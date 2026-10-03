@@ -198,6 +198,10 @@ Aussprachegruppen werden nun ohne leere Nullstellen angehängt, fehlerhafte Anbi
 
 Eine vollständig eingegebene Folge, die mehreren Karten entspricht, kann nun in einer Aktion übernommen werden. Automatisch abgeleitete Aussprache wird sofort als übernommener Wert neu dargestellt, sodass ein leeres Eingabefeld nicht mehr zur doppelten manuellen Eingabe verleitet.
 
+## Zusammengesetzte Vorschläge bleiben sichtbar
+
+Das Aussprachekarussell verarbeitet keine Texteingaben mehr, die dem Eingabeeditor gehören. Dadurch löscht seine Ganztextsuche nicht länger die Vorschläge des zusammengesetzten Resolvers für die nächste oder mehrere Karten, wenn mehr als ein Zeichen eingegeben wird.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

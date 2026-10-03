@@ -352,6 +352,10 @@ test("Study Library commits multi-value fields and resolves typed prefixes", () 
         adminInteractionsSource,
         /event\.target === form\.elements\["field:pronunciation"\]/,
     );
+    assert.match(
+        adminInteractionsSource,
+        /libraryCompositionField !==[\s\S]*"pronunciation"[\s\S]*return/,
+    );
     assert.match(createEntrySource, /return existing\.entry/);
 });
 

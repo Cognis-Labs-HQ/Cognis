@@ -198,6 +198,10 @@ Pronunciation groups are now appended without sparse null slots, malformed provi
 
 A complete typed sequence that resolves to multiple cards can now be accepted in one action. Automatically derived pronunciation is immediately redrawn as a committed value, preventing the empty editor from suggesting that users must enter a duplicate manually.
 
+## Compound suggestions remain visible
+
+The pronunciation carousel no longer handles text events owned by the input composer. This prevents its whole-string pronunciation search from erasing the compound resolver’s next-card or multi-card suggestions when more than one character is typed.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

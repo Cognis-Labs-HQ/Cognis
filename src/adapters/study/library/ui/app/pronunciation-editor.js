@@ -394,6 +394,11 @@ export function mountEditableRelationshipCarousels(
             const compositionField = input.closest(
                 "[data-library-composition-field]",
             );
+            if (
+                compositionField?.dataset.libraryCompositionField !==
+                "pronunciation"
+            )
+                return;
             const text = input.value.trim().normalize("NFKC");
             input.setCustomValidity(
                 text ? i18n.t("gateway.study.library_select_suggestion") : "",
