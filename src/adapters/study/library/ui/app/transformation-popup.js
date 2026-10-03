@@ -117,20 +117,20 @@ function drawTransformationLinks(tree) {
         const startItem = parent
             ?.closest("[data-library-transform-node]")
             ?.getBoundingClientRect();
-        const sx = start
+        const startX = start
             ? start.left + start.width / 2 - bounds.left
             : tree.scrollWidth / 2;
-        const sy = startItem ? startItem.bottom - bounds.top : 0;
-        const ex = end.left + end.width / 2 - bounds.left;
-        const ey = end.top - bounds.top;
-        const mid = sy + (ey - sy) / 2;
+        const startY = startItem ? startItem.bottom - bounds.top : 0;
+        const endX = end.left + end.width / 2 - bounds.left;
+        const endY = end.top - bounds.top;
+        const midpointY = startY + (endY - startY) / 2;
         const path = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "path",
         );
         path.setAttribute(
             "d",
-            `M ${sx} ${sy} C ${sx} ${mid}, ${ex} ${mid}, ${ex} ${ey}`,
+            `M ${startX} ${startY} C ${startX} ${midpointY}, ${endX} ${midpointY}, ${endX} ${endY}`,
         );
         if (item.classList.contains("library-transform-path-active"))
             path.classList.add("active");

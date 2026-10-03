@@ -555,17 +555,6 @@ export async function openCreateEntryPopup({
                         });
                         delete carousel.dataset.suggestedLabel;
                         if (!created) return;
-                        const compositionInput = form.querySelector(
-                            "[data-library-composer-text]",
-                        );
-                        if (compositionInput && suggestedLabel) {
-                            compositionInput.value = compositionInput.value
-                                .replace(suggestedLabel, "")
-                                .trim();
-                            compositionInput.dispatchEvent(
-                                new Event("input", { bubbles: true }),
-                            );
-                        }
                         entries.push(created);
                         const select = form.elements[`relationship:${id}`];
                         const option = new Option(
@@ -579,6 +568,17 @@ export async function openCreateEntryPopup({
                             value: created.id,
                             label: created.label,
                         })?.click();
+                        const compositionInput = form.querySelector(
+                            "[data-library-composer-text]",
+                        );
+                        if (compositionInput && suggestedLabel) {
+                            compositionInput.value = compositionInput.value
+                                .replace(suggestedLabel, "")
+                                .trim();
+                            compositionInput.dispatchEvent(
+                                new Event("input", { bubbles: true }),
+                            );
+                        }
                     },
                 },
             );
@@ -946,34 +946,38 @@ function bindTextComposition(
     const relationships = (layer.relationships ?? []).filter(({ id }) =>
         inputCarouselIds.has(id),
     );
-    const candidates = relationships
-        .flatMap((relationship) =>
-            entries
-                .filter(
-                    (entry) =>
-                        entry.layer === relationship.targetLayer &&
-                        entry.hidden !== true,
-                )
-                .map((entry) => ({
-                    ...entry,
-                    relationshipId: relationship.id,
-                    preview: transformationPathways(entry, schema).length
-                        ? i18n.t("gateway.study.library_transforms_available")
-                        : entryDefinition(entry, entries, schema),
-                })),
-        )
-        .sort(
-            (left, right) =>
-                Number(Boolean(right.preview)) - Number(Boolean(left.preview)),
-        )
-        .filter(
-            (candidate, index, all) =>
-                all.findIndex(
-                    ({ label }) =>
-                        label.trim().normalize("NFKC") ===
-                        candidate.label.trim().normalize("NFKC"),
-                ) === index,
-        );
+    const compositionCandidates = () =>
+        relationships
+            .flatMap((relationship) =>
+                entries
+                    .filter(
+                        (entry) =>
+                            entry.layer === relationship.targetLayer &&
+                            entry.hidden !== true,
+                    )
+                    .map((entry) => ({
+                        ...entry,
+                        relationshipId: relationship.id,
+                        preview: transformationPathways(entry, schema).length
+                            ? i18n.t(
+                                  "gateway.study.library_transforms_available",
+                              )
+                            : entryDefinition(entry, entries, schema),
+                    })),
+            )
+            .sort(
+                (left, right) =>
+                    Number(Boolean(right.preview)) -
+                    Number(Boolean(left.preview)),
+            )
+            .filter(
+                (candidate, index, all) =>
+                    all.findIndex(
+                        ({ label }) =>
+                            label.trim().normalize("NFKC") ===
+                            candidate.label.trim().normalize("NFKC"),
+                    ) === index,
+            );
     const selectedLabels = () => {
         const labels = new Map(
             relationships.flatMap((relationship) =>
@@ -1006,6 +1010,7 @@ function bindTextComposition(
             })
             .join("");
         const normalizedInput = input.value.trim().normalize("NFKC");
+        const candidates = compositionCandidates();
         const resolution = resolveCompositionPrefix(
             normalizedInput,
             candidates,
@@ -1058,6 +1063,7 @@ function bindTextComposition(
         const text = input.value.trim();
         if (lookups) lookups.hidden = !text;
         const normalizedText = text.normalize("NFKC");
+        const candidates = compositionCandidates();
         const exactMatches = candidates.filter(
             ({ label }) => label.trim().normalize("NFKC") === normalizedText,
         );

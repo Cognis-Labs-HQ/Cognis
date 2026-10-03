@@ -202,6 +202,10 @@ Urutan lengkap yang diketik dan dapat diuraikan menjadi beberapa kartu kini dapa
 
 Karusel pelafalan tidak lagi menangani peristiwa teks milik penyusun masukan. Dengan demikian, pencarian pelafalan seluruh teks tidak lagi menghapus saran kartu berikutnya atau multi-kartu dari pengurai gabungan ketika lebih dari satu karakter diketik.
 
+## Kartu baru menyegarkan komposisi
+
+Kandidat komposisi ketikan kini dibangun ulang dari koleksi entri terkini, dan pembuatan karusel bertingkat menambahkan entri baru sebelum menyegarkan saran. Karena itu, kartu yang baru dibuat dapat langsung menguraikan teks yang tertunda.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

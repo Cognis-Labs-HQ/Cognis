@@ -56,7 +56,6 @@
     inset-inline-end: 0.25rem;
 }
 
-.horizontal-carousel-scroll,
 .horizontal-carousel-add {
     min-width: 2.5rem;
 }
@@ -72,7 +71,6 @@
     white-space: nowrap;
 }
 
-.horizontal-carousel-scroll,
 .horizontal-carousel-add {
     display: grid;
     width: 2.75rem;

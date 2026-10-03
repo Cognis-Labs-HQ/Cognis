@@ -202,6 +202,10 @@ Eine vollständig eingegebene Folge, die mehreren Karten entspricht, kann nun in
 
 Das Aussprachekarussell verarbeitet keine Texteingaben mehr, die dem Eingabeeditor gehören. Dadurch löscht seine Ganztextsuche nicht länger die Vorschläge des zusammengesetzten Resolvers für die nächste oder mehrere Karten, wenn mehr als ein Zeichen eingegeben wird.
 
+## Neu erstellte Karten aktualisieren die Komposition
+
+Kandidaten für die Texteingabe werden nun aus der aktuellen Eintragssammlung neu aufgebaut, und bei der verschachtelten Karussellerstellung wird der neue Eintrag vor der Aktualisierung der Vorschläge hinzugefügt. Neu erstellte Karten können den ausstehenden Text daher sofort auflösen.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

@@ -19,11 +19,11 @@ test("classes page redirects non-teachers back to dashboard", () => {
 
 test("study hub detects native library child component by descriptor id", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",
     );
     assert.match(
         source,
-        /hasLibraryModule[\s\S]*component\?\.id[\s\S]*===\s*"library"/,
+        /hasLibraryModule[\s\S]*String\(component\?\.id[\s\S]*===\s*"library"/,
     );
 });

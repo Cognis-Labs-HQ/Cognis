@@ -531,7 +531,7 @@ test("Study Library administration exposes contract-safe editing", () => {
     assert.match(composerContractSource, /fields\.pronunciation =/);
     assert.match(
         composerContractSource,
-        /derivesPronunciation && field\.id === "pronunciation"/,
+        /"orderedLexicalSequence"[\s\S]*fieldsById\.has\("pronunciation"\)/,
     );
     assert.match(adminInteractionsSource, /data-library-entry-tags/);
     assert.match(source, /join\("\\n"\)/);

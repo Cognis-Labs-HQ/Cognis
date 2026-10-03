@@ -342,6 +342,11 @@ test("Study Library commits multi-value fields and resolves typed prefixes", () 
     );
     assert.match(adminInteractionsSource, /definitionsRequired/);
     assert.match(createEntrySource, /resolveCompositionPrefix/);
+    assert.match(createEntrySource, /const compositionCandidates = \(\) =>/);
+    assert.match(
+        createEntrySource,
+        /entries\.push\(created\)[\s\S]*dispatchEvent\([\s\S]*new Event\("input"/,
+    );
     assert.match(createEntrySource, /data-library-suggestion-sequence/);
     assert.match(createEntrySource, /prefixMatches\.matches\.length > 1/);
     assert.match(
