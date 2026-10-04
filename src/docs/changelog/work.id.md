@@ -210,6 +210,10 @@ Kandidat komposisi ketikan kini dibangun ulang dari koleksi entri terkini, dan p
 
 Komposisi ketikan kini mengindeks simpul transformasi penyedia sebagai kandidat. Memilih ejaan yang ditransformasikan menempatkan token transformasi yang tepat tanpa membuka kembali dialog pilihan. Kartu transformasi juga memakai ukuran baris internal dan tinggi minimum yang konsisten untuk tata letak dua kolom yang seimbang.
 
+## Pelafalan turunan yang tertaut
+
+Segmen pelafalan yang diturunkan otomatis kini memakai referensi komposisi berurutan sebagai cadangan ketika grup pelafalan penyedia tidak berisi tautan, sehingga tautan mendalam kembali menuju kartu sumber. Pembuatan kalimat tetap menurunkan pelafalan secara internal dan menyembunyikan bidang masukannya sepenuhnya.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

@@ -210,6 +210,10 @@ Kandidaten für die Texteingabe werden nun aus der aktuellen Eintragssammlung ne
 
 Die Texteingabe indiziert nun die Transformationsknoten des Anbieters als Kandidaten. Bei Auswahl einer transformierten Schreibweise wird das genaue Transformationstoken übernommen, ohne den Auswahldialog erneut zu öffnen. Transformationskarten verwenden außerdem eine einheitliche interne Zeilenaufteilung und Mindesthöhe für ein ausgewogenes zweispaltiges Layout.
 
+## Verknüpfte abgeleitete Aussprachen
+
+Automatisch abgeleitete Ausspracheabschnitte greifen nun auf die geordneten Kompositionsreferenzen zurück, wenn die Aussprachegruppen des Anbieters keine Verknüpfungen enthalten. Dadurch führen Tiefenlinks wieder zu ihren Quellkarten. Bei der Satzerstellung wird die Aussprache intern abgeleitet und das Eingabefeld vollständig ausgeblendet.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

@@ -182,6 +182,10 @@ test("Study Library derives pronunciation using the provider field type", () => 
         /pronunciationField\.multi_value === true[\s\S]*fields\.pronunciation\.some/,
     );
     assert.match(adminInteractionsSource, /name="class" type="hidden"/);
+    assert.match(
+        adminInteractionsSource,
+        /semanticRole === "orderedLexicalSequence"[\s\S]*type="hidden"/,
+    );
     assert.doesNotMatch(adminInteractionsSource, /<select name="class">/);
 });
 

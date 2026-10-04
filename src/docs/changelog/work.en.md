@@ -210,6 +210,10 @@ Typed-composition candidates are now rebuilt from the live entry collection, and
 
 Typed composition now indexes provider transformation nodes as candidates. Choosing a transformed spelling stages the exact transformation token without reopening the selection dialog. Transformation cards also use consistent internal row sizing and minimum height for a balanced two-column layout.
 
+## Linked derived pronunciations
+
+Automatically derived pronunciation segments now fall back to the ordered composition references when provider pronunciation groups do not contain links, restoring deep links to their source cards. Sentence creation keeps pronunciation derived internally and hides its input completely.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)

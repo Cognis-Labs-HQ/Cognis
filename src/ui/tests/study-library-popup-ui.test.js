@@ -166,6 +166,11 @@ test("Study Library links pronunciations through ordered relationship aliases", 
     assert.match(source, /linkRelationships\.has\(relation\)/);
     assert.match(source, /left\.position - right\.position/);
     assert.match(source, /resolveReferenceAliasComposition/);
+    assert.match(popupTitleSource, /derivedPronunciationEntries/);
+    assert.match(
+        popupTitleSource,
+        /configuredLinked\.length[\s\S]*derivedPronunciationEntries/,
+    );
 });
 
 test("Study Library numbers composed carousel selections holistically", () => {

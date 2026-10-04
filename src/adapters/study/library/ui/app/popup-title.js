@@ -174,6 +174,24 @@ export function popupTitleDetailItems(
               )
               .map(({ entry }) => entry)
         : [];
+    const derivedPronunciationEntries = (detail.entry.references ?? [])
+        .slice()
+        .sort(
+            (left, right) =>
+                (left.position ?? Number.MAX_SAFE_INTEGER) -
+                (right.position ?? Number.MAX_SAFE_INTEGER),
+        )
+        .map((reference) =>
+            (detail.references ?? []).find(
+                ({ id }) => id === reference.entryId,
+            ),
+        )
+        .filter((candidate) => {
+            const role = candidate
+                ? layerForEntry(schemas, candidate)?.semanticRole
+                : undefined;
+            return candidate && !["definition", "meaning"].includes(role);
+        });
     const linkedPronunciationGroups = Array.from(linkRelationships).flatMap(
         (relation) =>
             (detail.entry.referenceGroups?.[relation] ?? []).map((group) =>
@@ -196,7 +214,7 @@ export function popupTitleDetailItems(
         spellingLabels,
     )
         .map((label, pronunciationIndex) => {
-            const linked = linkRelationships.size
+            const configuredLinked = linkRelationships.size
                 ? resolveReferenceAliasComposition(
                       label,
                       linkedPronunciationGroups.length
@@ -205,6 +223,12 @@ export function popupTitleDetailItems(
                           : linkedPronunciationEntries,
                   )
                 : [];
+            const linked = configuredLinked.length
+                ? configuredLinked
+                : resolveReferenceAliasComposition(
+                      label,
+                      derivedPronunciationEntries,
+                  );
             const linkedLabel = linked.map((entry) => entry.label).join("");
             const displayedLinked =
                 linked.length &&
