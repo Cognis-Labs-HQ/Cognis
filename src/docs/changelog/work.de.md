@@ -214,6 +214,10 @@ Die Texteingabe indiziert nun die Transformationsknoten des Anbieters als Kandid
 
 Automatisch abgeleitete Ausspracheabschnitte greifen nun auf die geordneten Kompositionsreferenzen zurück, wenn die Aussprachegruppen des Anbieters keine Verknüpfungen enthalten. Dadurch führen Tiefenlinks wieder zu ihren Quellkarten. Bei der Satzerstellung wird die Aussprache intern abgeleitet und das Eingabefeld vollständig ausgeblendet.
 
+## Genaue Verwendungsbeispiele für Transformationen
+
+Beim Anzeigen einer transformierten Karte enthalten Verwendungsbeispiele, „Verwendet von“-Einträge und andere abhängige Listen jetzt nur Karten, deren Referenz genau denselben Transformationssatz und Regelpfad verwendet. Die Basisansicht behält weiterhin ihre vollständige Übersicht.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -265,3 +269,4 @@ Automatisch abgeleitete Ausspracheabschnitte greifen nun auf die geordneten Komp
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
+- [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)

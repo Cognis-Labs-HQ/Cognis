@@ -214,6 +214,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 プロバイダーの発音グループにリンクがない場合、自動派生した発音部分は順序付き構成参照を代替として使用し、元カードへのディープリンクを復元します。文カードの作成では発音を内部で派生し、入力欄を完全に非表示にします。
 
+## 変換に一致する使用例
+
+変換済みカードを表示すると、使用例、「使用元」、その他の依存項目一覧には、同じ変換セットと規則パスを参照するカードだけが表示されます。基本形の表示では、これまでどおり完全な一覧を確認できます。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -265,3 +269,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
+- [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)

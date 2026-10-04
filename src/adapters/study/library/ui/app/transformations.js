@@ -79,6 +79,35 @@ export function referencedTransformation(entry, schema, transformation) {
     );
 }
 
+export function referenceMatchesTransformation(reference, transformation) {
+    if (!transformation) return true;
+    const setId = transformation.setId ?? transformation.set?.id;
+    const path = transformation.path ?? transformation.node?.path;
+    const referencePath = reference?.transformation?.path;
+    return (
+        reference?.transformation?.setId === setId &&
+        Array.isArray(referencePath) &&
+        Array.isArray(path) &&
+        referencePath.length === path.length &&
+        referencePath.every((ruleId, index) => ruleId === path[index])
+    );
+}
+
+export function dependantsMatchingTransformation(
+    entries,
+    targetEntryId,
+    transformation,
+) {
+    if (!transformation) return entries;
+    return entries.filter((entry) =>
+        (entry.references ?? []).some(
+            (reference) =>
+                reference.entryId === targetEntryId &&
+                referenceMatchesTransformation(reference, transformation),
+        ),
+    );
+}
+
 export function transformedDefinition(baseDefinition, node, language) {
     const localized = (metadata) => {
         if (typeof metadata === "string") return metadata;

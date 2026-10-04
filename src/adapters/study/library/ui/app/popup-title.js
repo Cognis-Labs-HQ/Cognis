@@ -1,15 +1,11 @@
-import {
-    compositionReferenceGroups,
-    layerForEntry,
-    pronunciationValues,
-    relationshipPresentationRole,
-} from "./presentation.js";
+import { layerForEntry, pronunciationValues } from "./presentation.js";
 import {
     distinctPronunciationLabels,
     excludeTitleReferenceDuplicates,
     resolveReferenceAliasComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
+import { secondarySpellingGroups } from "./popup-spellings.js";
 import { variantPlacement } from "./variant-placement.js";
 
 function linkedItems(entries) {
@@ -65,54 +61,6 @@ export function withParentTitleAttribution(
     return parentEntry
         ? withParentAttribution(items, parentEntry, parentLabel)
         : items;
-}
-
-export function secondarySpellingGroups(detail, schemas) {
-    const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
-    if (
-        semanticRole !== "lexicalUnit" &&
-        semanticRole !== "orderedLexicalSequence"
-    ) {
-        return [];
-    }
-    const sourceLayer = layerForEntry(schemas, detail.entry);
-    const referencedSpellings = compositionReferenceGroups(detail, schemas)
-        .filter(
-            (group) =>
-                group.presentationRole === "alternateSpelling" &&
-                group.entries.length > 0,
-        )
-        .map((group) => group.entries);
-    const dependentSpellings = (detail.usedBy ?? []).flatMap((candidate) => {
-        const candidateLayer = layerForEntry(schemas, candidate);
-        const isAlternateSpelling = (candidate.references ?? []).some(
-            (reference) => {
-                if (reference.entryId !== detail.entry.id) return false;
-                const relationship = (candidateLayer?.relationships ?? []).find(
-                    ({ id }) => id === reference.relation,
-                );
-                return (
-                    relationship &&
-                    relationshipPresentationRole(
-                        relationship,
-                        candidateLayer,
-                        schemas,
-                    ) === "alternateSpelling"
-                );
-            },
-        );
-        return isAlternateSpelling &&
-            candidateLayer?.semanticRole === sourceLayer?.semanticRole
-            ? [[candidate]]
-            : [];
-    });
-    const seen = new Set();
-    return [...referencedSpellings, ...dependentSpellings].filter((group) => {
-        const key = group.map((entry) => entry.id).join("\u0000");
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
 }
 
 export function popupTitleDetailItems(

@@ -18,7 +18,10 @@ import {
 import { definitionDisplay } from "./definition-display.js";
 import { similarEntries } from "./similar-items.js";
 import { uniqueRelatedEntries } from "./related-entries.js";
-import { transformationPathways } from "./transformations.js";
+import {
+    dependantsMatchingTransformation,
+    transformationPathways,
+} from "./transformations.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
@@ -168,8 +171,18 @@ export async function composeDetail(
     languageCode,
     options = {},
 ) {
+    const presentationDetail = options.transformation
+        ? {
+              ...detail,
+              usedBy: dependantsMatchingTransformation(
+                  detail.usedBy ?? [],
+                  detail.entry.id,
+                  options.transformation,
+              ),
+          }
+        : detail;
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
-        detail,
+        detail: presentationDetail,
         i18n,
         languageCode,
     });
@@ -179,9 +192,9 @@ export async function composeDetail(
                 ? contribution.sections.filter(Boolean)
                 : [],
         );
-    const layer = layerForEntry(schemas, detail.entry);
+    const layer = layerForEntry(schemas, presentationDetail.entry);
     const { titleDefinition, additionalDefinitions } = definitionDisplay(
-        detail,
+        presentationDetail,
         schemas,
         languageCode,
         flow.stageResults,
@@ -196,7 +209,7 @@ export async function composeDetail(
               );
     const core = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, entries, i18n, options),
+        ...coreSections(presentationDetail, schemas, entries, i18n, options),
     ];
     const tail = [...sectionsFor("core"), ...sectionsFor("afterCore")];
     const renderBody = (definitions) =>
@@ -216,7 +229,7 @@ export async function composeDetail(
         definitions,
         renderBody,
         titleDefinition,
-        titleLeading: renderScope(detail.entry, i18n),
+        titleLeading: renderScope(presentationDetail.entry, i18n),
         actions,
     };
 }

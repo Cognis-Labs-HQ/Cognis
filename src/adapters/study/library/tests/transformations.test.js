@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+    dependantsMatchingTransformation,
+    referenceMatchesTransformation,
     transformedDefinition,
     transformedDefinitions,
     referencedTransformation,
@@ -123,6 +125,68 @@ test("provider-authored references resolve an exact transformation path", () => 
         schema,
     );
     assert.deepEqual(transformationTokenDetails(token).path, ["past"]);
+});
+
+test("dependants require the active transformation on their target reference", () => {
+    const active = {
+        set: { id: "verb" },
+        node: { path: ["polite"] },
+    };
+    const politeUsage = {
+        id: "polite-usage",
+        references: [
+            {
+                entryId: "go",
+                transformation: { setId: "verb", path: ["polite"] },
+            },
+        ],
+    };
+    const plainUsage = {
+        id: "plain-usage",
+        references: [{ entryId: "go" }],
+    };
+    const otherTransformation = {
+        id: "past-usage",
+        references: [
+            {
+                entryId: "go",
+                transformation: { setId: "verb", path: ["past"] },
+            },
+        ],
+    };
+    const unrelated = {
+        id: "unrelated",
+        references: [
+            {
+                entryId: "come",
+                transformation: { setId: "verb", path: ["polite"] },
+            },
+        ],
+    };
+
+    assert.equal(
+        referenceMatchesTransformation(politeUsage.references[0], active),
+        true,
+    );
+    assert.equal(
+        referenceMatchesTransformation(
+            otherTransformation.references[0],
+            active,
+        ),
+        false,
+    );
+    assert.deepEqual(
+        dependantsMatchingTransformation(
+            [politeUsage, plainUsage, otherTransformation, unrelated],
+            "go",
+            active,
+        ),
+        [politeUsage],
+    );
+    assert.deepEqual(
+        dependantsMatchingTransformation([politeUsage, plainUsage], "go", null),
+        [politeUsage, plainUsage],
+    );
 });
 
 test("transform sets ignore entries without every matching tag", () => {

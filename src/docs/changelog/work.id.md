@@ -214,6 +214,10 @@ Komposisi ketikan kini mengindeks simpul transformasi penyedia sebagai kandidat.
 
 Segmen pelafalan yang diturunkan otomatis kini memakai referensi komposisi berurutan sebagai cadangan ketika grup pelafalan penyedia tidak berisi tautan, sehingga tautan mendalam kembali menuju kartu sumber. Pembuatan kalimat tetap menurunkan pelafalan secara internal dan menyembunyikan bidang masukannya sepenuhnya.
 
+## Contoh penggunaan transformasi yang tepat
+
+Saat melihat kartu yang ditransformasikan, contoh penggunaan, entri “digunakan oleh”, dan daftar dependen lainnya kini hanya memuat kartu yang referensinya memakai rangkaian transformasi dan jalur aturan yang sama persis. Tampilan dasar tetap mempertahankan ikhtisar lengkapnya.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -265,3 +269,4 @@ Segmen pelafalan yang diturunkan otomatis kini memakai referensi komposisi berur
 - [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
+- [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)
