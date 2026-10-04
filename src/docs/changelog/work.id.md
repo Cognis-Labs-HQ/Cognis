@@ -218,6 +218,10 @@ Segmen pelafalan yang diturunkan otomatis kini memakai referensi komposisi berur
 
 Saat melihat kartu yang ditransformasikan, contoh penggunaan, entri “digunakan oleh”, dan daftar dependen lainnya kini hanya memuat kartu yang referensinya memakai rangkaian transformasi dan jalur aturan yang sama persis. Tampilan dasar tetap mempertahankan ikhtisar lengkapnya.
 
+## Kartu anak tetap berada di dalam kisi yang terlihat
+
+Penyesuaian kartu anak saat runtime kini memprioritaskan batas kisi yang terlihat sebelum menyelesaikan tabrakan. Posisi bebas tabrakan di luar kisi tidak lagi dapat menggantikan posisi yang tersedia di dalam kisi.
+
 ## Commit
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -270,3 +274,4 @@ Saat melihat kartu yang ditransformasikan, contoh penggunaan, entri “digunakan
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
 - [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)
+- [08bdb45f](https://github.com/Cognis-Labs-HQ/Cognis/commit/08bdb45f2746b9b76b5005a34cff98cd54b27823)

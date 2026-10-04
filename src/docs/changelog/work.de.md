@@ -218,6 +218,10 @@ Automatisch abgeleitete Ausspracheabschnitte greifen nun auf die geordneten Komp
 
 Beim Anzeigen einer transformierten Karte enthalten Verwendungsbeispiele, „Verwendet von“-Einträge und andere abhängige Listen jetzt nur Karten, deren Referenz genau denselben Transformationssatz und Regelpfad verwendet. Die Basisansicht behält weiterhin ihre vollständige Übersicht.
 
+## Unterkarten bleiben im sichtbaren Raster
+
+Die Laufzeitanpassung von Unterkarten priorisiert jetzt zuerst die sichtbaren Rastergrenzen und löst erst danach Überschneidungen auf. Eine kollisionsfreie Position außerhalb des Rasters kann dadurch keine sichtbare Position mehr verdrängen.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -270,3 +274,4 @@ Beim Anzeigen einer transformierten Karte enthalten Verwendungsbeispiele, „Ver
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
 - [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)
+- [08bdb45f](https://github.com/Cognis-Labs-HQ/Cognis/commit/08bdb45f2746b9b76b5005a34cff98cd54b27823)

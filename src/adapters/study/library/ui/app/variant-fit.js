@@ -163,6 +163,15 @@ function collisionScore(rect, occupiedRects) {
     );
 }
 
+export function isBetterVariantFit(candidate, current) {
+    return (
+        !current ||
+        candidate.overflow < current.overflow ||
+        (candidate.overflow === current.overflow &&
+            candidate.collision < current.collision)
+    );
+}
+
 function setVariantDirection(slot, direction) {
     for (const candidate of VARIANT_DIRECTIONS) {
         slot.classList.toggle(
@@ -258,17 +267,18 @@ export function fitVariantBranchWithinGrid(rootShell) {
                     if (!isAncestorSafe(rect, ancestorRects)) continue;
                     const overflow = overflowScore(rect, boundary);
                     const collision = collisionScore(rect, occupiedRects);
-                    if (
-                        !best ||
-                        collision < best.collision ||
-                        (collision === best.collision &&
-                            overflow < best.overflow)
-                    ) {
-                        best = { direction, distance, overflow, collision };
+                    const candidate = {
+                        direction,
+                        distance,
+                        overflow,
+                        collision,
+                    };
+                    if (isBetterVariantFit(candidate, best)) {
+                        best = candidate;
                     }
                     if (collision === 0 && overflow === 0) break;
                 }
-                if (best?.collision === 0) break;
+                if (best?.collision === 0 && best.overflow === 0) break;
             }
             setVariantDirection(slot, best.direction);
             setVariantDistance(slot, best.distance);

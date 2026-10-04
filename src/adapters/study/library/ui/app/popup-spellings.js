@@ -6,7 +6,10 @@ import {
 
 export function secondarySpellingGroups(detail, schemas) {
     const semanticRole = layerForEntry(schemas, detail.entry)?.semanticRole;
-    if (!["lexicalUnit", "orderedLexicalSequence"].includes(semanticRole)) {
+    if (
+        semanticRole !== "lexicalUnit" &&
+        semanticRole !== "orderedLexicalSequence"
+    ) {
         return [];
     }
     const referencedSpellings = compositionReferenceGroups(detail, schemas)

@@ -218,6 +218,10 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 
 変換済みカードを表示すると、使用例、「使用元」、その他の依存項目一覧には、同じ変換セットと規則パスを参照するカードだけが表示されます。基本形の表示では、これまでどおり完全な一覧を確認できます。
 
+## 子カードを表示グリッド内に維持
+
+実行時の子カード配置は、重なりの回避より先に表示グリッドの境界を優先するようになりました。これにより、グリッド外の重ならない位置が、グリッド内の利用可能な位置より優先されることはありません。
+
 ## コミット
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -270,3 +274,4 @@ Library の複数タブ検証は、アダプター固有の実装ではなく、
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
 - [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)
+- [08bdb45f](https://github.com/Cognis-Labs-HQ/Cognis/commit/08bdb45f2746b9b76b5005a34cff98cd54b27823)

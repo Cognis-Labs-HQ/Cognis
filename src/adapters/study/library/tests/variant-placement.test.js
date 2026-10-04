@@ -5,7 +5,10 @@ import {
     isSameLibraryRecord,
     variantPlacement,
 } from "../ui/app/variant-placement.js";
-import { variantDirectionCandidates } from "../ui/app/variant-fit.js";
+import {
+    isBetterVariantFit,
+    variantDirectionCandidates,
+} from "../ui/app/variant-fit.js";
 
 const layer = {
     id: "characters",
@@ -31,6 +34,27 @@ test("overflow fitting tries diagonal free slots before opposite cardinals", () 
         "down-right",
         "right",
     ]);
+});
+
+test("overflow fitting keeps child cards on the grid before avoiding collisions", () => {
+    const visibleWithCollision = { overflow: 0, collision: 120 };
+    const offGridWithoutCollision = { overflow: 40, collision: 0 };
+
+    assert.equal(
+        isBetterVariantFit(visibleWithCollision, offGridWithoutCollision),
+        true,
+    );
+    assert.equal(
+        isBetterVariantFit(offGridWithoutCollision, visibleWithCollision),
+        false,
+    );
+    assert.equal(
+        isBetterVariantFit(
+            { overflow: 0, collision: 10 },
+            visibleWithCollision,
+        ),
+        true,
+    );
 });
 
 function entry(id, overrides = {}) {

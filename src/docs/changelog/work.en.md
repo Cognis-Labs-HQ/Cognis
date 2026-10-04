@@ -218,6 +218,10 @@ Automatically derived pronunciation segments now fall back to the ordered compos
 
 When viewing a transformed card, usage examples, used-by entries, and other dependant lists now include only cards whose reference uses the exact same transformation set and rule path. The base view continues to retain its complete overview.
 
+## Child cards remain inside the visible grid
+
+Runtime child-card fitting now prioritizes the visible grid boundary before resolving collisions. A collision-free position outside the grid can therefore no longer displace an available on-grid position.
+
 ## Commits
 
 - [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
@@ -270,3 +274,4 @@ When viewing a transformed card, usage examples, used-by entries, and other depe
 - [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
 - [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
 - [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)
+- [08bdb45f](https://github.com/Cognis-Labs-HQ/Cognis/commit/08bdb45f2746b9b76b5005a34cff98cd54b27823)
