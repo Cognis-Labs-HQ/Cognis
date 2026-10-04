@@ -14,7 +14,7 @@
  *   container.innerHTML = menu.render();
  *   menu.mount(container);
  *
- * @param {{ groups: Array<{id: string, label: string, items: Array<{id: string, label: string, targetId?: string}>}>, storageKeyPrefix: string, onSelect?: (id: string) => void, activeId?: string, scrollBehavior?: ScrollBehavior }} options
+ * @param {{ groups: Array<{id: string, label: string, collapsible?: boolean, items: Array<{id: string, label: string, targetId?: string}>}>, storageKeyPrefix: string, onSelect?: (id: string) => void, activeId?: string, scrollBehavior?: ScrollBehavior }} options
  * @returns {{ render: () => string, mount: (root: HTMLElement, options?: {signal?: AbortSignal}) => void, setActive: (id: string, root?: HTMLElement) => void }}
  */
 
@@ -51,14 +51,17 @@ export function createSideMenu({
                 const storageKey = `${storageKeyPrefix}:${groupId}`;
                 const isOpen = localStorage.getItem(storageKey) !== "false";
                 const items = Array.isArray(group?.items) ? group.items : [];
-                return `<details class="side-menu-group"${isOpen ? " open" : ""} data-side-menu-group="${escapeHtml(groupId)}"><summary>${escapeHtml(String(group?.label ?? ""))}</summary><ul>${items
+                const itemList = `<ul>${items
                     .map((item) => {
                         const itemId = String(item?.id ?? "");
                         const targetId = String(item?.targetId ?? "").trim();
                         const isActive = itemId === selectedId;
                         return `<li><button class="side-menu-link${isActive ? " active" : ""}" data-side-menu-item="${escapeHtml(itemId)}"${targetId ? ` data-side-menu-target="${escapeHtml(targetId)}"` : ""}${isActive ? ' aria-current="page"' : ""}>${escapeHtml(String(item?.label ?? ""))}</button></li>`;
                     })
-                    .join("")}</ul></details>`;
+                    .join("")}</ul>`;
+                if (group?.collapsible === false)
+                    return `<div class="side-menu-group side-menu-group--fixed" data-side-menu-group="${escapeHtml(groupId)}">${itemList}</div>`;
+                return `<details class="side-menu-group"${isOpen ? " open" : ""} data-side-menu-group="${escapeHtml(groupId)}"><summary>${escapeHtml(String(group?.label ?? ""))}</summary>${itemList}</details>`;
             })
             .join("")}</nav>`;
     }
@@ -85,6 +88,7 @@ export function createSideMenu({
             );
         });
         root.querySelectorAll("[data-side-menu-group]").forEach((details) => {
+            if (details.tagName !== "DETAILS") return;
             details.addEventListener(
                 "toggle",
                 () => {

@@ -9,8 +9,11 @@ export async function fetchLibrarySchemas(languageCode) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLocations() {
-    const response = await apiFetch("/api/v1/study/library/locations");
+export async function fetchLibraryLocations(languageCode) {
+    const query = new URLSearchParams();
+    if (languageCode) query.set("language", languageCode);
+    const suffix = query.size > 0 ? `?${query}` : "";
+    const response = await apiFetch(`/api/v1/study/library/locations${suffix}`);
     if (!response.ok) throw new Error("locations_failed");
     return (await response.json()).data;
 }
@@ -94,6 +97,25 @@ export async function requestLibraryPromotion(entryId, destination) {
     return (await response.json()).data;
 }
 
+export async function requestLibraryUpdate(entryId, proposedEntry) {
+    const response = await apiFetch("/api/v1/study/library/push-requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+            entryId,
+            destination: { scope: "global", scopeId: "global" },
+            proposedEntry,
+        }),
+    });
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "request_failed");
+        error.details = payload.error;
+        throw error;
+    }
+    return (await response.json()).data;
+}
+
 export async function reviewLibraryPromotion(requestId, decision) {
     const response = await apiFetch(
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
@@ -134,7 +156,12 @@ export async function updateLibraryEntry(entryId, entry) {
             body: JSON.stringify({ entry }),
         },
     );
-    if (!response.ok) throw new Error("update_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "update_failed");
+        error.details = payload.error;
+        throw error;
+    }
     return (await response.json()).data;
 }
 
@@ -161,11 +188,26 @@ export async function previewLibraryResolution(location, entry) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLookupSuggestions(entry) {
+export async function fetchLibraryLookupProviders({
+    schemaId,
+    schemaVersion,
+    layer,
+}) {
+    const parameters = new URLSearchParams({ schemaId, layer });
+    if (schemaVersion !== undefined)
+        parameters.set("schemaVersion", String(schemaVersion));
+    const response = await apiFetch(
+        `/api/v1/study/library/lookup/providers?${parameters}`,
+    );
+    if (!response.ok) throw new Error("lookup_providers_failed");
+    return (await response.json()).data;
+}
+
+export async function fetchLibraryLookupSuggestions(providerId, entry) {
     const response = await apiFetch("/api/v1/study/library/lookup", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(entry),
+        body: JSON.stringify({ providerId, entry }),
     });
     if (!response.ok) throw new Error("lookup_failed");
     return (await response.json()).data;

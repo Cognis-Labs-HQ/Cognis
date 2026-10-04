@@ -123,3 +123,7 @@ Penghapusan akun yang diautentikasi secara eksternal menyimpan sidik jari satu a
 ### Nama akun berlingkup penyedia
 
 Akun eksternal baru memakai ruang nama penyedia pada kunci akun lokal dan handle profil. Sesi penyedia untuk handle `firehawksystems` dengan `accountNamespace` bernilai `x` menjadi `x:firehawksystems`; akun lokal `firehawksystems` dan identitas seperti `line:firehawksystems` tetap terpisah. Pemetaan `(provider, external_user_id)` yang sudah ada tetap menjadi acuan pada proses masuk berikutnya meskipun handle penyedia berubah.
+
+## Kebijakan media peramban
+
+Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL `blob:` yang dibuat peramban. Dengan demikian, klien UI tepercaya dapat memutar respons audio terautentikasi tanpa mengizinkan sumber media jarak jauh yang sewenang-wenang.

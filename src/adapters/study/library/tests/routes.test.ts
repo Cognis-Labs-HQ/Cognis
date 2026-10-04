@@ -9,10 +9,10 @@ import { createLibraryRoutes } from "../routes/index.js";
 
 const schemas = [
     {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        language: "JA",
-        label: "Japanese",
+        language: "X-Mock",
+        label: "Mock Language",
         layers: [],
     },
     { id: "german", version: 1, language: "de", label: "German", layers: [] },
@@ -45,11 +45,13 @@ async function request(path: string, token = "learner") {
 }
 
 test("schema route returns only the requested BCP-47 language", async () => {
-    const result = await request("/api/v1/study/library/schemas?language=JA");
+    const result = await request(
+        "/api/v1/study/library/schemas?language=X-Mock",
+    );
     assert.equal(result.status, 200);
     assert.deepEqual(
         result.body.data.map((schema: { id: string }) => schema.id),
-        ["japanese"],
+        ["mock-language"],
     );
 });
 
@@ -74,7 +76,7 @@ test("schema route supports private-use BCP-47 languages", async () => {
 
 test("schema route rejects unauthorized requests", async () => {
     const result = await request(
-        "/api/v1/study/library/schemas?language=ja",
+        "/api/v1/study/library/schemas?language=x-mock",
         "",
     );
     assert.equal(result.status, 401);
@@ -240,7 +242,7 @@ test("Library browser resolves labels from localized schema metadata", async () 
     );
 });
 
-test("remote audio cache remains behind authenticated entry access", async () => {
+test("packaged audio remains behind authenticated entry access", async () => {
     let requestedEntry = "";
     let requestedField = "";
     const route = createLibraryRoutes(
@@ -273,11 +275,11 @@ test("remote audio cache remains behind authenticated entry access", async () =>
 test("entry update delegates validated identity to the Library capability", async () => {
     let updatedId = "";
     const entry = {
-        schemaId: "japanese",
+        schemaId: "mock-language",
         schemaVersion: 1,
         layer: "words",
         label: "updated",
-        fields: { reading: "ことば" },
+        fields: { reading: "spoken" },
         references: [],
     };
     const route = createLibraryRoutes(

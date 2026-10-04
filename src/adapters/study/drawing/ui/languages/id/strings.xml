@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="adapter.study.drawing.title">Latihan Menulis</string>
+  <string name="adapter.study.drawing.reset">Atur Ulang</string>
+  <string name="adapter.study.drawing.guidance">Tampilkan panduan lengkap dan atur ulang kesulitan</string>
+  <string name="adapter.study.drawing.well_done">Bagus Sekali</string>
+  <string name="adapter.study.drawing.loser">Kalah!</string>
+  <string name="adapter.study.drawing.mistakes">Kesalahan: {{ count }}</string>
+  <string name="adapter.study.drawing.close">Tutup</string>
+  <string name="adapter.study.drawing.try_again">Coba Lagi</string>
+</resources>

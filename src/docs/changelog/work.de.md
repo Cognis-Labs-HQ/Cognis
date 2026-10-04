@@ -1,40 +1,272 @@
-# Benutzerbezogene Nachverfolgung neuer Bibliotheksinhalte
+# Stabile Unterkarten-Navigation
 
 **Feature-Zweig:** work
 
-## Dauerhafter Cache angesehener Inhalte
+## Stabile Unterkartenpositionen
 
-Cognis speichert nun die UUIDs angesehener Bibliothekseinträge pro Konto. Das Überfahren einer Karte oder ihr direktes beziehungsweise über eine Beziehung erfolgendes Öffnen markiert sie als angesehen, ohne den Verlauf anderer Benutzer offenzulegen.
+Unterkarten behalten ihre eingepassten Positionen, während tiefere Zweige geöffnet werden. Neue Nachfahren werden nach Tiefe mit Kollisionsabstand in sichtbaren freien Plätzen angeordnet, sodass Karten und Verbindungen weder springen noch überlappen.
 
-## Kennzeichnung und Benachrichtigung neuer Inhalte
+## Zuverlässige Zeigernavigation
 
-Nicht angesehene Einträge zeigen in Vorschau und Detailfenster einmalig **Neu**. Anbieteraktualisierungen und genehmigte globale Beiträge benachrichtigen aktivierte Benutzer über neue Sprachinhalte.
+Diagonale Wege verfügen nun über einen größeren, durchgängigen Trefferkorridor, Zweigwechsel verwenden eine kurze Verzögerung zur Erkennung der Zeigerabsicht, und aktive Karten pulsieren nicht mehr. Die Reihenfolge der Ausweichrichtungen hält anfängliche Unterkartenanordnungen außerdem kompakt um ihre bevorzugte Achse.
 
-## Bereichsbezogene Beiträge und Prüfabläufe
+## Einheitliche Kompositionskarussells
 
-Benutzer können persönliche Karten erstellen, Lehrkräfte zusätzlich Karten in eigenen Klassen und Administratoren globale Karten. Genehmigte Hochstufungsanfragen verschieben Karten in lehrergeführte Klassen oder die globale Sammlung; berechtigte Herabstufungen bringen sie zum ursprünglichen Einreicher zurück. Anbietergeschützte Karten können weder verschoben noch gelöscht werden.
+Eingabe und Aussprache verwenden jetzt dieselbe wiederverwendbare Token-Eingabe und Karusselldarstellung. Eingabekarussells stehen direkt unter ihrem Feld, ausgewählte Token teilen sich die kompakte Entfernen-Schaltfläche, und Steuerelemente zum Erstellen von Abhängigkeiten erscheinen nur für Ebenen, die Benutzer normalerweise erstellen dürfen.
 
-## Durchsuchbare und konfigurierbare Bibliotheksoberfläche
+## Sofortige Abhängigkeitskomposition
 
-Sprachanbieter können ebeneneigene Erstellungsfelder über eine ctx-Fähigkeit gestalten. Die globale Duplikaterkennung unterbricht die Erstellung zur Bestätigung, importierte Datensätze erhalten einen dauerhaften Suchindex, die Bibliothekssuche umfasst alle Ebenen, optionale Definitionen erscheinen unter dem Karteninhalt und die Mehrfachauswahl liegt mit wiederhergestellten schwebenden Aktionen an den gewünschten Kartenrändern.
+Karten, die über die Hinzufügen-Steuerung eines Karussells erstellt werden, durchlaufen nun denselben Auswahlpfad wie bestehende Karten und werden sofort der aktiven Kompositionsfläche hinzugefügt. Aussprachefelder für alternative Zeichen enthalten nun auch dann ihr Karussell für atomare Zeichen, wenn die Anbieterbeziehung eine allgemeinere Darstellungsrolle verwendet.
 
-## Sprachdefinierte Erstellung ist vollständig
+## Strichsuche und geführte Validierung
 
-Sprachpakete können nun für jede erstellbare Ebene einen geprüften `cardConstructor` angeben oder ihn über die öffentliche ctx-Fähigkeit `study:library:provider` registrieren. Cognis kombiniert Anbieterfelder mit rollenabhängigen Sichtbarkeits- und Klassenfeldern, zeigt die Klassenauswahl nur bei Bedarf und stellt Prüfungsanfragen berechtigten Lehrkräften sowie Administratoren bereit.
+Composer mit Strichunterstützung platzieren feldbezogene Nachschlageaktionen nun unter einer eigenen Überschrift für Strichmuster und zeichnen geladene Daten in einer kompakten Vorschau. Die Validierung erforderlicher Beziehungen kennzeichnet betroffene Reiter, öffnet den Reiter mit dem ersten ungültigen Feld und fokussiert das Feld oder die Definitionsaktion, die Aufmerksamkeit benötigt.
 
-## Begrenzter Kartenstatus und kontextbezogene Veröffentlichung
+## Ausgerichtete Popup-Titeldetails
 
-Bereichs-, Neu- und Auswahlindikatoren am Kartenrand bleiben nun innerhalb der horizontalen Kartengrenzen; bei wenig Platz erhält der Hauptwert den größten Anteil der Vorschau. Die Mehrfachauswahl bietet jetzt ein schwebendes Menü „Veröffentlichen in“, eine echte lokalisierte Löschbeschriftung, das Zurückziehen ausstehender Anträge und berechtigte Rücksendungen ohne überflüssige Schließen-Schaltfläche.
+Popup-Definitionen tragen keinen vorangestellten Gedankenstrich mehr. Aussprache- und Definitionsgruppen teilen nun die primäre Titelzeile und sind vertikal am Kartentitel zentriert.
 
-## Prägnante Links und intelligentere Suche
+## Präzise Composer-Pflichten
 
-Steuerelemente für verwandte Einträge zeigen nun ausschließlich den Hauptwert jeder Karte. Untergeordnete Karten besitzen deutlichere Oberflächen, eine stärkere Hintergrundtrennung und unabhängig per Maus aktivierbare Neu-Markierungen. Detailansichten schlagen anhand von Schriftzeichen, Wortschatzmetadaten und gemeinsamen Beziehungen ähnliche Einträge derselben Ebene vor. Sprachanbieter können außerdem zusätzliche Metadatenfelder als Filter für Lernende freigeben.
+Definitionspflichten kennzeichnen nun den Reiter Definitionen und die Hinzufügen-Aktion, während ungültige Aussprachefelder sich direkt ausweisen. Reiter behalten ihre normale Farbe und zeigen nur ein rotes Sternchen. Alternative Zeichen dürfen Definitionen auslassen und laden nun alle Aussprachebeziehungen außerhalb von Definitionen. Anbieter für Strich- und Wörterbuchsuche deklarieren neutrale Fähigkeiten für korrekte Platzierung und schichtweise Wörterbuch-Abwahl. Schlagwörter stehen nun zuletzt in Inhaltsformularen.
+
+## Wiederverwendbare Tab-Validierung
+
+Die mehrteilige Library-Validierung verwendet nun den Tab-Validierungscontroller des gemeinsamen Formular-Composers statt einer adapterspezifischen Implementierung. Der wiederverwendbare Controller verwaltet Tab-Aktivierung, Ungültigkeitsmarkierungen und den Fokus auf das erste ungültige Feld; Library liefert nur das definitionsspezifische Fokusziel und die Stilklasse.
+
+## Korrigierte Zuordnung im Altzeichen-Composer
+
+Composer für alternative Zeichen behalten jetzt die vom Anbieter deklarierten Zeichenkarussells für die Aussprache und greifen nur ersatzweise auf atomare Zeichenbeziehungen zurück, sodass unter Aussprache keine Wortschatzkarten mehr erscheinen. Anbieter von Strichmustern werden anhand neutraler Vertragsmetadaten oder der lokalisierten Feldbezeichnung zugeordnet; ihre Aktion wird daher aus der allgemeinen Nachschlagezeile entfernt und als „Nachschlagen“ im Abschnitt Strichmuster angezeigt.
+
+## Aussprache alternativer Zeichen begrenzt
+
+Aussprachekarussells für alternative Zeichen werden jetzt ausschließlich aus Beziehungen zu atomaren Schrifteinheiten bestimmt. Karusselllisten des Konstruktors bleiben Referenzen der Formularnutzlast und können im Ausspracheeditor alternativer Zeichen kein Wortschatzkarussell mehr auslösen.
+
+## Bibliotheksansichten und Zeichenkarussells wiederhergestellt
+
+Vom Anbieter deklarierte Verben- und Adverbienansichten werden jetzt über die SPA-Route der Bibliotheksschicht aufgelöst, statt 404 zurückzugeben. Composer für alternative Zeichen befüllen die Aussprache nun aus schemaweiten atomaren Zeichenschichten und lassen sachfremde Wortschatzbeziehungen weg, während Definitionen erhalten bleiben.
+
+## Nutzlasten alternativer Zeichen angeglichen
+
+Formularnutzlasten für alternative Zeichen kopieren ihre Liste der Aussprachekarussells jetzt direkt aus der Wortschatz-Formularnutzlast desselben Schemas. Die bisherige spezielle Karussellableitung und Filterung für alternative Zeichen wurde entfernt.
+
+## Wortschatzkarussell ersetzt
+
+Die Formularangleichung für alternative Zeichen ersetzt jetzt sowohl das Wortschatz-Ausspracheziel als auch dessen Darstellungsbeziehung durch die Zeichenbeziehung der Wortschatzkarten. Beim Erstellen einer Kanji-Aussprache erscheint daher das Zeichenkarussell statt Wortschatz.
+
+## Aussprache und Duplikate korrigiert
+
+Explizite Wort- und Satzaussprachen beenden nun die rekursive Zeichenableitung. Sichtbare doppelte Eingaben werden blockiert und beim Fortfahren wird die vorhandene Karte ausgewählt; Anfragen erkennen die Typen update und merge.
+
+## Definitionen unter Titeln
+
+Definitionen in Pop-ups beginnen jetzt unter dem Kartentitel und umbrechen im verfügbaren Titelbereich, statt an den rechten Rand gedrängt zu werden.
+
+## Partikelaussprache bewahrt
+
+Die Ausspracheauflösung endet jetzt bei der Partikel selbst, sodass Zeichenreferenzen kontextabhängige verfasste Lesungen nicht ersetzen.
+
+## Gespeicherte Aussprachen bearbeiten
+
+Leere Aussprache-Stufen erzeugen jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten enthalten ihre Entfernen-Schaltfläche; ihre Auswahl stellt die Komponentenkarten in Stufe und Karussells zur Bearbeitung wieder her.
+
+## Definitionsbearbeitung vervollständigt
+
+Die Vorschau-Definitionsoption befindet sich jetzt unter Definitionen; Editoren vorhandener Karten können zusätzliche Definitionen erstellen und sofort auswählen.
+
+## Stabile Eltern-Definitionen
+
+Die Elternzuordnung bleibt nun geschlossen in der Lesungszeile vor der Definition. Karten, die eine Definition vom Elterneintrag übernehmen, bewahren die Definition dadurch unter dem Titel, ohne die lokalisierte Elternbezeichnung in der Popup-Überschrift aufzuteilen.
+
+## Getaggte Ansichten wiederhergestellt
+
+Tags aus Content-Packs bleiben nun bei Validierung und Import in Bibliothekseinträgen erhalten. Vom Anbieter deklarierte Ansichten für Verben und Adverbien können ihr markiertes Vokabular dadurch finden und anzeigen, statt eine leere Ebene zu melden.
+
+## Komponierbare Transformationsbäume
+
+Verb- und Adverbtransformationen unterstützen nun erweiterte verzweigte Ketten, transformationsspezifische Lesungen und Definitionen sowie ein verbundenes Technologiebaum-Layout. Satz-Composer können transformierte Karussellformen auswählen und dabei kanonische Verweise bewahren; transformierte Verweise werden mit ihrer verfassten Form und dem vollständigen Pfad erneut geöffnet.
+
+## Elternsichere Kindkarten
+
+Die Platzierung von Kindkarten schließt nun jede Vorfahrenposition aus und durchsucht diagonale sowie kardinale Positionen in zunehmend größeren Abständen. Blockierte Kinder rücken um weitere Positionen nach außen, statt einen Vorfahren zu überdecken oder zurückgehalten zu werden.
+
+## Interaktive Transformationsbäume über die gesamte Breite
+
+Transformationsbaum-Ansichten beginnen jetzt als dichtes Kartenraster über die gesamte Breite. Karten ohne verfügbare Transformationen bleiben inaktiv. Beim Öffnen wird eine erweiterbare Karte nach oben verschoben, die übrigen Karten werden animiert ausgeblendet und der Baum wächst direkt unter der zentrierten Wurzel über die gesamte Inhaltsbreite; die Schließen-Schaltfläche stellt das Raster wieder her. Die Auswahl einer Transformation hebt den vollständigen Pfad zurück zur Wurzel hervor und animiert ihn fortlaufend, während Transformationsbezeichnungen über den Werten stehen, um Überläufe in schmalen Karten zu vermeiden.
+
+## Durchgehende Transformationspfade und stabile Wurzeln
+
+Transformationsbäume behalten jetzt die Karte des Ausgangsverbs oder -adverbs als unveränderte visuelle Wurzel bei und lassen die redundante Zusammenfassung der ausgewählten Form darunter weg. Verbindungslinien schließen lückenlos aneinander an und werden im gesamten Baum kontinuierlich animiert, während der ausgewählte Herkunftspfad deutlich hervorgehoben bleibt. Ein Klick auf die bereits geöffnete Ausgangskarte öffnet nun ihre Standarddetailansicht.
+
+## In den Wortschatz integrierte Transformationsauswahl
+
+Verb- und Adverbeinträge bleiben jetzt auf der Wortschatzseite, wo vom Anbieter deklarierte Transformations-Tags als Filter statt als eigene Navigationsziele erscheinen. Eine Transformationsregel kann lokalisierte `marker`-Metadaten deklarieren; Cognis setzt sie in den Platzhalter `{{ marker }}` einer referenzierten Definition ein (beispielsweise wird `to {{ marker }} watch` zu `to (want to) watch`). Formnamen wurden in Informations-Tooltips der einzelnen Knoten verschoben. Das normale Detailfenster bietet eine Varianten-Aktion, die einen eigenen Graph-Auswahldialog öffnet; die Auswahl eines Knotens zeichnet den Basiseintrag mit transformiertem Titel, Aussprache, Definition und Zeicheneingabe neu und deaktiviert die Bearbeitung. Composer-Karussells kennzeichnen transformierbare Einträge und verwenden eine zweispaltige Auswahl, die eine Transformation oder die Grundform übernimmt.
+
+## Ausgewogene Transformationsgraphen und zuverlässige Marker
+
+Transformationsgraphen bemessen jetzt jeden Zweig anhand seines vollständigen Nachkommenbaums, bewahren eine Mindestbreite von zwölf rem pro Knoten, verteilen Zweige über die intrinsische Graphbreite und scrollen horizontal, wenn der Graph den Dialog überschreitet. Dadurch werden Karten in tiefen oder stark verzweigten Konjugationsfamilien nicht mehr zu schmalen Spalten zusammengedrückt. Die Auflösung von Definitionsmarkern akzeptiert nun lokalisierte Metadaten oder eine direkte Zeichenfolge, erkennt sowohl `{{ marker }}` als auch `{{marker}}`, verwendet die aktive Oberflächensprache, ersetzt jeden Marker in Texten mit mehreren Definitionen und gibt einer vom Anbieter erstellten Markervorlage Vorrang vor einer älteren vollständigen Definitionsüberschreibung.
+
+## Transformationsgraph und definitionsgetreue Darstellung
+
+Transformationsbäume verwenden nun gebogene SVG-Graphkanten, beschränken das Scrollen auf den Graphen und halten Popup-Aktionen sichtbar. Eine ausgewählte Variante bleibt jetzt in der zurückgegebenen Detailansicht erhalten, aktualisiert jede referenzierte Definition mit der Anbieter-Markierung und platziert die Variantensteuerung links.
+
+## Korrekte Homografen-Verknüpfung
+
+Die ersatzweise Titelzusammensetzung folgt jetzt der Reihenfolge der semantischen Ebenen. Wortschatzeinträge mit identischer Schreibweise verweisen auf ihre atomaren oder zusammengesetzten Schrifteinheiten statt aufeinander, während die Satzzusammensetzung weiterhin Wortschatzeinträge auflöst.
+
+## Kompakte Transformationsgraphen
+
+Transformationsgraphen verwenden jetzt pro Tiefe eine horizontale Reihe, platzieren großzügige Definitionen unter jeder Karte und halten den Überlauf beider Achsen in einem an die Ansichtsfensterhöhe gebundenen Graphbereich, sodass Popup-Aktionen sichtbar bleiben. Ausgewählte Transformationen ersetzen zusammengesetzte Grundtitel-Links, damit der transformierte Titel in Detailansichten erscheint. Anbieterregeln verwenden nun verkettbare lokalisierte Definitionsvorlagen mit expliziter Präfix- und Suffixerkennung statt fester Marker.
+
+## Kontextabhängige Definitionsketten
+
+Transformationsbäume zeigen den unveränderten Eintrag nun als zentrierte Stammkarte und beginnen Verbindungen unter dem Definitionsbereich jedes Knotens. Definitionstransformationen unterstützen geordnete lokalisierte Ersetzungen vor Ausweichvorlagen. Spätere Regeln können damit frühere Bedeutungen umschreiben – etwa „want to“ zu „have wanted to“ – oder eine Abfolge an die vollständig transformierte Definition anhängen.
+
+## Rückkehr von transformierten Karten
+
+Eine transformierte Karte ersetzt ihre Variantensteuerung nun durch die lokalisierte Aktion „Zurück zu {Karte}“. Die Rückkehr stellt die kanonische Karte im selben Detail-Navigationskontext wieder her – einschließlich Titel, Aussprache, Definitionen, Zeichenziel, Bearbeitungsmöglichkeit und Variantensteuerung.
+
+## Verzerrungsfreie Zeichengröße
+
+Die Zeichenübungsfläche passt ihren logischen Strichkoordinatenraum nun in einen zentrierten, seitenverhältnistreuen Darstellungsbereich ein, der aus der tatsächlichen Canvas-Größe abgeleitet wird. Größenänderungen können horizontalen oder vertikalen Freiraum ergänzen, verzerren jedoch Zeichen, Hilfslinien, Anmerkungen, angenommene Striche und aktive Zeigereingaben nicht mehr.
+
+## Zuverlässige Vokabelzusammenstellung
+
+Formulare zum Erstellen und Bearbeiten von Vokabeln zeigen nun auch dann ein Zeichenkarussell, wenn ein Anbieter nur eine Aussprachebeziehung deklariert. Gespeicherte Aussprachegruppen werden sichtbar aus der Bereitstellungszeile verschoben, Anbieter-Tags erhalten keine redundante Ebenenklasse mehr und fehlgeschlagene Erstellungen zeigen einen Fehler, während das Formular geöffnet bleibt.
+
+## Zuverlässige mehrwertige Aussprachen
+
+Beim Speichern einer Aussprache wird nun die Karussellauswahl übernommen, manuell erstellte mehrwertige Aussprachen bleiben bei der Kartenerstellung erhalten und bei ungültigen Aussprachegruppen erscheint eine konkrete Korrekturmeldung.
+
+## Zuverlässiges Speichern der Aussprache
+
+Die Aussprache-Vorbereitung wird nun auch abgeschlossen, wenn Karussellkarten keine Zähler anzeigen. Der bestätigte Wert wird in die Liste der gespeicherten Werte verschoben und klare Erfolgs- oder hilfreiche Übermittlungsfehler werden angezeigt.
+
+## Anbieterneutrale Kartentests
+
+Ein aktuelles anbieterneutrales Testschema prüft jetzt das Erstellen und Bearbeiten von Karten mit zusammengesetzten Schrifteinheiten, geordneten Bestandteilen, mehrwertigen Aussprachen und gruppierten Lesereferenzen. Bibliothekstests enthalten keine Inhalte eines bestimmten Sprachmoduls mehr.
+
+## Korrekte Bearbeitungsbestätigung
+
+Erfolgreiche Serveraktualisierungen werden nicht mehr als Fehler gemeldet, wenn eine spätere Listenaktualisierung fehlschlägt. Der Editor schließt nach der bestätigten Aktualisierung und zeigt entweder die normale Erfolgsmeldung oder einen klaren Hinweis zum Neuladen der Seite, wenn die lokale Synchronisierung fehlschlägt.
+
+## Aktuelle Satzaussprache
+
+Satzkarten verwerfen beim Speichern eine zuvor gespeicherte Aussprache und leiten einen neuen Wert aus den aktuell geordneten Eingabereferenzen ab. Das Umordnen oder Ersetzen von Satzbestandteilen aktualisiert dadurch die gespeicherte Aussprache.
+
+## Karussell für Satzstrukturen
+
+Vom Anbieter deklarierte Tag-Karussells funktionieren jetzt als eigenständige Karussells für die Satzeingabe, statt von Einträgen im allgemeinen Karussell abhängig zu sein, die dort ausgeblendet werden. Strukturwörter können beim Bearbeiten ausgewählt, angeordnet, entfernt und wiederhergestellt werden. Transformationsbäume bieten außerdem mehr vertikalen Abstand zwischen den Tiefenebenen.
+
+## Stabile Eintragsaktualisierung
+
+Ein einzelner Eintrag aus einer erfolgreichen Popup-Bearbeitung wird nun vor dem Rendern in die vorhandene Bibliothekseintragssammlung übernommen. Die Seite ersetzt ihr Array nicht mehr durch einen einzelnen Eintrag, sodass Aktualisierungen nach dem Speichern ohne Filter-Laufzeitfehler abgeschlossen werden.
+
+## Transformationsauswahl im Karten-Composer
+
+Bei der Auswahl eines transformierbaren Verbs im Karten-Composer erscheint jetzt ein Dialog „Wird hinzugefügt“ mit einer zweispaltigen Liste der verfügbaren Formen und ihrer angepassten Definitionen. Die ausgewählte Form wird als Transformationstoken vorgemerkt, sodass Links in gespeicherten Sätzen wieder die passende transformierte Verb- oder Adverbansicht öffnen.
+
+## Vom Anbieter verfasste transformierte Satzverweise
+
+Inhaltsanbieter können Satzverweisen jetzt eine geprüfte Transformationssatz-ID und einen Regelpfad hinzufügen. Cognis speichert die Auswahl, stellt das genaue transformierte Composer-Token wieder her und öffnet aus dem Satz dieselbe transformierte Verb- oder Adverbansicht. Transformierte Details verwenden nun die übliche Kindzuordnung „Von: übergeordnet“ als Link zur kanonischen Grundkarte statt einer separaten Zurück-Schaltfläche.
+
+## Kompatibilität des Lebenszyklus des Japanisch-Moduls
+
+Die Sicherheitsgrenze für Module erkennt nun die kanonischen API- und Capability-Namensräume, die Modulen nach dem Muster `study-language-<code>` gehören. Das aktuelle Japanisch-Lernmodul kann beim Aktivieren `study:language:ja`, seine Bibliotheks-Capability und Routen unter `/api/v1/study/languages/ja/*` registrieren, ohne uneingeschränkte Modulrechte anzufordern; benachbarte Sprachnamensräume bleiben gesperrt.
+
+## Titelumbruch im Popup nur als letzte Möglichkeit
+
+Bibliotheks-Detailfenster messen jetzt den Platzbedarf von Titel und Aussprache, nachdem die normale kompakte Skalierung angewendet wurde. Nur wenn der Titel abgeschnitten oder die Aussprache umgebrochen würde, wird die Aussprache unter den Titel verschoben; in allen passenden Fällen bleibt die einzeilige Anordnung erhalten.
+
+## Zuverlässige verschachtelte Definitionen und Ausspracheübernahmen
+
+Beim Erstellen einer Definition innerhalb des Karten-Composers wird jetzt eine bereits vorhandene passende Definition wiederverwendet, statt einen unbehandelten Inhaltskonflikt auszulösen. Nur neu erstellte verschachtelte Definitionen werden beim Abbrechen zurückgesetzt. Beim Speichern einer zusammengesetzten Aussprache wird ihre gespeicherte Karte neu gezeichnet; ausgewählte Karussellkarten, Reihenfolgenummern und Auswahlzusammenfassung werden gemeinsam geleert.
+
+## Zuverlässige Komposition verschachtelter Karten
+
+Beim Speichern mehrwertiger Aussprachen werden nun die übernommenen Werte neu dargestellt und die Karussellauswahl geleert. Erforderliche Definitionen sind sichtbar markiert und werden vor dem Absenden geprüft, doppelte verschachtelte Karten verwenden den vorhandenen Eintrag, und zusammengesetzte Eingaben bieten Kartenübereinstimmungen für das längste Präfix an.
+
+## Sichtbare abgeleitete Satzaussprache
+
+Satzeditoren behalten nun das Aussprachefeld des Anbieters im Formular, zeigen es schreibgeschützt an und leiten es aus allen auflösbaren Eingabekarten ab. Zusammengesetzter Text wird durch deterministische Übereinstimmung mit dem längsten Präfix segmentiert, damit Eingaben schrittweise aufgelöst werden können.
+
+## Gültige gruppierte Vokabeleinreichungen
+
+Aussprachegruppen werden nun ohne leere Nullstellen angehängt, fehlerhafte Anbietereingaben liefern einen stabilen Vertragsfehler statt eines Absturzes, und vorhandene verschachtelte Definitionen werden vor einer kollidierenden Anfrage wiederverwendet.
+
+## Getippte Komposition aus mehreren Karten
+
+Eine vollständig eingegebene Folge, die mehreren Karten entspricht, kann nun in einer Aktion übernommen werden. Automatisch abgeleitete Aussprache wird sofort als übernommener Wert neu dargestellt, sodass ein leeres Eingabefeld nicht mehr zur doppelten manuellen Eingabe verleitet.
+
+## Zusammengesetzte Vorschläge bleiben sichtbar
+
+Das Aussprachekarussell verarbeitet keine Texteingaben mehr, die dem Eingabeeditor gehören. Dadurch löscht seine Ganztextsuche nicht länger die Vorschläge des zusammengesetzten Resolvers für die nächste oder mehrere Karten, wenn mehr als ein Zeichen eingegeben wird.
+
+## Neu erstellte Karten aktualisieren die Komposition
+
+Kandidaten für die Texteingabe werden nun aus der aktuellen Eintragssammlung neu aufgebaut, und bei der verschachtelten Karussellerstellung wird der neue Eintrag vor der Aktualisierung der Vorschläge hinzugefügt. Neu erstellte Karten können den ausstehenden Text daher sofort auflösen.
+
+## Transformierte Formen in Eingabevorschlägen
+
+Die Texteingabe indiziert nun die Transformationsknoten des Anbieters als Kandidaten. Bei Auswahl einer transformierten Schreibweise wird das genaue Transformationstoken übernommen, ohne den Auswahldialog erneut zu öffnen. Transformationskarten verwenden außerdem eine einheitliche interne Zeilenaufteilung und Mindesthöhe für ein ausgewogenes zweispaltiges Layout.
+
+## Verknüpfte abgeleitete Aussprachen
+
+Automatisch abgeleitete Ausspracheabschnitte greifen nun auf die geordneten Kompositionsreferenzen zurück, wenn die Aussprachegruppen des Anbieters keine Verknüpfungen enthalten. Dadurch führen Tiefenlinks wieder zu ihren Quellkarten. Bei der Satzerstellung wird die Aussprache intern abgeleitet und das Eingabefeld vollständig ausgeblendet.
+
+## Genaue Verwendungsbeispiele für Transformationen
+
+Beim Anzeigen einer transformierten Karte enthalten Verwendungsbeispiele, „Verwendet von“-Einträge und andere abhängige Listen jetzt nur Karten, deren Referenz genau denselben Transformationssatz und Regelpfad verwendet. Die Basisansicht behält weiterhin ihre vollständige Übersicht.
 
 ## Commits
 
-- [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
-- [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
-- [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
-- [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
-- [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
-- [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
+- [0518e6c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/0518e6c409501b6c12e96010ef2d039acec42bd5)
+- [54c47947](https://github.com/Cognis-Labs-HQ/Cognis/commit/54c479475d86915fff94aff089b9670f887d4c7d)
+
+- [44891fa5](https://github.com/Cognis-Labs-HQ/Cognis/commit/44891fa5705fc417cf0fbd75b96599a6fac21895)
+- [3e86f4e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e86f4e5c83828d0101fbacb4354381048de5290)
+
+- [03268e5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/03268e5bb34d94a46146b0ec6ba9f3e678752481)
+- [8862690a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8862690a835650a677efa6a5404ad55491b6a778)
+
+- [ccbab39b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ccbab39b)
+- [db0728af](https://github.com/Cognis-Labs-HQ/Cognis/commit/db0728af)
+- [9c77e48f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c77e48f)
+- [41d895c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/41d895c6)
+- [e5f1dd4b](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5f1dd4b)
+- [ed27aee1](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed27aee1)
+- [ac06311e](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac06311e)
+- [517d09f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/517d09f0)
+- [38faf70c](https://github.com/Cognis-Labs-HQ/Cognis/commit/38faf70c)
+- [12a11fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/12a11fa8)
+- [fc7e7054](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc7e7054)
+- [28161864](https://github.com/Cognis-Labs-HQ/Cognis/commit/28161864)
+- [0fcff931](https://github.com/Cognis-Labs-HQ/Cognis/commit/0fcff931)
+- [6d0da649](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0da649)
+- [9d4adb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d4adb8)
+- [492cf08](https://github.com/Cognis-Labs-HQ/Cognis/commit/492cf08)
+- [b3a66ab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b3a66ab8)
+- [1bc87c38](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bc87c38)
+- [5c9ef37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c9ef37)
+- [0223c43](https://github.com/Cognis-Labs-HQ/Cognis/commit/0223c43)
+- [0055fdfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/0055fdfe)
+- [8e60e383](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e60e383)
+- [5f098e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f098e37)
+- [4d32a72e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d32a72e)
+- [7dea5c6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dea5c6c)
+- [e356a233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e356a233)
+- [6c0ba3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c0ba3ed)
+- [a0d73d7a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0d73d7a)
+- [4bd6efe1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4bd6efe1)
+- [d68194c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d68194c6)
+- [508d6197](https://github.com/Cognis-Labs-HQ/Cognis/commit/508d6197)
+- [0b3514f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b3514f9)
+- [1f67610e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f67610e)
+- [7b038799](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b038799)
+- [35a54a21](https://github.com/Cognis-Labs-HQ/Cognis/commit/35a54a21)
+- [6a48472b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a48472bfb28deb7094af36fc7fab7defa597b65)
+- [f4640403](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4640403af8c1a228844cde3f784fa45650299cd)
+- [42cf60f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/42cf60f01cbc42b765aaa71bdbcd84999c605a4a)
+- [dfe0b9fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/dfe0b9fbd48b84bd50dd3e346b65a825fb259f05)
+- [51bf12a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/51bf12a7b71ee520065eca1e02a8cf34e91c8fa9)
+- [4a8da35e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4a8da35e205dd137be35c585d03361854f0480ce)

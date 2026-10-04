@@ -3,16 +3,94 @@ import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../store.js";
+import { contentEntryId } from "../content-pack.js";
 import type { LibraryContentPackPlan } from "../types.js";
+
+test("new releases may replace a schema owned only by the same content pack", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const previousSchema = {
+        id: "mock-language",
+        version: 45,
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
+        layers: [{ id: "words", metadata: { labels: { en: "Words" } } }],
+    };
+    const nextSchema = {
+        ...previousSchema,
+        layers: [
+            {
+                ...previousSchema.layers[0],
+                displayDefinition: true,
+            },
+        ],
+    };
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return {
+                    rows: [{ schema_json: JSON.stringify(previousSchema) }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_content_packs" &&
+                command.where?.some(({ column }) => column === "schema_id")
+            ) {
+                return {
+                    rows: [
+                        {
+                            publisher: "Cognis Labs HQ",
+                            pack_id: "mock-language",
+                        },
+                    ],
+                };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest: {
+            id: "mock-language",
+            publisher: "Cognis Labs HQ",
+            version: "2.2.16",
+            contentRevision: "12",
+            namespace: "x-mock",
+            schema: "schema.json",
+            content: "content",
+            license: { id: "AGPL-3.0-or-later" },
+        },
+        schema: nextSchema,
+        digest: "next",
+        records: [],
+        assets: [],
+    });
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.table === "study_library_schemas" &&
+                command.set.schema_json === JSON.stringify(nextSchema),
+        ),
+    );
+});
 
 test("content pack import ignores duplicate all-key references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -42,9 +120,10 @@ test("content pack import ignores duplicate all-key references", async () => {
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
+            metadata: { catalog: { featured: true } },
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -55,6 +134,7 @@ test("content pack import ignores duplicate all-key references", async () => {
                 layer: "characters",
                 label: "A",
                 hidden: true,
+                tags: ["verb", "godan"],
                 references: [
                     { entryId: "i", relation: "related", position: 0 },
                 ],
@@ -75,6 +155,7 @@ test("content pack import ignores duplicate all-key references", async () => {
     const receipt = await new LibraryStore(db).ingestContentPack(plan);
 
     assert.equal(receipt.unchanged, false);
+    assert.equal(receipt.newRecordCount, 3);
     const entryInsert = commands.find(
         (command) =>
             command.option === "INSERT" &&
@@ -92,6 +173,12 @@ test("content pack import ignores duplicate all-key references", async () => {
             ? entryInsert.values.hidden
             : undefined,
         true,
+    );
+    assert.equal(
+        entryInsert?.option === "INSERT"
+            ? entryInsert.values.tags_json
+            : undefined,
+        '["verb","godan"]',
     );
     assert.deepEqual(
         entryInsert?.option === "INSERT"
@@ -132,16 +219,95 @@ test("content pack import ignores duplicate all-key references", async () => {
         ),
         false,
     );
+    const packInsert = commands.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_library_content_packs",
+    );
+    assert.equal(
+        packInsert?.option === "INSERT"
+            ? packInsert.values.metadata_json
+            : undefined,
+        JSON.stringify({ catalog: { featured: true } }),
+    );
+    assert.deepEqual(receipt.metadata, { catalog: { featured: true } });
 });
 
-test("content pack updates prune omitted records only when requested", async () => {
+test("entry reads compact sparse grouped references before sorting", async () => {
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            if (command.table === "study_library_entries") {
+                return {
+                    rows: [
+                        {
+                            id: "entry-1",
+                            scope: "global",
+                            scope_id: "global",
+                            schema_id: "mock-language",
+                            schema_version: 1,
+                            layer: "words",
+                            language: "x-mock",
+                            label: "word",
+                            fields_json: "{}",
+                            created_by: "admin",
+                            created_at: "2026-01-01T00:00:00Z",
+                            updated_at: "2026-01-01T00:00:00Z",
+                        },
+                    ],
+                };
+            }
+            if (command.table === "study_library_references") {
+                return {
+                    rows: [
+                        {
+                            target_entry_id: "character-2",
+                            relation: "readings",
+                            position: 1,
+                            group_index: 1,
+                        },
+                        {
+                            target_entry_id: "character-1",
+                            relation: "readings",
+                            position: 0,
+                            group_index: 1,
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+    };
+
+    const entry = await new LibraryStore(db).get("entry-1");
+
+    assert.deepEqual(entry?.referenceGroups, {
+        readings: [
+            [
+                {
+                    entryId: "character-1",
+                    relation: "readings",
+                    position: 0,
+                },
+                {
+                    entryId: "character-2",
+                    relation: "readings",
+                    position: 1,
+                },
+            ],
+        ],
+    });
+});
+
+test("authoritative content packs prune omitted records by default", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             { id: "characters", metadata: { labels: { en: "Characters" } } },
         ],
@@ -154,8 +320,7 @@ test("content pack updates prune omitted records only when requested", async () 
             if (
                 command.option === "SELECT" &&
                 command.table === "study_library_entries" &&
-                command.columns?.length === 1 &&
-                command.columns[0] === "id" &&
+                command.columns?.includes("provider_modified") &&
                 command.where?.some((clause) => clause.column === "created_by")
             ) {
                 return { rows: [{ id: "removed-entry" }] };
@@ -177,10 +342,9 @@ test("content pack updates prune omitted records only when requested", async () 
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
-            pruneOmittedRecords: true,
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -206,16 +370,102 @@ test("content pack updates prune omitted records only when requested", async () 
         ).length,
         2,
     );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_viewed_entries",
+        ),
+        false,
+    );
 });
 
-test("content pack updates retain omitted records by default", async () => {
+test("content packs preserve provider records after a user modifies them", async () => {
+    const commands: StructuredDbCommand[] = [];
+    const manifest = {
+        id: "study-language-ja",
+        publisher: "Cognis Labs HQ",
+        version: "2.0.0",
+        contentRevision: "2",
+        namespace: "x-mock",
+        schema: "schema.json",
+        content: "data",
+        license: { id: "CC-BY-4.0" },
+    };
+    const schema = {
+        id: "mock-language",
+        version: 1,
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
+        layers: [
+            { id: "characters", metadata: { labels: { en: "Characters" } } },
+        ],
+    };
+    const protectedId = contentEntryId(manifest, "neko");
+    const db: DbExecutor = {
+        ensureTable: async () => {},
+        transaction: async (callback) => callback(db),
+        executeCommand: async (command) => {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_entries" &&
+                command.columns?.includes("provider_modified") &&
+                command.where?.some(({ column }) => column === "created_by")
+            ) {
+                return {
+                    rows: [{ id: protectedId, provider_modified: true }],
+                };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_schemas"
+            ) {
+                return { rows: [{ schema_json: JSON.stringify(schema) }] };
+            }
+            if (command.option === "SELECT") return { rows: [] };
+            return { rowCount: 1 };
+        },
+    };
+    await new LibraryStore(db).ingestContentPack({
+        root: "/content",
+        manifest,
+        schema,
+        digest: "digest-two",
+        records: [
+            { id: "neko", layer: "characters", label: "Provider version" },
+        ],
+        assets: [],
+    });
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_library_entries" &&
+                command.values.id === protectedId,
+        ),
+        false,
+    );
+    assert.equal(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "study_library_references" &&
+                command.where?.some(({ value }) => value === protectedId),
+        ),
+        false,
+    );
+});
+
+test("content packs retain omitted records only when explicitly requested", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [],
     };
     const db: DbExecutor = {
@@ -234,9 +484,10 @@ test("content pack updates retain omitted records by default", async () => {
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
+            pruneOmittedRecords: false,
             license: { id: "CC-BY-4.0" },
         },
         schema,
@@ -251,18 +502,18 @@ test("content pack updates retain omitted records by default", async () => {
                 command.table === "study_library_entries" &&
                 command.where?.some((clause) => clause.column === "created_by"),
         ),
-        false,
+        true,
     );
 });
 
 test("content pack import removes duplicate hashes and preserves references", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -310,7 +561,7 @@ test("content pack import removes duplicate hashes and preserves references", as
             publisher: "Cognis Labs HQ",
             version: "2.0.0",
             contentRevision: "2",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -318,8 +569,8 @@ test("content pack import removes duplicate hashes and preserves references", as
         schema,
         digest: "digest-two",
         records: [
-            { id: "ja:a", layer: "characters", label: "あ" },
-            { id: "ja:a-copy", layer: "characters", label: "あ" },
+            { id: "ja:a", layer: "characters", label: "a" },
+            { id: "ja:a-copy", layer: "characters", label: "a" },
         ],
         assets: [],
     };
@@ -373,7 +624,7 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                     return {
                         rows: [
                             {
-                                schema_id: "japanese",
+                                schema_id: "mock-language",
                                 schema_version: 1,
                                 layer: "words",
                             },
@@ -388,10 +639,10 @@ test("permanent deletion blacklists content hashes and removes relationships", a
                                 id,
                                 scope: "global",
                                 scope_id: "global",
-                                schema_id: "japanese",
+                                schema_id: "mock-language",
                                 schema_version: 1,
                                 layer: "words",
-                                language: "ja",
+                                language: "x-mock",
                                 label: id,
                                 fields_json: "{}",
                                 created_by: "admin",
@@ -514,7 +765,7 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
                 return {
                     rows: [
                         {
-                            schema_id: "japanese",
+                            schema_id: "mock-language",
                             schema_version: 1,
                             layer: "words",
                         },
@@ -559,11 +810,11 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
 test("content pack reconciliation skips blacklisted hashes", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -578,7 +829,7 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -622,11 +873,11 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
 test("unchanged content packs restore entries removed after installation", async () => {
     const commands: StructuredDbCommand[] = [];
     const schema = {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        namespace: "ja",
-        language: "ja",
-        metadata: { labels: { en: "Japanese" } },
+        namespace: "x-mock",
+        language: "x-mock",
+        metadata: { labels: { en: "Mock Language" } },
         layers: [
             {
                 id: "characters",
@@ -641,7 +892,7 @@ test("unchanged content packs restore entries removed after installation", async
             publisher: "Cognis Labs HQ",
             version: "1.0.0",
             contentRevision: "1",
-            namespace: "ja",
+            namespace: "x-mock",
             schema: "schema.json",
             content: "data",
             license: { id: "CC-BY-4.0" },
@@ -696,10 +947,10 @@ test("entry updates replace editable fields and relationships atomically", async
                             id: "entry-1",
                             scope: "global",
                             scope_id: "global",
-                            schema_id: "japanese",
+                            schema_id: "mock-language",
                             schema_version: 1,
                             layer: "words",
-                            language: "ja",
+                            language: "x-mock",
                             label: "updated",
                             fields_json: "{}",
                             created_by: "ada",
@@ -713,15 +964,49 @@ test("entry updates replace editable fields and relationships atomically", async
             return { rowCount: 1 };
         },
     };
-    await new LibraryStore(db).update("entry-1", {
-        schemaId: "japanese",
-        schemaVersion: 1,
-        layer: "words",
-        label: "updated",
-        fields: {},
-        references: [{ entryId: "definition-1", relation: "means" }],
-    });
-    assert.ok(commands.some((command) => command.option === "UPDATE"));
+    await new LibraryStore(db).update(
+        "entry-1",
+        {
+            schemaId: "mock-language",
+            schemaVersion: 2,
+            layer: "words",
+            label: "updated",
+            fields: {},
+            references: [{ entryId: "definition-1", relation: "means" }],
+            referenceGroups: {
+                readings: [
+                    [
+                        {
+                            entryId: "character-1",
+                            relation: "readings",
+                            position: 0,
+                        },
+                        {
+                            entryId: "character-2",
+                            relation: "readings",
+                            position: 1,
+                        },
+                    ],
+                ],
+            },
+        },
+        true,
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.set.label === "updated" &&
+                command.set.schema_version === 2,
+        ),
+    );
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "UPDATE" &&
+                command.set.provider_modified === true,
+        ),
+    );
     assert.ok(
         commands.some(
             (command) =>
@@ -735,5 +1020,23 @@ test("entry updates replace editable fields and relationships atomically", async
                 command.option === "INSERT" &&
                 command.table === "study_library_references",
         ),
+    );
+    assert.deepEqual(
+        commands
+            .filter(
+                (command) =>
+                    command.option === "INSERT" &&
+                    command.table === "study_library_references" &&
+                    command.values.relation === "readings",
+            )
+            .map((command) => ({
+                target: command.values.target_entry_id,
+                group: command.values.group_index,
+                position: command.values.position,
+            })),
+        [
+            { target: "character-1", group: 0, position: 0 },
+            { target: "character-2", group: 0, position: 1 },
+        ],
     );
 });

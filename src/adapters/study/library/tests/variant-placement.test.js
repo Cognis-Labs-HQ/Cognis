@@ -5,6 +5,7 @@ import {
     isSameLibraryRecord,
     variantPlacement,
 } from "../ui/app/variant-placement.js";
+import { variantDirectionCandidates } from "../ui/app/variant-fit.js";
 
 const layer = {
     id: "characters",
@@ -17,15 +18,28 @@ const layer = {
         },
     ],
 };
-const schema = { id: "japanese", layers: [layer] };
+const schema = { id: "mock-language", layers: [layer] };
+
+test("overflow fitting tries diagonal free slots before opposite cardinals", () => {
+    assert.deepEqual(variantDirectionCandidates("left"), [
+        "left",
+        "up-left",
+        "down-left",
+        "up",
+        "down",
+        "up-right",
+        "down-right",
+        "right",
+    ]);
+});
 
 function entry(id, overrides = {}) {
     return {
         id,
-        schemaId: "japanese",
+        schemaId: "mock-language",
         layer: "characters",
-        language: "ja",
-        label: "い",
+        language: "x-mock",
+        label: "i",
         fields: { pronunciation: "i" },
         references: [],
         ...overrides,
@@ -68,7 +82,7 @@ test("hidden composition targets never become structural child cards", () => {
     const parent = entry("canonical-i", { sourceRecordId: "i" });
     const hiddenTarget = entry("small-i", {
         hidden: true,
-        label: "ぃ",
+        label: "small-i",
         fields: { pronunciation: "xi" },
         references: [{ entryId: parent.id, relation: "variant-of" }],
     });
@@ -95,7 +109,7 @@ test("orphaned variant references do not create phantom children", () => {
 test("variants do not become child cards unless the schema opts in", () => {
     const parent = entry("canonical-i", { sourceRecordId: "i" });
     const alternative = entry("alternative-i", {
-        label: "ぃ",
+        label: "small-i",
         references: [{ entryId: parent.id, relation: "variant-of" }],
     });
     const withoutChildren = {

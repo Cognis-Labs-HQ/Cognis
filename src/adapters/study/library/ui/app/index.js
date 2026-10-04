@@ -16,13 +16,8 @@ import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
 import { bindAdminLibraryInteractions } from "./admin-interactions.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
-import { openCreateEntryPopup } from "./create-entry.js";
 import { librarySelectionFloatingMenu, setSelectionMode } from "./selection.js";
-import {
-    bindLibraryRequestReviews,
-    loadLibraryRequests,
-    renderLibraryRequests,
-} from "./requests.js";
+import { loadLibraryRequests } from "./requests.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -75,12 +70,6 @@ export async function mount(root, { signal } = {}) {
                 i18n,
                 searchQuery ? null : selectedLayer,
             );
-        const createButton = root.querySelector("[data-library-create]");
-        if (createButton)
-            createButton.hidden = !schemas
-                .find(({ id }) => id === selectedLayer?.schemaId)
-                ?.layers.find(({ id }) => id === selectedLayer?.layerId)
-                ?.cardConstructor;
     };
     const layerMenu = createSideMenu({
         groups: adminLayerGroups(schemas),
@@ -123,18 +112,7 @@ export async function mount(root, { signal } = {}) {
                 id: "library-layers",
                 label: i18n.t("gateway.study.library_layers"),
                 render: () =>
-                    `<label class="library-quick-search"><span>${escapeHtml(i18n.t("gateway.study.library_search"))}</span><span class="library-quick-search-control"><input type="search" data-library-quick-search placeholder="${escapeHtml(i18n.t("gateway.study.library_search_placeholder"))}"><button class="btn-neutral" type="button" data-library-clear-search aria-label="${escapeHtml(i18n.t("gateway.study.library_search_clear"))}"><img src="/static/adapters/study/library/assets/clear-search.svg" alt=""></button></span></label>${layerMenu.render()}`,
-            },
-            {
-                id: "library-create",
-                label: i18n.t("gateway.study.library_create"),
-                render: () =>
-                    `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
-            },
-            {
-                id: "library-requests",
-                label: i18n.t("gateway.study.library_requests"),
-                render: () => renderLibraryRequests(requests, i18n),
+                    `<label class="library-quick-search"><span>${escapeHtml(i18n.t("gateway.study.library_search"))}</span><span class="library-quick-search-control"><input type="text" inputmode="search" data-library-quick-search placeholder="${escapeHtml(i18n.t("gateway.study.library_search_placeholder"))}"><button class="btn-neutral" type="button" data-library-clear-search aria-label="${escapeHtml(i18n.t("gateway.study.library_search_clear"))}" hidden><img src="/static/adapters/study/library/assets/clear-search.svg" alt=""></button></span></label>${layerMenu.render()}`,
             },
         ],
         toolbarScrollable: true,
@@ -156,10 +134,11 @@ export async function mount(root, { signal } = {}) {
     signal?.throwIfAborted();
     layerMenu.mount(root, { signal });
     renderSelectedLayer();
-    bindLibraryRequestReviews(root, requests, { i18n, signal });
     const searchInput = root.querySelector("[data-library-quick-search]");
     const updateSearch = () => {
         searchQuery = searchInput?.value ?? "";
+        const clearSearch = root.querySelector("[data-library-clear-search]");
+        if (clearSearch) clearSearch.hidden = searchQuery.length === 0;
         const matches = visibleEntries();
         root.querySelectorAll("[data-side-menu-item]").forEach((item) => {
             const [schemaId, layerId] = item.dataset.sideMenuItem.split(":");
@@ -191,26 +170,6 @@ export async function mount(root, { signal } = {}) {
         }
     });
     bindStudySubNavigation(root, { signal });
-    root.addEventListener(
-        "click",
-        async (event) => {
-            if (event.target.closest("[data-library-create]")) {
-                const created = await openCreateEntryPopup({
-                    schemas,
-                    entries,
-                    schemaId: selectedLayer?.schemaId,
-                    layerId: selectedLayer?.layerId,
-                    i18n,
-                });
-                if (created) {
-                    entries.push(created);
-                    renderSelectedLayer();
-                }
-                return;
-            }
-        },
-        { signal },
-    );
     bindLibraryInteractions(root, {
         entries,
         i18n,

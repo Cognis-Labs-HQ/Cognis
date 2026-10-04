@@ -281,6 +281,7 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
         [
             "default-src 'self'",
             "img-src 'self' blob:",
+            "media-src 'self' blob:",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             buildPageResourceDirective("script-src"),

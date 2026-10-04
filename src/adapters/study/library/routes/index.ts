@@ -5,7 +5,7 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type { LibraryCapability, LibraryActor } from "../service.js";
-import type { LibraryLocation } from "../types.js";
+import type { LibraryEntryInput, LibraryLocation } from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
@@ -105,7 +105,12 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/locations" &&
                 req.method === "GET"
             ) {
-                sendJson(res, 200, { data: await library.locations(actor) });
+                sendJson(res, 200, {
+                    data: await library.locations(
+                        actor,
+                        url.searchParams.get("language") || undefined,
+                    ),
+                });
                 return true;
             }
             if (
@@ -284,13 +289,39 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
+                url.pathname === "/api/v1/study/library/lookup/providers" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.listLookupProviders({
+                        schemaId: url.searchParams.get("schemaId") ?? "",
+                        schemaVersion: url.searchParams.has("schemaVersion")
+                            ? Number(url.searchParams.get("schemaVersion"))
+                            : undefined,
+                        layer: url.searchParams.get("layer") ?? "",
+                    }),
+                });
+                return true;
+            }
+            if (
                 url.pathname === "/api/v1/study/library/lookup" &&
                 req.method === "POST"
             ) {
-                const entry = (await readJson(req)) as Parameters<
-                    LibraryCapability["lookup"]
-                >[0];
-                sendJson(res, 200, { data: await library.lookup(entry) });
+                const body = (await readJson(req)) as {
+                    providerId: string;
+                    entry: Parameters<LibraryCapability["lookup"]>[1];
+                };
+                sendJson(res, 200, {
+                    data: await library.lookup(body.providerId, body.entry),
+                });
+                await log?.("info", "Looked up Library composer input.", {
+                    component: "study-library",
+                    operation: "lookup",
+                    accountId: actor.accountId,
+                    providerId: body.providerId,
+                    schemaId: body.entry.schemaId,
+                    layer: body.entry.layer,
+                });
                 return true;
             }
             if (
@@ -309,12 +340,19 @@ export function createLibraryRoutes(
                 const body = (await readJson(req)) as {
                     entryId: string;
                     destination: LibraryLocation;
+                    proposedEntry?: LibraryEntryInput;
                 };
-                const request = await library.requestPush(
-                    actor,
-                    body.entryId,
-                    body.destination,
-                );
+                const request = body.proposedEntry
+                    ? await library.requestUpdate(
+                          actor,
+                          body.entryId,
+                          body.proposedEntry,
+                      )
+                    : await library.requestPush(
+                          actor,
+                          body.entryId,
+                          body.destination,
+                      );
                 await log?.("info", "Submitted library push request.", {
                     component: "study-library",
                     operation: "request_push",
@@ -386,6 +424,7 @@ export function createLibraryRoutes(
             await log?.("error", "Library request failed.", {
                 component: "study-library",
                 operation: req.method ?? "unknown",
+                path: url.pathname,
                 accountId: actor.accountId,
                 code,
             });

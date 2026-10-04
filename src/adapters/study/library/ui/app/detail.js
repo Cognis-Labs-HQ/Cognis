@@ -17,6 +17,11 @@ import {
 } from "./presentation.js";
 import { definitionDisplay } from "./definition-display.js";
 import { similarEntries } from "./similar-items.js";
+import { uniqueRelatedEntries } from "./related-entries.js";
+import {
+    dependantsMatchingTransformation,
+    transformationPathways,
+} from "./transformations.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 
@@ -36,6 +41,10 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                   "lexicalUnit",
           )
         : [];
+    const visibleRelatedWords = relatedWords.filter(
+        (candidate) =>
+            candidate.label.normalize("NFC") !== entry.label.normalize("NFC"),
+    );
     const structuralDependants = usedBy.filter((candidate) => {
         const candidateLayer = layerForEntry(schemas, candidate);
         return (candidate.references ?? []).some((reference) => {
@@ -62,12 +71,20 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             !structuralDependants.includes(candidate) &&
             layerForEntry(schemas, candidate)?.semanticRole !== "definition",
     );
-    const wordLayer = relatedWords.length
-        ? layerForEntry(schemas, relatedWords[0])
-        : null;
+    const relatedDependants = uniqueRelatedEntries([
+        ...visibleRelatedWords,
+        ...otherUsedBy,
+    ]);
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
-    const reserved = new Set(["pronunciation", "audio", ...metadataIds]);
+    const reserved = new Set([
+        "pronunciation",
+        "audio",
+        ...metadataIds,
+        ...(layer?.fields ?? [])
+            .filter(({ type }) => type === "strokePattern")
+            .map(({ id }) => id),
+    ]);
     const genericFields = Object.fromEntries(
         (layer?.fields ?? [])
             .filter(
@@ -95,20 +112,37 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
                       ];
             }),
     );
+    const layerLabel = localizedLabel(layer?.metadata, entry.language);
+    const providerIdentifiesVocabulary =
+        layer?.semanticRole === "lexicalUnit" &&
+        (entry.tags ?? []).some((tag) => tag.toLocaleLowerCase() === "vocab");
+    const classPill =
+        layerLabel && !providerIdentifiesVocabulary
+            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
+            : "";
+    const tagPills = (entry.tags ?? [])
+        .map(
+            (tag) =>
+                `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
+        )
+        .join("");
+    const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const hasVariants = transformationPathways(entry, schema).some(
+        ({ nodes }) => nodes.length > 1,
+    );
+    const variants = options.transformation
+        ? ""
+        : hasVariants
+          ? `<button class="library-detail-variants btn-neutral" type="button" data-library-transform-variants>${escapeHtml(i18n.t("gateway.study.library_variants"))}</button>`
+          : "";
     return [
-        `<header class="library-detail-summary">${renderAudio(entry, layer)}<div class="library-entry-indicators">${renderMetadataPills(entry, layer)}</div></header>`,
+        `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"), i18n.t("gateway.study.library_dependencies_missing_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div>${variants}</header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
         renderDetailFields(genericFields),
-        !options.showReferenceTree && relatedWords.length
+        !options.showReferenceTree && relatedDependants.length
             ? relationSection(
-                  i18n
-                      .t("gateway.study.library_used_in_layer")
-                      .replace(
-                          "{{ layer }}",
-                          localizedLabel(wordLayer.metadata, entry.language) ||
-                              wordLayer.id,
-                      ),
-                  relatedWords,
+                  i18n.t("gateway.study.library_used_by"),
+                  relatedDependants,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
@@ -116,13 +150,6 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             ? relationSection(
                   i18n.t("gateway.study.library_usage_examples"),
                   directExamples,
-                  i18n.t("gateway.study.library_no_relationships"),
-              )
-            : "",
-        !options.showReferenceTree && otherUsedBy.length
-            ? relationSection(
-                  i18n.t("gateway.study.library_used_by"),
-                  otherUsedBy,
                   i18n.t("gateway.study.library_no_relationships"),
               )
             : "",
@@ -144,8 +171,18 @@ export async function composeDetail(
     languageCode,
     options = {},
 ) {
+    const presentationDetail = options.transformation
+        ? {
+              ...detail,
+              usedBy: dependantsMatchingTransformation(
+                  detail.usedBy ?? [],
+                  detail.entry.id,
+                  options.transformation,
+              ),
+          }
+        : detail;
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
-        detail,
+        detail: presentationDetail,
         i18n,
         languageCode,
     });
@@ -155,9 +192,9 @@ export async function composeDetail(
                 ? contribution.sections.filter(Boolean)
                 : [],
         );
-    const layer = layerForEntry(schemas, detail.entry);
+    const layer = layerForEntry(schemas, presentationDetail.entry);
     const { titleDefinition, additionalDefinitions } = definitionDisplay(
-        detail,
+        presentationDetail,
         schemas,
         languageCode,
         flow.stageResults,
@@ -170,20 +207,29 @@ export async function composeDetail(
                       ? contribution.actions
                       : [],
               );
-    const sections = [
+    const core = [
         ...sectionsFor("beforeCore"),
-        ...coreSections(detail, schemas, entries, i18n, options),
-        section(
-            i18n.t("gateway.study.library_additional_definitions"),
-            additionalDefinitions,
-        ),
-        ...sectionsFor("core"),
-        ...sectionsFor("afterCore"),
+        ...coreSections(presentationDetail, schemas, entries, i18n, options),
     ];
+    const tail = [...sectionsFor("core"), ...sectionsFor("afterCore")];
+    const renderBody = (definitions) =>
+        `<div class="library-detail">${[
+            ...core,
+            section(
+                i18n.t("gateway.study.library_additional_definitions"),
+                definitions.slice(1),
+            ),
+            ...tail,
+        ].join("")}</div>`;
+    const definitions = [titleDefinition, ...additionalDefinitions].filter(
+        Boolean,
+    );
     return {
-        body: `<div class="library-detail">${sections.join("")}</div>`,
+        body: renderBody(definitions),
+        definitions,
+        renderBody,
         titleDefinition,
-        titleLeading: renderScope(detail.entry, i18n),
+        titleLeading: renderScope(presentationDetail.entry, i18n),
         actions,
     };
 }

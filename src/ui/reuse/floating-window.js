@@ -15,7 +15,7 @@
  * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, preserveBrowsingContext?: boolean, closeButton?: {label: string, onClose: () => void}}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, preserveBrowsingContext?: boolean, allowOrientationSwap?: boolean, closeButton?: {label: string, onClose: () => void}}} options
  * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -154,6 +154,7 @@ export function makeFloatingWindow(
         portal = true,
         topLayer = portal,
         preserveBrowsingContext = false,
+        allowOrientationSwap = true,
         closeButton,
     } = {},
 ) {
@@ -257,6 +258,8 @@ export function makeFloatingWindow(
     const constrain = () => {
         const rect = element.getBoundingClientRect();
         const boundary = getBoundary();
+        element.style.minWidth = `${Math.min(minWidth, boundary.width)}px`;
+        element.style.minHeight = `${Math.min(minHeight, boundary.height)}px`;
         const convertAnchors =
             element.style.right !== "auto" || element.style.bottom !== "auto";
         const width = Math.min(rect.width, boundary.width);
@@ -321,6 +324,7 @@ export function makeFloatingWindow(
         return true;
     };
     const applyResizeOrientation = (requestedWidth, requestedHeight) => {
+        if (!allowOrientationSwap) return;
         const horizontalMinWidth =
             minimumOrientation === "horizontal" ? minWidth : minHeight;
         const horizontalMinHeight =

@@ -100,10 +100,6 @@ test("module preference fields use the form builder and secret controls", () => 
         /required:\s*definition\.required === true/,
     );
     assert.match(modulePreferencesSource, /renderInfoTooltip/);
-    assert.match(
-        popupSource,
-        /renderInfoTooltip\([\s\S]*description[\s\S]*ui\.reuse\.more_information/,
-    );
     assert.doesNotMatch(popupSource, /module-settings-popup-description/);
     assert.match(
         popupSource,

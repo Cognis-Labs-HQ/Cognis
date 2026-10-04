@@ -331,12 +331,17 @@ export async function bootstrapStudyAdapter(
             const enrolled = await store.getEnrolledClasses(accountId);
             return [...new Set([...taught, ...enrolled].map(({ id }) => id))];
         },
-        async listWritable(accountId: string, role: string) {
-            if (role === "admin" || role === "owner")
-                return (await store.getAvailableClasses()).map(({ id }) => id);
-            return (await store.getClassesForTeacher(accountId)).map(
-                ({ id }) => id,
-            );
+        async listWritable(accountId: string, role: string, language?: string) {
+            const classes =
+                role === "admin" || role === "owner"
+                    ? await store.getAvailableClasses()
+                    : await store.getClassesForTeacher(accountId);
+            return classes
+                .filter(
+                    ({ languageCode }) =>
+                        !language || languageCode === language,
+                )
+                .map(({ id }) => id);
         },
     });
 

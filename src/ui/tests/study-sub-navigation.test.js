@@ -20,7 +20,10 @@ test("Study submenu links use the user-dropdown button class", () => {
         "utf8",
     );
 
-    assert.match(source, /class="dropdown-item\$\{activeClass\}"/);
+    assert.match(
+        source,
+        /class="dropdown-item\$\{activeClass\}\$\{attentionClass\}"/,
+    );
     assert.match(source, /class="dropdown-item\$\{settingsActiveClass\}"/);
     assert.doesNotMatch(
         source,
@@ -66,6 +69,8 @@ test("Study submenu promotes Library layers and Leaderboard to pages", () => {
     );
     assert.match(source, /pageUrl: "\/study\/leaderboard"/);
     assert.match(source, /labelKey: "gateway\.study\.leaderboard_label"/);
+    assert.match(source, /requestsRoute\.navigationLabels/);
+    assert.match(source, /navigationLabels\[activeLocale\]/);
 });
 
 test("Study navigation stores language selection on buttons instead of URLs", () => {
@@ -123,6 +128,22 @@ test("Study pages redirect to the unavailable page without valid languages", () 
     assert.match(
         childRouteSource,
         /model\.groups\.length === 0[\s\S]*navigateTo\("\/error\?code=503"\)/,
+    );
+});
+
+test("Study hub hides saved languages whose provider is disabled", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    assert.match(source, /const registeredLanguageCodes = new Set/);
+    assert.match(
+        source,
+        /storedLearningLanguages\.filter\(\(languageCode\) =>[\s\S]*registeredLanguageCodes\.has\(languageCode\)/,
+    );
+    assert.doesNotMatch(
+        source,
+        /for \(const languageCode of languageModulesMap\.keys\(\)\)/,
     );
 });
 

@@ -4,26 +4,31 @@ import { similarEntries } from "../ui/app/similar-items.js";
 
 const source = {
     id: "school",
-    schemaId: "ja",
+    schemaId: "x-mock",
     layer: "words",
-    language: "ja",
-    label: "学校",
-    fields: { pronunciation: "がっこう", tags: ["education"] },
+    language: "x-mock",
+    label: "academy",
+    fields: { pronunciation: "academy-reading", tags: ["education"] },
     references: [{ entryId: "character-school" }],
 };
 
 test("similar items rank shared writing, vocabulary metadata, and references", () => {
     const result = similarEntries(source, [
         source,
-        { ...source, id: "school-life", label: "学校生活" },
+        { ...source, id: "school-life", label: "academy-life" },
         {
             ...source,
             id: "student",
-            label: "学生",
+            label: "student",
             references: [{ entryId: "character-school" }],
         },
-        { ...source, id: "cat", label: "猫", fields: {}, references: [] },
-        { ...source, id: "sentence", layer: "sentences", label: "学校です" },
+        { ...source, id: "unrelated", label: "qx", fields: {}, references: [] },
+        {
+            ...source,
+            id: "sentence",
+            layer: "sentences",
+            label: "academy sentence",
+        },
     ]);
 
     assert.deepEqual(
@@ -36,7 +41,7 @@ test("similar items omit hidden candidates and enforce the result limit", () => 
     const candidates = Array.from({ length: 8 }, (_, index) => ({
         ...source,
         id: `candidate-${index}`,
-        label: `学校${index}`,
+        label: `academy-${index}`,
         hidden: index === 0,
     }));
     assert.equal(similarEntries(source, candidates, 3).length, 3);

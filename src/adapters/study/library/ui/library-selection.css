@@ -12,6 +12,7 @@
     background: var(--surface-2);
     color-scheme: light dark;
     accent-color: var(--accent);
+    cursor: pointer;
     transform: translateY(-50%);
 }
 

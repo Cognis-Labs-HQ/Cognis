@@ -1,16 +1,39 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
+function layerRank(layer) {
+    return {
+        atomicWritingUnit: 1,
+        compoundWritingUnit: 2,
+        lexicalUnit: 3,
+        orderedLexicalSequence: 4,
+    }[layer?.semanticRole];
+}
+
 function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const sourceRank = layerRank(
+        schema?.layers.find(({ id }) => id === entry.layer),
+    );
     return new Set(
         (schema?.layers ?? [])
             .filter(
-                ({ semanticRole }) =>
-                    semanticRole === "atomicWritingUnit" ||
-                    semanticRole === "compoundWritingUnit" ||
-                    semanticRole === "lexicalUnit",
+                (layer) =>
+                    layerRank(layer) &&
+                    sourceRank &&
+                    layerRank(layer) < sourceRank,
             )
             .map(({ id }) => id),
+    );
+}
+
+function pronunciationValues(entry) {
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return [];
+    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 
@@ -29,15 +52,10 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
         )
         .sort((left, right) => {
             const schema = schemas.find(({ id }) => id === entry.schemaId);
-            const role = (candidate) =>
-                schema?.layers.find(({ id }) => id === candidate.layer)
-                    ?.semanticRole;
             const rank = (candidate) =>
-                role(candidate) === "lexicalUnit"
-                    ? 3
-                    : role(candidate) === "compoundWritingUnit"
-                      ? 2
-                      : 1;
+                layerRank(
+                    schema?.layers.find(({ id }) => id === candidate.layer),
+                );
             return (
                 right.label.length - left.label.length ||
                 rank(right) - rank(left)
@@ -57,21 +75,51 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
 }
 
 function normalizedLabel(value) {
-    return String(value).trim().normalize();
+    return String(value).trim().normalize("NFKC");
+}
+
+function entryAliases(entry) {
+    return Array.from(
+        new Set(
+            [entry.label, ...pronunciationValues(entry)]
+                .map(normalizedLabel)
+                .filter(Boolean),
+        ),
+    ).sort((left, right) => right.length - left.length);
+}
+
+export function resolveReferenceAliasComposition(label, entries) {
+    const normalized = normalizedLabel(label);
+    if (!normalized || !entries.length) return [];
+    let offset = 0;
+    for (const entry of entries) {
+        const alias = entryAliases(entry).find((candidate) =>
+            normalized.startsWith(candidate, offset),
+        );
+        if (!alias) return [];
+        offset += alias.length;
+    }
+    return offset === normalized.length ? entries : [];
+}
+
+function entryLinkKey(entry) {
+    return `${entry.id}\u0000${normalizedLabel(entry.label)}`;
+}
+
+export function excludeTitleReferenceDuplicates(groups, titleReferences) {
+    const titleReferenceKey = titleReferences.map(entryLinkKey).join("\u0001");
+    return groups.filter(
+        (group) => group.map(entryLinkKey).join("\u0001") !== titleReferenceKey,
+    );
 }
 
 export function distinctPronunciationLabels(entry, secondaryLabels = []) {
     const blocked = new Set(
         [entry.label, ...secondaryLabels].map(normalizedLabel),
     );
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return [];
-    const labels = Array.isArray(pronunciation)
-        ? pronunciation
-        : [pronunciation];
     return Array.from(
         new Set(
-            labels
+            pronunciationValues(entry)
                 .map(normalizedLabel)
                 .filter((label) => label && !blocked.has(label)),
         ),

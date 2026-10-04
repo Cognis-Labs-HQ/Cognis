@@ -2,8 +2,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
 
-function filterDescriptors(layer, layerEntries, contentLanguage) {
-    return filterFields(layer).flatMap((field) => {
+function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
+    const fieldFilters = filterFields(layer).flatMap((field) => {
         const values = [
             ...new Set(
                 layerEntries.flatMap((entry) =>
@@ -26,10 +26,33 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
               ]
             : [];
     });
+    const transformTags = [
+        ...new Set(
+            (layer.views ?? [])
+                .filter(({ layout }) => layout === "transformTree")
+                .flatMap(({ includeTags }) => includeTags),
+        ),
+    ];
+    return transformTags.length
+        ? [
+              ...fieldFilters,
+              {
+                  id: "__tags",
+                  label: i18n.t("gateway.study.library_word_type"),
+                  values: transformTags,
+                  detail: { exclusive: false },
+              },
+          ]
+        : fieldFilters;
 }
 
 export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
-    const filters = filterDescriptors(layer, layerEntries, contentLanguage);
+    const filters = filterDescriptors(
+        layer,
+        layerEntries,
+        contentLanguage,
+        i18n,
+    );
     if (!filters.length) return "";
     const groups = groupByToMap(
         filters,
