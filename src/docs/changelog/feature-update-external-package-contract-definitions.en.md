@@ -454,6 +454,10 @@ Detail relationship lists show immediate neighbors. Used By, Usage Examples, and
 
 A direct relationship remains visible even when an intermediate route reaches the same card. Authored references, grouped references, and canonical title components retain their direct links, supporting both あ → ある + あるく and あ → ある → あるく. Only relationships reached exclusively through another parent are excluded.
 
+## Transformed card readings and root
+
+Transformed cards omit a pronunciation identical to their displayed title after normalization. Distinct readings retain their character links. A localized Return to {{ verb }} action restores the base card and clears the selected transformation while preserving normal card navigation.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

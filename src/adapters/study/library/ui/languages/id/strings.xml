@@ -122,4 +122,5 @@
   <string name="gateway.study.library_transform_prompt">{{ verb }} memiliki transformasi berikut:</string>
   <string name="gateway.study.library_use_base_transform">Gunakan {{ verb }} saja!</string>
   <string name="gateway.study.library_transforms_available">Transformasi tersedia</string>
+  <string name="gateway.study.library_return_to_root">Kembali ke {{ verb }}</string>
 </resources>

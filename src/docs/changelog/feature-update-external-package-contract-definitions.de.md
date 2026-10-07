@@ -454,6 +454,10 @@ Beziehungslisten in der Detailansicht zeigen unmittelbare Nachbarn. „Verwendet
 
 Eine direkte Beziehung bleibt sichtbar, auch wenn ein Weg über einen Zwischeneintrag dieselbe Karte erreicht. Gespeicherte Referenzen, gruppierte Referenzen und kanonische Titelbestandteile behalten ihre direkten Links. Damit werden sowohl あ → ある + あるく als auch あ → ある → あるく unterstützt. Nur Beziehungen, die ausschließlich über einen weiteren übergeordneten Eintrag erreichbar sind, werden ausgeschlossen.
 
+## Lesungen und Grundform
+
+Transformierte Karten lassen eine Aussprache weg, die nach Normalisierung mit dem angezeigten Titel übereinstimmt. Abweichende Lesungen behalten ihre Zeichenlinks. Eine lokalisierte Aktion „Zurück zu {{ verb }}“ stellt die Basiskarte wieder her und entfernt die ausgewählte Transformation, während die normale Kartennavigation erhalten bleibt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

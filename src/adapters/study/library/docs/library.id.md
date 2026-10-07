@@ -338,3 +338,5 @@ Judul dan pelafalan kosakata yang ditransformasi menautkan satuan tulisan kanoni
 Daftar hubungan dalam detail menampilkan tetangga langsung. Digunakan Oleh, Contoh Penggunaan, dan pohon hubungan mengecualikan entri yang hanya dicapai melalui induk ejaan atau pelafalan lain, termasuk referensi berkelompok. Tautan langsung tetap tersedia, dan referensi siklik tidak menyebabkan penelusuran berulang. Item Serupa tetap menampilkan entri pada lapisan yang sama.
 
 Hubungan langsung tetap terlihat meskipun jalur melalui entri perantara mencapai kartu yang sama. Referensi tersimpan, referensi berkelompok, dan komponen judul kanonis mempertahankan tautan langsung, mendukung あ → ある + あるく serta あ → ある → あるく. Hanya hubungan yang dicapai semata-mata melalui induk lain yang dikecualikan.
+
+Kartu yang ditransformasi tidak menampilkan pelafalan yang sama dengan judulnya setelah normalisasi. Pelafalan yang berbeda tetap memiliki tautan karakter. Tindakan terlokalisasi Kembali ke {{ verb }} memulihkan kartu dasar dan menghapus transformasi yang dipilih sambil mempertahankan navigasi kartu biasa.

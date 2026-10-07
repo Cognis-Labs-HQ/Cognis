@@ -6,7 +6,10 @@ import {
     transformedDefinitions,
     transformationPathways,
 } from "./transformations.js";
-import { resolveLabelComposition } from "./composition-links.js";
+import {
+    resolveLabelComposition,
+    distinctPronunciationLabels,
+} from "./composition-links.js";
 import { highlightTransformationPath } from "./transformation-interactions.js";
 
 function renderTransformationNodes(
@@ -84,22 +87,27 @@ export function transformedPopupPresentation(
         ({ placement }) =>
             placement !== "reading" && placement !== "definition",
     );
-    const pronunciation = transformation.node.pronunciation;
-    const readingReferences = resolveLabelComposition(
-        pronunciation,
-        entry,
-        schemas,
-        entries,
-    );
-    details.unshift(
-        ...(readingReferences.length
-            ? readingReferences.map((reference) => ({
-                  label: reference.label,
-                  actionId: `open-title-reference:${reference.id}`,
-                  placement: "reading",
-              }))
-            : [{ label: pronunciation, placement: "reading" }]),
-    );
+    const pronunciation = distinctPronunciationLabels({
+        label: transformation.node.value,
+        fields: { pronunciation: transformation.node.pronunciation },
+    })[0];
+    if (pronunciation) {
+        const readingReferences = resolveLabelComposition(
+            pronunciation,
+            entry,
+            schemas,
+            entries,
+        );
+        details.unshift(
+            ...(readingReferences.length
+                ? readingReferences.map((reference) => ({
+                      label: reference.label,
+                      actionId: `open-title-reference:${reference.id}`,
+                      placement: "reading",
+                  }))
+                : [{ label: pronunciation, placement: "reading" }]),
+        );
+    }
     const changedDefinitions = transformedDefinitions(
         definitions,
         transformation.node,

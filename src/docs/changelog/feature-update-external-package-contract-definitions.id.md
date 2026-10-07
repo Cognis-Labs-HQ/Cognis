@@ -454,6 +454,10 @@ Daftar hubungan dalam detail menampilkan tetangga langsung. Digunakan Oleh, Cont
 
 Hubungan langsung tetap terlihat meskipun jalur melalui entri perantara mencapai kartu yang sama. Referensi tersimpan, referensi berkelompok, dan komponen judul kanonis mempertahankan tautan langsung, mendukung あ → ある + あるく serta あ → ある → あるく. Hanya hubungan yang dicapai semata-mata melalui induk lain yang dikecualikan.
 
+## Pelafalan dan bentuk dasar
+
+Kartu yang ditransformasi tidak menampilkan pelafalan yang sama dengan judulnya setelah normalisasi. Pelafalan yang berbeda tetap memiliki tautan karakter. Tindakan terlokalisasi Kembali ke {{ verb }} memulihkan kartu dasar dan menghapus transformasi yang dipilih sambil mempertahankan navigasi kartu biasa.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

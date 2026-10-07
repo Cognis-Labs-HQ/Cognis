@@ -1,3 +1,5 @@
+import { headingCompositionReferences } from "./presentation.js";
+import { resolveLabelComposition } from "./composition-links.js";
 import { openTransformationTreePopup } from "./transformation-popup.js";
 import { sourceTransformation } from "./transformation-popup.js";
 import { withParentAttribution } from "./popup-title.js";
@@ -48,4 +50,38 @@ export function selectDetailTransformation(event, context) {
         if (transformation) context.onSelected(transformation);
     });
     return true;
+}
+
+export function detailTitleReferences(
+    detail,
+    schemas,
+    entries,
+    transformation,
+) {
+    const explicitTitleReferences = headingCompositionReferences(
+        detail,
+        schemas,
+    );
+    return !transformation && explicitTitleReferences.length
+        ? explicitTitleReferences
+        : resolveLabelComposition(
+              transformation?.node.value ?? detail.entry.label,
+              detail.entry,
+              schemas,
+              entries,
+          );
+}
+
+export function transformedRootActions(entry, transformation, i18n) {
+    return transformation
+        ? [
+              {
+                  id: "return-root",
+                  label: i18n
+                      .t("gateway.study.library_return_to_root")
+                      .replace("{{ verb }}", entry.label),
+                  variant: "neutral",
+              },
+          ]
+        : [];
 }

@@ -351,3 +351,5 @@ Transformed vocabulary headings and readings link to the canonical writing units
 Detail relationship lists show immediate neighbors. Used By, Usage Examples, and the relationship tree exclude dependants reached only through another spelling or pronunciation parent, including grouped references. Direct links remain available, and cyclic references do not cause repeated traversal. Similar Items continues to show same-layer peers.
 
 A direct relationship remains visible even when an intermediate route reaches the same card. Authored references, grouped references, and canonical title components retain their direct links, supporting both あ → ある + あるく and あ → ある → あるく. Only relationships reached exclusively through another parent are excluded.
+
+Transformed cards omit a pronunciation identical to their displayed title after normalization. Distinct readings retain their character links. A localized Return to {{ verb }} action restores the base card and clears the selected transformation while preserving normal card navigation.

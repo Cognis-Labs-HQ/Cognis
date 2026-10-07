@@ -122,4 +122,5 @@
   <string name="gateway.study.library_transform_prompt">{{ verb }} には次の変換形があります:</string>
   <string name="gateway.study.library_use_base_transform">{{ verb }} をそのまま使う！</string>
   <string name="gateway.study.library_transforms_available">変換形があります</string>
+  <string name="gateway.study.library_return_to_root">{{ verb }} に戻る</string>
 </resources>

@@ -1,9 +1,7 @@
 import { openPopup } from "/static/reuse/popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { composeDetail } from "./detail.js";
-import { resolveLabelComposition } from "./composition-links.js";
 import {
-    headingCompositionReferences,
     isMeaningLayer,
     layerForEntry,
     loadLibraryAudio,
@@ -23,6 +21,8 @@ import { openLibraryEntryEditor } from "./admin-interactions.js";
 import { entryEditMode } from "./editability.js";
 import { transformedPopupPresentation as transformPresentation } from "./transformation-popup.js";
 import {
+    detailTitleReferences,
+    transformedRootActions,
     resolveDetailTransformation,
     selectDetailTransformation,
     transformedDetailEntry,
@@ -46,19 +46,12 @@ export async function openEntryPopup(
     let selectedTransformation = null;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
-        const explicitTitleReferences = headingCompositionReferences(
+        const titleReferences = detailTitleReferences(
             detail,
             schemas,
+            entries,
+            selectedTransformation,
         );
-        const titleReferences =
-            !selectedTransformation && explicitTitleReferences.length
-                ? explicitTitleReferences
-                : resolveLabelComposition(
-                      selectedTransformation?.node.value ?? detail.entry.label,
-                      detail.entry,
-                      schemas,
-                      entries,
-                  );
         const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
         const handleSaved = (updated) => {
@@ -181,6 +174,11 @@ export async function openEntryPopup(
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
             actions: [
+                ...transformedRootActions(
+                    detail.entry,
+                    selectedTransformation,
+                    i18n,
+                ),
                 {
                     id: "previous",
                     label: i18n.t("gateway.study.library_previous"),
@@ -270,8 +268,9 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
-        if (chosenTransformation !== undefined) {
-            selectedTransformation = chosenTransformation;
+        if (chosenTransformation !== undefined || result === "return-root") {
+            selectedTransformation =
+                result === "return-root" ? null : chosenTransformation;
             selectedEntry = detail.entry;
             sourceDefinition = "";
             continue;

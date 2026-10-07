@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
-import { resolveLabelComposition } from "../ui/app/composition-links.js";
+import {
+    resolveLabelComposition,
+    distinctPronunciationLabels,
+} from "../ui/app/composition-links.js";
 
 const schemas = [
     {
@@ -40,6 +43,7 @@ function loadPresentation() {
         .replace(/\bexport /g, "");
     const context = {
         resolveLabelComposition,
+        distinctPronunciationLabels,
         transformedDefinitions: (definitions) => definitions,
     };
     vm.runInNewContext(
@@ -193,4 +197,123 @@ test("detail rendering merges canonical upward links with stored relationships",
         composed.body.includes("gateway.study.library_used_by:explicit,slowly"),
     );
     assert.equal(detail.usedBy.length, 3);
+});
+
+test("a transformed kana title does not repeat the same pronunciation", () => {
+    for (const [value, pronunciation] of [
+        ["ありたくない", "ありたくない"],
+        ["ありたくない", " ありたくない "],
+        ["カナ", "ｶﾅ"],
+    ]) {
+        const presentation = loadPresentation()(
+            { node: { value, pronunciation } },
+            verb,
+            schemas[0],
+            [],
+            "body",
+            ["meaning"],
+            schemas,
+            entries,
+        );
+        assert.deepEqual(
+            Array.from(
+                presentation.titleDetailItems,
+                ({ placement }) => placement,
+            ),
+            ["definition"],
+        );
+    }
+});
+
+test("Return to the verb root closes the transformed card and restores the base card", async () => {
+    const transformation = {
+        node: { value: "行かなくて", pronunciation: "いかなくて" },
+    };
+    const popups = [];
+    const context = {
+        AbortController,
+        URL,
+        resolveLabelComposition,
+        headingCompositionReferences: () => [],
+        fetchLibraryEntry: async () => ({ entry: verb, references: [] }),
+        composeDetail: async () => ({
+            titleDefinition: "meaning",
+            body: "body",
+            definitions: ["meaning"],
+            renderBody: () => "body",
+            actions: [],
+        }),
+        isMeaningLayer: () => false,
+        layerForEntry: () => schemas[0].layers[1],
+        entryEditMode: () => null,
+        popupEntryNavigationState: () => ({ active: [verb], index: 0 }),
+        popupTitleDetailItems: () => [],
+        popupTitleItems: () => [],
+        transformPresentation: loadPresentation(),
+        withParentAttribution: (items) => items,
+        withParentTitleAttribution: (items) => items,
+        titleDefinitionForRole: () => "meaning",
+        resolveDraw: () => null,
+        drawingHeaderActions: () => [],
+        referencedTransformation: (_entry, _schema, descriptor) => descriptor,
+        sourceTransformation: () => null,
+        resolvePopupNavigation: ({ result }) =>
+            result === "variant"
+                ? { entry: verb, transformation }
+                : { entry: null },
+        openPopup: async (options) => {
+            popups.push(options);
+            return ["variant", "return-root", "close"][popups.length - 1];
+        },
+    };
+    const stripImports = (source) =>
+        source
+            .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+            .replace(/\bexport /g, "");
+    vm.createContext(context);
+    vm.runInContext(
+        stripImports(
+            readFileSync(
+                new URL("../ui/app/transformation-detail.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        context,
+    );
+    vm.runInContext(
+        stripImports(
+            readFileSync(
+                new URL("../ui/app/entry-popup.js", import.meta.url),
+                "utf8",
+            ),
+        ) + "\nglobalThis.open = openEntryPopup;",
+        context,
+    );
+    await context.open(
+        {},
+        verb,
+        schemas,
+        [verb, ...entries],
+        {
+            t: (key) =>
+                key === "gateway.study.library_return_to_root"
+                    ? "Return to {{ verb }}"
+                    : key,
+        },
+        "ja",
+    );
+    assert.deepEqual(
+        popups.map(({ title }) => title),
+        ["行く", "行かなくて", "行く"],
+    );
+    const rootAction = popups[1].actions.find(({ id }) => id === "return-root");
+    assert.equal(rootAction.label, "Return to 行く");
+    assert.equal(rootAction.variant, "neutral");
+    assert.deepEqual(
+        popups.map(
+            ({ actions }) =>
+                actions.filter(({ id }) => id === "return-root").length,
+        ),
+        [0, 1, 0],
+    );
 });

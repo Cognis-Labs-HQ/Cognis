@@ -122,4 +122,5 @@
   <string name="gateway.study.library_transform_prompt">Für {{ verb }} sind folgende Transformationen verfügbar:</string>
   <string name="gateway.study.library_use_base_transform">Einfach {{ verb }} verwenden!</string>
   <string name="gateway.study.library_transforms_available">Transformation(en) verfügbar</string>
+  <string name="gateway.study.library_return_to_root">Zurück zu {{ verb }}</string>
 </resources>
