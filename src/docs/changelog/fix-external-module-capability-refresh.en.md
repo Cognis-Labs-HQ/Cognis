@@ -11,3 +11,5 @@ Fix external-module lookups so published provider capabilities remain visible th
 Serialize module refresh requests to prevent overlapping teardown and capability registration. Add regression coverage for separate capability stores, verified providers, repeated refresh, disable/re-enable, concurrent refresh, and recovery after failure. Bump the API Server to 0.6.4.
 
 ## Commits
+
+- [35277745](https://github.com/Cognis-Labs-HQ/Cognis/commit/35277745a929001fd66152ac879a6acc2418056a)

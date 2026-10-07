@@ -11,3 +11,5 @@ Die Suche externer Module nutzt den aktuellen System-ctx für veröffentlichte A
 Modulaktualisierungen laufen nacheinander, um Überschneidungen beim Abbau und Registrieren zu verhindern. Regressionstests prüfen getrennte Registrierungen, verifizierte Anbieter, wiederholte Aktualisierung, Deaktivierung und Reaktivierung, parallele Anfragen und Wiederherstellung nach Fehlern. API Server auf 0.6.4 erhöht.
 
 ## Commits
+
+- [35277745](https://github.com/Cognis-Labs-HQ/Cognis/commit/35277745a929001fd66152ac879a6acc2418056a)
