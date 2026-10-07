@@ -131,6 +131,12 @@ export interface LibraryCapability {
             "schemaId" | "schemaVersion" | "layer" | "label"
         >,
     ): Promise<LibraryResolutionProposal[]>;
+    localizeDefinition(
+        request: import("./types.js").LibraryDefinitionLocalizationRequest,
+    ): Promise<{
+        translations: Record<string, string>;
+        missingLanguages: string[];
+    }>;
     lookup(
         providerId: string,
         input: Pick<

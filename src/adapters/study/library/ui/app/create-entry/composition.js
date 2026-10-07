@@ -1,3 +1,4 @@
+import { setGeneratedPronunciation } from "./pronunciation-draft.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     derivedPronunciation,
@@ -123,8 +124,7 @@ export function bindTextComposition(
                   .map((entry) => derivedPronunciation(entry, entries, schema))
                   .join("");
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
-        control.value = pronunciation;
-        control.dispatchEvent(new Event("input", { bubbles: true }));
+        setGeneratedPronunciation(form, pronunciation);
     };
     const syncLabel = () => {
         for (const relationship of relationships) {

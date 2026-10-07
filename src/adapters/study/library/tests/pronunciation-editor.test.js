@@ -1,3 +1,4 @@
+import { setGeneratedPronunciation } from "../ui/app/create-entry/pronunciation-draft.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -149,11 +150,11 @@ test("generated pronunciation values redraw after the main composition changes",
 
 test("lookup pronunciations update the visible control using the list field delimiter", () => {
     const source = readFileSync(
-        new URL("../ui/app/create-entry/index.js", import.meta.url),
+        new URL("../ui/app/create-entry/lookups.js", import.meta.url),
         "utf8",
     );
-    const start = source.indexOf("function applyLookupFields(");
-    const end = source.indexOf("function bindRawInput(", start);
+    const start = source.indexOf("export function applyLookupFields(");
+    const end = source.indexOf("export function bindRawInput(", start);
     let redraws = 0;
     const control = {
         value: "",
@@ -169,7 +170,8 @@ test("lookup pronunciations update the visible control using the list field deli
         renderStrokePatternPreviews() {},
     };
     vm.runInNewContext(
-        source.slice(start, end) + "\nglobalThis.apply = applyLookupFields;",
+        source.slice(start, end).replace(/\bexport /g, "") +
+            "\nglobalThis.apply = applyLookupFields;",
         context,
     );
     const draft = { fields: {} };
@@ -181,4 +183,21 @@ test("lookup pronunciations update the visible control using the list field deli
     assert.equal(control.value, "ab\nba");
     assert.equal(redraws, 1);
     assert.deepEqual(draft.fields.pronunciation, ["ab", "ba"]);
+});
+
+test("generated pronunciations appear immediately as committed values and preserve manual readings", () => {
+    const session = editor("");
+    setGeneratedPronunciation(session.form, ["ab", "ba", "ab"]);
+    assert.equal(session.field.value, "ab\nba");
+    assert.equal(session.saved.hidden, false);
+    assert.match(session.saved.innerHTML, /data-library-edit-saved-value>ab/);
+    assert.match(session.saved.innerHTML, /data-library-edit-saved-value>ba/);
+    session.field.value += "\nmanual";
+    setGeneratedPronunciation(session.form, "new");
+    assert.equal(session.field.value, "manual\nnew");
+    setGeneratedPronunciation(session.form, "");
+    assert.equal(session.field.value, "manual");
+    setGeneratedPronunciation(session.form, "manual");
+    setGeneratedPronunciation(session.form, "next");
+    assert.equal(session.field.value, "manual\nnext");
 });

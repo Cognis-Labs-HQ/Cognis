@@ -133,4 +133,9 @@
   <string name="gateway.study.library_visibility_error">The visibility change could not be completed. Check access and pending reviews, then try again.</string>
   <string name="gateway.study.library_publish_components">Request Component Publication</string>
   <string name="gateway.study.library_publish_dependencies_help">Request publication of these required components first. After approval, retry sharing the parent card.</string>
+  <string name="gateway.study.library_lookup_result">Dictionary result</string>
+  <string name="gateway.study.library_lookup_apply">Apply card data</string>
+  <string name="gateway.study.library_translate_definitions">Retrieve missing translations</string>
+  <string name="gateway.study.library_translation_missing">Some languages could not be translated. You can enter their definitions manually.</string>
+  <string name="gateway.study.library_dictionary_source">Dictionary source</string>
 </resources>

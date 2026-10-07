@@ -227,3 +227,18 @@ export async function fetchLibraryLookupSuggestions(providerId, entry) {
     if (!response.ok) throw new Error("lookup_failed");
     return (await response.json()).data;
 }
+
+export async function localizeLibraryDefinition(translations, languages) {
+    const response = await apiFetch(
+        "/api/v1/study/library/definitions/localize",
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ translations, languages }),
+        },
+    );
+    const result = await response.json();
+    if (!response.ok)
+        throw new Error(result.error?.code || "localization_failed");
+    return result.data;
+}

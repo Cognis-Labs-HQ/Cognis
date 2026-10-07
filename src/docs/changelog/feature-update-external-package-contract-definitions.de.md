@@ -464,8 +464,13 @@ Beim Schreiben von Abhängigkeiten wird nun die Sichtbarkeit jeder Verbindung ge
 
 Beim Löschen werden alle löschbaren abhängigen Karten mit Kaskaden- oder Einschränkungsregel bestätigt, einschließlich gruppierter Referenzen. Karten mit Trennungsregel bleiben erhalten. Die Transaktion prüft Eigentum, Klassenzugriff, Schutz und ausstehende Prüfungen jeder betroffenen Karte, bevor etwas gelöscht wird. Einschränkungen scheitern nicht mehr an der Reihenfolge der Kaskadensuche. Bei zu geringer Sichtbarkeit von Abhängigkeiten bietet die Erstellung eine persönliche Speicherung an. Die Veröffentlichungshilfe kann zunächst geeignete unterste Bestandteile einschließlich verborgener Definitionen anfragen; nach ihrer Genehmigung kann die übergeordnete Karte eingereicht werden.
 
-
 Der Server plant die Löschbestätigung anhand der gespeicherten Schemaversionen und berücksichtigt abhängige Karten, die auf der aktuellen Seite fehlen. Der Study-Gateway-Client stellt die schreibgeschützte Löschprüfung bereit.
+
+## Wörterbuchimport und Entwürfe
+
+Wörterbuchergebnisse lassen sich vor der Übernahme von Aussprachen, Klassifikationen, Tags, Verweisen und einzelnen Bedeutungen prüfen. Importierte Aussprachen erscheinen sofort mit denselben Bedienelementen wie manuell gespeicherte Aussprachen. Generierte Aussprachen reagieren auf Änderungen der Haupteingabe und erhalten eigene Alternativen. Pflichtreiter zeigen eine Markierung; die Aktion zum Hinzufügen einer Definition ist kompakt.
+
+Fehlende Übersetzungen abrufen verwendet `POST /api/v1/study/library/definitions/localize` mit `{ translations, languages }`. Fehlende UI-Sprachen werden über `localization:translateString` angefordert, vorhandene Übersetzungen bleiben erhalten. Bei fehlenden oder fehlerhaften Anbietern werden `missingLanguages` gemeldet. Fehlende Texte können bearbeitet werden; englische Texte werden nicht in andere Sprachfelder kopiert. Die Aktion steht auch beim manuellen Hinzufügen von Definitionen bereit.
 
 ## Commits
 

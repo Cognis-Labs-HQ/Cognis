@@ -1,3 +1,5 @@
+import { openDefinitionPopup, linkDefinition } from "./definition-editor.js";
+import { bindLookupProviders, bindRawInput } from "./lookups.js";
 import { resolveCreationScope } from "../dependency-scope.js";
 import { bindTextComposition } from "./composition.js";
 import { entryDefinitions } from "./definitions.js";
@@ -11,9 +13,7 @@ import {
     createLibraryEntry,
     deleteLibraryEntries,
     fetchLibraryForms,
-    fetchLibraryEntry,
     fetchLibraryLookupProviders,
-    fetchLibraryLookupSuggestions,
     fetchLibraryLocations,
     requestLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
@@ -624,8 +624,18 @@ export async function openCreateEntryPopup({
                 i18n,
                 inputCarouselIds,
             );
-            if (supportsRawInput) bindRawInput(form, i18n);
-            bindLookupProviders(form, draft, i18n);
+            if (supportsRawInput)
+                bindRawInput(form, i18n, {
+                    entries,
+                    schema,
+                    layer: editingLayer,
+                });
+            bindLookupProviders(form, draft, i18n, {
+                schema,
+                layer: editingLayer,
+                entries,
+                nestedDefinitionIds,
+            });
             const strokeLookup = form.querySelector(
                 "[data-library-stroke-lookup]",
             );
@@ -674,28 +684,7 @@ export async function openCreateEntryPopup({
                 if (!result) return;
                 const { entry: definition, created } = result;
                 if (created) nestedDefinitionIds.push(definition.id);
-                if (!entries.some(({ id }) => id === definition.id))
-                    entries.push(definition);
-                const existingOption = Array.from(select?.options ?? []).find(
-                    ({ value }) => value === definition.id,
-                );
-                if (existingOption) {
-                    existingOption.selected = true;
-                } else {
-                    select?.append(
-                        new Option(definition.label, definition.id, true, true),
-                    );
-                }
-                const panel = form.querySelector(
-                    '[data-library-editor-panel="definitions"]',
-                );
-                panel
-                    ?.querySelector("[data-library-definition-empty]")
-                    ?.remove();
-                panel?.insertAdjacentHTML(
-                    "afterbegin",
-                    `<article class="library-editor-aggregate"><header><strong>${escapeHtml(definition.label)}</strong></header></article>`,
-                );
+                linkDefinition(form, schema, editingLayer, entries, definition);
                 if (!created)
                     showToast(
                         i18n.t("gateway.study.library_definition_reused"),
@@ -717,210 +706,4 @@ export async function openCreateEntryPopup({
         return null;
     }
     return createdEntry;
-}
-
-async function openDefinitionPopup({
-    schema,
-    schemaId,
-    layerId,
-    entries,
-    i18n,
-}) {
-    const layer = schema.layers.find(({ id }) => id === layerId);
-    const localization = layer?.definitionLocalization;
-    if (!layer || !localization) return null;
-    const languages = ["de", "en", "id", "ja"];
-    const builder = createFormBuilder(
-        { i18n, escapeHtml },
-        {
-            formId: "library-definition-form",
-            formAttributes: { "data-library-definition-form": true },
-            includeSubmitButton: false,
-            fields: languages.map((language) => ({
-                name: language,
-                label: language.toUpperCase(),
-                required: true,
-                maxCharacters: 500,
-            })),
-        },
-    );
-    let form;
-    const action = await openPopup({
-        title: i18n.t("gateway.study.library_add_definition"),
-        body: builder.render(),
-        closeProtection: true,
-        actions: [
-            {
-                id: "save",
-                label: i18n.t("ui.reuse.save"),
-                variant: "confirm",
-            },
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
-            },
-        ],
-        onOpen(overlay) {
-            form = overlay.querySelector("[data-library-definition-form]");
-            builder.attach(form);
-        },
-        onAction(actionId) {
-            if (actionId !== "save") return true;
-            return form?.reportValidity() === true;
-        },
-    });
-    if (action !== "save" || !form) return null;
-    const translations = Object.fromEntries(
-        languages.map((language) => [language, form.elements[language].value]),
-    );
-    const normalizedLabel = translations.en.trim().normalize("NFKC");
-    const existing = entries.find(
-        (entry) =>
-            entry.schemaId === schemaId &&
-            entry.layer === layerId &&
-            entry.label.trim().normalize("NFKC") === normalizedLabel,
-    );
-    if (existing) return { entry: existing, created: false };
-    try {
-        const entry = await createLibraryEntry(
-            { scope: "user" },
-            {
-                schemaId,
-                schemaVersion: schema.version,
-                layer: layerId,
-                label: translations.en,
-                class: "definition",
-                hidden: true,
-                definitionLanguages: languages,
-                fields: {
-                    [localization.translationsField]: translations,
-                },
-                references: [],
-            },
-        );
-        return { entry, created: true };
-    } catch (error) {
-        const conflictId = error.details?.conflictEntryId;
-        if (error.message !== "content_conflict" || !conflictId) throw error;
-        const detail = await fetchLibraryEntry(conflictId);
-        return { entry: detail.entry, created: false };
-    }
-}
-
-function applyLookupFields(form, fields, draft) {
-    Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
-        draft.fields[fieldId] = value;
-        const control = form.elements[`field:${fieldId}`];
-        if (!control) return;
-        if (control.hasAttribute("data-library-provider-field")) {
-            control.libraryFieldValue = value;
-            renderStrokePatternPreviews(form);
-            return;
-        }
-        if (control instanceof RadioNodeList) {
-            Array.from(control).forEach((option) => {
-                option.checked = Array.isArray(value)
-                    ? value.includes(option.value)
-                    : option.value === value;
-            });
-            return;
-        }
-        if (control.type === "checkbox") {
-            control.checked = value === true;
-            return;
-        }
-        if (control.multiple) {
-            Array.from(control.options).forEach((option) => {
-                option.selected = Array.isArray(value)
-                    ? value.includes(option.value)
-                    : option.value === value;
-            });
-            return;
-        }
-        control.value = Array.isArray(value)
-            ? value.join(fieldId === "pronunciation" ? "\n" : "\u001f")
-            : value && typeof value === "object"
-              ? JSON.stringify(value)
-              : value;
-        control.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-}
-
-function bindRawInput(form, _i18n) {
-    const input = form.querySelector("[data-library-free-text]");
-    const lookups = form.querySelector(".library-composer-lookups");
-    const sync = () => {
-        const value = input.value.trim();
-        form.elements.label.value = value;
-        input.dataset.lookupApproved = "";
-        input.setCustomValidity("");
-        if (lookups) lookups.hidden = !value;
-    };
-    input.addEventListener("input", sync);
-    input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") event.preventDefault();
-    });
-    sync();
-}
-
-function bindLookupProviders(form, draft, i18n) {
-    form.addEventListener("click", async (event) => {
-        const button = event.target.closest("[data-library-lookup-provider]");
-        if (!button) return;
-        const input = form.querySelector("[data-library-composer-text]");
-        const label = input?.value.trim();
-        if (!label) return;
-        button.disabled = true;
-        try {
-            const [suggestion] = await fetchLibraryLookupSuggestions(
-                button.dataset.libraryLookupProvider,
-                { ...draft, label },
-            );
-            if (!suggestion) {
-                showToast(i18n.t("gateway.study.library_lookup_empty"), {
-                    variant: "info",
-                });
-                return;
-            }
-            const suggestedFields = { ...(suggestion.fields ?? {}) };
-            applyLookupFields(form, suggestedFields, draft);
-            for (const reference of suggestion.references ?? []) {
-                const item = form.querySelector(
-                    `[data-horizontal-carousel="${CSS.escape(reference.relation)}"] [data-carousel-value="${CSS.escape(reference.entryId)}"]`,
-                );
-                if (item && !item.classList.contains("is-selected"))
-                    item.click();
-            }
-            for (const [relation, groups] of Object.entries(
-                suggestion.referenceGroups ?? {},
-            )) {
-                form.referenceGroups[relation] = structuredClone(groups);
-            }
-            form.dispatchEvent(new Event("library-composition-change"));
-            if (!input.hasAttribute("data-library-free-text")) {
-                input.value = "";
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-            }
-            if (
-                input.hasAttribute("data-library-free-text") ||
-                suggestion.label ||
-                !(suggestion.references ?? []).length
-            )
-                form.elements.label.value = suggestion.label ?? label;
-            if (input.hasAttribute("data-library-free-text")) {
-                input.dataset.lookupApproved = "true";
-                input.setCustomValidity("");
-            }
-            showToast(i18n.t("gateway.study.library_lookup_applied"), {
-                variant: "success",
-            });
-        } catch {
-            showToast(i18n.t("gateway.study.library_lookup_error"), {
-                variant: "error",
-            });
-        } finally {
-            button.disabled = false;
-        }
-    });
 }

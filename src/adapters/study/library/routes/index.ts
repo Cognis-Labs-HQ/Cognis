@@ -319,6 +319,18 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
+                url.pathname === "/api/v1/study/library/definitions/localize" &&
+                req.method === "POST"
+            ) {
+                const request = (await readJson(req)) as Parameters<
+                    LibraryCapability["localizeDefinition"]
+                >[0];
+                sendJson(res, 200, {
+                    data: await library.localizeDefinition(request),
+                });
+                return true;
+            }
+            if (
                 url.pathname === "/api/v1/study/library/lookup" &&
                 req.method === "POST"
             ) {

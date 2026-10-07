@@ -67,7 +67,15 @@ const adapterSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/index.ts"),
     "utf8",
 );
-const createEntrySource = ["index.js", "composition.js", "definitions.js"]
+const createEntrySource = [
+    "index.js",
+    "composition.js",
+    "definitions.js",
+    "definition-editor.js",
+    "lookups.js",
+    "lookup-preview.js",
+    "pronunciation-draft.js",
+]
     .map((file) =>
         readFileSync(
             resolve(

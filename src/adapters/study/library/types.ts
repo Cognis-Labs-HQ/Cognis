@@ -323,8 +323,22 @@ export interface LibraryResolutionProposal {
     deterministic: boolean;
 }
 
+export interface LibraryLookupDefinition {
+    translations: Record<string, string>;
+    provenance?: string;
+}
+
+export interface LibraryDefinitionLocalizationRequest {
+    translations: Record<string, string>;
+    languages: readonly string[];
+}
+
 export interface LibraryLookupSuggestion {
     provider: string;
+    class?: string;
+    tags?: string[];
+    definitions?: LibraryLookupDefinition[];
+    sourceUrl?: string;
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];
@@ -335,6 +349,10 @@ export interface LibraryLookupSuggestion {
 
 export interface LibraryLookupProposal {
     provider?: string;
+    class?: string;
+    tags?: string[];
+    definitions?: LibraryLookupDefinition[];
+    sourceUrl?: string;
     label?: string;
     fields?: Record<string, unknown>;
     references?: LibraryReferenceInput[];

@@ -535,13 +535,24 @@ body[data-theme="light"]
 
 .library-definition-add {
     width: max-content;
-    min-width: 3rem;
-    min-height: 3rem;
-    padding: 0.35rem 0.75rem;
-    font-size: 2rem;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
     line-height: 1;
 }
 
 .library-composer-suggestion {
     position: relative;
+}
+
+.library-lookup-translations {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.5rem;
+}
+
+.library-lookup-translations label {
+    display: grid;
+    gap: 0.25rem;
 }

@@ -133,4 +133,9 @@
   <string name="gateway.study.library_visibility_error">Die Sichtbarkeit konnte nicht geändert werden. Prüfen Sie Zugriffsrechte und ausstehende Prüfungen und versuchen Sie es erneut.</string>
   <string name="gateway.study.library_publish_components">Veröffentlichung der Bestandteile anfragen</string>
   <string name="gateway.study.library_publish_dependencies_help">Fragen Sie zuerst die Veröffentlichung dieser erforderlichen Bestandteile an. Nach der Genehmigung können Sie die übergeordnete Karte erneut teilen.</string>
+  <string name="gateway.study.library_lookup_result">Wörterbuchergebnis</string>
+  <string name="gateway.study.library_lookup_apply">Kartendaten übernehmen</string>
+  <string name="gateway.study.library_translate_definitions">Fehlende Übersetzungen abrufen</string>
+  <string name="gateway.study.library_translation_missing">Einige Sprachen konnten nicht übersetzt werden. Sie können die Definitionen manuell eingeben.</string>
+  <string name="gateway.study.library_dictionary_source">Wörterbuchquelle</string>
 </resources>

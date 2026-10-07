@@ -346,3 +346,11 @@ Penulisan ketergantungan kini memeriksa visibilitas setiap hubungan, termasuk re
 Penghapusan mengonfirmasi semua kartu turunan yang dapat dihapus berdasarkan aturan kaskade dan pembatasan, termasuk referensi berkelompok. Kartu yang hanya dipisahkan tetap disimpan. Transaksi memeriksa kepemilikan, akses kelas, perlindungan, dan peninjauan tertunda pada setiap kartu sebelum menghapus apa pun. Kartu terbatas yang dicapai melalui kaskade lain tidak lagi gagal akibat urutan penelusuran. Pembuatan kartu bersama menawarkan penyimpanan pribadi jika cakupan ketergantungan terlalu sempit. Bantuan penerbitan dapat mengajukan komponen terbawah yang memenuhi syarat, termasuk definisi tersembunyi, sebelum mengajukan kartu induk setelah persetujuan.
 
 Server merencanakan konfirmasi penghapusan menggunakan versi skema tersimpan dan menyertakan kartu dependan yang tidak ada di halaman saat ini. Klien gateway Study menyediakan pemeriksaan penghapusan tanpa perubahan data.
+
+## Impor kamus dan draf
+
+Hasil kamus dapat ditinjau sebelum menerapkan pelafalan, klasifikasi, tag, referensi, dan definisi tiap makna. Pelafalan yang diimpor langsung muncul dengan kontrol yang sama seperti pelafalan yang disimpan manual. Pelafalan otomatis mengikuti perubahan masukan utama sambil mempertahankan alternatif pengguna. Tab wajib memiliki satu penanda dan tombol tambah definisi lebih ringkas.
+
+Kontrak lookup umum menerima `class`, `tags`, `definitions` (terjemahan lokal dan asal), serta `sourceUrl`. Data khusus penyedia disimpan dalam bidang yang dideklarasikan penyedia; modul Jepang mendeklarasikan `dictionary_data` tersembunyi untuk menyimpan rekaman Jisho lengkap. Aturan cakupan, deteksi konflik, validasi dependensi, dan pembersihan saat pembatalan juga berlaku bagi definisi yang diimpor.
+
+Ambil terjemahan yang belum tersedia menggunakan `POST /api/v1/study/library/definitions/localize` dengan `{ translations, languages }`. Bahasa UI yang belum tersedia diminta melalui `localization:translateString`, terjemahan yang diberikan tetap dipertahankan, dan `missingLanguages` dilaporkan jika penyedia tidak tersedia atau gagal. Teks yang belum diterjemahkan dapat diedit; teks Inggris tidak disalin ke bidang bahasa lain. Tindakan ini juga tersedia saat menambahkan definisi secara manual.

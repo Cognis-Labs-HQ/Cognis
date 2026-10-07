@@ -11,7 +11,15 @@ const adminInteractionsSource = [
 ]
     .map((file) => read(`src/adapters/study/library/ui/app/${file}`))
     .join("\n");
-const createEntrySource = ["index.js", "composition.js", "definitions.js"]
+const createEntrySource = [
+    "index.js",
+    "composition.js",
+    "definitions.js",
+    "definition-editor.js",
+    "lookups.js",
+    "lookup-preview.js",
+    "pronunciation-draft.js",
+]
     .map((file) =>
         read(`src/adapters/study/library/ui/app/create-entry/${file}`),
     )
@@ -344,7 +352,7 @@ test("Study Library commits multi-value fields and resolves typed prefixes", () 
         adminInteractionsSource,
         /"data-multi-value": multiValue \? "true" : "false"/,
     );
-    assert.match(adminInteractionsSource, /definitionsRequired/);
+    assert.match(adminInteractionsSource, /isDefinitionRelationship/);
     assert.match(createEntrySource, /resolveCompositionPrefix/);
     assert.match(createEntrySource, /const compositionCandidates = \(\) =>/);
     assert.match(

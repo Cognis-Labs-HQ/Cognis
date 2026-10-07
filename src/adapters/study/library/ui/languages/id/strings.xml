@@ -133,4 +133,9 @@
   <string name="gateway.study.library_visibility_error">Perubahan visibilitas tidak dapat diselesaikan. Periksa akses dan peninjauan tertunda, lalu coba lagi.</string>
   <string name="gateway.study.library_publish_components">Ajukan penerbitan komponen</string>
   <string name="gateway.study.library_publish_dependencies_help">Ajukan penerbitan komponen yang diperlukan ini terlebih dahulu. Setelah disetujui, coba bagikan kartu induk lagi.</string>
+  <string name="gateway.study.library_lookup_result">Hasil kamus</string>
+  <string name="gateway.study.library_lookup_apply">Terapkan data kartu</string>
+  <string name="gateway.study.library_translate_definitions">Ambil terjemahan yang belum tersedia</string>
+  <string name="gateway.study.library_translation_missing">Beberapa bahasa tidak dapat diterjemahkan. Anda dapat memasukkan definisinya secara manual.</string>
+  <string name="gateway.study.library_dictionary_source">Sumber kamus</string>
 </resources>

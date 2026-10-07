@@ -359,3 +359,11 @@ Dependency writes now enforce the visibility of every edge, including grouped re
 Deletion confirms all deletable cascade and restricted dependants, including grouped references, while detached cards remain. The transaction checks ownership, class access, protection, and pending review for every affected card before deleting anything. Restricted dependants reached by another cascade no longer fail due to traversal order. Shared creation offers a personal save when dependencies are too narrow. Publication assistance can request eligible leaf components, including hidden definitions, before submitting the parent after approval.
 
 Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
+
+## Dictionary imports and drafts
+
+Dictionary results can be reviewed before applying their pronunciations, classifications, tags, references, and separate sense definitions. Imported readings immediately use the same saved-value controls as manually committed readings. Generated readings update as the main input changes while preserving authored alternatives. Required tabs have one marker and the definition add action is compact.
+
+The common lookup contract accepts `class`, `tags`, `definitions` (localized translations and provenance), and `sourceUrl`. Source-specific data belongs in provider-declared fields; the Japanese module declares hidden `dictionary_data` containing the full Jisho record. Existing scoped creation, conflict detection, dependency validation, and cancellation cleanup apply to imported definitions.
+
+The Retrieve missing translations action calls `POST /api/v1/study/library/definitions/localize` with `{ translations, languages }`. It requests missing UI languages through `localization:translateString`, preserves supplied translations, and reports `missingLanguages` when a provider is absent or fails. Missing translations remain editable; English is not copied into other language fields. This is also available when adding a definition manually.

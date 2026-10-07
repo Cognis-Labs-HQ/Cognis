@@ -1,3 +1,5 @@
+import { localizeDefinition } from "./definitions.js";
+import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import { authorizeDeletion, planDeletion } from "./deletion.js";
 import { entryPermissions } from "./permissions.js";
 import { validateUpdateProposal } from "./proposals.js";
@@ -560,6 +562,9 @@ export class LibraryService implements LibraryCapability {
             input.label,
             await this.store.list(location, { schemaId: schema.id }),
         );
+    }
+    async localizeDefinition(request: LibraryDefinitionLocalizationRequest) {
+        return localizeDefinition(request, this.stringLocalization, this.log);
     }
     async lookup(
         providerId: string,

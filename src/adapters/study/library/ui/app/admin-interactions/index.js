@@ -185,6 +185,15 @@ export function bindLibraryEditorControls(
         const input = field.querySelector("[data-library-tag-input]");
         const hidden = field.querySelector('input[type="hidden"]');
         const list = field.querySelector(".library-tag-list");
+        form.setLibraryTags = (tags) => {
+            hidden.value = tags.join("\u001f");
+            list.innerHTML = tags
+                .map(
+                    (value) =>
+                        `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(value)}">${escapeHtml(value)} ×</button>`,
+                )
+                .join("");
+        };
         const values = () =>
             Array.from(
                 list.querySelectorAll("[data-library-tag]"),
