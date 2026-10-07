@@ -200,6 +200,7 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 10_000;
+    let refreshQueue = Promise.resolve();
     let handlers: RouteHandler[] = [];
     if (!options?.routeContext) {
         throw new Error(
@@ -223,9 +224,6 @@ export function createModuleExtensionRoutes(
         path.resolve(process.cwd(), "external-modules");
     const assuranceByModuleId = new Map<string, ModuleAssurance>();
 
-    /**
-     * Writes a standardized warning when a module declares an invalid access policy.
-     */
     function logInvalidAccessPolicy(
         method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
         moduleId: string,
@@ -265,7 +263,10 @@ export function createModuleExtensionRoutes(
         const moduleId = manifest.id;
         function resolveCapability<T>(capabilityId: string): T | undefined {
             const capability =
-                options.routeContext.getCapability<T>(capabilityId);
+                options.routeContext.getCapability<T>(capabilityId) ??
+                (systemCtx?.isPublicCapability(capabilityId)
+                    ? systemCtx.getCapability<T>(capabilityId)
+                    : undefined);
             if (
                 capabilityId !== "auth:registerProvider" ||
                 typeof capability !== "function"
@@ -442,17 +443,12 @@ export function createModuleExtensionRoutes(
                 },
                 has(key) {
                     if (key === "system:ctx") return false;
-                    return systemCtx?.hasCapability(key) ?? false;
+                    return resolveCapability(key) !== undefined;
                 },
                 require(key) {
                     if (key === "system:ctx") {
                         throw new Error(
                             'Required capability "system:ctx" is not available.',
-                        );
-                    }
-                    if (!systemCtx) {
-                        throw new Error(
-                            `Required capability "${key}" is not available.`,
                         );
                     }
                     const capability = resolveCapability(key);
@@ -637,20 +633,9 @@ export function createModuleExtensionRoutes(
 
     function resolveModuleEntrypointPath(
         moduleRoot: string,
-        entrypoints: { bootstrap?: string } | undefined,
+        entrypoint: string | undefined,
     ): string | null {
-        return entrypoints?.bootstrap
-            ? path.join(moduleRoot, entrypoints.bootstrap)
-            : null;
-    }
-
-    function resolveDisabledApiEntrypointPath(
-        moduleRoot: string,
-        entrypoints: { disabledApi?: string } | undefined,
-    ): string | null {
-        return entrypoints?.disabledApi
-            ? path.join(moduleRoot, entrypoints.disabledApi)
-            : null;
+        return entrypoint ? path.join(moduleRoot, entrypoint) : null;
     }
 
     async function bootstrapWithTimeout(
@@ -781,11 +766,11 @@ export function createModuleExtensionRoutes(
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
-                manifest.entrypoints,
+                manifest.entrypoints?.bootstrap,
             );
-            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
+            const disabledApiEntrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
-                manifest.entrypoints,
+                manifest.entrypoints?.disabledApi,
             );
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
@@ -833,6 +818,12 @@ export function createModuleExtensionRoutes(
                     plugin,
                     dispose: typeof result === "function" ? result : undefined,
                     ...scope,
+                });
+                log?.("info", "Module runtime contributions registered.", {
+                    component: "module-extension-routes",
+                    operation: "refresh_module_runtime",
+                    moduleId: manifest.id,
+                    capabilities: [...scope.capabilities],
                 });
             } catch (error) {
                 scope.active = false;
@@ -883,7 +874,7 @@ export function createModuleExtensionRoutes(
         const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
         const entrypoint = resolveModuleEntrypointPath(
             moduleRoot,
-            manifest.entrypoints,
+            manifest.entrypoints?.bootstrap,
         );
         if (!entrypoint) return false;
         const plugin = (await import(
@@ -943,6 +934,15 @@ export function createModuleExtensionRoutes(
             await match.handler(req, res);
             return true;
         },
-        refresh,
+        refresh(refreshOptions) {
+            const pendingRefresh = refreshQueue.then(() =>
+                refresh(refreshOptions),
+            );
+            refreshQueue = pendingRefresh.then(
+                () => undefined,
+                () => undefined,
+            );
+            return pendingRefresh;
+        },
     };
 }

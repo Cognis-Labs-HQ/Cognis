@@ -130,3 +130,7 @@ Disabled modules never import or execute their normal bootstrap. A module that m
 ### Activation guidance
 
 A module that contributes configuration surfaces elsewhere in Cognis can declare `ui.activationGuidance` instead of creating an empty module-settings form. The contract provides localized `titleKey`, optional `descriptionKey`, and ordered `steps`. Each step has a stable `id`, localized `labelKey`, optional `descriptionKey`, and optional `targets`. An adapter target uses `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. After successful enablement, Cognis presents every step and offers to open Administration. A module can list multiple adapter targets without core knowing the provider names.
+
+### Public capability lookup
+
+External modules publish shared server capabilities with `ctx.contributePublicCapability(key, value)`. Module `ctx.getCapability`, `ctx.capabilities.get`, `has`, and `require` resolve public capabilities from the live system registry, including capabilities published after the consumer bootstraps. Private system capabilities remain outside this surface; `system:ctx` is never exposed to modules. Refresh requests execute sequentially so teardown and registration cannot overlap. Disabling a provider removes its contributions; re-enabling it republishes them. A failed refresh rejects its caller without blocking later refreshes.
