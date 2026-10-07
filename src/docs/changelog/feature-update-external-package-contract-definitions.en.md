@@ -446,6 +446,10 @@ Inline card creation now commits staged pronunciation character selections befor
 
 Transformed vocabulary headings and readings link to the canonical writing units of the displayed form. Used By also includes complete canonical spelling and pronunciation compositions, so compound kana links resolve upward even when stored references identify smaller units. Stored relationships remain visible; incomplete compositions do not create partial links.
 
+## Immediate detail relationships
+
+Detail relationship lists show immediate neighbors. Used By, Usage Examples, and the relationship tree exclude dependants reached through another spelling or pronunciation parent, including grouped references. Direct links remain available, and cyclic references do not cause repeated traversal. Similar Items continues to show same-layer peers.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

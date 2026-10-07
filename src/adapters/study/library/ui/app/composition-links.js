@@ -99,6 +99,65 @@ export function resolveCompositionDependants(entry, schemas, entries) {
     });
 }
 
+export function filterImmediateDependants(entry, dependants, schemas, entries) {
+    const catalog = Array.from(
+        new Map(
+            [...entries, ...dependants, entry].map((candidate) => [
+                candidate.id,
+                candidate,
+            ]),
+        ).values(),
+    );
+    const entriesById = new Map(
+        catalog.map((candidate) => [candidate.id, candidate]),
+    );
+    const parentIds = new Map();
+    const parentsOf = (candidate) => {
+        if (!parentIds.has(candidate.id)) {
+            const references = [
+                ...(candidate.references ?? []),
+                ...Object.values(candidate.referenceGroups ?? {}).flat(2),
+            ].map(({ entryId }) => entryId);
+            const compositions = [
+                candidate.label,
+                ...pronunciationValues(candidate),
+            ]
+                .flatMap((label) =>
+                    resolveLabelComposition(label, candidate, schemas, catalog),
+                )
+                .map(({ id }) => id);
+            parentIds.set(
+                candidate.id,
+                [...new Set([...references, ...compositions])].filter(
+                    (id) => id !== candidate.id,
+                ),
+            );
+        }
+        return parentIds.get(candidate.id);
+    };
+    const reachesEntry = (parentId, sourceId) => {
+        const pending = [parentId];
+        const visited = new Set([sourceId]);
+        while (pending.length) {
+            const id = pending.pop();
+            if (id === entry.id) return true;
+            if (visited.has(id)) continue;
+            visited.add(id);
+            const parent = entriesById.get(id);
+            if (parent) pending.push(...parentsOf(parent));
+        }
+        return false;
+    };
+    return dependants.filter(
+        (candidate) =>
+            !parentsOf(candidate).some(
+                (parentId) =>
+                    parentId !== entry.id &&
+                    reachesEntry(parentId, candidate.id),
+            ),
+    );
+}
+
 function normalizedLabel(value) {
     return String(value).trim().normalize("NFKC");
 }

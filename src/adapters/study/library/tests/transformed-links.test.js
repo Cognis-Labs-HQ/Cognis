@@ -122,7 +122,7 @@ test("unresolved transformed readings stay visible without partial links", () =>
 });
 
 test("detail rendering merges canonical upward links with stored relationships", async () => {
-    const { resolveCompositionDependants } =
+    const { resolveCompositionDependants, filterImmediateDependants } =
         await import("../ui/app/composition-links.js");
     const character = entries.find(({ label }) => label === "っく");
     const adverb = { ...verb, id: "slowly", label: "ゆっくり" };
@@ -136,6 +136,7 @@ test("detail rendering merges canonical upward links with stored relationships",
     let flowDetail;
     const context = {
         resolveCompositionDependants,
+        filterImmediateDependants,
         uiCtx: {
             runFlow: async (_flow, { detail }) => {
                 flowDetail = detail;
@@ -170,7 +171,13 @@ test("detail rendering merges canonical upward links with stored relationships",
         source + "\nglobalThis.compose = composeDetail;",
         context,
     );
-    const detail = { entry: character, usedBy: [explicit, adverb] };
+    const indirect = {
+        ...verb,
+        id: "indirect",
+        label: "Indirect use",
+        references: [{ entryId: adverb.id }],
+    };
+    const detail = { entry: character, usedBy: [explicit, adverb, indirect] };
     const composed = await context.compose(
         detail,
         schemas,
@@ -185,5 +192,5 @@ test("detail rendering merges canonical upward links with stored relationships",
     assert.ok(
         composed.body.includes("gateway.study.library_used_by:explicit,slowly"),
     );
-    assert.equal(detail.usedBy.length, 2);
+    assert.equal(detail.usedBy.length, 3);
 });

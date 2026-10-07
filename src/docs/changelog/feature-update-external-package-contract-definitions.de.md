@@ -446,6 +446,10 @@ Die Inline-Kartenerstellung übernimmt jetzt vorgemerkte Zeichenauswahlen für d
 
 Überschriften und Lesungen transformierter Vokabeln verlinken die kanonischen Schrifteinheiten der angezeigten Form. „Verwendet von“ berücksichtigt außerdem vollständige kanonische Schreibweisen und Aussprachezusammensetzungen, sodass zusammengesetzte Kana auch dann zurückverweisen, wenn gespeicherte Referenzen kleinere Einheiten nennen. Gespeicherte Beziehungen bleiben sichtbar; unvollständige Zusammensetzungen erzeugen keine Teilverknüpfungen.
 
+## Direkte Detailbeziehungen
+
+Beziehungslisten in der Detailansicht zeigen unmittelbare Nachbarn. „Verwendet von“, Verwendungsbeispiele und der Beziehungsbaum schließen abhängige Einträge aus, die über einen weiteren übergeordneten Schreibungs- oder Ausspracheeintrag erreichbar sind, einschließlich gruppierter Referenzen. Direkte Links bleiben verfügbar, und zyklische Referenzen führen nicht zu wiederholter Traversierung. Ähnliche Elemente zeigen weiterhin Einträge derselben Ebene.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

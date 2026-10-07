@@ -241,3 +241,139 @@ test("compound kana resolves upward through canonical spelling and pronunciation
         ["slowly", "reading"],
     );
 });
+
+test("detail neighbours stop at the immediate spelling or pronunciation parent", async () => {
+    const { filterImmediateDependants, resolveCompositionDependants } =
+        await import("../ui/app/composition-links.js");
+    const kana = ["あ", "め", "る", "く"].map((label) => ({
+        ...entries[2],
+        id: `kana-${label}`,
+        label,
+    }));
+    const rainCharacter = {
+        ...entries[1],
+        id: "rain-character",
+        label: "雨",
+        fields: { pronunciation: ["あめ"] },
+        referenceGroups: {
+            readings: [[{ entryId: "kana-あ" }, { entryId: "kana-め" }]],
+        },
+    };
+    const walkCharacter = {
+        ...entries[1],
+        id: "walk-character",
+        label: "歩",
+        fields: { pronunciation: ["ある"] },
+        references: [{ entryId: "kana-あ" }, { entryId: "kana-る" }],
+    };
+    const rainWord = {
+        ...word,
+        id: "rain-word",
+        label: "雨",
+        fields: { pronunciation: ["あめ"] },
+        references: [{ entryId: rainCharacter.id }],
+    };
+    const walkWord = {
+        ...word,
+        id: "walk-word",
+        label: "歩く",
+        fields: { pronunciation: ["あるく"] },
+        references: [
+            { entryId: walkCharacter.id },
+            { entryId: "kana-く" },
+            { entryId: "kana-あ" },
+        ],
+    };
+    const groupedWord = {
+        ...word,
+        id: "grouped-word",
+        label: "Group",
+        fields: { pronunciation: ["あめ"] },
+        referenceGroups: { spelling: [[{ entryId: rainCharacter.id }]] },
+    };
+    const sentence = {
+        ...word,
+        id: "sentence",
+        layer: "sentences",
+        label: "雨歩く",
+        references: [{ entryId: rainWord.id }, { entryId: walkWord.id }],
+    };
+    const directWord = {
+        ...word,
+        id: "direct-word",
+        label: "あ",
+        references: [{ entryId: "kana-あ" }],
+    };
+    const catalog = [
+        ...kana,
+        rainCharacter,
+        walkCharacter,
+        rainWord,
+        walkWord,
+        groupedWord,
+        sentence,
+        directWord,
+    ];
+    const inferred = resolveCompositionDependants(kana[0], schemas, catalog);
+    const displayed = filterImmediateDependants(
+        kana[0],
+        inferred,
+        schemas,
+        catalog,
+    );
+    assert.deepEqual(
+        displayed.map(({ id }) => id),
+        ["rain-character", "walk-character", "direct-word"],
+    );
+    assert.deepEqual(
+        filterImmediateDependants(
+            rainCharacter,
+            [rainWord, groupedWord, sentence],
+            schemas,
+            catalog,
+        ).map(({ id }) => id),
+        ["rain-word", "grouped-word"],
+    );
+    assert.deepEqual(
+        filterImmediateDependants(
+            kana[3],
+            [walkWord, sentence],
+            schemas,
+            catalog,
+        ).map(({ id }) => id),
+        ["walk-word"],
+    );
+});
+
+test("direct neighbour filtering handles cyclic references without dropping independent direct links", async () => {
+    const { filterImmediateDependants } =
+        await import("../ui/app/composition-links.js");
+    const target = entries[2];
+    const first = {
+        ...entries[1],
+        id: "first",
+        label: "First",
+        references: [{ entryId: "second" }],
+    };
+    const second = {
+        ...entries[1],
+        id: "second",
+        label: "Second",
+        references: [{ entryId: "first" }],
+    };
+    const direct = {
+        ...word,
+        id: "direct",
+        label: "Direct",
+        references: [{ entryId: target.id }, { entryId: first.id }],
+    };
+    assert.deepEqual(
+        filterImmediateDependants(target, [direct], schemas, [
+            target,
+            first,
+            second,
+            direct,
+        ]),
+        [direct],
+    );
+});

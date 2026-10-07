@@ -446,6 +446,10 @@ Pembuatan kartu secara inline kini menyimpan pilihan karakter pelafalan yang mas
 
 Judul dan pelafalan kosakata yang ditransformasi menautkan satuan tulisan kanonis dari bentuk yang ditampilkan. Digunakan Oleh juga mencakup komposisi ejaan dan pelafalan kanonis yang lengkap, sehingga kana gabungan dapat menautkan kembali ke kosakata meskipun referensi tersimpan menunjuk satuan yang lebih kecil. Hubungan tersimpan tetap terlihat; komposisi yang tidak lengkap tidak menghasilkan tautan sebagian.
 
+## Hubungan detail langsung
+
+Daftar hubungan dalam detail menampilkan tetangga langsung. Digunakan Oleh, Contoh Penggunaan, dan pohon hubungan mengecualikan entri yang dicapai melalui induk ejaan atau pelafalan lain, termasuk referensi berkelompok. Tautan langsung tetap tersedia, dan referensi siklik tidak menyebabkan penelusuran berulang. Item Serupa tetap menampilkan entri pada lapisan yang sama.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
