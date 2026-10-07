@@ -13,7 +13,7 @@ import {
 } from "/static/gateways/study/ui/sub-navigation.js";
 import { isAdminScope } from "/static/gateways/study/ui/language.js";
 import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
-import { bindAdminLibraryInteractions } from "./admin-interactions.js";
+import { bindAdminLibraryInteractions } from "./admin-interactions/index.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 import { bindLibraryInteractions } from "./interactions.js";
 import { librarySelectionFloatingMenu, setSelectionMode } from "./selection.js";

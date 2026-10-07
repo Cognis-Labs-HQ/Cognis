@@ -13,7 +13,10 @@ import type {
 } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
-import { LibraryService, type LibraryProviderCapability } from "./service.js";
+import {
+    LibraryService,
+    type LibraryProviderCapability,
+} from "./service/index.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import {

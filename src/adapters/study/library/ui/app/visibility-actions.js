@@ -1,4 +1,9 @@
 import {
+    incompatibleDependencies,
+    publishableDependencyLeaves,
+} from "./dependency-scope.js";
+import { showToast } from "/static/reuse/toast.js";
+import {
     moveLibraryEntryToPersonal,
     requestLibraryPromotion,
     withdrawLibraryPromotion,
@@ -21,7 +26,7 @@ export function createLibraryVisibilityActions({
         return getEntries().find(({ id }) => id === entryId);
     };
 
-    return {
+    const actions = {
         async publish(scope) {
             const entry = selectedEntry();
             if (!entry || entry.protected || entry.scope !== "user") return;
@@ -47,7 +52,7 @@ export function createLibraryVisibilityActions({
                             variant: "neutral",
                         },
                     ],
-                    onMount: (overlay) => {
+                    onOpen: (overlay) => {
                         select = overlay.querySelector(
                             "[data-library-publish-class]",
                         );
@@ -56,10 +61,83 @@ export function createLibraryVisibilityActions({
                 if (action !== "submit") return;
                 scopeId = select.value;
             }
-            const request = await requestLibraryPromotion(entry.id, {
-                scope,
-                scopeId,
-            });
+            const destination = { scope, scopeId };
+            const dependencies = incompatibleDependencies(
+                entry,
+                destination,
+                getEntries(),
+            );
+            if (dependencies.length) {
+                const leaves = publishableDependencyLeaves(
+                    entry,
+                    destination,
+                    getEntries(),
+                ).filter(
+                    ({ id }) =>
+                        !requests.some(
+                            (request) =>
+                                request.sourceEntryId === id &&
+                                request.status === "pending",
+                        ),
+                );
+                if (!leaves.length) {
+                    showToast(
+                        i18n
+                            .t(
+                                "gateway.study.library_publish_dependencies_first",
+                            )
+                            .replace(
+                                "{{ cards }}",
+                                dependencies
+                                    .map(({ label }) => label)
+                                    .join(" · "),
+                            ),
+                        { variant: "error" },
+                    );
+                    return;
+                }
+                const action = await openPopup({
+                    title: i18n.t(
+                        "gateway.study.library_dependency_scope_title",
+                    ),
+                    body: `<p>${escapeHtml(i18n.t("gateway.study.library_publish_dependencies_help"))}</p><ul>${leaves.map(({ label }) => `<li>${escapeHtml(label)}</li>`).join("")}</ul>`,
+                    actions: [
+                        {
+                            id: "publish",
+                            label: i18n.t(
+                                "gateway.study.library_publish_components",
+                            ),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "neutral",
+                        },
+                    ],
+                });
+                if (action !== "publish") return;
+                for (const component of leaves) {
+                    const request = await requestLibraryPromotion(
+                        component.id,
+                        destination,
+                    );
+                    requests.push({
+                        ...request,
+                        source: component,
+                        canWithdraw: true,
+                    });
+                }
+                showToast(
+                    i18n.t("gateway.study.library_publish_dependencies_help"),
+                    { variant: "info" },
+                );
+                return;
+            }
+            const request = await requestLibraryPromotion(
+                entry.id,
+                destination,
+            );
             requests.push({ ...request, source: entry, canWithdraw: true });
             setSelectionMode(root, false);
         },
@@ -92,4 +170,23 @@ export function createLibraryVisibilityActions({
             setSelectionMode(root, false);
         },
     };
+    return Object.fromEntries(
+        Object.entries(actions).map(([name, action]) => [
+            name,
+            async (...args) => {
+                try {
+                    return await action(...args);
+                } catch (error) {
+                    const key =
+                        error.message === "reference_visibility_too_low"
+                            ? "gateway.study.library_dependency_scope_help"
+                            : error.message ===
+                                "entry_required_by_shared_content"
+                              ? "gateway.study.library_send_back_dependencies"
+                              : "gateway.study.library_visibility_error";
+                    showToast(i18n.t(key), { variant: "error" });
+                }
+            },
+        ]),
+    );
 }

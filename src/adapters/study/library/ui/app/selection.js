@@ -1,3 +1,5 @@
+import { planLibraryEntryDeletion } from "/static/gateways/study/ui/library-client.js";
+import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 
@@ -132,37 +134,17 @@ export async function confirmEntryDeletion(
 ) {
     const entryIds = selectedEntryIds(root);
     if (entryIds.length === 0) return null;
-    const cascadeIds = new Set(entryIds);
-    let changed = true;
-    while (changed) {
-        changed = false;
-        for (const entry of libraryEntries) {
-            const sourceLayer = schemas
-                .find(
-                    (schema) =>
-                        schema.id === entry.schemaId &&
-                        schema.version === entry.schemaVersion,
-                )
-                ?.layers.find((layer) => layer.id === entry.layer);
-            if (
-                !cascadeIds.has(entry.id) &&
-                entry.references?.some(
-                    (reference) =>
-                        cascadeIds.has(reference.entryId) &&
-                        sourceLayer?.relationships?.find(
-                            (relationship) =>
-                                relationship.id === reference.relation,
-                        )?.onDelete === "cascade",
-                )
-            ) {
-                cascadeIds.add(entry.id);
-                changed = true;
-            }
-        }
+    let plan;
+    try {
+        plan = await planLibraryEntryDeletion(entryIds);
+    } catch (error) {
+        showToast(i18n.t(deletionErrorKey(error)), { variant: "error" });
+        return null;
     }
+    const plannedIds = plan.entryIds;
     const selectedIds = new Set(entryIds);
-    const cascadeEntries = libraryEntries.filter(
-        (entry) => cascadeIds.has(entry.id) && !selectedIds.has(entry.id),
+    const cascadeEntries = plan.entries.filter(
+        (entry) => !selectedIds.has(entry.id),
     );
     const cascadeWarning = cascadeEntries.length
         ? `<p>${escapeHtml(i18n.t("gateway.study.library_delete_warning"))}</p><ul class="library-delete-cascade-list">${cascadeEntries.map((entry) => `<li>${escapeHtml(entry.label)}</li>`).join("")}</ul>`
@@ -191,5 +173,19 @@ export async function confirmEntryDeletion(
             ).checked;
         },
     });
-    return action === "delete" ? { entryIds, blacklistContentHashes } : null;
+    return action === "delete"
+        ? { entryIds: plannedIds, blacklistContentHashes }
+        : null;
+}
+
+export function deletionErrorKey(error) {
+    return [
+        "relationship_delete_restricted",
+        "forbidden",
+        "immutable_layer",
+        "protected_content",
+        "request_pending",
+    ].includes(error.message)
+        ? "gateway.study.library_delete_dependency_blocked"
+        : "gateway.study.library_delete_error";
 }

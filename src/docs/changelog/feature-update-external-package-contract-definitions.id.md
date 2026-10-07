@@ -458,6 +458,15 @@ Hubungan langsung tetap terlihat meskipun jalur melalui entri perantara mencapai
 
 Kartu yang ditransformasi tidak menampilkan pelafalan yang sama dengan judulnya setelah normalisasi. Pelafalan yang berbeda tetap memiliki tautan karakter. Tindakan terlokalisasi Kembali ke {{ verb }} memulihkan kartu dasar dan menghapus transformasi yang dipilih sambil mempertahankan navigasi kartu biasa.
 
+## Cakupan dan penghapusan
+
+Penulisan ketergantungan kini memeriksa visibilitas setiap hubungan, termasuk referensi berkelompok. Kartu pribadi dapat memakai kartu bersama yang dapat dibaca dan komponen pribadinya sendiri; kartu kelas memerlukan komponen global atau dari kelas yang sama; kartu global memerlukan komponen global. Usulan pembaruan memvalidasi skema referensi sebelum pengajuan, persetujuan penerbitan memeriksa kembali ketergantungan terkini, dan perubahan tidak boleh membatalkan keabsahan penerbitan yang tertunda. Konten bersama tidak dapat dikembalikan ke cakupan pribadi jika kartu bersama yang bergantung padanya atau permintaan tertunda masih memerlukan visibilitas yang lebih luas. Petunjuk izin dikembalikan setelah pembuatan dan perubahan serta mengikuti akses tulis kelas.
+
+Penghapusan mengonfirmasi semua kartu turunan yang dapat dihapus berdasarkan aturan kaskade dan pembatasan, termasuk referensi berkelompok. Kartu yang hanya dipisahkan tetap disimpan. Transaksi memeriksa kepemilikan, akses kelas, perlindungan, dan peninjauan tertunda pada setiap kartu sebelum menghapus apa pun. Kartu terbatas yang dicapai melalui kaskade lain tidak lagi gagal akibat urutan penelusuran. Pembuatan kartu bersama menawarkan penyimpanan pribadi jika cakupan ketergantungan terlalu sempit. Bantuan penerbitan dapat mengajukan komponen terbawah yang memenuhi syarat, termasuk definisi tersembunyi, sebelum mengajukan kartu induk setelah persetujuan.
+
+
+Server merencanakan konfirmasi penghapusan menggunakan versi skema tersimpan dan menyertakan kartu dependan yang tidak ada di halaman saat ini. Klien gateway Study menyediakan pemeriksaan penghapusan tanpa perubahan data.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

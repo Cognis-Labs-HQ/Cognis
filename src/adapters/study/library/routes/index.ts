@@ -4,7 +4,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { LibraryCapability, LibraryActor } from "../service.js";
+import type { LibraryCapability, LibraryActor } from "../service/index.js";
 import type { LibraryEntryInput, LibraryLocation } from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
 
@@ -216,6 +216,21 @@ export function createLibraryRoutes(
                     entryId: entry.id,
                 });
                 sendJson(res, 201, { data: entry });
+                return true;
+            }
+            if (
+                url.pathname ===
+                    "/api/v1/study/library/entries/deletion-plan" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as { entryIds?: unknown };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every((id) => typeof id === "string")
+                )
+                    throw new Error("invalid_delete_request");
+                const plan = await library.planDeletion(actor, body.entryIds);
+                sendJson(res, 200, { data: plan });
                 return true;
             }
             if (

@@ -10,6 +10,7 @@ import { openEntryPopup } from "./entry-popup.js";
 import { loadDrawing } from "./drawing.js";
 import {
     confirmEntryDeletion,
+    deletionErrorKey,
     deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
@@ -244,7 +245,6 @@ export function bindLibraryInteractions(root, context) {
     signal?.addEventListener("abort", () => setSelectionMode(root, false), {
         once: true,
     });
-
     async function deleteSelection() {
         const request = await confirmEntryDeletion(
             root,
@@ -265,8 +265,8 @@ export function bindLibraryInteractions(root, context) {
             showToast(i18n.t("gateway.study.library_delete_success"), {
                 variant: "success",
             });
-        } catch {
-            showToast(i18n.t("gateway.study.library_delete_error"), {
+        } catch (error) {
+            showToast(i18n.t(deletionErrorKey(error)), {
                 variant: "error",
             });
         }

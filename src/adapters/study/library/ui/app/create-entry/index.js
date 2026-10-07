@@ -1,3 +1,4 @@
+import { resolveCreationScope } from "../dependency-scope.js";
 import { bindTextComposition } from "./composition.js";
 import { entryDefinitions } from "./definitions.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -23,7 +24,7 @@ import {
     readReferenceGroups,
     readReferences,
     validateRequiredRelationships,
-} from "../admin-interactions.js";
+} from "../admin-interactions/index.js";
 import { localizedLabel } from "../presentation.js";
 import {
     mountEditableRelationshipCarousels,
@@ -278,7 +279,7 @@ export async function openCreateEntryPopup({
     };
     let createdEntry = null;
     const submitEntry = async () => {
-        const publishEveryone = form.elements.publishEveryone?.checked === true;
+        let publishEveryone = form.elements.publishEveryone?.checked === true;
         const scope =
             publishEveryone && canPublishEveryone
                 ? "global"
@@ -323,16 +324,36 @@ export async function openCreateEntryPopup({
                 form.elements.hidden?.value === "true" ||
                 form.elements.hidden?.checked === true,
         };
+        let location = { scope, scopeId };
+        const intended = publishEveryone
+            ? { scope: "global", scopeId: "global" }
+            : location;
+        const resolved = await resolveCreationScope(
+            candidate,
+            intended,
+            entries,
+            i18n,
+        );
+        if (!resolved) return null;
+        if (resolved.scope === "user" && intended.scope !== "user") {
+            location = resolved;
+            publishEveryone = false;
+        }
         try {
-            const created = await createLibraryEntry(
-                { scope, scopeId },
-                candidate,
-            );
-            if (publishEveryone && !canPublishEveryone)
-                await requestLibraryPromotion(created.id, {
-                    scope: "global",
-                    scopeId: "global",
-                });
+            const created = await createLibraryEntry(location, candidate);
+            if (publishEveryone && !canPublishEveryone) {
+                try {
+                    await requestLibraryPromotion(created.id, {
+                        scope: "global",
+                        scopeId: "global",
+                    });
+                } catch {
+                    showToast(
+                        i18n.t("gateway.study.library_publish_saved_personal"),
+                        { variant: "error" },
+                    );
+                }
+            }
             nestedDefinitionIds.length = 0;
             return created;
         } catch (error) {

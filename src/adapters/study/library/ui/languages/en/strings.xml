@@ -123,4 +123,14 @@
   <string name="gateway.study.library_use_base_transform">Just use {{ verb }}!</string>
   <string name="gateway.study.library_transforms_available">Transform(s) available</string>
   <string name="gateway.study.library_return_to_root">Return to {{ verb }}</string>
+  <string name="gateway.study.library_delete_dependency_blocked">This selection depends on cards you cannot delete or cards awaiting review. Resolve those dependencies before deleting.</string>
+  <string name="gateway.study.library_dependency_scope_title">Dependency Visibility</string>
+  <string name="gateway.study.library_dependency_scope_help">Some components are private or belong to another class. Save this card for personal use, or publish its components to the intended scope first.</string>
+  <string name="gateway.study.library_save_personal">Save for Personal Use</string>
+  <string name="gateway.study.library_publish_saved_personal">Card saved for personal use. Its publication request failed; publish the required components first, then try sharing it again.</string>
+  <string name="gateway.study.library_publish_dependencies_first">Publish these components to the destination first: {{ cards }}</string>
+  <string name="gateway.study.library_send_back_dependencies">This card is used by shared cards. Update or remove those dependencies before returning it to personal use.</string>
+  <string name="gateway.study.library_visibility_error">The visibility change could not be completed. Check access and pending reviews, then try again.</string>
+  <string name="gateway.study.library_publish_components">Request Component Publication</string>
+  <string name="gateway.study.library_publish_dependencies_help">Request publication of these required components first. After approval, retry sharing the parent card.</string>
 </resources>

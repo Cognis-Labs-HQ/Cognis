@@ -1,21 +1,31 @@
+import { authorizeDeletion, planDeletion } from "./deletion.js";
+import { entryPermissions } from "./permissions.js";
+import { validateUpdateProposal } from "./proposals.js";
+import {
+    normalizeLocation,
+    validateDependencyVisibility,
+    validateEntrySelection,
+    validatePendingPublicationEdits,
+} from "./dependencies.js";
+import { traceEntry } from "./trace.js";
 import type { FlowApi } from "@cognis/core";
 import { createHash, randomUUID } from "node:crypto";
-import { canonicalizeLanguageTag } from "./language.js";
-import { inspectContentPack } from "./content-pack.js";
+import { canonicalizeLanguageTag } from "../language.js";
+import { inspectContentPack } from "../content-pack.js";
 import {
     findLayer,
     resolveRelationships,
     validateFields,
     validateLibrarySchema,
     validateReferences,
-} from "./layers.js";
-import { LibraryStore } from "./store.js";
-import { LibraryAudioCache } from "./audio-cache.js";
-import { LibraryVisibilityService } from "./visibility.js";
+} from "../layers.js";
+import { LibraryStore } from "../store.js";
+import { LibraryAudioCache } from "../audio-cache.js";
+import { LibraryVisibilityService } from "../visibility.js";
 import {
     isImmutableEntry as immutableEntry,
     isImmutableLayer,
-} from "./immutability.js";
+} from "../immutability.js";
 import type {
     LibraryAsset,
     LibraryEntry,
@@ -31,62 +41,21 @@ import type {
     LibraryResolutionProposal,
     LibrarySchema,
     StringLocalizationCapability,
-} from "./types.js";
+} from "../types.js";
 const CONTENT_CLASS_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
-function allInputReferences(input: LibraryEntryInput) {
-    return [
-        ...(input.references ?? []),
-        ...Object.entries(input.referenceGroups ?? {}).flatMap(
-            ([relation, groups]) =>
-                Array.isArray(groups)
-                    ? groups.flatMap((group) =>
-                          Array.isArray(group)
-                              ? group.map((reference) => ({
-                                    ...reference,
-                                    relation,
-                                }))
-                              : [],
-                      )
-                    : [],
-        ),
-    ];
-}
-function canComposeAtLocation(
-    component: LibraryEntry,
-    composite: LibraryLocation,
-): boolean {
-    if (composite.scope === "user") return true;
-    if (component.scope === "global") return true;
-    return (
-        composite.scope === "class" &&
-        component.scope === "class" &&
-        component.scopeId === composite.scopeId
-    );
-}
 export type {
     LibraryActor,
     LibraryCapability,
     LibraryClassAccess,
     LibraryContentNotifier,
     LibraryProviderCapability,
-} from "./contracts.js";
+} from "../contracts.js";
 import type {
     LibraryActor,
     LibraryCapability,
     LibraryClassAccess,
     LibraryContentNotifier,
-} from "./contracts.js";
-function normalizeLocation(
-    location: LibraryLocation,
-    actor: LibraryActor,
-): LibraryLocation {
-    if (location.scope === "global")
-        return { scope: "global", scopeId: "global" };
-    if (location.scope === "user")
-        return { scope: "user", scopeId: location.scopeId ?? actor.accountId };
-    if (!location.scopeId?.trim()) throw new Error("class_id_required");
-    return { scope: "class", scopeId: location.scopeId.trim() };
-}
+} from "../contracts.js";
 export class LibraryService implements LibraryCapability {
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
@@ -112,6 +81,14 @@ export class LibraryService implements LibraryCapability {
             store,
             this.read.bind(this),
             this.authorize.bind(this),
+            async (actor, input, destination, sourceId) => {
+                await validateDependencyVisibility(
+                    input,
+                    destination,
+                    (id) => this.read(actor, id),
+                    sourceId,
+                );
+            },
             flow,
             notifyNewContent,
             this.update.bind(this),
@@ -498,42 +475,22 @@ export class LibraryService implements LibraryCapability {
         }
         const entries = await this.store.list(location, filters);
         return Promise.all(
-            entries.map(async (entry) => ({
-                ...entry,
-                canDelete: await this.canDelete(actor, entry),
-                ...this.editPermission(actor, entry),
-            })),
+            entries.map((entry) => this.entryWithPermissions(actor, entry)),
         );
     }
-    private editPermission(actor: LibraryActor, entry: LibraryEntry) {
-        if (this.immutable(entry))
-            return { canEdit: false, editRequiresReview: false };
-        const administrator = actor.role === "admin" || actor.role === "owner";
-        const owned =
-            entry.createdBy === actor.accountId ||
-            (entry.scope === "user" && entry.scopeId === actor.accountId);
-        if (administrator && entry.scope === "global")
-            return { canEdit: true, editRequiresReview: false };
-        if (!owned || entry.protected || entry.editable === false)
-            return { canEdit: false, editRequiresReview: false };
-        return { canEdit: true, editRequiresReview: entry.scope === "global" };
+    private entryWithPermissions(
+        actor: LibraryActor,
+        entry: LibraryEntry,
+    ): Promise<LibraryEntry> {
+        return entryPermissions(
+            actor,
+            entry,
+            this.immutable(entry),
+            this.classAccess,
+        );
     }
     private immutable(entry: LibraryEntry): boolean {
         return immutableEntry(this.getSchema(entry.schemaId), entry);
-    }
-    private async canDelete(
-        actor: LibraryActor,
-        entry: LibraryEntry,
-    ): Promise<boolean> {
-        if (entry.protected || this.immutable(entry)) return false;
-        if (actor.role === "admin" || actor.role === "owner") return true;
-        if (entry.scope === "user") return entry.scopeId === actor.accountId;
-        if (entry.scope !== "class" || !this.classAccess) return false;
-        return this.classAccess.canWrite(
-            entry.scopeId,
-            actor.accountId,
-            actor.role,
-        );
     }
     async read(
         actor: LibraryActor,
@@ -546,7 +503,7 @@ export class LibraryService implements LibraryCapability {
             { scope: entry.scope, scopeId: entry.scopeId },
             false,
         );
-        return entry;
+        return this.entryWithPermissions(actor, entry);
     }
     async viewedEntryIds(actor: LibraryActor): Promise<string[]> {
         return this.store.viewedEntryIds(actor.accountId);
@@ -648,12 +605,12 @@ export class LibraryService implements LibraryCapability {
         raw: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry> {
+        const location = await this.authorize(actor, raw, true);
         await this.flow?.run("study:library:create", {
             actor,
-            location: raw,
+            location,
             entry: input,
         });
-        const location = await this.authorize(actor, raw, true);
         const schema = this.schemaWithFormConstructors(
             this.schema(input.schemaId, input.schemaVersion),
         );
@@ -756,14 +713,11 @@ export class LibraryService implements LibraryCapability {
             throw new Error("fields_too_large");
         validateFields(schema, input.layer, fields);
         const references = input.references ?? [];
-        const targets = new Map<string, LibraryEntry>();
-        for (const reference of allInputReferences(input)) {
-            const target = await this.read(actor, reference.entryId);
-            if (!target) throw new Error("reference_not_found");
-            if (!canComposeAtLocation(target, location))
-                throw new Error("reference_visibility_too_low");
-            targets.set(target.id, target);
-        }
+        const targets = await validateDependencyVisibility(
+            input,
+            location,
+            (id) => this.read(actor, id),
+        );
         validateReferences(
             schema,
             input.layer,
@@ -792,7 +746,7 @@ export class LibraryService implements LibraryCapability {
                 entryCount: 1,
                 language: schema.language,
             });
-        return created;
+        return this.entryWithPermissions(actor, created);
     }
     async update(
         actor: LibraryActor,
@@ -883,19 +837,12 @@ export class LibraryService implements LibraryCapability {
             throw new Error("fields_too_large");
         validateFields(schema, input.layer, fields);
         const references = input.references ?? [];
-        const targets = new Map<string, LibraryEntry>();
-        for (const reference of allInputReferences(input)) {
-            const target = await this.read(actor, reference.entryId);
-            if (!target) throw new Error("reference_not_found");
-            if (
-                !canComposeAtLocation(target, {
-                    scope: current.scope,
-                    scopeId: current.scopeId,
-                })
-            )
-                throw new Error("reference_visibility_too_low");
-            targets.set(target.id, target);
-        }
+        const targets = await validateDependencyVisibility(
+            input,
+            { scope: current.scope, scopeId: current.scopeId },
+            (id) => this.read(actor, id),
+            entryId,
+        );
         validateReferences(
             schema,
             input.layer,
@@ -904,7 +851,13 @@ export class LibraryService implements LibraryCapability {
             input.referenceGroups,
             fields,
         );
-        return this.store.update(
+        await validatePendingPublicationEdits(
+            await this.store.listPushRequests("pending"),
+            current.id,
+            input,
+            (id) => this.read(actor, id),
+        );
+        const updated = await this.store.update(
             entryId,
             {
                 ...input,
@@ -914,20 +867,23 @@ export class LibraryService implements LibraryCapability {
             },
             current.sourceRecordId !== undefined,
         );
+        return this.entryWithPermissions(actor, updated);
+    }
+    async planDeletion(actor: LibraryActor, entryIds: readonly string[]) {
+        return planDeletion(
+            this.store,
+            actor,
+            entryIds,
+            (entry) => this.immutable(entry),
+            (actor, location, write) => this.authorize(actor, location, write),
+        );
     }
     async deleteEntries(
         actor: LibraryActor,
         entryIds: readonly string[],
         blacklistContentHashes: boolean,
     ): Promise<readonly string[]> {
-        if (entryIds.length === 0 || entryIds.length > 500)
-            throw new Error("invalid_entry_selection");
-        if (new Set(entryIds).size !== entryIds.length)
-            throw new Error("duplicate_entry_selection");
-        for (const entryId of entryIds) {
-            if (!entryId.trim() || entryId.length > 200)
-                throw new Error("invalid_entry_id");
-        }
+        validateEntrySelection(entryIds);
         const pendingSources = new Set(
             ((await this.store.listPushRequests?.("pending")) ?? []).map(
                 ({ sourceEntryId }) => sourceEntryId,
@@ -940,30 +896,14 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             blacklistContentHashes,
             async (entries) => {
-                if (entries.some((entry) => this.immutable(entry)))
-                    throw new Error("immutable_layer");
-                if (entries.some((entry) => entry.protected))
-                    throw new Error("protected_content");
-                if (
-                    actor.role !== "admin" &&
-                    actor.role !== "owner" &&
-                    entries.some((entry) =>
-                        entry.scope === "class"
-                            ? false
-                            : entry.scope !== "user" ||
-                              entry.scopeId !== actor.accountId,
-                    )
-                ) {
-                    throw new Error("forbidden");
-                }
-                for (const entry of entries) {
-                    if (entry.scope === "class")
-                        await this.authorize(
-                            actor,
-                            { scope: "class", scopeId: entry.scopeId },
-                            true,
-                        );
-                }
+                await authorizeDeletion(
+                    actor,
+                    entries,
+                    pendingSources,
+                    (entry) => this.immutable(entry),
+                    (actor, location, write) =>
+                        this.authorize(actor, location, write),
+                );
                 await this.flow?.run("study:library:delete", {
                     actor,
                     entries,
@@ -983,38 +923,13 @@ export class LibraryService implements LibraryCapability {
     async trace(actor: LibraryActor, entryId: string) {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
-        const references: LibraryEntry[] = [];
-        for (const reference of allInputReferences(entry)) {
-            const target = await this.read(actor, reference.entryId);
-            if (target) references.push(target);
-        }
-        const usedBy: LibraryEntry[] = [];
-        const usedByIds = new Set<string>();
-        for (const candidate of await this.store.referencesFor(entryId)) {
-            if (candidate.id === entry.id || usedByIds.has(candidate.id))
-                continue;
-            try {
-                await this.authorize(
-                    actor,
-                    { scope: candidate.scope, scopeId: candidate.scopeId },
-                    false,
-                );
-                usedBy.push(candidate);
-                usedByIds.add(candidate.id);
-            } catch (error) {
-                if (!(error instanceof Error) || error.message !== "forbidden")
-                    throw error;
-            }
-        }
-        return {
-            entry: {
-                ...entry,
-                canDelete: await this.canDelete(actor, entry),
-                ...this.editPermission(actor, entry),
-            },
-            references,
-            usedBy,
-        };
+        return traceEntry(
+            actor,
+            entry,
+            this.store,
+            this.read.bind(this),
+            this.authorize.bind(this),
+        );
     }
     requestPush(
         actor: LibraryActor,
@@ -1031,6 +946,20 @@ export class LibraryService implements LibraryCapability {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
         if (this.immutable(current)) throw new Error("immutable_layer");
+        if (current.scope !== "global" || current.createdBy !== actor.accountId)
+            throw new Error("forbidden");
+        const targets = await validateDependencyVisibility(
+            proposedEntry,
+            { scope: current.scope, scopeId: current.scopeId },
+            (id) => this.read(actor, id),
+            current.id,
+        );
+        validateUpdateProposal(
+            current,
+            proposedEntry,
+            this.schema(current.schemaId),
+            targets,
+        );
         return this.visibility.requestUpdate(actor, entryId, proposedEntry);
     }
     listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
@@ -1049,10 +978,12 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryPushRequest> {
         return this.visibility.withdrawPush(actor, requestId);
     }
-    moveToPersonal(
+    async moveToPersonal(
         actor: LibraryActor,
         entryId: string,
     ): Promise<LibraryEntry> {
+        const entry = await this.read(actor, entryId);
+        if (entry && this.immutable(entry)) throw new Error("immutable_layer");
         return this.visibility.moveToPersonal(actor, entryId);
     }
 }

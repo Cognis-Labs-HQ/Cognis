@@ -5,7 +5,8 @@ import { resolve } from "node:path";
 
 const read = (path) => readFileSync(resolve(path), "utf8");
 const adminInteractionsSource = [
-    "admin-interactions.js",
+    "admin-interactions/index.js",
+    "admin-interactions/editor-body.js",
     "pronunciation-editor.js",
 ]
     .map((file) => read(`src/adapters/study/library/ui/app/${file}`))

@@ -1,7 +1,12 @@
+import {
+    allInputReferences,
+    canComposeAtLocation,
+} from "./service/dependencies.js";
 import type { AccessRole, FlowApi } from "@cognis/core";
 import { LibraryStore } from "./store.js";
 import type {
     LibraryEntry,
+    LibraryEntryInput,
     LibraryLocation,
     LibraryPushRequest,
 } from "./types.js";
@@ -25,6 +30,12 @@ export class LibraryVisibilityService {
             entryId: string,
         ) => Promise<LibraryEntry | null>,
         private readonly authorize: Authorize,
+        private readonly validateDependencies: (
+            actor: VisibilityActor,
+            input: LibraryEntryInput,
+            destination: LibraryLocation,
+            sourceId?: string,
+        ) => Promise<void>,
         private readonly flow?: FlowApi,
         private readonly notifyNewContent?: (input: {
             entryCount: number;
@@ -56,6 +67,7 @@ export class LibraryVisibilityService {
             )
         )
             throw new Error("request_pending");
+        await this.validateDependencies(actor, source, normalized, source.id);
         return this.store.createPush(entryId, normalized, actor.accountId);
     }
 
@@ -75,6 +87,20 @@ export class LibraryVisibilityService {
             )
         )
             throw new Error("request_pending");
+        if (
+            proposedEntry.schemaId !== source.schemaId ||
+            proposedEntry.layer !== source.layer
+        )
+            throw new Error("entry_identity_immutable");
+        await this.validateDependencies(
+            actor,
+            proposedEntry,
+            {
+                scope: "global",
+                scopeId: "global",
+            },
+            source.id,
+        );
         return this.store.createPush(
             entryId,
             { scope: "global", scopeId: "global" },
@@ -126,7 +152,14 @@ export class LibraryVisibilityService {
                 ["update", "merge"].includes(request.kind ?? "") &&
                 request.proposedEntry
             ) {
-                await this.applyUpdate?.(
+                if (!this.applyUpdate) throw new Error("update_unavailable");
+                await this.validateDependencies(
+                    actor,
+                    request.proposedEntry,
+                    request.destination,
+                    source.id,
+                );
+                await this.applyUpdate(
                     actor,
                     request.sourceEntryId,
                     request.proposedEntry,
@@ -137,6 +170,11 @@ export class LibraryVisibilityService {
             )
                 throw new Error("request_source_moved");
             else {
+                await this.validateDependencies(
+                    actor,
+                    source,
+                    request.destination,
+                );
                 await this.store.move(source.id, request.destination);
                 if (request.destination.scope === "global")
                     await this.notifyNewContent?.({ entryCount: 1 });
@@ -185,6 +223,35 @@ export class LibraryVisibilityService {
             scope: "user",
             scopeId: entry.createdBy,
         } as const;
+        const requests = await this.store.listPushRequests("pending");
+        if (requests.some(({ sourceEntryId }) => sourceEntryId === entry.id))
+            throw new Error("request_pending");
+        for (const request of requests) {
+            const candidate =
+                request.proposedEntry ??
+                (await this.store.get(request.sourceEntryId));
+            if (
+                candidate &&
+                allInputReferences(candidate).some(
+                    ({ entryId }) => entryId === entry.id,
+                ) &&
+                !canComposeAtLocation(
+                    { ...entry, ...destination },
+                    request.destination,
+                )
+            )
+                throw new Error("request_pending");
+        }
+        for (const dependent of await this.store.referencesFor(entry.id)) {
+            if (!canComposeAtLocation({ ...entry, ...destination }, dependent))
+                throw new Error("entry_required_by_shared_content");
+        }
+        await this.validateDependencies(
+            { accountId: entry.createdBy, role: "user" },
+            entry,
+            destination,
+            entry.id,
+        );
         await this.flow?.run("study:library:move", {
             actor,
             entry,

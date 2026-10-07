@@ -458,6 +458,15 @@ A direct relationship remains visible even when an intermediate route reaches th
 
 Transformed cards omit a pronunciation identical to their displayed title after normalization. Distinct readings retain their character links. A localized Return to {{ verb }} action restores the base card and clears the selected transformation while preserving normal card navigation.
 
+## Dependency scopes and deletion
+
+Dependency writes now enforce the visibility of every edge, including grouped references. Personal cards may use readable shared cards and their own private components; class cards require global or same-class components; global cards require global components. Update proposals validate their reference schema before submission, publication approvals recheck current dependencies, and edits cannot invalidate a pending publication. Moving shared content back to personal scope is blocked when shared dependants or pending requests still need its wider visibility. Permission hints are returned after creation and editing and respect class write access.
+
+Deletion confirms all deletable cascade and restricted dependants, including grouped references, while detached cards remain. The transaction checks ownership, class access, protection, and pending review for every affected card before deleting anything. Restricted dependants reached by another cascade no longer fail due to traversal order. Shared creation offers a personal save when dependencies are too narrow. Publication assistance can request eligible leaf components, including hidden definitions, before submitting the parent after approval.
+
+
+Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

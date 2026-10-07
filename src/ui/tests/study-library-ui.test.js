@@ -25,7 +25,8 @@ const studyStylesheet = readFileSync(
     "utf8",
 );
 const adminInteractionsSource = [
-    "admin-interactions.js",
+    "admin-interactions/index.js",
+    "admin-interactions/editor-body.js",
     "pronunciation-editor.js",
 ]
     .map((file) =>
@@ -998,13 +999,12 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function chooseCreateLayer/);
     assert.match(source, /data-library-create-unmatched/);
     assert.match(stylesheet, /place-content: center/);
-    assert.match(source, /const cascadeIds = new Set\(entryIds\)/);
+    assert.match(source, /planLibraryEntryDeletion\(entryIds\)/);
     assert.match(source, /const selectedIds = new Set\(entryIds\)/);
-    assert.match(source, /cascadeIds\.has\(entry\.id\) && !selectedIds\.has/);
+    assert.match(source, /plan\.entries\.filter/);
     assert.match(source, /const cascadeWarning = cascadeEntries\.length/);
-    assert.match(source, /entry\.references\?\.some/);
-    assert.match(source, /onDelete === "cascade"/);
-    assert.match(source, /\? \{ entryIds, blacklistContentHashes \}/);
+    assert.match(source, /deletionErrorKey\(error\)/);
+    assert.match(source, /entryIds: plannedIds, blacklistContentHashes/);
     assert.match(source, /class="library-delete-cascade-list"/);
     assert.match(
         stylesheet,

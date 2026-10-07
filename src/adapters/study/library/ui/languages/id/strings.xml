@@ -123,4 +123,14 @@
   <string name="gateway.study.library_use_base_transform">Gunakan {{ verb }} saja!</string>
   <string name="gateway.study.library_transforms_available">Transformasi tersedia</string>
   <string name="gateway.study.library_return_to_root">Kembali ke {{ verb }}</string>
+  <string name="gateway.study.library_delete_dependency_blocked">Pilihan ini bergantung pada kartu yang tidak boleh Anda hapus atau masih menunggu peninjauan. Selesaikan ketergantungan tersebut sebelum menghapus.</string>
+  <string name="gateway.study.library_dependency_scope_title">Visibilitas Ketergantungan</string>
+  <string name="gateway.study.library_dependency_scope_help">Beberapa komponen bersifat pribadi atau milik kelas lain. Simpan kartu ini untuk penggunaan pribadi, atau terbitkan komponennya ke cakupan tujuan terlebih dahulu.</string>
+  <string name="gateway.study.library_save_personal">Simpan untuk penggunaan pribadi</string>
+  <string name="gateway.study.library_publish_saved_personal">Kartu disimpan untuk penggunaan pribadi. Permintaan penerbitannya gagal; terbitkan komponen yang diperlukan terlebih dahulu, lalu coba bagikan lagi.</string>
+  <string name="gateway.study.library_publish_dependencies_first">Terbitkan komponen ini ke tujuan terlebih dahulu: {{ cards }}</string>
+  <string name="gateway.study.library_send_back_dependencies">Kartu ini digunakan oleh kartu bersama. Ubah atau hapus ketergantungan tersebut sebelum mengembalikannya ke penggunaan pribadi.</string>
+  <string name="gateway.study.library_visibility_error">Perubahan visibilitas tidak dapat diselesaikan. Periksa akses dan peninjauan tertunda, lalu coba lagi.</string>
+  <string name="gateway.study.library_publish_components">Ajukan penerbitan komponen</string>
+  <string name="gateway.study.library_publish_dependencies_help">Ajukan penerbitan komponen yang diperlukan ini terlebih dahulu. Setelah disetujui, coba bagikan kartu induk lagi.</string>
 </resources>

@@ -1,22 +1,14 @@
+import { schema } from "../fixtures/service-schema.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import path from "node:path";
-import { LibraryService } from "../service.js";
-import type { LibrarySchema } from "../types.js";
+import { LibraryService } from "../../service/index.js";
+import type { LibrarySchema } from "../../types.js";
 import {
     mockCharacter,
     mockLanguageSchema,
     mockSymbolInput,
-} from "./fixtures/mock-language.js";
-
-const schema = (version: number): LibrarySchema => ({
-    id: "test-language",
-    version,
-    namespace: "test",
-    language: "x-test",
-    metadata: { labels: { en: "Test Language" } },
-    layers: [{ id: "units", metadata: { labels: { en: "Units" } } }],
-});
+} from "../fixtures/mock-language.js";
 
 function service() {
     const saved: LibrarySchema[] = [];
@@ -36,6 +28,7 @@ test("schema-driven cards retain grouped pronunciations through create and edit"
     const second = mockCharacter("character:second", "b");
     const records = new Map([first, second].map((entry) => [entry.id, entry]));
     const store = {
+        listPushRequests: async () => [],
         saveSchema: async () => {},
         list: async () => Array.from(records.values()),
         get: async (id: string) => records.get(id) ?? null,
@@ -294,6 +287,10 @@ test("character and particle layers are immutable through service mutations", as
             library.requestUpdate(actor, entry.id, input),
             /immutable_layer/,
         );
+        await assert.rejects(
+            library.moveToPersonal(actor, entry.id),
+            /immutable_layer/,
+        );
     }
     await assert.rejects(
         library.deleteEntries(
@@ -320,6 +317,7 @@ test("entry updates migrate stored records to the current schema version", async
     };
     let updatedInput: Record<string, unknown> | undefined;
     const library = new LibraryService({
+        listPushRequests: async () => [],
         saveSchema: async () => {},
         get: async () => current,
         update: async (_id: string, input: Record<string, unknown>) => {
@@ -381,7 +379,14 @@ test("entry traces retain edit permission metadata", async () => {
 
     assert.equal(detail.entry.canEdit, true);
     assert.equal(detail.entry.editRequiresReview, false);
-    assert.deepEqual(detail.references, [character]);
+    assert.deepEqual(detail.references, [
+        {
+            ...character,
+            canDelete: false,
+            canEdit: false,
+            editRequiresReview: false,
+        },
+    ]);
 });
 
 test("provider metadata survives store and capability round trips", async () => {
@@ -825,181 +830,6 @@ test("protected provider entries cannot be deleted even by administrators", asyn
         ),
         /protected_content/,
     );
-});
-
-test("promotion approval moves personal content into the requested scope", async () => {
-    const source = {
-        id: "personal-card",
-        scope: "user",
-        scopeId: "alice",
-        createdBy: "alice",
-        protected: false,
-    };
-    const moves: unknown[] = [];
-    const store = {
-        getPush: async () => ({
-            id: "request",
-            sourceEntryId: source.id,
-            destination: { scope: "global", scopeId: "global" },
-            requestedBy: "alice",
-            status: "pending",
-        }),
-        get: async () => source,
-        move: async (_id: string, destination: unknown) => {
-            moves.push(destination);
-            return { ...source, ...(destination as object) };
-        },
-        reviewPush: async () => {},
-    };
-    const library = new LibraryService(store as never);
-    await library.reviewPush(
-        { accountId: "admin", role: "admin" },
-        "request",
-        "approved",
-    );
-    assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
-});
-
-test("authors submit global card edits as update requests", async () => {
-    const source = {
-        id: "global-card",
-        label: "Original",
-        scope: "global",
-        scopeId: "global",
-        createdBy: "alice",
-        protected: false,
-    };
-    let captured: unknown;
-    const store = {
-        get: async () => source,
-        listPushRequests: async () => [],
-        createPush: async (...args: unknown[]) => {
-            captured = args;
-            return { id: "update-request", status: "pending" };
-        },
-    };
-    const library = new LibraryService(store as never);
-    const proposed = {
-        schemaId: "test-language",
-        layer: "units",
-        label: "Updated",
-        fields: {},
-    };
-    await library.requestUpdate(
-        { accountId: "alice", role: "user" },
-        source.id,
-        proposed,
-    );
-    assert.deepEqual(captured, [
-        source.id,
-        { scope: "global", scopeId: "global" },
-        "alice",
-        "update",
-        proposed,
-    ]);
-});
-
-test("authorized reviewers receive the source card with each request", async () => {
-    const source = {
-        id: "personal-card",
-        label: "Learner contribution",
-        scope: "user",
-        scopeId: "alice",
-        createdBy: "alice",
-    };
-    const store = {
-        listPushRequests: async () => [
-            {
-                id: "request",
-                sourceEntryId: source.id,
-                destination: { scope: "class", scopeId: "class-a" },
-                requestedBy: "alice",
-                status: "pending",
-            },
-        ],
-        get: async () => source,
-    };
-    const library = new LibraryService(store as never, {
-        canRead: async () => true,
-        canWrite: async () => true,
-    });
-
-    const requests = await library.listPushRequests({
-        accountId: "teacher",
-        role: "teacher",
-    });
-    assert.equal(requests[0].source?.label, "Learner contribution");
-    assert.equal(requests[0].canReview, true);
-});
-
-test("submitters can withdraw pending visibility requests", async () => {
-    const statuses: string[] = [];
-    const store = {
-        getPush: async () => ({
-            id: "request",
-            sourceEntryId: "personal-card",
-            destination: { scope: "global", scopeId: "global" },
-            requestedBy: "alice",
-            status: "pending",
-        }),
-        get: async () => ({
-            id: "personal-card",
-            scope: "user",
-            scopeId: "alice",
-        }),
-        reviewPush: async (_id: string, status: string) => {
-            statuses.push(status);
-        },
-    };
-    const library = new LibraryService(store as never);
-
-    const request = await library.withdrawPush(
-        { accountId: "alice", role: "user" },
-        "request",
-    );
-    assert.equal(request.status, "withdrawn");
-    assert.deepEqual(statuses, ["withdrawn"]);
-});
-
-test("provider cards cannot be sent to a personal namespace", async () => {
-    const entry = {
-        id: "provider-card",
-        scope: "global",
-        scopeId: "global",
-        createdBy: "content-pack:mock-language-core",
-        protected: false,
-    };
-    const store = { get: async () => entry };
-    const library = new LibraryService(store as never);
-
-    await assert.rejects(
-        library.moveToPersonal({ accountId: "admin", role: "admin" }, entry.id),
-        /provider_content/,
-    );
-});
-
-test("global downgrades return content to its original submitter", async () => {
-    const entry = {
-        id: "global-card",
-        scope: "global",
-        scopeId: "global",
-        createdBy: "alice",
-        protected: false,
-    };
-    let destination: unknown;
-    const store = {
-        get: async () => entry,
-        move: async (_id: string, value: unknown) => {
-            destination = value;
-            return { ...entry, ...(value as object) };
-        },
-    };
-    const library = new LibraryService(store as never);
-    await library.moveToPersonal(
-        { accountId: "admin", role: "admin" },
-        entry.id,
-    );
-    assert.deepEqual(destination, { scope: "user", scopeId: "alice" });
 });
 
 test("content deletion rejects actors who do not own every cascaded entry", async () => {

@@ -458,6 +458,15 @@ Eine direkte Beziehung bleibt sichtbar, auch wenn ein Weg über einen Zwischenei
 
 Transformierte Karten lassen eine Aussprache weg, die nach Normalisierung mit dem angezeigten Titel übereinstimmt. Abweichende Lesungen behalten ihre Zeichenlinks. Eine lokalisierte Aktion „Zurück zu {{ verb }}“ stellt die Basiskarte wieder her und entfernt die ausgewählte Transformation, während die normale Kartennavigation erhalten bleibt.
 
+## Abhängigkeiten und Löschung
+
+Beim Schreiben von Abhängigkeiten wird nun die Sichtbarkeit jeder Verbindung geprüft, einschließlich gruppierter Referenzen. Persönliche Karten dürfen lesbare geteilte Karten und eigene private Bestandteile verwenden; Klassenkarten benötigen globale Bestandteile oder Bestandteile derselben Klasse; globale Karten benötigen globale Bestandteile. Änderungsvorschläge prüfen das Referenzschema vor der Einreichung. Veröffentlichungen prüfen die aktuellen Abhängigkeiten bei der Genehmigung erneut, und Änderungen dürfen eine ausstehende Veröffentlichung nicht ungültig machen. Geteilte Inhalte können nicht in den persönlichen Bereich zurückkehren, solange geteilte abhängige Karten oder ausstehende Anfragen ihre größere Sichtbarkeit benötigen. Berechtigungshinweise werden nach Erstellung und Bearbeitung zurückgegeben und berücksichtigen Schreibrechte der Klasse.
+
+Beim Löschen werden alle löschbaren abhängigen Karten mit Kaskaden- oder Einschränkungsregel bestätigt, einschließlich gruppierter Referenzen. Karten mit Trennungsregel bleiben erhalten. Die Transaktion prüft Eigentum, Klassenzugriff, Schutz und ausstehende Prüfungen jeder betroffenen Karte, bevor etwas gelöscht wird. Einschränkungen scheitern nicht mehr an der Reihenfolge der Kaskadensuche. Bei zu geringer Sichtbarkeit von Abhängigkeiten bietet die Erstellung eine persönliche Speicherung an. Die Veröffentlichungshilfe kann zunächst geeignete unterste Bestandteile einschließlich verborgener Definitionen anfragen; nach ihrer Genehmigung kann die übergeordnete Karte eingereicht werden.
+
+
+Der Server plant die Löschbestätigung anhand der gespeicherten Schemaversionen und berücksichtigt abhängige Karten, die auf der aktuellen Seite fehlen. Der Study-Gateway-Client stellt die schreibgeschützte Löschprüfung bereit.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

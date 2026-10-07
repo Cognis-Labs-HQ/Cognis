@@ -165,6 +165,20 @@ export async function updateLibraryEntry(entryId, entry) {
     return (await response.json()).data;
 }
 
+export async function planLibraryEntryDeletion(entryIds) {
+    const response = await apiFetch(
+        "/api/v1/study/library/entries/deletion-plan",
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ entryIds }),
+        },
+    );
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error?.code || "delete_failed");
+    return result.data;
+}
+
 export async function deleteLibraryEntries(
     entryIds,
     { blacklistContentHashes = false } = {},
@@ -174,8 +188,9 @@ export async function deleteLibraryEntries(
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryIds, blacklistContentHashes }),
     });
-    if (!response.ok) throw new Error("delete_failed");
-    return (await response.json()).data;
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error?.code || "delete_failed");
+    return result.data;
 }
 
 export async function previewLibraryResolution(location, entry) {

@@ -17,7 +17,7 @@ import {
     resolvePopupNavigation,
 } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
-import { openLibraryEntryEditor } from "./admin-interactions.js";
+import { openLibraryEntryEditor } from "./admin-interactions/index.js";
 import { entryEditMode } from "./editability.js";
 import { transformedPopupPresentation as transformPresentation } from "./transformation-popup.js";
 import {

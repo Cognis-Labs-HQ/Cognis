@@ -111,6 +111,13 @@ export interface LibraryCapability {
         entryId: string,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry>;
+    planDeletion(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+    ): Promise<{
+        entryIds: readonly string[];
+        entries: readonly { id: string; label: string }[];
+    }>;
     deleteEntries(
         actor: LibraryActor,
         entryIds: readonly string[],

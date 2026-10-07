@@ -123,4 +123,14 @@
   <string name="gateway.study.library_use_base_transform">Einfach {{ verb }} verwenden!</string>
   <string name="gateway.study.library_transforms_available">Transformation(en) verfügbar</string>
   <string name="gateway.study.library_return_to_root">Zurück zu {{ verb }}</string>
+  <string name="gateway.study.library_delete_dependency_blocked">Diese Auswahl hängt von Karten ab, die Sie nicht löschen dürfen oder deren Prüfung noch aussteht. Klären Sie diese Abhängigkeiten vor dem Löschen.</string>
+  <string name="gateway.study.library_dependency_scope_title">Sichtbarkeit der Abhängigkeiten</string>
+  <string name="gateway.study.library_dependency_scope_help">Einige Bestandteile sind privat oder gehören zu einer anderen Klasse. Speichern Sie diese Karte für sich selbst oder veröffentlichen Sie zuerst ihre Bestandteile im vorgesehenen Bereich.</string>
+  <string name="gateway.study.library_save_personal">Für mich selbst speichern</string>
+  <string name="gateway.study.library_publish_saved_personal">Die Karte wurde für Sie selbst gespeichert. Die Veröffentlichungsanfrage ist fehlgeschlagen. Veröffentlichen Sie zuerst die erforderlichen Bestandteile und versuchen Sie es erneut.</string>
+  <string name="gateway.study.library_publish_dependencies_first">Veröffentlichen Sie zuerst diese Bestandteile im Zielbereich: {{ cards }}</string>
+  <string name="gateway.study.library_send_back_dependencies">Diese Karte wird von geteilten Karten verwendet. Ändern oder entfernen Sie diese Abhängigkeiten, bevor Sie die Karte wieder privat nutzen.</string>
+  <string name="gateway.study.library_visibility_error">Die Sichtbarkeit konnte nicht geändert werden. Prüfen Sie Zugriffsrechte und ausstehende Prüfungen und versuchen Sie es erneut.</string>
+  <string name="gateway.study.library_publish_components">Veröffentlichung der Bestandteile anfragen</string>
+  <string name="gateway.study.library_publish_dependencies_help">Fragen Sie zuerst die Veröffentlichung dieser erforderlichen Bestandteile an. Nach der Genehmigung können Sie die übergeordnete Karte erneut teilen.</string>
 </resources>

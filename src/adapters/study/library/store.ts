@@ -501,9 +501,10 @@ export class LibraryStore {
     async resolveDeletionCascade(
         entryIds: readonly string[],
         db: DbExecutor = this.db,
+        includeRestricted = false,
     ): Promise<readonly string[]> {
         const cascadeIds = new Set(entryIds);
-        const selectedIds = new Set(entryIds);
+        const restrictedIds = new Set<string>();
         const pendingIds = [...entryIds];
         const schemaCache = new Map<string, LibrarySchema>();
         while (pendingIds.length > 0) {
@@ -550,9 +551,11 @@ export class LibraryStore {
                         (candidate) => candidate.id === String(row.relation),
                     );
                 if (!relationship) throw new Error("relationship_not_found");
-                if (relationship.onDelete === "restrict") {
-                    if (!selectedIds.has(dependentId))
-                        throw new Error("relationship_delete_restricted");
+                if (
+                    relationship.onDelete === "restrict" &&
+                    !includeRestricted
+                ) {
+                    restrictedIds.add(dependentId);
                     continue;
                 }
                 if (relationship.onDelete === "detach") continue;
@@ -560,6 +563,8 @@ export class LibraryStore {
                 pendingIds.push(dependentId);
             }
         }
+        if (Array.from(restrictedIds).some((id) => !cascadeIds.has(id)))
+            throw new Error("relationship_delete_restricted");
         return Array.from(cascadeIds);
     }
     private async removeDuplicateContentEntries(
