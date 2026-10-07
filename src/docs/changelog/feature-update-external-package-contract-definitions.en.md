@@ -430,6 +430,10 @@ Multi-character pads now trim unused horizontal space around each character’s 
 
 The initial pad height now follows the rendered canvas, heading, and controls instead of a fixed allowance capped at seventy percent of the viewport. Short viewports reduce the available canvas height while preserving stroke proportions and keeping the Reset control visible. Loading another card refits the content and keeps the pad inside the viewport.
 
+## Repeated drawing card selection
+
+Selecting drawable Library cards while the pad is open now redraws every newly loaded pattern even when consecutive cards use the same canvas dimensions. Switching cards updates the guide immediately without requiring a resize or reopening the window.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

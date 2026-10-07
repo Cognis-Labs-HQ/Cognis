@@ -430,6 +430,10 @@ Bei Schreibflächen mit mehreren Zeichen wird ungenutzter horizontaler Raum anha
 
 Die anfängliche Höhe der Schreibfläche richtet sich jetzt nach Zeichenfläche, Kopfzeile und Bedienelementen statt nach einem festen Zuschlag mit einer Begrenzung auf siebzig Prozent der Fensterhöhe. Bei niedrigen Fenstern wird die verfügbare Zeichenhöhe reduziert, ohne die Strichproportionen zu verzerren oder die Zurücksetzen-Schaltfläche zu verdecken. Beim Laden einer anderen Karte werden Inhalt und Position neu angepasst.
 
+## Mehrfacher Schreibkartenwechsel
+
+Beim Auswählen zeichnbarer Library-Karten mit geöffneter Schreibfläche wird jedes neu geladene Muster jetzt auch dann neu gezeichnet, wenn aufeinanderfolgende Karten dieselben Zeichenflächenmaße verwenden. Der Kartenwechsel aktualisiert die Anleitung sofort, ohne dass die Fenstergröße geändert oder das Fenster erneut geöffnet werden muss.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

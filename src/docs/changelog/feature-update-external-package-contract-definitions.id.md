@@ -430,6 +430,10 @@ Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai
 
 Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, bukan tambahan tetap yang dibatasi hingga tujuh puluh persen tinggi layar. Pada layar pendek, tinggi kanvas yang tersedia diperkecil sambil mempertahankan proporsi goresan dan menjaga tombol Atur Ulang tetap terlihat. Memuat kartu lain menyesuaikan kembali konten dan mempertahankan pad di dalam layar.
 
+## Pemilihan kartu menulis berulang
+
+Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang setiap pola baru, meskipun kartu berturut-turut menggunakan ukuran kanvas yang sama. Beralih kartu langsung memperbarui panduan tanpa perlu mengubah ukuran atau membuka kembali jendela.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

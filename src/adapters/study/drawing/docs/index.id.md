@@ -35,3 +35,5 @@ Permukaan gambar kini membentuk viewport terpusat yang mempertahankan rasio aspe
 Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai berdasarkan batas goresan setiap karakter dan mempertahankan jarak kecil yang seragam. Jendela menyempit mengikuti pola yang ringkas sambil mempertahankan proporsi karakter, urutan goresan, waktu, tekanan, dan keselarasan penunjuk saat ukuran atau kartu berubah.
 
 Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, bukan tambahan tetap yang dibatasi hingga tujuh puluh persen tinggi layar. Pada layar pendek, tinggi kanvas yang tersedia diperkecil sambil mempertahankan proporsi goresan dan menjaga tombol Atur Ulang tetap terlihat. Memuat kartu lain menyesuaikan kembali konten dan mempertahankan pad di dalam layar.
+
+Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang setiap pola baru, meskipun kartu berturut-turut menggunakan ukuran kanvas yang sama. Beralih kartu langsung memperbarui panduan tanpa perlu mengubah ukuran atau membuka kembali jendela.

@@ -35,3 +35,5 @@ The drawing surface now derives a centered, aspect-preserving viewport from its 
 Multi-character pads now trim unused horizontal space around each character’s stroke bounds and keep a small, consistent gap. The window narrows to the compact pattern while preserving character proportions, stroke order, timing, pressure, and pointer alignment during resizing and card changes.
 
 The initial pad height now follows the rendered canvas, heading, and controls instead of a fixed allowance capped at seventy percent of the viewport. Short viewports reduce the available canvas height while preserving stroke proportions and keeping the Reset control visible. Loading another card refits the content and keeps the pad inside the viewport.
+
+Selecting drawable Library cards while the pad is open now redraws every newly loaded pattern even when consecutive cards use the same canvas dimensions. Switching cards updates the guide immediately without requiring a resize or reopening the window.

@@ -270,9 +270,10 @@ function openDrawingPad({
         colors.ink = styles.getPropertyValue("--drawing-ink").trim();
         colors.active = styles.getPropertyValue("--drawing-active").trim();
         colors.canvas = styles.getPropertyValue("--drawing-canvas").trim();
-        if (canvas.width === width && canvas.height === height) return;
-        canvas.width = width;
-        canvas.height = height;
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
         draw();
     };
     const normalized = (event) => {
