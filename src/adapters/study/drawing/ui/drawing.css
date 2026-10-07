@@ -39,9 +39,16 @@ body[data-theme="dark"] .study-drawing-pad {
 
 .study-drawing-heading {
     display: flex;
+    flex: 1;
     align-items: baseline;
     gap: 0.7rem;
     min-width: 0;
+}
+
+.study-drawing-heading [data-card-label] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .study-drawing-heading [data-pronunciations],
@@ -67,6 +74,7 @@ body[data-theme="dark"] .study-drawing-pad {
 
 .study-drawing-header-actions {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 0.35rem;
 }

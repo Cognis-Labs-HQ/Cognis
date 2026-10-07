@@ -422,6 +422,10 @@ Language providers can mark sentence transitions with a provider-owned tag and e
 
 Sentence-transition cards now appear only in their dedicated filtered composer carousel, editing restores repeated punctuation in authored order, and transformation nodes update an inline generated-form preview. Schema validation also rejects ambiguous or ineffective punctuation and transformation declarations.
 
+## Compact drawing pad spacing
+
+Multi-character pads now trim unused horizontal space around each character’s stroke bounds and keep a small, consistent gap. The window narrows to the compact pattern while preserving character proportions, stroke order, timing, pressure, and pointer alignment during resizing and card changes.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

@@ -422,6 +422,10 @@ Sprachanbieter können Satzübergänge mit einem anbietereigenen Tag kennzeichne
 
 Karten für Satzübergänge erscheinen nun ausschließlich in ihrem gefilterten Composer-Karussell, die Bearbeitung stellt wiederholte Satzzeichen in der verfassten Reihenfolge wieder her und Transformationsknoten aktualisieren eine eingebettete Vorschau der erzeugten Form. Die Schemavalidierung weist außerdem mehrdeutige oder wirkungslose Satzzeichen- und Transformationsdeklarationen zurück.
 
+## Kompakte Zeichenabstände
+
+Bei Schreibflächen mit mehreren Zeichen wird ungenutzter horizontaler Raum anhand der Strichgrenzen jedes Zeichens entfernt; ein kleiner, gleichmäßiger Abstand bleibt erhalten. Das Fenster wird an das kompakte Muster angepasst, während Zeichenproportionen, Strichreihenfolge, Zeitangaben, Druckwerte und Zeigerausrichtung beim Größenändern und Kartenwechsel erhalten bleiben.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

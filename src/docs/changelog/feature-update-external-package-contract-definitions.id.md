@@ -422,6 +422,10 @@ Penyedia bahasa dapat menandai transisi kalimat dengan tag milik penyedia dan me
 
 Kartu transisi kalimat kini hanya muncul dalam karusel komposer terfilternya, pengeditan memulihkan tanda baca berulang sesuai urutan penulisan, dan simpul transformasi memperbarui pratinjau bentuk hasil secara langsung. Validasi skema juga menolak deklarasi tanda baca dan transformasi yang ambigu atau tidak efektif.
 
+## Jarak pad menulis lebih rapat
+
+Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai berdasarkan batas goresan setiap karakter dan mempertahankan jarak kecil yang seragam. Jendela menyempit mengikuti pola yang ringkas sambil mempertahankan proporsi karakter, urutan goresan, waktu, tekanan, dan keselarasan penunjuk saat ukuran atau kartu berubah.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

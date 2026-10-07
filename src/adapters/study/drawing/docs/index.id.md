@@ -31,3 +31,5 @@ Saat jendela Latihan Menggambar yang terbuka beralih ke kartu dengan jumlah kolo
 Menekan Escape menutup jendela Latihan Menggambar aktif melalui alur penutupan beranimasi dan pembersihan penuh yang sama seperti kontrol tutupnya.
 
 Permukaan gambar kini membentuk viewport terpusat yang mempertahankan rasio aspek dari lebar dan tinggi hasil render sebenarnya. Saat ukuran panel mengambang diubah, area goresan logis diberi ruang tepi bila diperlukan alih-alih meregangkan geometri karakter; koordinat penunjuk, panduan, anotasi, goresan selesai, dan tinta aktif semuanya memakai viewport yang sama.
+
+Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai berdasarkan batas goresan setiap karakter dan mempertahankan jarak kecil yang seragam. Jendela menyempit mengikuti pola yang ringkas sambil mempertahankan proporsi karakter, urutan goresan, waktu, tekanan, dan keselarasan penunjuk saat ukuran atau kartu berubah.

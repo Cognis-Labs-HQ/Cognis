@@ -31,3 +31,5 @@ Beim Wechsel eines geöffneten Zeichenübungsfensters zu einer Karte mit einer a
 Durch Drücken der Escape-Taste wird das aktive Zeichenübungsfenster über denselben animierten und vollständig bereinigten Schließpfad wie bei den Schaltflächen geschlossen.
 
 Die Zeichenfläche leitet nun aus ihrer tatsächlich gerenderten Breite und Höhe einen zentrierten, seitenverhältnistreuen Darstellungsbereich ab. Beim Ändern der Größe des schwebenden Fensters wird der logische Strichbereich daher bei Bedarf mit Freiräumen eingepasst, statt die Zeichengeometrie zu strecken. Zeigerkoordinaten, Hilfslinien, Anmerkungen, abgeschlossene Striche und aktive Tinte verwenden denselben eingepassten Bereich.
+
+Bei Schreibflächen mit mehreren Zeichen wird ungenutzter horizontaler Raum anhand der Strichgrenzen jedes Zeichens entfernt; ein kleiner, gleichmäßiger Abstand bleibt erhalten. Das Fenster wird an das kompakte Muster angepasst, während Zeichenproportionen, Strichreihenfolge, Zeitangaben, Druckwerte und Zeigerausrichtung beim Größenändern und Kartenwechsel erhalten bleiben.

@@ -1,6 +1,7 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { drawingViewport } from "./viewport.js";
+import { compactDrawingPattern } from "./layout.js";
 
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/adapters/study/drawing/languages"],
@@ -278,7 +279,7 @@ function openDrawingPad({
         const bounds = canvas.getBoundingClientRect();
         const viewport = drawingViewport(
             { width: bounds.width, height: bounds.height },
-            currentPattern.columns,
+            currentPattern.aspectRatio ?? currentPattern.columns,
         );
         return {
             x: Math.max(
@@ -300,7 +301,10 @@ function openDrawingPad({
     };
     const drawPath = (points, color, width = 3) => {
         if (!points.length) return;
-        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const viewport = drawingViewport(
+            canvas,
+            currentPattern.aspectRatio ?? currentPattern.columns,
+        );
         const plotted = (point) => ({
             x: viewport.x + point.x * viewport.width,
             y: viewport.y + point.y * viewport.height,
@@ -329,7 +333,10 @@ function openDrawingPad({
     const drawStrokeOrder = (stroke, index, occupiedAnnotations, paths) => {
         const [start, next] = stroke.points;
         if (!start || !next) return;
-        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const viewport = drawingViewport(
+            canvas,
+            currentPattern.aspectRatio ?? currentPattern.columns,
+        );
         const startX = viewport.x + start.x * viewport.width;
         const startY = viewport.y + start.y * viewport.height;
         const angle = Math.atan2(
@@ -381,7 +388,10 @@ function openDrawingPad({
     };
     const draw = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        const viewport = drawingViewport(canvas, currentPattern.columns);
+        const viewport = drawingViewport(
+            canvas,
+            currentPattern.aspectRatio ?? currentPattern.columns,
+        );
         const annotationPaths = currentPattern.strokes.map(({ points }) =>
             points.map(({ x, y }) => ({
                 x: viewport.x + x * viewport.width,
@@ -685,17 +695,19 @@ function openDrawingPad({
         currentCard = nextCard;
         currentDefinition = nextDefinition;
         currentPronunciations = nextPronunciations;
-        currentPattern = nextPattern;
+        currentPattern = compactDrawingPattern(nextPattern);
         const columns = currentPattern.columns ?? 1;
+        const aspectRatio = currentPattern.aspectRatio ?? columns;
         const maximumWidth = window.innerWidth * 0.4;
-        const fittedWidth = Math.min(maximumWidth, 448 * columns);
+        const fittedWidth =
+            Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
         const fittedHeight = Math.min(
             window.innerHeight * 0.7,
-            fittedWidth / columns + 112,
+            fittedWidth / aspectRatio + 112,
         );
         pad.style.width = `${fittedWidth}px`;
         pad.style.height = `${fittedHeight}px`;
-        pad.style.setProperty("--drawing-columns", String(columns));
+        pad.style.setProperty("--drawing-columns", String(aspectRatio));
         difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
         hiddenGuideIndices = new Set(
             hiddenGuideIndicesByCardId.get(nextCard.id) ?? [],

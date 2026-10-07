@@ -31,3 +31,5 @@ Switching an open Drawing Practice window to a card with a different column coun
 Pressing Escape closes the active Drawing Practice window through the same animated and fully cleaned-up close path as its close controls.
 
 The drawing surface now derives a centered, aspect-preserving viewport from its actual rendered width and height. Resizing the floating pad therefore letterboxes the logical stroke area when necessary instead of stretching character geometry, while pointer coordinates, guides, annotations, completed strokes, and live ink all use the same fitted viewport.
+
+Multi-character pads now trim unused horizontal space around each character’s stroke bounds and keep a small, consistent gap. The window narrows to the compact pattern while preserving character proportions, stroke order, timing, pressure, and pointer alignment during resizing and card changes.
