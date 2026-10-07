@@ -15,6 +15,7 @@ import {
     renderScope,
     section,
 } from "./presentation.js";
+import { resolveCompositionDependants } from "./composition-links.js";
 import { definitionDisplay } from "./definition-display.js";
 import { similarEntries } from "./similar-items.js";
 import { uniqueRelatedEntries } from "./related-entries.js";
@@ -171,16 +172,24 @@ export async function composeDetail(
     languageCode,
     options = {},
 ) {
+    const usedBy = Array.from(
+        new Map(
+            [
+                ...(detail.usedBy ?? []),
+                ...resolveCompositionDependants(detail.entry, schemas, entries),
+            ].map((entry) => [entry.id, entry]),
+        ).values(),
+    );
     const presentationDetail = options.transformation
         ? {
               ...detail,
               usedBy: dependantsMatchingTransformation(
-                  detail.usedBy ?? [],
+                  usedBy,
                   detail.entry.id,
                   options.transformation,
               ),
           }
-        : detail;
+        : { ...detail, usedBy };
     const flow = await uiCtx.runFlow(DETAIL_FLOW, {
         detail: presentationDetail,
         i18n,

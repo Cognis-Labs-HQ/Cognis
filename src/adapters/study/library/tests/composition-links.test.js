@@ -197,3 +197,47 @@ test("title detail omits links already composing the primary title", () => {
         [[character]],
     );
 });
+
+test("compound kana resolves upward through canonical spelling and pronunciation components", async () => {
+    const { resolveCompositionDependants } =
+        await import("../ui/app/composition-links.js");
+    const character = { ...entries[2], id: "sokuon-ku", label: "っく" };
+    const kana = ["ゆ", "っ", "く", "り"].map((label) => ({
+        ...entries[2],
+        id: `kana-${label}`,
+        label,
+    }));
+    const adverb = {
+        ...word,
+        id: "slowly",
+        label: "ゆっくり",
+        references: kana.map(({ id }) => ({ entryId: id })),
+    };
+    const pronounced = {
+        ...word,
+        id: "reading",
+        label: "Reading",
+        fields: { pronunciation: ["ゆっくり"] },
+    };
+    const partial = { ...word, id: "unresolved", label: "ゆっくり?" };
+    const foreign = { ...adverb, id: "foreign", language: "another-language" };
+    const catalog = [...kana, character, adverb, pronounced, partial, foreign];
+    assert.deepEqual(
+        resolveLabelComposition(adverb.label, adverb, schemas, catalog).map(
+            ({ id }) => id,
+        ),
+        ["kana-ゆ", "sokuon-ku", "kana-り"],
+    );
+    assert.deepEqual(
+        resolveCompositionDependants(character, schemas, catalog).map(
+            ({ id }) => id,
+        ),
+        ["slowly", "reading"],
+    );
+    assert.deepEqual(
+        resolveCompositionDependants(kana[3], schemas, catalog).map(
+            ({ id }) => id,
+        ),
+        ["slowly", "reading"],
+    );
+});

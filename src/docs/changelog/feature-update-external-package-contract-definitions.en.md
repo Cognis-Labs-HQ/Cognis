@@ -442,6 +442,10 @@ Drawing Practice now stays inside the main page. Dragging and resizing use the m
 
 Inline card creation now commits staged pronunciation character selections before saving. Saving a reading already supplied by a lookup attaches its selected character links without adding a duplicate pronunciation. Lookup values immediately redraw using the pronunciation list’s newline format, and automatically composed vocabulary and sentence readings remain visible as the main input changes. Detail headings resolve reading groups by their complete reading rather than their field-list position, and can resolve unlinked readings to canonical writing-unit cards.
 
+## Transformed and compound links
+
+Transformed vocabulary headings and readings link to the canonical writing units of the displayed form. Used By also includes complete canonical spelling and pronunciation compositions, so compound kana links resolve upward even when stored references identify smaller units. Stored relationships remain visible; incomplete compositions do not create partial links.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

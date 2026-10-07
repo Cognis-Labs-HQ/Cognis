@@ -48,7 +48,8 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
                 candidate.language === entry.language &&
                 layerIds.has(candidate.layer) &&
                 typeof candidate.label === "string" &&
-                candidate.label,
+                candidate.label &&
+                label.includes(candidate.label),
         )
         .sort((left, right) => {
             const schema = schemas.find(({ id }) => id === entry.schemaId);
@@ -72,6 +73,30 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
         }
     }
     return resolved.get(0) ?? [];
+}
+
+export function resolveCompositionDependants(entry, schemas, entries) {
+    return entries.filter((candidate) => {
+        if (
+            candidate.id === entry.id ||
+            candidate.schemaId !== entry.schemaId ||
+            candidate.language !== entry.language
+        )
+            return false;
+        return [candidate.label, ...pronunciationValues(candidate)]
+            .filter(
+                (label) =>
+                    typeof label === "string" && label.includes(entry.label),
+            )
+            .some((label) =>
+                resolveLabelComposition(
+                    label,
+                    candidate,
+                    schemas,
+                    entries,
+                ).some(({ id }) => id === entry.id),
+            );
+    });
 }
 
 function normalizedLabel(value) {

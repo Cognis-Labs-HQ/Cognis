@@ -364,7 +364,6 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: popupTitleItems\(/);
-    assert.match(source, /if \(transformed\) return \[\]/);
     assert.match(source, /open-title-reference:\$\{entry\.id\}/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(

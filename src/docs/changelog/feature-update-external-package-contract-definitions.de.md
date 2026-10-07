@@ -442,6 +442,10 @@ Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieb
 
 Die Inline-Kartenerstellung übernimmt jetzt vorgemerkte Zeichenauswahlen für die Aussprache vor dem Speichern. Wird eine bereits durch eine Suche gelieferte Lesung gespeichert, werden ihre ausgewählten Zeichen verknüpft, ohne die Aussprache zu duplizieren. Suchwerte werden sofort im Zeilenformat der Ausspracheliste angezeigt; automatisch zusammengesetzte Wort- und Satzlesungen bleiben bei Änderungen der Haupteingabe sichtbar. Detailüberschriften ordnen Lesegruppen anhand ihrer vollständigen Lesung statt ihrer Listenposition zu und können unverknüpfte Lesungen mit kanonischen Schriftzeichenkarten verbinden.
 
+## Links für Formen und Kana
+
+Überschriften und Lesungen transformierter Vokabeln verlinken die kanonischen Schrifteinheiten der angezeigten Form. „Verwendet von“ berücksichtigt außerdem vollständige kanonische Schreibweisen und Aussprachezusammensetzungen, sodass zusammengesetzte Kana auch dann zurückverweisen, wenn gespeicherte Referenzen kleinere Einheiten nennen. Gespeicherte Beziehungen bleiben sichtbar; unvollständige Zusammensetzungen erzeugen keine Teilverknüpfungen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

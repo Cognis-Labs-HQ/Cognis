@@ -442,6 +442,10 @@ Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman y
 
 Pembuatan kartu secara inline kini menyimpan pilihan karakter pelafalan yang masih disiapkan sebelum kartu dibuat. Menyimpan bacaan yang sudah diberikan oleh pencarian melampirkan tautan karakter terpilih tanpa menambahkan pelafalan duplikat. Nilai pencarian langsung ditampilkan ulang dengan format baris daftar pelafalan, dan bacaan kosakata serta kalimat yang disusun otomatis tetap terlihat saat masukan utama berubah. Judul detail mencocokkan kelompok bacaan berdasarkan bacaan lengkapnya, bukan posisi dalam daftar, dan dapat menghubungkan bacaan yang belum tertaut ke kartu karakter kanonis.
 
+## Tautan bentuk dan kana gabungan
+
+Judul dan pelafalan kosakata yang ditransformasi menautkan satuan tulisan kanonis dari bentuk yang ditampilkan. Digunakan Oleh juga mencakup komposisi ejaan dan pelafalan kanonis yang lengkap, sehingga kana gabungan dapat menautkan kembali ke kosakata meskipun referensi tersimpan menunjuk satuan yang lebih kecil. Hubungan tersimpan tetap terlihat; komposisi yang tidak lengkap tidak menghasilkan tautan sebagian.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

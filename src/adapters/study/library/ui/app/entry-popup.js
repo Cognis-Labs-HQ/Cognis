@@ -50,14 +50,15 @@ export async function openEntryPopup(
             detail,
             schemas,
         );
-        const titleReferences = explicitTitleReferences.length
-            ? explicitTitleReferences
-            : resolveLabelComposition(
-                  detail.entry.label,
-                  detail.entry,
-                  schemas,
-                  entries,
-              );
+        const titleReferences =
+            !selectedTransformation && explicitTitleReferences.length
+                ? explicitTitleReferences
+                : resolveLabelComposition(
+                      selectedTransformation?.node.value ?? detail.entry.label,
+                      detail.entry,
+                      schemas,
+                      entries,
+                  );
         const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
         const handleSaved = (updated) => {
@@ -114,6 +115,8 @@ export async function openEntryPopup(
             titleDetailItems,
             composed.body,
             composed.definitions,
+            schemas,
+            entries,
         );
         titleDetailItems = transformed.titleDetailItems;
         titleDetailItems = transformedParentAttribution(
@@ -154,10 +157,7 @@ export async function openEntryPopup(
         const result = await openPopup({
             title: transformed.title,
             titleLeading: composed.titleLeading,
-            titleItems: popupTitleItems(
-                titleReferences,
-                selectedTransformation,
-            ),
+            titleItems: popupTitleItems(titleReferences),
             titleDetailItems,
             stackTitleDetailOnOverflow: true,
             headerActions: [
