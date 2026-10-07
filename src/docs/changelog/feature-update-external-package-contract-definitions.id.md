@@ -574,3 +574,4 @@ Kartu yang ditransformasi tidak menampilkan pelafalan yang sama dengan judulnya 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/efe439a8e4171e9e37d5040bb500b079e77a169e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2f3df8bd0a160131db564451806303e24af77072
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ac5f84b55f918e7e6121eeedbb32d5dc383099c1
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c81f0310c9966c5d4783b51bac6bbb52ff0fb5d5
