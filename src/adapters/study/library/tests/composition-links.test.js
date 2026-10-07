@@ -278,11 +278,7 @@ test("detail neighbours stop at the immediate spelling or pronunciation parent",
         id: "walk-word",
         label: "歩く",
         fields: { pronunciation: ["あるく"] },
-        references: [
-            { entryId: walkCharacter.id },
-            { entryId: "kana-く" },
-            { entryId: "kana-あ" },
-        ],
+        references: [{ entryId: walkCharacter.id }, { entryId: "kana-く" }],
     };
     const groupedWord = {
         ...word,
@@ -375,5 +371,64 @@ test("direct neighbour filtering handles cyclic references without dropping inde
             direct,
         ]),
         [direct],
+    );
+});
+
+test("direct and intermediate kana routes remain available together", async () => {
+    const { filterImmediateDependants } =
+        await import("../ui/app/composition-links.js");
+    const a = { ...entries[2], id: "a", label: "あ" };
+    const ru = { ...entries[2], id: "ru", label: "る" };
+    const ku = { ...entries[2], id: "ku", label: "く" };
+    const aru = {
+        ...entries[1],
+        id: "aru",
+        label: "ある",
+        references: [{ entryId: a.id }, { entryId: ru.id }],
+    };
+    const aruku = {
+        ...entries[1],
+        id: "aruku",
+        label: "あるく",
+        references: [{ entryId: aru.id }, { entryId: ku.id }],
+    };
+    const authored = {
+        ...word,
+        id: "authored",
+        label: "歩く",
+        references: [{ entryId: a.id }, { entryId: aru.id }],
+    };
+    const grouped = {
+        ...word,
+        id: "grouped",
+        label: "Grouped",
+        referenceGroups: {
+            readings: [[{ entryId: a.id }], [{ entryId: aru.id }]],
+        },
+    };
+    const indirect = {
+        ...word,
+        id: "indirect",
+        label: "Indirect",
+        references: [{ entryId: aru.id }],
+    };
+    const catalog = [a, ru, ku, aru, aruku, authored, grouped, indirect];
+    assert.deepEqual(
+        filterImmediateDependants(
+            a,
+            [aru, aruku, authored, grouped, indirect],
+            schemas,
+            catalog,
+        ).map(({ id }) => id),
+        ["aru", "aruku", "authored", "grouped"],
+    );
+    assert.deepEqual(
+        filterImmediateDependants(
+            aru,
+            [aruku, authored, grouped, indirect],
+            schemas,
+            catalog,
+        ).map(({ id }) => id),
+        ["aruku", "authored", "grouped", "indirect"],
     );
 });

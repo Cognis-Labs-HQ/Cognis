@@ -450,6 +450,10 @@ Transformed vocabulary headings and readings link to the canonical writing units
 
 Detail relationship lists show immediate neighbors. Used By, Usage Examples, and the relationship tree exclude dependants reached through another spelling or pronunciation parent, including grouped references. Direct links remain available, and cyclic references do not cause repeated traversal. Similar Items continues to show same-layer peers.
 
+## Preserve concurrent direct links
+
+A direct relationship remains visible even when an intermediate route reaches the same card. Authored references, grouped references, and canonical title components retain their direct links, supporting both あ → ある + あるく and あ → ある → あるく. Only relationships reached exclusively through another parent are excluded.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

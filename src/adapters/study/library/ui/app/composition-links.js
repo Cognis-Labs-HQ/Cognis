@@ -148,14 +148,26 @@ export function filterImmediateDependants(entry, dependants, schemas, entries) {
         }
         return false;
     };
-    return dependants.filter(
-        (candidate) =>
-            !parentsOf(candidate).some(
-                (parentId) =>
-                    parentId !== entry.id &&
-                    reachesEntry(parentId, candidate.id),
-            ),
-    );
+    return dependants.filter((candidate) => {
+        const references = [
+            ...(candidate.references ?? []),
+            ...Object.values(candidate.referenceGroups ?? {}).flat(2),
+        ];
+        if (references.some(({ entryId }) => entryId === entry.id)) return true;
+        if (
+            resolveLabelComposition(
+                candidate.label,
+                candidate,
+                schemas,
+                catalog,
+            ).some(({ id }) => id === entry.id)
+        )
+            return true;
+        return !parentsOf(candidate).some(
+            (parentId) =>
+                parentId !== entry.id && reachesEntry(parentId, candidate.id),
+        );
+    });
 }
 
 function normalizedLabel(value) {

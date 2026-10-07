@@ -450,6 +450,10 @@ Die Inline-Kartenerstellung übernimmt jetzt vorgemerkte Zeichenauswahlen für d
 
 Beziehungslisten in der Detailansicht zeigen unmittelbare Nachbarn. „Verwendet von“, Verwendungsbeispiele und der Beziehungsbaum schließen abhängige Einträge aus, die über einen weiteren übergeordneten Schreibungs- oder Ausspracheeintrag erreichbar sind, einschließlich gruppierter Referenzen. Direkte Links bleiben verfügbar, und zyklische Referenzen führen nicht zu wiederholter Traversierung. Ähnliche Elemente zeigen weiterhin Einträge derselben Ebene.
 
+## Parallele direkte Links erhalten
+
+Eine direkte Beziehung bleibt sichtbar, auch wenn ein Weg über einen Zwischeneintrag dieselbe Karte erreicht. Gespeicherte Referenzen, gruppierte Referenzen und kanonische Titelbestandteile behalten ihre direkten Links. Damit werden sowohl あ → ある + あるく als auch あ → ある → あるく unterstützt. Nur Beziehungen, die ausschließlich über einen weiteren übergeordneten Eintrag erreichbar sind, werden ausgeschlossen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
