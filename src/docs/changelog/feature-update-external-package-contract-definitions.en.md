@@ -426,6 +426,10 @@ Sentence-transition cards now appear only in their dedicated filtered composer c
 
 Multi-character pads now trim unused horizontal space around each character’s stroke bounds and keep a small, consistent gap. The window narrows to the compact pattern while preserving character proportions, stroke order, timing, pressure, and pointer alignment during resizing and card changes.
 
+## Drawing pad height fits content
+
+The initial pad height now follows the rendered canvas, heading, and controls instead of a fixed allowance capped at seventy percent of the viewport. Short viewports reduce the available canvas height while preserving stroke proportions and keeping the Reset control visible. Loading another card refits the content and keeps the pad inside the viewport.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

@@ -426,6 +426,10 @@ Karten für Satzübergänge erscheinen nun ausschließlich in ihrem gefilterten 
 
 Bei Schreibflächen mit mehreren Zeichen wird ungenutzter horizontaler Raum anhand der Strichgrenzen jedes Zeichens entfernt; ein kleiner, gleichmäßiger Abstand bleibt erhalten. Das Fenster wird an das kompakte Muster angepasst, während Zeichenproportionen, Strichreihenfolge, Zeitangaben, Druckwerte und Zeigerausrichtung beim Größenändern und Kartenwechsel erhalten bleiben.
 
+## Schreibfläche passend zur Höhe
+
+Die anfängliche Höhe der Schreibfläche richtet sich jetzt nach Zeichenfläche, Kopfzeile und Bedienelementen statt nach einem festen Zuschlag mit einer Begrenzung auf siebzig Prozent der Fensterhöhe. Bei niedrigen Fenstern wird die verfügbare Zeichenhöhe reduziert, ohne die Strichproportionen zu verzerren oder die Zurücksetzen-Schaltfläche zu verdecken. Beim Laden einer anderen Karte werden Inhalt und Position neu angepasst.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

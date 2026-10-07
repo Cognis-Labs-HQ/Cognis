@@ -33,3 +33,5 @@ Menekan Escape menutup jendela Latihan Menggambar aktif melalui alur penutupan b
 Permukaan gambar kini membentuk viewport terpusat yang mempertahankan rasio aspek dari lebar dan tinggi hasil render sebenarnya. Saat ukuran panel mengambang diubah, area goresan logis diberi ruang tepi bila diperlukan alih-alih meregangkan geometri karakter; koordinat penunjuk, panduan, anotasi, goresan selesai, dan tinta aktif semuanya memakai viewport yang sama.
 
 Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai berdasarkan batas goresan setiap karakter dan mempertahankan jarak kecil yang seragam. Jendela menyempit mengikuti pola yang ringkas sambil mempertahankan proporsi karakter, urutan goresan, waktu, tekanan, dan keselarasan penunjuk saat ukuran atau kartu berubah.
+
+Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, bukan tambahan tetap yang dibatasi hingga tujuh puluh persen tinggi layar. Pada layar pendek, tinggi kanvas yang tersedia diperkecil sambil mempertahankan proporsi goresan dan menjaga tombol Atur Ulang tetap terlihat. Memuat kartu lain menyesuaikan kembali konten dan mempertahankan pad di dalam layar.

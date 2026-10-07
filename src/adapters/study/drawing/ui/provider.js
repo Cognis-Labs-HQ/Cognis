@@ -600,7 +600,7 @@ function openDrawingPad({
         minWidth: 280,
         minHeight: 240,
         width: "min(40vw, 28rem)",
-        height: "min(70vh, 35rem)",
+        height: "auto",
         allowOrientationSwap: false,
     });
     const observer = new ResizeObserver(resize);
@@ -701,12 +701,8 @@ function openDrawingPad({
         const maximumWidth = window.innerWidth * 0.4;
         const fittedWidth =
             Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
-        const fittedHeight = Math.min(
-            window.innerHeight * 0.7,
-            fittedWidth / aspectRatio + 112,
-        );
         pad.style.width = `${fittedWidth}px`;
-        pad.style.height = `${fittedHeight}px`;
+        pad.style.height = "auto";
         pad.style.setProperty("--drawing-columns", String(aspectRatio));
         difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
         hiddenGuideIndices = new Set(
@@ -731,6 +727,11 @@ function openDrawingPad({
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").hidden =
             !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
+        const bounds = pad.getBoundingClientRect();
+        pad.style.top = `${Math.max(
+            16,
+            Math.min(bounds.top, window.innerHeight - bounds.height - 16),
+        )}px`;
         resize();
         window.requestAnimationFrame(resize);
         return true;
