@@ -590,3 +590,4 @@ The Retrieve missing translations action calls `POST /api/v1/study/library/defin
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/ac5f84b55f918e7e6121eeedbb32d5dc383099c1
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c81f0310c9966c5d4783b51bac6bbb52ff0fb5d5
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/19956a2031ff88c897f18799d5a01ac688166bc9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b40ad028ac75b37d161c075b04db41a85fdcaad
