@@ -13,7 +13,10 @@ import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
-import { chooseCreateLayer, openCreateEntryPopup } from "../create-entry.js";
+import {
+    chooseCreateLayer,
+    openCreateEntryPopup,
+} from "../create-entry/index.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
 import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";

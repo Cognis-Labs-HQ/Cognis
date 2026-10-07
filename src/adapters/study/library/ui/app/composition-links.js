@@ -102,6 +102,14 @@ export function resolveReferenceAliasComposition(label, entries) {
     return offset === normalized.length ? entries : [];
 }
 
+export function resolveGroupedPronunciation(label, groups) {
+    for (const group of groups) {
+        const entries = resolveReferenceAliasComposition(label, group);
+        if (entries.length) return entries;
+    }
+    return [];
+}
+
 function entryLinkKey(entry) {
     return `${entry.id}\u0000${normalizedLabel(entry.label)}`;
 }

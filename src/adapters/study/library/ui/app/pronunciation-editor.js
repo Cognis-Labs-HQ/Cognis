@@ -159,14 +159,14 @@ export function mountEditableRelationshipCarousels(
                 ?.querySelector("[data-library-saved-values]") ??
             compositionField.previousElementSibling;
         const field = form.elements["field:pronunciation"];
-        if (
-            !container?.matches("[data-library-saved-values]") ||
-            !field ||
-            compositionField.dataset.multiValue !== "true"
-        )
+        if (!container?.matches("[data-library-saved-values]") || !field)
             return;
         const values = valuesForField(field);
         container.hidden = values.length === 0;
+        if (compositionField.dataset.multiValue !== "true") {
+            container.textContent = values.join(" · ");
+            return;
+        }
         container.innerHTML = values
             .map(
                 (value, index) =>
@@ -225,6 +225,9 @@ export function mountEditableRelationshipCarousels(
                 pronunciation.value = selectedEntries
                     .map((candidate) => candidate.label)
                     .join("");
+                pronunciation.dispatchEvent(
+                    new Event("input", { bubbles: true }),
+                );
             }
             renderSelectedReferences();
         },
@@ -233,6 +236,16 @@ export function mountEditableRelationshipCarousels(
     renderSelectedReferences();
     form.querySelectorAll("[data-library-composition-field]").forEach(
         renderSavedValues,
+    );
+    form.addEventListener(
+        "library-composition-change",
+        () => {
+            renderSelectedReferences();
+            form.querySelectorAll("[data-library-composition-field]").forEach(
+                renderSavedValues,
+            );
+        },
+        { signal: controller.signal },
     );
     form.addEventListener(
         "click",
@@ -345,14 +358,25 @@ export function mountEditableRelationshipCarousels(
             } else if (!event.target.closest("[data-library-edit-saved-value]"))
                 return;
             const editingGroups = new Map();
+            const editingGroupIndices = new Map();
             for (const relationshipId of relationshipIdsForKind(
                 compositionField.dataset.libraryCompositionField,
             )) {
+                const groups = form.referenceGroups?.[relationshipId] ?? [];
+                const groupIndex = groups.findIndex(
+                    (group) =>
+                        group
+                            .map(
+                                ({ entryId }) =>
+                                    entries.find(({ id }) => id === entryId)
+                                        ?.label ?? "",
+                            )
+                            .join("") === values[index],
+                );
+                editingGroupIndices.set(relationshipId, groupIndex);
                 editingGroups.set(
                     relationshipId,
-                    (form.referenceGroups?.[relationshipId]?.[index] ?? []).map(
-                        ({ entryId }) => entryId,
-                    ),
+                    (groups[groupIndex] ?? []).map(({ entryId }) => entryId),
                 );
             }
             values.splice(index, 1);
@@ -361,7 +385,8 @@ export function mountEditableRelationshipCarousels(
             )) {
                 const groups = form.referenceGroups?.[relationshipId];
                 if (!groups) continue;
-                groups.splice(index, 1);
+                const groupIndex = editingGroupIndices.get(relationshipId);
+                if (groupIndex >= 0) groups.splice(groupIndex, 1);
                 if (!groups.length) delete form.referenceGroups[relationshipId];
             }
             field.value = values.join("\n");
@@ -384,6 +409,10 @@ export function mountEditableRelationshipCarousels(
         "input",
         (event) => {
             if (event.target === form.elements["field:pronunciation"]) {
+                const derived = form.querySelector(
+                    "[data-library-derived-pronunciation]",
+                );
+                if (derived) derived.textContent = event.target.value;
                 form.querySelectorAll(
                     '[data-library-composition-field="pronunciation"]',
                 ).forEach(renderSavedValues);
@@ -457,6 +486,7 @@ export function mountEditableRelationshipCarousels(
             const values = valuesForField(field);
             if (
                 kind === "pronunciation" &&
+                !values.includes(value) &&
                 values.length >= maxPronunciations
             ) {
                 showToast(
@@ -467,7 +497,7 @@ export function mountEditableRelationshipCarousels(
                 );
                 return;
             }
-            values.push(value);
+            if (!values.includes(value)) values.push(value);
             field.value = values.join("\n");
             for (const relationshipId of relationshipIds) {
                 const staged = stagedValues.get(relationshipId) ?? [];
@@ -479,13 +509,24 @@ export function mountEditableRelationshipCarousels(
                     if (staged.length) {
                         const groups = (form.referenceGroups[relationshipId] ??=
                             []);
-                        groups.push(
-                            staged.map((entryId, position) => ({
-                                entryId,
-                                relation: relationshipId,
-                                position,
-                            })),
+                        const references = staged.map((entryId, position) => ({
+                            entryId,
+                            relation: relationshipId,
+                            position,
+                        }));
+                        const matching = groups.findIndex(
+                            (group) =>
+                                group
+                                    .map(
+                                        ({ entryId }) =>
+                                            entries.find(
+                                                ({ id }) => id === entryId,
+                                            )?.label ?? "",
+                                    )
+                                    .join("") === value,
                         );
+                        if (matching < 0) groups.push(references);
+                        else groups[matching] = references;
                     }
                     stagedValues.set(relationshipId, []);
                 } else {
@@ -518,6 +559,21 @@ export function mountEditableRelationshipCarousels(
         },
         { signal: controller.signal },
     );
+    controller.commitPendingValues = () => {
+        for (const compositionField of form.querySelectorAll(
+            '[data-library-composition-field="pronunciation"][data-multi-value="true"]',
+        )) {
+            if (
+                selectedReferenceIds(
+                    relationshipIdsForKind("pronunciation"),
+                    "pronunciation",
+                ).length
+            )
+                compositionField
+                    .querySelector("[data-library-save-composed-value]")
+                    ?.click();
+        }
+    };
     return controller;
 }
 

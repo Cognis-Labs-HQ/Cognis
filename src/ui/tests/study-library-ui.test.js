@@ -39,7 +39,9 @@ const cardsSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
     "utf8",
 );
-const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
+const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"), {
+    recursive: true,
+})
     .filter((file) => file.endsWith(".js"))
     .map((file) =>
         readFileSync(
@@ -64,10 +66,17 @@ const adapterSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/index.ts"),
     "utf8",
 );
-const createEntrySource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/create-entry.js"),
-    "utf8",
-);
+const createEntrySource = ["index.js", "composition.js", "definitions.js"]
+    .map((file) =>
+        readFileSync(
+            resolve(
+                ROOT,
+                `src/adapters/study/library/ui/app/create-entry/${file}`,
+            ),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const carouselStylesheet = readFileSync(
     resolve(ROOT, "src/ui/styles/reuse/horizontal-carousel.css"),
     "utf8",

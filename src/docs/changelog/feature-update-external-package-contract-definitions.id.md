@@ -438,6 +438,10 @@ Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang
 
 Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman yang dapat digulir digunakan saat menyeret dan mengubah ukuran, sehingga pad tidak menutupi header atau footer. Pada jendela pendek, pad mempertahankan tinggi gambar alaminya dan halaman utama dapat digulir secara vertikal untuk menjangkau kontrol lainnya.
 
+## Tautan dan bacaan kartu inline
+
+Pembuatan kartu secara inline kini menyimpan pilihan karakter pelafalan yang masih disiapkan sebelum kartu dibuat. Menyimpan bacaan yang sudah diberikan oleh pencarian melampirkan tautan karakter terpilih tanpa menambahkan pelafalan duplikat. Nilai pencarian langsung ditampilkan ulang dengan format baris daftar pelafalan, dan bacaan kosakata serta kalimat yang disusun otomatis tetap terlihat saat masukan utama berubah. Judul detail mencocokkan kelompok bacaan berdasarkan bacaan lengkapnya, bukan posisi dalam daftar, dan dapat menghubungkan bacaan yang belum tertaut ke kartu karakter kanonis.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

@@ -105,6 +105,7 @@ export async function openEntryPopup(
             composed.titleDefinition,
             sourceDefinition,
             titleReferences,
+            entries,
         );
         const transformed = transformPresentation(
             selectedTransformation,

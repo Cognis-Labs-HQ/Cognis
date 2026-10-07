@@ -438,6 +438,10 @@ Beim Auswählen zeichnbarer Library-Karten mit geöffneter Schreibfläche wird j
 
 Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieben und Größenändern gelten die Grenzen des scrollbaren Seiteninhalts, sodass die Schreibfläche weder Kopf- noch Fußzeile überdecken kann. In niedrigeren Fenstern behält sie ihre natürliche Zeichenhöhe; durch vertikales Scrollen der Hauptseite bleiben alle Bedienelemente erreichbar.
 
+## Inline-Verknüpfungen und Lesung
+
+Die Inline-Kartenerstellung übernimmt jetzt vorgemerkte Zeichenauswahlen für die Aussprache vor dem Speichern. Wird eine bereits durch eine Suche gelieferte Lesung gespeichert, werden ihre ausgewählten Zeichen verknüpft, ohne die Aussprache zu duplizieren. Suchwerte werden sofort im Zeilenformat der Ausspracheliste angezeigt; automatisch zusammengesetzte Wort- und Satzlesungen bleiben bei Änderungen der Haupteingabe sichtbar. Detailüberschriften ordnen Lesegruppen anhand ihrer vollständigen Lesung statt ihrer Listenposition zu und können unverknüpfte Lesungen mit kanonischen Schriftzeichenkarten verbinden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

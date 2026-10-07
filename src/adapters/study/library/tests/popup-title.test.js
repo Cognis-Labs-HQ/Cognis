@@ -43,3 +43,96 @@ test("non-vocabulary cards never inherit a navigation-source definition", () => 
         "",
     );
 });
+
+test("compound reading links follow canonical character groups after unlinked and duplicate readings", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { default: vm } = await import("node:vm");
+    const links = await import("../ui/app/composition-links.js");
+    const source = readFileSync(
+        new URL("../ui/app/popup-title.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, "");
+    const context = {
+        ...links,
+        layerForEntry: (schemas, entry) =>
+            schemas
+                .find(({ id }) => id === entry.schemaId)
+                ?.layers.find(({ id }) => id === entry.layer),
+        pronunciationValues: (entry) => entry.fields?.pronunciation ?? [],
+        secondarySpellingGroups: () => [],
+        visibleTitleDefinition: () => "",
+        variantPlacement: () => null,
+    };
+    vm.runInNewContext(
+        source + "\nglobalThis.detailItems = popupTitleDetailItems;",
+        context,
+    );
+    const characters = ["a", "b"].map((label) => ({
+        id: `character-${label}`,
+        label,
+        schemaId: "mock",
+        layer: "characters",
+        language: "x-mock",
+    }));
+    const schemas = [
+        {
+            id: "mock",
+            layers: [
+                { id: "characters", semanticRole: "atomicWritingUnit" },
+                {
+                    id: "symbols",
+                    semanticRole: "compoundWritingUnit",
+                    fields: [{ id: "pronunciation" }],
+                    relationships: [
+                        { id: "readings", presentationRole: "pronunciation" },
+                    ],
+                },
+            ],
+        },
+    ];
+    const detail = {
+        entry: {
+            id: "symbol",
+            label: "Symbol",
+            schemaId: "mock",
+            layer: "symbols",
+            language: "x-mock",
+            fields: { pronunciation: ["unlinked", "ab", "ab"] },
+            referenceGroups: {
+                readings: [
+                    [
+                        { entryId: "character-a", position: 0 },
+                        { entryId: "character-b", position: 1 },
+                    ],
+                ],
+            },
+        },
+        references: characters,
+    };
+    let items = context.detailItems(detail, schemas, "", "", [], characters);
+    assert.deepEqual(
+        Array.from(
+            items.filter((item) => item.actionId),
+            (item) => item.actionId,
+        ),
+        [
+            "open-title-reference:character-a",
+            "open-title-reference:character-b",
+        ],
+    );
+    detail.entry.referenceGroups = {};
+    detail.references = [];
+    items = context.detailItems(detail, schemas, "", "", [], characters);
+    assert.deepEqual(
+        Array.from(
+            items.filter((item) => item.actionId),
+            (item) => item.actionId,
+        ),
+        [
+            "open-title-reference:character-a",
+            "open-title-reference:character-b",
+        ],
+    );
+});

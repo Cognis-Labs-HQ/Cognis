@@ -187,11 +187,14 @@ export function mountHorizontalCarousels(
             }
             const item = event.target.closest("[data-carousel-value]");
             if (!item) return;
-            const activation = await onActivate({
+            const requestedActivation = onActivate({
                 id: carousel.dataset.horizontalCarousel,
                 item,
                 selected: item.classList.contains("is-selected"),
             });
+            const activation = requestedActivation?.then
+                ? await requestedActivation
+                : requestedActivation;
             if (activation === false) return;
             if (activation?.value)
                 item.dataset.carouselValue = activation.value;

@@ -438,6 +438,10 @@ Selecting drawable Library cards while the pad is open now redraws every newly l
 
 Drawing Practice now stays inside the main page. Dragging and resizing use the main page’s scrollable content bounds, so the pad cannot cover the header or footer. In shorter windows the pad retains its natural drawing height and the main page scrolls vertically to reveal the remaining controls.
 
+## Inline card links and readings
+
+Inline card creation now commits staged pronunciation character selections before saving. Saving a reading already supplied by a lookup attaches its selected character links without adding a duplicate pronunciation. Lookup values immediately redraw using the pronunciation list’s newline format, and automatically composed vocabulary and sentence readings remain visible as the main input changes. Detail headings resolve reading groups by their complete reading rather than their field-list position, and can resolve unlinked readings to canonical writing-unit cards.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

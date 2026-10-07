@@ -3,6 +3,8 @@ import {
     distinctPronunciationLabels,
     excludeTitleReferenceDuplicates,
     resolveReferenceAliasComposition,
+    resolveGroupedPronunciation,
+    resolveLabelComposition,
 } from "./composition-links.js";
 import { visibleTitleDefinition } from "./title-definition.js";
 import { secondarySpellingGroups } from "./popup-spellings.js";
@@ -69,6 +71,7 @@ export function popupTitleDetailItems(
     titleDefinition,
     sourceDefinition = "",
     titleReferences = [],
+    entries = [],
 ) {
     const layer = layerForEntry(schemas, detail.entry);
     const spellingGroups = excludeTitleReferenceDuplicates(
@@ -98,9 +101,14 @@ export function popupTitleDetailItems(
     const pronunciationField = (layer?.fields ?? []).find(
         ({ id }) => id === "pronunciation",
     );
-    const linkRelationships = new Set(
-        pronunciationField?.input?.linkRelationships ?? [],
-    );
+    const linkRelationships = new Set([
+        ...(pronunciationField?.input?.linkRelationships ?? []),
+        ...(layer?.relationships ?? [])
+            .filter(
+                ({ presentationRole }) => presentationRole === "pronunciation",
+            )
+            .map(({ id }) => id),
+    ]);
     const linkedPronunciationEntries = linkRelationships.size
         ? (detail.entry.references ?? [])
               .map((reference, authoredIndex) => ({
@@ -161,21 +169,31 @@ export function popupTitleDetailItems(
         detail.entry,
         spellingLabels,
     )
-        .map((label, pronunciationIndex) => {
+        .map((label) => {
             const configuredLinked = linkRelationships.size
-                ? resolveReferenceAliasComposition(
-                      label,
-                      linkedPronunciationGroups.length
-                          ? (linkedPronunciationGroups[pronunciationIndex] ??
-                                [])
-                          : linkedPronunciationEntries,
-                  )
+                ? linkedPronunciationGroups.length
+                    ? resolveGroupedPronunciation(
+                          label,
+                          linkedPronunciationGroups,
+                      )
+                    : resolveReferenceAliasComposition(
+                          label,
+                          linkedPronunciationEntries,
+                      )
                 : [];
-            const linked = configuredLinked.length
+            const referenced = configuredLinked.length
                 ? configuredLinked
                 : resolveReferenceAliasComposition(
                       label,
                       derivedPronunciationEntries,
+                  );
+            const linked = referenced.length
+                ? referenced
+                : resolveLabelComposition(
+                      label,
+                      detail.entry,
+                      schemas,
+                      entries,
                   );
             const linkedLabel = linked.map((entry) => entry.label).join("");
             const displayedLinked =

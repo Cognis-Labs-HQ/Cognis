@@ -5,6 +5,7 @@ import {
     excludeTitleReferenceDuplicates,
     resolveLabelComposition,
     resolveReferenceAliasComposition,
+    resolveGroupedPronunciation,
 } from "../ui/app/composition-links.js";
 
 const schemas = [
@@ -62,6 +63,19 @@ test("word spellings resolve every writing-unit component", () => {
         ),
         ["character-s", "character-k"],
     );
+});
+
+test("pronunciation links resolve by their reading despite unlinked or duplicate values", () => {
+    const first = { id: "first-character", label: "a" };
+    const second = { id: "second-character", label: "b" };
+    const third = { id: "third-character", label: "c" };
+    const groups = [[third], [first, second]];
+    assert.deepEqual(resolveGroupedPronunciation("ab", groups), [
+        first,
+        second,
+    ]);
+    assert.deepEqual(resolveGroupedPronunciation("c", groups), [third]);
+    assert.deepEqual(resolveGroupedPronunciation("unlinked", groups), []);
 });
 
 test("homographic words resolve to writing units instead of each other", () => {

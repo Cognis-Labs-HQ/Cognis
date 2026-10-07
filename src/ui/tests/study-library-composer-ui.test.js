@@ -10,9 +10,11 @@ const adminInteractionsSource = [
 ]
     .map((file) => read(`src/adapters/study/library/ui/app/${file}`))
     .join("\n");
-const createEntrySource = read(
-    "src/adapters/study/library/ui/app/create-entry.js",
-);
+const createEntrySource = ["index.js", "composition.js", "definitions.js"]
+    .map((file) =>
+        read(`src/adapters/study/library/ui/app/create-entry/${file}`),
+    )
+    .join("\n");
 const clientSource = read("src/gateways/study/ui/library-client.js");
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
@@ -267,10 +269,7 @@ test("Study Library preserves each multi-value pronunciation reference group", (
     assert.match(adminInteractionsSource, /readReferenceGroups/);
     assert.match(createEntrySource, /referenceGroups: readReferenceGroups/);
     assert.match(popupTitleSource, /linkedPronunciationGroups/);
-    assert.match(
-        popupTitleSource,
-        /linkedPronunciationGroups\[pronunciationIndex\]/,
-    );
+    assert.match(popupTitleSource, /resolveGroupedPronunciation/);
 });
 
 test("Study Library excludes hidden cards from every composer candidate list", () => {

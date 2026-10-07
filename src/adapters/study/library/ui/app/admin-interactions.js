@@ -500,7 +500,7 @@ export function editorBody(
                       ? [value]
                       : [];
                 if (layer?.semanticRole === "orderedLexicalSequence")
-                    return `<input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join(""))}">`;
+                    return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><output data-library-derived-pronunciation>${escapeHtml(pronunciations.join(""))}</output><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join(""))}"></fieldset>`;
                 return `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(fieldLabel)}</legend><input name="field:pronunciation" type="hidden" value="${escapeHtml(pronunciations.join("\n"))}">${pronunciationRelationshipIds.size ? selectedReferenceField("pronunciation", pronunciationRelationshipIds, { fieldLabel, multiValue: field.multi_value === true, values: pronunciations }) : ""}${inlinePronunciationCarousel}</fieldset>`;
             }
             if (
@@ -891,7 +891,7 @@ async function createRelationshipDependency({
     form,
     i18n,
 }) {
-    const { openCreateEntryPopup } = await import("./create-entry.js");
+    const { openCreateEntryPopup } = await import("./create-entry/index.js");
     const suggestedLabel = carousel.dataset.suggestedLabel ?? "";
     const created = await openCreateEntryPopup({
         schemas,
@@ -1055,7 +1055,7 @@ export async function openLibraryEntryEditor({
                     if (!relationship) return;
                     void (async () => {
                         const { openCreateEntryPopup } =
-                            await import("./create-entry.js");
+                            await import("./create-entry/index.js");
                         const created = await openCreateEntryPopup({
                             schemas,
                             entries,

@@ -1,0 +1,184 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import vm from "node:vm";
+import {
+    compositionTokenEntryId,
+    compositionTokenLabel,
+} from "../ui/app/composition-tokens.js";
+
+function editor(value = "ab") {
+    const source = readFileSync(
+        new URL("../ui/app/pronunciation-editor.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, "");
+    const listeners = new Map();
+    const saved = { matches: () => true, hidden: true, innerHTML: "" };
+    const field = {
+        value,
+        dispatchEvent: () => listeners.get("input")?.({ target: field }),
+    };
+    const composition = {
+        dataset: {
+            libraryCompositionField: "pronunciation",
+            multiValue: "true",
+        },
+        closest: () => ({ querySelector: () => saved }),
+        querySelector: (selector) =>
+            selector === "[data-library-save-composed-value]"
+                ? save
+                : { value: "" },
+    };
+    const save = {
+        closest: (selector) =>
+            selector === "[data-library-save-composed-value]"
+                ? save
+                : selector === "[data-library-composition-field]"
+                  ? composition
+                  : null,
+        click: () =>
+            listeners.get("click")?.({ target: save, preventDefault() {} }),
+    };
+    const select = { options: [], selectedOptions: [] };
+    const form = {
+        referenceGroups: {},
+        elements: {
+            "field:pronunciation": field,
+            "relationship:readings": select,
+        },
+        querySelector: (selector) =>
+            selector === '[data-library-composition-field="pronunciation"]'
+                ? composition
+                : null,
+        querySelectorAll: (selector) =>
+            selector.includes("data-library-composition-field")
+                ? [composition]
+                : [],
+        addEventListener: (kind, handler) => listeners.set(kind, handler),
+        dispatchEvent: (event) => listeners.get(event.type)?.(event),
+    };
+    const entries = [
+        { id: "a", label: "a", layer: "characters" },
+        { id: "b", label: "b", layer: "characters" },
+    ];
+    const layer = {
+        semanticRole: "compoundWritingUnit",
+        relationships: [
+            {
+                id: "readings",
+                targetLayer: "characters",
+                grouped: true,
+                presentationRole: "pronunciation",
+            },
+        ],
+    };
+    let carousel;
+    const context = {
+        AbortController,
+        Event,
+        CustomEvent,
+        compositionTokenEntryId,
+        compositionTokenLabel,
+        CSS: { escape: (value) => value },
+        clearHorizontalCarouselSelection() {},
+        mountHorizontalCarousels(_root, options) {
+            carousel = options;
+        },
+        renderCompositionItems: () => "",
+        escapeHtml: (value) => String(value),
+        showToast() {},
+        openPopup: async () => "cancel",
+    };
+    vm.runInNewContext(
+        source + "\nglobalThis.mount = mountEditableRelationshipCarousels;",
+        context,
+    );
+    const controller = context.mount(
+        form,
+        { addEventListener() {} },
+        entries,
+        { layers: [{ id: "characters", semanticRole: "atomicWritingUnit" }] },
+        layer,
+        {
+            pronunciationCarouselLayers: new Set(["characters"]),
+            i18n: { t: (key) => key },
+        },
+    );
+    return {
+        form,
+        field,
+        saved,
+        controller,
+        select: (values) => carousel.onChange({ id: "readings", values }),
+    };
+}
+
+test("Create commits staged character links without duplicating an auto-generated pronunciation", () => {
+    const session = editor();
+    session.select(["a", "b"]);
+    session.controller.commitPendingValues();
+    assert.equal(session.field.value, "ab");
+    assert.deepEqual(JSON.parse(JSON.stringify(session.form.referenceGroups)), {
+        readings: [
+            [
+                { entryId: "a", relation: "readings", position: 0 },
+                { entryId: "b", relation: "readings", position: 1 },
+            ],
+        ],
+    });
+    session.select(["a", "b"]);
+    session.controller.commitPendingValues();
+    assert.equal(session.field.value, "ab");
+    assert.equal(session.form.referenceGroups.readings.length, 1);
+});
+
+test("generated pronunciation values redraw after the main composition changes", () => {
+    const session = editor();
+    assert.ok(session.saved.innerHTML.includes("ab"));
+    session.field.value = "ba";
+    session.field.dispatchEvent(new Event("input"));
+    assert.ok(session.saved.innerHTML.includes("ba"));
+    assert.ok(!session.saved.innerHTML.includes(">ab<"));
+    assert.equal(session.saved.hidden, false);
+    session.field.value = "";
+    session.field.dispatchEvent(new Event("input"));
+    assert.equal(session.saved.hidden, true);
+});
+
+test("lookup pronunciations update the visible control using the list field delimiter", () => {
+    const source = readFileSync(
+        new URL("../ui/app/create-entry/index.js", import.meta.url),
+        "utf8",
+    );
+    const start = source.indexOf("function applyLookupFields(");
+    const end = source.indexOf("function bindRawInput(", start);
+    let redraws = 0;
+    const control = {
+        value: "",
+        hasAttribute: () => false,
+        dispatchEvent: (event) => {
+            assert.equal(event.type, "input");
+            redraws += 1;
+        },
+    };
+    const context = {
+        Event,
+        RadioNodeList: class {},
+        renderStrokePatternPreviews() {},
+    };
+    vm.runInNewContext(
+        source.slice(start, end) + "\nglobalThis.apply = applyLookupFields;",
+        context,
+    );
+    const draft = { fields: {} };
+    context.apply(
+        { elements: { "field:pronunciation": control } },
+        { pronunciation: ["ab", "ba"] },
+        draft,
+    );
+    assert.equal(control.value, "ab\nba");
+    assert.equal(redraws, 1);
+    assert.deepEqual(draft.fields.pronunciation, ["ab", "ba"]);
+});
