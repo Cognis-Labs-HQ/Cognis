@@ -434,6 +434,10 @@ Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, buka
 
 Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang setiap pola baru, meskipun kartu berturut-turut menggunakan ukuran kanvas yang sama. Beralih kartu langsung memperbarui panduan tanpa perlu mengubah ukuran atau membuka kembali jendela.
 
+## Pad tetap di halaman utama
+
+Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman yang dapat digulir digunakan saat menyeret dan mengubah ukuran, sehingga pad tidak menutupi header atau footer. Pada jendela pendek, pad mempertahankan tinggi gambar alaminya dan halaman utama dapat digulir secara vertikal untuk menjangkau kontrol lainnya.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

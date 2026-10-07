@@ -55,7 +55,24 @@ async function drawingSession() {
             return elements.get(selector);
         },
     };
-    capabilities.set("ui:makeFloatingWindow", () => () => {});
+    const host = {
+        ...element(),
+        clientWidth: 1000,
+        scrollTop: 0,
+        style: {
+            getPropertyValue: () => "",
+            setProperty() {},
+            removeProperty() {},
+        },
+        append(child) {
+            child.parentElement = this;
+        },
+    };
+    let floatingOptions;
+    capabilities.set("ui:makeFloatingWindow", (element, options) => {
+        floatingOptions = options;
+        return () => {};
+    });
     const environment = {
         AbortController,
         compactDrawingPattern,
@@ -68,6 +85,8 @@ async function drawingSession() {
         },
         createI18n: async () => ({ t: (key) => key }),
         document: {
+            querySelector: (selector) =>
+                selector === ".app-page__main" ? host : null,
             createElement: (tag) => (tag === "section" ? pad : element()),
             head: { append() {} },
             body: { append() {} },
@@ -100,6 +119,9 @@ async function drawingSession() {
         elements,
         moves,
         canvas,
+        host,
+        pad,
+        floatingOptions: () => floatingOptions,
         paints: () => paints,
         flushFrames: () => {
             while (frames.length) frames.shift()();
@@ -155,4 +177,14 @@ test("every card selection paints its guide when the open pad keeps the same siz
         assert.equal(session.canvas.width, 400);
         assert.equal(session.canvas.height, 400);
     }
+});
+
+test("drawing opens inside the main page through a container-bound floating window", async () => {
+    const session = await drawingSession();
+    session.open(card(1));
+    assert.equal(session.pad.parentElement, session.host);
+    assert.equal(session.floatingOptions().boundaryElement, session.host);
+    session.host.scrollTop = 200;
+    session.load(card(2));
+    assert.equal(session.pad.style.top, "216px");
 });

@@ -230,10 +230,26 @@ function openDrawingPad({
     const makeFloatingWindow = uiCtx.capabilities.get("ui:makeFloatingWindow");
     if (!makeFloatingWindow) throw new Error("floating_window_unavailable");
     const controller = new AbortController();
+    const host = document.querySelector(".app-page__main");
+    if (!host) throw new Error("drawing_host_unavailable");
+    const previousHostHeight = host.style.getPropertyValue(
+        "--drawing-host-height",
+    );
+    const footer = document.querySelector(".global-footer");
+    const fitHost = () => {
+        const bottom =
+            footer?.getBoundingClientRect().top ?? window.innerHeight;
+        const top = Math.max(0, host.getBoundingClientRect().top);
+        host.style.setProperty(
+            "--drawing-host-height",
+            `${Math.max(0, bottom - top - 16)}px`,
+        );
+    };
+    fitHost();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
     pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-pronunciations></span><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance hidden aria-label="${i18n.t("adapter.study.drawing.guidance")}">?</button><button class="btn-cancel" type="button" data-close>×</button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
-    document.body.append(pad);
+    host.append(pad);
     const canvas = pad.querySelector("canvas");
     const stage = pad.querySelector(".study-drawing-stage");
     const completion = pad.querySelector("[data-complete]");
@@ -596,6 +612,7 @@ function openDrawingPad({
         { signal: controller.signal },
     );
     const release = makeFloatingWindow(pad, {
+        boundaryElement: host,
         handle: pad.querySelector("header"),
         signal: controller.signal,
         minWidth: 280,
@@ -605,6 +622,12 @@ function openDrawingPad({
         allowOrientationSwap: false,
     });
     const observer = new ResizeObserver(resize);
+    const hostObserver = new ResizeObserver(fitHost);
+    hostObserver.observe(host);
+    if (footer) hostObserver.observe(footer);
+    const pageHeader = document.querySelector(".site-header");
+    if (pageHeader) hostObserver.observe(pageHeader);
+    window.addEventListener("resize", fitHost, { signal: controller.signal });
     let closing = false;
     let closed = false;
     const finishClose = () => {
@@ -613,8 +636,12 @@ function openDrawingPad({
         controller.abort();
         if (drawingFrame) window.cancelAnimationFrame(drawingFrame);
         observer.disconnect();
+        hostObserver.disconnect();
         release?.();
         pad.remove();
+        if (previousHostHeight)
+            host.style.setProperty("--drawing-host-height", previousHostHeight);
+        else host.style.removeProperty("--drawing-host-height");
         activeDrawingSession = null;
     };
     const close = () => {
@@ -699,7 +726,10 @@ function openDrawingPad({
         currentPattern = compactDrawingPattern(nextPattern);
         const columns = currentPattern.columns ?? 1;
         const aspectRatio = currentPattern.aspectRatio ?? columns;
-        const maximumWidth = window.innerWidth * 0.4;
+        const maximumWidth = Math.min(
+            window.innerWidth * 0.4,
+            Math.max(1, host.clientWidth - 32),
+        );
         const fittedWidth =
             Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
         pad.style.width = `${fittedWidth}px`;
@@ -728,11 +758,8 @@ function openDrawingPad({
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").hidden =
             !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
-        const bounds = pad.getBoundingClientRect();
-        pad.style.top = `${Math.max(
-            16,
-            Math.min(bounds.top, window.innerHeight - bounds.height - 16),
-        )}px`;
+        pad.style.top = `${host.scrollTop + 16}px`;
+        pad.style.left = `${Math.max(16, host.clientWidth - pad.getBoundingClientRect().width - 16)}px`;
         resize();
         window.requestAnimationFrame(resize);
         return true;

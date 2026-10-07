@@ -15,7 +15,7 @@
  * release.updateMinimumSize({ width: 320, height: 180 });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, preserveBrowsingContext?: boolean, allowOrientationSwap?: boolean, closeButton?: {label: string, onClose: () => void}}} options
+ * @param {{handle?: HTMLElement | null, boundaryElement?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean, preserveBrowsingContext?: boolean, allowOrientationSwap?: boolean, closeButton?: {label: string, onClose: () => void}}} options
  * @returns {(() => void) & {updateMinimumSize: (size: {width: number, height: number}) => boolean}} Idempotent cleanup with a minimum-size updater.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -143,6 +143,7 @@ export function makeFloatingWindow(
     element,
     {
         handle = element,
+        boundaryElement = null,
         signal,
         minWidth: initialMinWidth = 240,
         minHeight: initialMinHeight = 160,
@@ -151,7 +152,7 @@ export function makeFloatingWindow(
         right = "1rem",
         bottom = "1rem",
         zIndex = 1201,
-        portal = true,
+        portal = !boundaryElement,
         topLayer = portal,
         preserveBrowsingContext = false,
         allowOrientationSwap = true,
@@ -204,7 +205,7 @@ export function makeFloatingWindow(
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
     chrome.toolbar?.classList.add("floating-window-handle");
-    element.style.position = "fixed";
+    element.style.position = boundaryElement ? "absolute" : "fixed";
     element.style.right = right;
     element.style.bottom = bottom;
     element.style.width = width;
@@ -227,6 +228,25 @@ export function makeFloatingWindow(
     }
 
     const getBoundary = () => {
+        if (boundaryElement) {
+            const bounds = boundaryElement.getBoundingClientRect();
+            return {
+                element: boundaryElement,
+                left:
+                    bounds.left +
+                    boundaryElement.clientLeft -
+                    boundaryElement.scrollLeft,
+                top:
+                    bounds.top +
+                    boundaryElement.clientTop -
+                    boundaryElement.scrollTop,
+                width: boundaryElement.clientWidth,
+                height: Math.max(
+                    boundaryElement.clientHeight,
+                    boundaryElement.scrollHeight,
+                ),
+            };
+        }
         if (shownInTopLayer) {
             return {
                 element: null,

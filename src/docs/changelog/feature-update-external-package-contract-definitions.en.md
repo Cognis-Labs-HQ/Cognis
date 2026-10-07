@@ -434,6 +434,10 @@ The initial pad height now follows the rendered canvas, heading, and controls in
 
 Selecting drawable Library cards while the pad is open now redraws every newly loaded pattern even when consecutive cards use the same canvas dimensions. Switching cards updates the guide immediately without requiring a resize or reopening the window.
 
+## Drawing stays in the main page
+
+Drawing Practice now stays inside the main page. Dragging and resizing use the main page’s scrollable content bounds, so the pad cannot cover the header or footer. In shorter windows the pad retains its natural drawing height and the main page scrolls vertically to reveal the remaining controls.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
