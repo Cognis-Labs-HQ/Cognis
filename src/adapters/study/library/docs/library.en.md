@@ -367,3 +367,7 @@ Dictionary results can be reviewed before applying their pronunciations, classif
 The common lookup contract accepts `class`, `tags`, `definitions` (localized translations and provenance), and `sourceUrl`. Source-specific data belongs in provider-declared fields; the Japanese module declares hidden `dictionary_data` containing the full Jisho record. Existing scoped creation, conflict detection, dependency validation, and cancellation cleanup apply to imported definitions.
 
 The Retrieve missing translations action calls `POST /api/v1/study/library/definitions/localize` with `{ translations, languages }`. It requests missing UI languages through `localization:translateString`, preserves supplied translations, and reports `missingLanguages` when a provider is absent or fails. Missing translations remain editable; English is not copied into other language fields. This is also available when adding a definition manually.
+
+## Administrator creation and focused stroke lookup
+
+Administrators create cards directly in the global namespace without Publish controls. Inline and dictionary-imported definitions use the same global destination; private dependencies must be published before saving. Stroke Pattern Lookup applies the provider’s stroke pattern immediately without opening the dictionary preview.

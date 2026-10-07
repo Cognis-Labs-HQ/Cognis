@@ -30,7 +30,9 @@ const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
 const carouselSource = read("src/ui/reuse/horizontal-carousel.js");
 const compositionStylesheet = read("src/ui/styles/reuse/composition-input.css");
 const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
-const libraryStylesheet = read("src/adapters/study/library/ui/library.css");
+const libraryStylesheet = ["library.css", "library-detail.css"]
+    .map((file) => read(`src/adapters/study/library/ui/${file}`))
+    .join("\n");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 const composerContractSource = read(
     "src/adapters/study/library/ui/app/composer-contract.js",

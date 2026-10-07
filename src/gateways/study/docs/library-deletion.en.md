@@ -1,8 +1,12 @@
 # Library deletion
 
+## Usage
+
 Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
 
 `POST /api/v1/study/library/entries/deletion-plan`
+
+## Technical specification
 
 `{ "entryIds": ["entry-id"] }` → `{ "data": { "entryIds": ["entry-id"], "entries": [{ "id": "entry-id", "label": "..." }] } }`
 

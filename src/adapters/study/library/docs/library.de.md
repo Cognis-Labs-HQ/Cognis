@@ -354,3 +354,7 @@ Wörterbuchergebnisse lassen sich vor der Übernahme von Aussprachen, Klassifika
 Der allgemeine Lookup-Vertrag unterstützt `class`, `tags`, `definitions` (lokalisierte Übersetzungen und Herkunft) sowie `sourceUrl`. Anbieterspezifische Daten gehören in deklarierte Felder; das japanische Modul verwendet das verborgene Feld `dictionary_data` für den vollständigen Jisho-Datensatz. Umfangsregeln, Konflikterkennung, Abhängigkeitsprüfung und Bereinigung beim Abbrechen gelten auch für importierte Definitionen.
 
 Fehlende Übersetzungen abrufen verwendet `POST /api/v1/study/library/definitions/localize` mit `{ translations, languages }`. Fehlende UI-Sprachen werden über `localization:translateString` angefordert, vorhandene Übersetzungen bleiben erhalten. Bei fehlenden oder fehlerhaften Anbietern werden `missingLanguages` gemeldet. Fehlende Texte können bearbeitet werden; englische Texte werden nicht in andere Sprachfelder kopiert. Die Aktion steht auch beim manuellen Hinzufügen von Definitionen bereit.
+
+## Administrator-Karten und gezielte Strichsuche
+
+Administratoren erstellen Karten ohne Veröffentlichungsfelder direkt im globalen Namensraum. Inline erstellte und aus Wörterbüchern importierte Definitionen verwenden dasselbe globale Ziel; private Abhängigkeiten müssen vor dem Speichern veröffentlicht werden. Die Suche im Feld Strichmuster übernimmt das Muster des Anbieters sofort, ohne die Wörterbuchvorschau zu öffnen.

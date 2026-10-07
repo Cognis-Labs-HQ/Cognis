@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 import { readFileSync, readdirSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
+const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"), {
+    recursive: true,
+})
     .filter((file) => file.endsWith(".js"))
     .map((file) =>
         readFileSync(
@@ -14,7 +16,12 @@ const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"))
         ),
     )
     .join("\n");
-const stylesheet = ["library.css", "library-admin.css", "library-selection.css"]
+const stylesheet = [
+    "library.css",
+    "library-admin.css",
+    "library-selection.css",
+    "library-detail.css",
+]
     .map((file) =>
         readFileSync(
             resolve(ROOT, `src/adapters/study/library/ui/${file}`),

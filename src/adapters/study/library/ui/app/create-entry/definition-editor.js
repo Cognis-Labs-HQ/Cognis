@@ -14,6 +14,7 @@ export async function openDefinitionPopup({
     layerId,
     entries,
     i18n,
+    location = { scope: "user" },
 }) {
     const layer = schema.layers.find(({ id }) => id === layerId);
     const localization = layer?.definitionLocalization;
@@ -101,13 +102,20 @@ export async function openDefinitionPopup({
     const translations = Object.fromEntries(
         languages.map((language) => [language, form.elements[language].value]),
     );
-    return createDefinition({ schema, layerId, entries, translations });
+    return createDefinition({
+        schema,
+        layerId,
+        entries,
+        translations,
+        location,
+    });
 }
 export async function createDefinition({
     schema,
     layerId,
     entries,
     translations,
+    location = { scope: "user" },
 }) {
     const languages = DEFINITION_LANGUAGES;
     const localization = schema.layers.find(
@@ -117,28 +125,26 @@ export async function createDefinition({
     const normalizedLabel = translations.en.trim().normalize("NFKC");
     const existing = entries.find(
         (entry) =>
+            (location.scope !== "global" || entry.scope === "global") &&
             entry.schemaId === schema.id &&
             entry.layer === layerId &&
             entry.label.trim().normalize("NFKC") === normalizedLabel,
     );
     if (existing) return { entry: existing, created: false };
     try {
-        const entry = await createLibraryEntry(
-            { scope: "user" },
-            {
-                schemaId: schema.id,
-                schemaVersion: schema.version,
-                layer: layerId,
-                label: translations.en,
-                class: "definition",
-                hidden: true,
-                definitionLanguages: languages,
-                fields: {
-                    [localization.translationsField]: translations,
-                },
-                references: [],
+        const entry = await createLibraryEntry(location, {
+            schemaId: schema.id,
+            schemaVersion: schema.version,
+            layer: layerId,
+            label: translations.en,
+            class: "definition",
+            hidden: true,
+            definitionLanguages: languages,
+            fields: {
+                [localization.translationsField]: translations,
             },
-        );
+            references: [],
+        });
         return { entry, created: true };
     } catch (error) {
         const conflictId = error.details?.conflictEntryId;

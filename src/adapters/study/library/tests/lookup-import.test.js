@@ -141,3 +141,50 @@ test("accepted dictionary results import definitions, source fields, readings, g
     assert.equal(button.disabled, false);
     assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
 });
+
+test("stroke-pattern lookup applies the pattern directly without dictionary preview or definition creation", async () => {
+    let listener;
+    let previews = 0;
+    let redraws = 0;
+    const field = { hasAttribute: () => true };
+    const input = { value: "教" };
+    const pattern = { viewBox: "0 0 109 109", strokes: [{ d: "M0 0 L1 1" }] };
+    const draft = { fields: { pronunciation: ["きょう"] } };
+    const context = {
+        fetchLibraryLookupSuggestions: async () => [
+            { fields: { stroke_pattern: pattern } },
+        ],
+        chooseLookupSuggestion: async () => {
+            previews += 1;
+        },
+        createDefinition: async () => {
+            throw new Error("unexpected definition creation");
+        },
+        renderStrokePatternPreviews: () => {
+            redraws += 1;
+        },
+        showToast() {},
+    };
+    vm.runInNewContext(source, context);
+    const form = {
+        elements: { "field:stroke_pattern": field },
+        querySelector: () => input,
+        addEventListener: (_kind, handler) => {
+            listener = handler;
+        },
+    };
+    context.bindLookupProviders(form, draft, { t: (key) => key }, {});
+    const button = {
+        dataset: {
+            libraryLookupProvider: "stroke-provider",
+            libraryLookupKind: "strokePattern",
+        },
+    };
+    await listener({ target: { closest: () => button } });
+    assert.equal(previews, 0);
+    assert.equal(redraws, 1);
+    assert.equal(field.libraryFieldValue, pattern);
+    assert.equal(draft.fields.stroke_pattern, pattern);
+    assert.deepEqual(draft.fields.pronunciation, ["きょう"]);
+    assert.equal(button.disabled, false);
+});

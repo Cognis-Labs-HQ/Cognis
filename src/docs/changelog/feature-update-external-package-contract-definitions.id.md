@@ -472,6 +472,12 @@ Hasil kamus dapat ditinjau sebelum menerapkan pelafalan, klasifikasi, tag, refer
 
 Ambil terjemahan yang belum tersedia menggunakan `POST /api/v1/study/library/definitions/localize` dengan `{ translations, languages }`. Bahasa UI yang belum tersedia diminta melalui `localization:translateString`, terjemahan yang diberikan tetap dipertahankan, dan `missingLanguages` dilaporkan jika penyedia tidak tersedia atau gagal. Teks yang belum diterjemahkan dapat diedit; teks Inggris tidak disalin ke bidang bahasa lain. Tindakan ini juga tersedia saat menambahkan definisi secara manual.
 
+## Pembuatan oleh administrator dan pencarian pola goresan
+
+Administrator membuat kartu langsung di ruang nama global tanpa kontrol Publikasikan. Definisi yang dibuat langsung atau diimpor dari kamus menggunakan tujuan global yang sama; dependensi pribadi harus diterbitkan sebelum penyimpanan. Pencarian Pola Goresan langsung menerapkan pola penyedia tanpa membuka pratinjau kamus.
+
+Stylesheet serta kode validasi, persistensi, penyelarasan konstruktor, dan pengujian terkait dibagi menjadi berkas terfokus agar memenuhi pemeriksaan ukuran repositori; struktur dokumentasi dan penemuan pengujian UI diperbaiki.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

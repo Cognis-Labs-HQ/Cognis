@@ -72,7 +72,7 @@ export function bindLookupProviders(
     form,
     draft,
     i18n,
-    { schema, layer, entries, nestedDefinitionIds },
+    { schema, layer, entries, nestedDefinitionIds, definitionLocation },
 ) {
     form.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-library-lookup-provider]");
@@ -92,6 +92,13 @@ export function bindLookupProviders(
                 });
                 return;
             }
+            if (button.dataset.libraryLookupKind === "strokePattern") {
+                applyLookupFields(form, suggestions[0].fields ?? {}, draft);
+                showToast(i18n.t("gateway.study.library_lookup_applied"), {
+                    variant: "success",
+                });
+                return;
+            }
             const suggestion = await chooseLookupSuggestion(suggestions, i18n);
             if (!suggestion) return;
             const definitionRelationship = layer.relationships.find(
@@ -106,6 +113,7 @@ export function bindLookupProviders(
                     layerId: definitionRelationship.targetLayer,
                     entries,
                     translations: definition.translations,
+                    location: definitionLocation,
                 });
                 if (result.created) nestedDefinitionIds.push(result.entry.id);
                 linkDefinition(form, schema, layer, entries, result.entry);

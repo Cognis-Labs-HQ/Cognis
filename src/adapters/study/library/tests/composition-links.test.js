@@ -377,33 +377,33 @@ test("direct neighbour filtering handles cyclic references without dropping inde
 test("direct and intermediate kana routes remain available together", async () => {
     const { filterImmediateDependants } =
         await import("../ui/app/composition-links.js");
-    const a = { ...entries[2], id: "a", label: "あ" };
-    const ru = { ...entries[2], id: "ru", label: "る" };
-    const ku = { ...entries[2], id: "ku", label: "く" };
+    const kanaA = { ...entries[2], id: "kanaA", label: "あ" };
+    const kanaRu = { ...entries[2], id: "kanaRu", label: "る" };
+    const kanaKu = { ...entries[2], id: "kanaKu", label: "く" };
     const aru = {
         ...entries[1],
         id: "aru",
         label: "ある",
-        references: [{ entryId: a.id }, { entryId: ru.id }],
+        references: [{ entryId: kanaA.id }, { entryId: kanaRu.id }],
     };
     const aruku = {
         ...entries[1],
         id: "aruku",
         label: "あるく",
-        references: [{ entryId: aru.id }, { entryId: ku.id }],
+        references: [{ entryId: aru.id }, { entryId: kanaKu.id }],
     };
     const authored = {
         ...word,
         id: "authored",
         label: "歩く",
-        references: [{ entryId: a.id }, { entryId: aru.id }],
+        references: [{ entryId: kanaA.id }, { entryId: aru.id }],
     };
     const grouped = {
         ...word,
         id: "grouped",
         label: "Grouped",
         referenceGroups: {
-            readings: [[{ entryId: a.id }], [{ entryId: aru.id }]],
+            readings: [[{ entryId: kanaA.id }], [{ entryId: aru.id }]],
         },
     };
     const indirect = {
@@ -412,10 +412,19 @@ test("direct and intermediate kana routes remain available together", async () =
         label: "Indirect",
         references: [{ entryId: aru.id }],
     };
-    const catalog = [a, ru, ku, aru, aruku, authored, grouped, indirect];
+    const catalog = [
+        kanaA,
+        kanaRu,
+        kanaKu,
+        aru,
+        aruku,
+        authored,
+        grouped,
+        indirect,
+    ];
     assert.deepEqual(
         filterImmediateDependants(
-            a,
+            kanaA,
             [aru, aruku, authored, grouped, indirect],
             schemas,
             catalog,

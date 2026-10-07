@@ -1,3 +1,4 @@
+import { alignFormContributions } from "./form-contributions.js";
 import { localizeDefinition } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import { authorizeDeletion, planDeletion } from "./deletion.js";
@@ -198,67 +199,9 @@ export class LibraryService implements LibraryCapability {
         return this.alignedFormContributions();
     }
     private alignedFormContributions(): LibraryFormContribution[] {
-        const contributions = Array.from(
-            this.formContributions.values(),
-            (contribution) => structuredClone(contribution),
+        return alignFormContributions(this.formContributions.values(), (id) =>
+            this.schema(id),
         );
-        for (const contribution of contributions) {
-            if (!contribution.cardConstructor) continue;
-            const schema = this.schema(contribution.schemaId);
-            const layer = findLayer(schema, contribution.layerId);
-            if (layer.semanticRole !== "compoundWritingUnit") continue;
-            const lexicalLayerIds = new Set(
-                schema.layers
-                    .filter(
-                        ({ semanticRole }) => semanticRole === "lexicalUnit",
-                    )
-                    .map(({ id }) => id),
-            );
-            const lexicalConstructor = contributions.find(
-                (candidate) =>
-                    candidate.schemaId === contribution.schemaId &&
-                    lexicalLayerIds.has(candidate.layerId) &&
-                    candidate.cardConstructor,
-            )?.cardConstructor;
-            if (lexicalConstructor) {
-                const pronunciationTargets = new Set(
-                    lexicalConstructor.pronunciation_carousels,
-                );
-                const replacedTargets = new Set(
-                    contribution.cardConstructor.pronunciation_carousels,
-                );
-                const relationships = new Set(
-                    (contribution.cardConstructor.relationships ?? []).filter(
-                        (relationshipId) => {
-                            const relationship = (
-                                layer.relationships ?? []
-                            ).find(({ id }) => id === relationshipId);
-                            return (
-                                !relationship ||
-                                !replacedTargets.has(
-                                    relationship.targetLayer,
-                                ) ||
-                                pronunciationTargets.has(
-                                    relationship.targetLayer,
-                                )
-                            );
-                        },
-                    ),
-                );
-                for (const relationship of layer.relationships ?? []) {
-                    if (pronunciationTargets.has(relationship.targetLayer))
-                        relationships.add(relationship.id);
-                }
-                contribution.cardConstructor = {
-                    ...contribution.cardConstructor,
-                    relationships: [...relationships],
-                    pronunciation_carousels: [
-                        ...lexicalConstructor.pronunciation_carousels,
-                    ],
-                };
-            }
-        }
-        return contributions;
     }
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>

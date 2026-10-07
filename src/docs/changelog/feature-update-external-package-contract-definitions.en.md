@@ -346,6 +346,12 @@ Input and Pronunciation sections now always show their selected-card field when 
 
 Provider fields can opt into multi-value composition with `multi_value`. The composer adds a field-specific save action and committed-value pills, supports reopening values for replacement, limits typed suggestions to cards in the configured carousels, rejects unresolved floating text, and confines confirmed deletion to dedicated × controls. Existing-entry editors now mount their declared carousels consistently with creation forms.
 
+## Administrator creation and focused stroke lookup
+
+Administrators create cards directly in the global namespace without Publish controls. Inline and dictionary-imported definitions use the same global destination; private dependencies must be published before saving. Stroke Pattern Lookup applies the provider’s stroke pattern immediately without opening the dictionary preview.
+
+Related stylesheet, validation, persistence, constructor-alignment, and test code is split into focused files to satisfy repository size checks; documentation structure and UI test discovery are corrected.
+
 ## Multi-value staging no longer mutates committed values
 
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.

@@ -472,6 +472,12 @@ Wörterbuchergebnisse lassen sich vor der Übernahme von Aussprachen, Klassifika
 
 Fehlende Übersetzungen abrufen verwendet `POST /api/v1/study/library/definitions/localize` mit `{ translations, languages }`. Fehlende UI-Sprachen werden über `localization:translateString` angefordert, vorhandene Übersetzungen bleiben erhalten. Bei fehlenden oder fehlerhaften Anbietern werden `missingLanguages` gemeldet. Fehlende Texte können bearbeitet werden; englische Texte werden nicht in andere Sprachfelder kopiert. Die Aktion steht auch beim manuellen Hinzufügen von Definitionen bereit.
 
+## Administrator-Karten und gezielte Strichsuche
+
+Administratoren erstellen Karten ohne Veröffentlichungsfelder direkt im globalen Namensraum. Inline erstellte und aus Wörterbüchern importierte Definitionen verwenden dasselbe globale Ziel; private Abhängigkeiten müssen vor dem Speichern veröffentlicht werden. Die Suche im Feld Strichmuster übernimmt das Muster des Anbieters sofort, ohne die Wörterbuchvorschau zu öffnen.
+
+Zugehörige Stylesheets sowie Validierungs-, Persistenz-, Konstruktorabgleichs- und Testcode sind für die Größenprüfungen in kleinere Dateien aufgeteilt; Dokumentationsstruktur und UI-Testsuche sind korrigiert.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

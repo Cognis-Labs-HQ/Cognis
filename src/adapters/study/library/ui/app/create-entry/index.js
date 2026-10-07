@@ -1,6 +1,9 @@
 import { openDefinitionPopup, linkDefinition } from "./definition-editor.js";
 import { bindLookupProviders, bindRawInput } from "./lookups.js";
-import { resolveCreationScope } from "../dependency-scope.js";
+import {
+    incompatibleDependencies,
+    resolveCreationScope,
+} from "../dependency-scope.js";
 import { bindTextComposition } from "./composition.js";
 import { entryDefinitions } from "./definitions.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -212,7 +215,7 @@ export async function openCreateEntryPopup({
         (provider) => !strokeLookupProviders.includes(provider),
     );
     const lookupButton = (provider, focused = false) =>
-        `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}"${focused ? ` aria-label="${escapeHtml(`${i18n.t("ui.reuse.lookup")}: ${localizedLabel(provider.metadata, document.documentElement.lang) || provider.id}`)}"` : ""}>${escapeHtml(focused ? i18n.t("ui.reuse.lookup") : i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`;
+        `<button class="btn-neutral" type="button" data-library-lookup-provider="${escapeHtml(provider.id)}" data-library-lookup-kind="${focused ? "strokePattern" : "dictionary"}"${focused ? ` aria-label="${escapeHtml(`${i18n.t("ui.reuse.lookup")}: ${localizedLabel(provider.metadata, document.documentElement.lang) || provider.id}`)}"` : ""}>${escapeHtml(focused ? i18n.t("ui.reuse.lookup") : i18n.t("gateway.study.library_lookup_with").replace("{{ service }}", localizedLabel(provider.metadata, document.documentElement.lang) || provider.id))}</button>`;
     const lookupActions = `<div class="library-composer-lookups" hidden>${generalLookupProviders.map((provider) => lookupButton(provider)).join("")}</div>`;
     const strokeLookupActions = strokeLookupProviders
         .map((provider) => lookupButton(provider, true))
@@ -222,12 +225,13 @@ export async function openCreateEntryPopup({
         : supportsRawInput
           ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text data-library-free-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composer-assistance">${lookupActions}</div></section>`
           : "";
-    const publishControls = `<input name="scope" type="hidden" value="user">${
-        access.readable.some(({ scope }) => scope === "global")
+    const publishControls = `<input name="scope" type="hidden" value="${canPublishEveryone ? "global" : "user"}">${
+        access.readable.some(({ scope }) => scope === "global") &&
+        !canPublishEveryone
             ? `<label class="library-admin-checkbox library-publish-choice"><input name="publishEveryone" type="checkbox" class="choice-checkbox"><span>${escapeHtml(i18n.t("gateway.study.library_publish_everyone"))}</span>${renderInfoTooltip(i18n.t("gateway.study.library_publish_everyone_info"), i18n.t("ui.reuse.more_information"))}</label>`
             : ""
     }${
-        writableClasses.length
+        writableClasses.length && !canPublishEveryone
             ? `<label class="library-admin-checkbox"><input name="publishClass" type="checkbox" class="choice-checkbox" data-library-publish-class-toggle> <span>${escapeHtml(i18n.t("gateway.study.library_publish_class_option"))}</span></label><label data-library-class-choice hidden><span>${escapeHtml(i18n.t("gateway.study.library_class"))}</span><select name="classId">${writableClasses.map(({ scopeId }) => `<option value="${escapeHtml(scopeId)}">${escapeHtml(scopeId)}</option>`).join("")}</select></label>`
             : '<input type="hidden" name="classId" value="">'
     }${compositionInput}${renderComposerExtras(constructor, editingLayer, entries, schema)}`;
@@ -279,7 +283,9 @@ export async function openCreateEntryPopup({
     };
     let createdEntry = null;
     const submitEntry = async () => {
-        let publishEveryone = form.elements.publishEveryone?.checked === true;
+        let publishEveryone =
+            canPublishEveryone ||
+            form.elements.publishEveryone?.checked === true;
         const scope =
             publishEveryone && canPublishEveryone
                 ? "global"
@@ -328,12 +334,28 @@ export async function openCreateEntryPopup({
         const intended = publishEveryone
             ? { scope: "global", scopeId: "global" }
             : location;
-        const resolved = await resolveCreationScope(
-            candidate,
-            intended,
-            entries,
-            i18n,
-        );
+        if (canPublishEveryone) {
+            const dependencies = incompatibleDependencies(
+                candidate,
+                intended,
+                entries,
+            );
+            if (dependencies.length) {
+                showToast(
+                    i18n
+                        .t("gateway.study.library_publish_dependencies_first")
+                        .replace(
+                            "{{ cards }}",
+                            dependencies.map(({ label }) => label).join(" · "),
+                        ),
+                    { variant: "error" },
+                );
+                return null;
+            }
+        }
+        const resolved = canPublishEveryone
+            ? intended
+            : await resolveCreationScope(candidate, intended, entries, i18n);
         if (!resolved) return null;
         if (resolved.scope === "user" && intended.scope !== "user") {
             location = resolved;
@@ -635,6 +657,9 @@ export async function openCreateEntryPopup({
                 layer: editingLayer,
                 entries,
                 nestedDefinitionIds,
+                definitionLocation: canPublishEveryone
+                    ? { scope: "global", scopeId: "global" }
+                    : { scope: "user" },
             });
             const strokeLookup = form.querySelector(
                 "[data-library-stroke-lookup]",
@@ -674,6 +699,9 @@ export async function openCreateEntryPopup({
                         layerId: relationship.targetLayer,
                         entries,
                         i18n,
+                        location: canPublishEveryone
+                            ? { scope: "global", scopeId: "global" }
+                            : { scope: "user" },
                     });
                 } catch {
                     showToast(i18n.t("gateway.study.library_create_error"), {

@@ -354,3 +354,7 @@ Hasil kamus dapat ditinjau sebelum menerapkan pelafalan, klasifikasi, tag, refer
 Kontrak lookup umum menerima `class`, `tags`, `definitions` (terjemahan lokal dan asal), serta `sourceUrl`. Data khusus penyedia disimpan dalam bidang yang dideklarasikan penyedia; modul Jepang mendeklarasikan `dictionary_data` tersembunyi untuk menyimpan rekaman Jisho lengkap. Aturan cakupan, deteksi konflik, validasi dependensi, dan pembersihan saat pembatalan juga berlaku bagi definisi yang diimpor.
 
 Ambil terjemahan yang belum tersedia menggunakan `POST /api/v1/study/library/definitions/localize` dengan `{ translations, languages }`. Bahasa UI yang belum tersedia diminta melalui `localization:translateString`, terjemahan yang diberikan tetap dipertahankan, dan `missingLanguages` dilaporkan jika penyedia tidak tersedia atau gagal. Teks yang belum diterjemahkan dapat diedit; teks Inggris tidak disalin ke bidang bahasa lain. Tindakan ini juga tersedia saat menambahkan definisi secara manual.
+
+## Pembuatan oleh administrator dan pencarian pola goresan
+
+Administrator membuat kartu langsung di ruang nama global tanpa kontrol Publikasikan. Definisi yang dibuat langsung atau diimpor dari kamus menggunakan tujuan global yang sama; dependensi pribadi harus diterbitkan sebelum penyimpanan. Pencarian Pola Goresan langsung menerapkan pola penyedia tanpa membuka pratinjau kamus.
