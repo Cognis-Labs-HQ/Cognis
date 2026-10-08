@@ -607,3 +607,4 @@ Library 契約を日本語学習プロバイダーのグループ化発音グラ
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2b40ad028ac75b37d161c075b04db41a85fdcaad
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c5d3f42d059d2aee21377f0f28d4ab2c2f026679
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/8a9bf125fa71a51cd45ac1e389d932c2bf1ca71e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00
