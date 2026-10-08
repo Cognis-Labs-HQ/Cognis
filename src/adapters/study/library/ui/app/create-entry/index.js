@@ -226,7 +226,7 @@ export async function openCreateEntryPopup({
         .map((provider) => lookupButton(provider, true))
         .join("");
     const compositionInput = supportsTextComposition
-        ? lookupActions
+        ? ""
         : supportsRawInput
           ? `<section class="library-composer-text"><label><span>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</span><input data-library-composer-text data-library-free-text autocomplete="off" value="${escapeHtml(initialLabel)}" required></label><div class="library-composer-assistance">${lookupActions}</div></section>`
           : "";
@@ -265,6 +265,8 @@ export async function openCreateEntryPopup({
             relationshipCarousels: true,
             inlinePronunciationCarousel: true,
             inputCarouselIds,
+            hideInputHeading: layer.semanticRole === "lexicalUnit",
+            compositionLookupHtml: supportsTextComposition ? lookupActions : "",
             pronunciationCarouselLayers,
             tagCarousels: constructor.tag_carousels,
             generatedLabel: supportsTextComposition || supportsRawInput,

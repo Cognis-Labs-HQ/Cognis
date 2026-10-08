@@ -502,6 +502,10 @@ Schema initialization removes historical generated unique indexes whose columns 
 
 Dictionary imports resolve complete pronunciations to installed Kana using longest complete matches, preserving compound characters such as きょ and っく and repeated positions. Canonical entry IDs are stored in ordered reading groups; a reading with missing characters is never partially linked. Definitions reuse matching cards or create cards through the normal composer flow. Carousels remain the primary way to create downstream cards. Characters and particles remain provider-owned read-only layers. Sentence composers do not offer dictionary lookup.
 
+## Dictionary match selection
+
+Vocabulary creation uses one composed card input without the redundant Input heading. Dictionary lookup sits directly beneath it and searches the complete text, including selected component cards. Vocabulary pronunciations are entered manually or imported from the dictionary instead of being generated from Kanji readings. One result fills the composer directly; multiple results open a horizontal list of card previews headed “Multiple Matches Found”. Click a candidate and Confirm to import its fields, pronunciations, definitions, tags, and relationships. Confirmation is disabled until a candidate is selected. Cancel preserves the current composer and creates no definitions. Dictionary-confirmed card text can be submitted, while subsequent text changes require resolution again. Sentence pronunciation remains derived from its constituents, and sentence dictionary lookup remains disabled.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

@@ -143,4 +143,5 @@
   <string name="gateway.study.library_lookup_replace">Replace values</string>
   <string name="gateway.study.library_lookup_replace_stroke_warning">Lookup will replace the current stroke pattern. Continue?</string>
   <string name="gateway.study.library_lookup_unlinked">Some lookup links could not be resolved to available cards. The returned values are preserved without those links.</string>
+  <string name="gateway.study.library_lookup_multiple_title">Multiple Matches Found</string>
 </resources>

@@ -474,7 +474,7 @@ export function editorBody(
         : "";
     const classField = `<input name="class" type="hidden" value="${escapeHtml(contentClass)}">`;
     const inputSelectionField = options.inputCarouselIds?.size
-        ? `<fieldset class="library-pronunciation-selector"><legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: i18n.t("gateway.study.library_composer_text"), inputValue: entry.id ? "" : entry.label, required: !entry.id })}${inlineInputCarousel}</fieldset>`
+        ? `<fieldset class="library-pronunciation-selector">${options.hideInputHeading ? "" : `<legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>`}${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: options.labelText ?? i18n.t("gateway.study.library_composer_text"), inputValue: entry.id ? "" : entry.label, required: !entry.id })}${options.compositionLookupHtml ?? ""}${inlineInputCarousel}</fieldset>`
         : "";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
     const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;

@@ -68,7 +68,10 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [createEntrySource, /data-library-lookup-provider/],
         [createEntrySource, /bindLookupProviders/],
         [createEntrySource, /data-library-free-text/],
-        [createEntrySource, /lookups\.hidden = !text/],
+        [
+            createEntrySource,
+            /lookups\.hidden = !form\.elements\.label\.value\.trim\(\)/,
+        ],
         [createEntrySource, /suggestion\.references/],
         [createEntrySource, /event\.key === "Enter"/],
         [createEntrySource, /draft\.fields\[fieldId\] = value/],

@@ -62,7 +62,7 @@ test("dictionary results directly import definitions, source fields, readings, g
     };
     const option = { value: "kanji", selected: false };
     const input = {
-        value: "教室",
+        value: "",
         dataset: {},
         hasAttribute: () => true,
         setCustomValidity() {},
@@ -87,10 +87,14 @@ test("dictionary results directly import definitions, source fields, readings, g
     const context = {
         resolveLookupReferences,
         separateLookupDefinitions,
+        chooseLookupSuggestion: async (suggestions) => suggestions[0],
         Event,
         RadioNodeList: class {},
         structuredClone,
-        fetchLibraryLookupSuggestions: async () => suggestions,
+        fetchLibraryLookupSuggestions: async (_provider, input) => {
+            assert.equal(input.label, "教室");
+            return suggestions;
+        },
         hasLookupValues: () => true,
         confirmLookupReplacement: async () => true,
         clearLookupValues: (form, draft) => {
@@ -171,6 +175,7 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const context = {
         resolveLookupReferences,
         separateLookupDefinitions,
+        chooseLookupSuggestion: async (suggestions) => suggestions[0],
         fetchLibraryLookupSuggestions: async () => [
             { fields: { stroke_pattern: pattern } },
         ],
@@ -220,6 +225,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     const context = {
         resolveLookupReferences,
         separateLookupDefinitions,
+        chooseLookupSuggestion: async (suggestions) => suggestions[0],
         hasLookupValues: () => true,
         confirmLookupReplacement: async () => false,
         fetchLibraryLookupSuggestions: async () => {
@@ -229,6 +235,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     };
     vm.runInNewContext(source, context);
     const form = {
+        elements: {},
         querySelector: () => input,
         addEventListener: (_type, handler) => {
             listener = handler;
@@ -249,6 +256,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         const context = {
             resolveLookupReferences,
             separateLookupDefinitions,
+            chooseLookupSuggestion: async (suggestions) => suggestions[0],
             hasLookupValues: () => false,
             fetchLibraryLookupSuggestions: async () => {
                 if (result instanceof Error) throw result;
@@ -258,6 +266,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         };
         vm.runInNewContext(source, context);
         const form = {
+            elements: {},
             querySelector: () => ({ value: "教" }),
             addEventListener: (_type, handler) => {
                 listener = handler;
@@ -283,6 +292,7 @@ test("lookup populates the visible composition input when no authored spelling c
         dispatchEvent() {},
     };
     const form = {
+        elements: {},
         querySelector: () => input,
         referenceGroups: {},
         elements: {
@@ -298,6 +308,7 @@ test("lookup populates the visible composition input when no authored spelling c
     const context = {
         resolveLookupReferences,
         separateLookupDefinitions,
+        chooseLookupSuggestion: async (suggestions) => suggestions[0],
         Event,
         structuredClone,
         hasLookupValues: () => false,

@@ -34,7 +34,7 @@ function renderSelection(entry, i18n) {
     return `<input class="library-entry-selection" type="checkbox" data-library-select-entry="${escapeHtml(entry.id)}" aria-label="${escapeHtml(label)}">`;
 }
 
-function renderCardContents(entry, layer, _entries, _schema, i18n) {
+export function renderCardContents(entry, layer, _entries, _schema, i18n) {
     const pronunciations =
         layer.semanticRole === "orderedLexicalSequence"
             ? []

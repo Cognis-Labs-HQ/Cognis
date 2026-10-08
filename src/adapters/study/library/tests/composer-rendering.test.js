@@ -90,3 +90,58 @@ test("definition editors render translations in Content and ordinary cards retai
         );
     }
 });
+
+test("vocabulary has one composed input and lookup precedes component carousels", () => {
+    const context = {
+        escapeHtml: String,
+        pronunciationRelationshipsFor: () => [],
+        localizedLabel: () => "Kanji",
+        canCreateLayerEntries: () => true,
+        renderHorizontalCarousel: () => "<div data-test-carousel></div>",
+        renderCompositionInput: ({ label }) =>
+            `<input aria-label="${label}" data-test-input>`,
+        createFormBuilder: (_i18n, options) => ({
+            render: () => options.trustedContentHtml,
+        }),
+    };
+    vm.createContext(context);
+    vm.runInContext(
+        source("../ui/app/admin-interactions/editor-body.js"),
+        context,
+    );
+    const schema = {
+        id: "ja",
+        language: "en",
+        layers: [
+            {
+                id: "words",
+                semanticRole: "lexicalUnit",
+                relationships: [{ id: "spelling", targetLayer: "kanji" }],
+            },
+            { id: "kanji", semanticRole: "compoundWritingUnit" },
+        ],
+    };
+    const { html } = context.editorBody(
+        { schemaId: "ja", layer: "words", label: "", fields: {} },
+        [schema],
+        [],
+        { t: (key) => key },
+        "",
+        {
+            inputCarouselIds: new Set(["spelling"]),
+            hideInputHeading: true,
+            labelText: "Vocabulary",
+            generatedLabel: true,
+            compositionLookupHtml: "<button data-test-lookup>Lookup</button>",
+        },
+    );
+    assert.match(html, /aria-label="Vocabulary"/);
+    assert.equal((html.match(/data-test-input/g) ?? []).length, 1);
+    assert.doesNotMatch(html, /<legend>gateway.study.library_composer_text/);
+    assert.ok(
+        html.indexOf("data-test-input") < html.indexOf("data-test-lookup"),
+    );
+    assert.ok(
+        html.indexOf("data-test-lookup") < html.indexOf("data-test-carousel"),
+    );
+});

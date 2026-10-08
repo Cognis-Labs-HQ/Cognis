@@ -374,3 +374,7 @@ Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termas
 ## Tautan pelafalan kamus
 
 Impor kamus menyelesaikan pelafalan lengkap ke Kana terpasang melalui kecocokan lengkap terpanjang, termasuk karakter gabungan seperti きょ dan っく serta posisi berulang. ID entri kanonis disimpan dalam kelompok bacaan berurutan; bacaan dengan karakter yang hilang tidak ditautkan sebagian. Definisi menggunakan kembali kartu yang cocok atau membuat kartu melalui alur editor biasa. Karusel tetap menjadi cara utama membuat kartu turunannya. Karakter dan partikel tetap menjadi lapisan hanya-baca yang dikelola penyedia. Editor kalimat tidak menawarkan pencarian kamus.
+
+## Pemilihan hasil kamus
+
+Pembuatan kosakata memakai satu input kartu gabungan tanpa judul Input yang berlebihan. Pencarian kamus berada tepat di bawahnya dan mencari teks lengkap, termasuk komponen kartu yang dipilih. Pelafalan kosakata dimasukkan secara manual atau diimpor dari kamus, bukan dibuat dari bacaan Kanji. Satu hasil langsung mengisi editor; beberapa hasil membuka daftar horizontal pratinjau kartu dengan judul “Beberapa kecocokan ditemukan”. Pilih kandidat lalu konfirmasi untuk mengimpor bidang, pelafalan, definisi, tag, dan hubungan. Konfirmasi dinonaktifkan sampai kandidat dipilih. Pembatalan mempertahankan editor dan tidak membuat definisi. Teks kartu yang dikonfirmasi kamus dapat dikirim; perubahan teks berikutnya perlu diselesaikan kembali. Pelafalan kalimat tetap berasal dari komponennya dan pencarian kamus untuk kalimat tetap dinonaktifkan.

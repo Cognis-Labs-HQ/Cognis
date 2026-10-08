@@ -1,3 +1,4 @@
+import { chooseLookupSuggestion } from "./lookup-choice.js";
 import { separateLookupDefinitions } from "./lookup-definitions.js";
 import { resolveLookupReferences } from "./lookup-references.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
@@ -91,7 +92,7 @@ export function bindLookupProviders(
         const button = event.target.closest("[data-library-lookup-provider]");
         if (!button) return;
         const input = form.querySelector("[data-library-composer-text]");
-        const label = input?.value.trim();
+        const label = form.elements.label?.value.trim() || input?.value.trim();
         if (!label) return;
         button.disabled = true;
         try {
@@ -131,12 +132,14 @@ export function bindLookupProviders(
                 });
                 return;
             }
-            const selectedSuggestion =
-                suggestions.find(
-                    (result) =>
-                        result.label?.normalize("NFKC") ===
-                        label.normalize("NFKC"),
-                ) ?? suggestions[0];
+            const selectedSuggestion = await chooseLookupSuggestion(
+                suggestions,
+                schema,
+                layer,
+                entries,
+                i18n,
+            );
+            if (!selectedSuggestion) return;
             const { suggestion, unresolved } = resolveLookupReferences(
                 selectedSuggestion,
                 entries,
@@ -215,10 +218,12 @@ export function bindLookupProviders(
             );
             renderStrokePatternPreviews(form);
 
-            if (input.hasAttribute("data-library-free-text")) {
+            input.dataset.libraryLookupLabel = form.elements.label.value
+                .trim()
+                .normalize("NFKC");
+            if (input.hasAttribute("data-library-free-text"))
                 input.dataset.lookupApproved = "true";
-                input.setCustomValidity("");
-            }
+            input.setCustomValidity("");
             form.dispatchEvent(new Event("change", { bubbles: true }));
             form.elements.label.value = suggestion.label ?? label;
             draft.label = form.elements.label.value;

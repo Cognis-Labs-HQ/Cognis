@@ -502,6 +502,10 @@ Die Schemainitialisierung entfernt historisch erzeugte eindeutige Indizes, deren
 
 Wörterbuchimporte lösen vollständige Aussprachen über die längsten vollständigen Treffer in installierte Kana auf. Zusammengesetzte Zeichen wie きょ und っく sowie wiederholte Positionen bleiben erhalten. Kanonische Eintragskennungen werden in geordneten Lesegruppen gespeichert; Lesungen mit fehlenden Zeichen werden nicht teilweise verknüpft. Definitionen verwenden passende Karten erneut oder erstellen Karten über den normalen Editorablauf. Karussells bleiben der wichtigste Weg zur Erstellung untergeordneter Karten. Zeichen und Partikeln bleiben schreibgeschützte, vom Anbieter verwaltete Ebenen. Satzeditoren bieten keine Wörterbuchsuche an.
 
+## Wörterbuchtreffer auswählen
+
+Die Vokabelerstellung verwendet eine zusammengesetzte Karteneingabe ohne die überflüssige Überschrift Eingabe. Die Wörterbuchsuche steht direkt darunter und durchsucht den gesamten Text einschließlich ausgewählter Komponenten. Aussprachen werden manuell eingegeben oder aus dem Wörterbuch übernommen, statt aus Kanji-Lesungen erzeugt zu werden. Ein Treffer füllt den Editor direkt; mehrere Treffer öffnen eine horizontale Liste von Kartenvorschauen mit der Überschrift „Mehrere Treffer gefunden“. Nach Auswahl und Bestätigung werden Felder, Aussprachen, Definitionen, Schlagwörter und Beziehungen übernommen. Die Bestätigung bleibt bis zur Auswahl deaktiviert. Abbrechen bewahrt den aktuellen Editor und erstellt keine Definitionen. Vom Wörterbuch bestätigter Kartentext kann gespeichert werden; spätere Textänderungen erfordern erneut eine Auflösung. Die Aussprache von Sätzen wird weiterhin aus ihren Bestandteilen abgeleitet; ihre Wörterbuchsuche bleibt deaktiviert.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

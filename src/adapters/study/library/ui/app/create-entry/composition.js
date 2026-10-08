@@ -97,6 +97,7 @@ export function bindTextComposition(
         );
     };
     const syncPronunciation = () => {
+        if (layer.semanticRole === "lexicalUnit") return;
         const control = form.elements["field:pronunciation"];
         if (!control) return;
         const selectedPronunciation = (form.compositionOrder ?? [])
@@ -160,10 +161,10 @@ export function bindTextComposition(
                 : `<p>${escapeHtml(i18n.t("gateway.study.library_editor_no_relationships"))}</p>`;
         }
         syncPronunciation();
+        if (lookups) lookups.hidden = !form.elements.label.value.trim();
     };
     const renderSuggestions = () => {
         const text = input.value.trim();
-        if (lookups) lookups.hidden = !text;
         const normalizedText = text.normalize("NFKC");
         const candidates = compositionCandidates();
         const exactMatches = candidates.filter(
@@ -270,7 +271,15 @@ export function bindTextComposition(
     return {
         validate() {
             syncLabel();
-            const unresolved = relationships.length > 0 && input.value.trim();
+            const dictionaryLabel = input.dataset.libraryLookupLabel;
+            const fromDictionary =
+                dictionaryLabel &&
+                dictionaryLabel ===
+                    form.elements.label.value.trim().normalize("NFKC");
+            const unresolved =
+                !fromDictionary &&
+                relationships.length > 0 &&
+                input.value.trim();
             input.setCustomValidity(
                 unresolved
                     ? i18n.t("gateway.study.library_composer_resolve_input")
