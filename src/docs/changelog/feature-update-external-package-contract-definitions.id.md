@@ -625,3 +625,4 @@ Impor kamus menyelesaikan pelafalan lengkap ke Kana terpasang melalui kecocokan 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/8a9bf125fa71a51cd45ac1e389d932c2bf1ca71e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6aab168c82f96e8991583d14d45e7f43f7c32efe
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/caecf066d84d75cdf09fc337052e5df1d9393195
