@@ -379,3 +379,11 @@ Dictionary lookup now fills the open card composer directly and commits all retu
 ## Resolvable imports and editable definitions
 
 Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
+
+## Composer lookup corrections
+
+Stroke lookup is hidden whenever a retrieved pattern is present, including patterns loaded from dictionary results or saved cards. Clearing the pattern restores lookup. Definition editors keep translations in Content and omit the redundant Definitions tab. Dictionary meanings separated by semicolons become individually committed definitions, preserving aligned translations and original source metadata. Structured imported meanings replace aggregate source-definition links.
+
+## Dictionary pronunciation links
+
+Dictionary imports resolve complete pronunciations to installed Kana using longest complete matches, preserving compound characters such as きょ and っく and repeated positions. Canonical entry IDs are stored in ordered reading groups; a reading with missing characters is never partially linked. Definitions reuse matching cards or create cards through the normal composer flow. Carousels remain the primary way to create downstream cards. Characters and particles remain provider-owned read-only layers. Sentence composers do not offer dictionary lookup.

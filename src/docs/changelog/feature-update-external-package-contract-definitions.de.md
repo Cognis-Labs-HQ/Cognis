@@ -490,6 +490,18 @@ Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zu
 
 PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
 
+## Korrekturen am Karteneditor
+
+Die Strichsuche wird ausgeblendet, sobald ein abgerufenes Muster vorhanden ist, auch bei Wörterbuchergebnissen und gespeicherten Karten. Das Löschen des Musters zeigt die Suche wieder an. Definitionseditoren zeigen Übersetzungen unter Inhalt und lassen den überflüssigen Reiter Definitionen weg. Durch Semikolon getrennte Wörterbuchbedeutungen werden einzeln übernommen; zugeordnete Übersetzungen und ursprüngliche Quelldaten bleiben erhalten. Strukturierte Bedeutungen ersetzen Verknüpfungen zu zusammengefassten Quelldefinitionen.
+
+## Vollständige Schlüsselreparatur
+
+Die Schemainitialisierung entfernt historisch erzeugte eindeutige Indizes, deren Spalten eine echte Teilmenge des aktuellen Primärschlüssels sind, nachdem dieser bestätigt wurde. Dies repariert den Index uq_study_library_references_208386997ea7, der sonst wiederholte Kana an derselben Position in verschiedenen Lesegruppen ablehnt. Explizit deklarierte eindeutige Schlüssel und unabhängig benannte Indizes bleiben erhalten, ebenso vorhandene Zeilen. Manuelles Löschen von Daten ist nicht erforderlich.
+
+## Aussprache aus dem Wörterbuch
+
+Wörterbuchimporte lösen vollständige Aussprachen über die längsten vollständigen Treffer in installierte Kana auf. Zusammengesetzte Zeichen wie きょ und っく sowie wiederholte Positionen bleiben erhalten. Kanonische Eintragskennungen werden in geordneten Lesegruppen gespeichert; Lesungen mit fehlenden Zeichen werden nicht teilweise verknüpft. Definitionen verwenden passende Karten erneut oder erstellen Karten über den normalen Editorablauf. Karussells bleiben der wichtigste Weg zur Erstellung untergeordneter Karten. Zeichen und Partikeln bleiben schreibgeschützte, vom Anbieter verwaltete Ebenen. Satzeditoren bieten keine Wörterbuchsuche an.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

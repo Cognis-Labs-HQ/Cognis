@@ -43,3 +43,7 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 ## Upgrade legacy relationship keys
 
 PostgreSQL and MariaDB now widen an existing composite primary key when the declared key adds columns while retaining all previous key columns. Existing Library reference tables therefore gain group_index and position in their key, allowing the same Kana to occur in different pronunciations or at different positions without duplicate-key errors. Existing rows are preserved; current keys and unrelated or narrower declarations are left unchanged. The expansion is logged and runs when schema initialization next occurs.
+
+## Complete reference-key repair
+
+Schema initialization removes historical generated unique indexes whose columns are a strict subset of the current primary key, after confirming that the primary key is current. This repairs the index uq_study_library_references_208386997ea7, which otherwise rejects repeated Kana at the same position across different reading groups. Explicitly declared unique keys and independently named indexes remain intact; existing rows are preserved. No manual data deletion is required.

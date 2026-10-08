@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
@@ -370,12 +371,17 @@ class PostgresExecutor implements RawDbExecutor {
             );
             const existing = result.rows?.[0];
             const columns = existing?.columns;
+            let primaryCurrent =
+                Array.isArray(columns) &&
+                columns.length === compositePk.length &&
+                columns.every((column) => compositePk.includes(String(column)));
             if (
                 Array.isArray(columns) &&
                 columns.length > 0 &&
                 columns.length < compositePk.length &&
                 columns.every((column) => compositePk.includes(String(column)))
             ) {
+                primaryCurrent = true;
                 const constraint = String(existing.constraint_name).replaceAll(
                     '"',
                     '""',
@@ -390,6 +396,8 @@ class PostgresExecutor implements RawDbExecutor {
                     columns: compositePk,
                 });
             }
+            if (primaryCurrent)
+                await removeSupersededLegacyIndexes(this, def, this.log);
         }
         for (const index of def.indexes ?? []) {
             const indexName =
@@ -449,4 +457,75 @@ async function createPostgresPool(
         });
     });
     return pool as PostgresPool;
+}
+
+function legacyIndexName(table: string, columns: string[]): string {
+    const descriptive = `uq_${table}_${columns.join("_")}`;
+    if (descriptive.length <= 63) return descriptive;
+    const digest = createHash("sha256")
+        .update(`${table}:${columns.join(":")}`)
+        .digest("hex")
+        .slice(0, 12);
+    return `uq_${table.slice(0, 46)}_${digest}`;
+}
+const quote = (identifier: string) => `"${identifier.replaceAll('"', '""')}"`;
+
+export async function removeSupersededLegacyIndexes(
+    executor: RawDbExecutor,
+    definition: StructuredDbTableDef,
+    log?: BootstrapLog,
+) {
+    const primary = definition.primaryKey ?? [];
+    const declared = [
+        ...(definition.uniqueKeys ?? []),
+        ...definition.columns
+            .filter(({ unique }) => unique)
+            .map(({ name }) => [name]),
+    ];
+    const result = await executor.execute(
+        `SELECT indexes.relname AS index_name, namespaces.nspname AS schema_name, constraints.conname AS constraint_name, array_agg(attributes.attname::text ORDER BY keys.ordinality) AS columns
+FROM pg_index metadata
+JOIN pg_class indexes ON indexes.oid = metadata.indexrelid
+JOIN pg_namespace namespaces ON namespaces.oid = indexes.relnamespace
+CROSS JOIN LATERAL unnest(metadata.indkey) WITH ORDINALITY AS keys(attribute_number, ordinality)
+JOIN pg_attribute attributes ON attributes.attrelid = metadata.indrelid AND attributes.attnum = keys.attribute_number
+LEFT JOIN pg_constraint constraints ON constraints.conindid = metadata.indexrelid
+WHERE metadata.indrelid = to_regclass($1) AND metadata.indisunique AND NOT metadata.indisprimary AND metadata.indexprs IS NULL AND metadata.indpred IS NULL AND keys.ordinality <= metadata.indnkeyatts
+GROUP BY indexes.relname, namespaces.nspname, constraints.conname`,
+        [definition.name],
+    );
+    for (const index of result.rows ?? []) {
+        const columns = index.columns;
+        if (
+            !Array.isArray(columns) ||
+            !columns.length ||
+            columns.length >= primary.length ||
+            !columns.every((column) => primary.includes(String(column)))
+        )
+            continue;
+        if (
+            declared.some(
+                (key) =>
+                    key.length === columns.length &&
+                    key.every((column) => columns.includes(column)),
+            )
+        )
+            continue;
+        if (index.index_name !== legacyIndexName(definition.name, columns))
+            continue;
+        if (index.constraint_name)
+            await executor.execute(
+                `ALTER TABLE ${definition.name} DROP CONSTRAINT ${quote(String(index.constraint_name))}`,
+            );
+        else
+            await executor.execute(
+                `DROP INDEX IF EXISTS ${quote(String(index.schema_name))}.${quote(String(index.index_name))}`,
+            );
+        writeDbLog(log, "info", "Removed superseded legacy unique index.", {
+            component: "db",
+            provider: "postgresql",
+            table: definition.name,
+            index: String(index.index_name),
+        });
+    }
 }

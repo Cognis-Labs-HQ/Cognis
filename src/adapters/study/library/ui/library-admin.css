@@ -556,3 +556,7 @@ body[data-theme="light"]
     display: grid;
     gap: 0.25rem;
 }
+
+.library-stroke-pattern [data-library-lookup-provider][hidden] {
+    display: none;
+}

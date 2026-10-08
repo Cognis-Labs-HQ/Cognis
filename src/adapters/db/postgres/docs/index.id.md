@@ -38,3 +38,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 ## Memperbarui kunci relasi lama
 
 PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
+
+## Perbaikan kunci referensi
+
+Inisialisasi skema menghapus indeks unik lama yang dibuat otomatis jika kolomnya merupakan bagian dari kunci primer saat ini, setelah memastikan kunci primer sesuai. Ini memperbaiki indeks uq_study_library_references_208386997ea7 yang menolak Kana berulang pada posisi sama di kelompok bacaan berbeda. Kunci unik yang dinyatakan secara eksplisit, indeks dengan nama mandiri, dan baris yang ada tetap dipertahankan. Tidak diperlukan penghapusan data manual.

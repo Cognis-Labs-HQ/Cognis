@@ -490,6 +490,18 @@ Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses 
 
 PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
 
+## Perbaikan pencarian editor
+
+Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termasuk pola dari hasil kamus atau kartu tersimpan. Menghapus pola menampilkan pencarian kembali. Editor definisi menampilkan terjemahan di Konten tanpa tab Definisi yang berlebihan. Makna kamus yang dipisahkan titik koma menjadi definisi tersendiri yang langsung disimpan, dengan terjemahan yang sesuai dan metadata sumber asli tetap tersimpan. Makna terstruktur menggantikan tautan definisi sumber gabungan.
+
+## Perbaikan kunci referensi
+
+Inisialisasi skema menghapus indeks unik lama yang dibuat otomatis jika kolomnya merupakan bagian dari kunci primer saat ini, setelah memastikan kunci primer sesuai. Ini memperbaiki indeks uq_study_library_references_208386997ea7 yang menolak Kana berulang pada posisi sama di kelompok bacaan berbeda. Kunci unik yang dinyatakan secara eksplisit, indeks dengan nama mandiri, dan baris yang ada tetap dipertahankan. Tidak diperlukan penghapusan data manual.
+
+## Tautan pelafalan kamus
+
+Impor kamus menyelesaikan pelafalan lengkap ke Kana terpasang melalui kecocokan lengkap terpanjang, termasuk karakter gabungan seperti きょ dan っく serta posisi berulang. ID entri kanonis disimpan dalam kelompok bacaan berurutan; bacaan dengan karakter yang hilang tidak ditautkan sebagian. Definisi menggunakan kembali kartu yang cocok atau membuat kartu melalui alur editor biasa. Karusel tetap menjadi cara utama membuat kartu turunannya. Karakter dan partikel tetap menjadi lapisan hanya-baca yang dikelola penyedia. Editor kalimat tidak menawarkan pencarian kamus.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

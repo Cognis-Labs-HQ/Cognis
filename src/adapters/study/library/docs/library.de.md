@@ -366,3 +366,11 @@ Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle 
 ## Auflösbare Importe und editierbare Definitionen
 
 Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zugänglichen installierten Karten zu, auch für gruppierte Links. Fehlende oder mehrdeutige Ziele lassen die Werte mit einer Warnung unverknüpft, statt das Speichern zu verhindern. Übernommene Definitionen bieten eine Bearbeiten-Aktion über den bestehenden berechtigungsabhängigen Karteneditor; gespeicherte Änderungen aktualisieren ihre Zusammenfassung. Versteckte Schemafelder, einschließlich Wörterbuch-Quelldaten, erscheinen nicht im Formular, behalten aber ihre gespeicherten Werte.
+
+## Korrekturen am Karteneditor
+
+Die Strichsuche wird ausgeblendet, sobald ein abgerufenes Muster vorhanden ist, auch bei Wörterbuchergebnissen und gespeicherten Karten. Das Löschen des Musters zeigt die Suche wieder an. Definitionseditoren zeigen Übersetzungen unter Inhalt und lassen den überflüssigen Reiter Definitionen weg. Durch Semikolon getrennte Wörterbuchbedeutungen werden einzeln übernommen; zugeordnete Übersetzungen und ursprüngliche Quelldaten bleiben erhalten. Strukturierte Bedeutungen ersetzen Verknüpfungen zu zusammengefassten Quelldefinitionen.
+
+## Aussprache aus dem Wörterbuch
+
+Wörterbuchimporte lösen vollständige Aussprachen über die längsten vollständigen Treffer in installierte Kana auf. Zusammengesetzte Zeichen wie きょ und っく sowie wiederholte Positionen bleiben erhalten. Kanonische Eintragskennungen werden in geordneten Lesegruppen gespeichert; Lesungen mit fehlenden Zeichen werden nicht teilweise verknüpft. Definitionen verwenden passende Karten erneut oder erstellen Karten über den normalen Editorablauf. Karussells bleiben der wichtigste Weg zur Erstellung untergeordneter Karten. Zeichen und Partikeln bleiben schreibgeschützte, vom Anbieter verwaltete Ebenen. Satzeditoren bieten keine Wörterbuchsuche an.

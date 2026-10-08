@@ -1,3 +1,4 @@
+import { separateLookupDefinitions } from "./lookup-definitions.js";
 import { resolveLookupReferences } from "./lookup-references.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
 import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library-client.js";
@@ -152,7 +153,9 @@ export function bindLookupProviders(
                     schema.layers.find(({ id }) => id === targetLayer)
                         ?.semanticRole === "definition",
             );
-            for (const definition of suggestion.definitions ?? []) {
+            for (const definition of separateLookupDefinitions(
+                suggestion.definitions,
+            )) {
                 if (!definitionRelationship) break;
                 const result = await createDefinition({
                     schema,

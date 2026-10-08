@@ -65,6 +65,11 @@ export function renderStrokePatternPreviews(form) {
                 ? pattern.strokes
                 : [];
             canvas.hidden = strokes.length === 0;
+            section
+                .querySelectorAll("[data-library-lookup-provider]")
+                .forEach((button) => {
+                    button.hidden = strokes.length > 0;
+                });
             if (!strokes.length) return;
             const context = canvas.getContext("2d");
             if (!context) return;

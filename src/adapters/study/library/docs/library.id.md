@@ -366,3 +366,11 @@ Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan 
 ## Impor yang terselesaikan dan definisi yang dapat diedit
 
 Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses sebelum menambahkan tautan biasa atau berkelompok. Target yang hilang atau ambigu membiarkan nilai hasil tanpa tautan dengan peringatan, bukan menghalangi penyimpanan. Definisi yang telah disimpan memiliki tindakan Edit melalui editor kartu yang memeriksa izin, dan perubahan tersimpan memperbarui ringkasannya. Bidang skema tersembunyi, termasuk data sumber kamus, tidak ditampilkan dalam formulir tetapi nilai tersimpannya dipertahankan.
+
+## Perbaikan pencarian editor
+
+Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termasuk pola dari hasil kamus atau kartu tersimpan. Menghapus pola menampilkan pencarian kembali. Editor definisi menampilkan terjemahan di Konten tanpa tab Definisi yang berlebihan. Makna kamus yang dipisahkan titik koma menjadi definisi tersendiri yang langsung disimpan, dengan terjemahan yang sesuai dan metadata sumber asli tetap tersimpan. Makna terstruktur menggantikan tautan definisi sumber gabungan.
+
+## Tautan pelafalan kamus
+
+Impor kamus menyelesaikan pelafalan lengkap ke Kana terpasang melalui kecocokan lengkap terpanjang, termasuk karakter gabungan seperti きょ dan っく serta posisi berulang. ID entri kanonis disimpan dalam kelompok bacaan berurutan; bacaan dengan karakter yang hilang tidak ditautkan sebagian. Definisi menggunakan kembali kartu yang cocok atau membuat kartu melalui alur editor biasa. Karusel tetap menjadi cara utama membuat kartu turunannya. Karakter dan partikel tetap menjadi lapisan hanya-baca yang dikelola penyedia. Editor kalimat tidak menawarkan pencarian kamus.

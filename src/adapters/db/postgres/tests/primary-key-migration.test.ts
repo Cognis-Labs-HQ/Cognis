@@ -12,6 +12,8 @@ const columns = [
 
 test("existing reference keys widen without discarding repeated readings or positions", async () => {
     let primary = columns.slice(0, 3);
+    let oldIndex = true;
+    let indexMigrations = 0;
     let migrations = 0;
     const rows: Record<string, unknown>[] = [];
     const query = async (sql: string, params: unknown[] = []) => {
@@ -31,7 +33,27 @@ test("existing reference keys widen without discarding repeated readings or posi
                     columns: primary,
                 },
             ];
-        else if (sql.includes("DROP ") && sql.includes("ADD PRIMARY KEY")) {
+        else if (sql.includes("FROM pg_index"))
+            result = oldIndex
+                ? [
+                      {
+                          index_name:
+                              "uq_study_library_references_208386997ea7",
+                          schema_name: "public",
+                          columns: columns.filter(
+                              (column) => column !== "group_index",
+                          ),
+                      },
+                  ]
+                : [];
+        else if (sql.startsWith("DROP INDEX")) {
+            assert.equal(
+                sql,
+                'DROP INDEX IF EXISTS "public"."uq_study_library_references_208386997ea7"',
+            );
+            oldIndex = false;
+            indexMigrations += 1;
+        } else if (sql.includes("DROP ") && sql.includes("ADD PRIMARY KEY")) {
             migrations += 1;
             primary = [...columns];
         } else if (sql.startsWith("INSERT INTO")) {
@@ -43,8 +65,18 @@ test("existing reference keys widen without discarding repeated readings or posi
                 names.map((name, index) => [name, params[index]]),
             );
             if (
-                rows.some((existing) =>
-                    primary.every((column) => existing[column] === row[column]),
+                rows.some(
+                    (existing) =>
+                        primary.every(
+                            (column) => existing[column] === row[column],
+                        ) ||
+                        (oldIndex &&
+                            columns
+                                .filter((column) => column !== "group_index")
+                                .every(
+                                    (column) =>
+                                        existing[column] === row[column],
+                                )),
                 )
             )
                 throw new Error("23505 duplicate primary key");
@@ -96,6 +128,7 @@ test("existing reference keys widen without discarding repeated readings or posi
     await assert.rejects(insert(0, 0), /23505/);
     assert.equal(rows.length, 3);
     assert.equal(migrations, 1);
+    assert.equal(indexMigrations, 1);
 });
 
 test("current and unrelated primary keys are not replaced", async () => {

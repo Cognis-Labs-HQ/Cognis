@@ -38,3 +38,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 ## Ältere Beziehungsschlüssel aktualisieren
 
 PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
+
+## Vollständige Schlüsselreparatur
+
+Die Schemainitialisierung entfernt historisch erzeugte eindeutige Indizes, deren Spalten eine echte Teilmenge des aktuellen Primärschlüssels sind, nachdem dieser bestätigt wurde. Dies repariert den Index uq_study_library_references_208386997ea7, der sonst wiederholte Kana an derselben Position in verschiedenen Lesegruppen ablehnt. Explizit deklarierte eindeutige Schlüssel und unabhängig benannte Indizes bleiben erhalten, ebenso vorhandene Zeilen. Manuelles Löschen von Daten ist nicht erforderlich.

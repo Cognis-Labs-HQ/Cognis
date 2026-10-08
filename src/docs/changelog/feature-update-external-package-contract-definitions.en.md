@@ -490,6 +490,18 @@ Dictionary results can be reviewed before applying their pronunciations, classif
 
 The Retrieve missing translations action calls `POST /api/v1/study/library/definitions/localize` with `{ translations, languages }`. It requests missing UI languages through `localization:translateString`, preserves supplied translations, and reports `missingLanguages` when a provider is absent or fails. Missing translations remain editable; English is not copied into other language fields. This is also available when adding a definition manually.
 
+## Composer lookup corrections
+
+Stroke lookup is hidden whenever a retrieved pattern is present, including patterns loaded from dictionary results or saved cards. Clearing the pattern restores lookup. Definition editors keep translations in Content and omit the redundant Definitions tab. Dictionary meanings separated by semicolons become individually committed definitions, preserving aligned translations and original source metadata. Structured imported meanings replace aggregate source-definition links.
+
+## Complete reference-key repair
+
+Schema initialization removes historical generated unique indexes whose columns are a strict subset of the current primary key, after confirming that the primary key is current. This repairs the index uq_study_library_references_208386997ea7, which otherwise rejects repeated Kana at the same position across different reading groups. Explicitly declared unique keys and independently named indexes remain intact; existing rows are preserved. No manual data deletion is required.
+
+## Dictionary pronunciation links
+
+Dictionary imports resolve complete pronunciations to installed Kana using longest complete matches, preserving compound characters such as きょ and っく and repeated positions. Canonical entry IDs are stored in ordered reading groups; a reading with missing characters is never partially linked. Definitions reuse matching cards or create cards through the normal composer flow. Carousels remain the primary way to create downstream cards. Characters and particles remain provider-owned read-only layers. Sentence composers do not offer dictionary lookup.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

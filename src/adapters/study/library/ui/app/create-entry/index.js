@@ -192,8 +192,9 @@ export async function openCreateEntryPopup({
     );
     const enabledLookupProviders = lookupProviders.filter(
         ({ capabilities }) =>
-            layer.dictionary_lookup !== false ||
-            !capabilities?.includes("dictionary"),
+            !capabilities?.includes("dictionary") ||
+            (layer.dictionary_lookup !== false &&
+                layer.semanticRole !== "orderedLexicalSequence"),
     );
     const normalizedLookupLabels = (metadata) =>
         Object.values(metadata?.labels ?? {}).map((label) =>

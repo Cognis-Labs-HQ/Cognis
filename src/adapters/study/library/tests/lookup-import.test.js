@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { separateLookupDefinitions } from "../ui/app/create-entry/lookup-definitions.js";
 import { resolveLookupReferences } from "../ui/app/create-entry/lookup-references.js";
 
 const source = readFileSync(
@@ -85,6 +86,7 @@ test("dictionary results directly import definitions, source fields, readings, g
     };
     const context = {
         resolveLookupReferences,
+        separateLookupDefinitions,
         Event,
         RadioNodeList: class {},
         structuredClone,
@@ -168,6 +170,7 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const draft = { fields: { pronunciation: ["きょう"] } };
     const context = {
         resolveLookupReferences,
+        separateLookupDefinitions,
         fetchLibraryLookupSuggestions: async () => [
             { fields: { stroke_pattern: pattern } },
         ],
@@ -216,6 +219,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     const draft = { fields: { pronunciation: ["original"] } };
     const context = {
         resolveLookupReferences,
+        separateLookupDefinitions,
         hasLookupValues: () => true,
         confirmLookupReplacement: async () => false,
         fetchLibraryLookupSuggestions: async () => {
@@ -244,6 +248,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         const draft = { fields: {} };
         const context = {
             resolveLookupReferences,
+            separateLookupDefinitions,
             hasLookupValues: () => false,
             fetchLibraryLookupSuggestions: async () => {
                 if (result instanceof Error) throw result;
@@ -292,6 +297,7 @@ test("lookup populates the visible composition input when no authored spelling c
     };
     const context = {
         resolveLookupReferences,
+        separateLookupDefinitions,
         Event,
         structuredClone,
         hasLookupValues: () => false,

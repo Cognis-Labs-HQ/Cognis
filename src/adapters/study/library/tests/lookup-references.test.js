@@ -151,3 +151,90 @@ test("resolved lookup groups pass the same validation used when creating cards",
         ),
     );
 });
+
+test("structured meanings replace an aggregate source definition while retaining spelling links", () => {
+    const result = resolveLookupReferences(
+        {
+            definitions: [{ translations: { en: "teach; faith" } }],
+            references: [
+                { relation: "meaning", entryId: "aggregate" },
+                { relation: "spelling", entryId: "pack-kanji" },
+            ],
+        },
+        entries,
+        { ...schema, layers: [{ id: "meanings", semanticRole: "definition" }] },
+        {
+            relationships: [
+                ...layer.relationships,
+                { id: "meaning", targetLayer: "meanings" },
+            ],
+        },
+    );
+    assert.equal(result.unresolved, false);
+    assert.deepEqual(result.suggestion.references, [
+        { relation: "spelling", entryId: "db-kanji" },
+    ]);
+});
+
+test("dictionary pronunciations resolve to canonical Kana, including compound and repeated characters", () => {
+    const kana = ["きょ", "う", "し", "つ", "っく"].map((label, index) => ({
+        id: `kana-${index}`,
+        label,
+        schemaId: "ja",
+        layer: "kana",
+        schemaVersion: 88,
+    }));
+    const readingSchema = {
+        ...schema,
+        layers: [{ id: "kana", semanticRole: "atomicWritingUnit" }],
+    };
+    const readingLayer = {
+        relationships: [
+            {
+                id: "reading",
+                targetLayer: "kana",
+                grouped: true,
+                ordered: true,
+                presentationRole: "pronunciation",
+            },
+        ],
+    };
+    for (const referenceGroups of [
+        undefined,
+        { reading: [[{ entryId: "uninstalled-provider-id" }]] },
+    ]) {
+        const result = resolveLookupReferences(
+            {
+                fields: { pronunciation: ["きょうしつ", "っくっく"] },
+                referenceGroups,
+            },
+            kana,
+            readingSchema,
+            readingLayer,
+        );
+        assert.equal(result.unresolved, false);
+        assert.deepEqual(
+            result.suggestion.referenceGroups.reading.map((group) =>
+                group.map(({ entryId }) => entryId),
+            ),
+            [
+                ["kana-0", "kana-1", "kana-2", "kana-3"],
+                ["kana-4", "kana-4"],
+            ],
+        );
+        assert.deepEqual(
+            result.suggestion.referenceGroups.reading[1].map(
+                ({ position }) => position,
+            ),
+            [0, 1],
+        );
+    }
+    const missing = resolveLookupReferences(
+        { fields: { pronunciation: ["きょう", "unknown"] } },
+        kana,
+        readingSchema,
+        readingLayer,
+    );
+    assert.equal(missing.unresolved, true);
+    assert.deepEqual(missing.suggestion.referenceGroups, {});
+});
