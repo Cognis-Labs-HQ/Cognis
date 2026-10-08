@@ -55,7 +55,7 @@ test("replacement clears fields, relationships, groups, and definition displays"
         libraryGeneratedPronunciation: ["old"],
     };
     const draft = { fields: { pronunciation: ["old"] } };
-    const context = { Event };
+    const context = { Event, CustomEvent };
     vm.runInNewContext(source, context);
     context.clearLookupValues(form, draft);
     assert.equal(controls[0].value, "");

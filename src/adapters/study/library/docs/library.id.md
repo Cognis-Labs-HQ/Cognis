@@ -378,3 +378,7 @@ Impor kamus menyelesaikan pelafalan lengkap ke Kana terpasang melalui kecocokan 
 ## Pemilihan hasil kamus
 
 Pembuatan kosakata memakai satu input kartu gabungan tanpa judul Input yang berlebihan. Pencarian kamus berada tepat di bawahnya dan mencari teks lengkap, termasuk komponen kartu yang dipilih. Pelafalan kosakata dimasukkan secara manual atau diimpor dari kamus, bukan dibuat dari bacaan Kanji. Satu hasil langsung mengisi editor; beberapa hasil membuka daftar horizontal pratinjau kartu dengan judul “Beberapa kecocokan ditemukan”. Pilih kandidat lalu konfirmasi untuk mengimpor bidang, pelafalan, definisi, tag, dan hubungan. Konfirmasi dinonaktifkan sampai kandidat dipilih. Pembatalan mempertahankan editor dan tidak membuat definisi. Teks kartu yang dikonfirmasi kamus dapat dikirim; perubahan teks berikutnya perlu diselesaikan kembali. Pelafalan kalimat tetap berasal dari komponennya dan pencarian kamus untuk kalimat tetap dinonaktifkan.
+
+## Input kosakata dipertahankan
+
+Pencarian kamus kosakata mempertahankan teks yang ditulis, urutan komponen, dan kartu input yang dipilih sambil mengimpor bidang pendukung, pelafalan, dan definisi. Formulir menggunakan kembali definisi yang cocok dengan perbandingan ternormalisasi yang sama seperti API; definisi yang baru diimpor langsung disimpan dalam cache agar makna berulang tidak menyebabkan konflik. Penggunaan kembali menghormati cakupan tujuan dan mempertahankan terjemahan definisi yang ada.

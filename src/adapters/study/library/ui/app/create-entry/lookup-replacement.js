@@ -41,15 +41,29 @@ export async function confirmLookupReplacement(i18n, strokeOnly = false) {
     );
 }
 
-export function clearLookupValues(form, draft) {
+export function clearLookupValues(
+    form,
+    draft,
+    { preserveComposition = false, preservedRelationshipIds = new Set() } = {},
+) {
     draft.fields = {};
-    form.referenceGroups = {};
-    form.compositionOrder = [];
+    form.referenceGroups = Object.fromEntries(
+        Object.entries(form.referenceGroups ?? {}).filter(([relation]) =>
+            preservedRelationshipIds.has(relation),
+        ),
+    );
+    if (!preserveComposition) form.compositionOrder = [];
     form.libraryGeneratedPronunciation = [];
     for (const control of form.querySelectorAll(
         '[name^="field:"], [name^="relationship:"]',
     )) {
-        if (control.disabled) continue;
+        if (
+            control.disabled ||
+            preservedRelationshipIds.has(
+                control.name?.replace(/^relationship:/u, ""),
+            )
+        )
+            continue;
         if (control.options) {
             for (const option of control.options) option.selected = false;
         } else if (control.type === "checkbox" || control.type === "radio") {
@@ -68,5 +82,9 @@ export function clearLookupValues(form, draft) {
             button.hidden = false;
         },
     );
-    form.dispatchEvent(new Event("library-lookup-replace"));
+    form.dispatchEvent(
+        new CustomEvent("library-lookup-replace", {
+            detail: { preservedRelationshipIds: [...preservedRelationshipIds] },
+        }),
+    );
 }

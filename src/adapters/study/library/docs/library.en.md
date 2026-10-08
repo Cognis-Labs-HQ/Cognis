@@ -391,3 +391,7 @@ Dictionary imports resolve complete pronunciations to installed Kana using longe
 ## Dictionary match selection
 
 Vocabulary creation uses one composed card input without the redundant Input heading. Dictionary lookup sits directly beneath it and searches the complete text, including selected component cards. Vocabulary pronunciations are entered manually or imported from the dictionary instead of being generated from Kanji readings. One result fills the composer directly; multiple results open a horizontal list of card previews headed “Multiple Matches Found”. Click a candidate and Confirm to import its fields, pronunciations, definitions, tags, and relationships. Confirmation is disabled until a candidate is selected. Cancel preserves the current composer and creates no definitions. Dictionary-confirmed card text can be submitted, while subsequent text changes require resolution again. Sentence pronunciation remains derived from its constituents, and sentence dictionary lookup remains disabled.
+
+## Preserved vocabulary input
+
+Vocabulary dictionary lookup preserves the authored text, composed token order, and selected input cards while importing supporting fields, pronunciations, and definitions. The composer reuses matching definitions using the same normalized comparison as the API; newly imported definitions are cached immediately so repeated meanings do not cause conflicts. Reuse respects the destination scope and retains the existing definition translations.

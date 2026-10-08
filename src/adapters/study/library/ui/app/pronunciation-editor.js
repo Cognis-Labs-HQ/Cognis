@@ -239,11 +239,19 @@ export function mountEditableRelationshipCarousels(
     );
     form.addEventListener(
         "library-lookup-replace",
-        () => {
-            draftValues.clear();
-            stagedValues.clear();
+        (event) => {
+            const preserved = new Set(
+                event.detail?.preservedRelationshipIds ?? [],
+            );
+            for (const relation of draftValues.keys())
+                if (!preserved.has(relation)) draftValues.delete(relation);
+            for (const relation of stagedValues.keys())
+                if (!preserved.has(relation)) stagedValues.delete(relation);
             form.querySelectorAll("[data-horizontal-carousel]").forEach(
-                clearHorizontalCarouselSelection,
+                (carousel) => {
+                    if (!preserved.has(carousel.dataset.horizontalCarousel))
+                        clearHorizontalCarouselSelection(carousel);
+                },
             );
             form.querySelectorAll(
                 '[data-library-composition-field="pronunciation"] input',

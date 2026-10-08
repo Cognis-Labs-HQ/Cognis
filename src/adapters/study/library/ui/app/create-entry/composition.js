@@ -271,7 +271,7 @@ export function bindTextComposition(
     return {
         validate() {
             syncLabel();
-            const dictionaryLabel = input.dataset.libraryLookupLabel;
+            const dictionaryLabel = form.libraryLookupLabel;
             const fromDictionary =
                 dictionaryLabel &&
                 dictionaryLabel ===

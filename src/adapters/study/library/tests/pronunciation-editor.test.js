@@ -16,6 +16,11 @@ function editor(value = "ab") {
         .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
         .replace(/\bexport /g, "");
     const listeners = new Map();
+    const clearedCarousels = [];
+    const carousels = [
+        { dataset: { horizontalCarousel: "spelling" } },
+        { dataset: { horizontalCarousel: "readings" } },
+    ];
     const saved = { matches: () => true, hidden: true, innerHTML: "" };
     const field = {
         value,
@@ -54,9 +59,13 @@ function editor(value = "ab") {
                 ? composition
                 : null,
         querySelectorAll: (selector) =>
-            selector.includes("data-library-composition-field")
-                ? [composition]
-                : [],
+            selector === "[data-horizontal-carousel]"
+                ? carousels
+                : selector.endsWith(" input")
+                  ? []
+                  : selector.includes("data-library-composition-field")
+                    ? [composition]
+                    : [],
         addEventListener: (kind, handler) => listeners.set(kind, handler),
         dispatchEvent: (event) => listeners.get(event.type)?.(event),
     };
@@ -83,7 +92,9 @@ function editor(value = "ab") {
         compositionTokenEntryId,
         compositionTokenLabel,
         CSS: { escape: (value) => value },
-        clearHorizontalCarouselSelection() {},
+        clearHorizontalCarouselSelection(carousel) {
+            clearedCarousels.push(carousel.dataset.horizontalCarousel);
+        },
         mountHorizontalCarousels(_root, options) {
             carousel = options;
         },
@@ -111,6 +122,7 @@ function editor(value = "ab") {
         form,
         field,
         saved,
+        clearedCarousels,
         controller,
         select: (values) => carousel.onChange({ id: "readings", values }),
     };
@@ -200,4 +212,18 @@ test("generated pronunciations appear immediately as committed values and preser
     setGeneratedPronunciation(session.form, "manual");
     setGeneratedPronunciation(session.form, "next");
     assert.equal(session.field.value, "manual\nnext");
+});
+
+test("lookup replacement preserves spelling carousel selection and clears pending pronunciation", () => {
+    const session = editor("");
+    session.select(["a", "b"]);
+    session.form.dispatchEvent(
+        new CustomEvent("library-lookup-replace", {
+            detail: { preservedRelationshipIds: ["spelling"] },
+        }),
+    );
+    assert.deepEqual(session.clearedCarousels, ["readings"]);
+    session.controller.commitPendingValues();
+    assert.equal(session.field.value, "");
+    assert.equal(session.form.referenceGroups.readings, undefined);
 });

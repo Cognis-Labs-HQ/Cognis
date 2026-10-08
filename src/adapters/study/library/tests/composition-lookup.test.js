@@ -74,7 +74,7 @@ test("vocabulary composition supplies the full lookup label without generating p
     assert.equal(generated, 0);
     form.compositionOrder = [];
     input.value = "教える";
-    input.dataset.libraryLookupLabel = "教える";
+    form.libraryLookupLabel = "教える";
     assert.equal(controller.validate(), true);
     input.value = "教わる";
     assert.equal(controller.validate(), false);

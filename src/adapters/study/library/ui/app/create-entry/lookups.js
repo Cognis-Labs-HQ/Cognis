@@ -170,10 +170,18 @@ export function bindLookupProviders(
                 if (result.created) nestedDefinitionIds.push(result.entry.id);
                 importedDefinitions.push(result.entry);
             }
-            clearLookupValues(form, draft);
+            const preserveInput = layer.semanticRole === "lexicalUnit";
+            clearLookupValues(form, draft, {
+                preserveComposition: preserveInput,
+                preservedRelationshipIds: preserveInput
+                    ? inputCarouselIds
+                    : new Set(),
+            });
             for (const definition of importedDefinitions)
                 linkDefinition(form, schema, layer, entries, definition);
             for (const reference of suggestion.references ?? []) {
+                if (preserveInput && inputCarouselIds.has(reference.relation))
+                    continue;
                 const select =
                     form.elements[`relationship:${reference.relation}`];
                 const option = Array.from(select?.options ?? []).find(
@@ -186,27 +194,36 @@ export function bindLookupProviders(
                         form.compositionOrder.push(reference.entryId);
                 }
             }
-            form.referenceGroups = structuredClone(
-                suggestion.referenceGroups ?? {},
-            );
-            const canonicalLabel = suggestion.label ?? label;
-            const composedLabel = form.compositionOrder
-                .map(
-                    (entryId) =>
-                        entries.find(({ id }) => id === entryId)?.label ?? "",
-                )
-                .join("");
-            if (input.hasAttribute("data-library-free-text"))
-                input.value = canonicalLabel;
-            else if (canonicalLabel.startsWith(composedLabel))
-                input.value = canonicalLabel.slice(composedLabel.length);
-            else {
-                form.compositionOrder = [];
-                input.value = canonicalLabel;
+            form.referenceGroups = structuredClone({
+                ...form.referenceGroups,
+                ...Object.fromEntries(
+                    Object.entries(suggestion.referenceGroups ?? {}).filter(
+                        ([relation]) =>
+                            !preserveInput || !inputCarouselIds.has(relation),
+                    ),
+                ),
+            });
+            if (!preserveInput) {
+                const canonicalLabel = suggestion.label ?? label;
+                const composedLabel = form.compositionOrder
+                    .map(
+                        (entryId) =>
+                            entries.find(({ id }) => id === entryId)?.label ??
+                            "",
+                    )
+                    .join("");
+                if (input.hasAttribute("data-library-free-text"))
+                    input.value = canonicalLabel;
+                else if (canonicalLabel.startsWith(composedLabel))
+                    input.value = canonicalLabel.slice(composedLabel.length);
+                else {
+                    form.compositionOrder = [];
+                    input.value = canonicalLabel;
+                }
+                form.dispatchEvent(new Event("library-composition-change"));
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                form.elements.label.value = suggestion.label ?? label;
             }
-            form.dispatchEvent(new Event("library-composition-change"));
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            form.elements.label.value = suggestion.label ?? label;
             form.libraryGeneratedPronunciation = [];
             applyLookupFields(form, suggestion.fields ?? {}, draft);
             if (suggestion.class) form.elements.class.value = suggestion.class;
@@ -218,14 +235,20 @@ export function bindLookupProviders(
             );
             renderStrokePatternPreviews(form);
 
-            input.dataset.libraryLookupLabel = form.elements.label.value
+            form.libraryLookupLabel = (
+                preserveInput ? label : (suggestion.label ?? label)
+            )
                 .trim()
                 .normalize("NFKC");
-            if (input.hasAttribute("data-library-free-text"))
-                input.dataset.lookupApproved = "true";
-            input.setCustomValidity("");
+            if (!preserveInput) {
+                if (input.hasAttribute("data-library-free-text"))
+                    input.dataset.lookupApproved = "true";
+                input.setCustomValidity("");
+            }
             form.dispatchEvent(new Event("change", { bubbles: true }));
-            form.elements.label.value = suggestion.label ?? label;
+            form.elements.label.value = preserveInput
+                ? label
+                : (suggestion.label ?? label);
             draft.label = form.elements.label.value;
             showToast(i18n.t("gateway.study.library_lookup_applied"), {
                 variant: "success",

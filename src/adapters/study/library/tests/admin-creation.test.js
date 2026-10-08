@@ -1,3 +1,4 @@
+import { findMatchingEntry } from "../ui/app/create-entry/entry-match.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -52,6 +53,7 @@ test("inline definitions for global cards do not reuse private cards or save to 
         .replace(/\bexport /g, "");
     let saved;
     const context = {
+        findMatchingEntry,
         DEFINITION_LANGUAGES: ["de", "en", "id", "ja"],
         createLibraryEntry: async (location, input) => {
             saved = { location, input };

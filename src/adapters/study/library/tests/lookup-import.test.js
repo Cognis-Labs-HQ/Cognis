@@ -333,3 +333,155 @@ test("lookup populates the visible composition input when no authored spelling c
     assert.equal(input.value, "教室");
     assert.equal(form.elements.label.value, "教室");
 });
+
+test("vocabulary lookup preserves text, token order, and selected spelling while importing supporting data", async () => {
+    const replacementSource = readFileSync(
+        new URL(
+            "../ui/app/create-entry/lookup-replacement.js",
+            import.meta.url,
+        ),
+        "utf8",
+    )
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, "");
+    const input = {
+        get value() {
+            return "";
+        },
+        set value(_value) {
+            throw new Error("lookup changed input");
+        },
+        dispatchEvent() {
+            throw new Error("lookup redrew input suggestions");
+        },
+        setCustomValidity() {
+            throw new Error("lookup changed input validity");
+        },
+    };
+    const selected = [
+        { value: "kanji-教", selected: true },
+        { value: "kanji-室", selected: true },
+    ];
+    const spelling = {
+        name: "relationship:spelling",
+        options: selected,
+        append() {
+            throw new Error("lookup reordered spelling");
+        },
+    };
+    const pronunciation = {
+        name: "field:pronunciation",
+        value: "old",
+        hasAttribute: () => false,
+        dispatchEvent() {},
+    };
+    const tokenOrder = ["kanji-教", "kanji-室"];
+    let listener;
+    const form = {
+        compositionOrder: tokenOrder,
+        referenceGroups: {},
+        elements: {
+            label: { value: "教室" },
+            class: { value: "" },
+            tags: { value: "", dispatchEvent() {} },
+            "field:pronunciation": pronunciation,
+            "relationship:spelling": spelling,
+        },
+        querySelector: (selector) =>
+            selector === "[data-library-composer-text]" ? input : null,
+        querySelectorAll: (selector) =>
+            selector.startsWith('[name^="field:"')
+                ? [pronunciation, spelling]
+                : [],
+        dispatchEvent() {},
+        addEventListener: (_type, handler) => {
+            listener = handler;
+        },
+    };
+    const schema = {
+        id: "ja",
+        version: 88,
+        layers: [
+            { id: "kanji", semanticRole: "compoundWritingUnit" },
+            { id: "definitions", semanticRole: "definition" },
+        ],
+    };
+    const layer = {
+        semanticRole: "lexicalUnit",
+        relationships: [
+            { id: "spelling", targetLayer: "kanji" },
+            { id: "definitions", targetLayer: "definitions" },
+        ],
+    };
+    let linked = 0;
+    const draft = { fields: {} };
+    const context = {
+        Event,
+        CustomEvent,
+        escapeHtml: String,
+        openPopup: async () => "replace",
+        RadioNodeList: class {},
+        structuredClone,
+        resolveLookupReferences,
+        separateLookupDefinitions,
+        chooseLookupSuggestion: async (suggestions) => suggestions[0],
+        hasLookupValues: () => true,
+        confirmLookupReplacement: async () => true,
+        fetchLibraryLookupSuggestions: async () => [
+            {
+                label: "different provider spelling",
+                class: "lexical:noun",
+                fields: { pronunciation: ["きょうしつ"] },
+                tags: ["jlpt-n5"],
+                references: [
+                    { relation: "spelling", entryId: "provider-kanji" },
+                ],
+                definitions: [{ translations: { en: "classroom" } }],
+            },
+        ],
+        createDefinition: async () => ({
+            entry: { id: "definition" },
+            created: false,
+        }),
+        linkDefinition: () => {
+            linked += 1;
+        },
+        renderStrokePatternPreviews() {},
+        showToast() {},
+    };
+    vm.createContext(context);
+    vm.runInContext(replacementSource, context);
+    vm.runInContext(source, context);
+    const entries = [
+        {
+            id: "kanji-教",
+            sourceRecordId: "provider-kanji",
+            schemaId: "ja",
+            layer: "kanji",
+        },
+    ];
+    context.bindLookupProviders(
+        form,
+        draft,
+        { t: (key) => key },
+        {
+            schema,
+            layer,
+            entries,
+            nestedDefinitionIds: [],
+            inputCarouselIds: new Set(["spelling"]),
+        },
+    );
+    await listener({ target: { closest: () => ({ dataset: {} }) } });
+    assert.equal(form.compositionOrder, tokenOrder);
+    assert.deepEqual(
+        selected.map(({ selected }) => selected),
+        [true, true],
+    );
+    assert.equal(form.elements.label.value, "教室");
+    assert.equal(draft.label, "教室");
+    assert.equal(pronunciation.value, "きょうしつ");
+    assert.equal(form.elements.class.value, "lexical:noun");
+    assert.equal(form.elements.tags.value, "jlpt-n5");
+    assert.equal(linked, 1);
+});

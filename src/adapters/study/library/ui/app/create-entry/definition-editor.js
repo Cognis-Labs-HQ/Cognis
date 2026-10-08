@@ -1,3 +1,4 @@
+import { findMatchingEntry } from "./entry-match.js";
 import { openLibraryEntryEditor } from "../admin-interactions/index.js";
 import { entryEditMode } from "../editability.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
@@ -124,13 +125,10 @@ export async function createDefinition({
         ({ id }) => id === layerId,
     )?.definitionLocalization;
     if (!localization) throw new Error("definition_layer_not_found");
-    const normalizedLabel = translations.en.trim().normalize("NFKC");
-    const existing = entries.find(
-        (entry) =>
-            (location.scope !== "global" || entry.scope === "global") &&
-            entry.schemaId === schema.id &&
-            entry.layer === layerId &&
-            entry.label.trim().normalize("NFKC") === normalizedLabel,
+    const existing = findMatchingEntry(
+        entries,
+        { schemaId: schema.id, layer: layerId, label: translations.en },
+        location,
     );
     if (existing) return { entry: existing, created: false };
     try {
@@ -147,11 +145,14 @@ export async function createDefinition({
             },
             references: [],
         });
+        if (!entries.some(({ id }) => id === entry.id)) entries.push(entry);
         return { entry, created: true };
     } catch (error) {
         const conflictId = error.details?.conflictEntryId;
         if (error.message !== "content_conflict" || !conflictId) throw error;
         const detail = await fetchLibraryEntry(conflictId);
+        if (!entries.some(({ id }) => id === detail.entry.id))
+            entries.push(detail.entry);
         return { entry: detail.entry, created: false };
     }
 }
