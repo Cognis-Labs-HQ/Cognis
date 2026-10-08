@@ -35,10 +35,8 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |
 
-## Ältere Beziehungsschlüssel aktualisieren
+## Schemaabgleich
 
-PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
+PostgreSQL gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.
 
-## Vollständige Schlüsselreparatur
-
-Die Schemainitialisierung entfernt historisch erzeugte eindeutige Indizes, deren Spalten eine echte Teilmenge des aktuellen Primärschlüssels sind, nachdem dieser bestätigt wurde. Dies repariert den Index uq_study_library_references_208386997ea7, der sonst wiederholte Kana an derselben Position in verschiedenen Lesegruppen ablehnt. Explizit deklarierte eindeutige Schlüssel und unabhängig benannte Indizes bleiben erhalten, ebenso vorhandene Zeilen. Manuelles Löschen von Daten ist nicht erforderlich.
+Eindeutige Constraints und einfache eindeutige Indizes werden in derselben Transaktion mit den deklarierten eindeutigen Schlüsseln abgeglichen. Die Tabellendeklaration ist maßgeblich; Ausdrucksindizes und partielle Indizes bleiben unabhängig verwaltet.

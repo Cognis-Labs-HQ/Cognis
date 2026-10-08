@@ -312,7 +312,7 @@ The unified composer interface now adds relationships implied by input or pronun
 
 ## Pronunciation carousels restored from schema relationships
 
-When a visible pronunciation field receives no carousel layers from its runtime constructor, the unified composer now uses the target layers of every declared pronunciation relationship. The Kanji composer therefore renders its character carousel even for legacy contributions with an empty `pronunciation_carousels` array.
+Compound writing units compose pronunciations from atomic writing units. Lexical units use atomic writing units for pronunciation and writing or lexical units for input. Ordered lexical sequences derive pronunciations from their selected lexical units and particles. These semantic roles define the current composer contract.
 
 ## Semantic carousel profiles match the authoring contract
 
@@ -360,9 +360,9 @@ Dictionary lookup now fills the open card composer directly and commits all retu
 
 Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
 
-## Upgrade legacy relationship keys
+## Declared schema reconciliation
 
-PostgreSQL and MariaDB now widen an existing composite primary key when the declared key adds columns while retaining all previous key columns. Existing Library reference tables therefore gain group_index and position in their key, allowing the same Kana to occur in different pronunciations or at different positions without duplicate-key errors. Existing rows are preserved; current keys and unrelated or narrower declarations are left unchanged. The expansion is logged and runs when schema initialization next occurs.
+Database schema initialization reconciles existing keys with the current table declaration. Rows are retained, changes are logged, and invalid declarations fail rather than discarding data. No version-specific key migration is needed.
 
 ## Multi-value staging no longer mutates committed values
 
@@ -496,7 +496,7 @@ Stroke lookup is hidden whenever a retrieved pattern is present, including patte
 
 ## Complete reference-key repair
 
-Schema initialization removes historical generated unique indexes whose columns are a strict subset of the current primary key, after confirming that the primary key is current. This repairs the index uq_study_library_references_208386997ea7, which otherwise rejects repeated Kana at the same position across different reading groups. Explicitly declared unique keys and independently named indexes remain intact; existing rows are preserved. No manual data deletion is required.
+Schema initialization reconciles primary and unique keys with the current declaration in one transaction, without version-specific index names or migration functions.
 
 ## Dictionary pronunciation links
 
@@ -509,6 +509,14 @@ Vocabulary creation uses one composed card input without the redundant Input hea
 ## Preserved vocabulary input
 
 Vocabulary dictionary lookup preserves the authored text, composed token order, and selected input cards while importing supporting fields, pronunciations, and definitions. The composer reuses matching definitions using the same normalized comparison as the API; newly imported definitions are cached immediately so repeated meanings do not cause conflicts. Reuse respects the destination scope and retains the existing definition translations.
+
+## Transformed sentences and scope moves
+
+Sentence creation, editing, and detail views derive pronunciations from each ordered reference’s selected transformation. Repeated roots retain separate positions and transformation paths. Declared punctuation remains visible without preventing adjacent title links; transformed title and reading links open the selected form and retain navigation back to its root. Scope moves execute the registered Study Library move flow, return updated permissions, and keep an owned card visible after moving it. The action reads “Move to: User” because shared cards return to the original creator’s user scope. Provider-owned content, shared dependants, pending requests, and ACL restrictions continue to block invalid moves. Contributor instructions explicitly prohibit advertising capabilities, actions, routes, or flows without executable implementations.
+
+## Lean component implementation
+
+Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
 
 ## Commits
 

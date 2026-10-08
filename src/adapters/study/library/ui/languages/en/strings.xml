@@ -75,7 +75,8 @@
   <string name="gateway.study.library_publish_class">Publish to class</string>
   <string name="gateway.study.library_publish_global">Publish globally</string>
   <string name="gateway.study.library_withdraw">Withdraw</string>
-  <string name="gateway.study.library_send_back">Send back</string>
+  <string name="gateway.study.library_move_to">Move to: {{ scope }}</string>
+  <string name="gateway.study.library_destination_user">User</string>
   <string name="gateway.study.library_deselect_all">Deselect All</string>
   <string name="gateway.study.library_requests_mine">My Requests</string>
   <string name="gateway.study.library_requests_approved">Approved</string>
@@ -129,7 +130,7 @@
   <string name="gateway.study.library_save_personal">Save for Personal Use</string>
   <string name="gateway.study.library_publish_saved_personal">Card saved for personal use. Its publication request failed; publish the required components first, then try sharing it again.</string>
   <string name="gateway.study.library_publish_dependencies_first">Publish these components to the destination first: {{ cards }}</string>
-  <string name="gateway.study.library_send_back_dependencies">This card is used by shared cards. Update or remove those dependencies before returning it to personal use.</string>
+  <string name="gateway.study.library_move_dependencies">This card is used by shared cards. Update or remove those dependencies before returning it to personal use.</string>
   <string name="gateway.study.library_visibility_error">The visibility change could not be completed. Check access and pending reviews, then try again.</string>
   <string name="gateway.study.library_publish_components">Request Component Publication</string>
   <string name="gateway.study.library_publish_dependencies_help">Request publication of these required components first. After approval, retry sharing the parent card.</string>

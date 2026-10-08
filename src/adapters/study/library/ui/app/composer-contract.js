@@ -1,4 +1,5 @@
 import { layerForEntry, pronunciationValues } from "./presentation.js";
+import { referencedTransformation } from "./transformations.js";
 
 export function resolveComposerContract(schema, layer, constructor) {
     const effectiveConstructor = constructor ?? {
@@ -50,6 +51,10 @@ export function resolveComposerContract(schema, layer, constructor) {
             .map(({ id }) => id);
     if (layer?.semanticRole === "compoundWritingUnit") {
         inputCarouselLayers.clear();
+        pronunciationCarouselLayers.clear();
+        layerIdsForRoles("atomicWritingUnit").forEach((id) =>
+            pronunciationCarouselLayers.add(id),
+        );
     } else if (layer?.semanticRole === "lexicalUnit") {
         inputCarouselLayers.clear();
         pronunciationCarouselLayers.clear();
@@ -69,28 +74,6 @@ export function resolveComposerContract(schema, layer, constructor) {
             "compoundWritingUnit",
             "lexicalUnit",
         ).forEach((id) => inputCarouselLayers.add(id));
-    }
-    if (
-        constructorFieldIds.has("pronunciation") &&
-        pronunciationCarouselLayers.size === 0
-    ) {
-        const pronunciationRelationships = (layer?.relationships ?? []).filter(
-            (relationship) => relationship.presentationRole === "pronunciation",
-        );
-        const fallbackRelationships =
-            pronunciationRelationships.length > 0
-                ? pronunciationRelationships
-                : (layer?.relationships ?? []).filter((relationship) => {
-                      const target = schema?.layers?.find(
-                          ({ id }) => id === relationship.targetLayer,
-                      );
-                      return (
-                          layer?.semanticRole === "compoundWritingUnit" &&
-                          target?.semanticRole === "atomicWritingUnit"
-                      );
-                  });
-        for (const relationship of fallbackRelationships)
-            pronunciationCarouselLayers.add(relationship.targetLayer);
     }
     const constructorRelationshipIds = new Set(
         effectiveConstructor.relationships ?? [],
@@ -189,16 +172,25 @@ export function derivedPronunciation(
                 (left.position ?? Number.MAX_SAFE_INTEGER) -
                 (right.position ?? Number.MAX_SAFE_INTEGER),
         )
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .filter((candidate) => {
+        .flatMap((reference) => {
+            const candidate = entries.find(
+                ({ id }) => id === reference.entryId,
+            );
             const role = candidate
                 ? layerForEntry([schema], candidate)?.semanticRole
                 : undefined;
-            return !["definition", "meaning"].includes(role);
+            if (!candidate || ["definition", "meaning"].includes(role))
+                return [];
+            const transformation = referencedTransformation(
+                candidate,
+                schema,
+                reference.transformation,
+            );
+            return [
+                transformation?.node.pronunciation ??
+                    derivedPronunciation(candidate, entries, schema, path),
+            ];
         })
-        .map((candidate) =>
-            derivedPronunciation(candidate, entries, schema, path),
-        )
         .filter(Boolean);
     return parts.join("");
 }
@@ -239,4 +231,16 @@ export function applyDerivedPronunciation(
                 : []
             : pronunciation;
     return fields;
+}
+
+export function deriveDetailPronunciation(detail, schemas) {
+    const layer = layerForEntry(schemas, detail.entry);
+    applyDerivedPronunciation(
+        detail.entry.fields,
+        detail.entry.references,
+        detail.references,
+        schemas.find(({ id }) => id === detail.entry.schemaId),
+        layer,
+        layer?.semanticRole === "orderedLexicalSequence",
+    );
 }

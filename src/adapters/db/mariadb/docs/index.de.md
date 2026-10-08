@@ -36,6 +36,6 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`  | Maximales Zeitfenster für die Startbereitschaft in Millisekunden (1.000–600.000) |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`   | Pause zwischen Bereitschaftsversuchen in Millisekunden (100–30.000)              |
 
-## Ältere Beziehungsschlüssel aktualisieren
+## Schemaabgleich
 
-PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
+MariaDB gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.

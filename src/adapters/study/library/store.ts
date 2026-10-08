@@ -4,11 +4,7 @@ import {
 } from "./store/reference-rows.js";
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import {
-    contentEntryId,
-    contentRecordHash,
-    versionedContentEntryId,
-} from "./content-pack.js";
+import { contentEntryId, contentRecordHash } from "./content-pack.js";
 import type {
     LibraryAsset,
     LibraryContentPackPlan,
@@ -289,35 +285,6 @@ export class LibraryStore {
                     }
                 }
                 const { canonicalId: id, contentHash } = identity;
-                await this.removeDuplicateContentEntries(
-                    db,
-                    id,
-                    contentHash,
-                    {
-                        schema_id: schema.id,
-                        schema_version: schema.version,
-                        layer: record.layer,
-                        language: schema.language,
-                        label: record.label.trim(),
-                        class: record.class ?? null,
-                        tags_json: JSON.stringify(record.tags ?? []),
-                        source_record_id: record.id,
-                        display_id: record.displayId ?? null,
-                        hidden: record.hidden === true,
-                        always_show_definition:
-                            record.alwaysShowDefinition === true,
-                        protected: manifest.protected === true,
-                        editable: record.editable !== false,
-                        fields_json: JSON.stringify(fields),
-                        search_text:
-                            `${record.label} ${(record.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
-                                .normalize()
-                                .toLocaleLowerCase(),
-                        created_by: `content-pack:${manifest.publisher}:${manifest.id}`,
-                    },
-                    manifest,
-                    record.id,
-                );
                 await this.upsert(db, "study_library_entries", ["id"], {
                     id,
                     scope: "global",
@@ -543,113 +510,6 @@ export class LibraryStore {
         if (Array.from(restrictedIds).some((id) => !cascadeIds.has(id)))
             throw new Error("relationship_delete_restricted");
         return Array.from(cascadeIds);
-    }
-    private async removeDuplicateContentEntries(
-        db: DbExecutor,
-        canonicalId: string,
-        contentHash: string,
-        legacyIdentity: Record<string, unknown>,
-        manifest: LibraryContentPackPlan["manifest"],
-        recordId: string,
-    ): Promise<void> {
-        const installedVersions = await db.executeCommand({
-            option: "SELECT",
-            table: "study_library_content_packs",
-            columns: ["version"],
-            where: [
-                { column: "publisher", value: manifest.publisher },
-                { column: "pack_id", value: manifest.id },
-            ],
-        });
-        const versionedIds = (installedVersions.rows ?? []).map((row) =>
-            versionedContentEntryId(
-                { ...manifest, version: String(row.version) },
-                recordId,
-            ),
-        );
-        const matches = await Promise.all([
-            db.executeCommand({
-                option: "SELECT",
-                table: "study_library_entries",
-                columns: ["id", "updated_at"],
-                where: [{ column: "content_hash", value: contentHash }],
-            }),
-            db.executeCommand({
-                option: "SELECT",
-                table: "study_library_entries",
-                columns: ["id", "updated_at"],
-                where: Object.entries(legacyIdentity).map(
-                    ([column, value]) => ({ column, value }),
-                ),
-            }),
-            ...(versionedIds.length > 0
-                ? [
-                      db.executeCommand({
-                          option: "SELECT",
-                          table: "study_library_entries",
-                          columns: ["id", "updated_at"],
-                          where: [
-                              {
-                                  column: "id",
-                                  operator: "IN",
-                                  value: versionedIds,
-                              },
-                          ],
-                      }),
-                  ]
-                : []),
-        ]);
-        const duplicateIds = new Set(
-            matches
-                .flatMap((result) => result.rows ?? [])
-                .sort(
-                    (left, right) =>
-                        Date.parse(String(right.updated_at ?? "")) -
-                        Date.parse(String(left.updated_at ?? "")),
-                )
-                .map((row) => String(row.id)),
-        );
-        duplicateIds.delete(canonicalId);
-        for (const duplicateId of duplicateIds) {
-            for (const column of ["source_entry_id", "target_entry_id"]) {
-                const references = await db.executeCommand({
-                    option: "SELECT",
-                    table: "study_library_references",
-                    where: [{ column, value: duplicateId }],
-                });
-                for (const reference of references.rows ?? []) {
-                    await db.executeCommand({
-                        option: "INSERT",
-                        table: "study_library_references",
-                        values: {
-                            source_entry_id:
-                                column === "source_entry_id"
-                                    ? canonicalId
-                                    : reference.source_entry_id,
-                            target_entry_id:
-                                column === "target_entry_id"
-                                    ? canonicalId
-                                    : reference.target_entry_id,
-                            relation: reference.relation,
-                            position: reference.position,
-                            group_index: reference.group_index,
-                            transformation_json: reference.transformation_json,
-                        },
-                        conflict: { action: "ignore" },
-                    });
-                }
-                await db.executeCommand({
-                    option: "DELETE",
-                    table: "study_library_references",
-                    where: [{ column, value: duplicateId }],
-                });
-            }
-            await db.executeCommand({
-                option: "DELETE",
-                table: "study_library_entries",
-                where: [{ column: "id", value: duplicateId }],
-            });
-        }
     }
     private contentPackAssetUrl(
         publisher: string,

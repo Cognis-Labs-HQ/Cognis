@@ -1,3 +1,4 @@
+import { orderedReadingReferences } from "../ui/app/reference-readings.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -56,6 +57,8 @@ test("compound reading links follow canonical character groups after unlinked an
         .replace(/\bexport /g, "");
     const context = {
         ...links,
+        orderedReadingReferences,
+        referencedTransformation: () => null,
         layerForEntry: (schemas, entry) =>
             schemas
                 .find(({ id }) => id === entry.schemaId)
@@ -118,8 +121,8 @@ test("compound reading links follow canonical character groups after unlinked an
             (item) => item.actionId,
         ),
         [
-            "open-title-reference:character-a",
-            "open-title-reference:character-b",
+            `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: "character-a" }))}`,
+            `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: "character-b" }))}`,
         ],
     );
     detail.entry.referenceGroups = {};
@@ -131,8 +134,8 @@ test("compound reading links follow canonical character groups after unlinked an
             (item) => item.actionId,
         ),
         [
-            "open-title-reference:character-a",
-            "open-title-reference:character-b",
+            `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: "character-a" }))}`,
+            `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: "character-b" }))}`,
         ],
     );
 });

@@ -36,12 +36,7 @@ export function resolvePopupNavigation({
 }) {
     if (result?.startsWith("open-title-reference:")) {
         const payload = result.slice("open-title-reference:".length);
-        let reference = { entryId: payload };
-        try {
-            reference = JSON.parse(decodeURIComponent(payload));
-        } catch {
-            // Retain the legacy plain-ID fallback initialized above.
-        }
+        const reference = JSON.parse(decodeURIComponent(payload));
         return {
             entry: entries.find((entry) => entry.id === reference.entryId),
             sourceDefinition: "",

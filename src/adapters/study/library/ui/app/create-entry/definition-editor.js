@@ -10,7 +10,7 @@ import {
     fetchLibraryEntry,
     localizeLibraryDefinition,
 } from "/static/gateways/study/ui/library-client.js";
-export const DEFINITION_LANGUAGES = ["de", "en", "id", "ja"];
+import { DEFINITION_LANGUAGES } from "../definition-languages.js";
 export async function openDefinitionPopup({
     schema,
     schemaId,

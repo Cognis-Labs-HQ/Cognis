@@ -93,6 +93,10 @@ For runtime modules specifically, treat `ctx` as the full system bus: module boo
 - Use `ctx` to detect whether another component is present; do not hardcode adapter-to-adapter imports for availability checks.
 - When a subsystem exposes multiple provider tracks or outputs, model that selection through capabilities and ctx-backed contracts rather than hardcoded branches.
 
+### Advertise only implemented capabilities
+
+Never advertise or register a capability, UI action, route, or flow that lacks a working implementation. Register every flow invoked by an exposed operation before making that operation available. Metadata, buttons, and capability declarations are promises of executable behavior, not placeholders. Verify each exposed operation through the real registered runtime, including authorization, persistence, and failure handling; tests with a no-op flow runner do not establish that the flow exists. If an optional implementation is unavailable, omit its advertised capability and action rather than exposing a control that fails when invoked.
+
 ### Flows and staged injection are mandatory for orchestration
 
 Treat all meaningful operations as named `ctx` flows with explicit stages. A flow can represent backend operations (create user, login, change password, send message, create meeting) and UI construction operations (construct login page, construct settings page).
@@ -148,7 +152,7 @@ Files inside a `reuse/` directory must also be generically named for the reusabl
 
 Any file that exists for one product surface (for example release-changelog popups or popup-only style bundles) is not true reuse and must live in a purpose-constrained directory outside `reuse/`.
 
-Do not create `reuse/` directories inside `src/adapters/*`. Adapters are already niche capabilities and should keep their implementation files local to the adapter root (for example `store.ts`, `db-store.ts`) instead of introducing adapter-internal reuse layers.
+Components, including adapters, may own a `reuse/` directory for parameterizable logic shared by multiple surfaces within that component. Keep single-surface logic beside its feature; reuse must reduce duplication rather than add forwarding wrappers.
 
 DB adapters and the DB gateway must not own feature stores for other gateways/adapters (for example auth/profile/notify-specific stores). Feature-specific persistence code belongs to the owning gateway or owning adapter and is consumed through capabilities.
 
@@ -380,6 +384,8 @@ Format all new or modified code for human readability. Do not compress logic, ma
 
 ### LOC discipline and consistency are mandatory
 
+Never delete blank lines between functions, compress declarations, or relax a size guard to pass an anti-monolith check. Split cohesive behavior into focused modules and restore natural spacing. Tests must exercise actual behavior; never substitute a no-op implementation, change expectations to accept a known defect, or bypass the production path merely to make a test pass.
+
 Large diffs are not a success metric. Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness. Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken whenever behavior remains unchanged.
 
 For every change:
@@ -442,7 +448,7 @@ When editing a file, make opportunistic improvements to the surrounding code tha
 
 Legacy compatibility is never required and never acceptable. Do not introduce fallback paths, conditional shims, or alternate code branches that exist solely to handle older schema layouts, API shapes, or data formats that are no longer the standard — even temporarily. This rule applies with particular force when the "legacy" concern originates in the same pull request that introduces the modern replacement: a feature cannot be deprecated and replaced in the same PR that creates it. If a feature is new, it ships clean; if an old feature is being removed, the removal is complete and unconditional.
 
-Upgrade existing installations with explicit, one-way migrations instead of runtime compatibility. Cross-component upgrade transformations must live under `src/legacy/migrations/`; component-owned database migrations remain in that component's `sql/migrate/` directory. Nothing under `src/legacy/` may be imported by request handlers, gateways, adapters, modules, or UI code. The startup migration runner is the only allowed caller, and migrated data must use the current model immediately afterward. Any compatibility code retained temporarily for an upgrade must be isolated under `src/legacy/`, carry a removal condition in its migration documentation, and must never share a file with the current implementation.
+Existing installations must converge on the current declared schema through the database gateway's schema initialization. Do not add version-specific migration functions or identity conversions to compensate for a superseded model introduced in this beta application. Keep persisted identities stable and let declarative schema reconciliation enforce the current keys.
 
 Current implementation directories have zero tolerance for legacy aliases, fallback entrypoints, deprecated payload keys, or dual-format parsing. Delete those paths rather than preserving them beside the current contract.
 

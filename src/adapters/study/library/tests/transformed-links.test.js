@@ -44,6 +44,8 @@ function loadPresentation() {
     const context = {
         resolveLabelComposition,
         distinctPronunciationLabels,
+        titleReferenceAction: (entry) =>
+            `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: entry.id, transformation: entry.referenceTransformation }))}`,
         transformedDefinitions: (definitions) => definitions,
     };
     vm.runInNewContext(
@@ -72,7 +74,8 @@ test("verb transformations link their changed reading to canonical kana", () => 
     assert.deepEqual(
         Array.from(reading, ({ actionId }) => actionId),
         ["い", "か", "な", "く", "て"].map(
-            (label) => `open-title-reference:kana-${label}`,
+            (label) =>
+                `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: `kana-${label}` }))}`,
         ),
     );
     assert.equal(presentation.titleDetailItems.at(-1).label, "to not go");
@@ -87,7 +90,8 @@ test("transformed titles retain clickable canonical character components", () =>
     vm.runInNewContext(
         source
             .slice(source.indexOf("export function popupTitleItems"))
-            .replace("export ", "") + "\nglobalThis.items = popupTitleItems;",
+            .replaceAll("export ", "") +
+            "\nglobalThis.items = popupTitleItems;",
         context,
     );
     for (const title of ["行かなくて", "ゆっくり"]) {
@@ -141,6 +145,7 @@ test("detail rendering merges canonical upward links with stored relationships",
     const context = {
         resolveCompositionDependants,
         filterImmediateDependants,
+        deriveDetailPronunciation() {},
         uiCtx: {
             runFlow: async (_flow, { detail }) => {
                 flowDetail = detail;
@@ -235,6 +240,7 @@ test("Return to the verb root closes the transformed card and restores the base 
         URL,
         resolveLabelComposition,
         headingCompositionReferences: () => [],
+        deriveDetailPronunciation() {},
         fetchLibraryEntry: async () => ({ entry: verb, references: [] }),
         composeDetail: async () => ({
             titleDefinition: "meaning",

@@ -163,8 +163,8 @@ export function bindLibraryInteractions(root, context) {
                 void visibilityActions.withdraw();
                 return;
             }
-            if (event.target.closest("[data-library-send-back-selection]")) {
-                void visibilityActions.sendBack();
+            if (event.target.closest("[data-library-move-selection]")) {
+                void visibilityActions.moveToUser();
                 return;
             }
             if (event.target.matches("[data-library-select-entry]")) return;

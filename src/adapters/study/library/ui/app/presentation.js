@@ -3,6 +3,7 @@ import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
 import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
 import { referencedTransformation } from "./transformations.js";
+import { resolveReferenceTitleComposition } from "./composition-links.js";
 
 export function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -303,31 +304,30 @@ export function compositionReferenceGroups(detail, schemas) {
 
 export function headingCompositionReferences(detail, schemas) {
     const schema = schemas.find(({ id }) => id === detail.entry.schemaId);
-    const group = compositionReferenceGroups(detail, schemas).find(
-        (candidate) =>
-            candidate.presentationRole === "composition" &&
-            candidate.entries.length > 0 &&
-            candidate.entries
-                .map(
-                    (entry) =>
-                        referencedTransformation(
-                            entry,
-                            schema,
-                            entry.referenceTransformation,
-                        )?.node.value ?? entry.label,
-                )
-                .join("") === detail.entry.label,
-    );
-    return (group?.entries ?? []).map((entry) => {
-        const transformation = referencedTransformation(
-            entry,
-            schema,
-            entry.referenceTransformation,
+    const literals = (
+        layerForEntry(schemas, detail.entry)?.cardConstructor
+            ?.literal_carousels ?? []
+    ).flatMap(({ values }) => values);
+    for (const group of compositionReferenceGroups(detail, schemas)) {
+        if (group.presentationRole !== "composition") continue;
+        const references = group.entries.map((entry) => {
+            const transformation = referencedTransformation(
+                entry,
+                schema,
+                entry.referenceTransformation,
+            );
+            return transformation
+                ? { ...entry, label: transformation.node.value }
+                : entry;
+        });
+        const title = resolveReferenceTitleComposition(
+            detail.entry.label,
+            references,
+            literals,
         );
-        return transformation
-            ? { ...entry, label: transformation.node.value }
-            : entry;
-    });
+        if (title.length) return title;
+    }
+    return [];
 }
 
 function entryAudio(entry, layer) {

@@ -75,7 +75,8 @@
   <string name="gateway.study.library_publish_class">In Klasse veröffentlichen</string>
   <string name="gateway.study.library_publish_global">Global veröffentlichen</string>
   <string name="gateway.study.library_withdraw">Zurückziehen</string>
-  <string name="gateway.study.library_send_back">Zurücksenden</string>
+  <string name="gateway.study.library_move_to">Verschieben nach: {{ scope }}</string>
+  <string name="gateway.study.library_destination_user">Benutzer</string>
   <string name="gateway.study.library_deselect_all">Auswahl aufheben</string>
   <string name="gateway.study.library_requests_mine">Meine Anfragen</string>
   <string name="gateway.study.library_requests_approved">Genehmigt</string>
@@ -129,7 +130,7 @@
   <string name="gateway.study.library_save_personal">Für mich selbst speichern</string>
   <string name="gateway.study.library_publish_saved_personal">Die Karte wurde für Sie selbst gespeichert. Die Veröffentlichungsanfrage ist fehlgeschlagen. Veröffentlichen Sie zuerst die erforderlichen Bestandteile und versuchen Sie es erneut.</string>
   <string name="gateway.study.library_publish_dependencies_first">Veröffentlichen Sie zuerst diese Bestandteile im Zielbereich: {{ cards }}</string>
-  <string name="gateway.study.library_send_back_dependencies">Diese Karte wird von geteilten Karten verwendet. Ändern oder entfernen Sie diese Abhängigkeiten, bevor Sie die Karte wieder privat nutzen.</string>
+  <string name="gateway.study.library_move_dependencies">Diese Karte wird von geteilten Karten verwendet. Ändern oder entfernen Sie diese Abhängigkeiten, bevor Sie die Karte wieder privat nutzen.</string>
   <string name="gateway.study.library_visibility_error">Die Sichtbarkeit konnte nicht geändert werden. Prüfen Sie Zugriffsrechte und ausstehende Prüfungen und versuchen Sie es erneut.</string>
   <string name="gateway.study.library_publish_components">Veröffentlichung der Bestandteile anfragen</string>
   <string name="gateway.study.library_publish_dependencies_help">Fragen Sie zuerst die Veröffentlichung dieser erforderlichen Bestandteile an. Nach der Genehmigung können Sie die übergeordnete Karte erneut teilen.</string>

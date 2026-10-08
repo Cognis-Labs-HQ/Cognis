@@ -237,7 +237,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /data-library-publish="class"/);
     assert.match(source, /data-library-publish="global"/);
     assert.match(source, /data-library-withdraw-selection/);
-    assert.match(source, /data-library-send-back-selection/);
+    assert.match(source, /data-library-move-selection/);
     assert.match(source, /entry\?\.scope === "user" && canDeleteEntry/);
     assert.match(source, /entry\.createdBy\?\.startsWith\("content-pack:"\)/);
     assert.match(stylesheet, /\.library-publish-options/);

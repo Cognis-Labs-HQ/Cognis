@@ -1,3 +1,4 @@
+import { titleReferenceAction } from "./popup-title.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { localizedLabel } from "./presentation.js";
@@ -102,7 +103,7 @@ export function transformedPopupPresentation(
             ...(readingReferences.length
                 ? readingReferences.map((reference) => ({
                       label: reference.label,
-                      actionId: `open-title-reference:${reference.id}`,
+                      actionId: titleReferenceAction(reference),
                       placement: "reading",
                   }))
                 : [{ label: pronunciation, placement: "reading" }]),

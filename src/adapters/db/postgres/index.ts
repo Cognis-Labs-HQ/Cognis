@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { KEY_CATALOG_QUERY, planKeyReconciliation } from "./schema.js";
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
@@ -342,14 +342,6 @@ class PostgresExecutor implements RawDbExecutor {
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
-            const renamedFrom = readRenamedColumn(col);
-            if (renamedFrom && existingCols.has(renamedFrom)) {
-                await this.execute(
-                    `ALTER TABLE ${def.name} RENAME COLUMN ${renamedFrom} TO ${col.name}`,
-                );
-                existingCols.add(col.name);
-                continue;
-            }
             const defaultClause =
                 col.default !== undefined
                     ? `DEFAULT ${pgDefault(col.default)}`
@@ -364,40 +356,18 @@ class PostgresExecutor implements RawDbExecutor {
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
-        if (compositePk.length) {
-            const result = await this.execute(
-                "SELECT constraint_name, array_agg(column_name::text ORDER BY ordinal_position) AS columns FROM information_schema.key_column_usage WHERE table_name = $1 AND table_schema = current_schema() AND constraint_name IN (SELECT constraint_name FROM information_schema.table_constraints WHERE table_name = $1 AND table_schema = current_schema() AND constraint_type = 'PRIMARY KEY') GROUP BY constraint_name",
-                [def.name],
-            );
-            const existing = result.rows?.[0];
-            const columns = existing?.columns;
-            let primaryCurrent =
-                Array.isArray(columns) &&
-                columns.length === compositePk.length &&
-                columns.every((column) => compositePk.includes(String(column)));
-            if (
-                Array.isArray(columns) &&
-                columns.length > 0 &&
-                columns.length < compositePk.length &&
-                columns.every((column) => compositePk.includes(String(column)))
-            ) {
-                primaryCurrent = true;
-                const constraint = String(existing.constraint_name).replaceAll(
-                    '"',
-                    '""',
-                );
-                await this.execute(
-                    `ALTER TABLE ${def.name} DROP CONSTRAINT "${constraint}", ADD PRIMARY KEY (${compositePk.join(", ")})`,
-                );
-                writeDbLog(this.log, "info", "Expanded database primary key.", {
-                    component: "db",
-                    provider: "postgresql",
-                    table: def.name,
-                    columns: compositePk,
-                });
-            }
-            if (primaryCurrent)
-                await removeSupersededLegacyIndexes(this, def, this.log);
+        const catalog = await this.execute(KEY_CATALOG_QUERY, [def.name]);
+        const keyChanges = planKeyReconciliation(def, catalog.rows ?? []);
+        if (keyChanges.length) {
+            await this.transaction(async (transaction) => {
+                for (const statement of keyChanges)
+                    await transaction.execute(statement);
+            });
+            writeDbLog(this.log, "info", "Reconciled declared database keys.", {
+                component: "db",
+                provider: "postgresql",
+                table: def.name,
+            });
         }
         for (const index of def.indexes ?? []) {
             const indexName =
@@ -407,15 +377,6 @@ class PostgresExecutor implements RawDbExecutor {
             );
         }
     }
-}
-
-function readRenamedColumn(
-    column: StructuredDbTableDef["columns"][number],
-): string | undefined {
-    if (!("renamedFrom" in column)) return undefined;
-    return typeof column.renamedFrom === "string"
-        ? column.renamedFrom
-        : undefined;
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {
@@ -457,75 +418,4 @@ async function createPostgresPool(
         });
     });
     return pool as PostgresPool;
-}
-
-function legacyIndexName(table: string, columns: string[]): string {
-    const descriptive = `uq_${table}_${columns.join("_")}`;
-    if (descriptive.length <= 63) return descriptive;
-    const digest = createHash("sha256")
-        .update(`${table}:${columns.join(":")}`)
-        .digest("hex")
-        .slice(0, 12);
-    return `uq_${table.slice(0, 46)}_${digest}`;
-}
-const quote = (identifier: string) => `"${identifier.replaceAll('"', '""')}"`;
-
-export async function removeSupersededLegacyIndexes(
-    executor: RawDbExecutor,
-    definition: StructuredDbTableDef,
-    log?: BootstrapLog,
-) {
-    const primary = definition.primaryKey ?? [];
-    const declared = [
-        ...(definition.uniqueKeys ?? []),
-        ...definition.columns
-            .filter(({ unique }) => unique)
-            .map(({ name }) => [name]),
-    ];
-    const result = await executor.execute(
-        `SELECT indexes.relname AS index_name, namespaces.nspname AS schema_name, constraints.conname AS constraint_name, array_agg(attributes.attname::text ORDER BY keys.ordinality) AS columns
-FROM pg_index metadata
-JOIN pg_class indexes ON indexes.oid = metadata.indexrelid
-JOIN pg_namespace namespaces ON namespaces.oid = indexes.relnamespace
-CROSS JOIN LATERAL unnest(metadata.indkey) WITH ORDINALITY AS keys(attribute_number, ordinality)
-JOIN pg_attribute attributes ON attributes.attrelid = metadata.indrelid AND attributes.attnum = keys.attribute_number
-LEFT JOIN pg_constraint constraints ON constraints.conindid = metadata.indexrelid
-WHERE metadata.indrelid = to_regclass($1) AND metadata.indisunique AND NOT metadata.indisprimary AND metadata.indexprs IS NULL AND metadata.indpred IS NULL AND keys.ordinality <= metadata.indnkeyatts
-GROUP BY indexes.relname, namespaces.nspname, constraints.conname`,
-        [definition.name],
-    );
-    for (const index of result.rows ?? []) {
-        const columns = index.columns;
-        if (
-            !Array.isArray(columns) ||
-            !columns.length ||
-            columns.length >= primary.length ||
-            !columns.every((column) => primary.includes(String(column)))
-        )
-            continue;
-        if (
-            declared.some(
-                (key) =>
-                    key.length === columns.length &&
-                    key.every((column) => columns.includes(column)),
-            )
-        )
-            continue;
-        if (index.index_name !== legacyIndexName(definition.name, columns))
-            continue;
-        if (index.constraint_name)
-            await executor.execute(
-                `ALTER TABLE ${definition.name} DROP CONSTRAINT ${quote(String(index.constraint_name))}`,
-            );
-        else
-            await executor.execute(
-                `DROP INDEX IF EXISTS ${quote(String(index.schema_name))}.${quote(String(index.index_name))}`,
-            );
-        writeDbLog(log, "info", "Removed superseded legacy unique index.", {
-            component: "db",
-            provider: "postgresql",
-            table: definition.name,
-            index: String(index.index_name),
-        });
-    }
 }

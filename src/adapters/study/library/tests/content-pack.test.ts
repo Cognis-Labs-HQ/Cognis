@@ -4,14 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-    contentEntryId,
-    inspectContentPack,
-    versionedContentEntryId,
-} from "../content-pack.js";
+import { contentEntryId, inspectContentPack } from "../content-pack.js";
 import { validateLibrarySchema } from "../layers.js";
 
-test("external-package compatibility fixture preserves validated contract metadata", async () => {
+test("external-package contract fixture preserves validated contract metadata", async () => {
     const root = fileURLToPath(
         new URL("fixtures/external-pack", import.meta.url),
     );
@@ -224,13 +220,6 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.equal(
         contentEntryId(manifest, "english:letter:a"),
         contentEntryId({ ...manifest, version: "2.0.0" }, "english:letter:a"),
-    );
-    assert.notEqual(
-        versionedContentEntryId(manifest, "english:letter:a"),
-        versionedContentEntryId(
-            { ...manifest, version: "2.0.0" },
-            "english:letter:a",
-        ),
     );
 
     await writeJson(path.join(root, "schema.json"), {

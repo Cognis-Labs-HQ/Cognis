@@ -1,4 +1,9 @@
-import { alignFormContributions } from "./form-contributions.js";
+import { storeContentPackAudio } from "./content-audio.js";
+import { validateEntryInput } from "./input.js";
+import {
+    alignFormContributions,
+    applyFormContributions,
+} from "./form-contributions.js";
 import { localizeDefinition } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import { authorizeDeletion, planDeletion } from "./deletion.js";
@@ -12,7 +17,7 @@ import {
 } from "./dependencies.js";
 import { traceEntry } from "./trace.js";
 import type { FlowApi } from "@cognis/core";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { canonicalizeLanguageTag } from "../language.js";
 import { inspectContentPack } from "../content-pack.js";
 import {
@@ -45,7 +50,6 @@ import type {
     LibrarySchema,
     StringLocalizationCapability,
 } from "../types.js";
-const CONTENT_CLASS_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 export type {
     LibraryActor,
     LibraryCapability,
@@ -59,6 +63,7 @@ import type {
     LibraryClassAccess,
     LibraryContentNotifier,
 } from "../contracts.js";
+
 export class LibraryService implements LibraryCapability {
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
@@ -67,6 +72,7 @@ export class LibraryService implements LibraryCapability {
         LibraryFormContribution
     >();
     private readonly visibility: LibraryVisibilityService;
+
     constructor(
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
@@ -97,12 +103,14 @@ export class LibraryService implements LibraryCapability {
             this.update.bind(this),
         );
     }
+
     async registerSchema(input: LibrarySchema): Promise<void> {
         const schema = validateLibrarySchema(input);
         this.assertSchemaVersionAvailable(schema);
         await this.store.saveSchema(schema);
         this.rememberSchema(schema);
     }
+
     private assertSchemaVersionAvailable(schema: LibrarySchema): void {
         const versions = this.schemas.get(schema.id) ?? new Map();
         if (versions.has(schema.version))
@@ -111,11 +119,13 @@ export class LibraryService implements LibraryCapability {
         if (schema.version <= newest)
             throw new Error("schema_version_regression");
     }
+
     private rememberSchema(schema: LibrarySchema): void {
         const versions = this.schemas.get(schema.id) ?? new Map();
         versions.set(schema.version, schema);
         this.schemas.set(schema.id, versions);
     }
+
     registerLookupProvider(provider: LibraryLookupProvider): () => void {
         if (
             !provider.id.trim() ||
@@ -126,6 +136,7 @@ export class LibraryService implements LibraryCapability {
         this.lookupProviders.set(provider.id, provider);
         return () => this.lookupProviders.delete(provider.id);
     }
+
     listLookupProviders(input: {
         schemaId: string;
         schemaVersion?: number;
@@ -149,6 +160,7 @@ export class LibraryService implements LibraryCapability {
                     : {}),
             }));
     }
+
     registerFormContribution(
         contribution: LibraryFormContribution,
     ): () => void {
@@ -189,64 +201,41 @@ export class LibraryService implements LibraryCapability {
             )
                 throw new Error("constructor_registered");
         }
+
         this.formContributions.set(
             contribution.id,
             structuredClone(contribution),
         );
         return () => this.formContributions.delete(contribution.id);
     }
+
     listFormContributions(): LibraryFormContribution[] {
         return this.alignedFormContributions();
     }
+
     private alignedFormContributions(): LibraryFormContribution[] {
         return alignFormContributions(this.formContributions.values(), (id) =>
             this.schema(id),
         );
     }
+
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
         ).map((schema) => this.schemaWithFormConstructors(schema));
     }
+
     private schemaWithFormConstructors(schema: LibrarySchema): LibrarySchema {
-        const copy = structuredClone(schema);
-        return {
-            ...copy,
-            layers: copy.layers.map((layer) => {
-                const contributions = this.alignedFormContributions().filter(
-                    (candidate) =>
-                        candidate.schemaId === copy.id &&
-                        candidate.layerId === layer.id,
-                );
-                const contributedFields = new Map(
-                    contributions
-                        .flatMap(({ fields }) => fields ?? [])
-                        .map((field) => [field.id, field]),
-                );
-                const fields = (layer.fields ?? []).map(
-                    (field) => contributedFields.get(field.id) ?? field,
-                );
-                for (const [fieldId, field] of contributedFields) {
-                    if (!fields.some(({ id }) => id === fieldId))
-                        fields.push(field);
-                }
-                const cardConstructor = contributions.find(
-                    (contribution) => contribution.cardConstructor,
-                )?.cardConstructor;
-                return {
-                    ...layer,
-                    fields,
-                    ...(cardConstructor ? { cardConstructor } : {}),
-                };
-            }),
-        };
+        return applyFormContributions(schema, this.alignedFormContributions());
     }
+
     getSchema(id: string, version?: number): LibrarySchema | null {
         const versions = this.schemas.get(id);
         if (!versions) return null;
         const selected = versions.get(version ?? Math.max(...versions.keys()));
         return selected ? structuredClone(selected) : null;
     }
+
     async locations(actor: LibraryActor, language?: string) {
         const personal = { scope: "user", scopeId: actor.accountId } as const;
         const readable: LibraryLocation[] = [
@@ -270,9 +259,11 @@ export class LibraryService implements LibraryCapability {
             writable.push({ scope: "class", scopeId: classId });
         return { readable, writable };
     }
+
     async inspectContentPack(root: string): Promise<LibraryContentPackPlan> {
         return inspectContentPack(root);
     }
+
     async ingestContentPack(root: string): Promise<LibraryContentPackReceipt> {
         try {
             const plan = await inspectContentPack(root);
@@ -283,8 +274,9 @@ export class LibraryService implements LibraryCapability {
             if (!registered) {
                 this.assertSchemaVersionAvailable(plan.schema);
             }
+
             await this.flow?.run("study:library:ingest", { plan });
-            await this.storeContentPackAudio(plan);
+            await storeContentPackAudio(plan, this.audioCache);
             const receipt = await this.store.ingestContentPack(plan);
             if (receipt.newRecordCount > 0)
                 await this.notifyNewContent?.({
@@ -312,51 +304,6 @@ export class LibraryService implements LibraryCapability {
             throw error;
         }
     }
-    private async storeContentPackAudio(
-        plan: LibraryContentPackPlan,
-    ): Promise<void> {
-        if (!this.audioCache) throw new Error("file_gateway_unavailable");
-        const audioPaths = new Set<string>();
-        for (const record of plan.records) {
-            const layer = plan.schema.layers.find(
-                ({ id }) => id === record.layer,
-            )!;
-            const fields = { ...(record.fields ?? {}) };
-            for (const field of layer.fields ?? []) {
-                const value = fields[field.id];
-                if (field.type !== "audio" && field.type !== "audioList")
-                    continue;
-                const values = Array.isArray(value) ? value : [value];
-                const stored = [];
-                for (const audioPath of values) {
-                    if (typeof audioPath !== "string") {
-                        stored.push(audioPath);
-                        continue;
-                    }
-                    const asset = plan.assets.find(
-                        ({ path }) => path === audioPath,
-                    );
-                    if (!asset || !asset.mediaType.startsWith("audio/"))
-                        throw new Error("audio_asset_not_found");
-                    const key = `packs/${createHash("sha256")
-                        .update(
-                            `${plan.manifest.publisher}:${plan.manifest.id}:${plan.manifest.version}:${audioPath}`,
-                        )
-                        .digest("hex")}.audio`;
-                    await this.audioCache.store(
-                        key,
-                        asset.mediaType,
-                        Buffer.from(asset.data, "base64"),
-                    );
-                    stored.push(`file:${key}`);
-                    audioPaths.add(audioPath);
-                }
-                fields[field.id] = Array.isArray(value) ? stored : stored[0];
-            }
-            record.fields = fields;
-        }
-        plan.assets = plan.assets.filter(({ path }) => !audioPaths.has(path));
-    }
     async readContentPackAsset(
         publisher: string,
         packId: string,
@@ -370,11 +317,13 @@ export class LibraryService implements LibraryCapability {
             assetPath,
         );
     }
+
     private schema(id: string, version?: number): LibrarySchema {
         const schema = this.getSchema(id, version);
         if (!schema) throw new Error("schema_not_found");
         return schema;
     }
+
     private async authorize(
         actor: LibraryActor,
         raw: LibraryLocation,
@@ -386,11 +335,13 @@ export class LibraryService implements LibraryCapability {
                 throw new Error("forbidden");
             return location;
         }
+
         if (location.scope === "user") {
             if (location.scopeId !== actor.accountId)
                 throw new Error("forbidden");
             return location;
         }
+
         if (!this.classAccess) throw new Error("class_access_unavailable");
         const allowed = write
             ? await this.classAccess.canWrite(
@@ -406,6 +357,7 @@ export class LibraryService implements LibraryCapability {
         if (!allowed) throw new Error("forbidden");
         return location;
     }
+
     async list(
         actor: LibraryActor,
         raw: LibraryLocation,
@@ -418,11 +370,13 @@ export class LibraryService implements LibraryCapability {
         } else if (filters.layer) {
             throw new Error("schema_required");
         }
+
         const entries = await this.store.list(location, filters);
         return Promise.all(
             entries.map((entry) => this.entryWithPermissions(actor, entry)),
         );
     }
+
     private entryWithPermissions(
         actor: LibraryActor,
         entry: LibraryEntry,
@@ -434,9 +388,11 @@ export class LibraryService implements LibraryCapability {
             this.classAccess,
         );
     }
+
     private immutable(entry: LibraryEntry): boolean {
         return immutableEntry(this.getSchema(entry.schemaId), entry);
     }
+
     async read(
         actor: LibraryActor,
         entryId: string,
@@ -450,9 +406,11 @@ export class LibraryService implements LibraryCapability {
         );
         return this.entryWithPermissions(actor, entry);
     }
+
     async viewedEntryIds(actor: LibraryActor): Promise<string[]> {
         return this.store.viewedEntryIds(actor.accountId);
     }
+
     async markEntriesViewed(
         actor: LibraryActor,
         entryIds: readonly string[],
@@ -464,8 +422,10 @@ export class LibraryService implements LibraryCapability {
             if (!(await this.read(actor, entryId)))
                 throw new Error("not_found");
         }
+
         await this.store.markEntriesViewed(actor.accountId, uniqueIds);
     }
+
     async readAudio(
         actor: LibraryActor,
         entryId: string,
@@ -485,6 +445,7 @@ export class LibraryService implements LibraryCapability {
         if (!this.audioCache) throw new Error("file_gateway_unavailable");
         return this.audioCache.readStored(storedAudio.slice("file:".length));
     }
+
     async resolve(
         actor: LibraryActor,
         raw: LibraryLocation,
@@ -506,9 +467,11 @@ export class LibraryService implements LibraryCapability {
             await this.store.list(location, { schemaId: schema.id }),
         );
     }
+
     async localizeDefinition(request: LibraryDefinitionLocalizationRequest) {
         return localizeDefinition(request, this.stringLocalization, this.log);
     }
+
     async lookup(
         providerId: string,
         input: Pick<
@@ -548,6 +511,7 @@ export class LibraryService implements LibraryCapability {
             )
             .sort((left, right) => right.confidence - left.confidence);
     }
+
     async create(
         actor: LibraryActor,
         raw: LibraryLocation,
@@ -562,32 +526,7 @@ export class LibraryService implements LibraryCapability {
         const schema = this.schemaWithFormConstructors(
             this.schema(input.schemaId, input.schemaVersion),
         );
-        if (!input.label?.trim() || input.label.length > 500)
-            throw new Error("invalid_label");
-        if (
-            input.class !== undefined &&
-            !CONTENT_CLASS_PATTERN.test(input.class)
-        )
-            throw new Error("invalid_content_class");
-        if (
-            input.tags !== undefined &&
-            (!Array.isArray(input.tags) ||
-                input.tags.some(
-                    (tag) =>
-                        typeof tag !== "string" ||
-                        !tag.trim() ||
-                        tag.length > 50,
-                ) ||
-                input.tags.length > 25)
-        )
-            throw new Error("invalid_tags");
-        if (input.hidden !== undefined && typeof input.hidden !== "boolean")
-            throw new Error("invalid_hidden");
-        if (
-            input.alwaysShowDefinition !== undefined &&
-            typeof input.alwaysShowDefinition !== "boolean"
-        )
-            throw new Error("invalid_always_show_definition");
+        validateEntryInput(input);
         const layer = findLayer(schema, input.layer);
         if (isImmutableLayer(layer)) throw new Error("immutable_layer");
         if (layer.semanticRole === "definition") {
@@ -596,6 +535,7 @@ export class LibraryService implements LibraryCapability {
         } else if (layer.semanticRole === "orderedLexicalSequence") {
             input.class = layer.id;
         }
+
         const fields = structuredClone(input.fields ?? {});
         const candidateLocations = [
             location,
@@ -636,6 +576,7 @@ export class LibraryService implements LibraryCapability {
             ) {
                 throw new Error("definition_english_required");
             }
+
             entryId = randomUUID();
             const stringKey = `${localization.stringKeyPrefix}:${entryId}`;
             fields[localization.stringKeyField] = stringKey;
@@ -657,6 +598,7 @@ export class LibraryService implements LibraryCapability {
                 }
             }
         }
+
         if (JSON.stringify(fields).length > 100_000)
             throw new Error("fields_too_large");
         validateFields(schema, input.layer, fields);
@@ -696,6 +638,7 @@ export class LibraryService implements LibraryCapability {
             });
         return this.entryWithPermissions(actor, created);
     }
+
     async update(
         actor: LibraryActor,
         entryId: string,
@@ -719,32 +662,7 @@ export class LibraryService implements LibraryCapability {
             input.layer !== current.layer
         )
             throw new Error("entry_identity_immutable");
-        if (!input.label?.trim() || input.label.length > 500)
-            throw new Error("invalid_label");
-        if (
-            input.class !== undefined &&
-            !CONTENT_CLASS_PATTERN.test(input.class)
-        )
-            throw new Error("invalid_content_class");
-        if (
-            input.tags !== undefined &&
-            (!Array.isArray(input.tags) ||
-                input.tags.some(
-                    (tag) =>
-                        typeof tag !== "string" ||
-                        !tag.trim() ||
-                        tag.length > 50,
-                ) ||
-                input.tags.length > 25)
-        )
-            throw new Error("invalid_tags");
-        if (input.hidden !== undefined && typeof input.hidden !== "boolean")
-            throw new Error("invalid_hidden");
-        if (
-            input.alwaysShowDefinition !== undefined &&
-            typeof input.alwaysShowDefinition !== "boolean"
-        )
-            throw new Error("invalid_always_show_definition");
+        validateEntryInput(input);
         const schema = this.schemaWithFormConstructors(
             this.schema(current.schemaId),
         );
@@ -757,6 +675,7 @@ export class LibraryService implements LibraryCapability {
         } else if (layer.semanticRole === "orderedLexicalSequence") {
             input.class = layer.id;
         }
+
         const fields = structuredClone(input.fields ?? {});
         for (const field of layer.fields ?? []) {
             if (
@@ -766,6 +685,7 @@ export class LibraryService implements LibraryCapability {
             )
                 throw new Error(`field_immutable:${field.id}`);
         }
+
         if (layer.semanticRole === "definition") {
             const localization = layer.definitionLocalization!;
             fields[localization.stringKeyField] =
@@ -781,6 +701,7 @@ export class LibraryService implements LibraryCapability {
             )
                 throw new Error("definition_english_required");
         }
+
         if (JSON.stringify(fields).length > 100_000)
             throw new Error("fields_too_large");
         validateFields(schema, input.layer, fields);
@@ -817,6 +738,7 @@ export class LibraryService implements LibraryCapability {
         );
         return this.entryWithPermissions(actor, updated);
     }
+
     async planDeletion(actor: LibraryActor, entryIds: readonly string[]) {
         return planDeletion(
             this.store,
@@ -826,6 +748,7 @@ export class LibraryService implements LibraryCapability {
             (actor, location, write) => this.authorize(actor, location, write),
         );
     }
+
     async deleteEntries(
         actor: LibraryActor,
         entryIds: readonly string[],
@@ -868,6 +791,7 @@ export class LibraryService implements LibraryCapability {
         });
         return deletedEntryIds;
     }
+
     async trace(actor: LibraryActor, entryId: string) {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
@@ -879,6 +803,7 @@ export class LibraryService implements LibraryCapability {
             this.authorize.bind(this),
         );
     }
+
     requestPush(
         actor: LibraryActor,
         entryId: string,
@@ -886,6 +811,7 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryPushRequest> {
         return this.visibility.requestPush(actor, entryId, destination);
     }
+
     async requestUpdate(
         actor: LibraryActor,
         entryId: string,
@@ -910,9 +836,11 @@ export class LibraryService implements LibraryCapability {
         );
         return this.visibility.requestUpdate(actor, entryId, proposedEntry);
     }
+
     listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
         return this.visibility.listPushRequests(actor);
     }
+
     reviewPush(
         actor: LibraryActor,
         requestId: string,
@@ -920,18 +848,23 @@ export class LibraryService implements LibraryCapability {
     ): Promise<LibraryPushRequest> {
         return this.visibility.reviewPush(actor, requestId, decision);
     }
+
     withdrawPush(
         actor: LibraryActor,
         requestId: string,
     ): Promise<LibraryPushRequest> {
         return this.visibility.withdrawPush(actor, requestId);
     }
+
     async moveToPersonal(
         actor: LibraryActor,
         entryId: string,
     ): Promise<LibraryEntry> {
         const entry = await this.read(actor, entryId);
         if (entry && this.immutable(entry)) throw new Error("immutable_layer");
-        return this.visibility.moveToPersonal(actor, entryId);
+        return this.entryWithPermissions(
+            actor,
+            await this.visibility.moveToPersonal(actor, entryId),
+        );
     }
 }

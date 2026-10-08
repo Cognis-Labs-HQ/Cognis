@@ -75,7 +75,8 @@
   <string name="gateway.study.library_publish_class">クラスに公開</string>
   <string name="gateway.study.library_publish_global">グローバルに公開</string>
   <string name="gateway.study.library_withdraw">取り下げ</string>
-  <string name="gateway.study.library_send_back">差し戻す</string>
+  <string name="gateway.study.library_move_to">移動先: {{ scope }}</string>
+  <string name="gateway.study.library_destination_user">ユーザー</string>
   <string name="gateway.study.library_deselect_all">すべて選択解除</string>
   <string name="gateway.study.library_requests_mine">自分のリクエスト</string>
   <string name="gateway.study.library_requests_approved">承認済み</string>
@@ -129,7 +130,7 @@
   <string name="gateway.study.library_save_personal">個人用として保存</string>
   <string name="gateway.study.library_publish_saved_personal">カードを個人用として保存しました。公開申請に失敗しました。必要な構成要素を先に公開してから、もう一度共有してください。</string>
   <string name="gateway.study.library_publish_dependencies_first">先に次の構成要素を公開先の範囲で公開してください：{{ cards }}</string>
-  <string name="gateway.study.library_send_back_dependencies">このカードは共有カードで使用されています。個人用に戻す前に、その依存関係を変更または削除してください。</string>
+  <string name="gateway.study.library_move_dependencies">このカードは共有カードで使用されています。個人用に戻す前に、その依存関係を変更または削除してください。</string>
   <string name="gateway.study.library_visibility_error">公開範囲を変更できませんでした。アクセス権限と保留中の審査を確認して、もう一度お試しください。</string>
   <string name="gateway.study.library_publish_components">構成要素の公開を申請</string>
   <string name="gateway.study.library_publish_dependencies_help">先に必要な構成要素の公開を申請してください。承認後に親カードの共有をもう一度お試しください。</string>

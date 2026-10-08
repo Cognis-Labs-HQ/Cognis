@@ -1,3 +1,7 @@
+import {
+    CONTENT_CLASS_PATTERN,
+    CONTENT_RECORD_ID_PATTERN,
+} from "./identifiers.js";
 import { validateStrokePattern } from "./layers/stroke-pattern.js";
 import type {
     LibraryEntry,
@@ -12,8 +16,6 @@ import type {
 import { canonicalizeLanguageTag } from "./language.js";
 
 const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
-const CONTENT_RECORD_ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
-const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 const BUILT_IN_FIELD_TYPES = new Set([
     "string",
     "number",
@@ -304,11 +306,11 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             }
         }
         for (const role of layer.activityCompatibility ?? []) {
-            if (!ROLE_PATTERN.test(role))
+            if (!CONTENT_CLASS_PATTERN.test(role))
                 throw new Error("invalid_activity_role");
         }
         for (const vein of layer.interestVeins ?? []) {
-            if (!ROLE_PATTERN.test(vein))
+            if (!CONTENT_CLASS_PATTERN.test(vein))
                 throw new Error("invalid_interest_vein");
         }
         const viewIds = new Set<string>();
@@ -479,7 +481,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             const localization = layer.definitionLocalization;
             if (!localization)
                 throw new Error("definition_localization_required");
-            if (!ROLE_PATTERN.test(localization.stringKeyPrefix))
+            if (!CONTENT_CLASS_PATTERN.test(localization.stringKeyPrefix))
                 throw new Error("invalid_definition_string_key_prefix");
             const stringKeyField = (layer.fields ?? []).find(
                 ({ id }) => id === localization.stringKeyField,

@@ -312,7 +312,7 @@ Die einheitliche Composer-Schnittstelle ergänzt Beziehungen, die durch Eingabe-
 
 ## Aussprachekarussells aus dem Schema wiederhergestellt
 
-Wenn ein sichtbares Aussprachefeld keine Karussellschichten aus dem Laufzeit-Konstruktor erhält, verwendet der einheitliche Composer nun die Zielschichten aller deklarierten Aussprachebeziehungen. Dadurch rendert der Kanji-Composer das Zeichenkarussell auch bei älteren Beiträgen mit leerem `pronunciation_carousels`.
+Zusammengesetzte Schreibeinheiten bilden Aussprachen aus atomaren Schreibeinheiten. Lexikalische Einheiten verwenden atomare Schreibeinheiten für Aussprachen und Schreib- oder lexikalische Einheiten für Eingaben. Geordnete lexikalische Folgen leiten Aussprachen aus ausgewählten lexikalischen Einheiten und Partikeln ab. Diese semantischen Rollen definieren den aktuellen Composer-Vertrag.
 
 ## Semantische Karussellprofile entsprechen dem Autorenvertrag
 
@@ -488,7 +488,7 @@ Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zu
 
 ## Ältere Beziehungsschlüssel aktualisieren
 
-PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
+Die Datenbankschemainitialisierung gleicht vorhandene Schlüssel mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten, Änderungen werden protokolliert und ungültige Deklarationen schlagen fehl, statt Daten zu verwerfen. Eine versionsspezifische Schlüsselmigration ist nicht erforderlich.
 
 ## Korrekturen am Karteneditor
 
@@ -496,7 +496,7 @@ Die Strichsuche wird ausgeblendet, sobald ein abgerufenes Muster vorhanden ist, 
 
 ## Vollständige Schlüsselreparatur
 
-Die Schemainitialisierung entfernt historisch erzeugte eindeutige Indizes, deren Spalten eine echte Teilmenge des aktuellen Primärschlüssels sind, nachdem dieser bestätigt wurde. Dies repariert den Index uq_study_library_references_208386997ea7, der sonst wiederholte Kana an derselben Position in verschiedenen Lesegruppen ablehnt. Explizit deklarierte eindeutige Schlüssel und unabhängig benannte Indizes bleiben erhalten, ebenso vorhandene Zeilen. Manuelles Löschen von Daten ist nicht erforderlich.
+Die Schemainitialisierung gleicht Primärschlüssel und eindeutige Schlüssel in einer Transaktion mit der aktuellen Deklaration ab, ohne versionsspezifische Indexnamen oder Migrationsfunktionen.
 
 ## Aussprache aus dem Wörterbuch
 
@@ -509,6 +509,14 @@ Die Vokabelerstellung verwendet eine zusammengesetzte Karteneingabe ohne die üb
 ## Vokabeleingabe bleibt erhalten
 
 Die Wörterbuchsuche für Vokabeln behält den eingegebenen Text, die Reihenfolge der Bestandteile und die ausgewählten Eingabekarten bei und übernimmt ergänzende Felder, Aussprachen und Definitionen. Das Formular verwendet passende Definitionen mit demselben normalisierten Vergleich wie die API erneut; neu importierte Definitionen werden sofort zwischengespeichert, damit wiederholte Bedeutungen keine Konflikte verursachen. Die Wiederverwendung berücksichtigt den Zielbereich und erhält vorhandene Übersetzungen.
+
+## Transformierte Sätze und Bereiche
+
+Satzerstellung, Bearbeitung und Detailansicht leiten Aussprachen aus der gewählten Transformation jeder geordneten Referenz ab. Wiederholte Stammformen behalten getrennte Positionen und Transformationspfade. Deklarierte Satzzeichen bleiben sichtbar, ohne angrenzende Titellinks zu verhindern; Links in Titel und Aussprache öffnen die gewählte Form mit Rücknavigation zum Stamm. Bereichswechsel führen den registrierten Study-Library-Ablauf aus, liefern aktualisierte Berechtigungen und behalten eigene Karten nach dem Verschieben sichtbar. Die Aktion heißt „Verschieben nach: Benutzer“, da geteilte Karten in den Benutzerbereich ihres ursprünglichen Erstellers zurückkehren. Anbieterkarten, geteilte abhängige Karten, offene Anträge und Zugriffsbeschränkungen verhindern weiterhin ungültige Verschiebungen. Die Beitragsregeln verbieten ausdrücklich das Ankündigen von Fähigkeiten, Aktionen, Routen oder Abläufen ohne ausführbare Implementierung.
+
+## Schlanke Komponenten
+
+Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen sind zusammengeführt. Inhaltsaudio und Schemaabgleich liegen in fokussierten Modulen mit lesbaren Funktionsabständen. Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten; versionsabhängige Identitätsumwandlungen und Kompatibilitätspfade für umbenannte Spalten entfallen. Datenbankadapter gleichen deklarierte Schlüssel bei der Schemainitialisierung ab, mit adapterspezifischer Dokumentation und Tests des aktuellen Schemas.
 
 ## Commits
 

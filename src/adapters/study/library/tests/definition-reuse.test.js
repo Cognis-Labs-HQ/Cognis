@@ -1,3 +1,4 @@
+import { DEFINITION_LANGUAGES } from "../ui/app/definition-languages.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -34,6 +35,7 @@ test("dictionary definitions reuse case-equivalent cards and immediately cache n
     ];
     const context = {
         findMatchingEntry,
+        DEFINITION_LANGUAGES,
         createLibraryEntry: async (_location, input) => {
             posts += 1;
             return { ...input, id: "new", scope: "global" };

@@ -1,3 +1,4 @@
+import { VARIANT_DIRECTIONS } from "./variant-directions.js";
 /** Variant relationship identity and grid placement for Library cards. */
 
 export function isSameLibraryRecord(left, right) {
@@ -49,17 +50,6 @@ export function variantPlacement(entry, schema, entries = []) {
     }
     return null;
 }
-
-const VARIANT_DIRECTIONS = [
-    "up",
-    "down",
-    "left",
-    "right",
-    "up-left",
-    "up-right",
-    "down-right",
-    "down-left",
-];
 
 const VARIANT_DIRECTION_OFFSETS = {
     up: { column: 0, row: -1 },

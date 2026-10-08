@@ -606,54 +606,63 @@ export function readFields(form, layer, entry) {
 }
 
 export function readReferences(form, layer, compositionOrder = []) {
-    const authoredPositions = new Map(
-        compositionOrder.map((token, position) => [
-            compositionTokenEntryId(token),
-            position,
-        ]),
-    );
-    const authoredTransformations = new Map(
-        compositionOrder.flatMap((token) => {
-            const transformation = transformationTokenDetails(token);
-            return transformation
-                ? [
-                      [
-                          transformation.entryId,
-                          {
-                              setId: transformation.setId,
-                              path: transformation.path,
-                          },
-                      ],
-                  ]
-                : [];
-        }),
-    );
     return (layer?.relationships ?? [])
         .filter((relationship) => !relationship.grouped)
-        .flatMap((relationship) =>
-            Array.from(
+        .flatMap((relationship) => {
+            const selected = Array.from(
                 form.elements[`relationship:${relationship.id}`]
                     ?.selectedOptions ?? [],
-                (option, position) => ({
-                    entryId: option.value,
+            );
+            const orderedTokens = relationship.ordered
+                ? compositionOrder.filter((token) =>
+                      selected.some(
+                          ({ value }) =>
+                              value === compositionTokenEntryId(token),
+                      ),
+                  )
+                : [];
+            const tokens = [
+                ...orderedTokens,
+                ...selected
+                    .filter(
+                        ({ value }) =>
+                            !orderedTokens.some(
+                                (token) =>
+                                    compositionTokenEntryId(token) === value,
+                            ),
+                    )
+                    .map(({ value }) => value),
+            ];
+            let cursor = 0;
+            return tokens.map((token, index) => {
+                const transformation = transformationTokenDetails(token);
+                const authoredPosition = compositionOrder.indexOf(
+                    token,
+                    cursor,
+                );
+                if (authoredPosition >= 0) cursor = authoredPosition + 1;
+                return {
+                    entryId: compositionTokenEntryId(token),
                     relation: relationship.id,
-                    ...(authoredTransformations.has(option.value)
+                    ...(transformation
                         ? {
-                              transformation: authoredTransformations.get(
-                                  option.value,
-                              ),
+                              transformation: {
+                                  setId: transformation.setId,
+                                  path: transformation.path,
+                              },
                           }
                         : {}),
                     ...(relationship.ordered
                         ? {
                               position:
-                                  authoredPositions.get(option.value) ??
-                                  position,
+                                  authoredPosition >= 0
+                                      ? authoredPosition
+                                      : compositionOrder.length + index,
                           }
                         : {}),
-                }),
-            ),
-        );
+                };
+            });
+        });
 }
 
 export function readReferenceGroups(form) {

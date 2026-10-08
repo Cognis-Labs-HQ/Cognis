@@ -35,10 +35,8 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                      |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Batas waktu pernyataan opsional dalam milidetik (1–3.600.000)          |
 
-## Memperbarui kunci relasi lama
+## Penyelarasan skema
 
-PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
+PostgreSQL menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.
 
-## Perbaikan kunci referensi
-
-Inisialisasi skema menghapus indeks unik lama yang dibuat otomatis jika kolomnya merupakan bagian dari kunci primer saat ini, setelah memastikan kunci primer sesuai. Ini memperbaiki indeks uq_study_library_references_208386997ea7 yang menolak Kana berulang pada posisi sama di kelompok bacaan berbeda. Kunci unik yang dinyatakan secara eksplisit, indeks dengan nama mandiri, dan baris yang ada tetap dipertahankan. Tidak diperlukan penghapusan data manual.
+Kendala unik dan indeks unik biasa diselaraskan dengan kunci unik yang dideklarasikan dalam transaksi yang sama. Deklarasi tabel bersifat otoritatif; indeks ekspresi dan parsial tetap dikelola secara terpisah.

@@ -122,7 +122,11 @@ export function bindTextComposition(
         const inputPronunciation = resolution.remainder
             ? ""
             : resolution.matches
-                  .map((entry) => derivedPronunciation(entry, entries, schema))
+                  .map(
+                      (entry) =>
+                          entry.pronunciation ??
+                          derivedPronunciation(entry, entries, schema),
+                  )
                   .join("");
         const pronunciation = `${selectedPronunciation}${inputPronunciation}`;
         setGeneratedPronunciation(form, pronunciation);
@@ -196,6 +200,30 @@ export function bindTextComposition(
     input.addEventListener("input", renderSuggestions);
     form.addEventListener("change", syncLabel);
     form.addEventListener("library-composition-change", syncLabel);
+    const addSuggestion = (suggestion) => {
+        const { id, relationshipId, label, transformationValue } = suggestion;
+        const carousel = form.querySelector(
+            `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
+        );
+        const item = carousel?.querySelector(
+            `[data-carousel-value="${CSS.escape(id)}"], [data-carousel-base-value="${CSS.escape(id)}"]`,
+        );
+        if (!item) return;
+        const relationship = relationships.find(
+            (candidate) => candidate.id === relationshipId,
+        );
+        if (item.classList.contains("is-selected") && relationship?.ordered) {
+            form.compositionOrder.push(transformationValue ?? id);
+            form.dispatchEvent(new Event("library-composition-change"));
+            return;
+        }
+        item.dataset.carouselSuggestedTransformation = JSON.stringify({
+            entryId: id,
+            value: transformationValue ?? id,
+            label,
+        });
+        item.click();
+    };
     output.addEventListener("click", (event) => {
         const sequence = event.target.closest(
             "[data-library-suggestion-sequence]",
@@ -204,35 +232,19 @@ export function bindTextComposition(
             const suggestions = JSON.parse(
                 sequence.dataset.librarySuggestionSequence,
             );
-            for (const suggestion of suggestions) {
-                const item = form.querySelector(
-                    `[data-horizontal-carousel="${CSS.escape(suggestion.relationshipId)}"] [data-carousel-value="${CSS.escape(suggestion.id)}"]`,
-                );
-                if (item && suggestion.transformationValue)
-                    item.dataset.carouselSuggestedTransformation =
-                        JSON.stringify({
-                            entryId: suggestion.id,
-                            value: suggestion.transformationValue,
-                            label: suggestion.label,
-                        });
-                item?.click();
-            }
+            for (const suggestion of suggestions) addSuggestion(suggestion);
             input.value = "";
             renderSuggestions();
             return;
         }
         const suggestion = event.target.closest("[data-library-suggestion]");
         if (suggestion) {
-            const item = form.querySelector(
-                `[data-horizontal-carousel="${CSS.escape(suggestion.dataset.relationship)}"] [data-carousel-value="${CSS.escape(suggestion.dataset.librarySuggestion)}"]`,
-            );
-            if (item && suggestion.dataset.transformationValue)
-                item.dataset.carouselSuggestedTransformation = JSON.stringify({
-                    entryId: suggestion.dataset.librarySuggestion,
-                    value: suggestion.dataset.transformationValue,
-                    label: suggestion.dataset.suggestionLabel,
-                });
-            item?.click();
+            addSuggestion({
+                id: suggestion.dataset.librarySuggestion,
+                relationshipId: suggestion.dataset.relationship,
+                label: suggestion.dataset.suggestionLabel,
+                transformationValue: suggestion.dataset.transformationValue,
+            });
             input.value = input.value
                 .replace(suggestion.dataset.suggestionLabel, "")
                 .trim();

@@ -1,13 +1,5 @@
-const VARIANT_DIRECTIONS = [
-    "up",
-    "down",
-    "left",
-    "right",
-    "up-left",
-    "up-right",
-    "down-right",
-    "down-left",
-];
+import { VARIANT_DIRECTIONS } from "./variant-directions.js";
+
 const DIRECTION_ALTERNATIVES = {
     up: [
         "up-left",

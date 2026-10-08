@@ -224,6 +224,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             stages: ["inspect", "validate", "stage", "persist", "audit"],
         },
         {
+            id: "study:library:move",
+            stages: ["authorize", "validate", "move", "audit"],
+        },
+        {
             id: "study:library:delete",
             stages: ["authorize", "validate", "delete", "audit"],
         },

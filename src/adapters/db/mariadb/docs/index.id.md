@@ -36,6 +36,6 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Jendela maksimum kesiapan startup dalam milidetik (1.000–600.000) |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Jeda antarpercobaan kesiapan dalam milidetik (100–30.000)         |
 
-## Memperbarui kunci relasi lama
+## Penyelarasan skema
 
-PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
+MariaDB menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.

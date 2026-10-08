@@ -312,7 +312,7 @@ Antarmuka composer terpadu kini otomatis menambahkan relasi yang tersirat oleh l
 
 ## Carousel pelafalan dipulihkan dari relasi skema
 
-Ketika bidang pelafalan yang terlihat tidak menerima lapisan carousel dari konstruktor runtime, composer terpadu kini memakai lapisan target dari setiap relasi pelafalan yang dideklarasikan. Karena itu composer Kanji merender carousel karakter bahkan untuk kontribusi lama dengan larik `pronunciation_carousels` kosong.
+Unit tulisan gabungan menyusun pelafalan dari unit tulisan atomik. Unit leksikal memakai unit tulisan atomik untuk pelafalan serta unit tulisan atau leksikal untuk masukan. Urutan leksikal berurutan menurunkan pelafalan dari unit leksikal dan partikel yang dipilih. Peran semantik ini menentukan kontrak composer terkini.
 
 ## Profil carousel semantik sesuai kontrak penulisan
 
@@ -488,7 +488,7 @@ Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses 
 
 ## Memperbarui kunci relasi lama
 
-PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
+Inisialisasi skema basis data menyelaraskan kunci yang ada dengan deklarasi tabel terkini. Baris tetap tersimpan, perubahan dicatat, dan deklarasi tidak valid gagal tanpa membuang data. Tidak diperlukan migrasi kunci khusus versi.
 
 ## Perbaikan pencarian editor
 
@@ -496,7 +496,7 @@ Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termas
 
 ## Perbaikan kunci referensi
 
-Inisialisasi skema menghapus indeks unik lama yang dibuat otomatis jika kolomnya merupakan bagian dari kunci primer saat ini, setelah memastikan kunci primer sesuai. Ini memperbaiki indeks uq_study_library_references_208386997ea7 yang menolak Kana berulang pada posisi sama di kelompok bacaan berbeda. Kunci unik yang dinyatakan secara eksplisit, indeks dengan nama mandiri, dan baris yang ada tetap dipertahankan. Tidak diperlukan penghapusan data manual.
+Inisialisasi skema menyelaraskan kunci utama dan unik dengan deklarasi terkini dalam satu transaksi, tanpa nama indeks khusus versi atau fungsi migrasi.
 
 ## Tautan pelafalan kamus
 
@@ -509,6 +509,14 @@ Pembuatan kosakata memakai satu input kartu gabungan tanpa judul Input yang berl
 ## Input kosakata dipertahankan
 
 Pencarian kamus kosakata mempertahankan teks yang ditulis, urutan komponen, dan kartu input yang dipilih sambil mengimpor bidang pendukung, pelafalan, dan definisi. Formulir menggunakan kembali definisi yang cocok dengan perbandingan ternormalisasi yang sama seperti API; definisi yang baru diimpor langsung disimpan dalam cache agar makna berulang tidak menyebabkan konflik. Penggunaan kembali menghormati cakupan tujuan dan mempertahankan terjemahan definisi yang ada.
+
+## Kalimat bertransformasi dan cakupan
+
+Pembuatan, penyuntingan, dan tampilan detail kalimat menurunkan pelafalan dari transformasi yang dipilih pada setiap referensi berurutan. Kata dasar yang berulang mempertahankan posisi dan jalur transformasi terpisah. Tanda baca yang dideklarasikan tetap terlihat tanpa menghalangi tautan judul di sekitarnya; tautan judul dan pelafalan membuka bentuk yang dipilih serta mempertahankan navigasi kembali ke kata dasar. Pemindahan cakupan menjalankan alur Study Library yang terdaftar, mengembalikan izin terbaru, dan mempertahankan kartu milik sendiri setelah dipindahkan. Aksi bernama “Pindahkan ke: Pengguna” karena kartu bersama kembali ke cakupan pengguna pembuat aslinya. Konten penyedia, kartu bersama yang bergantung, permintaan tertunda, dan pembatasan akses tetap mencegah pemindahan tidak valid. Instruksi kontribusi secara tegas melarang pengumuman kapabilitas, aksi, rute, atau alur tanpa implementasi yang dapat dijalankan.
+
+## Komponen yang ringkas
+
+Validasi masukan, pola pengenal, bahasa definisi, dan arah varian telah disatukan. Penanganan audio konten dan penyelarasan skema berada dalam modul terfokus dengan jarak antarfungsi yang tetap mudah dibaca. Paket konten langsung memakai identitas rekaman stabil; konversi identitas berdasarkan versi dan jalur kompatibilitas kolom lama telah dihapus. Adapter basis data menyelaraskan kunci yang dideklarasikan saat inisialisasi skema, disertai dokumentasi khusus adapter dan pengujian skema terkini.
 
 ## Commit
 

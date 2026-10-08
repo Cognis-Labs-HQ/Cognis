@@ -366,3 +366,23 @@ test("study adapter routes announce controls and support disable toggles", async
     );
     assert.equal(updatedClassesAdapter?.active, false);
 });
+
+test("Study registers an executable Library move flow before advertising the provider", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "move", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:move",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:move", {
+        entryId: "authored-card",
+    });
+    assert.deepEqual(stages, ["authorize", "validate", "move", "audit"]);
+});

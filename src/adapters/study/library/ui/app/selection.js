@@ -14,7 +14,7 @@ export function librarySelectionFloatingMenu(entries, i18n) {
             id: "library-selection-actions",
             label: i18n.t("ui.reuse.actions"),
             render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all data-selection-action="select" data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}" data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-send-back-selection hidden>${escapeHtml(i18n.t("gateway.study.library_send_back"))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
+                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all data-selection-action="select" data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}" data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-move-selection hidden>${escapeHtml(i18n.t("gateway.study.library_move_to").replace("{{ scope }}", i18n.t("gateway.study.library_destination_user")))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
         },
     ];
 }
@@ -59,9 +59,9 @@ export function updateSelectionActions(root, entries, requests, locations) {
         withdraw.hidden = !pending;
         withdraw.dataset.libraryRequestId = pending?.id ?? "";
     }
-    const sendBack = root.querySelector("[data-library-send-back-selection]");
-    if (sendBack)
-        sendBack.hidden = !(
+    const moveToUser = root.querySelector("[data-library-move-selection]");
+    if (moveToUser)
+        moveToUser.hidden = !(
             entry &&
             entry.scope !== "user" &&
             canDeleteEntry(entry) &&

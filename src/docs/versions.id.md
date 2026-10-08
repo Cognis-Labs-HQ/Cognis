@@ -43,8 +43,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23`  |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.37`  |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.26`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.27`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.32`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.28`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.33`  |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27`  |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38`  |
@@ -55,7 +55,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.1`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.24.37` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.24.38` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.22`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`   |
@@ -76,7 +76,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.8.38`  |
+| Study                 | `src/gateways/study/`         | `1.8.39`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kontrak inti

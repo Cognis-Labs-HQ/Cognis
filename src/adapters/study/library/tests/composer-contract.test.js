@@ -6,18 +6,24 @@ const source = readFileSync(
     new URL("../ui/app/composer-contract.js", import.meta.url),
     "utf8",
 );
-const executableSource = source.replace(
-    'import { layerForEntry, pronunciationValues } from "./presentation.js";',
-    `const layerForEntry = (schemas, entry) => schemas.flatMap(({ layers }) => layers).find(({ id }) => id === entry.layer);
+const executableSource = source
+    .replace(
+        'from "./transformations.js"',
+        `from "${new URL("../ui/app/transformations.js", import.meta.url).href}"`,
+    )
+    .replace(
+        'import { layerForEntry, pronunciationValues } from "./presentation.js";',
+        `const layerForEntry = (schemas, entry) => schemas.flatMap(({ layers }) => layers).find(({ id }) => id === entry.layer);
 const pronunciationValues = (entry) => {
     const value = entry.fields?.pronunciation;
     return value ? (Array.isArray(value) ? value : [value]) : [];
 };`,
-);
+    );
 const {
     applyDerivedPronunciation,
     derivedPronunciation,
     resolveCompositionPrefix,
+    resolveComposerContract,
 } = await import(
     `data:text/javascript;base64,${Buffer.from(executableSource).toString("base64")}`
 );
@@ -95,4 +101,32 @@ test("compound input resolves the longest available cards in sequence", () => {
         matches: [candidates[1]],
         remainder: "x",
     });
+});
+
+test("compound writing pronunciation carousels follow the current semantic contract", () => {
+    const layer = {
+        id: "kanji",
+        semanticRole: "compoundWritingUnit",
+        fields: [{ id: "pronunciation", type: "stringList" }],
+        relationships: [
+            {
+                id: "readings",
+                targetLayer: "kana",
+                presentationRole: "pronunciation",
+            },
+        ],
+    };
+    const schema = {
+        layers: [{ id: "kana", semanticRole: "atomicWritingUnit" }, layer],
+    };
+    const contract = resolveComposerContract(schema, layer, {
+        fields: ["pronunciation"],
+        input_carousels: [],
+        pronunciation_carousels: [],
+    });
+    assert.deepEqual([...contract.pronunciationCarouselLayers], ["kana"]);
+    assert.deepEqual(
+        contract.layer.relationships.map(({ id }) => id),
+        ["readings"],
+    );
 });

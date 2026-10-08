@@ -1,10 +1,10 @@
+import definitionLanguages from "../definition-languages.json" with { type: "json" };
 import { canonicalizeLanguageTag } from "../language.js";
 import { createHash } from "node:crypto";
 import type {
     LibraryDefinitionLocalizationRequest,
     StringLocalizationCapability,
 } from "../types.js";
-const UI_LANGUAGES = new Set(["de", "en", "id", "ja"]);
 
 export async function localizeDefinition(
     request: LibraryDefinitionLocalizationRequest,
@@ -21,7 +21,9 @@ export async function localizeDefinition(
         typeof request.translations !== "object" ||
         Array.isArray(request.translations) ||
         !Array.isArray(request.languages) ||
-        request.languages.some((language) => !UI_LANGUAGES.has(language))
+        request.languages.some(
+            (language) => !definitionLanguages.includes(language),
+        )
     )
         throw new Error("invalid_definition_localization");
     const translations: Record<string, string> = {};

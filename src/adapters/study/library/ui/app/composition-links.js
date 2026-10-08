@@ -75,6 +75,36 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
     return resolved.get(0) ?? [];
 }
 
+export function resolveReferenceTitleComposition(
+    label,
+    references,
+    literals = [],
+) {
+    if (!references.length) return [];
+    const values = literals.toSorted(
+        (left, right) => right.length - left.length,
+    );
+    const result = [];
+    let offset = 0;
+    let referenceIndex = 0;
+    while (offset < label.length) {
+        const reference = references[referenceIndex];
+        if (reference && label.startsWith(reference.label, offset)) {
+            result.push(reference);
+            offset += reference.label.length;
+            referenceIndex += 1;
+            continue;
+        }
+        const literal = values.find(
+            (value) => value && label.startsWith(value, offset),
+        );
+        if (!literal) return [];
+        result.push({ label: literal });
+        offset += literal.length;
+    }
+    return referenceIndex === references.length ? result : [];
+}
+
 export function resolveCompositionDependants(entry, schemas, entries) {
     return entries.filter((candidate) => {
         if (
@@ -184,23 +214,37 @@ function entryAliases(entry) {
     ).sort((left, right) => right.length - left.length);
 }
 
-export function resolveReferenceAliasComposition(label, entries) {
+export function resolveReferenceAliasComposition(
+    label,
+    entries,
+    useAliasLabels = false,
+) {
     const normalized = normalizedLabel(label);
     if (!normalized || !entries.length) return [];
     let offset = 0;
+    const resolved = [];
     for (const entry of entries) {
         const alias = entryAliases(entry).find((candidate) =>
             normalized.startsWith(candidate, offset),
         );
         if (!alias) return [];
         offset += alias.length;
+        resolved.push(useAliasLabels ? { ...entry, label: alias } : entry);
     }
-    return offset === normalized.length ? entries : [];
+    return offset === normalized.length ? resolved : [];
 }
 
-export function resolveGroupedPronunciation(label, groups) {
+export function resolveGroupedPronunciation(
+    label,
+    groups,
+    useAliasLabels = false,
+) {
     for (const group of groups) {
-        const entries = resolveReferenceAliasComposition(label, group);
+        const entries = resolveReferenceAliasComposition(
+            label,
+            group,
+            useAliasLabels,
+        );
         if (entries.length) return entries;
     }
     return [];

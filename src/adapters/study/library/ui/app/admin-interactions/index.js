@@ -1,3 +1,4 @@
+import { activateCompositionEntry } from "../composition-activation.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -246,7 +247,8 @@ function syncGeneratedCardLabel(form, inputCarouselIds, entries) {
     form.elements.label.value = (form.compositionOrder ?? [])
         .filter(
             (entryId) =>
-                selected.has(entryId) || entryId.startsWith("literal:"),
+                selected.has(compositionTokenEntryId(entryId)) ||
+                entryId.startsWith("literal:"),
         )
         .map((entryId) => compositionTokenLabel(entryId, entries))
         .filter(Boolean)
@@ -258,12 +260,15 @@ function updateCompositionOrder(form, relationshipId, values) {
     const previous = new Set(
         Array.from(select?.selectedOptions ?? [], ({ value }) => value),
     );
-    const selected = new Set(values);
+    const selected = new Set(values.map(compositionTokenEntryId));
     form.compositionOrder = (form.compositionOrder ?? []).filter(
-        (value) => selected.has(value) || !previous.has(value),
+        (value) =>
+            selected.has(compositionTokenEntryId(value)) ||
+            !previous.has(compositionTokenEntryId(value)),
     );
     values.forEach((value) => {
-        if (!previous.has(value)) form.compositionOrder.push(value);
+        if (!previous.has(compositionTokenEntryId(value)))
+            form.compositionOrder.push(value);
     });
 }
 
@@ -397,6 +402,16 @@ export async function openLibraryEntryEditor({
                             return localIndex;
                         const index = form.compositionOrder.indexOf(value);
                         return index < 0 ? localIndex : index + 1;
+                    },
+                    onActivate: (activation) => {
+                        if (pronunciationRelationshipIds.has(activation.id))
+                            return;
+                        return activateCompositionEntry(
+                            activation,
+                            entries,
+                            schema,
+                            i18n,
+                        );
                     },
                     onChange: ({ id, values }) => {
                         if (pronunciationRelationshipIds.has(id)) return;
@@ -717,6 +732,20 @@ export function bindAdminLibraryInteractions(
                                     const index =
                                         form.compositionOrder.indexOf(value);
                                     return index < 0 ? localIndex : index + 1;
+                                },
+                                onActivate: (activation) => {
+                                    if (
+                                        pronunciationRelationshipIds.has(
+                                            activation.id,
+                                        )
+                                    )
+                                        return;
+                                    return activateCompositionEntry(
+                                        activation,
+                                        entries,
+                                        schema,
+                                        i18n,
+                                    );
                                 },
                                 onChange: ({ id, values }) => {
                                     if (pronunciationRelationshipIds.has(id))

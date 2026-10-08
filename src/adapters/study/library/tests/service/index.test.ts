@@ -1,3 +1,4 @@
+import { storeContentPackAudio } from "../../service/content-audio.js";
 import { schema } from "../fixtures/service-schema.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -419,16 +420,6 @@ test("provider metadata survives store and capability round trips", async () => 
 
 test("content-pack audio lists are cached and rewritten entry by entry", async () => {
     const stored: string[] = [];
-    const library = new LibraryService(
-        {} as never,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        {
-            store: async (key: string) => void stored.push(key),
-        } as never,
-    );
     const plan = {
         manifest: { publisher: "Fixture", id: "pack", version: "1.0.0" },
         schema: {
@@ -445,11 +436,12 @@ test("content-pack audio lists are cached and rewritten entry by entry", async (
             data: Buffer.from(path).toString("base64"),
         })),
     };
-    await (
-        library as unknown as {
-            storeContentPackAudio(value: unknown): Promise<void>;
-        }
-    ).storeContentPackAudio(plan);
+    await storeContentPackAudio(
+        plan as never,
+        {
+            store: async (key: string) => void stored.push(key),
+        } as never,
+    );
     assert.equal(stored.length, 2);
     assert.deepEqual(plan.records[0].fields.audio, [
         `file:${stored[0]}`,

@@ -405,8 +405,15 @@ test("Study Library exposes tagged sentence components and repeatable literals",
 });
 
 test("Study Library composes transformed carousel cards into sentences", () => {
-    assert.match(createEntrySource, /openTransformationPopup/);
-    assert.match(createEntrySource, /transformationCompositionToken/);
+    const activationSource = readFileSync(
+        new URL(
+            "../../adapters/study/library/ui/app/composition-activation.js",
+            import.meta.url,
+        ),
+        "utf8",
+    );
+    assert.match(activationSource, /openTransformationPopup/);
+    assert.match(activationSource, /transformationCompositionToken/);
     assert.match(createEntrySource, /transformationTokenDetails/);
     assert.match(createEntrySource, /transformationValue/);
     assert.match(createEntrySource, /carouselSuggestedTransformation/);

@@ -393,12 +393,19 @@ export function createLibraryRoutes(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/move-to-personal$/,
             );
             if (downgradeMatch && req.method === "POST") {
-                sendJson(res, 200, {
-                    data: await library.moveToPersonal(
-                        actor,
-                        decodeURIComponent(downgradeMatch[1]),
-                    ),
+                const entry = await library.moveToPersonal(
+                    actor,
+                    decodeURIComponent(downgradeMatch[1]),
+                );
+                await log?.("info", "Library card moved to user scope.", {
+                    component: "study-library",
+                    operation: "move-entry",
+                    accountId: actor.accountId,
+                    entryId: entry.id,
+                    destinationScope: entry.scope,
+                    destinationScopeId: entry.scopeId,
                 });
+                sendJson(res, 200, { data: entry });
                 return true;
             }
             const reviewMatch = url.pathname.match(

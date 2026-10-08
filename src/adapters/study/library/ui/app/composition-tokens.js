@@ -1,7 +1,4 @@
-import {
-    referencedTransformation,
-    transformationPathways,
-} from "./transformations.js";
+import { referencedTransformation } from "./transformations.js";
 
 const LITERAL_PREFIX = "literal:";
 const TRANSFORMATION_PREFIX = "transformation:";
@@ -65,20 +62,17 @@ export function restoreCompositionTokens(
     for (let cursor = 0; cursor < entry.label.length;) {
         const referenceItem = references[referenceIndex];
         const reference = referenceItem?.entry;
-        const transformation = reference
-            ? (referencedTransformation(
+        const resolved = reference
+            ? referencedTransformation(
                   reference,
                   schema,
                   referenceItem.transformation,
-              ) ??
-              transformationPathways(reference, schema)
-                  .flatMap(({ set, nodes }) =>
-                      nodes.slice(1).map((node) => ({ set, node })),
-                  )
-                  .find(({ node }) =>
-                      entry.label.startsWith(node.value, cursor),
-                  ))
+              )
             : null;
+        const transformation =
+            resolved && entry.label.startsWith(resolved.node.value, cursor)
+                ? resolved
+                : null;
         if (
             reference &&
             (entry.label.startsWith(reference.label, cursor) || transformation)

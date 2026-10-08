@@ -149,7 +149,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
     assert.match(source, /let titleDetailItems = popupTitleDetailItems\(/);
     assert.match(
         source,
-        /label: parentEntry\.label,[\s\S]*actionId: `open-title-reference:\$\{parentEntry\.id\}`/,
+        /label: parentEntry\.label,[\s\S]*actionId: titleReferenceAction\(parentEntry\)/,
     );
     assert.match(
         popupTitleSource,

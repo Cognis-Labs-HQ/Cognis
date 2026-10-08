@@ -9,12 +9,19 @@ import {
 import { visibleTitleDefinition } from "./title-definition.js";
 import { secondarySpellingGroups } from "./popup-spellings.js";
 import { variantPlacement } from "./variant-placement.js";
+import { orderedReadingReferences } from "./reference-readings.js";
 
 function linkedItems(entries) {
-    return entries.map((entry) => ({
-        label: entry.label,
-        actionId: `open-title-reference:${entry.id}`,
-    }));
+    return entries.flatMap((entry) =>
+        entry.referenceTransformation
+            ? popupTitleItems([entry])
+            : [
+                  {
+                      label: entry.label,
+                      actionId: titleReferenceAction(entry),
+                  },
+              ],
+    );
 }
 
 function normalizedTitleText(value) {
@@ -33,7 +40,7 @@ export function withParentAttribution(items, parentEntry, parentLabel) {
         { label: prefix, placement: "reading" },
         {
             label: parentEntry.label,
-            actionId: `open-title-reference:${parentEntry.id}`,
+            actionId: titleReferenceAction(parentEntry),
             placement: "reading",
         },
         { label: suffix, placement: "reading" },
@@ -130,24 +137,10 @@ export function popupTitleDetailItems(
               )
               .map(({ entry }) => entry)
         : [];
-    const derivedPronunciationEntries = (detail.entry.references ?? [])
-        .slice()
-        .sort(
-            (left, right) =>
-                (left.position ?? Number.MAX_SAFE_INTEGER) -
-                (right.position ?? Number.MAX_SAFE_INTEGER),
-        )
-        .map((reference) =>
-            (detail.references ?? []).find(
-                ({ id }) => id === reference.entryId,
-            ),
-        )
-        .filter((candidate) => {
-            const role = candidate
-                ? layerForEntry(schemas, candidate)?.semanticRole
-                : undefined;
-            return candidate && !["definition", "meaning"].includes(role);
-        });
+    const derivedPronunciationEntries = orderedReadingReferences(
+        detail,
+        schemas,
+    );
     const linkedPronunciationGroups = Array.from(linkRelationships).flatMap(
         (relation) =>
             (detail.entry.referenceGroups?.[relation] ?? []).map((group) =>
@@ -175,10 +168,12 @@ export function popupTitleDetailItems(
                     ? resolveGroupedPronunciation(
                           label,
                           linkedPronunciationGroups,
+                          true,
                       )
                     : resolveReferenceAliasComposition(
                           label,
                           linkedPronunciationEntries,
+                          true,
                       )
                 : [];
             const referenced = configuredLinked.length
@@ -186,6 +181,7 @@ export function popupTitleDetailItems(
                 : resolveReferenceAliasComposition(
                       label,
                       derivedPronunciationEntries,
+                      true,
                   );
             const linked = referenced.length
                 ? referenced
@@ -247,11 +243,19 @@ export function popupTitleDetailItems(
 export function popupTitleItems(references) {
     return references.map((entry) => ({
         label: entry.label,
-        actionId: `open-title-reference:${encodeURIComponent(
-            JSON.stringify({
-                entryId: entry.id,
-                transformation: entry.referenceTransformation,
-            }),
-        )}`,
+        ...(entry.id
+            ? {
+                  actionId: titleReferenceAction(entry),
+              }
+            : {}),
     }));
+}
+
+export function titleReferenceAction(entry) {
+    return `open-title-reference:${encodeURIComponent(
+        JSON.stringify({
+            entryId: entry.id,
+            transformation: entry.referenceTransformation,
+        }),
+    )}`;
 }

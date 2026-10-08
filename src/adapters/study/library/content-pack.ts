@@ -1,3 +1,7 @@
+import {
+    CONTENT_CLASS_PATTERN,
+    CONTENT_RECORD_ID_PATTERN,
+} from "./identifiers.js";
 import { createHash } from "node:crypto";
 import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
@@ -14,11 +18,9 @@ import type {
     LibraryEntry,
 } from "./types.js";
 
-const ID_PATTERN = /^[a-z0-9]+(?:[-_.:][a-z0-9]+)*$/i;
 const VERSION_PATTERN =
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const LICENSE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-.+]*$/;
-const ROLE_PATTERN = /^[a-z][a-zA-Z0-9]*(?::[a-z][a-zA-Z0-9]*)*$/;
 
 function canonicalJson(value: unknown): string {
     if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
@@ -60,13 +62,13 @@ function validateManifest(value: unknown): LibraryContentPackManifest {
     const manifest = value as LibraryContentPackManifest;
     if (
         !manifest ||
-        !ID_PATTERN.test(manifest.id) ||
+        !CONTENT_RECORD_ID_PATTERN.test(manifest.id) ||
         !manifest.publisher?.trim() ||
         !VERSION_PATTERN.test(manifest.version) ||
         !manifest.contentRevision?.trim() ||
         !manifest.schema?.trim() ||
         !manifest.content?.trim() ||
-        !ID_PATTERN.test(manifest.namespace) ||
+        !CONTENT_RECORD_ID_PATTERN.test(manifest.namespace) ||
         !LICENSE_PATTERN.test(manifest.license?.id ?? "")
     ) {
         throw new Error("invalid_content_pack_manifest");
@@ -120,17 +122,6 @@ export function contentEntryId(
 ): string {
     return createHash("sha256")
         .update(externalKey(manifest, recordId))
-        .digest("hex");
-}
-
-export function versionedContentEntryId(
-    manifest: LibraryContentPackManifest,
-    recordId: string,
-): string {
-    return createHash("sha256")
-        .update(
-            `${manifest.publisher}:${manifest.id}:${manifest.version}:${recordId}`,
-        )
         .digest("hex");
 }
 
@@ -253,12 +244,15 @@ async function validateContentRecords(
     const entries = new Map<string, LibraryEntry>();
     for (const record of records) {
         if (
-            !ID_PATTERN.test(record.id) ||
+            !CONTENT_RECORD_ID_PATTERN.test(record.id) ||
             !record.id.startsWith(`${manifest.namespace}:`) ||
             !record.label?.trim()
         )
             throw new Error("invalid_content_record");
-        if (record.class !== undefined && !ROLE_PATTERN.test(record.class))
+        if (
+            record.class !== undefined &&
+            !CONTENT_CLASS_PATTERN.test(record.class)
+        )
             throw new Error("invalid_content_class");
         if (
             record.tags !== undefined &&

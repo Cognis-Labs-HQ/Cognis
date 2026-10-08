@@ -1,3 +1,4 @@
+import { DEFINITION_LANGUAGES } from "./definition-languages.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
 
@@ -28,9 +29,9 @@ export function inputForField(field, value, language, i18n) {
             value && typeof value === "object" && !Array.isArray(value)
                 ? value
                 : {};
-        const uiLanguages = ["de", "en", "id", "ja"];
-        return `<fieldset class="library-admin-localized-field"><legend>${escapeHtml(label)}</legend>${uiLanguages
-            .map((locale) => [locale, translations[locale] ?? ""])
+        return `<fieldset class="library-admin-localized-field"><legend>${escapeHtml(label)}</legend>${DEFINITION_LANGUAGES.map(
+            (locale) => [locale, translations[locale] ?? ""],
+        )
             .map(
                 ([locale, text]) =>
                     `<label><span>${escapeHtml(locale)}</span><input name="${escapeHtml(`${name}:${locale}`)}" value="${escapeHtml(String(text))}"${field.required ? " required" : ""}></label>`,

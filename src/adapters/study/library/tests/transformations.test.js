@@ -267,7 +267,22 @@ test("transform pathways support branching chains with dynamic readings and defi
     const [token] = restoreCompositionTokens(
         {
             label: "morayously",
-            references: [{ entryId: "eat", relation: "words", position: 0 }],
+            references: [
+                {
+                    entryId: "eat",
+                    relation: "words",
+                    position: 0,
+                    transformation: {
+                        setId: "verb-group-b",
+                        path: [
+                            "causative",
+                            "desire",
+                            "negative-desire",
+                            "continuous-negative-desire",
+                        ],
+                    },
+                },
+            ],
         },
         [entry],
         { literal_carousels: [] },

@@ -1,3 +1,4 @@
+import { deriveDetailPronunciation } from "./composer-contract.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -175,6 +176,7 @@ export async function composeDetail(
     languageCode,
     options = {},
 ) {
+    deriveDetailPronunciation(detail, schemas);
     const usedBy = filterImmediateDependants(
         detail.entry,
         Array.from(

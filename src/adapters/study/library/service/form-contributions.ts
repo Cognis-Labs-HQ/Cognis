@@ -60,3 +60,40 @@ export function alignFormContributions(
     }
     return contributions;
 }
+
+export function applyFormContributions(
+    schema: LibrarySchema,
+    formContributions: LibraryFormContribution[],
+): LibrarySchema {
+    const copy = structuredClone(schema);
+    return {
+        ...copy,
+        layers: copy.layers.map((layer) => {
+            const contributions = formContributions.filter(
+                (candidate) =>
+                    candidate.schemaId === copy.id &&
+                    candidate.layerId === layer.id,
+            );
+            const contributedFields = new Map(
+                contributions
+                    .flatMap(({ fields }) => fields ?? [])
+                    .map((field) => [field.id, field]),
+            );
+            const fields = (layer.fields ?? []).map(
+                (field) => contributedFields.get(field.id) ?? field,
+            );
+            for (const [fieldId, field] of contributedFields) {
+                if (!fields.some(({ id }) => id === fieldId))
+                    fields.push(field);
+            }
+            const cardConstructor = contributions.find(
+                (contribution) => contribution.cardConstructor,
+            )?.cardConstructor;
+            return {
+                ...layer,
+                fields,
+                ...(cardConstructor ? { cardConstructor } : {}),
+            };
+        }),
+    };
+}

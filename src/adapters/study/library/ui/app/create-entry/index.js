@@ -1,3 +1,4 @@
+import { DEFINITION_LANGUAGES } from "../definition-languages.js";
 import {
     openDefinitionPopup,
     linkDefinition,
@@ -49,12 +50,8 @@ import {
     bindComposerExtras,
     renderComposerExtras,
 } from "../composer-extras.js";
-import {
-    compositionTokenEntryId,
-    transformationCompositionToken,
-} from "../composition-tokens.js";
-import { transformationPathways } from "../transformations.js";
-import { openTransformationPopup } from "../transformation-popup.js";
+import { compositionTokenEntryId } from "../composition-tokens.js";
+import { activateCompositionEntry } from "../composition-activation.js";
 import { renderStrokePatternPreviews } from "../field-input.js";
 
 export async function chooseCreateLayer({
@@ -329,7 +326,7 @@ export async function openCreateEntryPopup({
             referenceGroups: readReferenceGroups(form),
             definitionLanguages:
                 layer.semanticRole === "definition"
-                    ? ["de", "en", "id", "ja"]
+                    ? DEFINITION_LANGUAGES
                     : undefined,
             alwaysShowDefinition:
                 form.elements.alwaysShowDefinition?.checked === true,
@@ -523,51 +520,15 @@ export async function openCreateEntryPopup({
                         const index = form.compositionOrder.indexOf(value);
                         return index < 0 ? localIndex : index + 1;
                     },
-                    onActivate: ({ id, item, selected }) => {
-                        if (pronunciationRelationshipIds.has(id)) return;
-                        if (selected) return;
-                        const suggestedTransformation =
-                            item.dataset.carouselSuggestedTransformation;
-                        if (suggestedTransformation) {
-                            delete item.dataset.carouselSuggestedTransformation;
-                            const suggestion = JSON.parse(
-                                suggestedTransformation,
-                            );
-                            item.dataset.carouselBaseValue = suggestion.entryId;
-                            return {
-                                value: suggestion.value,
-                                label: suggestion.label,
-                            };
-                        }
-                        const entryId =
-                            item.dataset.carouselBaseValue ??
-                            compositionTokenEntryId(item.dataset.carouselValue);
-                        const candidate = entries.find(
-                            ({ id }) => id === entryId,
-                        );
-                        if (
-                            !candidate ||
-                            !transformationPathways(candidate, schema).length
-                        )
+                    onActivate: (activation) => {
+                        if (pronunciationRelationshipIds.has(activation.id))
                             return;
-                        return openTransformationPopup(
-                            candidate,
+                        return activateCompositionEntry(
+                            activation,
+                            entries,
                             schema,
                             i18n,
-                            entryDefinitions(candidate, entries, schema),
-                        ).then((transformation) => {
-                            if (!transformation) return false;
-                            if (transformation.base) return;
-                            item.dataset.carouselBaseValue = candidate.id;
-                            return {
-                                value: transformationCompositionToken(
-                                    candidate.id,
-                                    transformation.set.id,
-                                    transformation.node,
-                                ),
-                                label: transformation.node.value,
-                            };
-                        });
+                        );
                     },
                     onChange: ({ id, values }) => {
                         const select = form.elements[`relationship:${id}`];

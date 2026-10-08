@@ -46,13 +46,13 @@ export async function openEntryPopup(
     let selectedTransformation = null;
     while (selectedEntry && !signal?.aborted) {
         const detail = await fetchLibraryEntry(selectedEntry.id);
+        const layer = layerForEntry(schemas, detail.entry);
         const titleReferences = detailTitleReferences(
             detail,
             schemas,
             entries,
             selectedTransformation,
         );
-        const layer = layerForEntry(schemas, selectedEntry);
         const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
         const handleSaved = (updated) => {
             if (editMode !== "direct") return;

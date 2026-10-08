@@ -378,7 +378,7 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: popupTitleItems\(/);
-    assert.match(source, /open-title-reference:\$\{entry\.id\}/);
+    assert.match(source, /actionId: titleReferenceAction\(entry\)/);
     assert.doesNotMatch(source, /querySelector\("\.popup-title"\)/);
     assert.match(
         source,
@@ -527,14 +527,6 @@ test("Study Library administration exposes contract-safe editing", () => {
         composerContractSource,
         /constructorRelationshipIds\.add\(relationship\.id\)/,
     );
-    assert.match(
-        composerContractSource,
-        /pronunciationCarouselLayers\.add\(relationship\.targetLayer\)/,
-    );
-    assert.match(
-        composerContractSource,
-        /target\?\.semanticRole === "atomicWritingUnit"/,
-    );
     assert.match(composerContractSource, /constructorFieldIds\.add\("audio"\)/);
     assert.match(composerContractSource, /"lexicalUnit"/);
     assert.match(composerContractSource, /"orderedLexicalSequence"/);
@@ -616,7 +608,7 @@ test("Study Library positions pronunciations by semantic role", () => {
         source,
         /normalizedTitleText\(displayedPronunciation\)[\s\S]*normalizedTitleText\(detail\.entry\.label\)/,
     );
-    assert.match(source, /open-title-reference:\$\{entry\.id\}/);
+    assert.match(source, /actionId: titleReferenceAction\(entry\)/);
     assert.match(source, /composed\.titleDefinition/);
     assert.doesNotMatch(source, /class="library-entry-heading"/);
     assert.doesNotMatch(source, /library-card-pronunciation-below/);
@@ -638,7 +630,10 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(stylesheet, /\.library-entry-variant-down/);
     assert.match(stylesheet, /\.library-entry-variant-down-left/);
     assert.match(source, /function assignVariantPlacements/);
-    assert.match(source, /const VARIANT_DIRECTIONS = \[/);
+    assert.match(
+        source,
+        /export const VARIANT_DIRECTIONS = Object\.freeze\(\[/,
+    );
     assert.match(source, /function variantDirectionFitsGrid/);
     assert.match(source, /typeof direction !== "string"/);
     assert.match(source, /"up",\s*"down",\s*"left",\s*"right",\s*"up-left"/);

@@ -154,7 +154,7 @@ export function createLibraryVisibilityActions({
             setSelectionMode(root, false);
         },
 
-        async sendBack() {
+        async moveToUser() {
             const entry = selectedEntry();
             if (
                 !entry ||
@@ -163,10 +163,16 @@ export function createLibraryVisibilityActions({
                 entry.createdBy?.startsWith("content-pack:")
             )
                 return;
-            await moveLibraryEntryToPersonal(entry.id);
-            const remaining = getEntries().filter(({ id }) => id !== entry.id);
-            setEntries(remaining);
-            render(remaining);
+            const moved = await moveLibraryEntryToPersonal(entry.id);
+            const updated = getEntries().flatMap((candidate) =>
+                candidate.id !== entry.id
+                    ? [candidate]
+                    : moved.canEdit || moved.canDelete
+                      ? [moved]
+                      : [],
+            );
+            setEntries(updated);
+            render(updated);
             setSelectionMode(root, false);
         },
     };
@@ -182,7 +188,7 @@ export function createLibraryVisibilityActions({
                             ? "gateway.study.library_dependency_scope_help"
                             : error.message ===
                                 "entry_required_by_shared_content"
-                              ? "gateway.study.library_send_back_dependencies"
+                              ? "gateway.study.library_move_dependencies"
                               : "gateway.study.library_visibility_error";
                     showToast(i18n.t(key), { variant: "error" });
                 }
