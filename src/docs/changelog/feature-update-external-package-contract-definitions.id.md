@@ -649,3 +649,4 @@ Kartu yang dipilih menampilkan “Pindahkan ke:” diikuti ikon tujuan publik, k
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/618ba4f547fbde0d4dc2a9145ef02aa9451b180b
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0bb340a8bce6ce96596bfbfe36647743b696574d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/884b73f2286cfd8922494c2fe65ac3b51833ea54
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
