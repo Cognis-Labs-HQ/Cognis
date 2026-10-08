@@ -39,3 +39,7 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-client timeout in milliseconds (1,000–600,000)                       |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                          |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Optional statement timeout in milliseconds (1–3,600,000)                  |
+
+## Upgrade legacy relationship keys
+
+PostgreSQL and MariaDB now widen an existing composite primary key when the declared key adds columns while retaining all previous key columns. Existing Library reference tables therefore gain group_index and position in their key, allowing the same Kana to occur in different pronunciations or at different positions without duplicate-key errors. Existing rows are preserved; current keys and unrelated or narrower declarations are left unchanged. The expansion is logged and runs when schema initialization next occurs.

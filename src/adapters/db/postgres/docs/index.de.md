@@ -34,3 +34,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                         |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |
+
+## Ältere Beziehungsschlüssel aktualisieren
+
+PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.

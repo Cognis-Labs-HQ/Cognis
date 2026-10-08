@@ -34,3 +34,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`    | アイドルクライアントのタイムアウト（ミリ秒、1,000～600,000）       |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`     | 接続タイムアウト（ミリ秒、100～120,000）                           |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —          | 任意のステートメントタイムアウト（ミリ秒、1～3,600,000）           |
+
+## 旧参照キーの更新
+
+PostgreSQLとMariaDBは、既存のキー列をすべて維持しながら列を追加する宣言に対して、既存の複合主キーを拡張します。これにより既存のLibrary参照テーブルのキーにgroup_indexとpositionが加わり、同じ仮名を複数の発音や異なる位置で使用しても重複キーエラーが発生しません。既存の行は保持し、更新済みのキーや別の列を使う宣言、列を減らす宣言は変更しません。拡張をログに記録し、次回のスキーマ初期化時に実行します。

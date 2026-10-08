@@ -486,6 +486,10 @@ Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan 
 
 Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses sebelum menambahkan tautan biasa atau berkelompok. Target yang hilang atau ambigu membiarkan nilai hasil tanpa tautan dengan peringatan, bukan menghalangi penyimpanan. Definisi yang telah disimpan memiliki tindakan Edit melalui editor kartu yang memeriksa izin, dan perubahan tersimpan memperbarui ringkasannya. Bidang skema tersembunyi, termasuk data sumber kamus, tidak ditampilkan dalam formulir tetapi nilai tersimpannya dipertahankan.
 
+## Memperbarui kunci relasi lama
+
+PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

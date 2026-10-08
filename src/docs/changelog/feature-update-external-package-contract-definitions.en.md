@@ -360,6 +360,10 @@ Dictionary lookup now fills the open card composer directly and commits all retu
 
 Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
 
+## Upgrade legacy relationship keys
+
+PostgreSQL and MariaDB now widen an existing composite primary key when the declared key adds columns while retaining all previous key columns. Existing Library reference tables therefore gain group_index and position in their key, allowing the same Kana to occur in different pronunciations or at different positions without duplicate-key errors. Existing rows are preserved; current keys and unrelated or narrower declarations are left unchanged. The expansion is logged and runs when schema initialization next occurs.
+
 ## Multi-value staging no longer mutates committed values
 
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.

@@ -34,3 +34,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu klien menganggur dalam milidetik (1.000–600.000)           |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                      |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Batas waktu pernyataan opsional dalam milidetik (1–3.600.000)          |
+
+## Memperbarui kunci relasi lama
+
+PostgreSQL dan MariaDB kini memperluas kunci utama gabungan yang sudah ada ketika deklarasi menambah kolom sambil mempertahankan semua kolom kunci sebelumnya. Tabel referensi Library lama memperoleh group_index dan position dalam kuncinya, sehingga Kana yang sama dapat muncul pada beberapa pelafalan atau posisi tanpa kesalahan kunci duplikat. Baris lama dipertahankan; kunci yang sudah sesuai serta deklarasi yang berbeda atau lebih sempit tidak diubah. Perluasan dicatat dan dijalankan saat inisialisasi skema berikutnya.

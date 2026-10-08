@@ -363,6 +363,34 @@ class PostgresExecutor implements RawDbExecutor {
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
+        if (compositePk.length) {
+            const result = await this.execute(
+                "SELECT constraint_name, array_agg(column_name::text ORDER BY ordinal_position) AS columns FROM information_schema.key_column_usage WHERE table_name = $1 AND table_schema = current_schema() AND constraint_name IN (SELECT constraint_name FROM information_schema.table_constraints WHERE table_name = $1 AND table_schema = current_schema() AND constraint_type = 'PRIMARY KEY') GROUP BY constraint_name",
+                [def.name],
+            );
+            const existing = result.rows?.[0];
+            const columns = existing?.columns;
+            if (
+                Array.isArray(columns) &&
+                columns.length > 0 &&
+                columns.length < compositePk.length &&
+                columns.every((column) => compositePk.includes(String(column)))
+            ) {
+                const constraint = String(existing.constraint_name).replaceAll(
+                    '"',
+                    '""',
+                );
+                await this.execute(
+                    `ALTER TABLE ${def.name} DROP CONSTRAINT "${constraint}", ADD PRIMARY KEY (${compositePk.join(", ")})`,
+                );
+                writeDbLog(this.log, "info", "Expanded database primary key.", {
+                    component: "db",
+                    provider: "postgresql",
+                    table: def.name,
+                    columns: compositePk,
+                });
+            }
+        }
         for (const index of def.indexes ?? []) {
             const indexName =
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;

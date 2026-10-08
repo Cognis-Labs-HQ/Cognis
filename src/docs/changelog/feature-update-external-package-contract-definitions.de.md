@@ -486,6 +486,10 @@ Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle 
 
 Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zugänglichen installierten Karten zu, auch für gruppierte Links. Fehlende oder mehrdeutige Ziele lassen die Werte mit einer Warnung unverknüpft, statt das Speichern zu verhindern. Übernommene Definitionen bieten eine Bearbeiten-Aktion über den bestehenden berechtigungsabhängigen Karteneditor; gespeicherte Änderungen aktualisieren ihre Zusammenfassung. Versteckte Schemafelder, einschließlich Wörterbuch-Quelldaten, erscheinen nicht im Formular, behalten aber ihre gespeicherten Werte.
 
+## Ältere Beziehungsschlüssel aktualisieren
+
+PostgreSQL und MariaDB erweitern vorhandene zusammengesetzte Primärschlüssel, wenn die Deklaration Spalten ergänzt und alle bisherigen Schlüsselspalten beibehält. Bestehende Library-Referenztabellen erhalten dadurch group_index und position im Schlüssel. Dasselbe Kana kann in mehreren Aussprachen oder an verschiedenen Positionen vorkommen, ohne einen Duplikatfehler auszulösen. Vorhandene Zeilen bleiben erhalten; aktuelle Schlüssel sowie andere oder engere Deklarationen bleiben unverändert. Die Erweiterung wird protokolliert und bei der nächsten Schemainitialisierung ausgeführt.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

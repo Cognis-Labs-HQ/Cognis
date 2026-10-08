@@ -493,6 +493,30 @@ class MariaDbExecutor implements RawDbExecutor {
                 `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
             );
         }
+        if (compositePk.length) {
+            const result = await this.execute(
+                "SELECT column_name FROM information_schema.key_column_usage WHERE table_name = ? AND table_schema = DATABASE() AND constraint_name = 'PRIMARY' ORDER BY ordinal_position",
+                [def.name],
+            );
+            const columns = (result.rows ?? []).map((row) =>
+                String(row.column_name),
+            );
+            if (
+                columns.length > 0 &&
+                columns.length < compositePk.length &&
+                columns.every((column) => compositePk.includes(column))
+            ) {
+                await this.execute(
+                    `ALTER TABLE ${def.name} DROP PRIMARY KEY, ADD PRIMARY KEY (${compositePk.join(", ")})`,
+                );
+                writeDbLog(this.log, "info", "Expanded database primary key.", {
+                    component: "db",
+                    provider: "mariadb",
+                    table: def.name,
+                    columns: compositePk,
+                });
+            }
+        }
         for (const index of def.indexes ?? []) {
             const indexName =
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
