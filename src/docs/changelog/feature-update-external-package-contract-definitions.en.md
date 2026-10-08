@@ -630,3 +630,4 @@ Vocabulary creation uses one composed card input without the redundant Input hea
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6aab168c82f96e8991583d14d45e7f43f7c32efe
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/caecf066d84d75cdf09fc337052e5df1d9393195
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/618ba4f547fbde0d4dc2a9145ef02aa9451b180b
