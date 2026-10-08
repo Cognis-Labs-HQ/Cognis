@@ -612,3 +612,4 @@ PostgreSQLとMariaDBは、既存のキー列をすべて維持しながら列を
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c5d3f42d059d2aee21377f0f28d4ab2c2f026679
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/8a9bf125fa71a51cd45ac1e389d932c2bf1ca71e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6aab168c82f96e8991583d14d45e7f43f7c32efe
