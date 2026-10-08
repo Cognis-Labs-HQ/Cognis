@@ -142,4 +142,5 @@
   <string name="gateway.study.library_lookup_replace_warning">検索すると現在のカードの値、定義、発音を置き換えます。続行しますか？</string>
   <string name="gateway.study.library_lookup_replace">値を置き換える</string>
   <string name="gateway.study.library_lookup_replace_stroke_warning">検索すると現在の筆順を置き換えます。続行しますか？</string>
+  <string name="gateway.study.library_lookup_unlinked">検索結果の一部のリンクに対応するカードが見つかりませんでした。値はそのリンクなしで保持されます。</string>
 </resources>

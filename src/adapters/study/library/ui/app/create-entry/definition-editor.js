@@ -1,3 +1,5 @@
+import { openLibraryEntryEditor } from "../admin-interactions/index.js";
+import { entryEditMode } from "../editability.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -167,34 +169,77 @@ export function linkDefinition(form, schema, layer, entries, definition) {
     const option = Array.from(select.options).find(
         ({ value }) => value === definition.id,
     );
-    if (option) option.selected = true;
-    else select.append(new Option(definition.label, definition.id, true, true));
+    if (option) {
+        option.selected = true;
+        option.textContent = definition.label;
+    } else
+        select.append(new Option(definition.label, definition.id, true, true));
     const panel = form.querySelector(
         '[data-library-editor-panel="definitions"]',
     );
     panel?.querySelector("[data-library-definition-empty]")?.remove();
-    if (
-        !panel?.querySelector(
+    panel
+        ?.querySelector(
             `[data-library-definition-id="${CSS.escape(definition.id)}"]`,
         )
-    )
-        panel?.insertAdjacentHTML(
-            "afterbegin",
-            `<article class="library-editor-aggregate" data-library-definition-id="${escapeHtml(definition.id)}"><header><strong>${escapeHtml(definition.label)}</strong></header><p>${DEFINITION_LANGUAGES.map(
-                (language) => {
-                    const text =
-                        definition.fields?.[
-                            schema.layers.find(
-                                ({ id }) => id === definition.layer,
-                            )?.definitionLocalization?.translationsField
-                        ]?.[language];
-                    return text
-                        ? `${language.toUpperCase()}: ${escapeHtml(text)}`
-                        : "";
-                },
-            )
-                .filter(Boolean)
-                .join(" · ")}</p></article>`,
-        );
+        ?.remove();
+    panel?.insertAdjacentHTML(
+        "afterbegin",
+        `<article class="library-editor-aggregate" data-library-definition-id="${escapeHtml(definition.id)}"><header><strong>${escapeHtml(definition.label)}</strong>${definition.canEdit !== false ? `<button class="btn-neutral" type="button" data-library-edit-definition="${escapeHtml(definition.id)}">${escapeHtml(form.libraryDefinitionI18n?.t("ui.reuse.edit") ?? "")}</button>` : ""}</header><p>${DEFINITION_LANGUAGES.map(
+            (language) => {
+                const text =
+                    definition.fields?.[
+                        schema.layers.find(({ id }) => id === definition.layer)
+                            ?.definitionLocalization?.translationsField
+                    ]?.[language];
+                return text
+                    ? `${language.toUpperCase()}: ${escapeHtml(text)}`
+                    : "";
+            },
+        )
+            .filter(Boolean)
+            .join(" · ")}</p></article>`,
+    );
     select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+export function bindCommittedDefinitionEditing(
+    form,
+    { schema, layer, entries, i18n },
+) {
+    form.libraryDefinitionI18n = i18n;
+    form.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-library-edit-definition]");
+        if (!button) return;
+        button.disabled = true;
+        try {
+            const { entry } = await fetchLibraryEntry(
+                button.dataset.libraryEditDefinition,
+            );
+            const mode = entryEditMode(entry);
+            if (!mode) throw new Error("forbidden");
+            await openLibraryEntryEditor({
+                entry,
+                entries,
+                schemas: [schema],
+                i18n,
+                requestUpdate: mode === "request",
+                onSaved(updated) {
+                    if (mode !== "direct") return;
+                    const existing = entries.find(
+                        ({ id }) => id === updated.id,
+                    );
+                    if (existing) Object.assign(existing, updated);
+                    linkDefinition(form, schema, layer, entries, updated);
+                    form.dispatchEvent(new Event("change", { bubbles: true }));
+                },
+            });
+        } catch {
+            showToast(i18n.t("gateway.study.library_create_error"), {
+                variant: "error",
+            });
+        } finally {
+            button.disabled = false;
+        }
+    });
 }

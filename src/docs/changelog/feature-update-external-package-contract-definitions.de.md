@@ -482,6 +482,10 @@ Zugehörige Stylesheets sowie Validierungs-, Persistenz-, Konstruktorabgleichs- 
 
 Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle zurückgegebenen Definitionen und Aussprachen ohne Ergebnisfenster oder Übernahmeschritt. Bestehende Werte erfordern vor der Anfrage eine Bestätigung zum Ersetzen; Abbruch und leere oder fehlgeschlagene Suchen erhalten die aktuelle Karte. Eine erfolgreiche Strichmustersuche blendet ihre Schaltfläche aus. Wörterbuch-Quelladressen bleiben als unsichtbare Quelldaten gespeichert statt als Links angezeigt zu werden.
 
+## Auflösbare Importe und editierbare Definitionen
+
+Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zugänglichen installierten Karten zu, auch für gruppierte Links. Fehlende oder mehrdeutige Ziele lassen die Werte mit einer Warnung unverknüpft, statt das Speichern zu verhindern. Übernommene Definitionen bieten eine Bearbeiten-Aktion über den bestehenden berechtigungsabhängigen Karteneditor; gespeicherte Änderungen aktualisieren ihre Zusammenfassung. Versteckte Schemafelder, einschließlich Wörterbuch-Quelldaten, erscheinen nicht im Formular, behalten aber ihre gespeicherten Werte.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

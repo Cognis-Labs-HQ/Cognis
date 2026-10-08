@@ -329,7 +329,10 @@ export function editorBody(
               .join("")
         : "";
     const fields = (layer?.fields ?? [])
-        .filter((field) => field.id !== immutableStringKeyField)
+        .filter(
+            (field) =>
+                field.id !== immutableStringKeyField && field.hidden !== true,
+        )
         .map((field) => {
             if (
                 field.id === "pronunciation" &&
@@ -537,7 +540,11 @@ export function readFields(form, layer, entry) {
         ...(entry.fields ?? {}),
         ...Object.fromEntries(
             (layer?.fields ?? [])
-                .filter((field) => field.id !== immutableStringKeyField)
+                .filter(
+                    (field) =>
+                        field.id !== immutableStringKeyField &&
+                        field.hidden !== true,
+                )
                 .map((field) => {
                     if (field.input?.immutable === true)
                         return [field.id, entry.fields?.[field.id]];

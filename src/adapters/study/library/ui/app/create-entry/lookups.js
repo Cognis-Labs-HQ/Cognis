@@ -1,3 +1,4 @@
+import { resolveLookupReferences } from "./lookup-references.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
 import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -129,12 +130,22 @@ export function bindLookupProviders(
                 });
                 return;
             }
-            const suggestion =
+            const selectedSuggestion =
                 suggestions.find(
                     (result) =>
                         result.label?.normalize("NFKC") ===
                         label.normalize("NFKC"),
                 ) ?? suggestions[0];
+            const { suggestion, unresolved } = resolveLookupReferences(
+                selectedSuggestion,
+                entries,
+                schema,
+                layer,
+            );
+            if (unresolved)
+                showToast(i18n.t("gateway.study.library_lookup_unlinked"), {
+                    variant: "warning",
+                });
             const importedDefinitions = [];
             const definitionRelationship = layer.relationships.find(
                 ({ targetLayer }) =>

@@ -1,4 +1,8 @@
-import { openDefinitionPopup, linkDefinition } from "./definition-editor.js";
+import {
+    openDefinitionPopup,
+    linkDefinition,
+    bindCommittedDefinitionEditing,
+} from "./definition-editor.js";
 import { bindLookupProviders, bindRawInput } from "./lookups.js";
 import {
     incompatibleDependencies,
@@ -493,6 +497,12 @@ export async function openCreateEntryPopup({
             form.compositionOrder = [];
             form.referenceGroups = {};
             bindComposerExtras(form);
+            bindCommittedDefinitionEditing(form, {
+                schema,
+                layer: editingLayer,
+                entries,
+                i18n,
+            });
             carouselController = mountEditableRelationshipCarousels(
                 form,
                 overlay,

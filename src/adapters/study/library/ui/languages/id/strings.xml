@@ -142,4 +142,5 @@
   <string name="gateway.study.library_lookup_replace_warning">Pencarian akan mengganti nilai kartu, definisi, dan pelafalan saat ini. Lanjutkan?</string>
   <string name="gateway.study.library_lookup_replace">Ganti nilai</string>
   <string name="gateway.study.library_lookup_replace_stroke_warning">Pencarian akan mengganti pola goresan saat ini. Lanjutkan?</string>
+  <string name="gateway.study.library_lookup_unlinked">Beberapa tautan pencarian tidak dapat dipetakan ke kartu yang tersedia. Nilai hasil tetap disimpan tanpa tautan tersebut.</string>
 </resources>

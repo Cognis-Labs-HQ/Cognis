@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { resolveLookupReferences } from "../ui/app/create-entry/lookup-references.js";
 
 const source = readFileSync(
     new URL("../ui/app/create-entry/lookups.js", import.meta.url),
@@ -83,6 +84,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         dispatchEvent() {},
     };
     const context = {
+        resolveLookupReferences,
         Event,
         RadioNodeList: class {},
         structuredClone,
@@ -105,9 +107,14 @@ test("dictionary results directly import definitions, source fields, readings, g
     };
     vm.runInNewContext(source, context);
     const schema = {
+        id: "test",
+        version: 1,
         layers: [{ id: "definitions", semanticRole: "definition" }],
     };
-    const entries = [];
+    const entries = [
+        { id: "kanji", schemaId: "test", layer: "kanji", schemaVersion: 1 },
+        { id: "kana", schemaId: "test", layer: "kana", schemaVersion: 1 },
+    ];
     const nestedDefinitionIds = [];
     const draft = { fields: {} };
     context.bindLookupProviders(
@@ -119,6 +126,8 @@ test("dictionary results directly import definitions, source fields, readings, g
             layer: {
                 relationships: [
                     { id: "definitions", targetLayer: "definitions" },
+                    { id: "spelling", targetLayer: "kanji" },
+                    { id: "reading-kana", targetLayer: "kana" },
                 ],
             },
             entries,
@@ -158,6 +167,7 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const pattern = { viewBox: "0 0 109 109", strokes: [{ d: "M0 0 L1 1" }] };
     const draft = { fields: { pronunciation: ["きょう"] } };
     const context = {
+        resolveLookupReferences,
         fetchLibraryLookupSuggestions: async () => [
             { fields: { stroke_pattern: pattern } },
         ],
@@ -205,6 +215,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     const input = { value: "教" };
     const draft = { fields: { pronunciation: ["original"] } };
     const context = {
+        resolveLookupReferences,
         hasLookupValues: () => true,
         confirmLookupReplacement: async () => false,
         fetchLibraryLookupSuggestions: async () => {
@@ -232,6 +243,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         let listener;
         const draft = { fields: {} };
         const context = {
+            resolveLookupReferences,
             hasLookupValues: () => false,
             fetchLibraryLookupSuggestions: async () => {
                 if (result instanceof Error) throw result;
@@ -279,6 +291,7 @@ test("lookup populates the visible composition input when no authored spelling c
         dispatchEvent() {},
     };
     const context = {
+        resolveLookupReferences,
         Event,
         structuredClone,
         hasLookupValues: () => false,

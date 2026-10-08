@@ -142,4 +142,5 @@
   <string name="gateway.study.library_lookup_replace_warning">Die Suche ersetzt die aktuellen Kartenwerte, Definitionen und Aussprachen. Fortfahren?</string>
   <string name="gateway.study.library_lookup_replace">Werte ersetzen</string>
   <string name="gateway.study.library_lookup_replace_stroke_warning">Die Suche ersetzt das aktuelle Strichmuster. Fortfahren?</string>
+  <string name="gateway.study.library_lookup_unlinked">Einige Suchverknüpfungen konnten keiner verfügbaren Karte zugeordnet werden. Die Werte bleiben ohne diese Verknüpfungen erhalten.</string>
 </resources>

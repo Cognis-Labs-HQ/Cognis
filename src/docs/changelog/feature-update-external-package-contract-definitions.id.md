@@ -482,6 +482,10 @@ Stylesheet serta kode validasi, persistensi, penyelarasan konstruktor, dan pengu
 
 Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan semua definisi serta pelafalan yang dikembalikan tanpa popup hasil atau langkah Terapkan. Nilai yang sudah ada memerlukan konfirmasi penggantian sebelum permintaan; pembatalan serta pencarian kosong atau gagal mempertahankan kartu saat ini. Pencarian Pola Goresan yang berhasil menyembunyikan tombolnya. URL sumber kamus disimpan dalam data sumber tersembunyi, bukan ditampilkan sebagai tautan.
 
+## Impor yang terselesaikan dan definisi yang dapat diedit
+
+Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses sebelum menambahkan tautan biasa atau berkelompok. Target yang hilang atau ambigu membiarkan nilai hasil tanpa tautan dengan peringatan, bukan menghalangi penyimpanan. Definisi yang telah disimpan memiliki tindakan Edit melalui editor kartu yang memeriksa izin, dan perubahan tersimpan memperbarui ringkasannya. Bidang skema tersembunyi, termasuk data sumber kamus, tidak ditampilkan dalam formulir tetapi nilai tersimpannya dipertahankan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

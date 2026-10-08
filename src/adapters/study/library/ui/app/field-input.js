@@ -2,6 +2,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
 
 export function inputForField(field, value, language, i18n) {
+    if (field.hidden === true) return "";
     const label = localizedLabel(field.metadata, language);
     const name = `field:${field.id}`;
     const control = field.input?.control;
