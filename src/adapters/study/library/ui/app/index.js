@@ -40,7 +40,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
     );
     let entries = loadedEntries;
-    const requests = await loadLibraryRequests();
+    const requests = await loadLibraryRequests(i18n);
     const firstLayer = schemas
         .flatMap((schema) =>
             schema.layers.map((layer) => ({

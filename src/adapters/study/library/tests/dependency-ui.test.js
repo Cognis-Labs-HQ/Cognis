@@ -176,12 +176,14 @@ test("publication assistance submits only valid leaf dependencies, including hid
         selectedEntryIds: () => [root.id],
         setSelectionMode() {},
         showToast() {},
-        requestLibraryPromotion: async (id, destination) => {
+        relocateLibraryEntry: async (id, destination) => {
             publications.push({ id, destination });
             return {
-                id: `request:${id}`,
-                sourceEntryId: id,
-                status: "pending",
+                request: {
+                    id: `request:${id}`,
+                    sourceEntryId: id,
+                    status: "pending",
+                },
             };
         },
     });
@@ -195,7 +197,7 @@ test("publication assistance submits only valid leaf dependencies, including hid
         context,
     );
     const actions = context.createLibraryVisibilityActions({
-        root: {},
+        root: { querySelectorAll: () => [] },
         getEntries: () => [root, component, definition],
         requests,
         i18n: { t: (key) => key },

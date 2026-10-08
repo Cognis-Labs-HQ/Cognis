@@ -116,23 +116,28 @@ export class LibraryVisibilityService {
         const visible: LibraryPushRequest[] = [];
         for (const request of await this.store.listPushRequests()) {
             const source = await this.store.get(request.sourceEntryId);
-            if (!source) continue;
-            if (request.requestedBy === actor.accountId) {
-                visible.push({
-                    ...request,
-                    source,
-                    canWithdraw: request.status === "pending",
-                });
-                continue;
-            }
-            if (request.status !== "pending") continue;
+            let canReview = false;
             try {
                 await this.authorize(actor, request.destination, true);
-                visible.push({ ...request, source, canReview: true });
+                canReview = true;
             } catch (error) {
-                if (!(error instanceof Error) || error.message !== "forbidden")
+                if (
+                    !(error instanceof Error) ||
+                    !["forbidden", "class_access_unavailable"].includes(
+                        error.message,
+                    )
+                )
                     throw error;
             }
+            const owned = request.requestedBy === actor.accountId;
+            if (!owned && !canReview) continue;
+            visible.push({
+                ...request,
+                source: request.sourceSnapshot ?? source ?? undefined,
+                canReview:
+                    canReview && !!source && request.status === "pending",
+                canWithdraw: owned && !!source && request.status === "pending",
+            });
         }
         return visible;
     }
@@ -142,66 +147,137 @@ export class LibraryVisibilityService {
         requestId: string,
         decision: "approved" | "rejected",
     ): Promise<LibraryPushRequest> {
-        const request = await this.pendingRequest(requestId);
-        await this.authorize(actor, request.destination, true);
-        if (decision === "approved") {
-            const source = await this.store.get(request.sourceEntryId);
-            if (!source) throw new Error("reference_not_found");
-            if (source.protected) throw new Error("protected_content");
-            if (
-                ["update", "merge"].includes(request.kind ?? "") &&
-                request.proposedEntry
-            ) {
-                if (!this.applyUpdate) throw new Error("update_unavailable");
-                await this.validateDependencies(
-                    actor,
-                    request.proposedEntry,
-                    request.destination,
-                    source.id,
-                );
-                await this.applyUpdate(
-                    actor,
-                    request.sourceEntryId,
-                    request.proposedEntry,
-                );
-            } else if (
-                source.scope !== "user" ||
-                source.scopeId !== request.requestedBy
-            )
-                throw new Error("request_source_moved");
-            else {
-                await this.validateDependencies(
-                    actor,
-                    source,
-                    request.destination,
-                );
-                await this.store.move(source.id, request.destination);
-                if (request.destination.scope === "global")
-                    await this.notifyNewContent?.({ entryCount: 1 });
+        const reviewed = await this.store.transaction(async () => {
+            const request = await this.pendingRequest(requestId);
+            await this.authorize(actor, request.destination, true);
+            await this.store.reviewPush(requestId, decision, actor.accountId);
+            if (decision === "approved") {
+                const source = await this.store.get(request.sourceEntryId);
+                if (!source) throw new Error("reference_not_found");
+                if (
+                    request.sourceSnapshot?.updatedAt &&
+                    request.sourceSnapshot.updatedAt !== source.updatedAt
+                )
+                    throw new Error("request_source_changed");
+                if (source.protected) throw new Error("protected_content");
+                if (
+                    ["update", "merge"].includes(request.kind ?? "") &&
+                    request.proposedEntry
+                ) {
+                    if (!this.applyUpdate)
+                        throw new Error("update_unavailable");
+                    await this.validateDependencies(
+                        actor,
+                        request.proposedEntry,
+                        request.destination,
+                        source.id,
+                    );
+                    await this.applyUpdate(
+                        actor,
+                        request.sourceEntryId,
+                        request.proposedEntry,
+                    );
+                } else if (
+                    source.scope !== "user" ||
+                    source.scopeId !== request.requestedBy
+                )
+                    throw new Error("request_source_moved");
+                else {
+                    await this.validateDependencies(
+                        actor,
+                        source,
+                        request.destination,
+                    );
+                    await this.store.move(source.id, request.destination);
+                }
             }
-        }
-        await this.store.reviewPush(requestId, decision, actor.accountId);
-        return { ...request, status: decision };
+            return {
+                ...request,
+                status: decision,
+                reviewedBy: actor.accountId,
+                reviewedAt: new Date().toISOString(),
+                canReview: false,
+                canWithdraw: false,
+            };
+        });
+        if (
+            decision === "approved" &&
+            reviewed.destination.scope === "global" &&
+            reviewed.kind !== "update" &&
+            reviewed.kind !== "merge"
+        )
+            await this.notifyNewContent?.({ entryCount: 1 });
+        return reviewed;
     }
 
     async withdrawPush(
         actor: VisibilityActor,
         requestId: string,
     ): Promise<LibraryPushRequest> {
-        const request = await this.pendingRequest(requestId);
-        if (request.requestedBy !== actor.accountId)
+        return this.store.transaction(async () => {
+            const request = await this.pendingRequest(requestId);
+            if (request.requestedBy !== actor.accountId)
+                throw new Error("forbidden");
+            const source = await this.store.get(request.sourceEntryId);
+            const validUpdateSource =
+                request.kind === "update" &&
+                source?.scope === "global" &&
+                source.createdBy === actor.accountId;
+            const validPromotionSource =
+                source?.scope === "user" && source.scopeId === actor.accountId;
+            if (!validUpdateSource && !validPromotionSource)
+                throw new Error("request_source_moved");
+            await this.store.reviewPush(
+                requestId,
+                "withdrawn",
+                actor.accountId,
+            );
+            return {
+                ...request,
+                status: "withdrawn",
+                reviewedBy: actor.accountId,
+                reviewedAt: new Date().toISOString(),
+                canReview: false,
+                canWithdraw: false,
+            };
+        });
+    }
+
+    async relocate(
+        actor: VisibilityActor,
+        entryId: string,
+        destination: LibraryLocation,
+    ): Promise<LibraryEntry> {
+        if (actor.role !== "admin" && actor.role !== "owner")
             throw new Error("forbidden");
-        const source = await this.store.get(request.sourceEntryId);
-        const validUpdateSource =
-            request.kind === "update" &&
-            source?.scope === "global" &&
-            source.createdBy === actor.accountId;
-        const validPromotionSource =
-            source?.scope === "user" && source.scopeId === actor.accountId;
-        if (!validUpdateSource && !validPromotionSource)
-            throw new Error("request_source_moved");
-        await this.store.reviewPush(requestId, "withdrawn", actor.accountId);
-        return { ...request, status: "withdrawn" };
+        if (destination.scope === "user")
+            throw new Error("invalid_destination");
+        const moved = await this.store.transaction(async () => {
+            const entry = await this.read(actor, entryId);
+            if (!entry) throw new Error("not_found");
+            if (entry.protected) throw new Error("protected_content");
+            if (entry.createdBy.startsWith("content-pack:"))
+                throw new Error("provider_content");
+            if (entry.scope !== "user") throw new Error("invalid_destination");
+            await this.authorize(actor, entry, true);
+            const normalized = await this.authorize(actor, destination, true);
+            if (
+                (await this.store.listPushRequests("pending")).some(
+                    ({ sourceEntryId }) => sourceEntryId === entry.id,
+                )
+            )
+                throw new Error("request_pending");
+            await this.validateDependencies(actor, entry, normalized, entry.id);
+            await this.flow?.run("study:library:move", {
+                actor,
+                entry,
+                destination: normalized,
+            });
+            return this.store.move(entry.id, normalized);
+        });
+        if (moved.scope === "global")
+            await this.notifyNewContent?.({ entryCount: 1 });
+        return moved;
     }
 
     async moveToPersonal(

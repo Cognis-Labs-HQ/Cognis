@@ -65,7 +65,24 @@ export interface LibraryCapability {
         schemaId: string;
         schemaVersion?: number;
         layer: string;
-    }): Array<{ id: string; metadata: LibraryMetadata }>;
+    }): Array<{ id: string; metadata: LibraryMetadata; searchable?: boolean }>;
+    searchableProviders(language?: string): Array<{
+        id: string;
+        metadata: LibraryMetadata;
+        schemaId: string;
+        layers: string[];
+    }>;
+    searchDictionary(input: {
+        providerId: string;
+        schemaId: string;
+        query: string;
+        refresh?: boolean;
+    }): Promise<{
+        query: string;
+        cached: boolean;
+        cachedAt: string;
+        results: import("./service/dictionary.js").LibraryDictionaryResult[];
+    }>;
     registerFormContribution(contribution: LibraryFormContribution): () => void;
     listFormContributions(): LibraryFormContribution[];
     listSchemas(): LibrarySchema[];
@@ -173,4 +190,9 @@ export interface LibraryCapability {
         requestId: string,
     ): Promise<LibraryPushRequest>;
     moveToPersonal(actor: LibraryActor, entryId: string): Promise<LibraryEntry>;
+    relocate(
+        actor: LibraryActor,
+        entryId: string,
+        destination: LibraryLocation,
+    ): Promise<{ entry: LibraryEntry } | { request: LibraryPushRequest }>;
 }

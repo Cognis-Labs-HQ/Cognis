@@ -1,4 +1,8 @@
 import { storeContentPackAudio } from "./content-audio.js";
+import {
+    LibraryDictionarySearch,
+    lookupDictionarySuggestions,
+} from "./dictionary.js";
 import { validateEntryInput } from "./input.js";
 import {
     alignFormContributions,
@@ -65,6 +69,7 @@ import type {
 } from "../contracts.js";
 
 export class LibraryService implements LibraryCapability {
+    private readonly dictionary: LibraryDictionarySearch;
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
     private readonly lookupProviders = new Map<string, LibraryLookupProvider>();
     private readonly formContributions = new Map<
@@ -86,6 +91,7 @@ export class LibraryService implements LibraryCapability {
         private readonly audioCache?: LibraryAudioCache,
         private readonly notifyNewContent?: LibraryContentNotifier,
     ) {
+        this.dictionary = new LibraryDictionarySearch(store);
         this.visibility = new LibraryVisibilityService(
             store,
             this.read.bind(this),
@@ -99,7 +105,23 @@ export class LibraryService implements LibraryCapability {
                 );
             },
             flow,
-            notifyNewContent,
+            async (input) => {
+                try {
+                    await notifyNewContent?.(input);
+                } catch (error) {
+                    await log?.(
+                        "error",
+                        "Could not notify global Library content.",
+                        {
+                            component: "study-library",
+                            operation: "notify-content",
+                            entryCount: input.entryCount,
+                            errorName:
+                                error instanceof Error ? error.name : "Error",
+                        },
+                    );
+                }
+            },
             this.update.bind(this),
         );
     }
@@ -130,6 +152,10 @@ export class LibraryService implements LibraryCapability {
         if (
             !provider.id.trim() ||
             !Object.keys(provider.metadata?.labels ?? {}).length ||
+            (provider.searchable !== undefined &&
+                typeof provider.searchable !== "boolean") ||
+            (provider.searchable === true &&
+                !provider.capabilities?.includes("dictionary")) ||
             this.lookupProviders.has(provider.id)
         )
             throw new Error("lookup_provider_registered");
@@ -146,14 +172,16 @@ export class LibraryService implements LibraryCapability {
         metadata: LibraryMetadata;
         fields?: readonly string[];
         capabilities?: readonly ("dictionary" | "strokePattern")[];
+        searchable?: boolean;
     }> {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         return Array.from(this.lookupProviders.values())
             .filter((provider) => provider.supports(schema, layer))
-            .map(({ id, metadata, fields, capabilities }) => ({
+            .map(({ id, metadata, fields, capabilities, searchable }) => ({
                 id,
                 metadata: structuredClone(metadata),
+                ...(searchable === true ? { searchable: true } : {}),
                 ...(fields?.length ? { fields: [...fields] } : {}),
                 ...(capabilities?.length
                     ? { capabilities: [...capabilities] }
@@ -477,7 +505,7 @@ export class LibraryService implements LibraryCapability {
         input: Pick<
             LibraryEntryInput,
             "schemaId" | "schemaVersion" | "layer" | "label"
-        >,
+        > & { refresh?: boolean },
     ): Promise<LibraryLookupSuggestion[]> {
         await this.flow?.run("study:library:lookup", input);
         const schema = this.schema(input.schemaId, input.schemaVersion);
@@ -485,31 +513,45 @@ export class LibraryService implements LibraryCapability {
         const selectedProvider = this.lookupProviders.get(providerId);
         if (!selectedProvider || !selectedProvider.supports(schema, layer))
             throw new Error("lookup_provider_not_found");
-        const suggestions = await Promise.all(
-            [selectedProvider].map((provider) =>
-                provider.lookup({ schema, layer, label: input.label }),
-            ),
+        return lookupDictionarySuggestions(
+            selectedProvider,
+            schema,
+            layer,
+            input.label,
+            input.refresh === true,
         );
-        return suggestions
-            .flat()
-            .map((suggestion) => ({
-                ...suggestion,
-                provider: suggestion.provider?.trim() || selectedProvider.id,
-                provenance:
-                    suggestion.provenance?.trim() || selectedProvider.id,
-                confidence: Number.isFinite(suggestion.confidence)
-                    ? suggestion.confidence
-                    : 1,
-            }))
-            .filter(
-                (suggestion) =>
-                    suggestion.provider.trim() &&
-                    suggestion.provenance.trim() &&
-                    Number.isFinite(suggestion.confidence) &&
-                    suggestion.confidence >= 0 &&
-                    suggestion.confidence <= 1,
-            )
-            .sort((left, right) => right.confidence - left.confidence);
+    }
+
+    searchableProviders(language?: string) {
+        return this.dictionary.providers(
+            this.lookupProviders.values(),
+            this.listSchemas(),
+            language,
+        );
+    }
+
+    async searchDictionary(input: {
+        providerId: string;
+        schemaId: string;
+        query: string;
+        refresh?: boolean;
+    }) {
+        const provider = this.lookupProviders.get(input.providerId);
+        if (!provider) throw new Error("lookup_provider_not_found");
+        const schema = this.schema(input.schemaId);
+        return this.dictionary.search(
+            provider,
+            schema,
+            input.query,
+            input.refresh === true,
+            (layer, label) =>
+                this.lookup(provider.id, {
+                    schemaId: schema.id,
+                    layer,
+                    label,
+                    refresh: input.refresh === true,
+                }),
+        );
     }
 
     async create(
@@ -866,5 +908,25 @@ export class LibraryService implements LibraryCapability {
             actor,
             await this.visibility.moveToPersonal(actor, entryId),
         );
+    }
+
+    async relocate(
+        actor: LibraryActor,
+        entryId: string,
+        destination: LibraryLocation,
+    ): Promise<{ entry: LibraryEntry } | { request: LibraryPushRequest }> {
+        const entry = await this.read(actor, entryId);
+        if (!entry) throw new Error("not_found");
+        if (this.immutable(entry)) throw new Error("immutable_layer");
+        if (actor.role !== "admin" && actor.role !== "owner")
+            return {
+                request: await this.requestPush(actor, entryId, destination),
+            };
+        return {
+            entry: await this.entryWithPermissions(
+                actor,
+                await this.visibility.relocate(actor, entryId, destination),
+            ),
+        };
     }
 }

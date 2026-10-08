@@ -147,4 +147,24 @@
   <string name="gateway.study.library_lookup_replace_stroke_warning">Pencarian akan mengganti pola goresan saat ini. Lanjutkan?</string>
   <string name="gateway.study.library_lookup_unlinked">Beberapa tautan pencarian tidak dapat dipetakan ke kartu yang tersedia. Nilai hasil tetap disimpan tanpa tautan tersebut.</string>
   <string name="gateway.study.library_lookup_multiple_title">Beberapa kecocokan ditemukan</string>
+  <string name="gateway.study.library_relocated">Kartu dipindahkan.</string>
+  <string name="gateway.study.library_request_submitted">Permintaan peninjauan dikirim.</string>
+  <string name="gateway.study.library_requests_withdrawn">Ditarik</string>
+  <string name="gateway.study.library_request_promotion">Pemindahan</string>
+  <string name="gateway.study.library_request_merge">Penggabungan</string>
+  <string name="gateway.study.library_request_current">Kartu saat ini</string>
+  <string name="gateway.study.library_request_proposed">Kartu yang diusulkan</string>
+  <string name="gateway.study.library_request_details">Detail kartu</string>
+  <string name="gateway.study.library_request_by">Diminta oleh: {{ account }}</string>
+  <string name="gateway.study.library_request_reviewed_by">Diputuskan oleh: {{ account }}</string>
+  <string name="gateway.study.library_request_source_missing">Kartu sumber tidak lagi tersedia.</string>
+  <string name="gateway.study.library_request_audio_attached">Audio terlampir</string>
+  <string name="gateway.study.library_requests_empty">Tidak ada permintaan yang sesuai dengan filter ini.</string>
+  <string name="gateway.study.library_requests_load_error">Permintaan peninjauan tidak dapat dimuat. Coba muat ulang.</string>
+  <string name="gateway.study.library_request_completed">Permintaan diperbarui.</string>
+  <string name="gateway.study.library_request_stale">Permintaan ini telah berubah di tempat lain. Daftar telah diperbarui.</string>
+  <string name="gateway.study.library_request_action_error">Permintaan tidak dapat diperbarui. Periksa akses dan coba lagi.</string>
+  <string name="gateway.study.library_search_results">Hasil Pencarian</string>
+  <string name="gateway.study.library_dictionary_cached">Tersimpan di Cognis: {{ time }}</string>
+  <string name="gateway.study.library_dictionary_error">Pencarian kamus gagal. Coba lagi atau pilih penyedia lain.</string>
 </resources>

@@ -21,7 +21,6 @@ export function librarySelectionFloatingMenu(entries, i18n) {
                     ${escapeHtml(i18n.t("gateway.study.library_select_all"))}
                 </button>
                 <span class="library-relocate-actions" data-library-relocate-actions role="group" aria-label="${escapeHtml(i18n.t("gateway.study.library_relocate_to"))}" hidden>
-                    <span>${escapeHtml(i18n.t("gateway.study.library_relocate_to"))}</span>
                     ${["global", "class", "user"]
                         .map((scope) => {
                             const label = `${i18n.t("gateway.study.library_relocate_to")} ${i18n.t(`gateway.study.library_destination_${scope}`)}`;
@@ -30,6 +29,7 @@ export function librarySelectionFloatingMenu(entries, i18n) {
                                     ? "data-library-move-selection"
                                     : `data-library-publish="${scope}"`;
                             return `<button class="btn-confirm" type="button" ${action} title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" hidden>
+                            ${escapeHtml(i18n.t("gateway.study.library_relocate_to"))}
                             ${renderScope({ scope }, i18n, label)}
                         </button>`;
                         })

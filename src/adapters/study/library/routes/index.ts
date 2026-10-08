@@ -319,6 +319,42 @@ export function createLibraryRoutes(
                 return true;
             }
             if (
+                url.pathname === "/api/v1/study/library/dictionary/providers" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.searchableProviders(languageFrom(url)),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/dictionary/search" &&
+                req.method === "POST"
+            ) {
+                const input = (await readJson(req)) as Parameters<
+                    LibraryCapability["searchDictionary"]
+                >[0];
+                if (
+                    typeof input.query !== "string" ||
+                    typeof input.providerId !== "string" ||
+                    typeof input.schemaId !== "string" ||
+                    (input.refresh !== undefined &&
+                        typeof input.refresh !== "boolean")
+                )
+                    throw new Error("invalid_query");
+                const result = await library.searchDictionary(input);
+                await log?.("info", "Searched Library dictionary.", {
+                    component: "study-library",
+                    operation: "dictionary-search",
+                    accountId: actor.accountId,
+                    providerId: input.providerId,
+                    cacheHit: result.cached,
+                    resultCount: result.results.length,
+                });
+                sendJson(res, 200, { data: result });
+                return true;
+            }
+            if (
                 url.pathname === "/api/v1/study/library/definitions/localize" &&
                 req.method === "POST"
             ) {
@@ -387,6 +423,36 @@ export function createLibraryRoutes(
                     requestId: request.id,
                 });
                 sendJson(res, 201, { data: request });
+                return true;
+            }
+            const relocateMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/relocate$/,
+            );
+            if (relocateMatch && req.method === "POST") {
+                const body = (await readJson(req)) as {
+                    destination: LibraryLocation;
+                };
+                const result = await library.relocate(
+                    actor,
+                    decodeURIComponent(relocateMatch[1]),
+                    body.destination,
+                );
+                await log?.(
+                    "info",
+                    "Relocated Library card or requested relocation.",
+                    {
+                        component: "study-library",
+                        operation: "relocate-entry",
+                        accountId: actor.accountId,
+                        entryId: decodeURIComponent(relocateMatch[1]),
+                        destinationScope: body.destination.scope,
+                        requestId:
+                            "request" in result ? result.request.id : undefined,
+                    },
+                );
+                sendJson(res, "request" in result ? 201 : 200, {
+                    data: result,
+                });
                 return true;
             }
             const downgradeMatch = url.pathname.match(

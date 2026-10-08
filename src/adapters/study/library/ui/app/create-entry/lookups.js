@@ -88,8 +88,14 @@ export function bindLookupProviders(
         inputCarouselIds = new Set(),
     },
 ) {
-    form.addEventListener("click", async (event) => {
-        const button = event.target.closest("[data-library-lookup-provider]");
+    const handleLookup = async (event) => {
+        const imported =
+            event.type === "library-import-dictionary" ? event.detail : null;
+        const button = imported
+            ? form.querySelector(
+                  `[data-library-lookup-provider="${CSS.escape(imported.providerId)}"]`,
+              )
+            : event.target.closest("[data-library-lookup-provider]");
         if (!button) return;
         const input = form.querySelector("[data-library-composer-text]");
         const label = form.elements.label?.value.trim() || input?.value.trim();
@@ -99,14 +105,17 @@ export function bindLookupProviders(
             const strokeOnly =
                 button.dataset.libraryLookupKind === "strokePattern";
             if (
+                !imported &&
                 hasLookupValues(form, strokeOnly) &&
                 !(await confirmLookupReplacement(i18n, strokeOnly))
             )
                 return;
-            const suggestions = await fetchLibraryLookupSuggestions(
-                button.dataset.libraryLookupProvider,
-                { ...draft, label },
-            );
+            const suggestions = imported
+                ? [imported.suggestion]
+                : await fetchLibraryLookupSuggestions(
+                      button.dataset.libraryLookupProvider,
+                      { ...draft, label },
+                  );
             if (!suggestions.length) {
                 showToast(i18n.t("gateway.study.library_lookup_empty"), {
                     variant: "info",
@@ -170,7 +179,8 @@ export function bindLookupProviders(
                 if (result.created) nestedDefinitionIds.push(result.entry.id);
                 importedDefinitions.push(result.entry);
             }
-            const preserveInput = layer.semanticRole === "lexicalUnit";
+            const preserveInput =
+                layer.semanticRole === "lexicalUnit" && !imported;
             clearLookupValues(form, draft, {
                 preserveComposition: preserveInput,
                 preservedRelationshipIds: preserveInput
@@ -260,5 +270,21 @@ export function bindLookupProviders(
         } finally {
             button.disabled = false;
         }
-    });
+    };
+    let busy = false;
+    const runLookup = (event) => {
+        if (
+            busy ||
+            (event.type !== "library-import-dictionary" &&
+                !event.target.closest("[data-library-lookup-provider]"))
+        )
+            return;
+        busy = true;
+        form.libraryLookupPending = handleLookup(event).finally(() => {
+            busy = false;
+        });
+        return form.libraryLookupPending;
+    };
+    form.addEventListener("click", runLookup);
+    form.addEventListener("library-import-dictionary", runLookup);
 }

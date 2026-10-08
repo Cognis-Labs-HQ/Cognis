@@ -147,4 +147,24 @@
   <string name="gateway.study.library_lookup_replace_stroke_warning">Die Suche ersetzt das aktuelle Strichmuster. Fortfahren?</string>
   <string name="gateway.study.library_lookup_unlinked">Einige Suchverknüpfungen konnten keiner verfügbaren Karte zugeordnet werden. Die Werte bleiben ohne diese Verknüpfungen erhalten.</string>
   <string name="gateway.study.library_lookup_multiple_title">Mehrere Treffer gefunden</string>
+  <string name="gateway.study.library_relocated">Karte verschoben.</string>
+  <string name="gateway.study.library_request_submitted">Prüfanfrage eingereicht.</string>
+  <string name="gateway.study.library_requests_withdrawn">Zurückgezogen</string>
+  <string name="gateway.study.library_request_promotion">Bereichswechsel</string>
+  <string name="gateway.study.library_request_merge">Zusammenführung</string>
+  <string name="gateway.study.library_request_current">Aktuelle Karte</string>
+  <string name="gateway.study.library_request_proposed">Vorgeschlagene Karte</string>
+  <string name="gateway.study.library_request_details">Kartendetails</string>
+  <string name="gateway.study.library_request_by">Beantragt von: {{ account }}</string>
+  <string name="gateway.study.library_request_reviewed_by">Entscheidung von: {{ account }}</string>
+  <string name="gateway.study.library_request_source_missing">Die ursprüngliche Karte ist nicht mehr verfügbar.</string>
+  <string name="gateway.study.library_request_audio_attached">Audio angehängt</string>
+  <string name="gateway.study.library_requests_empty">Keine Anfragen entsprechen diesem Filter.</string>
+  <string name="gateway.study.library_requests_load_error">Prüfanfragen konnten nicht geladen werden. Aktualisieren Sie die Liste.</string>
+  <string name="gateway.study.library_request_completed">Anfrage aktualisiert.</string>
+  <string name="gateway.study.library_request_stale">Diese Anfrage wurde anderweitig geändert. Die Liste wurde aktualisiert.</string>
+  <string name="gateway.study.library_request_action_error">Die Anfrage konnte nicht aktualisiert werden. Prüfen Sie die Zugriffsrechte und versuchen Sie es erneut.</string>
+  <string name="gateway.study.library_search_results">Suchergebnisse</string>
+  <string name="gateway.study.library_dictionary_cached">In Cognis gespeichert: {{ time }}</string>
+  <string name="gateway.study.library_dictionary_error">Die Wörterbuchsuche ist fehlgeschlagen. Versuchen Sie es erneut oder wählen Sie einen anderen Anbieter.</string>
 </resources>

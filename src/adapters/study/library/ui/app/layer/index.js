@@ -54,7 +54,7 @@ export async function mount(root, { signal } = {}) {
         ({ id }) => id === selectedLayer?.layerId,
     );
     const [requests, formContributions] = await Promise.all([
-        loadLibraryRequests(),
+        loadLibraryRequests(i18n),
         fetchLibraryForms(),
     ]);
     const canCreate = Boolean(schema) && canCreateLayerEntries(layer);

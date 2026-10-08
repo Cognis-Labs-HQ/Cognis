@@ -101,6 +101,7 @@ export async function openCreateEntryPopup({
     i18n,
     contributions: suppliedContributions,
     initialLabel = "",
+    initialLookup,
 }) {
     const schema = schemas.find(({ id }) => id === schemaId);
     const layer = schema?.layers.find(({ id }) => id === layerId);
@@ -449,6 +450,7 @@ export async function openCreateEntryPopup({
             const activeForm = overlay.querySelector(
                 "[data-library-admin-editor]",
             );
+            await activeForm?.libraryLookupPending;
             carouselController?.commitPendingValues();
             activeForm?.compositionController?.validate();
             validateRequiredRelationships(
@@ -636,6 +638,12 @@ export async function openCreateEntryPopup({
                     ? { scope: "global", scopeId: "global" }
                     : { scope: "user" },
             });
+            if (initialLookup)
+                form.dispatchEvent(
+                    new CustomEvent("library-import-dictionary", {
+                        detail: initialLookup,
+                    }),
+                );
             const strokeLookup = form.querySelector(
                 "[data-library-stroke-lookup]",
             );

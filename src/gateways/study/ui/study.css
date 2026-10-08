@@ -370,3 +370,18 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
         box-shadow: inset 0 0 0 1px var(--color-danger-outline-text);
     }
 }
+
+.study-dictionary-search {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-inline-start: auto;
+    padding: 0.3rem;
+    min-width: 0;
+}
+
+.study-dictionary-search input {
+    width: min(15rem, 45vw);
+    min-width: 0;
+}

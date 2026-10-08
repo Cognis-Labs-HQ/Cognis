@@ -35,7 +35,7 @@ test("moving an owned shared card retains the returned user card and updated per
         };
         vm.runInNewContext(source, context);
         const actions = context.createLibraryVisibilityActions({
-            root: {},
+            root: { querySelectorAll: () => [] },
             getEntries: () => entries,
             setEntries: (value) => {
                 entries = value;

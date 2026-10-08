@@ -78,8 +78,8 @@ test("dictionary results directly import definitions, source fields, readings, g
             "field:pronunciation": pronunciation,
             "relationship:spelling": { options: [option], append() {} },
         },
-        addEventListener: (_type, handler) => {
-            listener = handler;
+        addEventListener: (type, handler) => {
+            if (type === "click") listener = handler;
         },
         querySelector: () => input,
         dispatchEvent() {},
@@ -196,8 +196,8 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const form = {
         elements: { "field:stroke_pattern": field },
         querySelector: () => input,
-        addEventListener: (_kind, handler) => {
-            listener = handler;
+        addEventListener: (type, handler) => {
+            if (type === "click") listener = handler;
         },
     };
     context.bindLookupProviders(form, draft, { t: (key) => key }, {});
@@ -237,8 +237,8 @@ test("canceling replacement avoids the request and preserves existing values", a
     const form = {
         elements: {},
         querySelector: () => input,
-        addEventListener: (_type, handler) => {
-            listener = handler;
+        addEventListener: (type, handler) => {
+            if (type === "click") listener = handler;
         },
     };
     context.bindLookupProviders(form, draft, {}, {});
@@ -268,8 +268,8 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         const form = {
             elements: {},
             querySelector: () => ({ value: "教" }),
-            addEventListener: (_type, handler) => {
-                listener = handler;
+            addEventListener: (type, handler) => {
+                if (type === "click") listener = handler;
             },
         };
         context.bindLookupProviders(form, draft, { t: (key) => key }, {});
@@ -300,8 +300,8 @@ test("lookup populates the visible composition input when no authored spelling c
             class: { value: "" },
             tags: { value: "", dispatchEvent() {} },
         },
-        addEventListener: (_type, handler) => {
-            listener = handler;
+        addEventListener: (type, handler) => {
+            if (type === "click") listener = handler;
         },
         dispatchEvent() {},
     };
@@ -394,8 +394,8 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
                 ? [pronunciation, spelling]
                 : [],
         dispatchEvent() {},
-        addEventListener: (_type, handler) => {
-            listener = handler;
+        addEventListener: (type, handler) => {
+            if (type === "click") listener = handler;
         },
     };
     const schema = {

@@ -147,4 +147,24 @@
   <string name="gateway.study.library_lookup_replace_stroke_warning">検索すると現在の筆順を置き換えます。続行しますか？</string>
   <string name="gateway.study.library_lookup_unlinked">検索結果の一部のリンクに対応するカードが見つかりませんでした。値はそのリンクなしで保持されます。</string>
   <string name="gateway.study.library_lookup_multiple_title">複数の候補が見つかりました</string>
+  <string name="gateway.study.library_relocated">カードを移動しました。</string>
+  <string name="gateway.study.library_request_submitted">レビューを申請しました。</string>
+  <string name="gateway.study.library_requests_withdrawn">取り下げ済み</string>
+  <string name="gateway.study.library_request_promotion">範囲の変更</string>
+  <string name="gateway.study.library_request_merge">統合</string>
+  <string name="gateway.study.library_request_current">現在のカード</string>
+  <string name="gateway.study.library_request_proposed">提案されたカード</string>
+  <string name="gateway.study.library_request_details">カードの詳細</string>
+  <string name="gateway.study.library_request_by">申請者: {{ account }}</string>
+  <string name="gateway.study.library_request_reviewed_by">判断者: {{ account }}</string>
+  <string name="gateway.study.library_request_source_missing">元のカードは利用できなくなりました。</string>
+  <string name="gateway.study.library_request_audio_attached">音声あり</string>
+  <string name="gateway.study.library_requests_empty">このフィルターに一致する申請はありません。</string>
+  <string name="gateway.study.library_requests_load_error">レビュー申請を読み込めませんでした。更新してください。</string>
+  <string name="gateway.study.library_request_completed">申請を更新しました。</string>
+  <string name="gateway.study.library_request_stale">この申請は別の場所で変更されました。一覧を更新しました。</string>
+  <string name="gateway.study.library_request_action_error">申請を更新できませんでした。アクセス権を確認して再試行してください。</string>
+  <string name="gateway.study.library_search_results">検索結果</string>
+  <string name="gateway.study.library_dictionary_cached">Cognis のキャッシュ: {{ time }}</string>
+  <string name="gateway.study.library_dictionary_error">辞書検索に失敗しました。再試行するか、別の提供元を選択してください。</string>
 </resources>

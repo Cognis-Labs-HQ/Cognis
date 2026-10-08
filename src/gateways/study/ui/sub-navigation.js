@@ -1,3 +1,4 @@
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -11,6 +12,7 @@ import {
 import {
     fetchLibraryPushRequests,
     fetchLibrarySchemas,
+    fetchSearchableDictionaryProviders,
 } from "/static/gateways/study/ui/library-client.js";
 
 const SETTINGS_GEAR_ICON = `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/assets/reuse/settings-cog-dark.svg"><img src="/static/assets/reuse/settings-cog-light.svg" alt=""></picture>`;
@@ -44,6 +46,27 @@ export function readSelectedStudyLanguageCode() {
 }
 
 export function bindStudySubNavigation(root, { signal } = {}) {
+    root.addEventListener(
+        "submit",
+        (event) => {
+            const form = event.target.closest("[data-study-dictionary-search]");
+            if (!form) return;
+            event.preventDefault();
+            const query = form.elements.query.value.trim();
+            if (!query) return;
+            const provider = JSON.parse(form.elements.provider.value);
+            const parameters = new URLSearchParams({
+                query,
+                providerId: provider.id,
+                schemaId: provider.schemaId,
+                language: form.dataset.language,
+            });
+            uiCtx.capabilities.get("ui:navigate")?.(
+                `/study/library/search?${parameters}`,
+            );
+        },
+        { signal },
+    );
     root.addEventListener(
         "click",
         (event) => {
@@ -260,6 +283,10 @@ export async function loadStudySubNavigationModel({
 
     return {
         selectedLanguageCode,
+        dictionaryProviders:
+            selectedLanguageCode && schemas.length
+                ? await fetchSearchableDictionaryProviders(selectedLanguageCode)
+                : [],
         modules,
         learningLanguages: activeLanguageCodes,
         languageCatalogByCode,
@@ -385,6 +412,26 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     </a>
                 </li>
             </ul>
+            ${
+                model.dictionaryProviders?.length
+                    ? createFormBuilder(
+                          { i18n, escapeHtml },
+                          {
+                              formId: "study-dictionary-search",
+                              formClassName: "study-dictionary-search",
+                              formAttributes: {
+                                  "data-study-dictionary-search": true,
+                                  "data-language": model.selectedLanguageCode,
+                              },
+                              submitLabelKey: "gateway.study.dictionary_search",
+                              submitButtonClassName: "btn-neutral",
+                              fields: [],
+                              trustedContentHtml: `<select name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
+                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">`,
+                          },
+                      ).render()
+                    : ""
+            }
         </div>
     `;
 }

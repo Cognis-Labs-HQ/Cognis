@@ -3,6 +3,8 @@ import {
     referenceTransformationValue,
 } from "./store/reference-rows.js";
 import { randomUUID } from "node:crypto";
+import { AsyncLocalStorage } from "node:async_hooks";
+import type { LibraryDictionaryResult } from "./service/dictionary.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { contentEntryId, contentRecordHash } from "./content-pack.js";
 import type {
@@ -26,7 +28,64 @@ import {
 import { markEntriesViewed, moveEntry, viewedEntryIds } from "./entry-state.js";
 
 export class LibraryStore {
-    constructor(private readonly db: DbExecutor) {}
+    private readonly transactionContext = new AsyncLocalStorage<DbExecutor>();
+
+    constructor(private readonly database: DbExecutor) {}
+
+    private get db(): DbExecutor {
+        return this.transactionContext.getStore() ?? this.database;
+    }
+
+    async transaction<T>(operation: () => Promise<T>): Promise<T> {
+        if (this.transactionContext.getStore()) return operation();
+        return this.database.transaction((executor) => {
+            const scoped: DbExecutor = {
+                executeCommand: executor.executeCommand.bind(executor),
+                ensureTable: executor.ensureTable.bind(executor),
+                transaction: (callback) => callback(scoped),
+            };
+            return this.transactionContext.run(scoped, operation);
+        });
+    }
+
+    async dictionaryCache(key: string): Promise<{
+        results: LibraryDictionaryResult[];
+        cachedAt: string;
+        expiresAt: number;
+    } | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_library_dictionary_cache",
+            where: [{ column: "cache_key", value: key }],
+        });
+        const row = result.rows?.[0];
+        return row
+            ? {
+                  results: JSON.parse(String(row.results_json)),
+                  cachedAt: new Date(String(row.cached_at)).toISOString(),
+                  expiresAt: new Date(String(row.expires_at)).getTime(),
+              }
+            : null;
+    }
+
+    async saveDictionaryCache(
+        key: string,
+        results: LibraryDictionaryResult[],
+    ): Promise<void> {
+        await this.upsert(
+            this.db,
+            "study_library_dictionary_cache",
+            ["cache_key"],
+            {
+                cache_key: key,
+                results_json: JSON.stringify(results),
+                cached_at: new Date().toISOString(),
+                expires_at: new Date(
+                    Date.now() + 24 * 60 * 60 * 1000,
+                ).toISOString(),
+            },
+        );
+    }
     private async upsert(
         db: DbExecutor,
         table: string,
@@ -761,14 +820,28 @@ export class LibraryStore {
         kind: "promotion" | "update" | "merge" = "promotion",
         proposedEntry?: LibraryEntryInput,
     ): Promise<LibraryPushRequest> {
-        return createPushRequest(
-            this.db,
-            sourceEntryId,
-            destination,
-            accountId,
-            kind,
-            proposedEntry,
-        );
+        const sourceSnapshot = (await this.get(sourceEntryId)) ?? undefined;
+        try {
+            return await this.transaction(() =>
+                createPushRequest(
+                    this.db,
+                    sourceEntryId,
+                    destination,
+                    accountId,
+                    kind,
+                    proposedEntry,
+                    sourceSnapshot,
+                ),
+            );
+        } catch (error) {
+            if (
+                (await this.listPushRequests("pending")).some(
+                    (request) => request.sourceEntryId === sourceEntryId,
+                )
+            )
+                throw new Error("request_pending");
+            throw error;
+        }
     }
     async getPush(id: string): Promise<LibraryPushRequest | null> {
         return getPushRequest(this.db, id);

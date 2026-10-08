@@ -230,6 +230,20 @@ export async function bootstrapStudyAdapter(
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     adapterReady = true;
+    ctx.registerSpaRoute?.({
+        id: "study-library-search-page",
+        pattern: "^/study/library/search$",
+        base: "/study/library/search",
+        scriptUrl: "/static/adapters/study/library/app/search/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     await ctx.log?.("info", "Study/library adapter bootstrapped.", {
         component: "study-library",
         operation: "bootstrap",

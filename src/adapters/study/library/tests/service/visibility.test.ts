@@ -12,6 +12,7 @@ test("promotion approval moves personal content into the requested scope", async
     };
     const moves: unknown[] = [];
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
         getPush: async () => ({
             id: "request",
             sourceEntryId: source.id,
@@ -48,6 +49,7 @@ test("authors submit global card edits as update requests", async () => {
     };
     let captured: unknown;
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
         saveSchema: async () => {},
         get: async () => source,
         listPushRequests: async () => [],
@@ -87,6 +89,7 @@ test("authorized reviewers receive the source card with each request", async () 
         createdBy: "alice",
     };
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
         listPushRequests: async () => [
             {
                 id: "request",
@@ -114,6 +117,7 @@ test("authorized reviewers receive the source card with each request", async () 
 test("submitters can withdraw pending visibility requests", async () => {
     const statuses: string[] = [];
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
         getPush: async () => ({
             id: "request",
             sourceEntryId: "personal-card",
@@ -148,7 +152,10 @@ test("provider cards cannot be sent to a personal namespace", async () => {
         createdBy: "content-pack:mock-language-core",
         protected: false,
     };
-    const store = { get: async () => entry };
+    const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
+        get: async () => entry,
+    };
     const library = new LibraryService(store as never);
 
     await assert.rejects(
@@ -167,6 +174,7 @@ test("global downgrades return content to its original submitter", async () => {
     };
     let destination: unknown;
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
         listPushRequests: async () => [],
         referencesFor: async () => [],
         get: async () => entry,
@@ -181,4 +189,83 @@ test("global downgrades return content to its original submitter", async () => {
         entry.id,
     );
     assert.deepEqual(destination, { scope: "user", scopeId: "alice" });
+});
+
+test("administrators relocate personal cards immediately while learners request review", async () => {
+    for (const role of ["admin", "owner", "user"] as const) {
+        const source = {
+            id: "personal",
+            schemaId: "test-language",
+            layer: "units",
+            scope: "user",
+            scopeId: "alice",
+            createdBy: "alice",
+            label: "Card",
+            fields: {},
+        };
+        const calls: string[] = [];
+        const store = {
+            saveSchema: async () => {},
+            get: async () => source,
+            listPushRequests: async () => [],
+            transaction: async <T>(operation: () => Promise<T>) => operation(),
+            move: async (_id: string, destination: object) => {
+                calls.push("move");
+                return { ...source, ...destination };
+            },
+            createPush: async () => {
+                calls.push("request");
+                return { id: "request", status: "pending" };
+            },
+        };
+        const library = new LibraryService(store as never);
+        await library.registerSchema(schema(1));
+        const result = await library.relocate(
+            { accountId: "alice", role },
+            source.id,
+            { scope: "global", scopeId: "global" },
+        );
+        assert.deepEqual(calls, [role === "user" ? "request" : "move"]);
+        if ("entry" in result) {
+            assert.equal(result.entry.scope, "global");
+            assert.equal(result.entry.canDelete, true);
+        } else assert.equal(result.request.status, "pending");
+    }
+});
+
+test("administrators can review their own pending requests and retain decision history", async () => {
+    const source = {
+        id: "personal",
+        scope: "user",
+        scopeId: "admin",
+        createdBy: "admin",
+    };
+    const library = new LibraryService({
+        get: async () => source,
+        listPushRequests: async () => [
+            {
+                id: "pending",
+                sourceEntryId: source.id,
+                requestedBy: "admin",
+                status: "pending",
+                destination: { scope: "global", scopeId: "global" },
+            },
+            {
+                id: "complete",
+                sourceEntryId: source.id,
+                requestedBy: "learner",
+                status: "approved",
+                destination: { scope: "global", scopeId: "global" },
+            },
+        ],
+    } as never);
+    const requests = await library.listPushRequests({
+        accountId: "admin",
+        role: "admin",
+    });
+    assert.equal(requests.length, 2);
+    assert.equal(requests[0].canReview, true);
+    assert.equal(requests[0].canWithdraw, true);
+    assert.equal(requests[1].canReview, false);
+    assert.equal(requests[1].status, "approved");
 });

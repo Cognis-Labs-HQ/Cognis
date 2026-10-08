@@ -147,4 +147,24 @@
   <string name="gateway.study.library_lookup_replace_stroke_warning">Lookup will replace the current stroke pattern. Continue?</string>
   <string name="gateway.study.library_lookup_unlinked">Some lookup links could not be resolved to available cards. The returned values are preserved without those links.</string>
   <string name="gateway.study.library_lookup_multiple_title">Multiple Matches Found</string>
+  <string name="gateway.study.library_relocated">Card relocated.</string>
+  <string name="gateway.study.library_request_submitted">Review request submitted.</string>
+  <string name="gateway.study.library_requests_withdrawn">Withdrawn</string>
+  <string name="gateway.study.library_request_promotion">Relocation</string>
+  <string name="gateway.study.library_request_merge">Merge</string>
+  <string name="gateway.study.library_request_current">Current card</string>
+  <string name="gateway.study.library_request_proposed">Proposed card</string>
+  <string name="gateway.study.library_request_details">Card details</string>
+  <string name="gateway.study.library_request_by">Requested by: {{ account }}</string>
+  <string name="gateway.study.library_request_reviewed_by">Decision by: {{ account }}</string>
+  <string name="gateway.study.library_request_source_missing">The source card is no longer available.</string>
+  <string name="gateway.study.library_request_audio_attached">Audio attached</string>
+  <string name="gateway.study.library_requests_empty">No requests match this filter.</string>
+  <string name="gateway.study.library_requests_load_error">Could not load review requests. Try refreshing.</string>
+  <string name="gateway.study.library_request_completed">Request updated.</string>
+  <string name="gateway.study.library_request_stale">This request changed elsewhere. The list has been refreshed.</string>
+  <string name="gateway.study.library_request_action_error">Could not update the request. Check access and try again.</string>
+  <string name="gateway.study.library_search_results">Search Results</string>
+  <string name="gateway.study.library_dictionary_cached">Cached in Cognis: {{ time }}</string>
+  <string name="gateway.study.library_dictionary_error">Dictionary search failed. Try again or choose another provider.</string>
 </resources>

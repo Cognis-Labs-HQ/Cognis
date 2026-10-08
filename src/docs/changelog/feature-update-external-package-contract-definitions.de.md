@@ -522,6 +522,14 @@ Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtunge
 
 Ausgewählte Karten zeigen „Verschieben nach:“ mit den verfügbaren Symbolen für öffentliche, Klassen- oder private Ziele. Jedes Symbol startet direkt die entsprechende Bereichsaktion; beim Klassenziel bleibt die Klassenauswahl verfügbar.
 
+## Wörterbuchsuche und Cache
+
+Wörterbuchanbieter aktivieren die Navigationssuche mit `searchable: true` und der Fähigkeit `dictionary`. Gesucht wird nur in unterstützten Ebenen mit erlaubter Wörterbuchsuche; Sätze bleiben ausgeschlossen. Die eigene Suchergebnisseite zeigt Kartenvorschauen und alle Definitionen, verbirgt Quelldaten und öffnet für bewusste Importe den normalen Karteneditor. Cognis speichert Ergebnisse nach Anbieter, Schemaversion und normalisierter Anfrage für 24 Stunden, bündelt gleichzeitige Anfragen und erhält den Cache über Neustarts. Aktualisieren fragt den Anbieter erneut ab. Lokale Karten und Ausspracheverknüpfungen werden anhand der aktuell zugänglichen Library aufgelöst. Jisho bietet keinen inkrementellen Änderungsfeed; neue Einträge werden durch Aktualisierung oder Ablauf entdeckt.
+
+## Prüfung und Bereichswechsel
+
+Administratoren und Eigentümer verschieben persönliche Karten direkt in berechtigte gemeinsame Bereiche; Lernende reichen Prüfanfragen ein. Text und Zielsymbol bilden gemeinsam die Schaltfläche. Anfragen zeigen die eingereichte Karte, Änderungsvorschläge, Bereich, Autor, Zeitangaben, Status und kompakte berechtigte Aktionen. Auch zurückgezogene Entscheidungen bleiben sichtbar. Kartenänderung und Entscheidung erfolgen in einer Datenbanktransaktion mit bedingtem Statuswechsel. Ungültige, veraltete und wiederholte Entscheidungen werden abgewiesen. Gespeicherte Einreichungen erhalten den geprüften Inhalt und verhindern die Genehmigung nach Änderungen an der Quelle.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

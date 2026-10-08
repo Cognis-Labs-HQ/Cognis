@@ -64,6 +64,15 @@ function harness(records: LibraryEntry[], requests: object[] = []) {
     const recordsById = new Map(records.map((value) => [value.id, value]));
     const mutations: string[] = [];
     const store = {
+        transaction: async <T>(operation: () => Promise<T>) => {
+            const length = mutations.length;
+            try {
+                return await operation();
+            } catch (error) {
+                mutations.splice(length);
+                throw error;
+            }
+        },
         resolveDeletionCascade: async () => records.map(({ id }) => id),
         saveSchema: async () => {},
         list: async () => [],

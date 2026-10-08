@@ -1,8 +1,19 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { LibraryLocation, LibraryPushRequest } from "./types.js";
+import type {
+    LibraryEntry,
+    LibraryLocation,
+    LibraryPushRequest,
+} from "./types.js";
 
 export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
+    await db.ensureTable({
+        name: "study_library_pending_requests",
+        columns: [
+            { name: "source_entry_id", type: "text", primaryKey: true },
+            { name: "request_id", type: "text", notNull: true, unique: true },
+        ],
+    });
     await db.ensureTable({
         name: "study_library_push_requests",
         columns: [
@@ -20,6 +31,7 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
                 default: "promotion",
             },
             { name: "proposed_entry_json", type: "text" },
+            { name: "source_entry_json", type: "text" },
             {
                 name: "created_at",
                 type: "timestamp",
@@ -43,8 +55,14 @@ export async function createPushRequest(
     accountId: string,
     kind: "promotion" | "update" | "merge" = "promotion",
     proposedEntry?: LibraryPushRequest["proposedEntry"],
+    sourceSnapshot?: LibraryEntry,
 ): Promise<LibraryPushRequest> {
     const id = randomUUID();
+    await db.executeCommand({
+        option: "INSERT",
+        table: "study_library_pending_requests",
+        values: { source_entry_id: sourceEntryId, request_id: id },
+    });
     await db.executeCommand({
         option: "INSERT",
         table: "study_library_push_requests",
@@ -58,6 +76,9 @@ export async function createPushRequest(
             proposed_entry_json: proposedEntry
                 ? JSON.stringify(proposedEntry)
                 : null,
+            source_entry_json: sourceSnapshot
+                ? JSON.stringify(sourceSnapshot)
+                : null,
         },
     });
     return {
@@ -68,6 +89,7 @@ export async function createPushRequest(
         status: "pending",
         kind,
         proposedEntry,
+        sourceSnapshot,
     };
 }
 
@@ -101,6 +123,12 @@ export async function getPushRequest(
                   String(row.proposed_entry_json),
               ) as LibraryPushRequest["proposedEntry"])
             : undefined,
+        sourceSnapshot: row.source_entry_json
+            ? JSON.parse(String(row.source_entry_json))
+            : undefined,
+        requestedAt: String(row.created_at),
+        reviewedAt: row.reviewed_by ? String(row.updated_at) : undefined,
+        reviewedBy: row.reviewed_by ? String(row.reviewed_by) : undefined,
     };
 }
 
@@ -127,7 +155,7 @@ export async function reviewPushRequest(
     status: "approved" | "rejected" | "withdrawn",
     reviewerId: string,
 ): Promise<void> {
-    await db.executeCommand({
+    const result = await db.executeCommand({
         option: "UPDATE",
         table: "study_library_push_requests",
         set: {
@@ -139,5 +167,11 @@ export async function reviewPushRequest(
             { column: "id", value: id },
             { column: "status", value: "pending" },
         ],
+    });
+    if (result.rowCount !== 1) throw new Error("already_reviewed");
+    await db.executeCommand({
+        option: "DELETE",
+        table: "study_library_pending_requests",
+        where: [{ column: "request_id", value: id }],
     });
 }

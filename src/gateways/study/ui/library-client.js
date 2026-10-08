@@ -87,6 +87,27 @@ export async function fetchLibraryPushRequests() {
     return (await response.json()).data;
 }
 
+export async function fetchSearchableDictionaryProviders(language) {
+    const response = await apiFetch(
+        `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
+    );
+    if (!response.ok) throw new Error("lookup_providers_failed");
+    return (await response.json()).data;
+}
+
+export async function searchLibraryDictionary(input) {
+    const response = await apiFetch("/api/v1/study/library/dictionary/search", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+    });
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error?.code ?? "lookup_failed");
+    }
+    return (await response.json()).data;
+}
+
 export async function requestLibraryPromotion(entryId, destination) {
     const response = await apiFetch("/api/v1/study/library/push-requests", {
         method: "POST",
@@ -94,6 +115,22 @@ export async function requestLibraryPromotion(entryId, destination) {
         body: JSON.stringify({ entryId, destination }),
     });
     if (!response.ok) throw new Error("request_failed");
+    return (await response.json()).data;
+}
+
+export async function relocateLibraryEntry(entryId, destination) {
+    const response = await apiFetch(
+        `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/relocate`,
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ destination }),
+        },
+    );
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error?.code ?? "move_failed");
+    }
     return (await response.json()).data;
 }
 
@@ -125,7 +162,10 @@ export async function reviewLibraryPromotion(requestId, decision) {
             body: JSON.stringify({ decision }),
         },
     );
-    if (!response.ok) throw new Error("review_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error?.code ?? "review_failed");
+    }
     return (await response.json()).data;
 }
 
@@ -134,7 +174,10 @@ export async function withdrawLibraryPromotion(requestId) {
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
         { method: "DELETE" },
     );
-    if (!response.ok) throw new Error("withdraw_failed");
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error?.code ?? "withdraw_failed");
+    }
     return (await response.json()).data;
 }
 

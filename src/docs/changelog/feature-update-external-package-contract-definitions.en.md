@@ -522,6 +522,14 @@ Consolidated entry validation, identifier patterns, definition languages, and va
 
 Selected cards show “Relocate to:” followed by the available public, classroom, or private destination icons. Each icon directly starts its existing scope action; the classroom picker remains available when a class destination is chosen.
 
+## Dictionary search and caching
+
+Dictionary providers opt into navigation search with `searchable: true` and the `dictionary` capability. Search uses only supported layers that allow dictionary lookup; sentences remain excluded. Results open on the dedicated Search Results page, with card previews, full definitions, hidden source metadata, and the normal card composer for deliberate imports. Cognis persists results by provider, schema revision, and normalized query for 24 hours, coalesces concurrent queries, and retains the cache across restarts. Refresh explicitly retrieves the provider again. Fresh local cards and pronunciation links resolve against the current accessible Library rather than cached entry permissions. Provider enablement and schema changes control availability. Jisho has no incremental change feed, so new upstream entries are discovered by refresh or expiry, not by an unsupported delta query.
+
+## Review and relocation
+
+Administrators and owners relocate personal cards directly into authorized shared scopes; ordinary learners submit review requests. The full text-and-icon destination control is clickable. Requests show the submitted card, proposed edits, scope, author, dates, decision status, and compact authorized actions. Decision history remains visible, including withdrawals. Card changes and decisions run in one database transaction with conditional pending-status transitions. Failed validation rolls back the decision; stale or repeated decisions report an error. Submission snapshots preserve reviewed content and prevent approval after the source changes.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

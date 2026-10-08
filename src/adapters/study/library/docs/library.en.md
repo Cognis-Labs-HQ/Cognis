@@ -403,3 +403,11 @@ Sentence creation, editing, and detail views derive pronunciations from each ord
 ## Lean component implementation
 
 Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
+
+## Dictionary search and caching
+
+Dictionary providers opt into navigation search with `searchable: true` and the `dictionary` capability. Search uses only supported layers that allow dictionary lookup; sentences remain excluded. Results open on the dedicated Search Results page, with card previews, full definitions, hidden source metadata, and the normal card composer for deliberate imports. Cognis persists results by provider, schema revision, and normalized query for 24 hours, coalesces concurrent queries, and retains the cache across restarts. Refresh explicitly retrieves the provider again. Fresh local cards and pronunciation links resolve against the current accessible Library rather than cached entry permissions. Provider enablement and schema changes control availability. Jisho has no incremental change feed, so new upstream entries are discovered by refresh or expiry, not by an unsupported delta query.
+
+## Review and relocation
+
+Administrators and owners relocate personal cards directly into authorized shared scopes; ordinary learners submit review requests. The full text-and-icon destination control is clickable. Requests show the submitted card, proposed edits, scope, author, dates, decision status, and compact authorized actions. Decision history remains visible, including withdrawals. Card changes and decisions run in one database transaction with conditional pending-status transitions. Failed validation rolls back the decision; stale or repeated decisions report an error. Submission snapshots preserve reviewed content and prevent approval after the source changes.

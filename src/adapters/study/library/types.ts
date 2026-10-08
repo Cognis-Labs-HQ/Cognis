@@ -367,11 +367,16 @@ export interface LibraryLookupProvider {
     /** Field IDs this provider can populate, used to place focused lookup actions. */
     fields?: readonly string[];
     capabilities?: readonly ("dictionary" | "strokePattern")[];
+    /** Expose this dictionary in the Study navigation search. */
+    searchable?: boolean;
+    /** Invalidate persisted results when provider mappings or datasets change. */
+    cacheRevision?: string;
     supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
     lookup(input: {
         schema: LibrarySchema;
         layer: LibraryLayerSchema;
         label: string;
+        refresh?: boolean;
     }): Promise<LibraryLookupProposal[]>;
 }
 
@@ -395,9 +400,13 @@ export interface LibraryPushRequest {
     proposedEntry?: LibraryEntryInput;
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
+    sourceSnapshot?: LibraryEntry;
     /** Request-scoped action hints; never persisted. */
     canReview?: boolean;
     canWithdraw?: boolean;
+    requestedAt?: string;
+    reviewedAt?: string;
+    reviewedBy?: string;
 }
 
 export interface LibraryContentPackManifest {

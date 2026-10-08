@@ -5,7 +5,7 @@ import {
 import { showToast } from "/static/reuse/toast.js";
 import {
     moveLibraryEntryToPersonal,
-    requestLibraryPromotion,
+    relocateLibraryEntry,
     withdrawLibraryPromotion,
 } from "/static/gateways/study/ui/library-client.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -24,6 +24,17 @@ export function createLibraryVisibilityActions({
     const selectedEntry = () => {
         const [entryId] = selectedEntryIds(root);
         return getEntries().find(({ id }) => id === entryId);
+    };
+    const applyRelocation = (result, source) => {
+        if (result.entry) {
+            const updated = getEntries().map((entry) =>
+                entry.id === source.id ? result.entry : entry,
+            );
+            setEntries(updated);
+            render(updated);
+        } else {
+            requests.push({ ...result.request, source, canWithdraw: true });
+        }
     };
 
     const actions = {
@@ -118,15 +129,11 @@ export function createLibraryVisibilityActions({
                 });
                 if (action !== "publish") return;
                 for (const component of leaves) {
-                    const request = await requestLibraryPromotion(
+                    const result = await relocateLibraryEntry(
                         component.id,
                         destination,
                     );
-                    requests.push({
-                        ...request,
-                        source: component,
-                        canWithdraw: true,
-                    });
+                    applyRelocation(result, component);
                 }
                 showToast(
                     i18n.t("gateway.study.library_publish_dependencies_help"),
@@ -134,11 +141,16 @@ export function createLibraryVisibilityActions({
                 );
                 return;
             }
-            const request = await requestLibraryPromotion(
-                entry.id,
-                destination,
+            const result = await relocateLibraryEntry(entry.id, destination);
+            applyRelocation(result, entry);
+            showToast(
+                i18n.t(
+                    result.entry
+                        ? "gateway.study.library_relocated"
+                        : "gateway.study.library_request_submitted",
+                ),
+                { variant: "success" },
             );
-            requests.push({ ...request, source: entry, canWithdraw: true });
             setSelectionMode(root, false);
         },
 
@@ -176,10 +188,19 @@ export function createLibraryVisibilityActions({
             setSelectionMode(root, false);
         },
     };
+    let busy = false;
     return Object.fromEntries(
         Object.entries(actions).map(([name, action]) => [
             name,
             async (...args) => {
+                if (busy) return;
+                busy = true;
+                const buttons = root.querySelectorAll(
+                    "[data-library-relocate-actions] button, [data-library-withdraw-selection]",
+                );
+                buttons.forEach((button) => {
+                    button.disabled = true;
+                });
                 try {
                     return await action(...args);
                 } catch (error) {
@@ -191,6 +212,11 @@ export function createLibraryVisibilityActions({
                               ? "gateway.study.library_move_dependencies"
                               : "gateway.study.library_visibility_error";
                     showToast(i18n.t(key), { variant: "error" });
+                } finally {
+                    busy = false;
+                    buttons.forEach((button) => {
+                        button.disabled = false;
+                    });
                 }
             },
         ]),

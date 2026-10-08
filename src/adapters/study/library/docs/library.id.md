@@ -390,3 +390,11 @@ Pembuatan, penyuntingan, dan tampilan detail kalimat menurunkan pelafalan dari t
 ## Komponen yang ringkas
 
 Validasi masukan, pola pengenal, bahasa definisi, dan arah varian telah disatukan. Penanganan audio konten dan penyelarasan skema berada dalam modul terfokus dengan jarak antarfungsi yang tetap mudah dibaca. Paket konten langsung memakai identitas rekaman stabil; konversi identitas berdasarkan versi dan jalur kompatibilitas kolom lama telah dihapus. Adapter basis data menyelaraskan kunci yang dideklarasikan saat inisialisasi skema, disertai dokumentasi khusus adapter dan pengujian skema terkini.
+
+## Pencarian kamus dan cache
+
+Penyedia kamus mengaktifkan pencarian navigasi melalui `searchable: true` dan kapabilitas `dictionary`. Pencarian hanya memakai lapisan yang didukung dan mengizinkan kamus; kalimat tetap dikecualikan. Halaman Hasil Pencarian menampilkan pratinjau kartu dan semua definisi, menyembunyikan metadata sumber, serta membuka penyusun kartu biasa untuk impor yang disengaja. Cognis menyimpan hasil berdasarkan penyedia, revisi skema, dan kueri yang dinormalisasi selama 24 jam, menggabungkan kueri bersamaan, dan mempertahankan cache setelah mulai ulang. Muat ulang secara eksplisit mengambil data penyedia lagi. Kartu lokal dan tautan pelafalan diselesaikan berdasarkan Library yang saat ini dapat diakses. Jisho tidak memiliki umpan perubahan inkremental; entri baru ditemukan melalui penyegaran atau kedaluwarsa.
+
+## Peninjauan dan pemindahan
+
+Administrator dan pemilik langsung memindahkan kartu pribadi ke cakupan bersama yang diizinkan; pelajar mengirim permintaan peninjauan. Seluruh teks dan ikon tujuan dapat diklik. Permintaan menampilkan kartu yang diajukan, perubahan yang diusulkan, cakupan, pembuat, waktu, status, dan tindakan ringkas sesuai izin. Riwayat keputusan, termasuk penarikan, tetap terlihat. Perubahan kartu dan keputusan berlangsung dalam satu transaksi basis data dengan perubahan status tertunda bersyarat. Validasi gagal membatalkan keputusan; keputusan usang atau berulang ditolak. Salinan pengajuan mempertahankan konten yang ditinjau dan mencegah persetujuan setelah sumber berubah.
