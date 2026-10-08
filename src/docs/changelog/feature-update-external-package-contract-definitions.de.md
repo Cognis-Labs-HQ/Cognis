@@ -478,6 +478,10 @@ Administratoren erstellen Karten ohne Veröffentlichungsfelder direkt im globale
 
 Zugehörige Stylesheets sowie Validierungs-, Persistenz-, Konstruktorabgleichs- und Testcode sind für die Größenprüfungen in kleinere Dateien aufgeteilt; Dokumentationsstruktur und UI-Testsuche sind korrigiert.
 
+## Suche füllt den offenen Karteneditor
+
+Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle zurückgegebenen Definitionen und Aussprachen ohne Ergebnisfenster oder Übernahmeschritt. Bestehende Werte erfordern vor der Anfrage eine Bestätigung zum Ersetzen; Abbruch und leere oder fehlgeschlagene Suchen erhalten die aktuelle Karte. Eine erfolgreiche Strichmustersuche blendet ihre Schaltfläche aus. Wörterbuch-Quelladressen bleiben als unsichtbare Quelldaten gespeichert statt als Links angezeigt zu werden.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

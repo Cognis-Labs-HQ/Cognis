@@ -10,7 +10,7 @@ const source = readFileSync(
     .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
     .replace(/\bexport /g, "");
 
-test("accepted dictionary results import definitions, source fields, readings, groups, and classifications", async () => {
+test("dictionary results directly import definitions, source fields, readings, groups, and classifications", async () => {
     const suggestions = [
         {
             label: "教室",
@@ -74,7 +74,7 @@ test("accepted dictionary results import definitions, source fields, readings, g
             class: { value: "" },
             tags: { value: "original", dispatchEvent() {} },
             "field:pronunciation": pronunciation,
-            "relationship:spelling": { options: [option] },
+            "relationship:spelling": { options: [option], append() {} },
         },
         addEventListener: (_type, handler) => {
             listener = handler;
@@ -87,7 +87,13 @@ test("accepted dictionary results import definitions, source fields, readings, g
         RadioNodeList: class {},
         structuredClone,
         fetchLibraryLookupSuggestions: async () => suggestions,
-        chooseLookupSuggestion: async (results) => results[0],
+        hasLookupValues: () => true,
+        confirmLookupReplacement: async () => true,
+        clearLookupValues: (form, draft) => {
+            draft.fields = {};
+            form.compositionOrder = [];
+            form.referenceGroups = {};
+        },
         createDefinition: async (request) => {
             imports.push(request);
             return { created: true, entry: { id: "new-definition" } };
@@ -117,6 +123,7 @@ test("accepted dictionary results import definitions, source fields, readings, g
             },
             entries,
             nestedDefinitionIds,
+            inputCarouselIds: new Set(["spelling"]),
         },
     );
     const button = {
@@ -134,7 +141,7 @@ test("accepted dictionary results import definitions, source fields, readings, g
     assert.equal(pronunciation.value, "きょうしつ");
     assert.equal(redraws, 1);
     assert.equal(form.elements.class.value, "lexical:noun");
-    assert.equal(form.elements.tags.value, "original\u001fcommon\u001fjlpt-n5");
+    assert.equal(form.elements.tags.value, "common\u001fjlpt-n5");
     assert.equal(form.elements.label.value, "教室");
     assert.equal(option.selected, true);
     assert.deepEqual(form.referenceGroups, suggestions[0].referenceGroups);
@@ -154,8 +161,10 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
         fetchLibraryLookupSuggestions: async () => [
             { fields: { stroke_pattern: pattern } },
         ],
-        chooseLookupSuggestion: async () => {
+        hasLookupValues: () => false,
+        confirmLookupReplacement: async () => {
             previews += 1;
+            return true;
         },
         createDefinition: async () => {
             throw new Error("unexpected definition creation");
@@ -182,9 +191,115 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     };
     await listener({ target: { closest: () => button } });
     assert.equal(previews, 0);
+    assert.equal(button.hidden, true);
     assert.equal(redraws, 1);
     assert.equal(field.libraryFieldValue, pattern);
     assert.equal(draft.fields.stroke_pattern, pattern);
     assert.deepEqual(draft.fields.pronunciation, ["きょう"]);
     assert.equal(button.disabled, false);
+});
+
+test("canceling replacement avoids the request and preserves existing values", async () => {
+    let listener;
+    let requests = 0;
+    const input = { value: "教" };
+    const draft = { fields: { pronunciation: ["original"] } };
+    const context = {
+        hasLookupValues: () => true,
+        confirmLookupReplacement: async () => false,
+        fetchLibraryLookupSuggestions: async () => {
+            requests += 1;
+        },
+        showToast() {},
+    };
+    vm.runInNewContext(source, context);
+    const form = {
+        querySelector: () => input,
+        addEventListener: (_type, handler) => {
+            listener = handler;
+        },
+    };
+    context.bindLookupProviders(form, draft, {}, {});
+    const button = { dataset: {} };
+    await listener({ target: { closest: () => button } });
+    assert.equal(requests, 0);
+    assert.deepEqual(draft.fields.pronunciation, ["original"]);
+    assert.equal(button.disabled, false);
+});
+
+test("failed and empty stroke lookups leave the lookup button available", async () => {
+    for (const result of [[], [{ fields: {} }], new Error("upstream")]) {
+        let listener;
+        const draft = { fields: {} };
+        const context = {
+            hasLookupValues: () => false,
+            fetchLibraryLookupSuggestions: async () => {
+                if (result instanceof Error) throw result;
+                return result;
+            },
+            showToast() {},
+        };
+        vm.runInNewContext(source, context);
+        const form = {
+            querySelector: () => ({ value: "教" }),
+            addEventListener: (_type, handler) => {
+                listener = handler;
+            },
+        };
+        context.bindLookupProviders(form, draft, { t: (key) => key }, {});
+        const button = {
+            dataset: { libraryLookupKind: "strokePattern" },
+            hidden: false,
+        };
+        await listener({ target: { closest: () => button } });
+        assert.equal(button.hidden, false);
+        assert.equal(button.disabled, false);
+        assert.deepEqual(draft.fields, {});
+    }
+});
+
+test("lookup populates the visible composition input when no authored spelling components exist", async () => {
+    let listener;
+    const input = {
+        value: "教室",
+        hasAttribute: () => false,
+        dispatchEvent() {},
+    };
+    const form = {
+        querySelector: () => input,
+        referenceGroups: {},
+        elements: {
+            label: { value: "教室" },
+            class: { value: "" },
+            tags: { value: "", dispatchEvent() {} },
+        },
+        addEventListener: (_type, handler) => {
+            listener = handler;
+        },
+        dispatchEvent() {},
+    };
+    const context = {
+        Event,
+        structuredClone,
+        hasLookupValues: () => false,
+        fetchLibraryLookupSuggestions: async () => [
+            { label: "教室", fields: {} },
+        ],
+        clearLookupValues: (form, draft) => {
+            form.compositionOrder = [];
+            draft.fields = {};
+        },
+        renderStrokePatternPreviews() {},
+        showToast() {},
+    };
+    vm.runInNewContext(source, context);
+    context.bindLookupProviders(
+        form,
+        { fields: {} },
+        { t: (key) => key },
+        { schema: { layers: [] }, layer: { relationships: [] }, entries: [] },
+    );
+    await listener({ target: { closest: () => ({ dataset: {} }) } });
+    assert.equal(input.value, "教室");
+    assert.equal(form.elements.label.value, "教室");
 });

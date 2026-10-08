@@ -138,4 +138,8 @@
   <string name="gateway.study.library_translate_definitions">Ambil terjemahan yang belum tersedia</string>
   <string name="gateway.study.library_translation_missing">Beberapa bahasa tidak dapat diterjemahkan. Anda dapat memasukkan definisinya secara manual.</string>
   <string name="gateway.study.library_dictionary_source">Sumber kamus</string>
+  <string name="gateway.study.library_lookup_replace_title">Ganti nilai saat ini?</string>
+  <string name="gateway.study.library_lookup_replace_warning">Pencarian akan mengganti nilai kartu, definisi, dan pelafalan saat ini. Lanjutkan?</string>
+  <string name="gateway.study.library_lookup_replace">Ganti nilai</string>
+  <string name="gateway.study.library_lookup_replace_stroke_warning">Pencarian akan mengganti pola goresan saat ini. Lanjutkan?</string>
 </resources>

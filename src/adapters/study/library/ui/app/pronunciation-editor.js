@@ -238,6 +238,23 @@ export function mountEditableRelationshipCarousels(
         renderSavedValues,
     );
     form.addEventListener(
+        "library-lookup-replace",
+        () => {
+            draftValues.clear();
+            stagedValues.clear();
+            form.querySelectorAll("[data-horizontal-carousel]").forEach(
+                clearHorizontalCarouselSelection,
+            );
+            form.querySelectorAll(
+                '[data-library-composition-field="pronunciation"] input',
+            ).forEach((input) => {
+                input.value = "";
+                input.setCustomValidity("");
+            });
+        },
+        { signal: controller.signal },
+    );
+    form.addEventListener(
         "library-composition-change",
         () => {
             renderSelectedReferences();

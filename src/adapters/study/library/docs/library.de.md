@@ -358,3 +358,7 @@ Fehlende Übersetzungen abrufen verwendet `POST /api/v1/study/library/definition
 ## Administrator-Karten und gezielte Strichsuche
 
 Administratoren erstellen Karten ohne Veröffentlichungsfelder direkt im globalen Namensraum. Inline erstellte und aus Wörterbüchern importierte Definitionen verwenden dasselbe globale Ziel; private Abhängigkeiten müssen vor dem Speichern veröffentlicht werden. Die Suche im Feld Strichmuster übernimmt das Muster des Anbieters sofort, ohne die Wörterbuchvorschau zu öffnen.
+
+## Suche füllt den offenen Karteneditor
+
+Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle zurückgegebenen Definitionen und Aussprachen ohne Ergebnisfenster oder Übernahmeschritt. Bestehende Werte erfordern vor der Anfrage eine Bestätigung zum Ersetzen; Abbruch und leere oder fehlgeschlagene Suchen erhalten die aktuelle Karte. Eine erfolgreiche Strichmustersuche blendet ihre Schaltfläche aus. Wörterbuch-Quelladressen bleiben als unsichtbare Quelldaten gespeichert statt als Links angezeigt zu werden.

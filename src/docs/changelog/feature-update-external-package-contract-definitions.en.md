@@ -352,6 +352,10 @@ Administrators create cards directly in the global namespace without Publish con
 
 Related stylesheet, validation, persistence, constructor-alignment, and test code is split into focused files to satisfy repository size checks; documentation structure and UI test discovery are corrected.
 
+## Lookup fills the open composer
+
+Dictionary lookup now fills the open card composer directly and commits all returned definitions and pronunciations without a result popup or Apply step. Existing values require replacement confirmation before the request; cancellation and empty or failed lookups preserve the current card. Successful Stroke Pattern lookup hides its button. Dictionary source URLs are retained in hidden source data instead of displayed as links.
+
 ## Multi-value staging no longer mutates committed values
 
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.

@@ -3,7 +3,11 @@ import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library
 import { showToast } from "/static/reuse/toast.js";
 import { renderStrokePatternPreviews } from "../field-input.js";
 import { createDefinition, linkDefinition } from "./definition-editor.js";
-import { chooseLookupSuggestion } from "./lookup-preview.js";
+import {
+    hasLookupValues,
+    confirmLookupReplacement,
+    clearLookupValues,
+} from "./lookup-replacement.js";
 export function applyLookupFields(form, fields, draft) {
     Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
         draft.fields[fieldId] = value;
@@ -72,7 +76,14 @@ export function bindLookupProviders(
     form,
     draft,
     i18n,
-    { schema, layer, entries, nestedDefinitionIds, definitionLocation },
+    {
+        schema,
+        layer,
+        entries,
+        nestedDefinitionIds,
+        definitionLocation,
+        inputCarouselIds = new Set(),
+    },
 ) {
     form.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-library-lookup-provider]");
@@ -82,6 +93,13 @@ export function bindLookupProviders(
         if (!label) return;
         button.disabled = true;
         try {
+            const strokeOnly =
+                button.dataset.libraryLookupKind === "strokePattern";
+            if (
+                hasLookupValues(form, strokeOnly) &&
+                !(await confirmLookupReplacement(i18n, strokeOnly))
+            )
+                return;
             const suggestions = await fetchLibraryLookupSuggestions(
                 button.dataset.libraryLookupProvider,
                 { ...draft, label },
@@ -92,15 +110,32 @@ export function bindLookupProviders(
                 });
                 return;
             }
-            if (button.dataset.libraryLookupKind === "strokePattern") {
-                applyLookupFields(form, suggestions[0].fields ?? {}, draft);
+            if (strokeOnly) {
+                const fields = suggestions[0].fields ?? {};
+                if (
+                    !Object.values(fields).some(
+                        (value) => value?.strokes?.length,
+                    )
+                ) {
+                    showToast(i18n.t("gateway.study.library_lookup_empty"), {
+                        variant: "info",
+                    });
+                    return;
+                }
+                applyLookupFields(form, fields, draft);
+                button.hidden = true;
                 showToast(i18n.t("gateway.study.library_lookup_applied"), {
                     variant: "success",
                 });
                 return;
             }
-            const suggestion = await chooseLookupSuggestion(suggestions, i18n);
-            if (!suggestion) return;
+            const suggestion =
+                suggestions.find(
+                    (result) =>
+                        result.label?.normalize("NFKC") ===
+                        label.normalize("NFKC"),
+                ) ?? suggestions[0];
+            const importedDefinitions = [];
             const definitionRelationship = layer.relationships.find(
                 ({ targetLayer }) =>
                     schema.layers.find(({ id }) => id === targetLayer)
@@ -116,43 +151,55 @@ export function bindLookupProviders(
                     location: definitionLocation,
                 });
                 if (result.created) nestedDefinitionIds.push(result.entry.id);
-                linkDefinition(form, schema, layer, entries, result.entry);
+                importedDefinitions.push(result.entry);
             }
+            clearLookupValues(form, draft);
+            for (const definition of importedDefinitions)
+                linkDefinition(form, schema, layer, entries, definition);
             for (const reference of suggestion.references ?? []) {
                 const select =
                     form.elements[`relationship:${reference.relation}`];
                 const option = Array.from(select?.options ?? []).find(
                     ({ value }) => value === reference.entryId,
                 );
-                if (option) option.selected = true;
+                if (option) {
+                    option.selected = true;
+                    select.append(option);
+                    if (inputCarouselIds.has(reference.relation))
+                        form.compositionOrder.push(reference.entryId);
+                }
             }
-            Object.assign(
-                form.referenceGroups,
-                structuredClone(suggestion.referenceGroups ?? {}),
+            form.referenceGroups = structuredClone(
+                suggestion.referenceGroups ?? {},
             );
-            if (!input.hasAttribute("data-library-free-text")) input.value = "";
-            else input.value = suggestion.label ?? label;
+            const canonicalLabel = suggestion.label ?? label;
+            const composedLabel = form.compositionOrder
+                .map(
+                    (entryId) =>
+                        entries.find(({ id }) => id === entryId)?.label ?? "",
+                )
+                .join("");
+            if (input.hasAttribute("data-library-free-text"))
+                input.value = canonicalLabel;
+            else if (canonicalLabel.startsWith(composedLabel))
+                input.value = canonicalLabel.slice(composedLabel.length);
+            else {
+                form.compositionOrder = [];
+                input.value = canonicalLabel;
+            }
             form.dispatchEvent(new Event("library-composition-change"));
             input.dispatchEvent(new Event("input", { bubbles: true }));
             form.elements.label.value = suggestion.label ?? label;
             form.libraryGeneratedPronunciation = [];
             applyLookupFields(form, suggestion.fields ?? {}, draft);
             if (suggestion.class) form.elements.class.value = suggestion.class;
-            if (suggestion.tags) {
-                const tags = [
-                    ...new Set([
-                        ...form.elements.tags.value
-                            .split("\u001f")
-                            .filter(Boolean),
-                        ...suggestion.tags,
-                    ]),
-                ];
-                if (form.setLibraryTags) form.setLibraryTags(tags);
-                else form.elements.tags.value = tags.join("\u001f");
-                form.elements.tags.dispatchEvent(
-                    new Event("change", { bubbles: true }),
-                );
-            }
+            const tags = [...new Set(suggestion.tags ?? [])];
+            if (form.setLibraryTags) form.setLibraryTags(tags);
+            else form.elements.tags.value = tags.join("\u001f");
+            form.elements.tags.dispatchEvent(
+                new Event("change", { bubbles: true }),
+            );
+            renderStrokePatternPreviews(form);
 
             if (input.hasAttribute("data-library-free-text")) {
                 input.dataset.lookupApproved = "true";

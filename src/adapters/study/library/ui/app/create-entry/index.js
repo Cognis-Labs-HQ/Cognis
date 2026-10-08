@@ -657,6 +657,7 @@ export async function openCreateEntryPopup({
                 layer: editingLayer,
                 entries,
                 nestedDefinitionIds,
+                inputCarouselIds,
                 definitionLocation: canPublishEveryone
                     ? { scope: "global", scopeId: "global" }
                     : { scope: "user" },

@@ -78,7 +78,7 @@ const createEntrySource = [
     "definitions.js",
     "definition-editor.js",
     "lookups.js",
-    "lookup-preview.js",
+    "lookup-replacement.js",
     "pronunciation-draft.js",
 ]
     .map((file) =>

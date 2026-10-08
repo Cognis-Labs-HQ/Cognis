@@ -358,3 +358,7 @@ Ambil terjemahan yang belum tersedia menggunakan `POST /api/v1/study/library/def
 ## Pembuatan oleh administrator dan pencarian pola goresan
 
 Administrator membuat kartu langsung di ruang nama global tanpa kontrol Publikasikan. Definisi yang dibuat langsung atau diimpor dari kamus menggunakan tujuan global yang sama; dependensi pribadi harus diterbitkan sebelum penyimpanan. Pencarian Pola Goresan langsung menerapkan pola penyedia tanpa membuka pratinjau kamus.
+
+## Pencarian mengisi penyusun kartu
+
+Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan semua definisi serta pelafalan yang dikembalikan tanpa popup hasil atau langkah Terapkan. Nilai yang sudah ada memerlukan konfirmasi penggantian sebelum permintaan; pembatalan serta pencarian kosong atau gagal mempertahankan kartu saat ini. Pencarian Pola Goresan yang berhasil menyembunyikan tombolnya. URL sumber kamus disimpan dalam data sumber tersembunyi, bukan ditampilkan sebagai tautan.

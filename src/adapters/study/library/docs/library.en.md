@@ -371,3 +371,7 @@ The Retrieve missing translations action calls `POST /api/v1/study/library/defin
 ## Administrator creation and focused stroke lookup
 
 Administrators create cards directly in the global namespace without Publish controls. Inline and dictionary-imported definitions use the same global destination; private dependencies must be published before saving. Stroke Pattern Lookup applies the provider’s stroke pattern immediately without opening the dictionary preview.
+
+## Lookup fills the open composer
+
+Dictionary lookup now fills the open card composer directly and commits all returned definitions and pronunciations without a result popup or Apply step. Existing values require replacement confirmation before the request; cancellation and empty or failed lookups preserve the current card. Successful Stroke Pattern lookup hides its button. Dictionary source URLs are retained in hidden source data instead of displayed as links.

@@ -478,6 +478,10 @@ Administrator membuat kartu langsung di ruang nama global tanpa kontrol Publikas
 
 Stylesheet serta kode validasi, persistensi, penyelarasan konstruktor, dan pengujian terkait dibagi menjadi berkas terfokus agar memenuhi pemeriksaan ukuran repositori; struktur dokumentasi dan penemuan pengujian UI diperbaiki.
 
+## Pencarian mengisi penyusun kartu
+
+Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan semua definisi serta pelafalan yang dikembalikan tanpa popup hasil atau langkah Terapkan. Nilai yang sudah ada memerlukan konfirmasi penggantian sebelum permintaan; pembatalan serta pencarian kosong atau gagal mempertahankan kartu saat ini. Pencarian Pola Goresan yang berhasil menyembunyikan tombolnya. URL sumber kamus disimpan dalam data sumber tersembunyi, bukan ditampilkan sebagai tautan.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

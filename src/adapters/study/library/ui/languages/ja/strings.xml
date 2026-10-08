@@ -138,4 +138,8 @@
   <string name="gateway.study.library_translate_definitions">不足している翻訳を取得</string>
   <string name="gateway.study.library_translation_missing">一部の言語を翻訳できませんでした。定義を手動で入力できます。</string>
   <string name="gateway.study.library_dictionary_source">辞書の出典</string>
+  <string name="gateway.study.library_lookup_replace_title">現在の値を置き換えますか？</string>
+  <string name="gateway.study.library_lookup_replace_warning">検索すると現在のカードの値、定義、発音を置き換えます。続行しますか？</string>
+  <string name="gateway.study.library_lookup_replace">値を置き換える</string>
+  <string name="gateway.study.library_lookup_replace_stroke_warning">検索すると現在の筆順を置き換えます。続行しますか？</string>
 </resources>

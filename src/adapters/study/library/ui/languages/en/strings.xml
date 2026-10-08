@@ -138,4 +138,8 @@
   <string name="gateway.study.library_translate_definitions">Retrieve missing translations</string>
   <string name="gateway.study.library_translation_missing">Some languages could not be translated. You can enter their definitions manually.</string>
   <string name="gateway.study.library_dictionary_source">Dictionary source</string>
+  <string name="gateway.study.library_lookup_replace_title">Replace current values?</string>
+  <string name="gateway.study.library_lookup_replace_warning">Lookup will replace the current card values, definitions, and pronunciations. Continue?</string>
+  <string name="gateway.study.library_lookup_replace">Replace values</string>
+  <string name="gateway.study.library_lookup_replace_stroke_warning">Lookup will replace the current stroke pattern. Continue?</string>
 </resources>
