@@ -149,14 +149,13 @@ export function scopeLabel(entry, i18n) {
     return i18n.t(`gateway.study.library_scope_${entry.scope}`);
 }
 
-export function renderScope(entry, i18n) {
+export function renderScope(entry, i18n, label = scopeLabel(entry, i18n)) {
     const icon =
         entry.scope === "global"
             ? "globe"
             : entry.scope === "class"
               ? "class"
               : "user";
-    const label = scopeLabel(entry, i18n);
     return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
 }
 

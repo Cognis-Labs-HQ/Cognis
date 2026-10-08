@@ -75,8 +75,10 @@
   <string name="gateway.study.library_publish_class">Publish to class</string>
   <string name="gateway.study.library_publish_global">Publish globally</string>
   <string name="gateway.study.library_withdraw">Withdraw</string>
-  <string name="gateway.study.library_move_to">Move to: {{ scope }}</string>
-  <string name="gateway.study.library_destination_user">User</string>
+  <string name="gateway.study.library_relocate_to">Relocate to:</string>
+  <string name="gateway.study.library_destination_global">Public</string>
+  <string name="gateway.study.library_destination_class">Classroom</string>
+  <string name="gateway.study.library_destination_user">Private</string>
   <string name="gateway.study.library_deselect_all">Deselect All</string>
   <string name="gateway.study.library_requests_mine">My Requests</string>
   <string name="gateway.study.library_requests_approved">Approved</string>

@@ -518,6 +518,10 @@ Pembuatan, penyuntingan, dan tampilan detail kalimat menurunkan pelafalan dari t
 
 Validasi masukan, pola pengenal, bahasa definisi, dan arah varian telah disatukan. Penanganan audio konten dan penyelarasan skema berada dalam modul terfokus dengan jarak antarfungsi yang tetap mudah dibaca. Paket konten langsung memakai identitas rekaman stabil; konversi identitas berdasarkan versi dan jalur kompatibilitas kolom lama telah dihapus. Adapter basis data menyelaraskan kunci yang dideklarasikan saat inisialisasi skema, disertai dokumentasi khusus adapter dan pengujian skema terkini.
 
+## Kontrol pemindahan langsung
+
+Kartu yang dipilih menampilkan “Pindahkan ke:” diikuti ikon tujuan publik, kelas, atau pribadi yang tersedia. Setiap ikon langsung memulai tindakan cakupan yang sesuai; pemilih kelas tetap tersedia ketika tujuan kelas dipilih.
+
 ## Commit
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

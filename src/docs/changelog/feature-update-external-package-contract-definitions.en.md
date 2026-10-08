@@ -518,6 +518,10 @@ Sentence creation, editing, and detail views derive pronunciations from each ord
 
 Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
 
+## Direct relocation controls
+
+Selected cards show “Relocate to:” followed by the available public, classroom, or private destination icons. Each icon directly starts its existing scope action; the classroom picker remains available when a class destination is chosen.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

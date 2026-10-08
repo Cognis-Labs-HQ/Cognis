@@ -2,6 +2,7 @@ import { planLibraryEntryDeletion } from "/static/gateways/study/ui/library-clie
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { renderScope } from "./presentation.js";
 
 export function canDeleteEntry(entry) {
     return entry.protected !== true && entry.canDelete === true;
@@ -13,8 +14,29 @@ export function librarySelectionFloatingMenu(entries, i18n) {
         {
             id: "library-selection-actions",
             label: i18n.t("ui.reuse.actions"),
-            render: () =>
-                `<button class="btn-neutral library-selection-action" type="button" data-library-select-all data-selection-action="select" data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}" data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">${escapeHtml(i18n.t("gateway.study.library_select_all"))}</button><span class="library-publish-menu" data-library-publish-menu hidden><button class="btn-confirm library-selection-action" type="button" data-library-publish-trigger>${escapeHtml(i18n.t("gateway.study.library_publish_to"))}</button><span class="library-publish-options"><button class="btn-confirm" type="button" data-library-publish="class">${escapeHtml(i18n.t("gateway.study.library_publish_class"))}</button><button class="btn-confirm" type="button" data-library-publish="global">${escapeHtml(i18n.t("gateway.study.library_publish_global"))}</button></span></span><button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button><button class="btn-neutral library-selection-action" type="button" data-library-move-selection hidden>${escapeHtml(i18n.t("gateway.study.library_move_to").replace("{{ scope }}", i18n.t("gateway.study.library_destination_user")))}</button><button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
+            render: () => `
+                <button class="btn-neutral library-selection-action" type="button" data-library-select-all data-selection-action="select"
+                    data-select-label="${escapeHtml(i18n.t("gateway.study.library_select_all"))}"
+                    data-deselect-label="${escapeHtml(i18n.t("gateway.study.library_deselect_all"))}">
+                    ${escapeHtml(i18n.t("gateway.study.library_select_all"))}
+                </button>
+                <span class="library-relocate-actions" data-library-relocate-actions role="group" aria-label="${escapeHtml(i18n.t("gateway.study.library_relocate_to"))}" hidden>
+                    <span>${escapeHtml(i18n.t("gateway.study.library_relocate_to"))}</span>
+                    ${["global", "class", "user"]
+                        .map((scope) => {
+                            const label = `${i18n.t("gateway.study.library_relocate_to")} ${i18n.t(`gateway.study.library_destination_${scope}`)}`;
+                            const action =
+                                scope === "user"
+                                    ? "data-library-move-selection"
+                                    : `data-library-publish="${scope}"`;
+                            return `<button class="btn-confirm" type="button" ${action} title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" hidden>
+                            ${renderScope({ scope }, i18n, label)}
+                        </button>`;
+                        })
+                        .join("")}
+                </span>
+                <button class="btn-cancel library-selection-action" type="button" data-library-withdraw-selection hidden>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button>
+                <button class="btn-cancel library-selection-action" type="button" data-library-delete-selection hidden>${escapeHtml(i18n.t("gateway.study.library_delete_selected"))}</button>`,
         },
     ];
 }
@@ -45,14 +67,15 @@ export function updateSelectionActions(root, entries, requests, locations) {
                   request.sourceEntryId === entry.id && request.canWithdraw,
           )
         : null;
-    const publishMenu = root.querySelector("[data-library-publish-menu]");
     const canPublish =
         entry?.scope === "user" && canDeleteEntry(entry) && !pending;
-    if (publishMenu) publishMenu.hidden = !canPublish;
+    const globalOption = root.querySelector('[data-library-publish="global"]');
+    if (globalOption) globalOption.hidden = !canPublish;
     const classOption = root.querySelector('[data-library-publish="class"]');
     if (classOption)
-        classOption.hidden = !(locations?.readable ?? []).some(
-            ({ scope }) => scope === "class",
+        classOption.hidden = !(
+            canPublish &&
+            (locations?.readable ?? []).some(({ scope }) => scope === "class")
         );
     const withdraw = root.querySelector("[data-library-withdraw-selection]");
     if (withdraw) {
@@ -67,6 +90,9 @@ export function updateSelectionActions(root, entries, requests, locations) {
             canDeleteEntry(entry) &&
             !entry.createdBy?.startsWith("content-pack:")
         );
+    const relocation = root.querySelector("[data-library-relocate-actions]");
+    if (relocation)
+        relocation.hidden = !canPublish && moveToUser?.hidden !== false;
     const deletion = root.querySelector("[data-library-delete-selection]");
     if (deletion)
         deletion.hidden =

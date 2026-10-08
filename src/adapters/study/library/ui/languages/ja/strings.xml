@@ -75,8 +75,10 @@
   <string name="gateway.study.library_publish_class">クラスに公開</string>
   <string name="gateway.study.library_publish_global">グローバルに公開</string>
   <string name="gateway.study.library_withdraw">取り下げ</string>
-  <string name="gateway.study.library_move_to">移動先: {{ scope }}</string>
-  <string name="gateway.study.library_destination_user">ユーザー</string>
+  <string name="gateway.study.library_relocate_to">移動先:</string>
+  <string name="gateway.study.library_destination_global">公開</string>
+  <string name="gateway.study.library_destination_class">クラス</string>
+  <string name="gateway.study.library_destination_user">非公開</string>
   <string name="gateway.study.library_deselect_all">すべて選択解除</string>
   <string name="gateway.study.library_requests_mine">自分のリクエスト</string>
   <string name="gateway.study.library_requests_approved">承認済み</string>

@@ -233,14 +233,14 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function allVisibleEntriesSelected/);
     assert.match(source, /setSelectionMode\(root, false\)/);
     assert.doesNotMatch(source, /data-library-selection-close/);
-    assert.match(source, /data-library-publish-menu/);
+    assert.match(source, /data-library-relocate-actions/);
     assert.match(source, /data-library-publish="class"/);
     assert.match(source, /data-library-publish="global"/);
     assert.match(source, /data-library-withdraw-selection/);
     assert.match(source, /data-library-move-selection/);
     assert.match(source, /entry\?\.scope === "user" && canDeleteEntry/);
     assert.match(source, /entry\.createdBy\?\.startsWith\("content-pack:"\)/);
-    assert.match(stylesheet, /\.library-publish-options/);
+    assert.match(stylesheet, /\.library-relocate-actions/);
     assert.match(source, /function setSelectionMode/);
     assert.match(source, /function selectAllVisibleEntries/);
     assert.match(source, /data-selection-action="select"/);

@@ -518,6 +518,10 @@ Satzerstellung, Bearbeitung und Detailansicht leiten Aussprachen aus der gewähl
 
 Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen sind zusammengeführt. Inhaltsaudio und Schemaabgleich liegen in fokussierten Modulen mit lesbaren Funktionsabständen. Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten; versionsabhängige Identitätsumwandlungen und Kompatibilitätspfade für umbenannte Spalten entfallen. Datenbankadapter gleichen deklarierte Schlüssel bei der Schemainitialisierung ab, mit adapterspezifischer Dokumentation und Tests des aktuellen Schemas.
 
+## Direkte Bereichswechsel
+
+Ausgewählte Karten zeigen „Verschieben nach:“ mit den verfügbaren Symbolen für öffentliche, Klassen- oder private Ziele. Jedes Symbol startet direkt die entsprechende Bereichsaktion; beim Klassenziel bleibt die Klassenauswahl verfügbar.
+
 ## Commits
 
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)

@@ -75,8 +75,10 @@
   <string name="gateway.study.library_publish_class">Terbitkan ke kelas</string>
   <string name="gateway.study.library_publish_global">Terbitkan secara global</string>
   <string name="gateway.study.library_withdraw">Tarik kembali</string>
-  <string name="gateway.study.library_move_to">Pindahkan ke: {{ scope }}</string>
-  <string name="gateway.study.library_destination_user">Pengguna</string>
+  <string name="gateway.study.library_relocate_to">Pindahkan ke:</string>
+  <string name="gateway.study.library_destination_global">Publik</string>
+  <string name="gateway.study.library_destination_class">Kelas</string>
+  <string name="gateway.study.library_destination_user">Pribadi</string>
   <string name="gateway.study.library_deselect_all">Batalkan Semua Pilihan</string>
   <string name="gateway.study.library_requests_mine">Permintaan Saya</string>
   <string name="gateway.study.library_requests_approved">Disetujui</string>
