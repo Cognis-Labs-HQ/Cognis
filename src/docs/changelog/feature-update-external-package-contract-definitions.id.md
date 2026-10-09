@@ -532,6 +532,8 @@ Administrator dan pemilik langsung memindahkan kartu pribadi ke cakupan bersama 
 
 ## Commit
 
+- [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
+
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
 - [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
@@ -674,3 +676,17 @@ Navigasi belajar hanya meminta tinjauan tertunda; halaman Permintaan tetap menam
 Pencarian kamus tetap dalam satu baris dengan ikon pencarian yang ringkas. Peninjauan tertunda ditandai dengan garis bawah aksen navigasi, bukan bingkai merah.
 
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+## Pencarian kamus yang stabil
+
+Jisho mengambil data leksikal dan Kanji terbaru atas permintaan host. Kecocokan kata/bacaan tepat diutamakan atas kecocokan terkait, entri yang lazim ditulis dalam Kana mempertahankan bentuk tersebut, dan hasil judul khusus Wikipedia dikecualikan. Bacaan yang hilang tidak diganti dengan definisi atau pelafalan buatan. Definisi dan metadata sumber tetap terpisah; Cognis mengatur seluruh kebijakan cache.
+
+Cognis core mengelola cache kamus melalui `core:cache`. Kueri tersimpan menjadi dingin setelah satu jam; penggunaan berikutnya memeriksa perubahan pada penyedia. Hasil yang berubah menunggu batas penerbitan dua belas jam, sementara isi yang tidak berubah tetap dipertahankan. Kueri bersamaan berbagi satu pemeriksaan; kegagalan pemeriksaan mempertahankan hasil terakhir yang berhasil. Status cache bertahan setelah mulai ulang. Modul mengambil data penyedia tanpa menjadwalkan kueri atau menyimpan cache respons sendiri. Jisho tidak menyediakan umpan perubahan ringan, sehingga pemeriksaan memerlukan respons pencarian biasa. Tidak ada kontrol Muat Ulang manual. Tautan pelafalan dan kartu selalu diselesaikan terhadap konten yang saat ini dapat diakses.
+
+## Peninjauan dan pemindahan jelas
+
+Permintaan Saya menampilkan riwayat semua status yang diajukan dalam mode baca saja. Tertunda adalah satu-satunya antrean peninjauan. Header menampilkan avatar profil dan tautan pemohon/peninjau; waktu keputusan tersedia pada label status. Judul kartu, pelafalan utama, dan definisi berbagi ringkasan yang dapat diperluas, dengan kartu terkait dikelompokkan menurut relasi. Penurunan visibilitas memakai gaya tombol batal. Arah pemindahan yang bertentangan atau tujuan yang tidak berubah menonaktifkan kontrol sampai pilihan yang bertentangan dihapus.
+
+## Graf bacaan kamus
+
+Data sumber kamus tetap menjadi metadata tersembunyi dalam penyusun kartu dan tampilan detail. Pelafalan impor memakai bacaan Kosakata tersembunyi dengan cakupan yang sama dengan kartu induknya. Kanji dengan beberapa bacaan memakai satu rekaman tersembunyi per bacaan, dengan tautan judul ke Kanji sumber dan tautan pelafalan Kana berurutan; Kanji dengan satu bacaan terhubung langsung ke Kana. Bacaan kata lengkap memakai segmen bacaan Kanji tersedia yang paling dekat dan Kana sisanya. Definisi ditautkan langsung ke bacaan tersembunyi. Cognis menyelesaikan identitas penyedia dan menyimpan graf secara atomik melalui validasi bidang, lapisan, dependensi, dan ACL biasa. Karakter dan partikel tetap dikelola penyedia. Gema Katakana berlebihan dari bacaan Hiragana setara disaring kecuali kamus menyatakan ejaan Katakana tersebut; bacaan on Kanji resmi dan bacaan kata serapan asli dipertahankan.

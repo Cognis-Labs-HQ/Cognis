@@ -234,12 +234,15 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /setSelectionMode\(root, false\)/);
     assert.doesNotMatch(source, /data-library-selection-close/);
     assert.match(source, /data-library-relocate-actions/);
-    assert.match(source, /data-library-publish="class"/);
-    assert.match(source, /data-library-publish="global"/);
+    assert.match(source, /const hasClasses/);
+    assert.match(source, /relocationState\(selected, scope, requests\)/);
     assert.match(source, /data-library-withdraw-selection/);
     assert.match(source, /data-library-move-selection/);
-    assert.match(source, /entry\?\.scope === "user" && canDeleteEntry/);
-    assert.match(source, /entry\.createdBy\?\.startsWith\("content-pack:"\)/);
+    assert.match(source, /selected\.some\([\s\S]*!canDeleteEntry\(entry\)/);
+    assert.match(
+        source,
+        /entry\.protected !== true && entry\.canDelete === true/,
+    );
     assert.match(stylesheet, /\.library-relocate-actions/);
     assert.match(source, /function setSelectionMode/);
     assert.match(source, /function selectAllVisibleEntries/);

@@ -3,6 +3,7 @@ import { canonicalizeLanguageTag } from "../language.js";
 import { createHash } from "node:crypto";
 import type {
     LibraryDefinitionLocalizationRequest,
+    LibraryLayerSchema,
     StringLocalizationCapability,
 } from "../types.js";
 
@@ -65,4 +66,53 @@ export async function localizeDefinition(
             (language) => !translations[language],
         ),
     };
+}
+
+export async function translateDefinitionLanguages(
+    translations: Record<string, string>,
+    stringKey: string,
+    languages: readonly string[],
+    localization?: StringLocalizationCapability,
+): Promise<void> {
+    if (!localization) return;
+    for (const language of languages) {
+        const targetLanguage = canonicalizeLanguageTag(language);
+        if (translations[targetLanguage]?.trim()) continue;
+        const translated = await localization.translate({
+            stringKey,
+            sourceText: translations.en.trim(),
+            sourceLanguage: "en",
+            targetLanguage,
+        });
+        if (translated?.trim())
+            translations[targetLanguage] = translated.trim();
+    }
+}
+
+export async function prepareDefinitionFields(
+    layer: LibraryLayerSchema,
+    fields: Record<string, unknown>,
+    entryId: string,
+    languages: readonly string[],
+    localization?: StringLocalizationCapability,
+): Promise<void> {
+    const settings = layer.definitionLocalization!;
+    const translations = fields[settings.translationsField];
+    if (
+        !translations ||
+        typeof translations !== "object" ||
+        Array.isArray(translations) ||
+        typeof (translations as Record<string, unknown>).en !== "string" ||
+        !(translations as Record<string, string>).en.trim()
+    ) {
+        throw new Error("definition_english_required");
+    }
+    const stringKey = `${settings.stringKeyPrefix}:${entryId}`;
+    fields[settings.stringKeyField] = stringKey;
+    await translateDefinitionLanguages(
+        translations as Record<string, string>,
+        stringKey,
+        languages,
+        localization,
+    );
 }

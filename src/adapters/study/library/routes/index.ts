@@ -350,9 +350,7 @@ export function createLibraryRoutes(
                 if (
                     typeof input.query !== "string" ||
                     typeof input.providerId !== "string" ||
-                    typeof input.schemaId !== "string" ||
-                    (input.refresh !== undefined &&
-                        typeof input.refresh !== "boolean")
+                    typeof input.schemaId !== "string"
                 )
                     throw new Error("invalid_query");
                 const result = await library.searchDictionary(input);

@@ -271,6 +271,11 @@ export interface LibraryEntryFilters {
     sourceRecordIds?: readonly string[];
 }
 
+export interface LibraryLinkedEntryInput {
+    key: string;
+    entry: LibraryEntryInput;
+}
+
 export interface LibraryEntryInput {
     schemaId: string;
     schemaVersion?: number;
@@ -294,6 +299,7 @@ export interface LibraryEntryInput {
     definitionLanguages?: string[];
     /** Explicit confirmation after the API reports matching global content. */
     allowConflict?: boolean;
+    linkedEntries?: LibraryLinkedEntryInput[];
 }
 
 export interface LibraryEntry extends LibraryEntryInput {
@@ -352,6 +358,7 @@ export interface LibraryLookupSuggestion {
     referenceGroups?: LibraryReferenceGroups;
     provenance: string;
     confidence: number;
+    linkedEntries?: LibraryLinkedEntryInput[];
 }
 
 export interface LibraryLookupProposal {

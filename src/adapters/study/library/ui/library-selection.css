@@ -93,4 +93,6 @@ body[data-theme="dark"] .library-entry-selection:checked {
 .library-relocate-actions .library-scope {
     margin: 0;
     background: transparent;
+    width: 1rem;
+    height: 1rem;
 }

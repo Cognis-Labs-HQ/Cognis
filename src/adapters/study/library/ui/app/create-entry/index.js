@@ -331,6 +331,7 @@ export async function openCreateEntryPopup({
                     : undefined,
             alwaysShowDefinition:
                 form.elements.alwaysShowDefinition?.checked === true,
+            linkedEntries: structuredClone(form.libraryLinkedEntries ?? []),
             hidden:
                 form.elements.hidden?.value === "true" ||
                 form.elements.hidden?.checked === true,

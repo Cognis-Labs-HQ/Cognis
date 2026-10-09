@@ -62,4 +62,5 @@
   <string name="gateway.study.library_strokes">Goresan</string>
   <string name="gateway.study.dictionary_search">Pencarian kamus</string>
   <string name="gateway.study.dictionary_provider">Penyedia kamus</string>
+  <string name="gateway.study.dictionary_search_with">Cari dengan {{ provider }}</string>
 </resources>

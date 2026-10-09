@@ -1,3 +1,4 @@
+import type { CacheSnapshot } from "@cognis/core";
 import {
     entryReferenceRows,
     referenceTransformationValue,
@@ -51,29 +52,21 @@ export class LibraryStore {
         });
     }
 
-    async dictionaryCache(key: string): Promise<{
-        results: LibraryDictionaryResult[];
-        cachedAt: string;
-        expiresAt: number;
-    } | null> {
+    async dictionaryCache(
+        key: string,
+    ): Promise<CacheSnapshot<LibraryDictionaryResult[]> | null> {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_dictionary_cache",
             where: [{ column: "cache_key", value: key }],
         });
         const row = result.rows?.[0];
-        return row
-            ? {
-                  results: JSON.parse(String(row.results_json)),
-                  cachedAt: new Date(String(row.cached_at)).toISOString(),
-                  expiresAt: new Date(String(row.expires_at)).getTime(),
-              }
-            : null;
+        return row ? JSON.parse(String(row.results_json)) : null;
     }
 
     async saveDictionaryCache(
         key: string,
-        results: LibraryDictionaryResult[],
+        snapshot: CacheSnapshot<LibraryDictionaryResult[]>,
     ): Promise<void> {
         await this.db.executeCommand({
             option: "DELETE",
@@ -92,11 +85,9 @@ export class LibraryStore {
             ["cache_key"],
             {
                 cache_key: key,
-                results_json: JSON.stringify(results),
-                cached_at: new Date().toISOString(),
-                expires_at: new Date(
-                    Date.now() + 24 * 60 * 60 * 1000,
-                ).toISOString(),
+                results_json: JSON.stringify(snapshot),
+                cached_at: new Date(snapshot.publishedAt).toISOString(),
+                expires_at: new Date(snapshot.expiresAt).toISOString(),
             },
         );
     }

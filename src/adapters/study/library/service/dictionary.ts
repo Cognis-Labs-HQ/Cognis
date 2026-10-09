@@ -1,3 +1,4 @@
+import type { ProbeCache, ProbeCacheFactory } from "@cognis/core";
 import { createHash } from "node:crypto";
 import type {
     LibraryLookupProvider,
@@ -13,11 +14,21 @@ export interface LibraryDictionaryResult extends LibraryLookupSuggestion {
 }
 
 export class LibraryDictionarySearch {
-    private readonly pending = new Map<
-        string,
-        Promise<LibraryDictionaryResult[]>
-    >();
-    constructor(private readonly store: LibraryStore) {}
+    private readonly cache?: ProbeCache<LibraryDictionaryResult[]>;
+    constructor(
+        store: LibraryStore,
+        factory?: ProbeCacheFactory,
+        log?: NonNullable<Parameters<ProbeCacheFactory>[1]>["log"],
+    ) {
+        this.cache = factory?.(
+            {
+                read: (key) => store.dictionaryCache(key),
+                write: (key, snapshot) =>
+                    store.saveDictionaryCache(key, snapshot),
+            },
+            { log },
+        );
+    }
 
     providers(
         providers: Iterable<LibraryLookupProvider>,
@@ -54,7 +65,6 @@ export class LibraryDictionarySearch {
         provider: LibraryLookupProvider,
         schema: LibrarySchema,
         rawQuery: string,
-        refresh: boolean,
         lookup: (
             layer: string,
             query: string,
@@ -73,6 +83,7 @@ export class LibraryDictionarySearch {
         const key = createHash("sha256")
             .update(
                 JSON.stringify([
+                    "probe-cache:2",
                     provider.id,
                     provider.cacheRevision,
                     schema.id,
@@ -81,51 +92,32 @@ export class LibraryDictionarySearch {
                 ]),
             )
             .digest("hex");
-        const cached = await this.store.dictionaryCache(key);
-        if (!refresh && cached && cached.expiresAt > Date.now())
-            return {
-                query,
-                cached: true,
-                results: cached.results,
-                cachedAt: cached.cachedAt,
-            };
-        let pending = this.pending.get(key);
-        if (!pending) {
-            pending = (async () => {
-                const results = (
-                    await Promise.all(
-                        schema.layers
-                            .filter(
-                                (layer) =>
-                                    layer.dictionary_lookup !== false &&
-                                    provider.supports(schema, layer),
-                            )
-                            .map(async (layer) =>
-                                (await lookup(layer.id, query)).map(
-                                    (result) => ({
-                                        ...result,
-                                        schemaId: schema.id,
-                                        layer: layer.id,
-                                    }),
-                                ),
-                            ),
-                    )
-                ).flat();
-                await this.store.saveDictionaryCache(key, results);
-                return results;
-            })();
-            this.pending.set(key, pending);
-        }
-        try {
-            return {
-                query,
-                cached: false,
-                results: await pending,
-                cachedAt: new Date().toISOString(),
-            };
-        } finally {
-            if (this.pending.get(key) === pending) this.pending.delete(key);
-        }
+        if (!this.cache) throw new Error("core_cache_unavailable");
+        const response = await this.cache.read(key, async () =>
+            (
+                await Promise.all(
+                    schema.layers
+                        .filter(
+                            (layer) =>
+                                layer.dictionary_lookup !== false &&
+                                provider.supports(schema, layer),
+                        )
+                        .map(async (layer) =>
+                            (await lookup(layer.id, query)).map((result) => ({
+                                ...result,
+                                schemaId: schema.id,
+                                layer: layer.id,
+                            })),
+                        ),
+                )
+            ).flat(),
+        );
+        return {
+            query,
+            cached: response.cached,
+            results: response.value,
+            cachedAt: response.cachedAt,
+        };
     }
 }
 

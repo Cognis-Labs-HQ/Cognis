@@ -62,4 +62,5 @@
   <string name="gateway.study.library_strokes">Striche</string>
   <string name="gateway.study.dictionary_search">Wörterbuchsuche</string>
   <string name="gateway.study.dictionary_provider">Wörterbuchanbieter</string>
+  <string name="gateway.study.dictionary_search_with">Suchen mit {{ provider }}</string>
 </resources>

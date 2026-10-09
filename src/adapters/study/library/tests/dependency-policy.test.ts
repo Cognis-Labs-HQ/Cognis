@@ -213,7 +213,12 @@ test("publication and update requests reject private dependencies before queuing
         ref(component.id),
     ]);
     const global = entry("global", { scope: "global", scopeId: "global" });
-    const { library, mutations } = harness([component, source, global]);
+    const { library, mutations, prepare } = harness([
+        component,
+        source,
+        global,
+    ]);
+    await prepare();
     await assert.rejects(
         library.requestPush(actor, source.id, { scope: "global" }),
         /reference_visibility_too_low/,
@@ -244,7 +249,11 @@ test("approval rechecks dependencies changed after request submission", async ()
         requestedBy: "alice",
         status: "pending",
     };
-    const { library, mutations } = harness([component, source], [request]);
+    const { library, mutations, prepare } = harness(
+        [component, source],
+        [request],
+    );
+    await prepare();
     await assert.rejects(
         library.reviewPush(admin, request.id, "approved"),
         /forbidden|reference_visibility_too_low/,
@@ -359,6 +368,7 @@ test("class-scoped publication succeeds with compatible components and permissio
         ref(component.id),
     ]);
     const h = harness([source, component]);
+    await h.prepare();
     await h.library.requestPush(actor, source.id, {
         scope: "class",
         scopeId: "class-a",

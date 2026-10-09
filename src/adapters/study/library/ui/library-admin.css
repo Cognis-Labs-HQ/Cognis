@@ -635,3 +635,38 @@ body[data-theme="light"]
 .library-dictionary-cards button.active {
     border-color: var(--accent);
 }
+
+.library-request-person,
+.library-request-card-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.library-request-card-summary {
+    flex-wrap: wrap;
+    text-align: start;
+}
+
+.library-request-avatar {
+    width: 2rem;
+    height: 2rem;
+}
+
+.library-request-preview .collapsible-section-content {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.library-request-preview .library-detail-facts {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.library-request-card-summary .library-card-definition {
+    width: auto;
+    flex-basis: auto;
+    margin: 0;
+    text-align: start;
+}

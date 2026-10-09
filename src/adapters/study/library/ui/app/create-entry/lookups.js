@@ -204,6 +204,26 @@ export function bindLookupProviders(
                         form.compositionOrder.push(reference.entryId);
                 }
             }
+            form.libraryLinkedEntries = structuredClone(
+                (suggestion.linkedEntries ?? []).map(({ key, entry }) => ({
+                    key,
+                    entry: {
+                        ...entry,
+                        references: [
+                            ...(entry.references ?? []).filter(
+                                (reference) =>
+                                    reference.relation !==
+                                    definitionRelationship?.id,
+                            ),
+                            ...importedDefinitions.map((definition) => ({
+                                relation:
+                                    definitionRelationship?.id || "definitions",
+                                entryId: definition.id,
+                            })),
+                        ],
+                    },
+                })),
+            );
             form.referenceGroups = structuredClone({
                 ...form.referenceGroups,
                 ...Object.fromEntries(

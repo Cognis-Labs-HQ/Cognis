@@ -84,7 +84,6 @@
   <string name="gateway.study.library_requests_approved">Genehmigt</string>
   <string name="gateway.study.library_requests_rejected">Abgelehnt</string>
   <string name="gateway.study.library_requests_pending">Ausstehend</string>
-  <string name="gateway.study.library_requests_review">Zur Prüfung</string>
   <string name="gateway.study.library_optional">Optional</string>
   <string name="gateway.study.library_composer_text">Eingabe</string>
   <string name="gateway.study.library_composer_match">Meinten Sie?</string>
@@ -167,4 +166,5 @@
   <string name="gateway.study.library_search_results">Suchergebnisse</string>
   <string name="gateway.study.library_dictionary_cached">In Cognis gespeichert: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Die Wörterbuchsuche ist fehlgeschlagen. Versuchen Sie es erneut oder wählen Sie einen anderen Anbieter.</string>
+  <string name="gateway.study.library_search_results_subtitle">Wörterbuchtreffer erkunden und verknüpfte Lernkarten erstellen</string>
 </resources>

@@ -1,3 +1,4 @@
+import { CORE_CACHE_CAPABILITY, type ProbeCacheFactory } from "@cognis/core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
@@ -149,6 +150,7 @@ export async function bootstrapStudyAdapter(
                   }
               }
             : undefined,
+        ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

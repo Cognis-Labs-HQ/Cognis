@@ -6,7 +6,17 @@ import {
 export async function loadDictionaryReferences(results, schemas) {
     const { readable } = await fetchLibraryLocations();
     const requests = new Map();
-    for (const result of results) {
+    const records = results.flatMap((result) => [
+        result,
+        ...(result.linkedEntries ?? []).map(({ entry }) => entry),
+    ]);
+    const temporaryIds = new Set([
+        "$root",
+        ...results.flatMap((result) =>
+            (result.linkedEntries ?? []).map(({ key }) => key),
+        ),
+    ]);
+    for (const result of records) {
         const schema = schemas.find(({ id }) => id === result.schemaId);
         const layer = schema?.layers.find(({ id }) => id === result.layer);
         for (const relationship of layer?.relationships ?? []) {
@@ -25,7 +35,10 @@ export async function loadDictionaryReferences(results, schemas) {
                 ...Object.values(result.referenceGroups ?? {}).flat(2),
             ];
             for (const reference of references) {
-                if (reference.relation === relationship.id)
+                if (
+                    reference.relation === relationship.id &&
+                    !temporaryIds.has(reference.entryId)
+                )
                     selected.ids.add(reference.entryId);
             }
             if (

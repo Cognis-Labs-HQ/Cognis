@@ -366,6 +366,8 @@ Database schema initialization reconciles existing keys with the current table d
 
 ## Multi-value staging no longer mutates committed values
 
+- [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
+
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.
 
 ## Canonical labels and immediate previews
@@ -674,3 +676,17 @@ Study navigation requests only pending review items; the Requests page retains c
 Dictionary search stays on one line with a compact search icon. Pending reviews use the navigation accent underline instead of a red outline.
 
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+## Stable dictionary searches
+
+Jisho retrieves current lexical and Kanji data on host requests. Exact word/reading matches rank above related matches, kana-preferred entries keep their conventional Kana form, and Wikipedia-only title results are excluded. Missing readings never become definitions or invented pronunciations. The provider preserves definitions and source metadata separately; Cognis owns all cache policy.
+
+Cognis core owns dictionary caching through `core:cache`. A cached query becomes cold after one hour; its next use probes the provider for changes. Changed results remain pending until the twelve-hour publication boundary, and unchanged results retain their content. Concurrent queries share one probe, and failed probes preserve the last successful result. Cache state survives restarts. Modules retrieve provider data without scheduling queries or maintaining provider-response caches. Jisho has no lightweight change feed, so a probe requires the ordinary search response. There is no manual Refresh control. Local pronunciation and card links always resolve against currently accessible content.
+
+## Clear request review and relocation
+
+My Requests is a read-only history of every submitted status. Pending is the sole review queue. Request headers show requester/reviewer profile avatars and links; decision time is available on the status pill. The card title, primary pronunciation and definition share an expandable summary, with related cards grouped by relationship. Visibility downgrades use the cancel button style. Mixed relocation directions or unchanged destinations disable the control until the conflicting selection is removed.
+
+## Dictionary reading graphs
+
+Dictionary source data remains invisible metadata in composers and detail views. Imported pronunciations use hidden Vocabulary readings with the same scope as their parent. Multi-reading Kanji uses one hidden record per reading, with a title link to its source Kanji and ordered Kana pronunciation links; single-reading Kanji links directly to Kana. Complete word readings compose from the nearest authored Kanji-reading segments and remaining Kana when available. Definitions are linked directly to hidden readings. Cognis resolves provider identities and commits the graph atomically through normal field, layer, dependency and ACL validation. Characters and particles remain provider-owned. Redundant Katakana echoes of an equivalent Hiragana reading are filtered unless the dictionary declares that Katakana spelling; authoritative Kanji on-readings and genuine loanword readings are preserved.

@@ -5,6 +5,8 @@ import { schema } from "../fixtures/service-schema.js";
 test("promotion approval moves personal content into the requested scope", async () => {
     const source = {
         id: "personal-card",
+        schemaId: "test-language",
+        layer: "units",
         scope: "user",
         scopeId: "alice",
         createdBy: "alice",
@@ -12,6 +14,7 @@ test("promotion approval moves personal content into the requested scope", async
     };
     const moves: unknown[] = [];
     const store = {
+        saveSchema: async () => {},
         transaction: async <T>(operation: () => Promise<T>) => operation(),
         getPush: async () => ({
             id: "request",
@@ -33,6 +36,7 @@ test("promotion approval moves personal content into the requested scope", async
             flows.push(id);
         },
     } as never);
+    await library.registerSchema(schema(1));
     await library.reviewPush(
         { accountId: "admin", role: "admin" },
         "request",
@@ -45,6 +49,7 @@ test("promotion approval moves personal content into the requested scope", async
             throw new Error("move_hook_rejected");
         },
     } as never);
+    await blocked.registerSchema(schema(1));
     await assert.rejects(
         blocked.reviewPush(
             { accountId: "admin", role: "admin" },
@@ -187,6 +192,8 @@ test("provider cards cannot be sent to a personal namespace", async () => {
 test("global downgrades return content to its original submitter", async () => {
     const entry = {
         id: "global-card",
+        schemaId: "test-language",
+        layer: "units",
         scope: "global",
         scopeId: "global",
         createdBy: "alice",
@@ -194,6 +201,7 @@ test("global downgrades return content to its original submitter", async () => {
     };
     let destination: unknown;
     const store = {
+        saveSchema: async () => {},
         transaction: async <T>(operation: () => Promise<T>) => operation(),
         listPushRequests: async () => [],
         referencesFor: async () => [],
@@ -204,6 +212,7 @@ test("global downgrades return content to its original submitter", async () => {
         },
     };
     const library = new LibraryService(store as never);
+    await library.registerSchema(schema(1));
     await library.moveToPersonal(
         { accountId: "admin", role: "admin" },
         entry.id,

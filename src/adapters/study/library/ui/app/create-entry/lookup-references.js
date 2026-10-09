@@ -27,6 +27,10 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
             ({ id }) => id === reference.relation,
         );
         if (!relationship) return null;
+        const linked = suggestion.linkedEntries?.find(
+            ({ key }) => key === reference.entryId,
+        );
+        if (linked?.entry.layer === relationship.targetLayer) return reference;
         const candidates = entries.filter(
             (entry) =>
                 entry.schemaId === schema.id &&
@@ -83,11 +87,16 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
     const pronunciations = (Array.isArray(raw) ? raw : [raw]).filter(
         (value) => typeof value === "string" && value.trim(),
     );
+    const hasPronunciationGroups = (layer.relationships ?? []).some(
+        ({ id, presentationRole }) =>
+            presentationRole === "pronunciation" && referenceGroups[id]?.length,
+    );
     for (const relationship of layer.relationships ?? []) {
         const target = schema.layers?.find(
             ({ id }) => id === relationship.targetLayer,
         );
         if (
+            hasPronunciationGroups ||
             !relationship.grouped ||
             relationship.presentationRole !== "pronunciation" ||
             target?.semanticRole !== "atomicWritingUnit"
@@ -108,8 +117,39 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
         } else if (groups.length && !referenceGroups[relationship.id]?.length)
             unresolvedRelations.add(relationship.id);
     }
+    const linkedEntries = suggestion.linkedEntries?.map(({ key, entry }) => {
+        const targetLayer = schema.layers.find(({ id }) => id === entry.layer);
+        const rootReferences = (entry.references ?? []).filter(
+            ({ entryId }) => entryId === "$root",
+        );
+        const child = resolveLookupReferences(
+            {
+                ...entry,
+                references: (entry.references ?? []).filter(
+                    ({ entryId }) => entryId !== "$root",
+                ),
+            },
+            entries,
+            schema,
+            targetLayer,
+        );
+        if (child.unresolved) unresolvedRelations.add(key);
+        return {
+            key,
+            entry: {
+                ...entry,
+                references: [...child.suggestion.references, ...rootReferences],
+                referenceGroups: child.suggestion.referenceGroups,
+            },
+        };
+    });
     return {
-        suggestion: { ...suggestion, references, referenceGroups },
+        suggestion: {
+            ...suggestion,
+            references,
+            referenceGroups,
+            linkedEntries,
+        },
         unresolved: unresolvedRelations.size > 0,
     };
 }

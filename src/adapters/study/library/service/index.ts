@@ -1,14 +1,21 @@
+import { createLinkedEntryGraph } from "./linked-entries.js";
+import { findContentConflict } from "./content-conflicts.js";
 import { storeContentPackAudio } from "./content-audio.js";
 import {
     LibraryDictionarySearch,
     lookupDictionarySuggestions,
 } from "./dictionary.js";
-import { validateEntryInput, validateEntryFilters } from "./input.js";
+import {
+    validateEntryInput,
+    validateEntryFilters,
+    validateEntryFields,
+    normalizeEntryClass,
+} from "./input.js";
 import {
     alignFormContributions,
     applyFormContributions,
 } from "./form-contributions.js";
-import { localizeDefinition } from "./definitions.js";
+import { localizeDefinition, prepareDefinitionFields } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import { authorizeDeletion, planDeletion } from "./deletion.js";
 import { entryPermissions } from "./permissions.js";
@@ -20,14 +27,12 @@ import {
     validatePendingPublicationEdits,
 } from "./dependencies.js";
 import { traceEntry } from "./trace.js";
-import type { FlowApi } from "@cognis/core";
+import type { FlowApi, ProbeCacheFactory } from "@cognis/core";
 import { randomUUID } from "node:crypto";
-import { canonicalizeLanguageTag } from "../language.js";
 import { inspectContentPack } from "../content-pack.js";
 import {
     findLayer,
     resolveRelationships,
-    validateFields,
     validateLibrarySchema,
     validateReferences,
 } from "../layers.js";
@@ -68,7 +73,6 @@ import type {
     LibraryClassAccess,
     LibraryContentNotifier,
 } from "../contracts.js";
-
 export class LibraryService implements LibraryCapability {
     private readonly dictionary: LibraryDictionarySearch;
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
@@ -78,7 +82,6 @@ export class LibraryService implements LibraryCapability {
         LibraryFormContribution
     >();
     private readonly visibility: LibraryVisibilityService;
-
     constructor(
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
@@ -91,8 +94,9 @@ export class LibraryService implements LibraryCapability {
         private readonly stringLocalization?: StringLocalizationCapability,
         private readonly audioCache?: LibraryAudioCache,
         private readonly notifyNewContent?: LibraryContentNotifier,
+        cacheFactory?: ProbeCacheFactory,
     ) {
-        this.dictionary = new LibraryDictionarySearch(store);
+        this.dictionary = new LibraryDictionarySearch(store, cacheFactory, log);
         this.visibility = new LibraryVisibilityService(
             store,
             this.read.bind(this),
@@ -103,6 +107,7 @@ export class LibraryService implements LibraryCapability {
                     destination,
                     (id) => this.read(actor, id),
                     sourceId,
+                    this.schema(input.schemaId),
                 );
             },
             flow,
@@ -333,6 +338,7 @@ export class LibraryService implements LibraryCapability {
             throw error;
         }
     }
+
     async readContentPackAsset(
         publisher: string,
         packId: string,
@@ -536,7 +542,6 @@ export class LibraryService implements LibraryCapability {
         providerId: string;
         schemaId: string;
         query: string;
-        refresh?: boolean;
     }) {
         const provider = this.lookupProviders.get(input.providerId);
         if (!provider) throw new Error("lookup_provider_not_found");
@@ -546,13 +551,11 @@ export class LibraryService implements LibraryCapability {
             provider,
             schema,
             input.query,
-            input.refresh === true,
             (layer, label) =>
                 this.lookup(provider.id, {
                     schemaId: schema.id,
                     layer,
                     label,
-                    refresh: input.refresh === true,
                 }),
         );
     }
@@ -561,6 +564,31 @@ export class LibraryService implements LibraryCapability {
         actor: LibraryActor,
         raw: LibraryLocation,
         input: LibraryEntryInput,
+    ): Promise<LibraryEntry> {
+        if (!input.linkedEntries?.length)
+            return this.createEntry(actor, raw, input);
+        const location = await this.authorize(actor, raw, true);
+        const language = this.schema(input.schemaId).language;
+        const result = await this.store.transaction(() =>
+            createLinkedEntryGraph(
+                input,
+                location,
+                language,
+                (node, id, candidates) =>
+                    this.createEntry(actor, location, node, id, candidates),
+            ),
+        );
+        if (location.scope === "global")
+            await this.notifyNewContent?.({ entryCount: 1, language });
+        return result;
+    }
+
+    private async createEntry(
+        actor: LibraryActor,
+        raw: LibraryLocation,
+        input: LibraryEntryInput,
+        allocatedId?: string,
+        candidates?: Map<string, LibraryEntry>,
     ): Promise<LibraryEntry> {
         const location = await this.authorize(actor, raw, true);
         await this.flow?.run("study:library:create", {
@@ -574,84 +602,34 @@ export class LibraryService implements LibraryCapability {
         validateEntryInput(input);
         const layer = findLayer(schema, input.layer);
         if (isImmutableLayer(layer)) throw new Error("immutable_layer");
-        if (layer.semanticRole === "definition") {
-            input.hidden = true;
-            input.class = "definition";
-        } else if (layer.semanticRole === "orderedLexicalSequence") {
-            input.class = layer.id;
-        }
+        normalizeEntryClass(input, layer);
 
         const fields = structuredClone(input.fields ?? {});
-        const candidateLocations = [
+        const conflict = await findContentConflict(
+            this.store,
             location,
-            { scope: "global", scopeId: "global" } as const,
-        ];
-        const visibleCandidates = (
-            await Promise.all(
-                candidateLocations.map(
-                    (candidateLocation) =>
-                        this.store.list?.(candidateLocation, {
-                            schemaId: schema.id,
-                            layer: input.layer,
-                        }) ?? Promise.resolve([]),
-                ),
-            )
-        ).flat();
-        const normalizedInput = input.label
-            .trim()
-            .normalize("NFKC")
-            .toLocaleLowerCase();
-        const conflict = visibleCandidates.find(
-            (candidate) =>
-                candidate.label.trim().normalize("NFKC").toLocaleLowerCase() ===
-                normalizedInput,
+            schema.id,
+            input,
         );
         if (conflict) throw new Error(`content_conflict:${conflict.id}`);
-        let entryId: string | undefined;
+        let entryId: string | undefined = allocatedId;
         if (layer.semanticRole === "definition") {
-            const localization = layer.definitionLocalization!;
-            const translations = fields[localization.translationsField];
-            if (
-                !translations ||
-                typeof translations !== "object" ||
-                Array.isArray(translations) ||
-                typeof (translations as Record<string, unknown>).en !==
-                    "string" ||
-                !(translations as Record<string, string>).en.trim()
-            ) {
-                throw new Error("definition_english_required");
-            }
-
-            entryId = randomUUID();
-            const stringKey = `${localization.stringKeyPrefix}:${entryId}`;
-            fields[localization.stringKeyField] = stringKey;
-            if (this.stringLocalization) {
-                const localized = translations as Record<string, string>;
-                for (const requestedLanguage of input.definitionLanguages ??
-                    []) {
-                    const targetLanguage =
-                        canonicalizeLanguageTag(requestedLanguage);
-                    if (localized[targetLanguage]?.trim()) continue;
-                    const translated = await this.stringLocalization.translate({
-                        stringKey,
-                        sourceText: localized.en.trim(),
-                        sourceLanguage: "en",
-                        targetLanguage,
-                    });
-                    if (translated?.trim())
-                        localized[targetLanguage] = translated.trim();
-                }
-            }
+            entryId ??= randomUUID();
+            await prepareDefinitionFields(
+                layer,
+                fields,
+                entryId,
+                input.definitionLanguages ?? [],
+                this.stringLocalization,
+            );
         }
 
-        if (JSON.stringify(fields).length > 100_000)
-            throw new Error("fields_too_large");
-        validateFields(schema, input.layer, fields);
+        validateEntryFields(schema, input.layer, fields);
         const references = input.references ?? [];
         const targets = await validateDependencyVisibility(
             input,
             location,
-            (id) => this.read(actor, id),
+            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
         );
         validateReferences(
             schema,
@@ -676,7 +654,7 @@ export class LibraryService implements LibraryCapability {
             actor.accountId,
             entryId,
         );
-        if (location.scope === "global")
+        if (location.scope === "global" && !candidates && !input.hidden)
             await this.notifyNewContent?.({
                 entryCount: 1,
                 language: schema.language,
@@ -688,6 +666,37 @@ export class LibraryService implements LibraryCapability {
         actor: LibraryActor,
         entryId: string,
         input: LibraryEntryInput,
+    ): Promise<LibraryEntry> {
+        if (!input.linkedEntries?.length)
+            return this.updateEntry(actor, entryId, input);
+        const current = await this.read(actor, entryId);
+        if (!current || !current.canEdit) throw new Error("forbidden");
+        const location = { scope: current.scope, scopeId: current.scopeId };
+        return this.store.transaction(() =>
+            createLinkedEntryGraph(
+                input,
+                location,
+                current.language,
+                (node, id, candidates, root) =>
+                    root
+                        ? this.updateEntry(actor, id, node, candidates)
+                        : this.createEntry(
+                              actor,
+                              location,
+                              node,
+                              id,
+                              candidates,
+                          ),
+                entryId,
+            ),
+        );
+    }
+
+    private async updateEntry(
+        actor: LibraryActor,
+        entryId: string,
+        input: LibraryEntryInput,
+        candidates?: Map<string, LibraryEntry>,
     ): Promise<LibraryEntry> {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
@@ -714,12 +723,7 @@ export class LibraryService implements LibraryCapability {
         input.schemaVersion = schema.version;
         const layer = findLayer(schema, input.layer);
         if (isImmutableLayer(layer)) throw new Error("immutable_layer");
-        if (layer.semanticRole === "definition") {
-            input.hidden = true;
-            input.class = "definition";
-        } else if (layer.semanticRole === "orderedLexicalSequence") {
-            input.class = layer.id;
-        }
+        normalizeEntryClass(input, layer);
 
         const fields = structuredClone(input.fields ?? {});
         for (const field of layer.fields ?? []) {
@@ -747,15 +751,14 @@ export class LibraryService implements LibraryCapability {
                 throw new Error("definition_english_required");
         }
 
-        if (JSON.stringify(fields).length > 100_000)
-            throw new Error("fields_too_large");
-        validateFields(schema, input.layer, fields);
+        validateEntryFields(schema, input.layer, fields);
         const references = input.references ?? [];
         const targets = await validateDependencyVisibility(
             input,
             { scope: current.scope, scopeId: current.scopeId },
-            (id) => this.read(actor, id),
+            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
             entryId,
+            schema,
         );
         validateReferences(
             schema,
@@ -769,7 +772,8 @@ export class LibraryService implements LibraryCapability {
             await this.store.listPushRequests("pending"),
             current.id,
             input,
-            (id) => this.read(actor, id),
+            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
+            schema,
         );
         const updated = await this.store.update(
             entryId,
@@ -872,6 +876,7 @@ export class LibraryService implements LibraryCapability {
             { scope: current.scope, scopeId: current.scopeId },
             (id) => this.read(actor, id),
             current.id,
+            this.schema(current.schemaId),
         );
         validateUpdateProposal(
             current,

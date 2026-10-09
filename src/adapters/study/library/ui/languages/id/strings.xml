@@ -84,7 +84,6 @@
   <string name="gateway.study.library_requests_approved">Disetujui</string>
   <string name="gateway.study.library_requests_rejected">Ditolak</string>
   <string name="gateway.study.library_requests_pending">Tertunda</string>
-  <string name="gateway.study.library_requests_review">Untuk Ditinjau</string>
   <string name="gateway.study.library_optional">Opsional</string>
   <string name="gateway.study.library_composer_text">Input</string>
   <string name="gateway.study.library_composer_match">Maksud Anda?</string>
@@ -167,4 +166,5 @@
   <string name="gateway.study.library_search_results">Hasil Pencarian</string>
   <string name="gateway.study.library_dictionary_cached">Tersimpan di Cognis: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Pencarian kamus gagal. Coba lagi atau pilih penyedia lain.</string>
+  <string name="gateway.study.library_search_results_subtitle">Jelajahi hasil kamus dan buat kartu belajar tertaut</string>
 </resources>

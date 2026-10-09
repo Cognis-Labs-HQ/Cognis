@@ -77,7 +77,6 @@ export interface LibraryCapability {
         providerId: string;
         schemaId: string;
         query: string;
-        refresh?: boolean;
     }): Promise<{
         query: string;
         cached: boolean;

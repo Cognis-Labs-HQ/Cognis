@@ -26,7 +26,6 @@ import { createLibraryVisibilityActions } from "./visibility-actions.js";
 import { bindTransformationInteractions } from "./transformation-interactions.js";
 import { mergeEntryCollectionUpdate } from "./entry-collection.js";
 let activeEntryPopup = null;
-
 export function bindLibraryInteractions(root, context) {
     const {
         i18n,
@@ -155,7 +154,7 @@ export function bindLibraryInteractions(root, context) {
                 return;
             }
             const publish = event.target.closest("[data-library-publish]");
-            if (publish) {
+            if (publish && !publish.disabled) {
                 void visibilityActions.publish(publish.dataset.libraryPublish);
                 return;
             }
@@ -163,7 +162,8 @@ export function bindLibraryInteractions(root, context) {
                 void visibilityActions.withdraw();
                 return;
             }
-            if (event.target.closest("[data-library-move-selection]")) {
+            const move = event.target.closest("[data-library-move-selection]");
+            if (move && !move.disabled) {
                 void visibilityActions.moveToUser();
                 return;
             }

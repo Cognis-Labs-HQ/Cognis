@@ -54,7 +54,9 @@ export async function mount(root, { signal } = {}) {
     );
     let results = [],
         selected = 0,
-        response;
+        response,
+        loading = false,
+        failed = false;
     const entryFor = (result, index) => ({
         ...result,
         id: `dictionary:${index}`,
@@ -65,6 +67,8 @@ export async function mount(root, { signal } = {}) {
     const render =
         () => `<section class="library-dictionary-results" data-library-dictionary-results>
         <h2>${escapeHtml(input.query)}</h2>
+        ${loading ? `<p role="status">${escapeHtml(i18n.t("ui.reuse.loading"))}</p>` : ""}
+        ${failed ? `<p role="alert">${escapeHtml(i18n.t("gateway.study.library_dictionary_error"))}</p>` : ""}
         ${response?.cached ? `<p>${escapeHtml(i18n.t("gateway.study.library_dictionary_cached").replace("{{ time }}", formatDateTime(response.cachedAt)))}</p>` : ""}
         <div class="library-dictionary-cards">${results
             .map((result, index) => {
@@ -113,9 +117,15 @@ export async function mount(root, { signal } = {}) {
                 ${renderDetailFields(
                     Object.fromEntries(
                         visibleDetailFields(layer)
-                            .filter(
-                                (field) => entry.fields[field.id] !== undefined,
-                            )
+                            .filter((field) => {
+                                const value = entry.fields[field.id];
+                                return (
+                                    value !== undefined &&
+                                    value !== null &&
+                                    value !== "" &&
+                                    (!Array.isArray(value) || value.length > 0)
+                                );
+                            })
                             .map((field) => [
                                 field.metadata?.labels?.[
                                     document.documentElement.lang
@@ -126,6 +136,7 @@ export async function mount(root, { signal } = {}) {
                             ]),
                     ),
                 )}
+                ${result.definitions?.length ? `<h4>${escapeHtml(i18n.t("gateway.study.library_definitions"))}</h4>` : ""}
                 <ul>${(result.definitions ?? [])
                     .map(
                         (definition) =>
@@ -155,20 +166,19 @@ export async function mount(root, { signal } = {}) {
                   : ""
         }
     </section>`;
-    const search = async (refresh = false) => {
-        const button = root.querySelector("[data-dictionary-refresh]");
-        if (button) button.disabled = true;
+    const search = async () => {
+        if (loading) return;
+        loading = true;
+        failed = false;
+        root.querySelector("[data-library-dictionary-results]").outerHTML =
+            render();
+
         try {
             if (!selectedProvider)
                 throw new Error("lookup_provider_not_searchable");
-            response = await searchLibraryDictionary({ ...input, refresh });
+            response = await searchLibraryDictionary(input);
             signal?.throwIfAborted();
             results = response.results;
-            const target = root.querySelector(
-                "[data-library-dictionary-results]",
-            );
-            selected = 0;
-            if (target) target.outerHTML = render();
             entries = await loadDictionaryReferences(results, schemas);
             signal?.throwIfAborted();
             results = response.results.map((result) => {
@@ -184,15 +194,23 @@ export async function mount(root, { signal } = {}) {
                 };
             });
             selected = 0;
-            root.querySelector("[data-library-dictionary-results]").outerHTML =
-                render();
         } catch (error) {
-            if (!signal?.aborted)
+            if (!signal?.aborted) {
+                results = [];
+                entries = [];
+                response = undefined;
+                failed = true;
                 showToast(i18n.t("gateway.study.library_dictionary_error"), {
                     variant: "error",
                 });
+            }
         } finally {
-            if (button) button.disabled = false;
+            loading = false;
+            if (!signal?.aborted) {
+                root.querySelector(
+                    "[data-library-dictionary-results]",
+                ).outerHTML = render();
+            }
         }
     };
     applyDocumentTitle(i18n, "gateway.study.library_search_results");
@@ -203,7 +221,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         pageContext: {
             title: i18n.t("gateway.study.library_search_results"),
-            subtitle: "",
+            subtitle: i18n.t("gateway.study.library_search_results_subtitle"),
         },
         elements: [
             {
@@ -213,14 +231,6 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render,
-            },
-        ],
-        toolbar: [
-            {
-                id: "dictionary-refresh",
-                label: i18n.t("ui.reuse.refresh"),
-                render: () =>
-                    `<button class="btn-neutral" type="button" data-dictionary-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button>`,
             },
         ],
         subNavigation: [
@@ -242,6 +252,7 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         async (event) => {
+            if (loading) return;
             const related = event.target.closest("[data-library-entry]");
             if (related) {
                 try {
@@ -278,8 +289,6 @@ export async function mount(root, { signal } = {}) {
                     "[data-library-dictionary-results]",
                 ).outerHTML = render();
             }
-            if (event.target.closest("[data-dictionary-refresh]"))
-                await search(true);
             const create = event.target.closest("[data-dictionary-create]");
             if (create && !create.disabled) {
                 create.disabled = true;

@@ -485,3 +485,113 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
     assert.equal(form.elements.tags.value, "jlpt-n5");
     assert.equal(linked, 1);
 });
+
+test("lookup resolves hidden reading segments without adding duplicate direct Kana groups", async () => {
+    const { resolveLookupReferences } =
+        await import("../ui/app/create-entry/lookup-references.js");
+    const schema = {
+        id: "test",
+        version: 1,
+        layers: [
+            {
+                id: "kanji",
+                relationships: [
+                    {
+                        id: "readings",
+                        targetLayer: "words",
+                        grouped: true,
+                        presentationRole: "pronunciation",
+                    },
+                ],
+            },
+            {
+                id: "words",
+                relationships: [
+                    {
+                        id: "segments",
+                        targetLayer: "words",
+                        grouped: true,
+                        presentationRole: "pronunciation",
+                    },
+                    {
+                        id: "kana",
+                        targetLayer: "characters",
+                        grouped: true,
+                        presentationRole: "pronunciation",
+                    },
+                    {
+                        id: "spelling",
+                        targetLayer: "kanji",
+                        presentationRole: "composition",
+                    },
+                ],
+            },
+            { id: "characters", semanticRole: "atomicWritingUnit" },
+        ],
+    };
+    const reference = {
+        entryId: "temporary-reading",
+        relation: "readings",
+        position: 0,
+    };
+    const suggestion = {
+        fields: { pronunciation: ["きょう"] },
+        referenceGroups: { readings: [[reference]] },
+        linkedEntries: [
+            {
+                key: reference.entryId,
+                entry: {
+                    schemaId: "test",
+                    layer: "words",
+                    label: "きょう",
+                    hidden: true,
+                    fields: { pronunciation: ["きょう"] },
+                    references: [{ entryId: "$root", relation: "spelling" }],
+                    referenceGroups: {
+                        segments: [
+                            [
+                                {
+                                    entryId: "native-reading",
+                                    relation: "segments",
+                                    position: 0,
+                                },
+                            ],
+                        ],
+                    },
+                },
+            },
+        ],
+    };
+    const resolved = resolveLookupReferences(
+        suggestion,
+        [
+            {
+                id: "uuid-reading",
+                sourceRecordId: "native-reading",
+                schemaId: "test",
+                layer: "words",
+                label: "きょう",
+            },
+            {
+                id: "uuid-kana",
+                schemaId: "test",
+                layer: "characters",
+                label: "きょう",
+            },
+        ],
+        schema,
+        schema.layers[0],
+    );
+    assert.equal(resolved.unresolved, false);
+    assert.deepEqual(
+        resolved.suggestion.referenceGroups.readings[0][0],
+        reference,
+    );
+    const child = resolved.suggestion.linkedEntries[0].entry;
+    assert.deepEqual(child.referenceGroups, {
+        segments: [
+            [{ entryId: "uuid-reading", relation: "segments", position: 0 }],
+        ],
+    });
+    assert.equal(child.references[0].entryId, "$root");
+});

@@ -84,7 +84,6 @@
   <string name="gateway.study.library_requests_approved">Approved</string>
   <string name="gateway.study.library_requests_rejected">Rejected</string>
   <string name="gateway.study.library_requests_pending">Pending</string>
-  <string name="gateway.study.library_requests_review">For Review</string>
   <string name="gateway.study.library_optional">Optional</string>
   <string name="gateway.study.library_composer_text">Input</string>
   <string name="gateway.study.library_composer_match">Did you mean?</string>
@@ -167,4 +166,5 @@
   <string name="gateway.study.library_search_results">Search Results</string>
   <string name="gateway.study.library_dictionary_cached">Cached in Cognis: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Dictionary search failed. Try again or choose another provider.</string>
+  <string name="gateway.study.library_search_results_subtitle">Explore dictionary matches and create linked study cards</string>
 </resources>

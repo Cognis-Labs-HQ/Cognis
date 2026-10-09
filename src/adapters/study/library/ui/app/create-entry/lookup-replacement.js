@@ -47,6 +47,7 @@ export function clearLookupValues(
     { preserveComposition = false, preservedRelationshipIds = new Set() } = {},
 ) {
     draft.fields = {};
+    form.libraryLinkedEntries = [];
     form.referenceGroups = Object.fromEntries(
         Object.entries(form.referenceGroups ?? {}).filter(([relation]) =>
             preservedRelationshipIds.has(relation),

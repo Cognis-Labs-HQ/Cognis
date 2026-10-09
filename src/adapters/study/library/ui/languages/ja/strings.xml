@@ -84,7 +84,6 @@
   <string name="gateway.study.library_requests_approved">承認済み</string>
   <string name="gateway.study.library_requests_rejected">却下済み</string>
   <string name="gateway.study.library_requests_pending">保留中</string>
-  <string name="gateway.study.library_requests_review">要確認</string>
   <string name="gateway.study.library_optional">任意</string>
   <string name="gateway.study.library_composer_text">入力</string>
   <string name="gateway.study.library_composer_match">もしかして？</string>
@@ -167,4 +166,5 @@
   <string name="gateway.study.library_search_results">検索結果</string>
   <string name="gateway.study.library_dictionary_cached">Cognis のキャッシュ: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">辞書検索に失敗しました。再試行するか、別の提供元を選択してください。</string>
+  <string name="gateway.study.library_search_results_subtitle">辞書の候補を確認して学習カードを作成</string>
 </resources>

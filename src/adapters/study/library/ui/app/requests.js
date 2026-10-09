@@ -1,3 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { createCollapsibleSectionComposer } from "/static/reuse/collapsible-section-composer.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
@@ -14,6 +16,10 @@ import {
     renderMetadataPills,
     renderScope,
     visibleDetailFields,
+    pronunciationValues,
+    definitionText,
+    isMeaningLayer,
+    relationSection,
 } from "./presentation.js";
 
 export async function loadLibraryRequests(i18n) {
@@ -30,12 +36,64 @@ export async function loadLibraryRequests(i18n) {
 export function filterLibraryRequests(requests, filter, accountId) {
     if (filter === "mine")
         return requests.filter(({ requestedBy }) => requestedBy === accountId);
-    if (filter === "review")
-        return requests.filter(
-            ({ canReview, status }) =>
-                canReview === true && status === "pending",
-        );
     return requests.filter(({ status }) => status === filter);
+}
+
+export async function loadRequestProfiles(requests) {
+    const client = uiCtx.capabilities.get("social:profileUiClient");
+    if (!client) return new Map();
+    const accounts = [
+        ...new Set(
+            requests
+                .flatMap(({ requestedBy, reviewedBy }) => [
+                    requestedBy,
+                    reviewedBy,
+                ])
+                .filter(Boolean),
+        ),
+    ];
+    return new Map(
+        await Promise.all(
+            accounts.map(async (account) => {
+                try {
+                    const response = await client.getProfile(account);
+                    return [
+                        account,
+                        response.ok ? (await response.json()).data : null,
+                    ];
+                } catch (error) {
+                    console.error("Request profile retrieval failed.", {
+                        component: "study-library",
+                        operation: "loadRequestProfiles",
+                        errorName: error?.name || "Error",
+                    });
+                    return [account, null];
+                }
+            }),
+        ),
+    );
+}
+
+function requestPerson(account, role, timestamp, profiles, i18n) {
+    if (!account) return "";
+    const profile = profiles.get(account);
+    const label = profile?.displayName || account;
+    const title =
+        i18n.t(role).replace("{{ account }}", label) +
+        (timestamp ? ` · ${formatDateTime(timestamp)}` : "");
+    const renderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!profile || !renderer)
+        return `<span title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+    const avatar = renderer.buildMarkup({
+        avatarKey: profile.avatarKey,
+        label,
+        colorSeed: account,
+        profileHandle: profile.handle || account,
+        avatarClass: "library-request-avatar",
+        imageClass: "library-request-avatar-image",
+        fallbackClass: "library-request-avatar-initials",
+    });
+    return `<span class="library-request-person" title="${escapeHtml(title)}">${avatar}<a href="/profile/${encodeURIComponent(profile.handle || account)}">${escapeHtml(label)}</a></span>`;
 }
 
 function requestCardPreview(entry, schemas, entries, i18n) {
@@ -45,7 +103,12 @@ function requestCardPreview(entry, schemas, entries, i18n) {
     const layer = layerForEntry(schemas, entry);
     const fields = Object.fromEntries(
         visibleDetailFields(layer)
-            .filter((field) => entry.fields?.[field.id] !== undefined)
+            .filter(
+                (field) =>
+                    field.id !== "pronunciation" &&
+                    field.detail?.renderer !== "badge" &&
+                    entry.fields?.[field.id] !== undefined,
+            )
             .map((field) => [
                 localizedLabel(field.metadata, entry.language) || field.id,
                 field.type === "audio"
@@ -57,25 +120,71 @@ function requestCardPreview(entry, schemas, entries, i18n) {
         ...(entry.references ?? []),
         ...Object.values(entry.referenceGroups ?? {}).flat(2),
     ];
-    const related = references
-        .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-        .filter(Boolean);
-    return `<div class="library-request-preview">
-        ${layer ? renderCardContents(entry, layer, entries, schema, i18n) : `<strong>${escapeHtml(entry.label)}</strong>`}
-        ${layer ? renderMetadataPills(entry, layer) : ""}
-        ${entry.tags?.length ? `<div class="library-metadata-pills">${entry.tags.map((tag) => `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-        <details><summary>${escapeHtml(i18n.t("gateway.study.library_request_details"))}</summary>
-            ${renderDetailFields(fields)}
-            ${related.length ? `<ul>${related.map((card) => `<li>${escapeHtml(card.label)}${card.fields?.translations ? ` — ${escapeHtml(Object.values(card.fields.translations).filter(Boolean).join(" · "))}` : ""}</li>`).join("")}</ul>` : ""}
-        </details>
-    </div>`;
+    const related = [
+        ...new Map(
+            references
+                .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+                .filter(Boolean)
+                .map((card) => [card.id, card]),
+        ).values(),
+    ];
+    const definitions = related.filter((card) =>
+        isMeaningLayer(layerForEntry(schemas, card)),
+    );
+    const meaning = definitions
+        .map((card) =>
+            definitionText(
+                card,
+                layerForEntry(schemas, card),
+                document.documentElement.lang,
+            ),
+        )
+        .filter(Boolean)
+        .join(" · ");
+    const pronunciation = pronunciationValues(entry).find(
+        (value) => value !== entry.label,
+    );
+    const relationGroups = (layer?.relationships ?? [])
+        .map((relationship) => {
+            const ids = new Set(
+                references
+                    .filter(({ relation }) => relation === relationship.id)
+                    .map(({ entryId }) => entryId),
+            );
+            const cards = related.filter(({ id }) => ids.has(id));
+            if (
+                !cards.length ||
+                cards.every((card) =>
+                    isMeaningLayer(layerForEntry(schemas, card)),
+                )
+            )
+                return "";
+            return relationSection(
+                localizedLabel(relationship.metadata, entry.language) ||
+                    relationship.id,
+                cards,
+                "",
+            );
+        })
+        .join("");
+    return createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("gateway.study.library_request_details"),
+    }).render([
+        {
+            id: entry.id,
+            className: "library-request-preview",
+            titleHtml: `<span class="library-request-card-summary"><strong>${escapeHtml(entry.label)}</strong>${pronunciation ? `<span class="library-card-pronunciation">${escapeHtml(pronunciation)}</span>` : ""}${meaning ? `<span class="library-card-definition">${escapeHtml(meaning)}</span>` : ""}</span>`,
+            contentHtml: `${layer ? renderMetadataPills(entry, layer) : ""}${renderDetailFields(fields)}${relationGroups}`,
+        },
+    ]);
 }
 
 export function renderLibraryRequests(
     requests,
     i18n,
     filter = "mine",
-    { schemas = [], entries = [] } = {},
+    { schemas = [], entries = [], profiles = new Map() } = {},
 ) {
     const visible = filterLibraryRequests(
         requests,
@@ -94,10 +203,8 @@ export function renderLibraryRequests(
                       const status = i18n.t(
                           `gateway.study.library_requests_${request.status}`,
                       );
-                      const kind = i18n.t(
-                          `gateway.study.library_request_${request.kind ?? "promotion"}`,
-                      );
-                      const canAct = request.status === "pending";
+                      const canAct =
+                          filter === "pending" && request.status === "pending";
                       const previewEntries = request.source
                           ? [
                                 ...entries.filter(
@@ -114,10 +221,10 @@ export function renderLibraryRequests(
                             }
                           : null;
                       return `<article class="library-request" data-library-request="${escapeHtml(request.id)}">
-            <header class="library-request-header"><strong>${escapeHtml(kind)}</strong><span class="library-metadata-pill">${escapeHtml(status)}</span></header>
+            <header class="library-request-header"><div class="library-request-meta">${requestPerson(request.requestedBy, "gateway.study.library_request_by", request.requestedAt, profiles, i18n)}${requestPerson(request.reviewedBy, "gateway.study.library_request_reviewed_by", null, profiles, i18n)}</div><span class="library-metadata-pill"${request.reviewedAt ? ` title="${escapeHtml(formatDateTime(request.reviewedAt))}" tabindex="0"` : ""}>${escapeHtml(status)}</span></header>
             <div class="library-request-destination">${renderScope(request.destination, i18n, destination)}<span>${escapeHtml(i18n.t("gateway.study.library_relocate_to"))} ${escapeHtml(destination)}${request.destination.scope === "class" ? ` · ${escapeHtml(request.destination.scopeId)}` : ""}</span></div>
             <div class="library-request-previews">${proposed ? `<section><h3>${escapeHtml(i18n.t("gateway.study.library_request_current"))}</h3>${requestCardPreview(request.source, schemas, previewEntries, i18n)}</section><section><h3>${escapeHtml(i18n.t("gateway.study.library_request_proposed"))}</h3>${requestCardPreview(proposed, schemas, previewEntries, i18n)}</section>` : requestCardPreview(request.source, schemas, previewEntries, i18n)}</div>
-            <div class="library-request-meta"><span>${escapeHtml(i18n.t("gateway.study.library_request_by").replace("{{ account }}", request.requestedBy))}</span>${request.requestedAt ? `<time datetime="${escapeHtml(request.requestedAt)}">${escapeHtml(formatDateTime(request.requestedAt))}</time>` : ""}${request.reviewedBy ? `<span>${escapeHtml(i18n.t("gateway.study.library_request_reviewed_by").replace("{{ account }}", request.reviewedBy))}</span>` : ""}${request.reviewedAt ? `<time datetime="${escapeHtml(request.reviewedAt)}">${escapeHtml(formatDateTime(request.reviewedAt))}</time>` : ""}</div>
+
             <footer class="library-request-actions">${canAct && request.canReview ? `<button class="btn-confirm" type="button" data-library-review="approved">${escapeHtml(i18n.t("gateway.study.library_approve"))}</button><button class="btn-cancel" type="button" data-library-review="rejected">${escapeHtml(i18n.t("gateway.study.library_reject"))}</button>` : ""}${canAct && request.canWithdraw ? `<button class="btn-neutral" type="button" data-library-withdraw-request>${escapeHtml(i18n.t("gateway.study.library_withdraw"))}</button>` : ""}</footer>
         </article>`;
                   })
@@ -135,24 +242,6 @@ export function bindLibraryRequestReviews(
     root.addEventListener(
         "click",
         async (event) => {
-            const refresh = event.target.closest(
-                "[data-library-refresh-requests]",
-            );
-            if (refresh) {
-                if (refresh.disabled) return;
-                refresh.disabled = true;
-                try {
-                    await reload();
-                } catch {
-                    showToast(
-                        i18n.t("gateway.study.library_requests_load_error"),
-                        { variant: "error" },
-                    );
-                } finally {
-                    refresh.disabled = false;
-                }
-                return;
-            }
             const review = event.target.closest("[data-library-review]");
             const withdraw = event.target.closest(
                 "[data-library-withdraw-request]",

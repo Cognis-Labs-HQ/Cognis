@@ -15,6 +15,7 @@ import {
     renderMetadataPills,
     renderScope,
     section,
+    visibleDetailFields,
 } from "./presentation.js";
 import {
     resolveCompositionDependants,
@@ -91,7 +92,7 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             .map(({ id }) => id),
     ]);
     const genericFields = Object.fromEntries(
-        (layer?.fields ?? [])
+        visibleDetailFields(layer)
             .filter(
                 (field) =>
                     !reserved.has(field.id) &&

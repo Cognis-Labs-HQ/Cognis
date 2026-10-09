@@ -54,6 +54,14 @@ function scopeContext(result = "personal") {
     return { context, popups };
 }
 
+const selectionPolicy = {};
+vm.runInNewContext(
+    readFileSync(new URL("../ui/app/selection.js", import.meta.url), "utf8")
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, ""),
+    selectionPolicy,
+);
+
 test("deletion confirmation includes restricted and grouped dependants but leaves detached cards", async () => {
     const records = [
         card("root"),
@@ -173,6 +181,8 @@ test("publication assistance submits only valid leaf dependencies, including hid
     const requests = [];
     const publications = [];
     Object.assign(context, {
+        relocationState: selectionPolicy.relocationState,
+        updateSelectionActions() {},
         selectedEntryIds: () => [root.id],
         setSelectionMode() {},
         showToast() {},
@@ -200,6 +210,7 @@ test("publication assistance submits only valid leaf dependencies, including hid
         root: { querySelectorAll: () => [] },
         getEntries: () => [root, component, definition],
         requests,
+        getLocations: () => ({}),
         i18n: { t: (key) => key },
         getLocations: () => ({ readable: [] }),
     });

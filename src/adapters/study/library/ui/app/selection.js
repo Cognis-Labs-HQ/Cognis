@@ -57,6 +57,35 @@ export function selectionForCard(root, card) {
     );
 }
 
+export function relocationState(selected, destination, requests = []) {
+    const ranks = { user: 0, class: 1, global: 2 };
+    const directions = selected.map(
+        (entry) => ranks[destination] - ranks[entry.scope],
+    );
+    return {
+        applicable: directions.some((direction) => direction !== 0),
+        downgrade:
+            directions.length > 0 &&
+            directions.every((direction) => direction < 0),
+        disabled:
+            !selected.length ||
+            directions.some(
+                (direction) => !Number.isFinite(direction) || direction === 0,
+            ) ||
+            (directions.some((direction) => direction > 0) &&
+                directions.some((direction) => direction < 0)) ||
+            selected.some(
+                (entry) =>
+                    !canDeleteEntry(entry) ||
+                    requests.some(
+                        (request) =>
+                            request.sourceEntryId === entry.id &&
+                            request.status === "pending",
+                    ),
+            ),
+    };
+}
+
 export function updateSelectionActions(root, entries, requests, locations) {
     const ids = selectedEntryIds(root);
     const selected = entries.filter(({ id }) => ids.includes(id));
@@ -67,32 +96,31 @@ export function updateSelectionActions(root, entries, requests, locations) {
                   request.sourceEntryId === entry.id && request.canWithdraw,
           )
         : null;
-    const canPublish =
-        entry?.scope === "user" && canDeleteEntry(entry) && !pending;
-    const globalOption = root.querySelector('[data-library-publish="global"]');
-    if (globalOption) globalOption.hidden = !canPublish;
-    const classOption = root.querySelector('[data-library-publish="class"]');
-    if (classOption)
-        classOption.hidden = !(
-            canPublish &&
-            (locations?.readable ?? []).some(({ scope }) => scope === "class")
+    const hasClasses = (locations?.readable ?? []).some(
+        ({ scope }) => scope === "class",
+    );
+    for (const scope of ["global", "class", "user"]) {
+        const button = root.querySelector(
+            scope === "user"
+                ? "[data-library-move-selection]"
+                : `[data-library-publish="${scope}"]`,
         );
+        if (!button) continue;
+        const state = relocationState(selected, scope, requests);
+        button.hidden = !state.applicable || (scope === "class" && !hasClasses);
+        button.disabled = state.disabled;
+        button.classList.toggle("btn-cancel", state.downgrade);
+        button.classList.toggle("btn-confirm", !state.downgrade);
+    }
     const withdraw = root.querySelector("[data-library-withdraw-selection]");
     if (withdraw) {
         withdraw.hidden = !pending;
         withdraw.dataset.libraryRequestId = pending?.id ?? "";
     }
-    const moveToUser = root.querySelector("[data-library-move-selection]");
-    if (moveToUser)
-        moveToUser.hidden = !(
-            entry &&
-            entry.scope !== "user" &&
-            canDeleteEntry(entry) &&
-            !entry.createdBy?.startsWith("content-pack:")
-        );
     const relocation = root.querySelector("[data-library-relocate-actions]");
     if (relocation)
-        relocation.hidden = !canPublish && moveToUser?.hidden !== false;
+        relocation.hidden =
+            !selected.length || selected.every((entry) => entry.protected);
     const deletion = root.querySelector("[data-library-delete-selection]");
     if (deletion)
         deletion.hidden =

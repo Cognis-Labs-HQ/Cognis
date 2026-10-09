@@ -4,6 +4,7 @@ import type {
     LibraryEntryInput,
     LibraryLocation,
     LibraryReferenceInput,
+    LibrarySchema,
 } from "../types.js";
 export function allInputReferences(
     input: LibraryEntryInput,
@@ -62,16 +63,42 @@ export async function validateDependencyVisibility(
     destination: LibraryLocation,
     read: (id: string) => Promise<LibraryEntry | null>,
     sourceId?: string,
+    schema?: LibrarySchema,
 ): Promise<Map<string, LibraryEntry>> {
     const pending = allInputReferences(input).map(({ entryId }) => ({
         id: entryId,
         location: destination,
+        from: "",
+        relation: "",
     }));
     const visited = new Set<string>();
     const targets = new Map<string, LibraryEntry>();
     while (pending.length) {
-        const { id, location } = pending.pop()!;
-        if (id === sourceId) throw new Error("reference_cycle");
+        const { id, location, from, relation } = pending.pop()!;
+        if (id === sourceId) {
+            const parent = targets.get(from);
+            const backlink = schema?.layers
+                .find(({ id }) => id === parent?.layer)
+                ?.relationships?.find(({ id }) => id === relation);
+            const readingEdge = allInputReferences(input).find(
+                ({ entryId, relation: edge }) =>
+                    entryId === from &&
+                    schema?.layers
+                        .find(({ id }) => id === input.layer)
+                        ?.relationships?.some(
+                            ({ id, presentationRole }) =>
+                                id === edge &&
+                                presentationRole === "pronunciation",
+                        ),
+            );
+            if (
+                parent?.hidden &&
+                backlink?.presentationRole === "composition" &&
+                readingEdge
+            )
+                continue;
+            throw new Error("reference_cycle");
+        }
         const key = `${id}:${location.scope}:${location.scopeId}`;
         if (visited.has(key)) continue;
         visited.add(key);
@@ -81,8 +108,10 @@ export async function validateDependencyVisibility(
             throw new Error("reference_visibility_too_low");
         targets.set(id, target);
         pending.push(
-            ...allInputReferences(target).map(({ entryId }) => ({
+            ...allInputReferences(target).map(({ entryId, relation }) => ({
                 id: entryId,
+                from: target.id,
+                relation,
                 location: { scope: target.scope, scopeId: target.scopeId },
             })),
         );
@@ -106,6 +135,7 @@ export async function validatePendingPublicationEdits(
     entryId: string,
     input: LibraryEntryInput,
     read: (id: string) => Promise<LibraryEntry | null>,
+    schema?: LibrarySchema,
 ): Promise<void> {
     for (const request of requests) {
         if (
@@ -117,6 +147,7 @@ export async function validatePendingPublicationEdits(
                 request.destination,
                 read,
                 entryId,
+                schema,
             );
     }
 }

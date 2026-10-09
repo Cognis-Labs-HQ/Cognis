@@ -80,7 +80,12 @@ test("saving dictionary results removes expired cache rows before upserting", as
             return { rows: [] };
         },
     };
-    await new LibraryStore(database).saveDictionaryCache("query", []);
+    await new LibraryStore(database).saveDictionaryCache("query", {
+        value: [],
+        probedAt: Date.now(),
+        publishedAt: Date.now(),
+        expiresAt: Date.now() + 86400000,
+    });
     const cleanup = commands[0] as {
         option: string;
         table: string;

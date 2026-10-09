@@ -1,3 +1,4 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
@@ -9,13 +10,10 @@ import {
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
-    isAdminScope,
-    isTeacherScope,
-} from "/static/gateways/study/ui/language.js";
-import {
     bindLibraryRequestReviews,
     loadLibraryRequests,
     renderLibraryRequests,
+    loadRequestProfiles,
 } from "../requests.js";
 import { loadLibrary } from "../data.js";
 import { fetchLibraryPushRequests } from "/static/gateways/study/ui/library-client.js";
@@ -35,8 +33,9 @@ export async function mount(root, { signal } = {}) {
     ]);
     applyDocumentTitle(i18n, "gateway.study.library_requests");
     const preview = await loadLibrary(model.selectedLanguageCode, i18n);
+    preview.profiles = await loadRequestProfiles(requests);
     let activeFilter = requests.some(({ canReview }) => canReview)
-        ? "review"
+        ? "pending"
         : "mine";
     const render = () => {
         const list = root.querySelector("[data-library-requests]");
@@ -47,6 +46,7 @@ export async function mount(root, { signal } = {}) {
                 activeFilter,
                 preview,
             );
+        uiCtx.capabilities.get("ui:profileAvatarRenderer")?.hydrate(root);
         root.querySelector(
             'a[href="/study/library/requests"]',
         )?.classList.toggle(
@@ -59,10 +59,10 @@ export async function mount(root, { signal } = {}) {
     const reload = async () => {
         const fresh = await fetchLibraryPushRequests();
         requests.splice(0, requests.length, ...fresh);
+        preview.profiles = await loadRequestProfiles(requests);
         render();
     };
     const filters = ["mine", "pending", "approved", "rejected", "withdrawn"];
-    if (isAdminScope() || isTeacherScope()) filters.push("review");
     const filterMenu = createSideMenu({
         groups: [
             {
@@ -109,12 +109,6 @@ export async function mount(root, { signal } = {}) {
         },
         toolbar: [
             {
-                id: "library-request-refresh",
-                label: i18n.t("ui.reuse.refresh"),
-                render: () =>
-                    `<button class="btn-neutral" type="button" data-library-refresh-requests>${i18n.t("ui.reuse.refresh")}</button>`,
-            },
-            {
                 id: "library-request-filters",
                 label: i18n.t("gateway.study.library_requests"),
                 render: () => filterMenu.render(),
@@ -138,6 +132,19 @@ export async function mount(root, { signal } = {}) {
     filterMenu.mount(root, { signal });
     bindStudySubNavigation(root, { signal });
     bindLibraryRequestReviews(root, requests, { i18n, signal, render, reload });
+    uiCtx.capabilities.get("ui:profileAvatarRenderer")?.hydrate(root);
+    root.addEventListener(
+        "keydown",
+        (event) => {
+            const toggle = event.target.closest("[data-details-toggle]");
+            if (toggle && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                const details = toggle.closest("details");
+                details.open = !details.open;
+            }
+        },
+        { signal },
+    );
 }
 
 await mountWhenDirect(mount);

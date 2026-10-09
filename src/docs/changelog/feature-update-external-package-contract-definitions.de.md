@@ -532,6 +532,8 @@ Administratoren und Eigentümer verschieben persönliche Karten direkt in berech
 
 ## Commits
 
+- [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
+
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
 - [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
 - [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
@@ -674,3 +676,17 @@ Die Studiennavigation fordert nur offene Prüfungen an; die Anfrageseite behält
 Die Wörterbuchsuche bleibt mit einem kompakten Suchsymbol in einer Zeile. Ausstehende Prüfungen werden durch die Akzent-Unterstreichung der Navigation statt durch einen roten Rahmen angezeigt.
 
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+## Stabile Wörterbuchsuche
+
+Jisho lädt auf Host-Anfragen aktuelle Wort- und Kanji-Daten. Exakte Wort- und Lesungstreffer stehen vor verwandten Treffern, bevorzugt in Kana geschriebene Einträge behalten diese Form, und reine Wikipedia-Titel werden ausgeschlossen. Fehlende Lesungen werden weder zu Definitionen noch zu erfundenen Aussprachen. Definitionen und Quelldaten bleiben getrennt; sämtliche Cacheregeln liegen bei Cognis.
+
+Cognis Core verwaltet den Wörterbuchcache über `core:cache`. Eine gespeicherte Anfrage wird nach einer Stunde kalt; bei der nächsten Nutzung prüft Cognis den Anbieter auf Änderungen. Geänderte Ergebnisse bleiben bis zur Zwölf-Stunden-Grenze vorgemerkt, unveränderte Inhalte bleiben erhalten. Gleichzeitige Anfragen teilen eine Prüfung; fehlgeschlagene Prüfungen behalten das letzte erfolgreiche Ergebnis. Der Zustand übersteht Neustarts. Module laden Anbieterdaten, planen aber weder Anfragen noch eigene Antwortcaches. Jisho bietet keinen schlanken Änderungsfeed, daher benötigt eine Prüfung die normale Suchantwort. Es gibt keine manuelle Aktualisierungsschaltfläche. Aussprache- und Kartenlinks werden stets anhand aktuell zugänglicher Inhalte aufgelöst.
+
+## Klare Prüfung und Verschiebung
+
+Meine Anfragen zeigt alle eingereichten Status nur lesend. Ausstehend ist die einzige Prüfwarteschlange. Kopfzeilen zeigen Profilbilder und Links für Antragsteller und Prüfer; der Entscheidungszeitpunkt steht am Statuskennzeichen. Kartentitel, primäre Aussprache und Definition bilden eine aufklappbare Zusammenfassung; verwandte Karten sind nach Beziehung gruppiert. Sichtbarkeitseinschränkungen verwenden den Abbrechen-Stil. Gegensätzliche Verschiebungsrichtungen oder unveränderte Ziele deaktivieren die Schaltfläche, bis die widersprüchliche Auswahl entfernt wird.
+
+## Lesungsgraphen aus dem Wörterbuch
+
+Wörterbuch-Quelldaten bleiben unsichtbare Metadaten in Formularen und Detailansichten. Importierte Aussprachen verwenden verborgene Vokabel-Lesungen im selben Bereich wie ihre übergeordnete Karte. Kanji mit mehreren Lesungen erhalten je einen verborgenen Datensatz mit Titelverweis zum Kanji und geordneten Kana-Verweisen; Kanji mit einer Lesung verweisen direkt auf Kana. Vollständige Wortlesungen verwenden verfügbare passende Kanji-Lesungssegmente und verbleibende Kana. Definitionen werden direkt mit den verborgenen Lesungen verknüpft. Cognis löst Anbieteridentitäten auf und speichert den Graphen atomar mit normaler Feld-, Ebenen-, Abhängigkeits- und ACL-Prüfung. Zeichen und Partikeln bleiben anbieterverwaltet. Redundante Katakana-Wiederholungen einer gleichwertigen Hiragana-Lesung werden herausgefiltert, sofern das Wörterbuch keine entsprechende Katakana-Schreibweise angibt; verbindliche On-Lesungen und echte Lehnwortlesungen bleiben erhalten.

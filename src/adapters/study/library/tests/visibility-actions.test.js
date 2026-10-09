@@ -10,9 +10,22 @@ const source = readFileSync(
     .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
     .replace(/\bexport /g, "");
 
+const selectionPolicy = {};
+vm.runInNewContext(
+    readFileSync(new URL("../ui/app/selection.js", import.meta.url), "utf8")
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, ""),
+    selectionPolicy,
+);
+
 test("moving an owned shared card retains the returned user card and updated permissions", async () => {
     for (const owned of [true, false]) {
-        const entry = { id: "shared", scope: "global", createdBy: "author" };
+        const entry = {
+            id: "shared",
+            scope: "global",
+            createdBy: "author",
+            canDelete: true,
+        };
         const moved = {
             ...entry,
             scope: "user",
@@ -23,6 +36,8 @@ test("moving an owned shared card retains the returned user card and updated per
         let entries = [entry];
         let rendered;
         const context = {
+            relocationState: selectionPolicy.relocationState,
+            updateSelectionActions() {},
             selectedEntryIds: () => [entry.id],
             moveLibraryEntryToPersonal: async (id) => {
                 assert.equal(id, entry.id);
