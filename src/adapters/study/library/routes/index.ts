@@ -1,5 +1,6 @@
+import { libraryFailure } from "./failures.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readJson } from "../../../../api/reuse/read-json.js";
+import { readJson as readRequestJson } from "../../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -11,6 +12,19 @@ import type {
     LibraryPushRequest,
 } from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
+
+async function readJson(req: IncomingMessage): Promise<unknown> {
+    try {
+        const body = await readRequestJson(req);
+        if (!body || typeof body !== "object" || Array.isArray(body))
+            throw new Error("invalid_request_json");
+        return body;
+    } catch (error) {
+        if (error instanceof SyntaxError)
+            throw new Error("invalid_request_json");
+        throw error;
+    }
+}
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { "content-type": "application/json" });
@@ -385,6 +399,16 @@ export function createLibraryRoutes(
                     providerId: string;
                     entry: Parameters<LibraryCapability["lookup"]>[1];
                 };
+                if (
+                    !body ||
+                    typeof body.providerId !== "string" ||
+                    !body.providerId.trim() ||
+                    !body.entry ||
+                    typeof body.entry.schemaId !== "string" ||
+                    typeof body.entry.layer !== "string" ||
+                    typeof body.entry.label !== "string"
+                )
+                    throw new Error("invalid_lookup_request");
                 sendJson(res, 200, {
                     data: await library.lookup(body.providerId, body.entry),
                 });
@@ -526,31 +550,21 @@ export function createLibraryRoutes(
             }
             return false;
         } catch (error) {
-            const code =
-                error instanceof Error ? error.message : "request_failed";
-            const status =
-                code === "forbidden"
-                    ? 403
-                    : code.startsWith("content_conflict:")
-                      ? 409
-                      : code === "not_found" || code === "entry_not_found"
-                        ? 404
-                        : 400;
+            const failure = libraryFailure(error);
             await log?.("error", "Library request failed.", {
                 component: "study-library",
                 operation: req.method ?? "unknown",
                 path: url.pathname,
                 accountId: actor.accountId,
-                code,
+                code: failure.code,
+                errorName: error instanceof Error ? error.name : "Error",
             });
-            sendJson(res, status, {
+            sendJson(res, failure.status, {
                 error: {
-                    code: code.startsWith("content_conflict:")
-                        ? "content_conflict"
-                        : code,
+                    code: failure.code,
                     message: "Library request could not be completed",
-                    ...(code.startsWith("content_conflict:")
-                        ? { conflictEntryId: code.slice(code.indexOf(":") + 1) }
+                    ...(failure.conflictEntryId
+                        ? { conflictEntryId: failure.conflictEntryId }
                         : {}),
                 },
             });

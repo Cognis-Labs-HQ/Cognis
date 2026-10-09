@@ -1,3 +1,5 @@
+import { runOperation } from "../reuse/operation.js";
+import { LibraryEntryWriter } from "./entries.js";
 import { createLinkedEntryGraph } from "./linked-entries.js";
 import { findContentConflict } from "./content-conflicts.js";
 import { storeContentPackAudio } from "./content-audio.js";
@@ -5,17 +7,12 @@ import {
     LibraryDictionarySearch,
     lookupDictionarySuggestions,
 } from "./dictionary.js";
-import {
-    validateEntryInput,
-    validateEntryFilters,
-    validateEntryFields,
-    normalizeEntryClass,
-} from "./input.js";
+import { validateEntryInput, validateEntryFilters } from "./input.js";
 import {
     alignFormContributions,
     applyFormContributions,
 } from "./form-contributions.js";
-import { localizeDefinition, prepareDefinitionFields } from "./definitions.js";
+import { localizeDefinition } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import { authorizeDeletion, planDeletion } from "./deletion.js";
 import { entryPermissions } from "./permissions.js";
@@ -24,25 +21,19 @@ import {
     normalizeLocation,
     validateDependencyVisibility,
     validateEntrySelection,
-    validatePendingPublicationEdits,
 } from "./dependencies.js";
 import { traceEntry } from "./trace.js";
 import type { FlowApi, ProbeCacheFactory } from "@cognis/core";
-import { randomUUID } from "node:crypto";
 import { inspectContentPack } from "../content-pack.js";
 import {
     findLayer,
     resolveRelationships,
     validateLibrarySchema,
-    validateReferences,
 } from "../layers.js";
 import { LibraryStore } from "../store.js";
 import { LibraryAudioCache } from "../audio-cache.js";
 import { LibraryVisibilityService } from "../visibility.js";
-import {
-    isImmutableEntry as immutableEntry,
-    isImmutableLayer,
-} from "../immutability.js";
+import { isImmutableEntry as immutableEntry } from "../immutability.js";
 import type {
     LibraryAsset,
     LibraryEntry,
@@ -82,6 +73,7 @@ export class LibraryService implements LibraryCapability {
         LibraryFormContribution
     >();
     private readonly visibility: LibraryVisibilityService;
+    private readonly writer: LibraryEntryWriter;
     constructor(
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
@@ -96,6 +88,17 @@ export class LibraryService implements LibraryCapability {
         private readonly notifyNewContent?: LibraryContentNotifier,
         cacheFactory?: ProbeCacheFactory,
     ) {
+        this.writer = new LibraryEntryWriter({
+            store,
+            flow,
+            schema: (id, version) =>
+                this.schemaWithFormConstructors(this.schema(id, version)),
+            authorize: this.authorize.bind(this),
+            read: this.read.bind(this),
+            entryWithPermissions: this.entryWithPermissions.bind(this),
+            stringLocalization,
+            notifyNewContent,
+        });
         this.dictionary = new LibraryDictionarySearch(store, cacheFactory, log);
         this.visibility = new LibraryVisibilityService(
             store,
@@ -309,9 +312,20 @@ export class LibraryService implements LibraryCapability {
                 this.assertSchemaVersionAvailable(plan.schema);
             }
 
-            await this.flow?.run("study:library:ingest", { plan });
-            await storeContentPackAudio(plan, this.audioCache);
-            const receipt = await this.store.ingestContentPack(plan);
+            let receipt!: LibraryContentPackReceipt;
+            await runOperation(
+                this.flow,
+                "study:library:ingest",
+                { plan },
+                {
+                    stage: async () => {
+                        await storeContentPackAudio(plan, this.audioCache);
+                    },
+                    persist: async () => {
+                        receipt = await this.store.ingestContentPack(plan);
+                    },
+                },
+            );
             if (receipt.newRecordCount > 0)
                 await this.notifyNewContent?.({
                     entryCount: receipt.newRecordCount,
@@ -490,18 +504,23 @@ export class LibraryService implements LibraryCapability {
             "schemaId" | "schemaVersion" | "layer" | "label"
         >,
     ): Promise<LibraryResolutionProposal[]> {
-        await this.flow?.run("study:library:resolve", input);
         const location = await this.authorize(actor, raw, false);
         const schema = this.schemaWithFormConstructors(
             this.schema(input.schemaId, input.schemaVersion),
         );
         findLayer(schema, input.layer);
-        return resolveRelationships(
-            schema,
-            input.layer,
-            input.label,
-            await this.store.list(location, { schemaId: schema.id }),
-        );
+        let proposals!: ReturnType<typeof resolveRelationships>;
+        await runOperation(this.flow, "study:library:resolve", input, {
+            propose: async () => {
+                proposals = resolveRelationships(
+                    schema,
+                    input.layer,
+                    input.label,
+                    await this.store.list(location, { schemaId: schema.id }),
+                );
+            },
+        });
+        return proposals;
     }
 
     async localizeDefinition(request: LibraryDefinitionLocalizationRequest) {
@@ -515,19 +534,33 @@ export class LibraryService implements LibraryCapability {
             "schemaId" | "schemaVersion" | "layer" | "label"
         > & { refresh?: boolean },
     ): Promise<LibraryLookupSuggestion[]> {
-        await this.flow?.run("study:library:lookup", input);
+        if (
+            !input ||
+            typeof input.schemaId !== "string" ||
+            typeof input.layer !== "string" ||
+            typeof input.label !== "string" ||
+            !input.label.trim() ||
+            input.label.length > 100
+        )
+            throw new Error("invalid_lookup_request");
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
         const selectedProvider = this.lookupProviders.get(providerId);
         if (!selectedProvider || !selectedProvider.supports(schema, layer))
             throw new Error("lookup_provider_not_found");
-        return lookupDictionarySuggestions(
-            selectedProvider,
-            schema,
-            layer,
-            input.label,
-            input.refresh === true,
-        );
+        let suggestions!: LibraryLookupSuggestion[];
+        await runOperation(this.flow, "study:library:lookup", input, {
+            lookup: async () => {
+                suggestions = await lookupDictionarySuggestions(
+                    selectedProvider,
+                    schema,
+                    layer,
+                    input.label,
+                    input.refresh === true,
+                );
+            },
+        });
+        return suggestions;
     }
 
     searchableProviders(language?: string) {
@@ -546,18 +579,31 @@ export class LibraryService implements LibraryCapability {
         const provider = this.lookupProviders.get(input.providerId);
         if (!provider) throw new Error("lookup_provider_not_found");
         const schema = this.schema(input.schemaId);
-        await this.flow?.run("study:library:search", input);
-        return this.dictionary.search(
-            provider,
-            schema,
-            input.query,
-            (layer, label) =>
-                this.lookup(provider.id, {
-                    schemaId: schema.id,
-                    layer,
-                    label,
-                }),
-        );
+        let result!: Awaited<ReturnType<LibraryDictionarySearch["search"]>>;
+        await runOperation(this.flow, "study:library:search", input, {
+            validate: () => {
+                if (
+                    typeof input.query !== "string" ||
+                    !input.query.trim() ||
+                    input.query.length > 100
+                )
+                    throw new Error("invalid_query");
+            },
+            search: async () => {
+                result = await this.dictionary.search(
+                    provider,
+                    schema,
+                    input.query,
+                    (layer, label) =>
+                        this.lookup(provider.id, {
+                            schemaId: schema.id,
+                            layer,
+                            label,
+                        }),
+                );
+            },
+        });
+        return result;
     }
 
     async create(
@@ -565,8 +611,13 @@ export class LibraryService implements LibraryCapability {
         raw: LibraryLocation,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry> {
-        if (!input.linkedEntries?.length)
-            return this.createEntry(actor, raw, input);
+        validateEntryInput(input);
+        if (!input.linkedEntries?.length) {
+            const operation = () => this.writer.create(actor, raw, input);
+            return this.store.transaction
+                ? this.store.transaction(operation)
+                : operation();
+        }
         const location = await this.authorize(actor, raw, true);
         const language = this.schema(input.schemaId).language;
         const result = await this.store.transaction(() =>
@@ -575,7 +626,16 @@ export class LibraryService implements LibraryCapability {
                 location,
                 language,
                 (node, id, candidates) =>
-                    this.createEntry(actor, location, node, id, candidates),
+                    this.writer.create(actor, location, node, id, candidates),
+                undefined,
+                (node) =>
+                    findContentConflict(
+                        this.store,
+                        location,
+                        node.schemaId,
+                        node,
+                        this.schema(node.schemaId),
+                    ),
             ),
         );
         if (location.scope === "global")
@@ -583,92 +643,18 @@ export class LibraryService implements LibraryCapability {
         return result;
     }
 
-    private async createEntry(
-        actor: LibraryActor,
-        raw: LibraryLocation,
-        input: LibraryEntryInput,
-        allocatedId?: string,
-        candidates?: Map<string, LibraryEntry>,
-    ): Promise<LibraryEntry> {
-        const location = await this.authorize(actor, raw, true);
-        await this.flow?.run("study:library:create", {
-            actor,
-            location,
-            entry: input,
-        });
-        const schema = this.schemaWithFormConstructors(
-            this.schema(input.schemaId, input.schemaVersion),
-        );
-        validateEntryInput(input);
-        const layer = findLayer(schema, input.layer);
-        if (isImmutableLayer(layer)) throw new Error("immutable_layer");
-        normalizeEntryClass(input, layer);
-
-        const fields = structuredClone(input.fields ?? {});
-        const conflict = await findContentConflict(
-            this.store,
-            location,
-            schema.id,
-            input,
-        );
-        if (conflict) throw new Error(`content_conflict:${conflict.id}`);
-        let entryId: string | undefined = allocatedId;
-        if (layer.semanticRole === "definition") {
-            entryId ??= randomUUID();
-            await prepareDefinitionFields(
-                layer,
-                fields,
-                entryId,
-                input.definitionLanguages ?? [],
-                this.stringLocalization,
-            );
-        }
-
-        validateEntryFields(schema, input.layer, fields);
-        const references = input.references ?? [];
-        const targets = await validateDependencyVisibility(
-            input,
-            location,
-            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
-        );
-        validateReferences(
-            schema,
-            input.layer,
-            references,
-            targets,
-            input.referenceGroups,
-            fields,
-        );
-        const created = await this.store.create(
-            location,
-            {
-                ...input,
-                definitionLanguages: undefined,
-                allowConflict: undefined,
-                schemaVersion: schema.version,
-                label: input.label.trim(),
-                fields,
-                references,
-            },
-            schema.language,
-            actor.accountId,
-            entryId,
-        );
-        if (location.scope === "global" && !candidates && !input.hidden)
-            await this.notifyNewContent?.({
-                entryCount: 1,
-                language: schema.language,
-            });
-        return this.entryWithPermissions(actor, created);
-    }
-
     async update(
         actor: LibraryActor,
         entryId: string,
         input: LibraryEntryInput,
     ): Promise<LibraryEntry> {
-        if (!input.linkedEntries?.length)
-            return this.updateEntry(actor, entryId, input);
+        validateEntryInput(input);
+        if (!input.linkedEntries?.length) {
+            const operation = () => this.writer.update(actor, entryId, input);
+            return this.store.transaction
+                ? this.store.transaction(operation)
+                : operation();
+        }
         const current = await this.read(actor, entryId);
         if (!current || !current.canEdit) throw new Error("forbidden");
         const location = { scope: current.scope, scopeId: current.scopeId };
@@ -679,8 +665,8 @@ export class LibraryService implements LibraryCapability {
                 current.language,
                 (node, id, candidates, root) =>
                     root
-                        ? this.updateEntry(actor, id, node, candidates)
-                        : this.createEntry(
+                        ? this.writer.update(actor, id, node, candidates)
+                        : this.writer.create(
                               actor,
                               location,
                               node,
@@ -688,104 +674,16 @@ export class LibraryService implements LibraryCapability {
                               candidates,
                           ),
                 entryId,
+                (node) =>
+                    findContentConflict(
+                        this.store,
+                        location,
+                        node.schemaId,
+                        node,
+                        this.schema(node.schemaId),
+                    ),
             ),
         );
-    }
-
-    private async updateEntry(
-        actor: LibraryActor,
-        entryId: string,
-        input: LibraryEntryInput,
-        candidates?: Map<string, LibraryEntry>,
-    ): Promise<LibraryEntry> {
-        const current = await this.read(actor, entryId);
-        if (!current) throw new Error("entry_not_found");
-        if (
-            (current.protected || current.editable === false) &&
-            actor.role !== "admin" &&
-            actor.role !== "owner"
-        )
-            throw new Error("entry_not_editable");
-        await this.authorize(
-            actor,
-            { scope: current.scope, scopeId: current.scopeId },
-            true,
-        );
-        if (
-            input.schemaId !== current.schemaId ||
-            input.layer !== current.layer
-        )
-            throw new Error("entry_identity_immutable");
-        validateEntryInput(input);
-        const schema = this.schemaWithFormConstructors(
-            this.schema(current.schemaId),
-        );
-        input.schemaVersion = schema.version;
-        const layer = findLayer(schema, input.layer);
-        if (isImmutableLayer(layer)) throw new Error("immutable_layer");
-        normalizeEntryClass(input, layer);
-
-        const fields = structuredClone(input.fields ?? {});
-        for (const field of layer.fields ?? []) {
-            if (
-                field.input?.immutable === true &&
-                JSON.stringify(fields[field.id]) !==
-                    JSON.stringify(current.fields?.[field.id])
-            )
-                throw new Error(`field_immutable:${field.id}`);
-        }
-
-        if (layer.semanticRole === "definition") {
-            const localization = layer.definitionLocalization!;
-            fields[localization.stringKeyField] =
-                current.fields[localization.stringKeyField];
-            const translations = fields[localization.translationsField];
-            if (
-                !translations ||
-                typeof translations !== "object" ||
-                Array.isArray(translations) ||
-                typeof (translations as Record<string, unknown>).en !==
-                    "string" ||
-                !(translations as Record<string, string>).en.trim()
-            )
-                throw new Error("definition_english_required");
-        }
-
-        validateEntryFields(schema, input.layer, fields);
-        const references = input.references ?? [];
-        const targets = await validateDependencyVisibility(
-            input,
-            { scope: current.scope, scopeId: current.scopeId },
-            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
-            entryId,
-            schema,
-        );
-        validateReferences(
-            schema,
-            input.layer,
-            references,
-            targets,
-            input.referenceGroups,
-            fields,
-        );
-        await validatePendingPublicationEdits(
-            await this.store.listPushRequests("pending"),
-            current.id,
-            input,
-            async (id) => candidates?.get(id) ?? (await this.read(actor, id)),
-            schema,
-        );
-        const updated = await this.store.update(
-            entryId,
-            {
-                ...input,
-                label: input.label.trim(),
-                fields,
-                references,
-            },
-            current.sourceRecordId !== undefined,
-        );
-        return this.entryWithPermissions(actor, updated);
     }
 
     async planDeletion(actor: LibraryActor, entryIds: readonly string[]) {
@@ -824,12 +722,14 @@ export class LibraryService implements LibraryCapability {
                     (actor, location, write) =>
                         this.authorize(actor, location, write),
                 );
-                await this.flow?.run("study:library:delete", {
-                    actor,
-                    entries,
-                    blacklistContentHashes,
-                });
             },
+            (entries, remove) =>
+                runOperation(
+                    this.flow,
+                    "study:library:delete",
+                    { actor, entries, blacklistContentHashes },
+                    { delete: remove },
+                ),
         );
         await this.log?.("info", "Deleted Study Library entries.", {
             component: "study-library",

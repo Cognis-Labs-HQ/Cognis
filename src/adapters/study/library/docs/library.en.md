@@ -425,3 +425,9 @@ My Requests is a read-only history of every submitted status. Pending is the sol
 ## Dictionary reading graphs
 
 Dictionary source data remains invisible metadata in composers and detail views. Imported pronunciations use hidden Vocabulary readings with the same scope as their parent. Multi-reading Kanji uses one hidden record per reading, with a title link to its source Kanji and ordered Kana pronunciation links; single-reading Kanji links directly to Kana. Complete word readings compose from the nearest authored Kanji-reading segments and remaining Kana when available. Definitions are linked directly to hidden readings. Cognis resolves provider identities and commits the graph atomically through normal field, layer, dependency and ACL validation. Characters and particles remain provider-owned. Redundant Katakana echoes of an equivalent Hiragana reading are filtered unless the dictionary declares that Katakana spelling; authoritative Kanji on-readings and genuine loanword readings are preserved.
+
+## Validated operation stages
+
+Repeated dictionary imports reuse matching hidden reading cards instead of producing duplicate conflicts. Owner validation and persistence execute within their named ctx stages; edits have an update flow and rejected hooks roll back writes. Invalid lookup bodies receive safe validation codes; unexpected internal failures return generic server errors. Shared definition validation lives in component-local reuse.
+
+Core 0.3.109 · Library 2.24.43 · Study 1.8.44

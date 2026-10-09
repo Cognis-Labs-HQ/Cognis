@@ -412,3 +412,9 @@ Meine Anfragen zeigt alle eingereichten Status nur lesend. Ausstehend ist die ei
 ## Lesungsgraphen aus dem Wörterbuch
 
 Wörterbuch-Quelldaten bleiben unsichtbare Metadaten in Formularen und Detailansichten. Importierte Aussprachen verwenden verborgene Vokabel-Lesungen im selben Bereich wie ihre übergeordnete Karte. Kanji mit mehreren Lesungen erhalten je einen verborgenen Datensatz mit Titelverweis zum Kanji und geordneten Kana-Verweisen; Kanji mit einer Lesung verweisen direkt auf Kana. Vollständige Wortlesungen verwenden verfügbare passende Kanji-Lesungssegmente und verbleibende Kana. Definitionen werden direkt mit den verborgenen Lesungen verknüpft. Cognis löst Anbieteridentitäten auf und speichert den Graphen atomar mit normaler Feld-, Ebenen-, Abhängigkeits- und ACL-Prüfung. Zeichen und Partikeln bleiben anbieterverwaltet. Redundante Katakana-Wiederholungen einer gleichwertigen Hiragana-Lesung werden herausgefiltert, sofern das Wörterbuch keine entsprechende Katakana-Schreibweise angibt; verbindliche On-Lesungen und echte Lehnwortlesungen bleiben erhalten.
+
+## Validierte Operationsstufen
+
+Wiederholte Wörterbuchimporte verwenden passende verborgene Lesungskarten statt Konflikte zu erzeugen. Validierung und Speicherung laufen in ihren benannten ctx-Stufen; Bearbeitungen besitzen einen Update-Flow und abgelehnte Hooks rollen Schreibvorgänge zurück. Ungültige Suchanfragen erhalten sichere Validierungscodes, unerwartete interne Fehler allgemeine Serverfehler. Gemeinsame Definitionsvalidierung liegt im komponenteneigenen reuse-Bereich.
+
+Core 0.3.109 · Library 2.24.43 · Study 1.8.44

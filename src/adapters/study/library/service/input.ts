@@ -4,12 +4,18 @@ import { CONTENT_CLASS_PATTERN } from "../identifiers.js";
 import type { LibraryEntryInput, LibraryEntryFilters } from "../types.js";
 
 export function validateEntryInput(input: LibraryEntryInput): void {
+    if (!input || typeof input !== "object" || Array.isArray(input))
+        throw new Error("invalid_entry");
     if (
         input.linkedEntries !== undefined &&
         !Array.isArray(input.linkedEntries)
     )
         throw new Error("invalid_linked_entries");
-    if (!input.label?.trim() || input.label.length > 500)
+    if (
+        typeof input.label !== "string" ||
+        !input.label.trim() ||
+        input.label.length > 500
+    )
         throw new Error("invalid_label");
     if (input.class !== undefined && !CONTENT_CLASS_PATTERN.test(input.class))
         throw new Error("invalid_content_class");

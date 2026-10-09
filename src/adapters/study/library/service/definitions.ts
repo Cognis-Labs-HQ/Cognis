@@ -1,3 +1,4 @@
+import { definitionTranslations } from "../reuse/definitions.js";
 import definitionLanguages from "../definition-languages.json" with { type: "json" };
 import { canonicalizeLanguageTag } from "../language.js";
 import { createHash } from "node:crypto";
@@ -97,16 +98,9 @@ export async function prepareDefinitionFields(
     localization?: StringLocalizationCapability,
 ): Promise<void> {
     const settings = layer.definitionLocalization!;
-    const translations = fields[settings.translationsField];
-    if (
-        !translations ||
-        typeof translations !== "object" ||
-        Array.isArray(translations) ||
-        typeof (translations as Record<string, unknown>).en !== "string" ||
-        !(translations as Record<string, string>).en.trim()
-    ) {
-        throw new Error("definition_english_required");
-    }
+    const translations = definitionTranslations(
+        fields[settings.translationsField],
+    );
     const stringKey = `${settings.stringKeyPrefix}:${entryId}`;
     fields[settings.stringKeyField] = stringKey;
     await translateDefinitionLanguages(

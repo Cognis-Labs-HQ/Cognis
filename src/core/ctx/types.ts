@@ -24,6 +24,8 @@ export type FlowStageHook = (
 ) => unknown | Promise<unknown>;
 
 export interface FlowRunOptions {
+    /** Per-run owner implementations, executed before extension hooks in each stage. */
+    handlers?: Readonly<Record<string, FlowStageHook>>;
     meta?: Record<string, unknown>;
     data?: Record<string, unknown>;
 }

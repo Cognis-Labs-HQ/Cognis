@@ -1,3 +1,4 @@
+import { runOperation } from "./reuse/operation.js";
 import {
     allInputReferences,
     canComposeAtLocation,
@@ -197,12 +198,19 @@ export class LibraryVisibilityService {
                         source,
                         request.destination,
                     );
-                    await this.flow?.run("study:library:move", {
-                        actor,
-                        entry: source,
-                        destination: request.destination,
-                    });
-                    await this.store.move(source.id, request.destination);
+                    await runOperation(
+                        this.flow,
+                        "study:library:move",
+                        {
+                            actor,
+                            entry: source,
+                            destination: request.destination,
+                        },
+                        {
+                            move: () =>
+                                this.store.move(source.id, request.destination),
+                        },
+                    );
                 }
             }
             return {
@@ -282,12 +290,18 @@ export class LibraryVisibilityService {
             )
                 throw new Error("request_pending");
             await this.validateDependencies(actor, entry, normalized, entry.id);
-            await this.flow?.run("study:library:move", {
-                actor,
-                entry,
-                destination: normalized,
-            });
-            return this.store.move(entry.id, normalized);
+            let relocated!: LibraryEntry;
+            await runOperation(
+                this.flow,
+                "study:library:move",
+                { actor, entry, destination: normalized },
+                {
+                    move: async () => {
+                        relocated = await this.store.move(entry.id, normalized);
+                    },
+                },
+            );
+            return relocated;
         });
         if (moved.scope === "global")
             await this.notifyNewContent?.({ entryCount: 1 });
@@ -342,12 +356,24 @@ export class LibraryVisibilityService {
             destination,
             entry.id,
         );
-        await this.flow?.run("study:library:move", {
-            actor,
-            entry,
-            destination,
-        });
-        return this.store.move(entry.id, destination);
+        let relocated!: LibraryEntry;
+        const operation = async () => {
+            await runOperation(
+                this.flow,
+                "study:library:move",
+                { actor, entry, destination },
+                {
+                    move: async () => {
+                        relocated = await this.store.move(
+                            entry.id,
+                            destination,
+                        );
+                    },
+                },
+            );
+            return relocated;
+        };
+        return this.store.transaction(operation);
     }
 
     private async pendingRequest(requestId: string) {

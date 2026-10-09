@@ -1,3 +1,4 @@
+import { createLibraryFlow } from "../reuse/flows.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryService } from "../../service/index.js";
@@ -31,11 +32,13 @@ test("promotion approval moves personal content into the requested scope", async
         reviewPush: async () => {},
     };
     const flows: string[] = [];
-    const library = new LibraryService(store as never, undefined, {
-        run: async (id: string) => {
+    const library = new LibraryService(
+        store as never,
+        undefined,
+        createLibraryFlow((id) => {
             flows.push(id);
-        },
-    } as never);
+        }),
+    );
     await library.registerSchema(schema(1));
     await library.reviewPush(
         { accountId: "admin", role: "admin" },
@@ -44,11 +47,13 @@ test("promotion approval moves personal content into the requested scope", async
     );
     assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
     assert.deepEqual(flows, ["study:library:move"]);
-    const blocked = new LibraryService(store as never, undefined, {
-        run: async () => {
+    const blocked = new LibraryService(
+        store as never,
+        undefined,
+        createLibraryFlow(() => {
             throw new Error("move_hook_rejected");
-        },
-    } as never);
+        }),
+    );
     await blocked.registerSchema(schema(1));
     await assert.rejects(
         blocked.reviewPush(

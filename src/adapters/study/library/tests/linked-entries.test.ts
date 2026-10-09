@@ -1,3 +1,5 @@
+import { createLibraryFlow } from "./reuse/flows.js";
+import type { FlowApi } from "@cognis/core";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryService } from "../service/index.js";
@@ -103,7 +105,7 @@ const input = (): LibraryEntryInput => ({
         },
     ],
 });
-async function harness() {
+async function harness(flow?: FlowApi, registeredSchema = schema) {
     const records = new Map<string, LibraryEntry>();
     records.set("kana", {
         id: "kana",
@@ -168,8 +170,8 @@ async function harness() {
             return entry;
         },
     };
-    const library = new LibraryService(store as never);
-    await library.registerSchema(schema);
+    const library = new LibraryService(store as never, undefined, flow);
+    await library.registerSchema(registeredSchema);
     return { library, records };
 }
 
@@ -222,5 +224,89 @@ test("editing imported readings accepts their structural backlinks and preserves
         referenceGroups: root.referenceGroups,
     });
     assert.equal(edited.id, root.id);
+    assert.equal(records.size, 3);
+});
+
+test("repeating dictionary import during editing reuses the hidden readings", async () => {
+    const { library, records } = await harness(createLibraryFlow());
+    const root = await library.create(actor, { scope: "global" }, input());
+    const before = structuredClone(root.referenceGroups);
+    const updated = await library.update(actor, root.id, input());
+    assert.deepEqual(updated.referenceGroups, before);
+    assert.equal(records.size, 3);
+});
+
+test("owner validation blocks persistence hooks and writes for invalid fields", async () => {
+    const flow = createLibraryFlow();
+    const { library, records } = await harness(flow);
+    let persisted = false;
+    flow.extend("study:library:create", "persist", { id: "observe" }, () => {
+        persisted = true;
+    });
+    const value = input();
+    value.fields = {};
+    await assert.rejects(
+        library.create(actor, { scope: "global" }, value),
+        /field_required/,
+    );
+    assert.equal(persisted, false);
+    assert.equal(records.size, 1);
+});
+
+test("editing executes validation and persistence stages with rollback on hook rejection", async () => {
+    const flow = createLibraryFlow();
+    const { library, records } = await harness(flow);
+    const root = await library.create(actor, { scope: "global" }, input());
+    const before = structuredClone(records);
+    let persisted = false;
+    flow.extend("study:library:update", "persist", { id: "reject" }, () => {
+        persisted = true;
+        assert.equal(records.get(root.id)!.label, "新");
+        throw new Error("edit_hook_rejected");
+    });
+    await assert.rejects(
+        library.update(actor, root.id, {
+            schemaId: root.schemaId,
+            layer: root.layer,
+            label: "新",
+            fields: root.fields,
+            referenceGroups: root.referenceGroups,
+        }),
+        /edit_hook_rejected/,
+    );
+    assert.equal(persisted, true);
+    assert.deepEqual(records, before);
+});
+
+test("repeat imports ignore SQL positions on unordered links while preserving ordered spelling", async () => {
+    const registeredSchema = structuredClone(schema);
+    const words = registeredSchema.layers.find(
+        (layer) => layer.id === "words",
+    )!;
+    words.relationships![0].ordered = true;
+    words.relationships!.push({
+        id: "meaning",
+        targetLayer: "characters",
+        metadata: { labels: { en: "Meaning" } },
+        onDelete: "restrict",
+    });
+    const { library, records } = await harness(
+        createLibraryFlow(),
+        registeredSchema,
+    );
+    const value = input();
+    value.linkedEntries![0].entry.references![0].position = 0;
+    value.linkedEntries![0].entry.references!.push({
+        entryId: "kana",
+        relation: "meaning",
+    });
+    const root = await library.create(actor, { scope: "global" }, value);
+    const readingId = root.referenceGroups!.readings[0][0].entryId;
+    const reading = records.get(readingId)!;
+    reading.references = reading
+        .references!.map((reference, position) => ({ ...reference, position }))
+        .reverse();
+    const updated = await library.update(actor, root.id, value);
+    assert.equal(updated.referenceGroups!.readings[0][0].entryId, readingId);
     assert.equal(records.size, 3);
 });

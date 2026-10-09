@@ -455,6 +455,10 @@ export class LibraryStore {
         authorize: (
             entries: readonly LibraryEntry[],
         ) => Promise<void> = async () => {},
+        perform?: (
+            entries: readonly LibraryEntry[],
+            remove: () => Promise<void>,
+        ) => Promise<void>,
     ): Promise<readonly string[]> {
         let deletedEntryIds: readonly string[] = [];
         await this.db.transaction(async (db) => {
@@ -471,38 +475,48 @@ export class LibraryStore {
                 entries.push(mapEntry(row));
             }
             await authorize(entries);
-            for (const entryId of deletedEntryIds) {
-                const result = await db.executeCommand({
-                    option: "SELECT",
-                    table: "study_library_entries",
-                    columns: ["content_hash"],
-                    where: [{ column: "id", value: entryId }],
-                });
-                const contentHash = result.rows?.[0]?.content_hash;
-                if (blacklistContentHashes && typeof contentHash === "string") {
-                    await db.executeCommand({
-                        option: "INSERT",
-                        table: "study_library_content_hash_blacklist",
-                        values: {
-                            content_hash: contentHash,
-                            deleted_by: deletedBy,
-                        },
-                        conflict: { action: "ignore" },
+            const remove = async () => {
+                for (const entryId of deletedEntryIds) {
+                    const result = await db.executeCommand({
+                        option: "SELECT",
+                        table: "study_library_entries",
+                        columns: ["content_hash"],
+                        where: [{ column: "id", value: entryId }],
                     });
-                }
-                for (const column of ["source_entry_id", "target_entry_id"]) {
+                    const contentHash = result.rows?.[0]?.content_hash;
+                    if (
+                        blacklistContentHashes &&
+                        typeof contentHash === "string"
+                    ) {
+                        await db.executeCommand({
+                            option: "INSERT",
+                            table: "study_library_content_hash_blacklist",
+                            values: {
+                                content_hash: contentHash,
+                                deleted_by: deletedBy,
+                            },
+                            conflict: { action: "ignore" },
+                        });
+                    }
+                    for (const column of [
+                        "source_entry_id",
+                        "target_entry_id",
+                    ]) {
+                        await db.executeCommand({
+                            option: "DELETE",
+                            table: "study_library_references",
+                            where: [{ column, value: entryId }],
+                        });
+                    }
                     await db.executeCommand({
                         option: "DELETE",
-                        table: "study_library_references",
-                        where: [{ column, value: entryId }],
+                        table: "study_library_entries",
+                        where: [{ column: "id", value: entryId }],
                     });
                 }
-                await db.executeCommand({
-                    option: "DELETE",
-                    table: "study_library_entries",
-                    where: [{ column: "id", value: entryId }],
-                });
-            }
+            };
+            if (perform) await perform(entries, remove);
+            else await remove();
         });
         return deletedEntryIds;
     }

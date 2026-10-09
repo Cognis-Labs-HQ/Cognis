@@ -307,3 +307,64 @@ test("entry update delegates validated identity to the Library capability", asyn
     assert.equal(updatedId, "entry-1");
     assert.equal(JSON.parse(response.payload).data.label, "updated");
 });
+
+test("malformed lookup is rejected before calling the provider", async () => {
+    let invoked = false;
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                invoked = true;
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: "{}",
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 400);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "invalid_lookup_request",
+    );
+    assert.equal(invoked, false);
+});
+
+test("unexpected persistence failures return a generic server error", async () => {
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                throw new Error(
+                    'duplicate key value violates unique constraint "private_index"',
+                );
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: JSON.stringify({
+                providerId: "dictionary",
+                entry: { schemaId: "test", layer: "words", label: "word" },
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 500);
+    assert.equal(JSON.parse(response.payload).error.code, "request_failed");
+    assert.equal(response.payload.includes("private_index"), false);
+});

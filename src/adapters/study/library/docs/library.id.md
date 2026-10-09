@@ -412,3 +412,9 @@ Permintaan Saya menampilkan riwayat semua status yang diajukan dalam mode baca s
 ## Graf bacaan kamus
 
 Data sumber kamus tetap menjadi metadata tersembunyi dalam penyusun kartu dan tampilan detail. Pelafalan impor memakai bacaan Kosakata tersembunyi dengan cakupan yang sama dengan kartu induknya. Kanji dengan beberapa bacaan memakai satu rekaman tersembunyi per bacaan, dengan tautan judul ke Kanji sumber dan tautan pelafalan Kana berurutan; Kanji dengan satu bacaan terhubung langsung ke Kana. Bacaan kata lengkap memakai segmen bacaan Kanji tersedia yang paling dekat dan Kana sisanya. Definisi ditautkan langsung ke bacaan tersembunyi. Cognis menyelesaikan identitas penyedia dan menyimpan graf secara atomik melalui validasi bidang, lapisan, dependensi, dan ACL biasa. Karakter dan partikel tetap dikelola penyedia. Gema Katakana berlebihan dari bacaan Hiragana setara disaring kecuali kamus menyatakan ejaan Katakana tersebut; bacaan on Kanji resmi dan bacaan kata serapan asli dipertahankan.
+
+## Tahap operasi tervalidasi
+
+Impor kamus berulang memakai ulang kartu bacaan tersembunyi yang cocok sehingga tidak menimbulkan konflik duplikat. Validasi dan persistensi berjalan dalam tahap ctx yang sesuai; penyuntingan memakai alur pembaruan dan penolakan hook membatalkan penulisan. Permintaan pencarian tidak valid menerima kode validasi aman; kegagalan internal tak terduga menerima kesalahan server generik. Validasi definisi bersama ditempatkan dalam reuse milik komponen.
+
+Core 0.3.109 · Library 2.24.43 · Study 1.8.44

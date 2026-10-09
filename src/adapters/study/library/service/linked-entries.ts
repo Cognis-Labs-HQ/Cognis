@@ -17,6 +17,7 @@ export async function createLinkedEntryGraph(
         root: boolean,
     ) => Promise<LibraryEntry>,
     rootId = randomUUID(),
+    existing?: (input: LibraryEntryInput) => Promise<LibraryEntry | undefined>,
 ): Promise<LibraryEntry> {
     const linked = input.linkedEntries ?? [];
     if (!Array.isArray(linked)) throw new Error("invalid_linked_entries");
@@ -52,6 +53,22 @@ export async function createLinkedEntryGraph(
         );
         return cloned;
     };
+    const reused = new Map<string, LibraryEntry>();
+    // Resolving a child changes references in its parents; repeat until aliases settle.
+    if (existing) {
+        for (let pass = 0; pass < linked.length; pass += 1) {
+            let changed = false;
+            for (const { key, entry } of linked) {
+                const match = await existing(resolve(entry));
+                if (match && match.id !== ids.get(key)) {
+                    ids.set(key, match.id);
+                    reused.set(match.id, match);
+                    changed = true;
+                }
+            }
+            if (!changed) break;
+        }
+    }
     const nodes = [
         { id: rootId, input: resolve(input) },
         ...linked.map(({ key, entry }) => ({
@@ -65,8 +82,13 @@ export async function createLinkedEntryGraph(
             { ...candidate, id, ...location, language } as LibraryEntry,
         ]),
     );
+    for (const [id, entry] of reused) candidates.set(id, entry);
     const root = await operation(nodes[0].input, rootId, candidates, true);
-    for (const node of nodes.slice(1))
+    const persisted = new Set(reused.keys());
+    for (const node of nodes.slice(1)) {
+        if (persisted.has(node.id)) continue;
         await operation(node.input, node.id, candidates, false);
+        persisted.add(node.id);
+    }
     return root;
 }

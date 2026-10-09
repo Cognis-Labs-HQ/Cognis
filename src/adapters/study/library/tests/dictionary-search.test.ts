@@ -1,3 +1,4 @@
+import { createLibraryFlow } from "./reuse/flows.js";
 import { createProbeCache } from "@cognis/core";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -114,11 +115,9 @@ test("dictionary search invokes its registered flow for fresh and cached queries
     const library = new LibraryService(
         store as never,
         undefined,
-        {
-            run: async (id: string) => {
-                flows.push(id);
-            },
-        } as never,
+        createLibraryFlow((id) => {
+            flows.push(id);
+        }),
         undefined,
         undefined,
         undefined,
