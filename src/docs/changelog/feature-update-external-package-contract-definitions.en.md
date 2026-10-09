@@ -668,3 +668,9 @@ Dictionary results render before reference hydration. Preview resolution request
 Search also invokes the registered search flow on cache hits, so extension hooks apply consistently.
 
 Study navigation requests only pending review items; the Requests page retains complete status history.
+
+## Compact Study navigation
+
+Dictionary search stays on one line with a compact search icon. Pending reviews use the navigation accent underline instead of a red outline.
+
+- [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)

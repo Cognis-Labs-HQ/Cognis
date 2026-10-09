@@ -668,3 +668,9 @@ Hasil kamus ditampilkan sebelum referensi dimuat. Pratinjau hanya mengambil ID e
 Hasil dari cache juga menjalankan alur pencarian terdaftar agar kait ekstensi diterapkan secara konsisten.
 
 Navigasi belajar hanya meminta tinjauan tertunda; halaman Permintaan tetap menampilkan riwayat status lengkap.
+
+## Navigasi Study yang ringkas
+
+Pencarian kamus tetap dalam satu baris dengan ikon pencarian yang ringkas. Peninjauan tertunda ditandai dengan garis bawah aksen navigasi, bukan bingkai merah.
+
+- [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)

@@ -668,3 +668,9 @@ Wörterbuchergebnisse erscheinen vor dem Laden der Referenzen. Vorschauen laden 
 Auch Cachetreffer rufen den registrierten Suchablauf auf, sodass Erweiterungshooks einheitlich greifen.
 
 Die Studiennavigation fordert nur offene Prüfungen an; die Anfrageseite behält den vollständigen Statusverlauf.
+
+## Kompakte Study-Navigation
+
+Die Wörterbuchsuche bleibt mit einem kompakten Suchsymbol in einer Zeile. Ausstehende Prüfungen werden durch die Akzent-Unterstreichung der Navigation statt durch einen roten Rahmen angezeigt.
+
+- [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)

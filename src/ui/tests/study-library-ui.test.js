@@ -442,7 +442,7 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(studySubNavigationSource, /study-subnav-attention/);
     assert.match(
         studyStylesheet,
-        /@keyframes study-subnav-attention-breathe[\s\S]*color-danger-outline-text/,
+        /@keyframes study-subnav-attention-breathe[\s\S]*border-block-end-color: var\(--accent-2\)/,
     );
 });
 test("Study Library creation offers ordered, recursive composition", () => {

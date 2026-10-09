@@ -423,11 +423,11 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                                   "data-study-dictionary-search": true,
                                   "data-language": model.selectedLanguageCode,
                               },
-                              submitLabelKey: "gateway.study.dictionary_search",
-                              submitButtonClassName: "btn-neutral",
+                              includeSubmitButton: false,
                               fields: [],
                               trustedContentHtml: `<select name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
-                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">`,
+                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
+                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" title="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}"><span class="search-bar-toggle-icon" aria-hidden="true"></span></button>`,
                           },
                       ).render()
                     : ""
