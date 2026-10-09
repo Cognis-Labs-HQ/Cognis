@@ -658,3 +658,13 @@ Administratoren und Eigentümer verschieben persönliche Karten direkt in berech
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0bb340a8bce6ce96596bfbfe36647743b696574d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/884b73f2286cfd8922494c2fe65ac3b51833ea54
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
+
+## Effiziente Wörterbuchauflösung
+
+Wörterbuchergebnisse erscheinen vor dem Laden der Referenzen. Vorschauen laden nur referenzierte Eintrags- oder Anbieter-IDs sowie die für Aussprachen benötigten Zeichen. Die vollständige Karussellbibliothek wird beim Öffnen des Editors oder einer verknüpften Karte geladen. Eintragslisten laden Referenzen gemeinsam statt pro Karte. Anfragen verwenden vorhandene Zeilen und lesen keine Quellen für unberechtigte oder abgeschlossene Anfragen. Suche und Prüfung verwenden denselben Sichtbarkeitsfilter für versteckte Felder. Abgelaufene Cachezeilen werden beim Schreiben über einen Ablaufindex entfernt. Genehmigte Verschiebungen rufen innerhalb der Entscheidungstransaktion denselben registrierten Ablauf wie direkte Verschiebungen auf.
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
+
+Auch Cachetreffer rufen den registrierten Suchablauf auf, sodass Erweiterungshooks einheitlich greifen.
+
+Die Studiennavigation fordert nur offene Prüfungen an; die Anfrageseite behält den vollständigen Statusverlauf.

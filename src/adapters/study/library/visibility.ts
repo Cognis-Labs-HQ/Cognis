@@ -112,10 +112,15 @@ export class LibraryVisibilityService {
 
     async listPushRequests(
         actor: VisibilityActor,
+        status?: LibraryPushRequest["status"],
     ): Promise<LibraryPushRequest[]> {
+        if (
+            status !== undefined &&
+            !["pending", "approved", "rejected", "withdrawn"].includes(status)
+        )
+            throw new Error("invalid_request_status");
         const visible: LibraryPushRequest[] = [];
-        for (const request of await this.store.listPushRequests()) {
-            const source = await this.store.get(request.sourceEntryId);
+        for (const request of await this.store.listPushRequests(status)) {
             let canReview = false;
             try {
                 await this.authorize(actor, request.destination, true);
@@ -131,6 +136,10 @@ export class LibraryVisibilityService {
             }
             const owned = request.requestedBy === actor.accountId;
             if (!owned && !canReview) continue;
+            const source =
+                request.status === "pending" || !request.sourceSnapshot
+                    ? await this.store.get(request.sourceEntryId)
+                    : request.sourceSnapshot;
             visible.push({
                 ...request,
                 source: request.sourceSnapshot ?? source ?? undefined,
@@ -188,6 +197,11 @@ export class LibraryVisibilityService {
                         source,
                         request.destination,
                     );
+                    await this.flow?.run("study:library:move", {
+                        actor,
+                        entry: source,
+                        destination: request.destination,
+                    });
                     await this.store.move(source.id, request.destination);
                 }
             }

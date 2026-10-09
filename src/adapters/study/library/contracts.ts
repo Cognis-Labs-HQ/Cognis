@@ -5,6 +5,7 @@ import type {
     LibraryContentPackReceipt,
     LibraryEntry,
     LibraryEntryInput,
+    LibraryEntryFilters,
     LibraryFormContribution,
     LibraryLocation,
     LibraryLookupProvider,
@@ -105,7 +106,7 @@ export interface LibraryCapability {
     list(
         actor: LibraryActor,
         location: LibraryLocation,
-        filters?: { schemaId?: string; layer?: string },
+        filters?: LibraryEntryFilters,
     ): Promise<LibraryEntry[]>;
     read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
     viewedEntryIds(actor: LibraryActor): Promise<string[]>;
@@ -179,7 +180,10 @@ export interface LibraryCapability {
         entryId: string,
         proposedEntry: LibraryEntryInput,
     ): Promise<LibraryPushRequest>;
-    listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]>;
+    listPushRequests(
+        actor: LibraryActor,
+        status?: LibraryPushRequest["status"],
+    ): Promise<LibraryPushRequest[]>;
     reviewPush(
         actor: LibraryActor,
         requestId: string,

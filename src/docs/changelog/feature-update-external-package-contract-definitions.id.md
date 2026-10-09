@@ -658,3 +658,13 @@ Administrator dan pemilik langsung memindahkan kartu pribadi ke cakupan bersama 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/0bb340a8bce6ce96596bfbfe36647743b696574d
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/884b73f2286cfd8922494c2fe65ac3b51833ea54
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
+
+## Resolusi Kamus yang Efisien
+
+Hasil kamus ditampilkan sebelum referensi dimuat. Pratinjau hanya mengambil ID entri atau ID penyedia yang dirujuk serta karakter dasar untuk pelafalan. Seluruh pustaka karusel dimuat saat membuka editor atau kartu tertaut. Daftar entri memuat referensi sekaligus, bukan per kartu. Daftar permintaan menggunakan baris yang tersedia dan tidak membaca sumber untuk permintaan tanpa izin atau yang sudah selesai. Pencarian dan tinjauan memakai pemilih visibilitas yang sama untuk kolom tersembunyi. Baris cache kedaluwarsa dihapus saat cache ditulis dengan indeks waktu kedaluwarsa. Relokasi yang disetujui menjalankan alur terdaftar yang sama dengan relokasi langsung di dalam transaksi keputusan.
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
+
+Hasil dari cache juga menjalankan alur pencarian terdaftar agar kait ekstensi diterapkan secara konsisten.
+
+Navigasi belajar hanya meminta tinjauan tertunda; halaman Permintaan tetap menampilkan riwayat status lengkap.

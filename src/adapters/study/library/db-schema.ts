@@ -5,6 +5,7 @@ import { ensurePushRequestSchema } from "./push-requests.js";
 export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
     await db.ensureTable({
         name: "study_library_dictionary_cache",
+        indexes: [{ columns: ["expires_at"] }],
         columns: [
             { name: "cache_key", type: "text", primaryKey: true },
             { name: "results_json", type: "text", notNull: true },
@@ -68,6 +69,17 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
     });
     await db.ensureTable({
         name: "study_library_entries",
+        indexes: [
+            {
+                columns: [
+                    "scope",
+                    "scope_id",
+                    "schema_id",
+                    "layer",
+                    "source_record_id",
+                ],
+            },
+        ],
         columns: [
             { name: "id", type: "text", primaryKey: true },
             { name: "scope", type: "text", notNull: true },

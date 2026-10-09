@@ -2,6 +2,7 @@ import {
     entryReferenceRows,
     referenceTransformationValue,
 } from "./store/reference-rows.js";
+import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import { randomUUID } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { LibraryDictionaryResult } from "./service/dictionary.js";
@@ -13,11 +14,13 @@ import type {
     LibraryContentPackReceipt,
     LibraryEntry,
     LibraryEntryInput,
+    LibraryEntryFilters,
     LibraryLocation,
     LibraryPushRequest,
     LibrarySchema,
 } from "./types.js";
 import { mapEntry } from "./entry-row.js";
+import { hydrateEntries } from "./store/hydrate.js";
 import { ensureLibraryStoreSchema } from "./db-schema.js";
 import {
     createPushRequest,
@@ -72,6 +75,17 @@ export class LibraryStore {
         key: string,
         results: LibraryDictionaryResult[],
     ): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "study_library_dictionary_cache",
+            where: [
+                {
+                    column: "expires_at",
+                    operator: "<=",
+                    value: new Date().toISOString(),
+                },
+            ],
+        });
         await this.upsert(
             this.db,
             "study_library_dictionary_cache",
@@ -638,53 +652,19 @@ export class LibraryStore {
         });
         const row = result.rows?.[0];
         if (!row) return null;
-        const entry = mapEntry(row);
-        const references = await this.db.executeCommand({
-            option: "SELECT",
-            table: "study_library_references",
-            where: [{ column: "source_entry_id", value: id }],
-        });
-        entry.references = [];
-        entry.referenceGroups = {};
-        for (const reference of references.rows ?? []) {
-            const value = {
-                entryId: String(reference.target_entry_id),
-                relation: String(reference.relation),
-                position: Number(reference.position),
-                ...(reference.transformation_json
-                    ? {
-                          transformation: JSON.parse(
-                              String(reference.transformation_json),
-                          ),
-                      }
-                    : {}),
-            };
-            const groupIndex = Number(reference.group_index);
-            if (groupIndex < 0) {
-                entry.references.push(value);
-                continue;
-            }
-            const groups = (entry.referenceGroups[value.relation] ??= []);
-            (groups[groupIndex] ??= []).push(value);
-        }
-        for (const [relation, groups] of Object.entries(
-            entry.referenceGroups,
-        )) {
-            entry.referenceGroups[relation] = groups
-                .filter((group) => Array.isArray(group))
-                .map((group) =>
-                    group.sort(
-                        (left, right) => left.position! - right.position!,
-                    ),
-                );
-        }
-        return entry;
+        return (await hydrateEntries(this.db, [row]))[0];
     }
+
     async list(
         location: LibraryLocation,
-        filters: { schemaId?: string; layer?: string } = {},
+        filters: LibraryEntryFilters = {},
     ): Promise<LibraryEntry[]> {
-        const where = [
+        if (
+            filters.entryIds?.length === 0 ||
+            filters.sourceRecordIds?.length === 0
+        )
+            return [];
+        const where: StructuredDbWhereClause[] = [
             { column: "scope", value: location.scope },
             { column: "scope_id", value: location.scopeId ?? location.scope },
         ];
@@ -692,16 +672,19 @@ export class LibraryStore {
             where.push({ column: "schema_id", value: filters.schemaId });
         if (filters.layer)
             where.push({ column: "layer", value: filters.layer });
+        for (const [key, column] of [
+            ["entryIds", "id"],
+            ["sourceRecordIds", "source_record_id"],
+        ] as const) {
+            if (filters[key])
+                where.push({ column, operator: "IN", value: filters[key] });
+        }
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_entries",
             where,
         });
-        return Promise.all(
-            (result.rows ?? []).map((row) => this.get(String(row.id))),
-        ).then((entries) =>
-            entries.filter((entry): entry is LibraryEntry => entry !== null),
-        );
+        return hydrateEntries(this.db, result.rows ?? []);
     }
     async create(
         location: LibraryLocation,

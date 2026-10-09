@@ -5,7 +5,11 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type { LibraryCapability, LibraryActor } from "../service/index.js";
-import type { LibraryEntryInput, LibraryLocation } from "../types.js";
+import type {
+    LibraryEntryInput,
+    LibraryLocation,
+    LibraryPushRequest,
+} from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
@@ -121,6 +125,15 @@ export function createLibraryRoutes(
                     data: await library.list(actor, locationFrom(url), {
                         schemaId: url.searchParams.get("schemaId") ?? undefined,
                         layer: url.searchParams.get("layer") ?? undefined,
+                        ...(url.searchParams.has("entryId")
+                            ? { entryIds: url.searchParams.getAll("entryId") }
+                            : {}),
+                        ...(url.searchParams.has("sourceRecordId")
+                            ? {
+                                  sourceRecordIds:
+                                      url.searchParams.getAll("sourceRecordId"),
+                              }
+                            : {}),
                     }),
                 });
                 return true;
@@ -392,7 +405,11 @@ export function createLibraryRoutes(
                 req.method === "GET"
             ) {
                 sendJson(res, 200, {
-                    data: await library.listPushRequests(actor),
+                    data: await library.listPushRequests(
+                        actor,
+                        (url.searchParams.get("status") ?? undefined) as
+                            LibraryPushRequest["status"] | undefined,
+                    ),
                 });
                 return true;
             }

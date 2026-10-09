@@ -27,13 +27,33 @@ test("promotion approval moves personal content into the requested scope", async
         },
         reviewPush: async () => {},
     };
-    const library = new LibraryService(store as never);
+    const flows: string[] = [];
+    const library = new LibraryService(store as never, undefined, {
+        run: async (id: string) => {
+            flows.push(id);
+        },
+    } as never);
     await library.reviewPush(
         { accountId: "admin", role: "admin" },
         "request",
         "approved",
     );
     assert.deepEqual(moves, [{ scope: "global", scopeId: "global" }]);
+    assert.deepEqual(flows, ["study:library:move"]);
+    const blocked = new LibraryService(store as never, undefined, {
+        run: async () => {
+            throw new Error("move_hook_rejected");
+        },
+    } as never);
+    await assert.rejects(
+        blocked.reviewPush(
+            { accountId: "admin", role: "admin" },
+            "request",
+            "approved",
+        ),
+        /move_hook_rejected/,
+    );
+    assert.equal(moves.length, 1);
 });
 
 test("authors submit global card edits as update requests", async () => {
@@ -268,4 +288,40 @@ test("administrators can review their own pending requests and retain decision h
     assert.equal(requests[0].canWithdraw, true);
     assert.equal(requests[1].canReview, false);
     assert.equal(requests[1].status, "approved");
+});
+
+test("request history accepts an explicit status filter and rejects invalid values", async () => {
+    const filters: unknown[] = [];
+    const source = { id: "personal", scope: "user", scopeId: "alice" };
+    const store = {
+        listPushRequests: async (status: unknown) => {
+            filters.push(status);
+            return [
+                {
+                    id: "pending",
+                    sourceEntryId: source.id,
+                    destination: { scope: "global", scopeId: "global" },
+                    status: "pending",
+                    requestedBy: "alice",
+                    sourceSnapshot: source,
+                },
+            ];
+        },
+        get: async () => source,
+    };
+    const library = new LibraryService(store as never);
+    const requests = await library.listPushRequests(
+        { accountId: "alice", role: "user" },
+        "pending",
+    );
+    assert.deepEqual(filters, ["pending"]);
+    assert.equal(requests[0].canWithdraw, true);
+    await assert.rejects(
+        library.listPushRequests(
+            { accountId: "alice", role: "user" },
+            "invalid" as never,
+        ),
+        /invalid_request_status/,
+    );
+    assert.equal(filters.length, 1);
 });

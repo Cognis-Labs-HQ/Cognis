@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { LibraryService } from "../service/index.js";
 import { LibraryDictionarySearch } from "../service/dictionary.js";
 import { schema } from "./fixtures/service-schema.js";
 
@@ -96,4 +97,35 @@ test("dictionary search retries failures and exposes only searchable supported l
         dictionary.search(provider, schema(1), "", false, lookup),
         /invalid_query/,
     );
+});
+
+test("dictionary search invokes its registered flow for fresh and cached queries", async () => {
+    let cached: object | null = null;
+    const flows: string[] = [];
+    const store = {
+        saveSchema: async () => {},
+        dictionaryCache: async () => cached,
+        saveDictionaryCache: async (_key: string, results: object[]) => {
+            cached = {
+                results,
+                cachedAt: new Date().toISOString(),
+                expiresAt: Date.now() + 10000,
+            };
+        },
+    };
+    const library = new LibraryService(store as never, undefined, {
+        run: async (id: string) => {
+            flows.push(id);
+        },
+    } as never);
+    await library.registerSchema(schema(1));
+    library.registerLookupProvider(provider);
+    const input = {
+        providerId: provider.id,
+        schemaId: schema(1).id,
+        query: "word",
+    };
+    await library.searchDictionary(input);
+    await library.searchDictionary(input);
+    assert.equal(flows.filter((id) => id === "study:library:search").length, 2);
 });

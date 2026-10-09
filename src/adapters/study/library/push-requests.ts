@@ -16,6 +16,7 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
     });
     await db.ensureTable({
         name: "study_library_push_requests",
+        indexes: [{ columns: ["status"] }],
         columns: [
             { name: "id", type: "text", primaryKey: true },
             { name: "source_entry_id", type: "text", notNull: true },
@@ -104,6 +105,10 @@ export async function getPushRequest(
     });
     const row = result.rows?.[0];
     if (!row) return null;
+    return mapPushRequest(row);
+}
+
+function mapPushRequest(row: Record<string, unknown>): LibraryPushRequest {
     return {
         id: String(row.id),
         sourceEntryId: String(row.source_entry_id),
@@ -141,12 +146,7 @@ export async function listPushRequests(
         table: "study_library_push_requests",
         ...(status ? { where: [{ column: "status", value: status }] } : {}),
     });
-    const requests = await Promise.all(
-        (result.rows ?? []).map((row) => getPushRequest(db, String(row.id))),
-    );
-    return requests.filter(
-        (request): request is LibraryPushRequest => request !== null,
-    );
+    return (result.rows ?? []).map(mapPushRequest);
 }
 
 export async function reviewPushRequest(

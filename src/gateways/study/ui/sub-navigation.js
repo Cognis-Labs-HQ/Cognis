@@ -208,9 +208,9 @@ export async function loadStudySubNavigationModel({
     const schemas = selectedLanguageCode
         ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
         : [];
-    const pendingLibraryRequests = await fetchLibraryPushRequests().catch(
-        () => [],
-    );
+    const pendingLibraryRequests = await fetchLibraryPushRequests({
+        status: "pending",
+    }).catch(() => []);
     const activeLocale = document.documentElement.lang;
     for (const schema of schemas) {
         for (const layer of schema.layers ?? []) {

@@ -3,7 +3,7 @@ import {
     LibraryDictionarySearch,
     lookupDictionarySuggestions,
 } from "./dictionary.js";
-import { validateEntryInput } from "./input.js";
+import { validateEntryInput, validateEntryFilters } from "./input.js";
 import {
     alignFormContributions,
     applyFormContributions,
@@ -44,6 +44,7 @@ import type {
     LibraryContentPackPlan,
     LibraryContentPackReceipt,
     LibraryEntryInput,
+    LibraryEntryFilters,
     LibraryLocation,
     LibraryLookupProvider,
     LibraryLookupSuggestion,
@@ -389,9 +390,10 @@ export class LibraryService implements LibraryCapability {
     async list(
         actor: LibraryActor,
         raw: LibraryLocation,
-        filters: { schemaId?: string; layer?: string } = {},
+        filters: LibraryEntryFilters = {},
     ): Promise<LibraryEntry[]> {
         const location = await this.authorize(actor, raw, false);
+        validateEntryFilters(filters);
         if (filters.schemaId) {
             const schema = this.schema(filters.schemaId);
             if (filters.layer) findLayer(schema, filters.layer);
@@ -539,6 +541,7 @@ export class LibraryService implements LibraryCapability {
         const provider = this.lookupProviders.get(input.providerId);
         if (!provider) throw new Error("lookup_provider_not_found");
         const schema = this.schema(input.schemaId);
+        await this.flow?.run("study:library:search", input);
         return this.dictionary.search(
             provider,
             schema,
@@ -879,8 +882,11 @@ export class LibraryService implements LibraryCapability {
         return this.visibility.requestUpdate(actor, entryId, proposedEntry);
     }
 
-    listPushRequests(actor: LibraryActor): Promise<LibraryPushRequest[]> {
-        return this.visibility.listPushRequests(actor);
+    listPushRequests(
+        actor: LibraryActor,
+        status?: LibraryPushRequest["status"],
+    ): Promise<LibraryPushRequest[]> {
+        return this.visibility.listPushRequests(actor, status);
     }
 
     reviewPush(

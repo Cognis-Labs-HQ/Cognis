@@ -398,3 +398,11 @@ Penyedia kamus mengaktifkan pencarian navigasi melalui `searchable: true` dan ka
 ## Peninjauan dan pemindahan
 
 Administrator dan pemilik langsung memindahkan kartu pribadi ke cakupan bersama yang diizinkan; pelajar mengirim permintaan peninjauan. Seluruh teks dan ikon tujuan dapat diklik. Permintaan menampilkan kartu yang diajukan, perubahan yang diusulkan, cakupan, pembuat, waktu, status, dan tindakan ringkas sesuai izin. Riwayat keputusan, termasuk penarikan, tetap terlihat. Perubahan kartu dan keputusan berlangsung dalam satu transaksi basis data dengan perubahan status tertunda bersyarat. Validasi gagal membatalkan keputusan; keputusan usang atau berulang ditolak. Salinan pengajuan mempertahankan konten yang ditinjau dan mencegah persetujuan setelah sumber berubah.
+
+## Resolusi Kamus yang Efisien
+
+Hasil kamus ditampilkan sebelum referensi dimuat. Pratinjau hanya mengambil ID entri atau ID penyedia yang dirujuk serta karakter dasar untuk pelafalan. Seluruh pustaka karusel dimuat saat membuka editor atau kartu tertaut. Daftar entri memuat referensi sekaligus, bukan per kartu. Daftar permintaan menggunakan baris yang tersedia dan tidak membaca sumber untuk permintaan tanpa izin atau yang sudah selesai. Pencarian dan tinjauan memakai pemilih visibilitas yang sama untuk kolom tersembunyi. Baris cache kedaluwarsa dihapus saat cache ditulis dengan indeks waktu kedaluwarsa. Relokasi yang disetujui menjalankan alur terdaftar yang sama dengan relokasi langsung di dalam transaksi keputusan.
+
+Hasil dari cache juga menjalankan alur pencarian terdaftar agar kait ekstensi diterapkan secara konsisten.
+
+Navigasi belajar hanya meminta tinjauan tertunda; halaman Permintaan tetap menampilkan riwayat status lengkap.

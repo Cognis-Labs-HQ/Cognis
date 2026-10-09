@@ -386,3 +386,21 @@ test("Study registers an executable Library move flow before advertising the pro
     });
     assert.deepEqual(stages, ["authorize", "validate", "move", "audit"]);
 });
+
+test("Study registers an executable dictionary search flow", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "search", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:search",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:search", { query: "word" });
+    assert.deepEqual(stages, ["authorize", "validate", "search", "audit"]);
+});

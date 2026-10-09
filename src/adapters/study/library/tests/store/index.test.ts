@@ -262,12 +262,14 @@ test("entry reads compact sparse grouped references before sorting", async () =>
                 return {
                     rows: [
                         {
+                            source_entry_id: "entry-1",
                             target_entry_id: "character-2",
                             relation: "readings",
                             position: 1,
                             group_index: 1,
                         },
                         {
+                            source_entry_id: "entry-1",
                             target_entry_id: "character-1",
                             relation: "readings",
                             position: 0,

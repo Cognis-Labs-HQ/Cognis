@@ -264,6 +264,13 @@ export interface LibraryReferenceInput {
 
 export type LibraryReferenceGroups = Record<string, LibraryReferenceInput[][]>;
 
+export interface LibraryEntryFilters {
+    schemaId?: string;
+    layer?: string;
+    entryIds?: readonly string[];
+    sourceRecordIds?: readonly string[];
+}
+
 export interface LibraryEntryInput {
     schemaId: string;
     schemaVersion?: number;

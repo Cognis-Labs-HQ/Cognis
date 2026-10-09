@@ -1,5 +1,5 @@
 import { CONTENT_CLASS_PATTERN } from "../identifiers.js";
-import type { LibraryEntryInput } from "../types.js";
+import type { LibraryEntryInput, LibraryEntryFilters } from "../types.js";
 
 export function validateEntryInput(input: LibraryEntryInput): void {
     if (!input.label?.trim() || input.label.length > 500)
@@ -23,4 +23,20 @@ export function validateEntryInput(input: LibraryEntryInput): void {
         typeof input.alwaysShowDefinition !== "boolean"
     )
         throw new Error("invalid_always_show_definition");
+}
+
+export function validateEntryFilters(filters: LibraryEntryFilters): void {
+    for (const values of [filters.entryIds, filters.sourceRecordIds]) {
+        if (
+            values !== undefined &&
+            (!Array.isArray(values) ||
+                values.some(
+                    (value) =>
+                        typeof value !== "string" ||
+                        !value.trim() ||
+                        value.length > 500,
+                ))
+        )
+            throw new Error("invalid_entry_filter");
+    }
 }

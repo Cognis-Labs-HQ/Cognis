@@ -24,11 +24,20 @@ export async function fetchLibraryForms() {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryEntries({ scope, scopeId, schemaId, layer }) {
+export async function fetchLibraryEntries({
+    scope,
+    scopeId,
+    schemaId,
+    layer,
+    entryIds,
+    sourceRecordIds,
+}) {
     const query = new URLSearchParams({ scope });
     if (scopeId) query.set("scopeId", scopeId);
     if (schemaId) query.set("schemaId", schemaId);
     if (layer) query.set("layer", layer);
+    for (const id of entryIds ?? []) query.append("entryId", id);
+    for (const id of sourceRecordIds ?? []) query.append("sourceRecordId", id);
     const response = await apiFetch(`/api/v1/study/library/entries?${query}`);
     if (!response.ok) throw new Error("entries_failed");
     return (await response.json()).data;
@@ -81,8 +90,12 @@ export async function createLibraryEntry(location, entry) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryPushRequests() {
-    const response = await apiFetch("/api/v1/study/library/push-requests");
+export async function fetchLibraryPushRequests({ status } = {}) {
+    const query = new URLSearchParams();
+    if (status) query.set("status", status);
+    const response = await apiFetch(
+        `/api/v1/study/library/push-requests${status ? `?${query}` : ""}`,
+    );
     if (!response.ok) throw new Error("requests_failed");
     return (await response.json()).data;
 }

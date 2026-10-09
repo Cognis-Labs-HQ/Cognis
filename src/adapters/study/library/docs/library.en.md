@@ -411,3 +411,11 @@ Dictionary providers opt into navigation search with `searchable: true` and the 
 ## Review and relocation
 
 Administrators and owners relocate personal cards directly into authorized shared scopes; ordinary learners submit review requests. The full text-and-icon destination control is clickable. Requests show the submitted card, proposed edits, scope, author, dates, decision status, and compact authorized actions. Decision history remains visible, including withdrawals. Card changes and decisions run in one database transaction with conditional pending-status transitions. Failed validation rolls back the decision; stale or repeated decisions report an error. Submission snapshots preserve reviewed content and prevent approval after the source changes.
+
+## Efficient dictionary resolution
+
+Dictionary results render before reference hydration. Preview resolution requests only referenced entry IDs or provider record IDs and the atomic characters needed for pronunciations; the complete carousel library loads when opening a composer or navigating a linked card. Entry lists hydrate references in one batch rather than querying each card. Request lists map existing rows and avoid reading sources for unauthorized or completed requests. Hidden fields use the same visibility selector in search and review previews. Expired dictionary-cache rows are removed on cache writes using an expiry index. Approved relocations invoke the same registered move flow as direct relocations, inside the decision transaction.
+
+Search also invokes the registered search flow on cache hits, so extension hooks apply consistently.
+
+Study navigation requests only pending review items; the Requests page retains complete status history.

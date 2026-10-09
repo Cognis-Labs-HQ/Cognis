@@ -216,6 +216,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             stages: ["normalize", "propose", "rank"],
         },
         {
+            id: "study:library:search",
+            stages: ["authorize", "validate", "search", "audit"],
+        },
+        {
             id: "study:library:lookup",
             stages: ["discover", "lookup", "rank"],
         },

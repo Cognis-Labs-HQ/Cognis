@@ -9,8 +9,12 @@ import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
-import { searchLibraryDictionary } from "/static/gateways/study/ui/library-client.js";
+import {
+    fetchLibrarySchemas,
+    searchLibraryDictionary,
+} from "/static/gateways/study/ui/library-client.js";
 import { loadLibrary } from "../data.js";
+import { loadDictionaryReferences } from "./references.js";
 import { renderCardContents } from "../cards.js";
 import {
     renderDetailFields,
@@ -19,6 +23,7 @@ import {
     localizedTextValue,
     relationSection,
     isMeaningLayer,
+    visibleDetailFields,
 } from "../presentation.js";
 import { resolveLookupReferences } from "../create-entry/lookup-references.js";
 import { openEntryPopup } from "../entry-popup.js";
@@ -36,10 +41,8 @@ export async function mount(root, { signal } = {}) {
     const model = await loadStudySubNavigationModel({
         fallbackLanguageCode: parameters.get("language"),
     });
-    const { schemas, entries } = await loadLibrary(
-        model.selectedLanguageCode,
-        i18n,
-    );
+    const schemas = await fetchLibrarySchemas(model.selectedLanguageCode);
+    let entries = [];
     const input = {
         providerId: parameters.get("providerId"),
         schemaId: parameters.get("schemaId"),
@@ -107,7 +110,22 @@ export async function mount(root, { signal } = {}) {
                             `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
                     )
                     .join("")}</div>
-                ${renderDetailFields(Object.fromEntries((layer.fields ?? []).filter((field) => !field.hidden && !field.detail?.hidden && entry.fields[field.id] !== undefined).map((field) => [field.metadata?.labels?.[document.documentElement.lang] || field.metadata?.labels?.en || field.id, entry.fields[field.id]])))}
+                ${renderDetailFields(
+                    Object.fromEntries(
+                        visibleDetailFields(layer)
+                            .filter(
+                                (field) => entry.fields[field.id] !== undefined,
+                            )
+                            .map((field) => [
+                                field.metadata?.labels?.[
+                                    document.documentElement.lang
+                                ] ||
+                                    field.metadata?.labels?.en ||
+                                    field.id,
+                                entry.fields[field.id],
+                            ]),
+                    ),
+                )}
                 <ul>${(result.definitions ?? [])
                     .map(
                         (definition) =>
@@ -132,7 +150,9 @@ export async function mount(root, { signal } = {}) {
                 }
                 ${canCreateLayerEntries(layer) ? `<button class="btn-confirm" type="button" data-dictionary-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>` : ""}</section>`;
                   })()
-                : `<p>${escapeHtml(i18n.t("gateway.study.library_lookup_empty"))}</p>`
+                : response
+                  ? `<p>${escapeHtml(i18n.t("gateway.study.library_lookup_empty"))}</p>`
+                  : ""
         }
     </section>`;
     const search = async (refresh = false) => {
@@ -142,6 +162,14 @@ export async function mount(root, { signal } = {}) {
             if (!selectedProvider)
                 throw new Error("lookup_provider_not_searchable");
             response = await searchLibraryDictionary({ ...input, refresh });
+            signal?.throwIfAborted();
+            results = response.results;
+            const target = root.querySelector(
+                "[data-library-dictionary-results]",
+            );
+            selected = 0;
+            if (target) target.outerHTML = render();
+            entries = await loadDictionaryReferences(results, schemas);
             signal?.throwIfAborted();
             results = response.results.map((result) => {
                 const schema = schemas.find(({ id }) => id === result.schemaId);
@@ -156,10 +184,8 @@ export async function mount(root, { signal } = {}) {
                 };
             });
             selected = 0;
-            const target = root.querySelector(
-                "[data-library-dictionary-results]",
-            );
-            if (target) target.outerHTML = render();
+            root.querySelector("[data-library-dictionary-results]").outerHTML =
+                render();
         } catch (error) {
             if (!signal?.aborted)
                 showToast(i18n.t("gateway.study.library_dictionary_error"), {
@@ -218,26 +244,31 @@ export async function mount(root, { signal } = {}) {
         async (event) => {
             const related = event.target.closest("[data-library-entry]");
             if (related) {
-                const entry = entries.find(
-                    ({ id }) => id === related.dataset.libraryEntry,
-                );
-                if (entry)
-                    try {
+                try {
+                    const full = await loadLibrary(
+                        model.selectedLanguageCode,
+                        i18n,
+                    );
+                    const entry = full.entries.find(
+                        ({ id }) => id === related.dataset.libraryEntry,
+                    );
+                    if (entry) {
                         await openEntryPopup(
                             root,
                             entry,
                             schemas,
-                            entries,
+                            full.entries,
                             i18n,
                             model.selectedLanguageCode,
                             signal,
                             { readOnly: true },
                         );
-                    } catch {
-                        showToast(i18n.t("gateway.study.library_load_error"), {
-                            variant: "error",
-                        });
                     }
+                } catch {
+                    showToast(i18n.t("gateway.study.library_load_error"), {
+                        variant: "error",
+                    });
+                }
                 return;
             }
             const result = event.target.closest("[data-dictionary-result]");
@@ -254,9 +285,13 @@ export async function mount(root, { signal } = {}) {
                 create.disabled = true;
                 try {
                     const result = results[selected];
+                    const full = await loadLibrary(
+                        model.selectedLanguageCode,
+                        i18n,
+                    );
                     await openCreateEntryPopup({
                         schemas,
-                        entries,
+                        entries: full.entries,
                         schemaId: result.schemaId,
                         layerId: result.layer,
                         i18n,

@@ -91,18 +91,23 @@ export function definitionText(entry, layer, languageCode) {
     return localizedTextValue(translations);
 }
 
-export function metadataFields(layer) {
+export function visibleDetailFields(layer) {
     return (layer?.fields ?? []).filter(
-        (field) => field.detail?.renderer === "badge" && !field.detail.hidden,
+        (field) => !field.hidden && !field.detail?.hidden,
+    );
+}
+
+export function metadataFields(layer) {
+    return visibleDetailFields(layer).filter(
+        (field) => field.detail?.renderer === "badge",
     );
 }
 
 export function filterFields(layer) {
-    return (layer?.fields ?? []).filter(
+    return visibleDetailFields(layer).filter(
         (field) =>
-            !field.detail?.hidden &&
-            (field.detail?.renderer === "badge" ||
-                field.detail?.filterable === true),
+            field.detail?.renderer === "badge" ||
+            field.detail?.filterable === true,
     );
 }
 

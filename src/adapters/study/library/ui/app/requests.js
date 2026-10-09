@@ -13,6 +13,7 @@ import {
     renderDetailFields,
     renderMetadataPills,
     renderScope,
+    visibleDetailFields,
 } from "./presentation.js";
 
 export async function loadLibraryRequests(i18n) {
@@ -43,12 +44,8 @@ function requestCardPreview(entry, schemas, entries, i18n) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = layerForEntry(schemas, entry);
     const fields = Object.fromEntries(
-        (layer?.fields ?? [])
-            .filter(
-                (field) =>
-                    !field.detail?.hidden &&
-                    entry.fields?.[field.id] !== undefined,
-            )
+        visibleDetailFields(layer)
+            .filter((field) => entry.fields?.[field.id] !== undefined)
             .map((field) => [
                 localizedLabel(field.metadata, entry.language) || field.id,
                 field.type === "audio"

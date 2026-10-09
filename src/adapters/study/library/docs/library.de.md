@@ -398,3 +398,11 @@ Wörterbuchanbieter aktivieren die Navigationssuche mit `searchable: true` und d
 ## Prüfung und Bereichswechsel
 
 Administratoren und Eigentümer verschieben persönliche Karten direkt in berechtigte gemeinsame Bereiche; Lernende reichen Prüfanfragen ein. Text und Zielsymbol bilden gemeinsam die Schaltfläche. Anfragen zeigen die eingereichte Karte, Änderungsvorschläge, Bereich, Autor, Zeitangaben, Status und kompakte berechtigte Aktionen. Auch zurückgezogene Entscheidungen bleiben sichtbar. Kartenänderung und Entscheidung erfolgen in einer Datenbanktransaktion mit bedingtem Statuswechsel. Ungültige, veraltete und wiederholte Entscheidungen werden abgewiesen. Gespeicherte Einreichungen erhalten den geprüften Inhalt und verhindern die Genehmigung nach Änderungen an der Quelle.
+
+## Effiziente Wörterbuchauflösung
+
+Wörterbuchergebnisse erscheinen vor dem Laden der Referenzen. Vorschauen laden nur referenzierte Eintrags- oder Anbieter-IDs sowie die für Aussprachen benötigten Zeichen. Die vollständige Karussellbibliothek wird beim Öffnen des Editors oder einer verknüpften Karte geladen. Eintragslisten laden Referenzen gemeinsam statt pro Karte. Anfragen verwenden vorhandene Zeilen und lesen keine Quellen für unberechtigte oder abgeschlossene Anfragen. Suche und Prüfung verwenden denselben Sichtbarkeitsfilter für versteckte Felder. Abgelaufene Cachezeilen werden beim Schreiben über einen Ablaufindex entfernt. Genehmigte Verschiebungen rufen innerhalb der Entscheidungstransaktion denselben registrierten Ablauf wie direkte Verschiebungen auf.
+
+Auch Cachetreffer rufen den registrierten Suchablauf auf, sodass Erweiterungshooks einheitlich greifen.
+
+Die Studiennavigation fordert nur offene Prüfungen an; die Anfrageseite behält den vollständigen Statusverlauf.
