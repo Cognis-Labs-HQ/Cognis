@@ -433,3 +433,9 @@ Dictionary source data remains invisible metadata in composers and detail views.
 Repeated dictionary imports reuse matching hidden reading cards instead of producing duplicate conflicts. Owner validation and persistence execute within their named ctx stages; edits have an update flow and rejected hooks roll back writes. Invalid lookup bodies receive safe validation codes; unexpected internal failures return generic server errors. Shared definition validation lives in component-local reuse.
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
+
+## Composer and relocation
+
+Hovering a carousel card highlights every matching placement instead of showing position counters. Pointer dragging reorders individual placements without selecting text. Typed verb suggestions use the transformation chooser, whose wider two-column layout preserves readable cards. Committed definitions support unlinking with a trash control and retain dictionary sense order. Rebinding page interactions removes previous listeners, and batch deletion has one in-flight confirmation.
+
+Shared-to-private relocation requires confirmation and an administrator review request, including requests submitted by administrators. Approval recomputes inaccessible dependents and deletes their cascades atomically with the move; compatible personal cards remain. Protected or provider-owned cards and pending dependent requests prevent approval. Ordinary deletion permissions remain unchanged. Successful requests show a toast; owners of removed cards receive notifications in the Study category. The move-to-personal endpoint now returns HTTP 201 with a pending request rather than a relocated card.

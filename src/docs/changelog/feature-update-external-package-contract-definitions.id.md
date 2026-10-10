@@ -566,6 +566,12 @@ Impor kamus berulang memakai ulang kartu bacaan tersembunyi yang cocok sehingga 
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
+## Komposisi dan pemindahan
+
+Menyorot kartu karusel menandai semua penempatan yang sesuai tanpa penghitung posisi. Seret penunjuk mengurutkan penempatan tanpa memilih teks. Saran kata kerja yang diketik membuka pemilih transformasi dua kolom yang lebih lebar. Definisi tertaut dapat dilepas melalui ikon tempat sampah dan mempertahankan urutan makna kamus. Pengikatan ulang mengganti pendengar sebelumnya; penghapusan kelompok hanya membuka satu konfirmasi.
+
+Pemindahan kartu bersama ke ruang pribadi memerlukan konfirmasi dan permintaan peninjauan administrator, termasuk bagi administrator. Persetujuan menghitung ulang kartu turunan yang kehilangan akses dan menghapus kaskadenya secara atomik bersama pemindahan; kartu pribadi yang kompatibel tetap ada. Kartu terlindungi, konten penyedia, dan permintaan turunan yang masih tertunda menghalangi persetujuan. Izin penghapusan biasa tidak berubah. Permintaan berhasil menampilkan notifikasi singkat; pemilik kartu yang dihapus menerima pemberitahuan kategori Study. Endpoint move-to-personal kini mengembalikan HTTP 201 dengan permintaan tertunda, bukan kartu yang sudah dipindahkan.
+
 ## Komit
 
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
@@ -700,3 +706,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
 
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e

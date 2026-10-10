@@ -167,4 +167,8 @@
   <string name="gateway.study.library_dictionary_cached">Tersimpan di Cognis: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Pencarian kamus gagal. Coba lagi atau pilih penyedia lain.</string>
   <string name="gateway.study.library_search_results_subtitle">Jelajahi hasil kamus dan buat kartu belajar tertaut</string>
+    <string name="gateway.study.library_relocation_review_title">Tinjau Pemindahan Pribadi</string>
+    <string name="gateway.study.library_relocation_review_warning">Memindahkan kartu bersama ini ke ruang pribadi memerlukan tinjauan administrator. Kartu yang bergantung padanya dan tidak lagi memiliki akses akan dihapus setelah disetujui. Pemiliknya akan diberi tahu.</string>
+    <string name="gateway.study.library_request_relocation">Ajukan Pemindahan</string>
+    <string name="gateway.study.library_relocation_approval_warning">Persetujuan ini akan menghapus kartu terkait yang tidak dapat mengakses kartu pribadi, termasuk kartu pengguna lain. Pemiliknya akan diberi tahu.</string>
 </resources>

@@ -564,6 +564,12 @@ Wiederholte Wörterbuchimporte verwenden passende verborgene Lesungskarten statt
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
+## Komposition und Verschieben
+
+Beim Überfahren einer Karussellkarte werden alle passenden Platzierungen hervorgehoben; Positionszähler entfallen. Zeigerziehen ordnet einzelne Platzierungen ohne Textauswahl neu. Eingetippte Verben öffnen die breitere zweispaltige Transformationsauswahl. Verknüpfte Definitionen lassen sich über den Papierkorb entfernen und behalten die Wörterbuchreihenfolge. Erneutes Binden ersetzt alte Ereignislistener; Sammellöschungen öffnen nur eine Bestätigung.
+
+Das Verschieben geteilter Karten in den privaten Bereich verlangt eine Bestätigung und einen administrativ geprüften Antrag, auch für Administratoren. Die Freigabe berechnet unzugängliche abhängige Karten erneut und löscht deren Kaskaden atomar mit dem Verschieben; kompatible private Karten bleiben erhalten. Geschützte Karten, Anbieterinhalte und ausstehende abhängige Anträge verhindern die Freigabe. Normale Löschberechtigungen bleiben unverändert. Erfolgreiche Anträge zeigen eine Meldung; Eigentümer gelöschter Karten erhalten Benachrichtigungen der Kategorie Study. Der Endpunkt move-to-personal liefert jetzt HTTP 201 mit einem ausstehenden Antrag statt einer verschobenen Karte.
+
 ## Commits
 
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
@@ -698,3 +704,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
 
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e

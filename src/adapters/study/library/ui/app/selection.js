@@ -76,7 +76,13 @@ export function relocationState(selected, destination, requests = []) {
                 directions.some((direction) => direction < 0)) ||
             selected.some(
                 (entry) =>
-                    !canDeleteEntry(entry) ||
+                    !(
+                        canDeleteEntry(entry) ||
+                        (destination === "user" &&
+                            entry.canEdit === true &&
+                            entry.editRequiresReview === true &&
+                            !entry.protected)
+                    ) ||
                     requests.some(
                         (request) =>
                             request.sourceEntryId === entry.id &&

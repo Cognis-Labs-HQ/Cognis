@@ -420,3 +420,9 @@ Wörterbuch-Quelldaten bleiben unsichtbare Metadaten in Formularen und Detailans
 Wiederholte Wörterbuchimporte verwenden passende verborgene Lesungskarten statt Konflikte zu erzeugen. Validierung und Speicherung laufen in ihren benannten ctx-Stufen; Bearbeitungen besitzen einen Update-Flow und abgelehnte Hooks rollen Schreibvorgänge zurück. Ungültige Suchanfragen erhalten sichere Validierungscodes, unerwartete interne Fehler allgemeine Serverfehler. Gemeinsame Definitionsvalidierung liegt im komponenteneigenen reuse-Bereich.
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
+
+## Komposition und Verschieben
+
+Beim Überfahren einer Karussellkarte werden alle passenden Platzierungen hervorgehoben; Positionszähler entfallen. Zeigerziehen ordnet einzelne Platzierungen ohne Textauswahl neu. Eingetippte Verben öffnen die breitere zweispaltige Transformationsauswahl. Verknüpfte Definitionen lassen sich über den Papierkorb entfernen und behalten die Wörterbuchreihenfolge. Erneutes Binden ersetzt alte Ereignislistener; Sammellöschungen öffnen nur eine Bestätigung.
+
+Das Verschieben geteilter Karten in den privaten Bereich verlangt eine Bestätigung und einen administrativ geprüften Antrag, auch für Administratoren. Die Freigabe berechnet unzugängliche abhängige Karten erneut und löscht deren Kaskaden atomar mit dem Verschieben; kompatible private Karten bleiben erhalten. Geschützte Karten, Anbieterinhalte und ausstehende abhängige Anträge verhindern die Freigabe. Normale Löschberechtigungen bleiben unverändert. Erfolgreiche Anträge zeigen eine Meldung; Eigentümer gelöschter Karten erhalten Benachrichtigungen der Kategorie Study. Der Endpunkt move-to-personal liefert jetzt HTTP 201 mit einem ausstehenden Antrag statt einer verschobenen Karte.

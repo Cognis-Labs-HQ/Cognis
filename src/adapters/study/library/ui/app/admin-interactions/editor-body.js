@@ -1,3 +1,4 @@
+import { renderDefinitionActions } from "../reuse/definition-actions.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -238,6 +239,7 @@ export function editorBody(
             },
             itemsAttributes: {
                 "data-library-selected-references": kind,
+                "data-composition-kind": kind,
                 ...(kind === "input"
                     ? { "data-library-composition-blocks": true }
                     : {}),
@@ -435,7 +437,7 @@ export function editorBody(
         ? definitionEntries
               .map(
                   (definition) =>
-                      `<article class="library-editor-aggregate library-definition-summary"><header><strong>${escapeHtml(definitionText(definition, layerForEntry([schema], definition), schema.language) || definition.label)}</strong>${entryEditMode(definition) ? `<button class="btn-neutral" type="button" data-library-edit-related="${escapeHtml(definition.id)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button>` : ""}</header><dl>${definitionSummaryFields(definition)}</dl></article>`,
+                      `<article class="library-editor-aggregate library-definition-summary"><header><strong>${escapeHtml(definitionText(definition, layerForEntry([schema], definition), schema.language) || definition.label)}</strong>${renderDefinitionActions(definition.id, i18n, entryEditMode(definition) ? `<button class="btn-neutral" type="button" data-library-edit-related="${escapeHtml(definition.id)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button>` : "")}</header><dl>${definitionSummaryFields(definition)}</dl></article>`,
               )
               .join("")
         : `<p data-library-definition-empty>${escapeHtml(i18n.t("gateway.study.library_editor_no_definitions"))}</p>`;

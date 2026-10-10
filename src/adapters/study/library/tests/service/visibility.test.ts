@@ -194,7 +194,7 @@ test("provider cards cannot be sent to a personal namespace", async () => {
     );
 });
 
-test("global downgrades return content to its original submitter", async () => {
+test("global downgrades request review for the original submitter’s private scope", async () => {
     const entry = {
         id: "global-card",
         schemaId: "test-language",
@@ -209,19 +209,19 @@ test("global downgrades return content to its original submitter", async () => {
         saveSchema: async () => {},
         transaction: async <T>(operation: () => Promise<T>) => operation(),
         listPushRequests: async () => [],
-        referencesFor: async () => [],
         get: async () => entry,
-        move: async (_id: string, value: unknown) => {
+        createPush: async (_id: string, value: unknown) => {
             destination = value;
-            return { ...entry, ...(value as object) };
+            return { id: "pending", status: "pending" };
         },
     };
     const library = new LibraryService(store as never);
     await library.registerSchema(schema(1));
-    await library.moveToPersonal(
+    const request = await library.moveToPersonal(
         { accountId: "admin", role: "admin" },
         entry.id,
     );
+    assert.equal(request.status, "pending");
     assert.deepEqual(destination, { scope: "user", scopeId: "alice" });
 });
 

@@ -1,3 +1,7 @@
+import {
+    renderDefinitionActions,
+    bindDefinitionRemoval,
+} from "../reuse/definition-actions.js";
 import { findMatchingEntry } from "./entry-match.js";
 import { openLibraryEntryEditor } from "../admin-interactions/index.js";
 import { entryEditMode } from "../editability.js";
@@ -171,7 +175,9 @@ export function linkDefinition(form, schema, layer, entries, definition) {
         ({ value }) => value === definition.id,
     );
     if (option) {
+        const wasSelected = option.selected;
         option.selected = true;
+        if (!wasSelected) select.append(option);
         option.textContent = definition.label;
     } else
         select.append(new Option(definition.label, definition.id, true, true));
@@ -179,14 +185,14 @@ export function linkDefinition(form, schema, layer, entries, definition) {
         '[data-library-editor-panel="definitions"]',
     );
     panel?.querySelector("[data-library-definition-empty]")?.remove();
-    panel
-        ?.querySelector(
-            `[data-library-definition-id="${CSS.escape(definition.id)}"]`,
-        )
-        ?.remove();
+    const previousCard = panel?.querySelector(
+        `[data-library-definition-id="${CSS.escape(definition.id)}"]`,
+    );
+    const nextCard = previousCard?.nextElementSibling;
+    previousCard?.remove();
     panel?.insertAdjacentHTML(
-        "afterbegin",
-        `<article class="library-editor-aggregate" data-library-definition-id="${escapeHtml(definition.id)}"><header><strong>${escapeHtml(definition.label)}</strong>${definition.canEdit !== false ? `<button class="btn-neutral" type="button" data-library-edit-definition="${escapeHtml(definition.id)}">${escapeHtml(form.libraryDefinitionI18n?.t("ui.reuse.edit") ?? "")}</button>` : ""}</header><p>${DEFINITION_LANGUAGES.map(
+        "beforeend",
+        `<article class="library-editor-aggregate" data-library-definition-id="${escapeHtml(definition.id)}"><header><strong>${escapeHtml(definition.label)}</strong>${renderDefinitionActions(definition.id, form.libraryDefinitionI18n, definition.canEdit !== false ? `<button class="btn-neutral" type="button" data-library-edit-definition="${escapeHtml(definition.id)}">${escapeHtml(form.libraryDefinitionI18n?.t("ui.reuse.edit") ?? "")}</button>` : "")}</header><p>${DEFINITION_LANGUAGES.map(
             (language) => {
                 const text =
                     definition.fields?.[
@@ -201,6 +207,8 @@ export function linkDefinition(form, schema, layer, entries, definition) {
             .filter(Boolean)
             .join(" · ")}</p></article>`,
     );
+    if (nextCard?.isConnected)
+        panel.insertBefore(panel.lastElementChild, nextCard);
     select.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
@@ -209,6 +217,7 @@ export function bindCommittedDefinitionEditing(
     { schema, layer, entries, i18n },
 ) {
     form.libraryDefinitionI18n = i18n;
+    bindDefinitionRemoval(form, layer, schema);
     form.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-library-edit-definition]");
         if (!button) return;

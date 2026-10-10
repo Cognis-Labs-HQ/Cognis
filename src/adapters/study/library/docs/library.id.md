@@ -420,3 +420,9 @@ Data sumber kamus tetap menjadi metadata tersembunyi dalam penyusun kartu dan ta
 Impor kamus berulang memakai ulang kartu bacaan tersembunyi yang cocok sehingga tidak menimbulkan konflik duplikat. Validasi dan persistensi berjalan dalam tahap ctx yang sesuai; penyuntingan memakai alur pembaruan dan penolakan hook membatalkan penulisan. Permintaan pencarian tidak valid menerima kode validasi aman; kegagalan internal tak terduga menerima kesalahan server generik. Validasi definisi bersama ditempatkan dalam reuse milik komponen.
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
+
+## Komposisi dan pemindahan
+
+Menyorot kartu karusel menandai semua penempatan yang sesuai tanpa penghitung posisi. Seret penunjuk mengurutkan penempatan tanpa memilih teks. Saran kata kerja yang diketik membuka pemilih transformasi dua kolom yang lebih lebar. Definisi tertaut dapat dilepas melalui ikon tempat sampah dan mempertahankan urutan makna kamus. Pengikatan ulang mengganti pendengar sebelumnya; penghapusan kelompok hanya membuka satu konfirmasi.
+
+Pemindahan kartu bersama ke ruang pribadi memerlukan konfirmasi dan permintaan peninjauan administrator, termasuk bagi administrator. Persetujuan menghitung ulang kartu turunan yang kehilangan akses dan menghapus kaskadenya secara atomik bersama pemindahan; kartu pribadi yang kompatibel tetap ada. Kartu terlindungi, konten penyedia, dan permintaan turunan yang masih tertunda menghalangi persetujuan. Izin penghapusan biasa tidak berubah. Permintaan berhasil menampilkan notifikasi singkat; pemilik kartu yang dihapus menerima pemberitahuan kategori Study. Endpoint move-to-personal kini mengembalikan HTTP 201 dengan permintaan tertunda, bukan kartu yang sudah dipindahkan.

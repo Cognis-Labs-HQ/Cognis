@@ -1,8 +1,8 @@
-import { runOperation } from "./reuse/operation.js";
 import {
     allInputReferences,
     canComposeAtLocation,
 } from "./service/dependencies.js";
+import { runOperation } from "./reuse/operation.js";
 import type { AccessRole, FlowApi } from "@cognis/core";
 import { LibraryStore } from "./store.js";
 import type {
@@ -47,6 +47,15 @@ export class LibraryVisibilityService {
             entryId: string,
             input: NonNullable<LibraryPushRequest["proposedEntry"]>,
         ) => Promise<LibraryEntry>,
+        private readonly cascadeRelocation?: (
+            actor: VisibilityActor,
+            source: LibraryEntry,
+            destination: LibraryLocation,
+        ) => Promise<LibraryEntry[]>,
+        private readonly notifyDeletion?: (
+            entries: readonly LibraryEntry[],
+            actor: VisibilityActor,
+        ) => Promise<void>,
     ) {}
 
     async requestPush(
@@ -57,11 +66,25 @@ export class LibraryVisibilityService {
         const source = await this.read(actor, entryId);
         if (!source) throw new Error("not_found");
         if (source.protected) throw new Error("protected_content");
-        if (source.scope !== "user" || source.scopeId !== actor.accountId)
-            throw new Error("forbidden");
-        if (destination.scope === "user")
-            throw new Error("invalid_destination");
-        const normalized = await this.authorize(actor, destination, false);
+        if (source.createdBy.startsWith("content-pack:"))
+            throw new Error("provider_content");
+        let normalized: LibraryLocation;
+        if (destination.scope === "user") {
+            if (source.scope === "user") throw new Error("invalid_destination");
+            if (
+                source.createdBy !== actor.accountId &&
+                actor.role !== "admin" &&
+                actor.role !== "owner"
+            )
+                throw new Error("forbidden");
+            if (destination.scopeId && destination.scopeId !== source.createdBy)
+                throw new Error("invalid_destination");
+            normalized = { scope: "user", scopeId: source.createdBy };
+        } else {
+            if (source.scope !== "user" || source.scopeId !== actor.accountId)
+                throw new Error("forbidden");
+            normalized = await this.authorize(actor, destination, false);
+        }
         if (
             (await this.store.listPushRequests("pending")).some(
                 (request) => request.sourceEntryId === source.id,
@@ -124,7 +147,13 @@ export class LibraryVisibilityService {
         for (const request of await this.store.listPushRequests(status)) {
             let canReview = false;
             try {
-                await this.authorize(actor, request.destination, true);
+                await this.authorize(
+                    actor,
+                    request.destination.scope === "user"
+                        ? { scope: "global", scopeId: "global" }
+                        : request.destination,
+                    true,
+                );
                 canReview = true;
             } catch (error) {
                 if (
@@ -157,9 +186,16 @@ export class LibraryVisibilityService {
         requestId: string,
         decision: "approved" | "rejected",
     ): Promise<LibraryPushRequest> {
+        let deletedEntries: LibraryEntry[] = [];
         const reviewed = await this.store.transaction(async () => {
             const request = await this.pendingRequest(requestId);
-            await this.authorize(actor, request.destination, true);
+            await this.authorize(
+                actor,
+                request.destination.scope === "user"
+                    ? { scope: "global", scopeId: "global" }
+                    : request.destination,
+                true,
+            );
             await this.store.reviewPush(requestId, decision, actor.accountId);
             if (decision === "approved") {
                 const source = await this.store.get(request.sourceEntryId);
@@ -186,6 +222,56 @@ export class LibraryVisibilityService {
                         actor,
                         request.sourceEntryId,
                         request.proposedEntry,
+                    );
+                } else if (request.destination.scope === "user") {
+                    if (
+                        source.scope === "user" ||
+                        request.destination.scopeId !== source.createdBy
+                    )
+                        throw new Error("request_source_moved");
+                    if (!this.cascadeRelocation)
+                        throw new Error("move_unavailable");
+                    await this.validateDependencies(
+                        { accountId: source.createdBy, role: "user" },
+                        source,
+                        request.destination,
+                        source.id,
+                    );
+                    for (const pending of await this.store.listPushRequests(
+                        "pending",
+                    )) {
+                        const candidate =
+                            pending.proposedEntry ??
+                            (await this.store.get(pending.sourceEntryId));
+                        if (
+                            candidate &&
+                            allInputReferences(candidate).some(
+                                ({ entryId }) => entryId === source.id,
+                            ) &&
+                            !canComposeAtLocation(
+                                { ...source, ...request.destination },
+                                pending.destination,
+                            )
+                        )
+                            throw new Error("request_pending");
+                    }
+                    deletedEntries = await this.cascadeRelocation(
+                        actor,
+                        source,
+                        request.destination,
+                    );
+                    await runOperation(
+                        this.flow,
+                        "study:library:move",
+                        {
+                            actor,
+                            entry: source,
+                            destination: request.destination,
+                        },
+                        {
+                            move: () =>
+                                this.store.move(source.id, request.destination),
+                        },
                     );
                 } else if (
                     source.scope !== "user" ||
@@ -222,6 +308,8 @@ export class LibraryVisibilityService {
                 canWithdraw: false,
             };
         });
+        if (deletedEntries.length)
+            await this.notifyDeletion?.(deletedEntries, actor);
         if (
             decision === "approved" &&
             reviewed.destination.scope === "global" &&
@@ -247,7 +335,16 @@ export class LibraryVisibilityService {
                 source.createdBy === actor.accountId;
             const validPromotionSource =
                 source?.scope === "user" && source.scopeId === actor.accountId;
-            if (!validUpdateSource && !validPromotionSource)
+            const validRelocationSource =
+                request.destination.scope === "user" &&
+                source &&
+                source.scope !== "user" &&
+                source.createdBy === request.destination.scopeId;
+            if (
+                !validUpdateSource &&
+                !validPromotionSource &&
+                !validRelocationSource
+            )
                 throw new Error("request_source_moved");
             await this.store.reviewPush(
                 requestId,
@@ -311,69 +408,8 @@ export class LibraryVisibilityService {
     async moveToPersonal(
         actor: VisibilityActor,
         entryId: string,
-    ): Promise<LibraryEntry> {
-        const entry = await this.read(actor, entryId);
-        if (!entry) throw new Error("not_found");
-        if (entry.protected) throw new Error("protected_content");
-        if (entry.createdBy.startsWith("content-pack:"))
-            throw new Error("provider_content");
-        await this.authorize(
-            actor,
-            { scope: entry.scope, scopeId: entry.scopeId },
-            true,
-        );
-        if (entry.scope === "user") throw new Error("invalid_destination");
-        const destination = {
-            scope: "user",
-            scopeId: entry.createdBy,
-        } as const;
-        const requests = await this.store.listPushRequests("pending");
-        if (requests.some(({ sourceEntryId }) => sourceEntryId === entry.id))
-            throw new Error("request_pending");
-        for (const request of requests) {
-            const candidate =
-                request.proposedEntry ??
-                (await this.store.get(request.sourceEntryId));
-            if (
-                candidate &&
-                allInputReferences(candidate).some(
-                    ({ entryId }) => entryId === entry.id,
-                ) &&
-                !canComposeAtLocation(
-                    { ...entry, ...destination },
-                    request.destination,
-                )
-            )
-                throw new Error("request_pending");
-        }
-        for (const dependent of await this.store.referencesFor(entry.id)) {
-            if (!canComposeAtLocation({ ...entry, ...destination }, dependent))
-                throw new Error("entry_required_by_shared_content");
-        }
-        await this.validateDependencies(
-            { accountId: entry.createdBy, role: "user" },
-            entry,
-            destination,
-            entry.id,
-        );
-        let relocated!: LibraryEntry;
-        const operation = async () => {
-            await runOperation(
-                this.flow,
-                "study:library:move",
-                { actor, entry, destination },
-                {
-                    move: async () => {
-                        relocated = await this.store.move(
-                            entry.id,
-                            destination,
-                        );
-                    },
-                },
-            );
-            return relocated;
-        };
-        return this.store.transaction(operation);
+    ): Promise<LibraryPushRequest> {
+        return this.requestPush(actor, entryId, { scope: "user" });
     }
 
     private async pendingRequest(requestId: string) {

@@ -101,6 +101,9 @@ function editor(value = "ab") {
         mountHorizontalCarousels(_root, options) {
             carousel = options;
         },
+        bindCompositionReordering: (_root, options) => {
+            context.reorder = options.onMove;
+        },
         renderCompositionItems: () => "",
         escapeHtml: (value) => String(value),
         showToast() {},
@@ -124,6 +127,7 @@ function editor(value = "ab") {
     return {
         form,
         listeners,
+        reorder: (detail) => context.reorder(detail),
         field,
         saved,
         clearedCarousels,
@@ -257,16 +261,6 @@ test("repeated pronunciation characters retain separate positions when committed
 test("dragging one repeated stage placement preserves the other instances", () => {
     const session = editor();
     session.form.compositionOrder = ["a", "b", "a"];
-    const item = (index) => ({
-        dataset: { libraryCompositionIndex: String(index) },
-        closest: () => ({ dataset: { librarySelectedReferences: "input" } }),
-    });
-    const source = item(2);
-    const target = item(0);
-    session.listeners.get("dragstart")({ target: { closest: () => source } });
-    session.listeners.get("drop")({
-        target: { closest: () => target },
-        preventDefault() {},
-    });
+    session.reorder({ kind: "input", from: 2, to: 0 });
     assert.deepEqual(session.form.compositionOrder, ["a", "a", "b"]);
 });

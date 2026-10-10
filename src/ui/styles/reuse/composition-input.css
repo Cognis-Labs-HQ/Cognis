@@ -58,3 +58,18 @@
     flex-wrap: wrap;
     gap: 0.35rem;
 }
+
+.composition-input-item[draggable="true"] {
+    user-select: none;
+    touch-action: pan-y;
+}
+
+.composition-input-item.is-carousel-highlight,
+.composition-input-item.is-drop-target {
+    border-color: var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 18%, var(--surface-2));
+}
+
+.composition-input-item.is-dragging {
+    opacity: 0.6;
+}

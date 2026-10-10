@@ -271,6 +271,7 @@ export async function openTransformationPopup(
     if (!pathways.length) return null;
     let overlay;
     const result = await openPopup({
+        maxWidth: "min(56rem, 96vw)",
         title: i18n
             .t("gateway.study.library_transform_title")
             .replace("{{ verb }}", entry.label),

@@ -209,19 +209,12 @@ export function bindTextComposition(
             `[data-carousel-value="${CSS.escape(id)}"], [data-carousel-base-value="${CSS.escape(id)}"]`,
         );
         if (!item) return;
-        const relationship = relationships.find(
-            (candidate) => candidate.id === relationshipId,
-        );
-        if (item.classList.contains("is-selected") && relationship?.ordered) {
-            form.compositionOrder.push(transformationValue ?? id);
-            form.dispatchEvent(new Event("library-composition-change"));
-            return;
-        }
-        item.dataset.carouselSuggestedTransformation = JSON.stringify({
-            entryId: id,
-            value: transformationValue ?? id,
-            label,
-        });
+        if (transformationValue)
+            item.dataset.carouselSuggestedTransformation = JSON.stringify({
+                entryId: id,
+                value: transformationValue,
+                label,
+            });
         item.click();
     };
     output.addEventListener("click", (event) => {

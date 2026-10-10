@@ -167,4 +167,8 @@
   <string name="gateway.study.library_dictionary_cached">Cognis のキャッシュ: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">辞書検索に失敗しました。再試行するか、別の提供元を選択してください。</string>
   <string name="gateway.study.library_search_results_subtitle">辞書の候補を確認して学習カードを作成</string>
+    <string name="gateway.study.library_relocation_review_title">非公開への移動を確認</string>
+    <string name="gateway.study.library_relocation_review_warning">共有カードを非公開へ移動するには管理者の審査が必要です。承認時には、参照先へアクセスできなくなる依存カードが削除され、所有者へ通知されます。</string>
+    <string name="gateway.study.library_request_relocation">移動を申請</string>
+    <string name="gateway.study.library_relocation_approval_warning">承認すると、非公開カードへアクセスできない依存カードが削除されます。他のユーザーのカードも対象になり、所有者へ通知されます。</string>
 </resources>

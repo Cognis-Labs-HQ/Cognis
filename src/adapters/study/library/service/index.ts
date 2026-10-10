@@ -14,10 +14,15 @@ import {
 } from "./form-contributions.js";
 import { localizeDefinition } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
-import { authorizeDeletion, planDeletion } from "./deletion.js";
+import {
+    authorizeDeletion,
+    pendingDeletionEntries,
+    planDeletion,
+} from "./deletion.js";
 import { entryPermissions } from "./permissions.js";
 import { validateUpdateProposal } from "./proposals.js";
 import {
+    canComposeAtLocation,
     normalizeLocation,
     validateDependencyVisibility,
     validateEntrySelection,
@@ -87,6 +92,10 @@ export class LibraryService implements LibraryCapability {
         private readonly audioCache?: LibraryAudioCache,
         private readonly notifyNewContent?: LibraryContentNotifier,
         cacheFactory?: ProbeCacheFactory,
+        private readonly notifyDeletion?: (
+            entries: readonly LibraryEntry[],
+            actor: LibraryActor,
+        ) => Promise<void>,
     ) {
         this.writer = new LibraryEntryWriter({
             store,
@@ -132,6 +141,27 @@ export class LibraryService implements LibraryCapability {
                 }
             },
             this.update.bind(this),
+            async (actor, source, destination) => {
+                const dependents = (
+                    await store.referencesFor(source.id)
+                ).filter(
+                    (dependent) =>
+                        !canComposeAtLocation(
+                            { ...source, ...destination },
+                            dependent,
+                        ),
+                );
+                if (!dependents.length) return [];
+                const cascadeIds = await store.resolveDeletionCascade(
+                    dependents.map(({ id }) => id),
+                    undefined,
+                    true,
+                );
+                if (cascadeIds.includes(source.id))
+                    throw new Error("entry_required_by_shared_content");
+                return this.removeEntries(actor, cascadeIds, false, true);
+            },
+            (entries, actor) => this.notifyDeletedEntries(entries, actor),
         );
     }
 
@@ -701,19 +731,50 @@ export class LibraryService implements LibraryCapability {
         entryIds: readonly string[],
         blacklistContentHashes: boolean,
     ): Promise<readonly string[]> {
+        const entries = await this.removeEntries(
+            actor,
+            entryIds,
+            blacklistContentHashes,
+        );
+        await this.notifyDeletedEntries(entries, actor);
+        return entries.map(({ id }) => id);
+    }
+
+    private async notifyDeletedEntries(
+        entries: readonly LibraryEntry[],
+        actor: LibraryActor,
+    ): Promise<void> {
+        try {
+            await this.notifyDeletion?.(entries, actor);
+        } catch (error) {
+            await this.log?.("error", "Study cascade notification failed.", {
+                component: "study-library",
+                operation: "notify-deletion",
+                accountId: actor.accountId,
+                errorName: error instanceof Error ? error.name : "Error",
+            });
+        }
+    }
+
+    private async removeEntries(
+        actor: LibraryActor,
+        entryIds: readonly string[],
+        blacklistContentHashes: boolean,
+        reviewedRelocation = false,
+    ): Promise<LibraryEntry[]> {
         validateEntrySelection(entryIds);
-        const pendingSources = new Set(
-            ((await this.store.listPushRequests?.("pending")) ?? []).map(
-                ({ sourceEntryId }) => sourceEntryId,
-            ),
+        const pendingSources = pendingDeletionEntries(
+            (await this.store.listPushRequests?.("pending")) ?? [],
         );
         if (entryIds.some((entryId) => pendingSources.has(entryId)))
             throw new Error("request_pending");
+        let deletedEntries: LibraryEntry[] = [];
         const deletedEntryIds = await this.store.deleteEntries(
             entryIds,
             actor.accountId,
             blacklistContentHashes,
             async (entries) => {
+                deletedEntries = [...entries];
                 await authorizeDeletion(
                     actor,
                     entries,
@@ -721,6 +782,7 @@ export class LibraryService implements LibraryCapability {
                     (entry) => this.immutable(entry),
                     (actor, location, write) =>
                         this.authorize(actor, location, write),
+                    reviewedRelocation,
                 );
             },
             (entries, remove) =>
@@ -738,7 +800,7 @@ export class LibraryService implements LibraryCapability {
             entryIds: deletedEntryIds,
             blacklistContentHashes,
         });
-        return deletedEntryIds;
+        return deletedEntries;
     }
 
     async trace(actor: LibraryActor, entryId: string) {
@@ -753,11 +815,13 @@ export class LibraryService implements LibraryCapability {
         );
     }
 
-    requestPush(
+    async requestPush(
         actor: LibraryActor,
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest> {
+        const entry = await this.read(actor, entryId);
+        if (entry && this.immutable(entry)) throw new Error("immutable_layer");
         return this.visibility.requestPush(actor, entryId, destination);
     }
 
@@ -812,13 +876,10 @@ export class LibraryService implements LibraryCapability {
     async moveToPersonal(
         actor: LibraryActor,
         entryId: string,
-    ): Promise<LibraryEntry> {
+    ): Promise<LibraryPushRequest> {
         const entry = await this.read(actor, entryId);
         if (entry && this.immutable(entry)) throw new Error("immutable_layer");
-        return this.entryWithPermissions(
-            actor,
-            await this.visibility.moveToPersonal(actor, entryId),
-        );
+        return this.visibility.moveToPersonal(actor, entryId);
     }
 
     async relocate(
@@ -829,7 +890,10 @@ export class LibraryService implements LibraryCapability {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
         if (this.immutable(entry)) throw new Error("immutable_layer");
-        if (actor.role !== "admin" && actor.role !== "owner")
+        if (
+            destination.scope === "user" ||
+            (actor.role !== "admin" && actor.role !== "owner")
+        )
             return {
                 request: await this.requestPush(actor, entryId, destination),
             };

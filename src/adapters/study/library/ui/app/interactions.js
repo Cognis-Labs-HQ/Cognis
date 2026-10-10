@@ -1,6 +1,5 @@
 import { showToast } from "/static/reuse/toast.js";
 import {
-    deleteLibraryEntries,
     fetchLibraryLocations,
     markLibraryEntriesViewed,
 } from "/static/gateways/study/ui/library-client.js";
@@ -9,8 +8,6 @@ import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
 import { loadDrawing } from "./drawing.js";
 import {
-    confirmEntryDeletion,
-    deletionErrorKey,
     deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
@@ -25,7 +22,9 @@ import {
 import { createLibraryVisibilityActions } from "./visibility-actions.js";
 import { bindTransformationInteractions } from "./transformation-interactions.js";
 import { mergeEntryCollectionUpdate } from "./entry-collection.js";
+import { deleteLibrarySelection } from "./deletion-actions.js";
 let activeEntryPopup = null;
+const interactionControllers = new WeakMap();
 export function bindLibraryInteractions(root, context) {
     const {
         i18n,
@@ -35,8 +34,17 @@ export function bindLibraryInteractions(root, context) {
         readOnly = false,
         schemas,
         showReferenceTree = false,
-        signal,
+        signal: ownerSignal,
     } = context;
+    interactionControllers.get(root)?.abort();
+    const controller = new AbortController();
+    interactionControllers.set(root, controller);
+    const signal = controller.signal;
+    if (ownerSignal?.aborted) controller.abort();
+    else
+        ownerSignal?.addEventListener("abort", () => controller.abort(), {
+            once: true,
+        });
     let entries = context.entries;
     const requests = context.requests ?? [];
     let locations;
@@ -246,29 +254,15 @@ export function bindLibraryInteractions(root, context) {
         once: true,
     });
     async function deleteSelection() {
-        const request = await confirmEntryDeletion(
+        await deleteLibrarySelection({
             root,
             entries,
             schemas,
             i18n,
-        );
-        if (!request) return;
-        try {
-            const deletion = await deleteLibraryEntries(request.entryIds, {
-                blacklistContentHashes: request.blacklistContentHashes,
-            });
-            entries = entries.filter(
-                (entry) => !deletion.entryIds.includes(entry.id),
-            );
-            renderEntries();
-            setSelectionMode(root, false);
-            showToast(i18n.t("gateway.study.library_delete_success"), {
-                variant: "success",
-            });
-        } catch (error) {
-            showToast(i18n.t(deletionErrorKey(error)), {
-                variant: "error",
-            });
-        }
+            onDeleted: (updated) => {
+                entries = updated;
+                renderEntries();
+            },
+        });
     }
 }

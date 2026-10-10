@@ -1,6 +1,20 @@
 import type { LibraryStore } from "../store.js";
-import { validateEntrySelection } from "./dependencies.js";
+import { allInputReferences, validateEntrySelection } from "./dependencies.js";
+import type { LibraryPushRequest } from "../types.js";
 import type { LibraryActor, LibraryEntry, LibraryLocation } from "../types.js";
+
+export function pendingDeletionEntries(
+    requests: readonly LibraryPushRequest[],
+): Set<string> {
+    return new Set(
+        requests.flatMap(({ sourceEntryId, proposedEntry }) => [
+            sourceEntryId,
+            ...allInputReferences(proposedEntry ?? { references: [] }).map(
+                ({ entryId }) => entryId,
+            ),
+        ]),
+    );
+}
 export async function authorizeDeletion(
     actor: LibraryActor,
     entries: readonly LibraryEntry[],
@@ -11,7 +25,21 @@ export async function authorizeDeletion(
         location: LibraryLocation,
         write: boolean,
     ) => Promise<void>,
+    reviewedRelocation = false,
 ): Promise<void> {
+    // Only a globally authorized administrator may remove foreign private
+    // dependents while approving a shared-to-private relocation.
+    if (reviewedRelocation) {
+        if (actor.role !== "admin" && actor.role !== "owner")
+            throw new Error("forbidden");
+        await authorize(actor, { scope: "global", scopeId: "global" }, true);
+        if (
+            entries.some(({ createdBy }) =>
+                createdBy.startsWith("content-pack:"),
+            )
+        )
+            throw new Error("provider_content");
+    }
     if (entries.some(({ id }) => pendingSources.has(id)))
         throw new Error("request_pending");
     if (entries.some((entry) => immutable(entry)))
@@ -30,6 +58,7 @@ export async function authorizeDeletion(
         throw new Error("forbidden");
     }
     for (const entry of entries) {
+        if (reviewedRelocation && entry.scope === "user") continue;
         await authorize(
             actor,
             { scope: entry.scope, scopeId: entry.scopeId },
@@ -59,10 +88,8 @@ export async function planDeletion(
     const entries = await Promise.all(plannedIds.map((id) => store.get(id)));
     if (entries.some((entry) => !entry)) throw new Error("entry_not_found");
     const resolved = entries as LibraryEntry[];
-    const pendingSources = new Set(
-        (await store.listPushRequests("pending")).map(
-            ({ sourceEntryId }) => sourceEntryId,
-        ),
+    const pendingSources = pendingDeletionEntries(
+        await store.listPushRequests("pending"),
     );
     await authorizeDeletion(
         actor,

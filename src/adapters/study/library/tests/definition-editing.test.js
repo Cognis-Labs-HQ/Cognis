@@ -17,6 +17,7 @@ test("committed definitions edit through the existing editor with refreshed perm
     let renders = 0;
     const context = {
         Event,
+        bindDefinitionRemoval() {},
         fetchLibraryEntry: async () => ({
             entry: { id: "definition", canEdit: true },
         }),
@@ -56,6 +57,7 @@ test("definitions without edit permission are not written", async () => {
     let listener;
     let opened = false;
     const context = {
+        bindDefinitionRemoval() {},
         fetchLibraryEntry: async () => ({ entry: { canEdit: false } }),
         entryEditMode: () => null,
         openLibraryEntryEditor: async () => {

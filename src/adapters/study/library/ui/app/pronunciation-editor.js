@@ -5,7 +5,10 @@ import {
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
-import { renderCompositionItems } from "/static/reuse/composition-input.js";
+import {
+    bindCompositionReordering,
+    renderCompositionItems,
+} from "/static/reuse/composition-input.js";
 import {
     compositionTokenEntryId,
     compositionTokenLabel,
@@ -132,7 +135,8 @@ export function mountEditableRelationshipCarousels(
                 itemAttributes: ({ value }, index) => ({
                     "data-library-selected-reference": value,
                     "data-library-composition-index": String(index),
-                    draggable: true,
+                    "data-composition-index": String(index),
+                    draggable: "true",
                     ...(kind === "input"
                         ? {
                               "data-library-composition-id": value,
@@ -312,62 +316,23 @@ export function mountEditableRelationshipCarousels(
         const field = form.elements["field:pronunciation"];
         if (field) field.value = components.join("");
     };
-    let draggedIndex = null;
-    let draggedKind = null;
-    form.addEventListener(
-        "dragstart",
-        (event) => {
-            const item = event.target.closest(
-                "[data-library-composition-index]",
-            );
-            draggedKind =
-                item?.closest("[data-library-selected-references]")?.dataset
-                    .librarySelectedReferences ?? null;
-            draggedIndex = item
-                ? Number(item.dataset.libraryCompositionIndex)
-                : null;
-            if (item)
-                event.dataTransfer?.setData("text/plain", String(draggedIndex));
-        },
-        { signal: controller.signal },
-    );
-    form.addEventListener(
-        "dragover",
-        (event) => {
-            if (event.target.closest("[data-library-selected-references]"))
-                event.preventDefault();
-        },
-        { signal: controller.signal },
-    );
-    form.addEventListener(
-        "drop",
-        (event) => {
-            const item = event.target.closest(
-                "[data-library-composition-index]",
-            );
-            if (
-                !item ||
-                draggedIndex === null ||
-                item.closest("[data-library-selected-references]")?.dataset
-                    .librarySelectedReferences !== draggedKind
-            )
-                return;
-            event.preventDefault();
-            const targetIndex = Number(item.dataset.libraryCompositionIndex);
-            if (draggedKind === "input") {
-                const [token] = form.compositionOrder.splice(draggedIndex, 1);
-                form.compositionOrder.splice(targetIndex, 0, token);
+    bindCompositionReordering(form, {
+        signal: controller.signal,
+        onMove({ kind, from, to }) {
+            if (kind === "input") {
+                const [token] = form.compositionOrder.splice(from, 1);
+                form.compositionOrder.splice(to, 0, token);
             } else {
-                const relationshipIds = relationshipIdsForKind(draggedKind);
-                const collection = isMultiValueKind(draggedKind)
+                const relationshipIds = relationshipIdsForKind(kind);
+                const collection = isMultiValueKind(kind)
                     ? stagedValues
                     : draftValues;
                 const placements = relationshipIds.flatMap((id) =>
                     (collection.get(id) ?? []).map((value) => ({ id, value })),
                 );
-                const [placement] = placements.splice(draggedIndex, 1);
+                const [placement] = placements.splice(from, 1);
                 if (!placement) return;
-                placements.splice(targetIndex, 0, placement);
+                placements.splice(to, 0, placement);
                 for (const id of relationshipIds)
                     collection.set(
                         id,
@@ -376,20 +341,53 @@ export function mountEditableRelationshipCarousels(
                             .map(({ value }) => value),
                     );
             }
-            draggedIndex = null;
             form.dispatchEvent(
                 new Event("library-composition-change", { bubbles: true }),
             );
         },
-        { signal: controller.signal },
-    );
-    form.addEventListener(
-        "dragend",
-        () => {
-            draggedIndex = null;
-        },
-        { signal: controller.signal },
-    );
+    });
+    const highlightPlacements = (event, active) => {
+        const item = event.target.closest(
+            "[data-carousel-value], [data-library-tag-carousel-entry]",
+        );
+        if (!item) return;
+        if (
+            event.relatedTarget instanceof Node &&
+            item.contains(event.relatedTarget)
+        )
+            return;
+        const relationshipId =
+            item.closest("[data-horizontal-carousel]")?.dataset
+                .horizontalCarousel ??
+            item.dataset.libraryTagCarouselRelationship;
+        const kind = kindForRelationshipId(relationshipId);
+        const entryId = compositionTokenEntryId(
+            item.dataset.carouselValue ?? item.dataset.libraryTagCarouselEntry,
+        );
+        form.querySelectorAll(
+            `[data-library-selected-references="${kind}"] [data-library-selected-reference]`,
+        ).forEach((placement) =>
+            placement.classList.toggle(
+                "is-carousel-highlight",
+                active &&
+                    compositionTokenEntryId(
+                        placement.dataset.librarySelectedReference,
+                    ) === entryId,
+            ),
+        );
+    };
+    for (const eventName of ["pointerover", "focusin"])
+        form.addEventListener(
+            eventName,
+            (event) => highlightPlacements(event, true),
+            { signal: controller.signal },
+        );
+    for (const eventName of ["pointerout", "focusout"])
+        form.addEventListener(
+            eventName,
+            (event) => highlightPlacements(event, false),
+            { signal: controller.signal },
+        );
     renderDerivedPronunciation();
     syncCompositionState();
     renderSelectedReferences();

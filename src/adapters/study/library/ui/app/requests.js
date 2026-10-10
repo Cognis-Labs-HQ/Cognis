@@ -1,3 +1,4 @@
+import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCollapsibleSectionComposer } from "/static/reuse/collapsible-section-composer.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -256,6 +257,32 @@ export function bindLibraryRequestReviews(
                 button.disabled = true;
             });
             try {
+                const request = requests.find(({ id }) => id === requestId);
+                if (
+                    review?.dataset.libraryReview === "approved" &&
+                    request?.destination.scope === "user"
+                ) {
+                    const confirmation = await openPopup({
+                        title: i18n.t(
+                            "gateway.study.library_relocation_review_title",
+                        ),
+                        body: `<p>${escapeHtml(i18n.t("gateway.study.library_relocation_approval_warning"))}</p>`,
+                        variant: "warning",
+                        actions: [
+                            {
+                                id: "approve",
+                                label: i18n.t("gateway.study.library_approve"),
+                                variant: "cancel",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "neutral",
+                            },
+                        ],
+                    });
+                    if (confirmation !== "approve") return;
+                }
                 const updated = withdraw
                     ? await withdrawLibraryPromotion(requestId)
                     : await reviewLibraryPromotion(

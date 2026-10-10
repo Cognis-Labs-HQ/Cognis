@@ -564,6 +564,12 @@ Cognis core は `core:cache` で辞書キャッシュを管理します。保存
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
+## 構成と移動
+
+カルーセルのカードにポインターを重ねると、位置番号の代わりに一致する配置すべてが強調されます。ポインターでドラッグすると、文字を選択せずに各配置を並べ替えられます。入力した動詞の候補も、幅を広げた２列の活用選択を開きます。登録済み定義はごみ箱から関連付けを外せ、辞書の意味順を維持します。画面の再登録では以前のイベントリスナーを解除し、一括削除の確認は１回だけ開きます。
+
+共有カードを個人領域へ移動するには、管理者自身も確認と管理者審査への申請が必要です。承認時にアクセスを失う依存カードを再計算し、その連鎖削除と移動を同一トランザクションで行います。利用可能な個人カードは残ります。保護カード、プロバイダーのコンテンツ、依存する審査中申請がある場合は承認できません。通常の削除権限は変わりません。申請成功はトーストで通知し、削除されたカードの所有者にはStudyカテゴリの通知を送ります。move-to-personalエンドポイントは、移動済みカードではなく、審査中申請をHTTP 201で返します。
+
 ## コミット
 
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
@@ -698,3 +704,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
 
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e

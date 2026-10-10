@@ -238,7 +238,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /relocationState\(selected, scope, requests\)/);
     assert.match(source, /data-library-withdraw-selection/);
     assert.match(source, /data-library-move-selection/);
-    assert.match(source, /selected\.some\([\s\S]*!canDeleteEntry\(entry\)/);
+    assert.match(source, /selected\.some\([\s\S]*canDeleteEntry\(entry\)/);
     assert.match(
         source,
         /entry\.protected !== true && entry\.canDelete === true/,

@@ -1,3 +1,4 @@
+import { bindDefinitionRemoval } from "../reuse/definition-actions.js";
 import { activateCompositionEntry } from "../composition-activation.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -378,6 +379,7 @@ export async function openLibraryEntryEditor({
                 schema,
             );
             form.referenceGroups = structuredClone(entry.referenceGroups ?? {});
+            bindDefinitionRemoval(form, composer.layer, schema);
             bindComposerExtras(form, () =>
                 syncGeneratedCardLabel(
                     form,
@@ -706,6 +708,7 @@ export function bindAdminLibraryInteractions(
                         form.referenceGroups = structuredClone(
                             entry.referenceGroups ?? {},
                         );
+                        bindDefinitionRemoval(form, composer.layer, schema);
                         bindComposerExtras(form, () =>
                             syncGeneratedCardLabel(
                                 form,

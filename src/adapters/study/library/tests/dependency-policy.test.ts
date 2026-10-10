@@ -263,7 +263,7 @@ test("approval rechecks dependencies changed after request submission", async ()
     assert.deepEqual(mutations, ["review"]);
 });
 
-test("shared dependants and pending publication requests prevent demotion", async () => {
+test("shared dependencies stay available while a private relocation awaits review", async () => {
     const component = entry("component", {
         scope: "global",
         scopeId: "global",
@@ -272,31 +272,9 @@ test("shared dependants and pending publication requests prevent demotion", asyn
         ref(component.id),
     ]);
     const h = harness([component, source]);
-    await assert.rejects(
-        h.library.moveToPersonal(admin, component.id),
-        /entry_required_by_shared_content/,
-    );
-    assert.deepEqual(h.mutations, []);
-    const privateSource = {
-        ...source,
-        scope: "user" as const,
-        scopeId: "alice",
-    };
-    const pending = harness(
-        [component, privateSource],
-        [
-            {
-                sourceEntryId: source.id,
-                destination: { scope: "global", scopeId: "global" },
-                status: "pending",
-            },
-        ],
-    );
-    await assert.rejects(
-        pending.library.moveToPersonal(admin, component.id),
-        /request_pending/,
-    );
-    assert.deepEqual(pending.mutations, []);
+    await h.prepare();
+    await h.library.moveToPersonal(admin, component.id);
+    assert.deepEqual(h.mutations, ["request"]);
 });
 
 test("deletion authorizes every dependent and blocks pending cascade sources", async () => {

@@ -192,7 +192,10 @@ export interface LibraryCapability {
         actor: LibraryActor,
         requestId: string,
     ): Promise<LibraryPushRequest>;
-    moveToPersonal(actor: LibraryActor, entryId: string): Promise<LibraryEntry>;
+    moveToPersonal(
+        actor: LibraryActor,
+        entryId: string,
+    ): Promise<LibraryPushRequest>;
     relocate(
         actor: LibraryActor,
         entryId: string,

@@ -184,18 +184,33 @@ export function createLibraryVisibilityActions({
         async moveToUser() {
             const selected = selectedEntries();
             if (relocationState(selected, "user", requests).disabled) return;
+            const decision = await openPopup({
+                title: i18n.t("gateway.study.library_relocation_review_title"),
+                body: `<p>${escapeHtml(i18n.t("gateway.study.library_relocation_review_warning"))}</p><ul>${selected.map(({ label }) => `<li>${escapeHtml(label)}</li>`).join("")}</ul>`,
+                variant: "warning",
+                actions: [
+                    {
+                        id: "request",
+                        label: i18n.t(
+                            "gateway.study.library_request_relocation",
+                        ),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "neutral",
+                    },
+                ],
+            });
+            if (decision !== "request") return;
             for (const entry of selected) {
-                const moved = await moveLibraryEntryToPersonal(entry.id);
-                const updated = getEntries().flatMap((candidate) =>
-                    candidate.id !== entry.id
-                        ? [candidate]
-                        : moved.canEdit || moved.canDelete
-                          ? [moved]
-                          : [],
-                );
-                setEntries(updated);
-                render(updated);
+                const request = await moveLibraryEntryToPersonal(entry.id);
+                applyRelocation({ request }, entry);
             }
+            showToast(i18n.t("gateway.study.library_request_submitted"), {
+                variant: "success",
+            });
             setSelectionMode(root, false);
         },
     };

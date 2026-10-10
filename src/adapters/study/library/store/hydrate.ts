@@ -58,6 +58,7 @@ function hydrateEntry(
         const groups = (entry.referenceGroups[value.relation] ??= []);
         (groups[groupIndex] ??= []).push(value);
     }
+    entry.references.sort((left, right) => left.position! - right.position!);
     for (const [relation, groups] of Object.entries(entry.referenceGroups)) {
         entry.referenceGroups[relation] = groups
             .filter((group) => Array.isArray(group))

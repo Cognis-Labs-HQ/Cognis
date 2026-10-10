@@ -564,6 +564,12 @@ Repeated dictionary imports reuse matching hidden reading cards instead of produ
 
 Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
+## Composer and relocation
+
+Hovering a carousel card highlights every matching placement instead of showing position counters. Pointer dragging reorders individual placements without selecting text. Typed verb suggestions use the transformation chooser, whose wider two-column layout preserves readable cards. Committed definitions support unlinking with a trash control and retain dictionary sense order. Rebinding page interactions removes previous listeners, and batch deletion has one in-flight confirmation.
+
+Shared-to-private relocation requires confirmation and an administrator review request, including requests submitted by administrators. Approval recomputes inaccessible dependents and deletes their cascades atomically with the move; compatible personal cards remain. Protected or provider-owned cards and pending dependent requests prevent approval. Ordinary deletion permissions remain unchanged. Successful requests show a toast; owners of removed cards receive notifications in the Study category. The move-to-personal endpoint now returns HTTP 201 with a pending request rather than a relocated card.
+
 ## Commits
 
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
@@ -698,3 +704,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
 
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e

@@ -167,4 +167,8 @@
   <string name="gateway.study.library_dictionary_cached">Cached in Cognis: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Dictionary search failed. Try again or choose another provider.</string>
   <string name="gateway.study.library_search_results_subtitle">Explore dictionary matches and create linked study cards</string>
+    <string name="gateway.study.library_relocation_review_title">Review Private Relocation</string>
+    <string name="gateway.study.library_relocation_review_warning">Moving these shared cards to private scope requires administrator review. Cards that depend on them and can no longer access them will be deleted when approved. Their owners will be notified.</string>
+    <string name="gateway.study.library_request_relocation">Request Relocation</string>
+    <string name="gateway.study.library_relocation_approval_warning">Approving this relocation will delete dependent cards that cannot access the private card, including other users’ cards. Their owners will be notified.</string>
 </resources>

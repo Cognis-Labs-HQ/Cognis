@@ -92,7 +92,7 @@ export async function bootstrapStudyAdapter(
     }
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
-    )?.("study-library", "Study Library");
+    )?.("study", "Study");
     const dispatchNotification =
         ctx.capabilities.get<
             (envelope: {
@@ -126,7 +126,7 @@ export async function bootstrapStudyAdapter(
                               .filter(({ enabled }) => enabled)
                               .map(({ username }) =>
                                   dispatchNotification({
-                                      category: "study-library",
+                                      category: "study",
                                       recipientUsername: username,
                                       subject: "New Study Library content",
                                       body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
@@ -151,6 +151,50 @@ export async function bootstrapStudyAdapter(
               }
             : undefined,
         ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
+        dispatchNotification
+            ? async (entries, actor) => {
+                  const recipients = new Map<string, string[]>();
+                  for (const entry of entries) {
+                      const recipient =
+                          entry.scope === "user"
+                              ? entry.scopeId
+                              : entry.createdBy;
+                      if (
+                          recipient === actor.accountId ||
+                          recipient.startsWith("content-pack:")
+                      )
+                          continue;
+                      const labels = recipients.get(recipient) ?? [];
+                      labels.push(entry.label);
+                      recipients.set(recipient, labels);
+                  }
+                  const results = await Promise.allSettled(
+                      Array.from(recipients, ([recipientUsername, labels]) =>
+                          dispatchNotification({
+                              category: "study",
+                              recipientUsername,
+                              subject: "Study cards removed",
+                              body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
+                              actionUrl: "/study/library",
+                          }),
+                      ),
+                  );
+                  for (const result of results)
+                      if (result.status === "rejected")
+                          await ctx.log?.(
+                              "error",
+                              "Could not notify affected Study card owner.",
+                              {
+                                  component: "study-library",
+                                  operation: "notify-deletion",
+                                  errorName:
+                                      result.reason instanceof Error
+                                          ? result.reason.name
+                                          : "Error",
+                              },
+                          );
+              }
+            : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

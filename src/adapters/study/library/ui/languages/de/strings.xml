@@ -167,4 +167,8 @@
   <string name="gateway.study.library_dictionary_cached">In Cognis gespeichert: {{ time }}</string>
   <string name="gateway.study.library_dictionary_error">Die Wörterbuchsuche ist fehlgeschlagen. Versuchen Sie es erneut oder wählen Sie einen anderen Anbieter.</string>
   <string name="gateway.study.library_search_results_subtitle">Wörterbuchtreffer erkunden und verknüpfte Lernkarten erstellen</string>
+    <string name="gateway.study.library_relocation_review_title">Private Verlagerung prüfen</string>
+    <string name="gateway.study.library_relocation_review_warning">Das Verschieben dieser geteilten Karten in den privaten Bereich erfordert eine Administratorprüfung. Abhängige Karten, die danach keinen Zugriff mehr haben, werden bei Genehmigung gelöscht. Ihre Besitzer werden benachrichtigt.</string>
+    <string name="gateway.study.library_request_relocation">Verlagerung beantragen</string>
+    <string name="gateway.study.library_relocation_approval_warning">Bei Genehmigung werden abhängige Karten ohne Zugriff auf die private Karte gelöscht, auch Karten anderer Nutzer. Ihre Besitzer werden benachrichtigt.</string>
 </resources>
