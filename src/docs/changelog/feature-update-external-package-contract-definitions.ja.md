@@ -570,6 +570,14 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
 共有カードを個人領域へ移動するには、管理者自身も確認と管理者審査への申請が必要です。承認時にアクセスを失う依存カードを再計算し、その連鎖削除と移動を同一トランザクションで行います。利用可能な個人カードは残ります。保護カード、プロバイダーのコンテンツ、依存する審査中申請がある場合は承認できません。通常の削除権限は変わりません。申請成功はトーストで通知し、削除されたカードの所有者にはStudyカテゴリの通知を送ります。move-to-personalエンドポイントは、移動済みカードではなく、審査中申請をHTTP 201で返します。
 
+## 辞書と活用
+
+活用カード内では見出し、読み、定義を同じ列に揃えます。原形を使う操作は中立スタイルのボタンです。ドラッグ中は移動先の前後に縦の挿入マーカーを表示します。Jishoから読み込む語彙には対応する活用グループのタグを保存し、新しく作った動詞は親の構成に配置する前に活用選択を開きます。副詞の品詞も保持しますが、現在の日本語スキーマには副詞の活用セットはありません。
+
+辞書プロバイダーはprerequisitesとして{ key, layer, label }の配列を返せます。作成画面で候補を選択した後、Cognisは指定の公開範囲で既存の複合文字カードを解決し、なければ辞書から取得して定義と読みのグラフを含むカードを作成します。この経路では原子的な文字と助詞を作成できません。主カードと非表示の読みの参照では、別名キーを正式なIDに置き換えます。語彙の入力は変更せず、読み込んだ表記リンクは入力が検索語と一致する間だけ使用します。検索結果を見るだけでは依存カードを作成しません。
+
+不足する必須フィールドは、保存前に登録済みの補助検索プロバイダーから取得します。漢字の筆順パターンにはKanjiVGを使います。各漢字、定義、非表示の読みは、公開範囲を検証した１つのグラフとして保存します。
+
 ## コミット
 
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
@@ -702,7 +710,6 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
-
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
-
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962

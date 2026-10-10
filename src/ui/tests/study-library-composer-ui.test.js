@@ -430,6 +430,10 @@ test("Study Library composes transformed carousel cards into sentences", () => {
     assert.match(libraryStylesheet, /grid-template-columns:\s*repeat\(2,/);
     assert.match(
         libraryStylesheet,
-        /library-transform-option[\s\S]*min-height:\s*7rem[\s\S]*grid-template-rows:\s*auto auto 1fr/,
+        /\.library-transform-options \.library-transform-option\s*\{\s*display: grid/,
+    );
+    assert.match(
+        libraryStylesheet,
+        /library-transform-option[\s\S]*min-height:\s*7rem[\s\S]*grid-auto-rows:\s*max-content/,
     );
 });

@@ -85,6 +85,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         dispatchEvent() {},
     };
     const context = {
+        resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
@@ -173,6 +174,7 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const pattern = { viewBox: "0 0 109 109", strokes: [{ d: "M0 0 L1 1" }] };
     const draft = { fields: { pronunciation: ["きょう"] } };
     const context = {
+        resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
@@ -223,6 +225,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     const input = { value: "教" };
     const draft = { fields: { pronunciation: ["original"] } };
     const context = {
+        resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
@@ -254,6 +257,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         let listener;
         const draft = { fields: {} };
         const context = {
+            resolveLookupPrerequisites: async (suggestion) => suggestion,
             resolveLookupReferences,
             separateLookupDefinitions,
             chooseLookupSuggestion: async (suggestions) => suggestions[0],
@@ -306,6 +310,7 @@ test("lookup populates the visible composition input when no authored spelling c
         dispatchEvent() {},
     };
     const context = {
+        resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
@@ -422,6 +427,7 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
         openPopup: async () => "replace",
         RadioNodeList: class {},
         structuredClone,
+        resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],

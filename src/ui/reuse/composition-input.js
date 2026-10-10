@@ -77,8 +77,11 @@ export function renderCompositionInput({
 export function bindCompositionReordering(root, { signal, onMove }) {
     let dragging = null;
     const clear = () => {
-        root.querySelectorAll(".is-dragging, .is-drop-target").forEach((item) =>
-            item.classList.remove("is-dragging", "is-drop-target"),
+        root.querySelectorAll(".is-dragging, .is-drop-target").forEach(
+            (item) => {
+                item.classList.remove("is-dragging", "is-drop-target");
+                delete item.dataset.compositionDrop;
+            },
         );
         dragging = null;
     };
@@ -115,9 +118,10 @@ export function bindCompositionReordering(root, { signal, onMove }) {
             const target = document
                 .elementFromPoint(event.clientX, event.clientY)
                 ?.closest("[data-composition-index]");
-            root.querySelectorAll(".is-drop-target").forEach((item) =>
-                item.classList.remove("is-drop-target"),
-            );
+            root.querySelectorAll(".is-drop-target").forEach((item) => {
+                item.classList.remove("is-drop-target");
+                delete item.dataset.compositionDrop;
+            });
             if (
                 !target ||
                 target.closest("[data-composition-kind]")?.dataset
@@ -125,7 +129,11 @@ export function bindCompositionReordering(root, { signal, onMove }) {
             )
                 return;
             dragging.to = Number(target.dataset.compositionIndex);
-            target.classList.add("is-drop-target");
+            if (dragging.to !== dragging.from) {
+                target.dataset.compositionDrop =
+                    dragging.to < dragging.from ? "before" : "after";
+                target.classList.add("is-drop-target");
+            }
         },
         { signal },
     );

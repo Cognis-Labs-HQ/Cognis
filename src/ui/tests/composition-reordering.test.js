@@ -56,6 +56,7 @@ test("pointer dragging reorders one placement and prevents text selection", () =
         },
     });
     listeners.pointermove({ pointerId: 1, clientX: 10, clientY: 20 });
+    assert.equal(to.dataset.compositionDrop, "before");
     listeners.pointerup({ pointerId: 1 });
     assert.equal(prevented, true);
     assert.equal(captured, false);

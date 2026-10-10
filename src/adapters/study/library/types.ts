@@ -346,6 +346,12 @@ export interface LibraryDefinitionLocalizationRequest {
     languages: readonly string[];
 }
 
+export interface LibraryLookupPrerequisite {
+    key: string;
+    layer: string;
+    label: string;
+}
+
 export interface LibraryLookupSuggestion {
     provider: string;
     class?: string;
@@ -359,6 +365,8 @@ export interface LibraryLookupSuggestion {
     provenance: string;
     confidence: number;
     linkedEntries?: LibraryLinkedEntryInput[];
+    /** Composer-only downstream lookup targets; aliases resolve to existing or created scoped cards. */
+    prerequisites?: LibraryLookupPrerequisite[];
 }
 
 export interface LibraryLookupProposal {
@@ -373,6 +381,7 @@ export interface LibraryLookupProposal {
     referenceGroups?: LibraryReferenceGroups;
     provenance?: string;
     confidence?: number;
+    prerequisites?: LibraryLookupPrerequisite[];
 }
 
 export interface LibraryLookupProvider {

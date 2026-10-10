@@ -1,6 +1,7 @@
 import { chooseLookupSuggestion } from "./lookup-choice.js";
 import { separateLookupDefinitions } from "./lookup-definitions.js";
 import { resolveLookupReferences } from "./lookup-references.js";
+import { resolveLookupPrerequisites } from "./lookup-prerequisites.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
 import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -149,8 +150,19 @@ export function bindLookupProviders(
                 i18n,
             );
             if (!selectedSuggestion) return;
-            const { suggestion, unresolved } = resolveLookupReferences(
+            const preparedSuggestion = await resolveLookupPrerequisites(
                 selectedSuggestion,
+                {
+                    providerId: button.dataset.libraryLookupProvider,
+                    schema,
+                    layer,
+                    entries,
+                    location: definitionLocation,
+                    form,
+                },
+            );
+            const { suggestion, unresolved } = resolveLookupReferences(
+                preparedSuggestion,
                 entries,
                 schema,
                 layer,
@@ -187,6 +199,13 @@ export function bindLookupProviders(
                     ? inputCarouselIds
                     : new Set(),
             });
+            form.libraryLookupReferences =
+                suggestion.label?.normalize("NFKC") ===
+                    label.normalize("NFKC") && suggestion.prerequisites?.length
+                    ? (suggestion.references ?? []).filter(({ relation }) =>
+                          inputCarouselIds.has(relation),
+                      )
+                    : [];
             for (const definition of importedDefinitions)
                 linkDefinition(form, schema, layer, entries, definition);
             for (const reference of suggestion.references ?? []) {

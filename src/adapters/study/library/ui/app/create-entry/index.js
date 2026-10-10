@@ -52,6 +52,7 @@ import {
 } from "../composer-extras.js";
 import { compositionTokenEntryId } from "../composition-tokens.js";
 import { activateCompositionEntry } from "../composition-activation.js";
+import { lookupCompositionReferences } from "./lookup-prerequisites.js";
 import { renderStrokePatternPreviews } from "../field-input.js";
 
 export async function chooseCreateLayer({
@@ -303,10 +304,9 @@ export async function openCreateEntryPopup({
                 : scope === "global"
                   ? "global"
                   : undefined;
-        const references = readReferences(
+        const references = lookupCompositionReferences(
             form,
-            editingLayer,
-            form.compositionOrder ?? [],
+            readReferences(form, editingLayer, form.compositionOrder ?? []),
         );
         const fields = readFields(form, editingLayer, draft);
         applyDerivedPronunciation(

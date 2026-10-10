@@ -292,7 +292,7 @@ export async function openTransformationPopup(
                 label: i18n
                     .t("gateway.study.library_use_base_transform")
                     .replace("{{ verb }}", entry.label),
-                variant: "confirm",
+                variant: "neutral",
             },
         ],
         onOpen(value) {
