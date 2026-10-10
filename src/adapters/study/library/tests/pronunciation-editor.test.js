@@ -49,6 +49,7 @@ function editor(value = "ab") {
     };
     const select = { options: [], selectedOptions: [] };
     const form = {
+        append() {},
         referenceGroups: {},
         elements: {
             "field:pronunciation": field,
@@ -80,12 +81,14 @@ function editor(value = "ab") {
                 id: "readings",
                 targetLayer: "characters",
                 grouped: true,
+                ordered: true,
                 presentationRole: "pronunciation",
             },
         ],
     };
     let carousel;
     const context = {
+        document: { createElement: () => ({ dataset: {} }) },
         AbortController,
         Event,
         CustomEvent,
@@ -120,11 +123,18 @@ function editor(value = "ab") {
     );
     return {
         form,
+        listeners,
         field,
         saved,
         clearedCarousels,
         controller,
         select: (values) => carousel.onChange({ id: "readings", values }),
+        repeat: (value) =>
+            carousel.onActivate({
+                id: "readings",
+                selected: true,
+                item: { dataset: { carouselValue: value } },
+            }),
     };
 }
 
@@ -226,4 +236,37 @@ test("lookup replacement preserves spelling carousel selection and clears pendin
     session.controller.commitPendingValues();
     assert.equal(session.field.value, "");
     assert.equal(session.form.referenceGroups.readings, undefined);
+});
+
+test("repeated pronunciation characters retain separate positions when committed", async () => {
+    const session = editor("");
+    session.select(["a", "b"]);
+    await session.repeat("a");
+    session.controller.commitPendingValues();
+    assert.equal(session.field.value, "aba");
+    assert.deepEqual(
+        JSON.parse(JSON.stringify(session.form.referenceGroups.readings[0])),
+        [
+            { entryId: "a", relation: "readings", position: 0 },
+            { entryId: "b", relation: "readings", position: 1 },
+            { entryId: "a", relation: "readings", position: 2 },
+        ],
+    );
+});
+
+test("dragging one repeated stage placement preserves the other instances", () => {
+    const session = editor();
+    session.form.compositionOrder = ["a", "b", "a"];
+    const item = (index) => ({
+        dataset: { libraryCompositionIndex: String(index) },
+        closest: () => ({ dataset: { librarySelectedReferences: "input" } }),
+    });
+    const source = item(2);
+    const target = item(0);
+    session.listeners.get("dragstart")({ target: { closest: () => source } });
+    session.listeners.get("drop")({
+        target: { closest: () => target },
+        preventDefault() {},
+    });
+    assert.deepEqual(session.form.compositionOrder, ["a", "a", "b"]);
 });

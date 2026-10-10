@@ -23,7 +23,7 @@ const { bindComposerExtras } = await import(
     `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`
 );
 
-test("tag carousels add and remove sentence structure entries", () => {
+test("tag carousels append repeated sentence structure entries", () => {
     const option = { value: "word:structure", selected: false };
     const select = {
         options: [option],
@@ -83,10 +83,10 @@ test("tag carousels add and remove sentence structure entries", () => {
     assert.equal(attributes.get("aria-pressed"), "true");
 
     click(event);
-    assert.equal(option.selected, false);
-    assert.deepEqual(form.compositionOrder, []);
-    assert.equal(classes.has("is-selected"), false);
-    assert.equal(attributes.get("aria-pressed"), "false");
+    assert.equal(option.selected, true);
+    assert.deepEqual(form.compositionOrder, [option.value, option.value]);
+    assert.equal(classes.has("is-selected"), true);
+    assert.equal(attributes.get("aria-pressed"), "true");
     assert.equal(changes, 2);
     assert.equal(events, 2);
 });

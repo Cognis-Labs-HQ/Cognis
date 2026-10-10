@@ -2,6 +2,8 @@
 
 **Cabang Fitur:** feature-update-external-package-contract-definitions
 
+Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
+
 ## Cache konten yang telah dilihat secara persisten
 
 Cognis kini menyimpan UUID entri Pustaka yang telah dilihat untuk setiap akun. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat tanpa mengungkap riwayat pengguna lain.
@@ -696,3 +698,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+- [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)

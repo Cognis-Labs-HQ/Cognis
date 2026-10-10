@@ -2,6 +2,8 @@
 
 **機能ブランチ:** feature-update-external-package-contract-definitions
 
+カード編集では、変更を破棄する前にキャンセルの確認を求めます。カルーセルから同じカードを複数回配置でき、各配置をドラッグで並べ替えられます。文の発音プレビューでは各構成カードを枠で囲み、重複する入力表示を省きます。カルーセルのホバープレビューは主要な発音と定義だけを表示し、画面内に収まります。
+
 ## 閲覧済みコンテンツの永続キャッシュ
 
 Cognis は、閲覧済みライブラリ項目の UUID をアカウントごとに保存するようになりました。カードへのホバー、直接表示、または関連項目経由の表示で閲覧済みとなり、他のユーザーの履歴は公開されません。
@@ -694,3 +696,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+- [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)

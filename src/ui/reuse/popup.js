@@ -513,7 +513,11 @@ export async function openPopup({
                 manuallyDirty ||
                 (closeProtectionTracker?.isAnyDirty() ??
                     hasUnsavedFormChanges(overlay));
-            if (actionId === null && closeProtection && hasUnsavedChanges) {
+            if (
+                (actionId === null || actionId === "cancel") &&
+                closeProtection &&
+                hasUnsavedChanges
+            ) {
                 const i18n = await getI18n();
                 const confirmed = await openPopup({
                     title: i18n.t("ui.reuse.unsaved_changes"),

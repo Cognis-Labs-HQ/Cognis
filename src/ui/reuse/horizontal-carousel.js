@@ -15,7 +15,15 @@ import { escapeHtml } from "./escape-html.js";
 import { createAnchoredPopup } from "./popup.js";
 
 function carouselItemMarkup({ value, label, preview = "" }, selected, order) {
-    return `<button class="btn-neutral horizontal-carousel-item${selected ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${selected}"><span>${escapeHtml(label)}</span><small data-carousel-order>${selected ? order : ""}</small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(label)}</strong>${preview ? `<span>${escapeHtml(preview)}</span>` : ""}</span></button>`;
+    return `<button class="btn-neutral horizontal-carousel-item${selected ? " is-selected" : ""}" type="button" data-carousel-value="${escapeHtml(value)}" aria-pressed="${selected}"><span>${escapeHtml(label)}</span><small data-carousel-order>${selected ? order : ""}</small><span class="horizontal-carousel-preview" role="tooltip"><strong>${escapeHtml(label)}</strong>${
+        preview
+            ? preview
+                  .split("\n")
+                  .filter(Boolean)
+                  .map((value) => `<span>${escapeHtml(value)}</span>`)
+                  .join("")
+            : ""
+    }</span></button>`;
 }
 
 /**

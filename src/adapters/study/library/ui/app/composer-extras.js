@@ -1,9 +1,6 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
-import {
-    compositionTokenEntryId,
-    literalCompositionToken,
-} from "./composition-tokens.js";
+import { literalCompositionToken } from "./composition-tokens.js";
 
 export function renderComposerExtras(constructor, layer, entries, schema) {
     const tagCarousels = (constructor.tag_carousels ?? []).map((carousel) => {
@@ -54,15 +51,11 @@ export function bindComposerExtras(form, onChange = () => {}) {
                 ({ value }) => value === entryId,
             );
             if (!option) return;
-            const selected = !option.selected;
+            const selected = true;
             option.selected = selected;
             if (selected) select.append(option);
             form.compositionOrder ??= [];
-            form.compositionOrder = selected
-                ? [...form.compositionOrder, entryId]
-                : form.compositionOrder.filter(
-                      (value) => compositionTokenEntryId(value) !== entryId,
-                  );
+            form.compositionOrder.push(entryId);
             tagged.classList.toggle("is-selected", selected);
             tagged.setAttribute("aria-pressed", String(selected));
             onChange();

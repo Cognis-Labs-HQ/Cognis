@@ -2,6 +2,8 @@
 
 **Feature-Zweig:** feature-update-external-package-contract-definitions
 
+Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
+
 ## Dauerhafter Cache angesehener Inhalte
 
 Cognis speichert nun die UUIDs angesehener Bibliothekseinträge pro Konto. Das Überfahren einer Karte oder ihr direktes beziehungsweise über eine Beziehung erfolgendes Öffnen markiert sie als angesehen, ohne den Verlauf anderer Benutzer offenzulegen.
@@ -694,3 +696,5 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
 - [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+
+- [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)

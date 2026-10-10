@@ -55,7 +55,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.36`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.1`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.24.43` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.24.44` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.0.22`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`   |
@@ -83,7 +83,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.109` |
+| Core Package | `src/core/` | `0.3.110` |
 
 ## API
 

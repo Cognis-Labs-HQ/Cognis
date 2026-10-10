@@ -670,3 +670,9 @@ body[data-theme="light"]
     margin: 0;
     text-align: start;
 }
+
+[data-library-derived-pronunciation] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}

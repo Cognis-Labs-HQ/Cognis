@@ -28,6 +28,7 @@ import {
 } from "../pronunciation-editor.js";
 import {
     applyDerivedPronunciation,
+    derivedPronunciation,
     resolveComposerContract,
 } from "../composer-contract.js";
 import {
@@ -47,7 +48,6 @@ import {
 
 export { inputForField } from "../field-input.js";
 import { inputForField, renderStrokePatternPreviews } from "../field-input.js";
-import { transformationPathways } from "../transformations.js";
 
 function relationshipEditor(
     relationship,
@@ -62,7 +62,6 @@ function relationshipEditor(
         allowAdd = true,
         ordersPronunciation = false,
         excludedTags = new Set(),
-        transformsAvailableLabel = "",
     } = {},
 ) {
     const targetLayer = schema.layers.find(
@@ -118,14 +117,10 @@ function relationshipEditor(
             !(candidate.tags ?? []).some((tag) => excludedTags.has(tag)),
     );
     const previewFor = (target) => {
-        if (
-            transformsAvailableLabel &&
-            transformationPathways(target, schema).some(
-                ({ nodes }) => nodes.length > 1,
-            )
-        )
-            return transformsAvailableLabel;
         const definition = (target.references ?? [])
+            .toSorted(
+                (left, right) => (left.position ?? 0) - (right.position ?? 0),
+            )
             .map(({ entryId }) => entries.find(({ id }) => id === entryId))
             .find((candidate) => {
                 const targetLayer = candidate
@@ -135,13 +130,15 @@ function relationshipEditor(
                     targetLayer?.semanticRole,
                 );
             });
-        return definition
+        const pronunciation = derivedPronunciation(target, entries, schema);
+        const meaning = definition
             ? definitionText(
                   definition,
                   layerForEntry([schema], definition),
                   document.documentElement.lang,
               )
             : "";
+        return [pronunciation, meaning].filter(Boolean).join("\n");
     };
     const targets = carousel
         ? [...visibleTargets]
@@ -297,9 +294,6 @@ export function editorBody(
                             )
                             .map(({ tag }) => tag),
                     ),
-                    transformsAvailableLabel: i18n.t(
-                        "gateway.study.library_transforms_available",
-                    ),
                 },
             ),
         )
@@ -320,9 +314,6 @@ export function editorBody(
                               options.relationshipCarouselAdd !== false &&
                               relationshipAllowsCreate(relationship),
                           ordersPronunciation: true,
-                          transformsAvailableLabel: i18n.t(
-                              "gateway.study.library_transforms_available",
-                          ),
                       },
                   ),
               )
@@ -402,9 +393,6 @@ export function editorBody(
                         options.relationshipCarousels === true &&
                         !carouselEligible,
                     addLabel: i18n.t("gateway.study.library_create"),
-                    transformsAvailableLabel: i18n.t(
-                        "gateway.study.library_transforms_available",
-                    ),
                     allowAdd:
                         options.relationshipCarouselAdd !== false &&
                         relationshipAllowsCreate(relationship),

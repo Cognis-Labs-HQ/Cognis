@@ -262,23 +262,6 @@ export function bindTextComposition(
         carousel.dataset.suggestedLabel = unmatched.dataset.unmatchedLabel;
         carousel.querySelector("[data-carousel-add]")?.click();
     });
-    let draggedId = null;
-    blocks.addEventListener("dragstart", (event) => {
-        const block = event.target.closest("[data-library-composition-id]");
-        draggedId = block?.dataset.libraryCompositionId ?? null;
-        if (draggedId) event.dataTransfer?.setData("text/plain", draggedId);
-    });
-    blocks.addEventListener("dragover", (event) => event.preventDefault());
-    blocks.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const target = event.target.closest("[data-library-composition-id]");
-        const targetId = target?.dataset.libraryCompositionId;
-        if (!draggedId || !targetId || draggedId === targetId) return;
-        const order = form.compositionOrder.filter((id) => id !== draggedId);
-        order.splice(order.indexOf(targetId), 0, draggedId);
-        form.compositionOrder = order;
-        syncLabel();
-    });
     renderSuggestions();
     return {
         validate() {

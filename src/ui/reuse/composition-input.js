@@ -24,7 +24,7 @@ function renderAttributes(attributes = {}) {
 
 /**
  * Render removable composition tokens.
- * @param {{items?: Array<{value: string, label: string}>, removeLabel?: (label: string) => string, itemAttributes?: (item: {value: string, label: string}) => Record<string, string | boolean>}} options Token rendering options.
+ * @param {{items?: Array<{value: string, label: string}>, removeLabel?: (label: string) => string, itemAttributes?: (item: {value: string, label: string}, index: number) => Record<string, string | boolean>}} options Token rendering options.
  * @returns {string} Safe token markup.
  */
 export function renderCompositionItems({
@@ -34,15 +34,15 @@ export function renderCompositionItems({
 } = {}) {
     return items
         .map(
-            (item) =>
-                `<span class="btn-neutral composition-input-item" data-composition-value="${escapeHtml(item.value)}"${renderAttributes(itemAttributes(item))}><span>${escapeHtml(item.label)}</span><button class="btn-cancel" type="button" data-composition-remove aria-label="${escapeHtml(removeLabel(item.label))}">×</button></span>`,
+            (item, index) =>
+                `<span class="btn-neutral composition-input-item" data-composition-value="${escapeHtml(item.value)}"${renderAttributes(itemAttributes(item, index))}><span>${escapeHtml(item.label)}</span><button class="btn-cancel" type="button" data-composition-remove aria-label="${escapeHtml(removeLabel(item.label))}">×</button></span>`,
         )
         .join("");
 }
 
 /**
  * Render a tokenized composition input.
- * @param {{id: string, label: string, items?: Array<{value: string, label: string}>, value?: string, required?: boolean, removeLabel?: (label: string) => string, containerAttributes?: Record<string, string | boolean>, inputAttributes?: Record<string, string | boolean>, itemsAttributes?: Record<string, string | boolean>, itemAttributes?: (item: {value: string, label: string}) => Record<string, string | boolean>, saveAction?: {label: string, attributes?: Record<string, string | boolean>}}} options Input rendering options.
+ * @param {{id: string, label: string, items?: Array<{value: string, label: string}>, value?: string, required?: boolean, removeLabel?: (label: string) => string, containerAttributes?: Record<string, string | boolean>, inputAttributes?: Record<string, string | boolean>, itemsAttributes?: Record<string, string | boolean>, itemAttributes?: (item: {value: string, label: string}, index: number) => Record<string, string | boolean>, saveAction?: {label: string, attributes?: Record<string, string | boolean>}}} options Input rendering options.
  * @returns {string} Safe composition input HTML.
  */
 export function renderCompositionInput({

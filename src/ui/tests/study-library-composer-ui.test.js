@@ -388,7 +388,7 @@ test("Study Library exposes tagged sentence components and repeatable literals",
     assert.match(composerExtrasSource, /aria-readonly="true"/);
     assert.match(composerExtrasSource, /compositionOrder\.push/);
     assert.match(composerExtrasSource, /option\.selected = selected/);
-    assert.match(composerExtrasSource, /compositionTokenEntryId/);
+    assert.match(composerExtrasSource, /compositionOrder\.push\(entryId\)/);
     assert.match(composerExtrasSource, /aria-pressed="false"/);
     assert.match(composerExtrasSource, /library-composition-change/);
     assert.match(createEntrySource, /bindComposerExtras\(form\)/);

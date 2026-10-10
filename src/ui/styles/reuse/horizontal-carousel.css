@@ -99,6 +99,7 @@
 
 .horizontal-carousel-preview.is-portal {
     position: fixed;
+    inset: auto;
     z-index: 10000;
     transform: none;
     pointer-events: none;
