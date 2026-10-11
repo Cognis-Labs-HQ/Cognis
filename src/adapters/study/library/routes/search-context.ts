@@ -1,3 +1,4 @@
+import { sendJson } from "../../../../api/reuse/http-response.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { FlowApi } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
@@ -23,23 +24,17 @@ export function createDictionarySearchContextRoutes(
             return false;
         const claims = auth.requireAuth(req, res);
         if (!claims) return true;
-        const send = (status: number, data: unknown) => {
-            res.writeHead(status, {
-                "content-type": "application/json",
-                "cache-control": "no-store",
-            });
-            res.end(JSON.stringify(data));
-        };
+        res.setHeader("cache-control", "no-store");
         try {
             if (req.method === "GET") {
-                send(200, { data: await state.get(claims.sub) });
+                sendJson(res, 200, { data: await state.get(claims.sub) });
                 return true;
             }
             if (req.method !== "PUT") return false;
             const input = await readJson(req);
             let data;
             await flow.run(
-                "study:library:search-context",
+                "study:library:searchContext",
                 { accountId: claims.sub },
                 {
                     handlers: {
@@ -53,7 +48,7 @@ export function createDictionarySearchContextRoutes(
                     },
                 },
             );
-            send(200, { data });
+            sendJson(res, 200, { data });
         } catch (error) {
             const code =
                 error instanceof Error
@@ -65,7 +60,8 @@ export function createDictionarySearchContextRoutes(
                 accountId: claims.sub,
                 errorName: error instanceof Error ? error.name : "Unknown",
             });
-            send(
+            sendJson(
+                res,
                 code === "invalid_query"
                     ? 400
                     : code === "forbidden"

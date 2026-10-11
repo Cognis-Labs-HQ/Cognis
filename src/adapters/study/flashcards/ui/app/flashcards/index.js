@@ -1,8 +1,15 @@
+import { isCardDue } from "../../reuse/review.js";
+import { createSearchMatchResolver } from "/static/reuse/search-util/matching.js";
+import {
+    loadDeckTemplates,
+    renderDeckBrowser,
+    renderDeckDetail,
+    renderDeckPreviews,
+} from "./markup.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import {
     loadFavourites,
     renderFavourite,
-    renderBrowseControls,
     sortItems,
 } from "/static/gateways/study/reuse/favourites.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -223,16 +230,22 @@ export async function mount(root, { signal: routerSignal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "adapter.study.flashcards.page_title");
-    let model, decks, schemas, entries;
+    let model;
+    let decks;
+    let schemas;
+    let entries;
+    let templates;
     try {
-        [model, decks, schemas] = await Promise.all([
+        [model, decks, schemas, templates] = await Promise.all([
             loadStudySubNavigationModel({
                 fallbackLanguageCode: readSelectedStudyLanguageCode(),
             }),
             fetchStudyDecks(),
             fetchLibrarySchemas(),
+            loadDeckTemplates(signal),
         ]);
     } catch {
+        if (signal.aborted) return;
         showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
             variant: "error",
         });
@@ -254,24 +267,34 @@ export async function mount(root, { signal: routerSignal } = {}) {
     }));
     let selected = decks.find((deck) => deck.id === requestedId);
     const favourites = await loadFavourites();
-    let sortOrder = "default",
-        favouritesOnly = false;
+    let sortOrder = "default";
+    let favouritesOnly = false;
+    let deckQuery = "";
     let queue = [];
     let session = null;
     let dueOnly = true;
     let generation = 0;
+    const visibleDecks = () => {
+        const match = createSearchMatchResolver(deckQuery);
+        return sortItems(
+            decks.filter(
+                (deck) =>
+                    (!favouritesOnly || favourites.has("deck", deck.id)) &&
+                    (!deckQuery || match(deck.name)),
+            ),
+            sortOrder,
+        );
+    };
     const renderDeck = () => {
         const target = root.querySelector("[data-study-deck]");
         if (!target) return;
         if (!selected) {
-            const visible = sortItems(
-                decks.filter(
-                    (deck) =>
-                        !favouritesOnly || favourites.has("deck", deck.id),
-                ),
-                sortOrder,
+            target.innerHTML = renderDeckBrowser(
+                templates,
+                visibleDecks(),
+                i18n,
+                deckQuery,
             );
-            target.innerHTML = `<header class="study-deck-browser-header"><h2>${escapeHtml(i18n.t("adapter.study.flashcards.page_title"))}</h2><button type="button" class="btn-neutral" data-deck-action="add" aria-label="${escapeHtml(i18n.t("adapter.study.flashcards.deck_create"))}">+</button></header><div class="library-filters">${renderBrowseControls(i18n)}</div><div class="study-deck-browser">${visible.length ? visible.map((deck) => `<article class="study-deck-preview"><button type="button" class="btn-neutral" data-deck-open="${escapeHtml(deck.id)}"><strong>${escapeHtml(deck.name)}</strong><span>${deck.entryIds.length + deck.notes.length} ${escapeHtml(i18n.t("adapter.study.flashcards.deck_cards"))}</span></button>${renderFavourite("deck", deck.id, i18n)}</article>`).join("") : `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_empty"))}</p>`}</div>`;
             const select = target.querySelector("[data-study-sort]");
             select.value = sortOrder;
             const toggle = target.querySelector("[data-study-favourites-only]");
@@ -280,7 +303,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             toggle.textContent = favouritesOnly ? "★" : "☆";
             return;
         }
-        target.innerHTML = `<div class="study-deck-browser-header"><button class="btn-neutral" data-deck-action="browse">${escapeHtml(i18n.t("ui.reuse.back"))}</button>${renderFavourite("deck", selected.id, i18n)}</div><h2>${escapeHtml(selected.name)}</h2><div class="study-deck-actions"><button class="btn-confirm" data-deck-action="study">${escapeHtml(i18n.t("adapter.study.flashcards.deck_study"))}</button>${!selected.canEdit ? `<button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button>` : ""}${selected.canEdit ? `<span data-deck-share></span><button class="btn-neutral" data-deck-action="edit">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button><button class="btn-cancel" data-deck-action="delete">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>` : ""}</div><label><input type="checkbox" data-deck-due${dueOnly ? " checked" : ""}>${escapeHtml(i18n.t("adapter.study.flashcards.deck_due_only"))}</label><div data-study-session></div>`;
+        target.innerHTML = renderDeckDetail(templates, selected, dueOnly, i18n);
         if (selected.canEdit && uiCtx.capabilities.get("share:openPopup"))
             uiCtx.capabilities
                 .get("share:uiGateway")
@@ -311,6 +334,8 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 });
     };
     const nextCard = () => {
+        const favourite = root.querySelector("[data-deck-favourite]");
+        if (favourite) favourite.hidden = queue.length > 0;
         const target = root.querySelector("[data-study-session]");
         if (!queue.length) {
             target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>`;
@@ -394,6 +419,16 @@ export async function mount(root, { signal: routerSignal } = {}) {
     });
     bindStudySubNavigation(root, { signal, i18n });
     renderDeck();
+    root.addEventListener(
+        "input",
+        (event) => {
+            if (!event.target.matches("[data-deck-query]")) return;
+            deckQuery = event.target.value;
+            root.querySelector(".study-deck-browser").innerHTML =
+                renderDeckPreviews(templates, visibleDecks(), i18n);
+        },
+        { signal },
+    );
     root.addEventListener(
         "change",
         (event) => {
@@ -519,6 +554,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     references: [],
                 }));
                 if (action === "export") {
+                    if (!session.deck.canExport) return;
                     const all = [...session.cards, ...notes];
                     download(
                         `${selected.name.replace(/[^\p{L}\p{N}._-]/gu, "_")}.tsv`,
@@ -549,9 +585,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 queue = [...session.cards, ...notes].filter(
                     (detail) =>
                         !dueOnly ||
-                        !session.deck.progress[detail.entry.id] ||
-                        new Date(session.deck.progress[detail.entry.id].due) <=
-                            new Date(),
+                        isCardDue(session.deck.progress, detail.entry.id),
                 );
                 nextCard();
             } catch {
@@ -565,4 +599,5 @@ export async function mount(root, { signal: routerSignal } = {}) {
         { signal },
     );
 }
+
 await mountWhenDirect(mount);

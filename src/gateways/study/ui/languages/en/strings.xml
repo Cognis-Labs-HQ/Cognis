@@ -65,4 +65,6 @@
   <string name="gateway.study.dictionary_search_with">Search with {{ provider }}</string>
   <string name="gateway.study.explore">Explore</string>
   <string name="gateway.study.favourite_failed">Could not update Study favourites.</string>
+  <string name="gateway.study.favourite_added">Added to favourites.</string>
+  <string name="gateway.study.favourite_removed">Removed from favourites.</string>
 </resources>

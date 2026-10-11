@@ -54,6 +54,8 @@ export interface LibraryProviderCapability {
     /** Validate a provider pack against the installed contract without mutating storage. */
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
+    /** Remove provider records and dependent cards transactionally during uninstall. */
+    deleteContentPack(root: string): Promise<void>;
     registerConstructor(contribution: LibraryFormContribution): () => void;
     /** Register enrichment such as provider-sourced stroke patterns for a label. */
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
@@ -96,6 +98,8 @@ export interface LibraryCapability {
     getSchema(id: string, version?: number): LibrarySchema | null;
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;
+    /** Remove provider records and dependent cards transactionally during uninstall. */
+    deleteContentPack(root: string): Promise<void>;
     readContentPackAsset(
         publisher: string,
         packId: string,

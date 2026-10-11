@@ -4,6 +4,7 @@ import type { StudyDeck, DeckDetail, DeckProgress } from "./types.js";
 
 export class DeckStore {
     constructor(private readonly db: DbExecutor) {}
+
     async initialize(): Promise<void> {
         await this.db.ensureTable({
             name: "study_decks",
@@ -29,6 +30,7 @@ export class DeckStore {
             primaryKey: ["deck_id", "account_id"],
         });
     }
+
     async list(accountId: string): Promise<StudyDeck[]> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -38,6 +40,7 @@ export class DeckStore {
         });
         return (result.rows ?? []).map((row) => this.decode(row));
     }
+
     private decode(row: Record<string, unknown>): StudyDeck {
         return {
             id: String(row.id),
@@ -51,10 +54,12 @@ export class DeckStore {
             progress: {},
         };
     }
+
     async read(accountId: string, id: string): Promise<StudyDeck | undefined> {
         const deck = await this.find(id);
         return deck?.ownerAccountId === accountId ? deck : undefined;
     }
+
     async find(id: string): Promise<StudyDeck | undefined> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -64,6 +69,7 @@ export class DeckStore {
         });
         return result.rows?.[0] ? this.decode(result.rows[0]) : undefined;
     }
+
     async progress(
         accountId: string,
         id: string,
@@ -81,6 +87,7 @@ export class DeckStore {
             ? JSON.parse(String(result.rows[0].progress_json))
             : {};
     }
+
     async saveProgress(
         accountId: string,
         id: string,
@@ -101,6 +108,7 @@ export class DeckStore {
             },
         });
     }
+
     async save(
         accountId: string,
         input: Pick<StudyDeck, "name" | "entryIds" | "notes"> & {
@@ -151,6 +159,7 @@ export class DeckStore {
         );
         return deck;
     }
+
     async delete(accountId: string, id: string): Promise<void> {
         await this.db.executeCommand({
             option: "DELETE",
@@ -166,6 +175,7 @@ export class DeckStore {
             ],
         });
     }
+
     async transact<T>(operation: (store: DeckStore) => Promise<T>): Promise<T> {
         return this.db.transaction((db) => operation(new DeckStore(db)));
     }

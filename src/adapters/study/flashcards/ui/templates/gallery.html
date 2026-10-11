@@ -1,0 +1,73 @@
+<template data-deck-template="browser">
+    <header class="study-deck-browser-header">
+        <h2>{title}</h2>
+        <button
+            type="button"
+            class="btn-neutral"
+            data-deck-action="add"
+            aria-label="{create_label}"
+        >
+            +
+        </button>
+    </header>
+    <div class="library-filters study-browse-filters">
+        <input
+            type="search"
+            class="study-deck-search"
+            data-deck-query
+            value="{query}"
+            placeholder="{search_label}"
+            aria-label="{search_label}"
+        />
+        {browse_controls}
+    </div>
+    <div class="study-deck-browser">{previews}</div>
+</template>
+
+<template data-deck-template="preview">
+    <article class="study-deck-preview">
+        <button type="button" class="btn-neutral" data-deck-open="{id}">
+            <span class="study-deck-preview-source">{source}</span>
+            <strong>{name}</strong>
+            <span class="study-deck-preview-meta">
+                <span>{count} {cards_label}{language}</span>
+                <span>{due_label}</span>
+            </span>
+        </button>
+        {favourite}
+    </article>
+</template>
+
+<template data-deck-template="detail">
+    <div class="study-deck-browser-header">
+        <button type="button" class="btn-neutral" data-deck-action="browse">
+            {back_label}
+        </button>
+        <span data-deck-favourite>{favourite}</span>
+    </div>
+    <h2>{name}</h2>
+    <div class="study-deck-actions">
+        <button type="button" class="btn-confirm" data-deck-action="study">
+            {study_label}
+        </button>
+        {editable_actions} {export_action}
+    </div>
+    <label><input type="checkbox" data-deck-due{checked} />{due_label}</label>
+    <div data-study-session></div>
+</template>
+
+<template data-deck-template="edit-actions">
+    <span data-deck-share></span>
+    <button type="button" class="btn-neutral" data-deck-action="edit">
+        {edit_label}
+    </button>
+    <button type="button" class="btn-cancel" data-deck-action="delete">
+        {delete_label}
+    </button>
+</template>
+
+<template data-deck-template="export">
+    <button type="button" class="btn-neutral" data-deck-action="export">
+        {export_label}
+    </button>
+</template>

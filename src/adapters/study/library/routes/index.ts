@@ -1,3 +1,4 @@
+import { sendJson } from "../../../../api/reuse/http-response.js";
 import { libraryFailure } from "./failures.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson as readRequestJson } from "../../../../api/reuse/read-json.js";
@@ -24,11 +25,6 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
             throw new Error("invalid_request_json");
         throw error;
     }
-}
-
-function sendJson(res: ServerResponse, status: number, body: unknown): void {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify(body));
 }
 
 function locationFrom(url: URL): LibraryLocation {

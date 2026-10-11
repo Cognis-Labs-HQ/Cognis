@@ -1,4 +1,5 @@
-import { layerForEntry, pronunciationValues } from "./presentation.js";
+import { pronunciationValues } from "./reuse/readings.js";
+import { layerForEntry } from "./presentation.js";
 import { referencedTransformation } from "./transformations.js";
 
 export function resolveComposerContract(schema, layer, constructor) {

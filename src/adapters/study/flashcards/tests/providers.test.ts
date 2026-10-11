@@ -39,6 +39,7 @@ function fixture(enabled = true) {
     };
     return { ctx, library, descriptor, traced: () => traced };
 }
+
 test("starter decks resolve provider keys in declared order with stable IDs, while browsing avoids loading card details", async () => {
     const scenario = fixture(),
         actor = { accountId: "user", role: "user" };

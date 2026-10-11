@@ -1,12 +1,3 @@
-.library-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-block-end: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 10px;
-    background: var(--surface-soft);
-}
 .library-filter-group {
     display: grid;
     gap: 0.4rem;
@@ -324,11 +315,13 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 
 .library-entry-card-shell > .study-favourite {
     position: absolute;
-    inset-inline-end: 0.4rem;
-    bottom: 0.4rem;
-    padding: 0.1rem 0.4rem;
-}
-.library-entry-card-shell > .study-favourite {
+    inset-inline-end: 2rem;
+    top: 0;
+    transform: translateY(-50%);
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0;
+    z-index: 4;
     opacity: 0;
 }
 .library-entry-card-shell:is(:hover, :focus-within) > .study-favourite,

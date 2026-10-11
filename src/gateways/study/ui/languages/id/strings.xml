@@ -65,4 +65,6 @@
   <string name="gateway.study.dictionary_search_with">Cari dengan {{ provider }}</string>
   <string name="gateway.study.explore">Jelajahi</string>
   <string name="gateway.study.favourite_failed">Favorit Study tidak dapat diperbarui.</string>
+  <string name="gateway.study.favourite_added">Ditambahkan ke favorit.</string>
+  <string name="gateway.study.favourite_removed">Dihapus dari favorit.</string>
 </resources>

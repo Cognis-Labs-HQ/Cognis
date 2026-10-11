@@ -54,6 +54,7 @@ export class DeckService {
             id?: string,
         ) => Promise<StudyDeck[]> = async () => [],
     ) {}
+
     async list(actor: DeckActor): Promise<StudyDeck[]> {
         const owned = [
             ...(await this.store.list(actor.accountId)),
@@ -77,13 +78,19 @@ export class DeckService {
                 ...deck,
                 canEdit:
                     !deck.provider && deck.ownerAccountId === actor.accountId,
+                canExport:
+                    deck.ownerAccountId === actor.accountId ||
+                    actor.role === "admin" ||
+                    actor.role === "owner",
                 progress: await this.store.progress(actor.accountId, deck.id),
             })),
         );
     }
+
     async owned(accountId: string, id: string): Promise<StudyDeck | undefined> {
         return this.store.read(accountId, id);
     }
+
     private async readable(
         store: DeckStore,
         actor: DeckActor,
@@ -102,9 +109,14 @@ export class DeckService {
         return {
             ...deck,
             canEdit: !deck.provider && deck.ownerAccountId === actor.accountId,
+            canExport:
+                deck.ownerAccountId === actor.accountId ||
+                actor.role === "admin" ||
+                actor.role === "owner",
             progress: await store.progress(actor.accountId, id),
         };
     }
+
     private async card(
         actor: DeckActor,
         id: string,
@@ -124,6 +136,7 @@ export class DeckService {
             throw error;
         }
     }
+
     async details(
         actor: DeckActor,
         id: string,
@@ -140,6 +153,7 @@ export class DeckService {
             unavailable: cards.filter((card) => !card).length,
         };
     }
+
     async save(
         actor: DeckActor,
         raw: unknown,
@@ -255,6 +269,7 @@ export class DeckService {
                     );
                     result.progress = progress;
                     result.canEdit = true;
+                    result.canExport = true;
                     await store.saveProgress(
                         actor.accountId,
                         result.id,
@@ -274,6 +289,7 @@ export class DeckService {
             return result;
         });
     }
+
     async review(
         actor: DeckActor,
         id: string,
@@ -336,6 +352,7 @@ export class DeckService {
             return deck;
         });
     }
+
     async delete(actor: DeckActor, id: string): Promise<void> {
         await this.flow.run(
             "study:decks:delete",

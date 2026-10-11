@@ -1,3 +1,4 @@
+import { pronunciationValues } from "./reuse/readings.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCollapsibleSectionComposer } from "/static/reuse/collapsible-section-composer.js";
@@ -17,7 +18,6 @@ import {
     renderMetadataPills,
     renderScope,
     visibleDetailFields,
-    pronunciationValues,
     definitionText,
     isMeaningLayer,
     relationSection,

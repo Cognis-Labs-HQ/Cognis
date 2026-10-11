@@ -3,6 +3,7 @@ import test from "node:test";
 import type { StructuredDbCommand } from "../../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../../store.js";
+
 test("permanent deletion blacklists content hashes and removes relationships", async () => {
     const commands: StructuredDbCommand[] = [];
     const db: DbExecutor = {

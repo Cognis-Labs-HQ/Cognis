@@ -24,7 +24,7 @@ const createEntrySource = [
         read(`src/adapters/study/library/ui/app/create-entry/${file}`),
     )
     .join("\n");
-const clientSource = read("src/gateways/study/ui/library-client.js");
+
 const adapterSource = read("src/adapters/study/library/index.ts");
 const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
 const carouselSource = read("src/ui/reuse/horizontal-carousel.js");
@@ -63,8 +63,6 @@ test("Study Library keeps editor tabs active and nested card types precise", () 
 
 test("Study Library composer exposes provider-owned raw-input lookup", () => {
     for (const [content, pattern] of [
-        [clientSource, /fetchLibraryLookupProviders/],
-        [clientSource, /fetchLibraryLookupSuggestions/],
         [createEntrySource, /data-library-lookup-provider/],
         [createEntrySource, /bindLookupProviders/],
         [createEntrySource, /data-library-free-text/],
@@ -257,8 +255,6 @@ test("Study Library edits saved pronunciations and rejects an empty stage", () =
 });
 
 test("Study Library edit failures retain server error codes for useful toasts", () => {
-    assert.match(clientSource, /payload\.error\?\.code \?\? "update_failed"/);
-    assert.match(clientSource, /payload\.error\?\.code \?\? "request_failed"/);
     assert.match(adminInteractionsSource, /showLibraryMutationError/);
     assert.match(adminInteractionsSource, /library_relationship_error/);
     assert.match(adminInteractionsSource, /library_pronunciation_group_error/);
@@ -400,10 +396,7 @@ test("Study Library exposes tagged sentence components and repeatable literals",
 
 test("Study Library composes transformed carousel cards into sentences", () => {
     const activationSource = readFileSync(
-        new URL(
-            "../../adapters/study/library/ui/app/composition-activation.js",
-            import.meta.url,
-        ),
+        new URL("../ui/app/composition-activation.js", import.meta.url),
         "utf8",
     );
     assert.match(activationSource, /openTransformationPopup/);

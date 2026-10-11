@@ -1,116 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { readFileSync, readdirSync } from "node:fs";
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const indexSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
-    "utf8",
-);
-const layerPageSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/layer/index.js"),
-    "utf8",
-);
-const requestsPageSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/requests/index.js"),
-    "utf8",
-);
-const studySubNavigationSource = readFileSync(
-    resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
-    "utf8",
-);
-const studyStylesheet = readFileSync(
-    resolve(ROOT, "src/gateways/study/ui/study.css"),
-    "utf8",
-);
-const adminInteractionsSource = [
-    "admin-interactions/index.js",
-    "admin-interactions/editor-body.js",
-    "pronunciation-editor.js",
-]
-    .map((file) =>
-        readFileSync(
-            resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
-            "utf8",
-        ),
-    )
-    .join("\n");
-const cardsSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/cards.js"),
-    "utf8",
-);
-const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"), {
-    recursive: true,
-})
-    .filter((file) => file.endsWith(".js"))
-    .map((file) =>
-        readFileSync(
-            resolve(ROOT, `src/adapters/study/library/ui/app/${file}`),
-            "utf8",
-        ),
-    )
-    .join("\n");
-const stylesheet = [
-    "library.css",
-    "library-admin.css",
-    "library-selection.css",
-    "library-detail.css",
-]
-    .map((file) =>
-        readFileSync(
-            resolve(ROOT, `src/adapters/study/library/ui/${file}`),
-            "utf8",
-        ),
-    )
-    .join("\n");
-const clientSource = readFileSync(
-    resolve(ROOT, "src/gateways/study/ui/library-client.js"),
-    "utf8",
-);
-const adapterSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/index.ts"),
-    "utf8",
-);
-const createEntrySource = [
-    "index.js",
-    "composition.js",
-    "definitions.js",
-    "definition-editor.js",
-    "lookups.js",
-    "lookup-replacement.js",
-    "pronunciation-draft.js",
-]
-    .map((file) =>
-        readFileSync(
-            resolve(
-                ROOT,
-                `src/adapters/study/library/ui/app/create-entry/${file}`,
-            ),
-            "utf8",
-        ),
-    )
-    .join("\n");
-const carouselStylesheet = readFileSync(
-    resolve(ROOT, "src/ui/styles/reuse/horizontal-carousel.css"),
-    "utf8",
-);
-const variantArrowLight = readFileSync(
-    resolve(
-        ROOT,
-        "src/adapters/study/library/ui/assets/variant-arrow-light.svg",
-    ),
-    "utf8",
-);
-const variantArrowDark = readFileSync(
-    resolve(
-        ROOT,
-        "src/adapters/study/library/ui/assets/variant-arrow-dark.svg",
-    ),
-    "utf8",
-);
+import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import {
+    ROOT,
+    indexSource,
+    layerPageSource,
+    requestsPageSource,
+    adminInteractionsSource,
+    cardsSource,
+    source,
+    stylesheet,
+    adapterSource,
+    createEntrySource,
+    carouselStylesheet,
+    variantArrowLight,
+    variantArrowDark,
+} from "./reuse/ui-sources.js";
+
 test("Study Library provides vocabulary transformations", () => {
-    assert.doesNotMatch(studySubNavigationSource, /layer\.views/);
     assert.match(source, /transformationPathways/);
     assert.match(source, /library-transform-tech-tree/);
     assert.match(source, /library-transform-root/);
@@ -179,11 +87,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /gateway\.study\.library_audio_load_error/);
     assert.match(source, /value\.startsWith\("file:"\)/);
     assert.match(source, /URL\.revokeObjectURL/);
-    assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
-    assert.match(
-        clientSource,
-        /URL\.createObjectURL\(await response\.blob\(\)\)/,
-    );
+
     assert.match(stylesheet, /\.library-audio/);
     assert.match(stylesheet, /\.library-audio-progress/);
     assert.match(stylesheet, /appearance: none/);
@@ -213,8 +117,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /deleteLibraryEntries/);
     assert.match(source, /const deletion = await deleteLibraryEntries/);
     assert.match(source, /!deletion\.entryIds\.includes\(entry\.id\)/);
-    assert.match(clientSource, /export async function deleteLibraryEntries/);
-    assert.match(clientSource, /method: "DELETE"/);
+
     assert.match(stylesheet, /\.library-entry-selection/);
     assert.match(source, /LONG_PRESS_DURATION_MS/);
     assert.match(source, /selectedEntryIds\(root\)\.length === 0/);

@@ -14,6 +14,7 @@ export interface StarterDeck {
     schemaId: string;
     sourceRecordIds: string[];
 }
+
 interface ProviderLanguage {
     moduleId: string;
     languageCode: string;
@@ -21,6 +22,7 @@ interface ProviderLanguage {
     starterDecks?: StarterDeck[];
 }
 /** Stable provider identities survive content revisions without copying Library records. */
+
 export function starterDeckId(packId: string, key: string): string {
     const hash = createHash("sha256").update(`${packId}\0${key}`).digest("hex");
     return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-8${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;

@@ -33,6 +33,7 @@ const strip = (source) =>
     source
         .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
         .replace(/\bexport /g, "");
+
 function scopeContext(result = "personal") {
     const popups = [];
     const context = {

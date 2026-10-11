@@ -78,19 +78,75 @@
     justify-content: space-between;
     gap: 1rem;
 }
+
+.study-flashcard > .study-favourite {
+    justify-self: end;
+}
+
+.study-deck-preview {
+    position: relative;
+    display: block;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+    overflow: hidden;
+}
+
+.study-deck-preview > [data-deck-open] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+    align-items: start;
+    width: 100%;
+    height: 100%;
+    min-height: 12rem;
+    padding: 1.4rem;
+    padding-inline-end: 3.5rem;
+    border: 0;
+    border-radius: inherit;
+    text-align: start;
+    justify-items: start;
+    align-content: space-between;
+    gap: 1.25rem;
+}
+
+.study-deck-preview > [data-deck-open] strong {
+    font-size: 1.15rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.study-deck-preview > .study-favourite {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    top: 0.75rem;
+}
+
+.study-deck-preview-meta {
+    display: grid;
+    gap: 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.study-deck-preview-source {
+    display: inline-flex;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text);
+    width: fit-content;
+}
+
 .study-deck-browser {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
     gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    margin-block-start: 1rem;
 }
-.study-deck-preview {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.study-deck-preview > [data-deck-open] {
-    flex: 1;
-    display: grid;
-    gap: 0.75rem;
-    min-height: 8rem;
+
+.study-deck-search {
+    width: min(100%, 22rem);
+    min-width: 0;
 }

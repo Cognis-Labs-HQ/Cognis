@@ -1,14 +1,13 @@
+import { bindViewedEntries } from "./viewed-entries.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
-import {
-    fetchLibraryLocations,
-    markLibraryEntriesViewed,
-} from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryLocations } from "/static/gateways/study/ui/library-client.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
 import { loadDrawing } from "./drawing.js";
 import {
+    bindSelectionEscape,
     deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
@@ -25,8 +24,10 @@ import { bindTransformationInteractions } from "./transformation-interactions.js
 import { mergeEntryCollectionUpdate } from "./entry-collection.js";
 import { deleteLibrarySelection } from "./deletion-actions.js";
 import { bindBrowseControls } from "./browse-controls.js";
+
 let activeEntryPopup = null;
 const interactionControllers = new WeakMap();
+
 export function bindLibraryInteractions(root, context) {
     const {
         i18n,
@@ -44,6 +45,7 @@ export function bindLibraryInteractions(root, context) {
     );
     interactionControllers.set(root, controller);
     const signal = controller.signal;
+    bindSelectionEscape(root, signal);
     if (root.querySelector(".library-browser"))
         void bindBrowseControls(root, context.entries, schemas, i18n, signal);
     window.addEventListener(
@@ -76,43 +78,7 @@ export function bindLibraryInteractions(root, context) {
         render: renderEntries,
     });
     let suppressEntryClick = false;
-    const markViewed = (control) => {
-        const entry = entries.find(
-            ({ id }) => id === control?.dataset.libraryEntry,
-        );
-        if (!entry?.isNew) return;
-        entry.isNew = false;
-        root.querySelectorAll(
-            `[data-library-entry="${CSS.escape(entry.id)}"]`,
-        ).forEach((card) =>
-            card
-                .closest(".library-entry-card-shell")
-                ?.querySelector(".library-new-pill")
-                ?.remove(),
-        );
-        void markLibraryEntriesViewed([entry.id]).catch(() => {
-            entry.isNew = true;
-        });
-    };
-    root.addEventListener(
-        "pointerover",
-        (event) => {
-            const status = event.target.closest("[data-library-entry-status]");
-            const control = event.target.closest("[data-library-entry]");
-            markViewed(
-                control ??
-                    (status
-                        ? {
-                              dataset: {
-                                  libraryEntry:
-                                      status.dataset.libraryEntryStatus,
-                              },
-                          }
-                        : null),
-            );
-        },
-        { capture: true, signal },
-    );
+    const markViewed = bindViewedEntries(root, () => entries, signal);
     bindVariantInteractions(root, {
         signal,
         suppressNextClick: () => {

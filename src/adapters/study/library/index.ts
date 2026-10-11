@@ -215,6 +215,7 @@ export async function bootstrapStudyAdapter(
         systemCtx?.contributePublicCapability("study:library:provider", {
             inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
+            deleteContentPack: service.deleteContentPack.bind(service),
             registerConstructor,
             registerLookupProvider:
                 service.registerLookupProvider.bind(service),
@@ -223,9 +224,9 @@ export async function bootstrapStudyAdapter(
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");
     if (preferences && auth) {
-        if (!systemCtx?.hasFlow("study:library:search-context"))
+        if (!systemCtx?.hasFlow("study:library:searchContext"))
             systemCtx?.registerFlow({
-                id: "study:library:search-context",
+                id: "study:library:searchContext",
                 stages: ["authorize", "persist"],
             });
         ctx.registerRoute(

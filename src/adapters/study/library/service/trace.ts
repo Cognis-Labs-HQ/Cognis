@@ -2,6 +2,7 @@ import type { LibraryActor } from "../contracts.js";
 import type { LibraryEntry, LibraryLocation } from "../types.js";
 import type { LibraryStore } from "../store.js";
 import { allInputReferences } from "./dependencies.js";
+
 export async function traceEntry(
     actor: LibraryActor,
     entry: LibraryEntry,

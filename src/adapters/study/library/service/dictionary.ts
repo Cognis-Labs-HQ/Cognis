@@ -15,6 +15,7 @@ export interface LibraryDictionaryResult extends LibraryLookupSuggestion {
 
 export class LibraryDictionarySearch {
     private readonly cache?: ProbeCache<LibraryDictionaryResult[]>;
+
     constructor(
         store: LibraryStore,
         factory?: ProbeCacheFactory,

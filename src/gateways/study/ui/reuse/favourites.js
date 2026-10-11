@@ -10,6 +10,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
+
 let active = new Set();
 const key = (kind, id) => `${kind}:${id}`;
 
@@ -19,10 +20,12 @@ export function renderFavourite(kind, id, i18n) {
     return `<button type="button" class="btn-neutral study-favourite${selected ? " is-favourite" : ""}" data-study-favourite="${escapeHtml(id)}" data-study-favourite-kind="${kind}" aria-pressed="${selected}" aria-label="${escapeHtml(i18n.t("ui.reuse.favourite"))}">${selected ? "★" : "☆"}</button>`;
 }
 /** @param {object} i18n Labels. @returns {string} Sort and favourite-filter controls. */
+
 export function renderBrowseControls(i18n) {
-    return `<span class="study-browse-controls"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
+    return `<span class="study-browse-controls"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select class="theme-select" data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
 }
 /** @param {object[]} items Items. @param {string} order Sort selection. @returns {object[]} Sorted copy. */
+
 export function sortItems(items, order) {
     const result = [...items];
     if (order === "az" || order === "za")
@@ -42,6 +45,7 @@ export function sortItems(items, order) {
     return result;
 }
 /** @returns {Promise<object>} Controller with has, bind and refresh methods. */
+
 export async function loadFavourites() {
     const response = await apiFetch("/api/v1/study/favourites");
     if (!response.ok) throw new Error("favourites_failed");
@@ -75,8 +79,9 @@ export async function loadFavourites() {
                     event.stopPropagation();
                     button.disabled = true;
                     try {
-                        const kind = button.dataset.studyFavouriteKind,
-                            id = button.dataset.studyFavourite;
+                        const kind = button.dataset.studyFavouriteKind;
+                        const id = button.dataset.studyFavourite;
+                        const selected = !active.has(key(kind, id));
                         const response = await apiFetch(
                             "/api/v1/study/favourites",
                             {
@@ -85,7 +90,7 @@ export async function loadFavourites() {
                                 body: JSON.stringify({
                                     kind,
                                     id,
-                                    favourite: !active.has(key(kind, id)),
+                                    favourite: selected,
                                 }),
                             },
                         );
@@ -96,6 +101,14 @@ export async function loadFavourites() {
                             ),
                         );
                         refresh(root);
+                        showToast(
+                            i18n.t(
+                                selected
+                                    ? "gateway.study.favourite_added"
+                                    : "gateway.study.favourite_removed",
+                            ),
+                            { variant: "success" },
+                        );
                         onChange();
                     } catch {
                         showToast(i18n.t("gateway.study.favourite_failed"), {

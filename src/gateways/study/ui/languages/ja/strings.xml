@@ -65,4 +65,6 @@
   <string name="gateway.study.dictionary_search_with">{{ provider }}で検索</string>
   <string name="gateway.study.explore">探索</string>
   <string name="gateway.study.favourite_failed">Study のお気に入りを更新できませんでした。</string>
+  <string name="gateway.study.favourite_added">お気に入りに追加しました。</string>
+  <string name="gateway.study.favourite_removed">お気に入りから削除しました。</string>
 </resources>

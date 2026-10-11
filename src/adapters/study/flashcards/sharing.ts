@@ -19,6 +19,7 @@ interface DeckShareGrant {
         recipients?: Array<{ permissions?: string[] }>;
     };
 }
+
 function supportedDeckGrant(input: DeckShareGrant): boolean {
     return (
         (input.grantedCapabilities === undefined ||

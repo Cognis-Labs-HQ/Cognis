@@ -777,3 +777,17 @@ Nach erfolgreicher Deck-Erstellung oder Import schließt der geschützte Editor 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea
+
+## Review und Lebenszyklus
+
+Library 2.26.0 stellt `deleteContentPack(root)` über die öffentliche Provider-Capability bereit. Provider-Datensätze, abhängige Karten, Paketbelege und Dateien werden in einer Transaktion des Lösch-Flows entfernt; fehlgeschlagene Audit-Hooks rollen alles zurück. Kaskaden verwenden die vorhandenen Study-Benachrichtigungen. Schemas bleiben für unabhängige eigene Inhalte erhalten. Die Deinstallation sperrt keine Inhalte, sodass eine Neuinstallation das Paket wiederherstellen kann.
+
+Study-Tests liegen beim zuständigen Adapter oder Gateway. Gemeinsame Leseextraktion, vollständige Zeichenzerlegung, JSON-Antworten und Testdaten vermeiden Duplikate. Inhaltsimport und Gesehen-Markierungen sind eigene, begrenzte Module. Leerzeilen werden geprüft, ohne Dateigrößenlimits zu erhöhen. Sortierfelder nutzen `theme-select`; Favoriten verwenden themengerechte quadratische Symbolschaltflächen.
+
+[835f7889](https://github.com/Cognis-Labs-HQ/Cognis/commit/835f7889aab52125ab607d1cbaca4a85340e9377)
+
+## Stapelgalerie und Favoriten
+
+Flashcards 1.2.0 zeigt alle sichtbaren Stapel als responsive Kacheln mit Herkunft, Sprache, Kartenanzahl und neuen/fälligen Karten. Die Suche verwendet den bestehenden Study-Suchabgleich. Sortierung, Favoritenfilter und Filterlayout liegen gemeinsam im Gateway. Galerie- und Detailansichten nutzen eigene HTML-Vorlagen. Die klaren Titel- und Metadatenmuster orientieren sich an [Brainscape](https://www.brainscape.com/subjects) und [Knowt](https://knowt.com/explore).
+
+Favoritensterne in Library-Vorschauen liegen neben der Auswahl und bleiben über Hinweisen für untergeordnete Karten erreichbar. Erfolgreiche Änderungen zeigen eine Meldung. Escape beendet die Mehrfachauswahl, wenn kein Popup die Taste bereits verarbeitet hat. Stapeldetails zeigen den Stapelfavoriten; beim Lernen erscheint stattdessen der Favorit der aktuellen Karte. Export ist nur sichtbar, wenn `canExport` den Ersteller oder einen Administrator zulässt, einschließlich Provider-Stapeln für Administratoren.

@@ -4,6 +4,64 @@ These instructions guide AI-assisted contributions to the Cognis codebase. Human
 
 ---
 
+## Persistent Review Preferences
+
+Read this file before changing Cognis or its modules. Apply these preferences proactively while implementing and reviewing; do not wait for another review comment. They supplement the AI instructions and do not authorize unrelated changes.
+
+### Ownership and integration
+
+- Keep code, routes, tests, styles, CLI contributions and lifecycle cleanup in their owning component. An optional component must be removable without breaking its siblings or core.
+- Use injected ctx capabilities and registered flows across component boundaries. Never instantiate another component's concrete services or import its private implementation, including in tests.
+- Only publish capabilities that are fully implemented, registered and tested. Check the actual host capability used by bootstrap, disable and uninstall; reject unavailable contracts rather than falling back to broader or older APIs.
+- Core owns host behavior and policy; modules provide language data and dictionary enrichment. Modules must not dictate app navigation, permissions or query-cache refresh schedules.
+- Do not change core, routing, page shell or composer-owned classes merely to make a feature work. Diagnose missing styles, initialization and lifecycle handling in the owning page first. Intentional shared features require their own evidence and regression coverage.
+- Unhook contributed UI/backend functions and event handlers when disabled or unmounted. Roll back registrations on failed bootstrap.
+
+### Reuse, clarity and scope
+
+- Search existing reuse before implementing a helper. Move parameterizable duplicated logic of five or more lines into the narrowest appropriate component-owned `reuse/` abstraction, with direct consumers.
+- Remove duplicate variable definitions and duplicated fixture setup. Generic shared labels belong in reuse and retain all supported translations.
+- Avoid forwarding-only shims, speculative compatibility branches and unnecessary abstractions. Keep route handlers thin; preserve meaningful named operation stages and transaction boundaries.
+- Preserve blank lines between functions, methods and declaration groups. Never remove newlines, compress declarations, raise size thresholds or weaken tests to disguise a large file or PR. Split files by coherent responsibility.
+- Keep large markup in feature templates and styles in their owning stylesheet. Small reusable controls may render their own bounded markup.
+- Review the whole PR and adjacent functionality, not only the reported symptom. Keep changes proportional to the feature, and explain unavoidable generated data separately.
+
+### UI and Study feedback
+
+- Use page composer, existing buttons, themed selects, SVG icons, popup/discard confirmation, profile previews and notification conventions. Do not override composer/shell classes in feature CSS.
+- Keep URLs free of query data, credentials and incidental page state. Preserve sidebar geometry and moved drawing-pad position across overlays. Close the drawing pad when leaving Explore.
+- Carousels append repeated placements. Hover highlights every matching placement, previews only primary pronunciation/definition, and horizontal dragging has drop indicators.
+- Resolve every reference to a real canonical UUID. Preserve authored composition, sentence structure, transformations and pronunciation segments across edits and nested creation.
+- Dictionary matches of the same composition combine alternate readings/definitions. Distinct compositions are optional choices. Preserve authoritative readings and common-result order; only suppress proven redundant echoes. Enforce field limits before saving.
+- Characters and particles remain provider-owned. Recursive dictionary enrichment starts at the permitted writing-unit layer. Hidden pronunciation cards follow provider content rules and resolve their own kana dependencies.
+- Keep requests' original card context through relocations; clear it only on deletion. Distinguish genuine new content from scope oscillations. Admin-authorized operations run immediately unless the operation explicitly requires review/confirmation.
+- Batch delete has one confirmation. Downgrading shared visibility requires confirmation/review and complete cascade handling; notify affected users in the Study category. Success creates/requests show a toast.
+- Browse pages show all visible items, concise empty states, sort/favourite controls and clean selected-detail results. Keep preview favourites clear of child hints, toast successful favourite changes, and use Escape to exit multi-selection. Show one contextual favourite control during study. Deck exports are available only to their creator or an administrator. Flashcards own their adapter, use Cognis sharing, and permit provider starter decks.
+
+### Verification and documentation
+
+- Test observable behavior through real registered flow execution and public-contract fakes. Source-only assertions are supplemental; they cannot prove a capability works. Never use silent no-op runners, unrelated tests or altered assertions to hide failures.
+- Check cold/direct navigation, repeated SPA mounts, disabled/uninstalled providers, admin/user permissions, pending/approved requests, transactional failures and dictionary/card duplication.
+- Keep versions, manifests, lockfiles, dependency ceilings and all four localized documents/changelogs synchronized. Document capabilities, constraints and lifecycle behavior accurately. Regenerate and verify provider package hashes after the final edits.
+- Avoid raw provider payloads in UI, unsafe error metadata and silent catches. Use appropriate user-facing errors and structured safe logs.
+
+### Evidence and full review archive
+
+These preferences derive from the author's Cognis PR reviews and the Study feedback in this conversation, archived on 2026-10-11. The workspace archive is `/workspace/feedback-deploy/review-memory/`: `cognis-author-reviews.json` contains all 101 nonempty author review bodies and 516 inline comments across the 228 PRs available at retrieval; `cognis-author-discussions.json` preserves the author's repository discussion comments. GitHub remains the portable source of the original feedback; the archive is deliberately outside the PR to avoid duplicating hundreds of historical comments in source control.
+
+Representative source reviews:
+
+- [#226: duplication, test integrity, size and spacing](https://github.com/Cognis-Labs-HQ/Cognis/pull/226#pullrequestreview-5453771603)
+- [#196: no convenience changes to core/router](https://github.com/Cognis-Labs-HQ/Cognis/pull/196#pullrequestreview-5273631083)
+- [#172: immediate disable cleanup](https://github.com/Cognis-Labs-HQ/Cognis/pull/172#pullrequestreview-5000121369)
+- [#128: prevent spurious newline removal](https://github.com/Cognis-Labs-HQ/Cognis/pull/128#pullrequestreview-4814252284)
+- [#106: shared search conventions](https://github.com/Cognis-Labs-HQ/Cognis/pull/106#pullrequestreview-4770189279)
+- [#99: gateway and adapter CLI ownership](https://github.com/Cognis-Labs-HQ/Cognis/pull/99#pullrequestreview-4750770814)
+- [#80: explicit reuse dependencies](https://github.com/Cognis-Labs-HQ/Cognis/pull/80#pullrequestreview-4727685799)
+- [#62: split files without gaming limits](https://github.com/Cognis-Labs-HQ/Cognis/pull/62#pullrequestreview-4719732992)
+- [#54: ctx integration and proportional changes](https://github.com/Cognis-Labs-HQ/Cognis/pull/54#pullrequestreview-4444490335)
+- [#8: retain lessons for future work](https://github.com/Cognis-Labs-HQ/Cognis/pull/8#pullrequestreview-4351935184)
+
 ## Session startup requirements
 
 As soon as you begin work in a session, you MUST run:

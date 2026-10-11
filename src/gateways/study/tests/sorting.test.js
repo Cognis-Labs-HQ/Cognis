@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+
 const ctx = vm.createContext({});
 vm.runInContext(
     readFileSync(new URL("../ui/reuse/favourites.js", import.meta.url), "utf8")

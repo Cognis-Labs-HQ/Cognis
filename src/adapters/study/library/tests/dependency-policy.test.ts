@@ -39,6 +39,7 @@ const schema: LibrarySchema = {
 };
 const actor = { accountId: "alice", role: "user" as const };
 const admin = { accountId: "admin", role: "admin" as const };
+
 function entry(
     id: string,
     location: LibraryLocation,
@@ -60,6 +61,7 @@ function entry(
         references,
     };
 }
+
 function harness(records: LibraryEntry[], requests: object[] = []) {
     const recordsById = new Map(records.map((value) => [value.id, value]));
     const mutations: string[] = [];
@@ -124,6 +126,7 @@ function harness(records: LibraryEntry[], requests: object[] = []) {
         prepare: () => library.registerSchema(schema),
     };
 }
+
 const ref = (id: string) => ({ entryId: id, relation: "parts" });
 const input = (label: string, id: string): LibraryEntryInput => ({
     schemaId: schema.id,

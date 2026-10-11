@@ -113,3 +113,15 @@ Jika Anda mengubah dokumen Markdown yang memiliki varian terjemahan, perbarui fi
 ## Konvensi dokumentasi fungsi
 
 Templat kontribusi tersembunyi `.github/DOCUMENTATION_TEMPLATE.en.md` menentukan urutan pembuka wajib untuk setiap berkas dokumentasi nyata. Tepat setelah H1, awali dengan pernyataan informatif tentang apa yang dicapai fungsi atau permukaan yang didokumentasikan. H2 berikutnya berisi contoh penggunaan konkret untuk impor, pencarian kapabilitas, panggilan rute, konfigurasi, dan hasil yang diharapkan. H2 setelahnya memulai spesifikasi teknis lengkap; tempatkan seluruh input, output, perilaku siklus hidup, validasi, otorisasi, kesalahan, efek samping, persistensi, keamanan, pembersihan, dan detail ekstensi di sana atau pada subbagian H3. Pengujian arsitektur membandingkan tiga tingkat heading pertama setiap dokumen non-changelog dengan templat tersembunyi.
+
+## Perbaikan tinjauan
+
+Library 2.26.0 menyediakan `deleteContentPack(root)` melalui kapabilitas penyedia publik. Catatan penyedia, kartu bergantung, tanda terima paket, dan aset dihapus dalam satu transaksi alur penghapusan; kegagalan hook audit membatalkan operasi. Penghapusan berantai menggunakan notifikasi Study yang ada. Skema tetap tersedia bagi konten mandiri buatan pengguna, dan pelepasan tidak memasukkan konten ke daftar blokir sehingga pemasangan ulang dapat memulihkan paket.
+
+Pengujian Study berada di adapter atau gateway pemiliknya. Ekstraksi bacaan, pemecahan label lengkap, respons JSON, dan data pengujian bersama menghilangkan duplikasi. Impor konten dan penanda telah dilihat dipisahkan menjadi modul terarah. Jarak antar deklarasi diperiksa tanpa menaikkan batas ukuran berkas. Pemilihan urutan memakai `theme-select`; kontrol favorit memakai ukuran tombol ikon persegi bertema.
+
+## Galeri dek dan favorit
+
+Flashcards 1.2.0 menampilkan semua dek yang terlihat dalam ubin responsif dengan sumber, bahasa, jumlah kartu, serta jumlah kartu baru/jatuh tempo. Pencarian dek memakai pencocok pencarian Study yang ada. Urutan, filter favorit, dan tata letak filter menggunakan kontrol gateway bersama. Tampilan galeri dan detail menggunakan templat HTML milik Flashcards. Pola judul dan metadata mengikuti [Brainscape](https://www.brainscape.com/subjects) dan [Knowt](https://knowt.com/explore).
+
+Bintang favorit pratinjau Library berada di samping kontrol pilihan dan tidak tertutup petunjuk kartu anak. Perubahan favorit menampilkan notifikasi sukses. Escape menghapus pilihan jamak jika popup belum menangani tombol tersebut. Detail dek menampilkan favorit dek; sesi belajar aktif menampilkan favorit kartu saat ini sebagai gantinya. Ekspor hanya terlihat jika `canExport` mengizinkan pembuat atau administrator, termasuk dek penyedia yang dilihat administrator.

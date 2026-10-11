@@ -47,6 +47,7 @@ interface EntryWriterContext {
 
 export class LibraryEntryWriter {
     constructor(private readonly context: EntryWriterContext) {}
+
     async create(
         actor: LibraryActor,
         raw: LibraryLocation,

@@ -1,10 +1,12 @@
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 
 export type StudyFavouriteKind = "library" | "deck" | "flashcard";
+
 export interface StudyFavourite {
     kind: StudyFavouriteKind;
     id: string;
 }
+
 const KEY = "study-favourites";
 
 export function validateFavourite(
@@ -25,10 +27,13 @@ export function validateFavourite(
 /** Account-scoped favourites. Owning adapters independently enforce resource access. */
 export class StudyFavourites {
     private readonly pending = new Map<string, Promise<unknown>>();
+
     constructor(private readonly preferences: UserPreferenceStore) {}
+
     async list(accountId: string): Promise<StudyFavourite[]> {
         return JSON.parse((await this.preferences.get(accountId, KEY)) ?? "[]");
     }
+
     async set(accountId: string, input: unknown): Promise<StudyFavourite[]> {
         validateFavourite(input);
         const operation = (this.pending.get(accountId) ?? Promise.resolve())

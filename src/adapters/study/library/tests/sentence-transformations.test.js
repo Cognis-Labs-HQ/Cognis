@@ -109,6 +109,7 @@ const sentence = {
         },
     ],
 };
+
 function load(relativePath, dependencies = {}) {
     const source = readFileSync(new URL(relativePath, import.meta.url), "utf8")
         .replace(/import[\s\S]*?from "[^"]+";\n/g, "")

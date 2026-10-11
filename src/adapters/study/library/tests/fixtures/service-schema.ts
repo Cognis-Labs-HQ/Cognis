@@ -1,4 +1,5 @@
 import type { LibrarySchema } from "../../types.js";
+
 export const schema = (version: number): LibrarySchema => ({
     id: "test-language",
     version,

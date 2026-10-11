@@ -15,6 +15,7 @@ import {
     localizeLibraryDefinition,
 } from "/static/gateways/study/ui/library-client.js";
 import { DEFINITION_LANGUAGES } from "../definition-languages.js";
+
 export async function openDefinitionPopup({
     schema,
     schemaId,
@@ -117,6 +118,7 @@ export async function openDefinitionPopup({
         location,
     });
 }
+
 export async function createDefinition({
     schema,
     layerId,

@@ -113,3 +113,15 @@ Wenn Sie ein Markdown-Dokument ändern, für das übersetzte Varianten existiere
 ## Konvention für Funktionsdokumentation
 
 Die verborgene Beitragsvorlage `.github/DOCUMENTATION_TEMPLATE.en.md` definiert die verbindliche Eröffnungsstruktur jeder echten Dokumentationsdatei. Direkt nach der H1 folgt eine informative Aussage darüber, was die dokumentierte Funktion oder Oberfläche leistet. Die nächste H2 enthält konkrete Verwendungsbeispiele für Importe, Capability-Auflösungen, Routenaufrufe, Konfiguration und erwartete Ergebnisse. Die folgende H2 beginnt die vollständige technische Spezifikation; Eingaben, Ausgaben, Lebenszyklus, Validierung, Autorisierung, Fehler, Nebenwirkungen, Persistenz, Sicherheit, Bereinigung und Erweiterungsdetails gehören dort hinein oder in untergeordnete H3-Abschnitte. Der Architekturtest vergleicht die ersten drei Überschriftenebenen jeder Nicht-Changelog-Dokumentation mit der verborgenen Vorlage.
+
+## Review und Lebenszyklus
+
+Library 2.26.0 stellt `deleteContentPack(root)` über die öffentliche Provider-Capability bereit. Provider-Datensätze, abhängige Karten, Paketbelege und Dateien werden in einer Transaktion des Lösch-Flows entfernt; fehlgeschlagene Audit-Hooks rollen alles zurück. Kaskaden verwenden die vorhandenen Study-Benachrichtigungen. Schemas bleiben für unabhängige eigene Inhalte erhalten. Die Deinstallation sperrt keine Inhalte, sodass eine Neuinstallation das Paket wiederherstellen kann.
+
+Study-Tests liegen beim zuständigen Adapter oder Gateway. Gemeinsame Leseextraktion, vollständige Zeichenzerlegung, JSON-Antworten und Testdaten vermeiden Duplikate. Inhaltsimport und Gesehen-Markierungen sind eigene, begrenzte Module. Leerzeilen werden geprüft, ohne Dateigrößenlimits zu erhöhen. Sortierfelder nutzen `theme-select`; Favoriten verwenden themengerechte quadratische Symbolschaltflächen.
+
+## Stapelgalerie und Favoriten
+
+Flashcards 1.2.0 zeigt alle sichtbaren Stapel als responsive Kacheln mit Herkunft, Sprache, Kartenanzahl und neuen/fälligen Karten. Die Suche verwendet den bestehenden Study-Suchabgleich. Sortierung, Favoritenfilter und Filterlayout liegen gemeinsam im Gateway. Galerie- und Detailansichten nutzen eigene HTML-Vorlagen. Die klaren Titel- und Metadatenmuster orientieren sich an [Brainscape](https://www.brainscape.com/subjects) und [Knowt](https://knowt.com/explore).
+
+Favoritensterne in Library-Vorschauen liegen neben der Auswahl und bleiben über Hinweisen für untergeordnete Karten erreichbar. Erfolgreiche Änderungen zeigen eine Meldung. Escape beendet die Mehrfachauswahl, wenn kein Popup die Taste bereits verarbeitet hat. Stapeldetails zeigen den Stapelfavoriten; beim Lernen erscheint stattdessen der Favorit der aktuellen Karte. Export ist nur sichtbar, wenn `canExport` den Ersteller oder einen Administrator zulässt, einschließlich Provider-Stapeln für Administratoren.

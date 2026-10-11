@@ -4,6 +4,7 @@ import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { findMatchingEntry } from "../ui/app/create-entry/entry-match.js";
 import { resolveLookupReferences } from "../ui/app/create-entry/lookup-references.js";
+
 const source = readFileSync(
     new URL("../ui/app/create-entry/lookup-prerequisites.js", import.meta.url),
     "utf8",
@@ -51,6 +52,7 @@ const input = {
         },
     ],
 };
+
 function session(overrides = {}) {
     let lookups = 0,
         creates = 0,
@@ -92,6 +94,7 @@ function session(overrides = {}) {
         stats: () => ({ lookups, creates, saved }),
     };
 }
+
 test("missing Kanji are committed once and canonical IDs replace every spelling link", async () => {
     const h = session();
     const result = await h.run(input);

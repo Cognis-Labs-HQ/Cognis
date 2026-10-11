@@ -6,15 +6,18 @@ export interface DictionarySearchContext {
     schemaId: string;
     query: string;
 }
+
 const KEY = "study-dictionary-search";
 
 /** Latest search is account-owned state, resolved through the authenticated session. */
 export class DictionarySearchState {
     constructor(private readonly preferences: UserPreferenceStore) {}
+
     async get(accountId: string): Promise<DictionarySearchContext | null> {
         const saved = await this.preferences.get(accountId, KEY);
         return saved ? JSON.parse(saved) : null;
     }
+
     async set(
         accountId: string,
         input: unknown,

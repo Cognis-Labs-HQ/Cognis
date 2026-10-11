@@ -396,30 +396,49 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     align-items: center;
     gap: 0.5rem;
 }
-.study-sort-control {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-}
 .study-favourite.is-favourite {
     color: #e5b92c;
 }
 .study-sort-control {
+    display: inline-flex;
+    align-items: center;
     position: relative;
     justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
+    background: var(--control-bg);
 }
+
+.study-favourite {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border-radius: 10px;
+    background: var(--control-bg);
+    flex: 0 0 auto;
+}
+
 .study-sort-control > select {
     position: absolute;
     inset: 0;
     width: 100%;
+    min-width: 0;
     cursor: pointer;
     opacity: 0;
 }
 .study-sort-control:focus-within {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+
+.study-browse-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-end: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: var(--surface-soft);
 }

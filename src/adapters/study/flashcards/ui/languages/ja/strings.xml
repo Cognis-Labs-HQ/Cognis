@@ -22,4 +22,9 @@
   <string name="adapter.study.flashcards.page_subtitle">閲覧可能なフラッシュカードデッキ</string>
   <string name="adapter.study.flashcards.deck_import">デッキをインポート</string>
   <string name="adapter.study.flashcards.deck_cards">カード</string>
+  <string name="adapter.study.flashcards.deck_starter">スターターデッキ</string>
+  <string name="adapter.study.flashcards.deck_yours">自分のデッキ</string>
+  <string name="adapter.study.flashcards.deck_shared">共有デッキ</string>
+  <string name="adapter.study.flashcards.deck_due_count">新規または復習予定 {{ count }} 件</string>
+  <string name="adapter.study.flashcards.deck_search">デッキを検索</string>
 </resources>

@@ -30,6 +30,7 @@ import {
 } from "./transformation-detail.js";
 import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
 import { drawingHeaderActions, placeAudioSpeaker } from "./drawing.js";
+
 export async function openEntryPopup(
     root,
     initialEntry,

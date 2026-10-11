@@ -10,6 +10,7 @@ function source(file) {
         .replace(/\bexport /g, "")
         .replace("await mountWhenDirect(mount);", "");
 }
+
 const schema = {
     id: "test",
     layers: [

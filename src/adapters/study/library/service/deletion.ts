@@ -15,6 +15,7 @@ export function pendingDeletionEntries(
         ]),
     );
 }
+
 export async function authorizeDeletion(
     actor: LibraryActor,
     entries: readonly LibraryEntry[],

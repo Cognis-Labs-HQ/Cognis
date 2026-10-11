@@ -17,6 +17,7 @@ import {
 } from "./sharing.js";
 
 let ready = false;
+
 export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "flashcards",
@@ -26,6 +27,7 @@ export function createStudyAdapter(): StudyAdapter {
         isConfigured: () => ready,
     };
 }
+
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {

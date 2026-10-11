@@ -1,6 +1,6 @@
+import { pronunciationValues } from "./reuse/readings.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createAnchoredPopup } from "/static/reuse/popup.js";
-import { pronunciationValues } from "./presentation.js";
 
 function ownDrawingPattern(entry, layer) {
     return (layer?.fields ?? [])

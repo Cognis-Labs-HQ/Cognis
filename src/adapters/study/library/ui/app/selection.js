@@ -158,6 +158,23 @@ export function setSelectionMode(root, enabled) {
     if (floatingActions) floatingActions.hidden = !enabled;
 }
 
+export function bindSelectionEscape(root, signal) {
+    window.addEventListener(
+        "keydown",
+        (event) => {
+            if (
+                event.key !== "Escape" ||
+                event.defaultPrevented ||
+                !root.classList.contains("library-selection-mode")
+            )
+                return;
+            event.preventDefault();
+            setSelectionMode(root, false);
+        },
+        { signal },
+    );
+}
+
 export function selectAllVisibleEntries(root) {
     const selections = visibleEntrySelections(root);
     selections.forEach((selection) => {

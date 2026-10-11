@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { pronunciationComponents } from "../ui/app/pronunciation-components.js";
+
 const schema = {
     layers: [
         { id: "kana", semanticRole: "atomicWritingUnit" },

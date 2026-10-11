@@ -100,6 +100,7 @@ function session(
         records,
     };
 }
+
 const owner = { accountId: "owner", role: "user" };
 
 test("decks persist privately and users cannot edit or review another account's deck", async () => {
@@ -195,6 +196,17 @@ test("shared decks isolate learner schedules and revocation takes effect immedia
     deckId = deck.id;
     const learner = { accountId: "learner", role: "user" };
     assert.equal((await service.list(learner))[0].canEdit, false);
+    assert.equal((await service.list(learner))[0].canExport, false);
+    assert.equal(
+        (await service.details(learner, deckId)).deck.canExport,
+        false,
+    );
+    assert.equal((await service.details(owner, deckId)).deck.canExport, true);
+    assert.equal(
+        (await service.details({ ...learner, role: "admin" }, deckId)).deck
+            .canExport,
+        true,
+    );
     await service.review(learner, deckId, "public", "easy");
     assert.equal(
         (await service.details(learner, deckId)).deck.progress.public.interval,

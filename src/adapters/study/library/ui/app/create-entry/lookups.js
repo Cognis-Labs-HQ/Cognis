@@ -13,6 +13,7 @@ import {
     confirmLookupReplacement,
     clearLookupValues,
 } from "./lookup-replacement.js";
+
 export function applyLookupFields(form, fields, draft) {
     Object.entries(fields ?? {}).forEach(([fieldId, value]) => {
         draft.fields[fieldId] = value;

@@ -1,3 +1,6 @@
+import { pronunciationValues } from "./reuse/readings.js";
+import { resolveSegments } from "./reuse/segments.js";
+
 /** Resolve complete labels into links to their canonical Library writing units. */
 
 function layerRank(layer) {
@@ -26,17 +29,6 @@ function composableLayerIds(entry, schemas) {
     );
 }
 
-function pronunciationValues(entry) {
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return [];
-    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
-        (value) =>
-            Array.isArray(value)
-                ? value.flat(Infinity).map(String).join("")
-                : String(value),
-    );
-}
-
 export function resolveLabelComposition(label, entry, schemas, entries) {
     if (typeof label !== "string" || !label) return [];
     const layerIds = composableLayerIds(entry, schemas);
@@ -62,17 +54,7 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
                 rank(right) - rank(left)
             );
         });
-    const resolved = new Map([[label.length, []]]);
-    for (let offset = label.length - 1; offset >= 0; offset -= 1) {
-        for (const candidate of candidates) {
-            if (!label.startsWith(candidate.label, offset)) continue;
-            const remainder = resolved.get(offset + candidate.label.length);
-            if (!remainder) continue;
-            resolved.set(offset, [candidate, ...remainder]);
-            break;
-        }
-    }
-    return resolved.get(0) ?? [];
+    return resolveSegments(label, candidates);
 }
 
 export function resolveReferenceTitleComposition(

@@ -6,6 +6,7 @@ import type {
     LibraryReferenceInput,
     LibrarySchema,
 } from "../types.js";
+
 export function allInputReferences(
     input: LibraryEntryInput,
 ): LibraryReferenceInput[] {
@@ -26,6 +27,7 @@ export function allInputReferences(
         ),
     ];
 }
+
 export function canComposeAtLocation(
     component: LibraryEntry,
     composite: LibraryLocation,
@@ -42,6 +44,7 @@ export function canComposeAtLocation(
         component.scopeId === composite.scopeId
     );
 }
+
 export function normalizeLocation(
     location: LibraryLocation,
     actor: LibraryActor,

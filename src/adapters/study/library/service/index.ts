@@ -1,10 +1,11 @@
+import { deleteProviderContent } from "./content-cleanup.js";
 import { importLibraryBatch } from "./import.js";
 import { mergeLibraryDraft, validateMergeProposal } from "./merge.js";
 import { runOperation } from "../reuse/operation.js";
 import { LibraryEntryWriter } from "./entries.js";
 import { createLinkedEntryGraph } from "./linked-entries.js";
 import { findContentConflict } from "./content-conflicts.js";
-import { storeContentPackAudio } from "./content-audio.js";
+import { ingestProviderContent } from "./content-ingestion.js";
 import {
     LibraryDictionarySearch,
     lookupDictionarySuggestions,
@@ -71,6 +72,7 @@ import type {
     LibraryClassAccess,
     LibraryContentNotifier,
 } from "../contracts.js";
+
 export class LibraryService implements LibraryCapability {
     private readonly dictionary: LibraryDictionarySearch;
     private readonly schemas = new Map<string, Map<number, LibrarySchema>>();
@@ -81,6 +83,7 @@ export class LibraryService implements LibraryCapability {
     >();
     private readonly visibility: LibraryVisibilityService;
     private readonly writer: LibraryEntryWriter;
+
     constructor(
         private readonly store: LibraryStore,
         private readonly classAccess?: LibraryClassAccess,
@@ -329,55 +332,35 @@ export class LibraryService implements LibraryCapability {
     }
 
     async ingestContentPack(root: string): Promise<LibraryContentPackReceipt> {
-        try {
-            const plan = await inspectContentPack(root);
-            const registered = this.getSchema(
-                plan.schema.id,
-                plan.schema.version,
-            );
-            if (!registered) {
-                this.assertSchemaVersionAvailable(plan.schema);
-            }
+        return ingestProviderContent(root, {
+            store: this.store,
+            flow: this.flow,
+            log: this.log,
+            audioCache: this.audioCache,
+            notifyNewContent: this.notifyNewContent,
+            getSchema: this.getSchema.bind(this),
+            assertSchemaVersionAvailable:
+                this.assertSchemaVersionAvailable.bind(this),
+            rememberSchema: this.rememberSchema.bind(this),
+        });
+    }
 
-            let receipt!: LibraryContentPackReceipt;
-            await runOperation(
-                this.flow,
-                "study:library:ingest",
-                { plan },
-                {
-                    stage: async () => {
-                        await storeContentPackAudio(plan, this.audioCache);
-                    },
-                    persist: async () => {
-                        receipt = await this.store.ingestContentPack(plan);
-                    },
-                },
-            );
-            if (receipt.newRecordCount > 0)
-                await this.notifyNewContent?.({
-                    entryCount: receipt.newRecordCount,
-                    language: plan.schema.language,
-                });
-            this.rememberSchema(plan.schema);
-            await this.log?.("info", "Ingested Study Library content pack.", {
-                component: "study-library",
-                operation: "ingest-content-pack",
-                packId: receipt.packId,
-                publisher: receipt.publisher,
-                version: receipt.version,
-                recordCount: receipt.recordCount,
-                unchanged: receipt.unchanged,
-            });
-            return receipt;
-        } catch (error) {
-            await this.log?.("error", "Study Library content pack failed.", {
-                component: "study-library",
-                operation: "ingest-content-pack",
-                root,
-                error: error instanceof Error ? error.message : String(error),
-            });
-            throw error;
-        }
+    async deleteContentPack(root: string): Promise<void> {
+        const entries = await deleteProviderContent(
+            root,
+            this.store,
+            this.flow,
+        );
+        const actor = {
+            accountId: "content-pack-cleanup",
+            role: "admin" as const,
+        };
+        await this.notifyDeletedEntries(entries, actor);
+        await this.log?.("info", "Deleted Study Library content pack.", {
+            component: "study-library",
+            operation: "deleteContentPack",
+            entryCount: entries.length,
+        });
     }
 
     async readContentPackAsset(

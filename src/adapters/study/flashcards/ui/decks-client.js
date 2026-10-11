@@ -1,4 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
+
 async function request(path, method = "GET", body) {
     const response = await apiFetch(`/api/v1/study/decks${path}`, {
         method,
@@ -13,6 +14,7 @@ async function request(path, method = "GET", body) {
     if (!response.ok) throw new Error(result.error?.code ?? "deck_failed");
     return result.data;
 }
+
 export const fetchStudyDecks = () => request("");
 export const fetchStudyDeck = (id) => request(`/${encodeURIComponent(id)}`);
 export const saveStudyDeck = (input, id) =>

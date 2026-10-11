@@ -113,3 +113,15 @@ When changing a Markdown doc that has translated variants, update the correspond
 ## Function documentation convention
 
 The hidden contributor template at `.github/DOCUMENTATION_TEMPLATE.en.md` defines the mandatory opening sequence for every real documentation file. Begin directly after the H1 with an informative statement of what the documented function or surface accomplishes. The next H2 contains concrete usage examples for imports, capability lookups, route calls, configuration, and expected results. The following H2 begins the exhaustive technical specification; place all inputs, outputs, lifecycle behavior, validation, authorization, errors, side effects, persistence, security, cleanup, and extension details there or in its H3 subsections. The architecture test compares every non-changelog doc's first three heading levels with the hidden template.
+
+## Review and lifecycle fixes
+
+Library 2.26.0 exposes `deleteContentPack(root)` on the public provider capability. It removes provider records, dependent cards, pack receipts and assets in one deletion-flow transaction; failed audit hooks roll back the operation. Cascaded deletions use existing Study notifications. Schemas remain available for independent authored content, and uninstall does not blacklist content, so reinstall can restore the pack.
+
+Study regressions live in their owning adapter or gateway. Shared reading extraction, complete-label segmentation, JSON responses and UI test fixtures remove duplication. Content ingestion and viewed-entry handling have focused modules; readable declaration spacing is checked without relaxing file-size limits. Sort selects use `theme-select`, and favourite controls use themed square icon-button dimensions.
+
+## Deck gallery and favourites
+
+Flashcards 1.2.0 browses all visible decks in responsive tiles with source labels, language, card totals and new/due counts. Deck search uses the existing Study search matcher; sorting and favourite filtering use the shared gateway controls and layout. Browse/detail markup lives in Flashcards-owned HTML templates. The gallery follows the clear title/metadata patterns of [Brainscape](https://www.brainscape.com/subjects) and [Knowt](https://knowt.com/explore).
+
+Library preview stars sit beside selection controls, clear of child-card hover hints. Favourite changes show success toasts, and Escape clears multi-selection unless a popup already consumed the key. Deck detail shows the deck favourite; an active review session shows the current card favourite instead. The Export action appears only when `canExport` permits the creator or an administrator, including administrators viewing provider decks.

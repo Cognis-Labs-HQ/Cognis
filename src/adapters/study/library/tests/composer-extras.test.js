@@ -16,6 +16,7 @@ const carouselSource = readFileSync(
 )
     .replace(/^import .*;\n/gm, "")
     .replace(/\bexport /g, "");
+
 function extras() {
     const context = {
         escapeHtml: String,
@@ -28,6 +29,7 @@ function extras() {
     vm.runInNewContext(carouselSource + "\n" + source, context);
     return context;
 }
+
 test("sentence structure uses the shared relationship carousel and its primary preview", () => {
     const context = extras();
     const html = context.renderComposerExtras(

@@ -1,20 +1,13 @@
+import { resolveSegments } from "../reuse/segments.js";
+
 function resolvePronunciation(value, candidates, relation) {
     const label = value.trim().normalize("NFKC");
     const ordered = candidates
         .filter(({ label }) => label?.trim())
         .toSorted((left, right) => right.label.length - left.label.length);
-    const resolved = new Map([[label.length, []]]);
-    for (let offset = label.length - 1; offset >= 0; offset -= 1) {
-        for (const candidate of ordered) {
-            const text = candidate.label.trim().normalize("NFKC");
-            const tail = resolved.get(offset + text.length);
-            if (tail && label.startsWith(text, offset)) {
-                resolved.set(offset, [candidate, ...tail]);
-                break;
-            }
-        }
-    }
-    return (resolved.get(0) ?? []).map((entry, position) => ({
+    return resolveSegments(label, ordered, ({ label }) =>
+        label.trim().normalize("NFKC"),
+    ).map((entry, position) => ({
         entryId: entry.id,
         relation,
         position,

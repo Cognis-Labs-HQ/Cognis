@@ -45,7 +45,7 @@ test("search context routes require authentication, isolate accounts and disallo
         await import("../../../../api/tests/reuse/route-test-helpers.js");
     const ctx = createCtx();
     ctx.registerFlow({
-        id: "study:library:search-context",
+        id: "study:library:searchContext",
         stages: ["authorize", "persist"],
     });
     const state = new DictionarySearchState(new VolatileUserPreferenceStore());
@@ -62,7 +62,11 @@ test("search context routes require authentication, isolate accounts and disallo
         ctx.flow,
     );
     const request = async (token: string, method = "GET") => {
-        const response = new ResponseRecorder();
+        const response = Object.assign(new ResponseRecorder(), {
+            setHeader(name: string, value: string) {
+                this.headers[name.toLowerCase()] = value;
+            },
+        });
         await route(
             new RequestRecorder({
                 token,

@@ -22,4 +22,9 @@
   <string name="adapter.study.flashcards.page_subtitle">Browse Your Visible Flashcard Decks</string>
   <string name="adapter.study.flashcards.deck_import">Import Deck</string>
   <string name="adapter.study.flashcards.deck_cards">Cards</string>
+  <string name="adapter.study.flashcards.deck_starter">Starter Deck</string>
+  <string name="adapter.study.flashcards.deck_yours">Your Deck</string>
+  <string name="adapter.study.flashcards.deck_shared">Shared Deck</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} New or Due</string>
+  <string name="adapter.study.flashcards.deck_search">Search Decks</string>
 </resources>

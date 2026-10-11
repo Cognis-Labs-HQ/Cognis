@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryService } from "../../service/index.js";
 import { schema } from "../fixtures/service-schema.js";
+
 test("promotion approval moves personal content into the requested scope", async () => {
     const source = {
         id: "personal-card",

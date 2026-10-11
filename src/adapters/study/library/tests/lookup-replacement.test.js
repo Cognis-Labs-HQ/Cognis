@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+
 const source = readFileSync(
     new URL("../ui/app/create-entry/lookup-replacement.js", import.meta.url),
     "utf8",

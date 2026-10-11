@@ -1,3 +1,4 @@
+import { pronunciationValues } from "./reuse/readings.js";
 import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -5,7 +6,6 @@ import {
     entrySearchAttribute,
     fieldValues,
     filterFields,
-    pronunciationValues,
     definitionText,
     isMeaningLayer,
     layerForEntry,

@@ -24,6 +24,7 @@ const suggestions = [
     { label: "年間", fields: { pronunciation: ["ねんかん"] } },
 ];
 const i18n = { t: (key) => key };
+
 function chooser(openPopup) {
     const context = {
         groupLookupSuggestions,

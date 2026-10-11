@@ -67,7 +67,7 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
             (layer.fields ?? []).find(({ id }) => id === filter.id)?.detail
                 ?.group ?? filter.id,
     );
-    return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
+    return `<div class="library-filters study-browse-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
         groups.entries(),
     )
         .map(([groupId, groupFilters]) => {

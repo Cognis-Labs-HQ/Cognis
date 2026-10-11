@@ -3,6 +3,7 @@ export interface DeckActor {
     role: string;
     claims?: { sub: string };
 }
+
 export interface DeckCard {
     id: string;
     label: string;
@@ -12,11 +13,13 @@ export interface DeckCard {
     sourceRecordId?: string;
     language?: string;
 }
+
 export interface DeckDetail {
     entry: DeckCard;
     references: DeckCard[];
     usedBy?: DeckCard[];
 }
+
 export interface DeckLibrary {
     list?(
         actor: DeckActor,
@@ -27,17 +30,20 @@ export interface DeckLibrary {
     read(actor: DeckActor, id: string): Promise<DeckCard | null>;
     trace(actor: DeckActor, id: string): Promise<DeckDetail>;
 }
+
 export interface DeckNote {
     id: string;
     front: string;
     back: string;
     pronunciation?: string;
 }
+
 export interface DeckProgress {
     due: string;
     interval: number;
     repetitions: number;
 }
+
 export interface StudyDeck {
     id: string;
     ownerAccountId: string;
@@ -48,6 +54,7 @@ export interface StudyDeck {
     cards: DeckDetail[];
     schemas: unknown[];
     canEdit?: boolean;
+    canExport?: boolean;
     name: string;
     entryIds: string[];
     notes: DeckNote[];

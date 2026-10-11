@@ -65,4 +65,6 @@
   <string name="gateway.study.dictionary_search_with">Suchen mit {{ provider }}</string>
   <string name="gateway.study.explore">Entdecken</string>
   <string name="gateway.study.favourite_failed">Study-Favoriten konnten nicht aktualisiert werden.</string>
+  <string name="gateway.study.favourite_added">Zu Favoriten hinzugefügt.</string>
+  <string name="gateway.study.favourite_removed">Aus Favoriten entfernt.</string>
 </resources>

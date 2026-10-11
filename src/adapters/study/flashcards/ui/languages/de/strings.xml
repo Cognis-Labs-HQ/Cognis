@@ -22,4 +22,9 @@
   <string name="adapter.study.flashcards.page_subtitle">Sichtbare Lernkartendecks durchsuchen</string>
   <string name="adapter.study.flashcards.deck_import">Deck importieren</string>
   <string name="adapter.study.flashcards.deck_cards">Karten</string>
+  <string name="adapter.study.flashcards.deck_starter">Starterstapel</string>
+  <string name="adapter.study.flashcards.deck_yours">Dein Stapel</string>
+  <string name="adapter.study.flashcards.deck_shared">Geteilter Stapel</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} neu oder fällig</string>
+  <string name="adapter.study.flashcards.deck_search">Stapel suchen</string>
 </resources>

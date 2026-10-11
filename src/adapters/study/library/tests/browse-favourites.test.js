@@ -58,6 +58,7 @@ test("favourite children render independently of unfavourited ancestors, and pro
         showToast: () => assert.fail("Unexpected load error"),
         MutationObserver: class {
             observe() {}
+
             disconnect() {}
         },
         root,

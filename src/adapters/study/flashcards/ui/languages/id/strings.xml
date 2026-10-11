@@ -22,4 +22,9 @@
   <string name="adapter.study.flashcards.page_subtitle">Jelajahi Dek Kartu Belajar yang Terlihat</string>
   <string name="adapter.study.flashcards.deck_import">Impor Dek</string>
   <string name="adapter.study.flashcards.deck_cards">Kartu</string>
+  <string name="adapter.study.flashcards.deck_starter">Dek Pemula</string>
+  <string name="adapter.study.flashcards.deck_yours">Dek Anda</string>
+  <string name="adapter.study.flashcards.deck_shared">Dek Bersama</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} Baru atau Jatuh Tempo</string>
+  <string name="adapter.study.flashcards.deck_search">Cari Dek</string>
 </resources>

@@ -12,12 +12,12 @@ const executableSource = source
         `from "${new URL("../ui/app/transformations.js", import.meta.url).href}"`,
     )
     .replace(
-        'import { layerForEntry, pronunciationValues } from "./presentation.js";',
-        `const layerForEntry = (schemas, entry) => schemas.flatMap(({ layers }) => layers).find(({ id }) => id === entry.layer);
-const pronunciationValues = (entry) => {
-    const value = entry.fields?.pronunciation;
-    return value ? (Array.isArray(value) ? value : [value]) : [];
-};`,
+        'from "./reuse/readings.js"',
+        `from "${new URL("../ui/app/reuse/readings.js", import.meta.url).href}"`,
+    )
+    .replace(
+        'import { layerForEntry } from "./presentation.js";',
+        `const layerForEntry = (schemas, entry) => schemas.flatMap(({ layers }) => layers).find(({ id }) => id === entry.layer);`,
     );
 const {
     applyDerivedPronunciation,

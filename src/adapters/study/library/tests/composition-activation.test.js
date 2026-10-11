@@ -7,6 +7,7 @@ import {
     compositionTokenEntryId,
     transformationCompositionToken,
 } from "../ui/app/composition-tokens.js";
+
 const source = readFileSync(
     new URL("../ui/app/composition-activation.js", import.meta.url),
     "utf8",
