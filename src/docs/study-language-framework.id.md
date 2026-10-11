@@ -118,7 +118,7 @@ Komponen anak adalah fitur pembelajaran yang dapat disampaikan secara mandiri un
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,7 @@ Jika komponen anak itu sendiri memerlukan sub-bagian (misalnya urutan guratan da
 - Setiap modul bahasa harus mendaftarkan rute komponen anak **Kelas** sehingga guru dan siswa dapat mengakses tampilan kelas dalam cakupan bahasa.
 - Halaman kelas harus menyertakan pemilih kelas, visualisasi kapasitas kursi, dan perilaku berbasis peran (kontrol manajemen guru vs. sebagian besar siswa + alur cuti).
 - Modul bahasa memiliki implementasi Perpustakaan dan UI Kelas dan memaparkannya melalui rute komponen anak yang dinyatakan.
+
+Lapisan belajar berada pada menu samping Jelajahi di `/study/explore/<bahasa ISO>/<navigationSlug>`. Modul dapat menetapkan `navigationSlug` unik per lapisan; jika tidak diberikan, ID lapisan digunakan. Rute Pustaka dan Permintaan tetap sama. Hanya pratinjau kalimat yang memotong judul dan definisi panjang.
+
+[Impor Pustaka Terstruktur](/docs/adapters/study/library/import)

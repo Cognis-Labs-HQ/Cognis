@@ -598,4 +598,8 @@
   <string name="ui.reuse.toggle_secret_visibility">シークレットの表示を切り替える</string>
   <string name="ui.reuse.lookup">検索</string>
   <string name="ui.reuse.continue">続行</string>
+  <string name="ui.reuse.import">インポート</string>
+  <string name="ui.reuse.export">エクスポート</string>
+  <string name="ui.reuse.file">ファイル</string>
+  <string name="ui.reuse.search">検索</string>
 </resources>

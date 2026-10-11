@@ -1,4 +1,12 @@
 const DOMAIN_CODES = new Set([
+    "definition_limit",
+    "pronunciation_limit",
+    "tag_limit",
+    "invalid_import_document",
+    "invalid_import_key",
+    "invalid_reference",
+    "invalid_reference_group",
+    "import_dependency_cycle",
     "already_reviewed",
     "asset_not_file",
     "audio_asset_not_found",

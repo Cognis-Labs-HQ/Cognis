@@ -118,7 +118,7 @@ A child component is an independently deliverable study feature for a specific l
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,7 @@ If a child component itself requires sub-sections (e.g. stroke order and vocabul
 - Every language module should register a **Classroom** child component route so both teachers and students can access language-scoped class views.
 - Classroom pages must include a class selector, seat-capacity visualization, and role-based behavior (teacher management controls vs. student read-mostly + leave flow).
 - Language modules own their Library and Classroom UI implementations and expose them through their declared child-component routes.
+
+Learner layers appear in the Explore side menu at `/study/explore/<ISO language>/<navigationSlug>`. Modules declare the optional unique `navigationSlug` on each layer; its layer ID is used when omitted. Library and Requests keep their existing routes. Only sentence previews truncate long titles and definitions; other layers retain their rendering.
+
+[Structured Library Import](/docs/adapters/study/library/import)

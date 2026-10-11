@@ -1,3 +1,5 @@
+import { createSideMenu } from "/static/reuse/side-menu.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -24,11 +26,10 @@ import { canCreateLayerEntries } from "../editability.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
-    if (![4, 5].includes(parts.length) || parts[1] !== "layers") return null;
+    if (parts.length !== 4 || parts[1] !== "explore") return null;
     return {
-        schemaId: decodeURIComponent(parts[2]),
-        layerId: decodeURIComponent(parts[3]),
-        viewId: parts[4] ? decodeURIComponent(parts[4]) : undefined,
+        language: decodeURIComponent(parts[2]),
+        slug: decodeURIComponent(parts[3]),
     };
 }
 
@@ -39,26 +40,66 @@ export async function mount(root, { signal } = {}) {
             "/static/adapters/study/library/languages",
         ],
     });
-    const selectedLayer = requestedLayer();
+    const requested = requestedLayer();
     const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: readSelectedStudyLanguageCode(),
+        fallbackLanguageCode:
+            requested?.language ?? readSelectedStudyLanguageCode(),
     });
-    const languageCode = model.selectedLanguageCode;
+    const languageCode = requested?.language ?? model.selectedLanguageCode;
     const { schemas, entries: loadedEntries } = await loadLibrary(
         languageCode,
         i18n,
     );
     const entries = loadedEntries;
-    const schema = schemas.find(({ id }) => id === selectedLayer?.schemaId);
-    const layer = schema?.layers?.find(
-        ({ id }) => id === selectedLayer?.layerId,
+    const browseable = schemas.flatMap((schema) =>
+        schema.layers
+            .filter(
+                (layer) =>
+                    !["definition", "meaning", "particle"].includes(
+                        layer.semanticRole,
+                    ),
+            )
+            .map((layer) => ({ schema, layer })),
     );
+    const selected =
+        browseable.find(
+            ({ layer }) =>
+                (layer.navigationSlug ?? layer.id) === requested?.slug,
+        ) ?? (!requested ? browseable[0] : undefined);
+    const schema = selected?.schema;
+    const layer = selected?.layer;
+    const selectedLayer =
+        schema && layer
+            ? { schemaId: schema.id, layerId: layer.id }
+            : { schemaId: "", layerId: "" };
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "explore",
+                label: i18n.t("gateway.study.explore"),
+                collapsible: false,
+                items: browseable.map(({ schema, layer }) => ({
+                    id: `${schema.language}/${layer.navigationSlug ?? layer.id}`,
+                    label:
+                        localizedLabel(
+                            layer.metadata,
+                            document.documentElement.lang,
+                        ) || layer.id,
+                })),
+            },
+        ],
+        activeId: selected
+            ? `${schema.language}/${layer.navigationSlug ?? layer.id}`
+            : "",
+        storageKeyPrefix: "study-explore",
+        onSelect: (id) => navigateTo(`/study/explore/${id}`),
+    });
     const [requests, formContributions] = await Promise.all([
         loadLibraryRequests(i18n),
         fetchLibraryForms(),
     ]);
     const canCreate = Boolean(schema) && canCreateLayerEntries(layer);
-    const view = layer?.views?.find(({ id }) => id === selectedLayer?.viewId);
+    const view = null;
     const title = view
         ? localizedLabel(view.metadata, schema.language) || view.id
         : layer
@@ -85,7 +126,14 @@ export async function mount(root, { signal } = {}) {
             title,
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
-        toolbar: [],
+        toolbar: [
+            {
+                id: "explore-layers",
+                label: i18n.t("gateway.study.explore"),
+                render: () => menu.render(),
+            },
+        ],
+        toolbarScrollable: true,
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
@@ -102,6 +150,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    menu.mount(root, { signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);

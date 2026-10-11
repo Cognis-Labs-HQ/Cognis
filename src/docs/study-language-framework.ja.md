@@ -118,7 +118,7 @@ interface Sentence {
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,7 @@ cognis-module-japanese-learning/
 - すべての言語モジュールは、教師と生徒の両方が言語スコープのクラス ビューにアクセスできるように、**クラスルーム** 子コンポーネント ルートを登録する必要があります。
 - 教室ページには、クラスセレクター、座席定員の視覚化、および役割ベースの動作 (教師の管理制御と学生のほとんどの読書 + 退出フロー) が含まれている必要があります。
 - 言語モジュールはライブラリおよびクラスルーム UI 実装を所有し、宣言された子コンポーネント ルートを通じてそれらを公開します。
+
+学習用の層は「探索」のサイドメニューに移動し、URL は `/study/explore/<ISO 言語>/<navigationSlug>` です。モジュールは各層に一意の `navigationSlug` を指定でき、省略時は層 ID を使います。ライブラリと申請の URL は変わりません。長い表題や定義の省略表示は文のプレビューだけに適用します。
+
+[ライブラリの構造化インポート](/docs/adapters/study/library/import)

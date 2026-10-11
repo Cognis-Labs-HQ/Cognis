@@ -4,6 +4,7 @@ import { createCtx, type FlowApi } from "@cognis/core";
 export function createLibraryFlow(onRun?: (id: string) => void): FlowApi {
     const ctx = createCtx();
     for (const [name, stages] of Object.entries({
+        import: ["authorize", "validate", "persist"],
         create: ["normalize", "resolve", "validate", "persist"],
         update: ["authorize", "validate", "persist", "audit"],
         resolve: ["normalize", "propose", "rank"],

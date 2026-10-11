@@ -205,6 +205,8 @@ export interface LibraryTransformSet {
 }
 
 export interface LibraryLayerSchema {
+    /** Provider-owned URL segment for learner exploration; defaults to id. */
+    navigationSlug?: string;
     id: string;
     metadata: LibraryMetadata;
     semanticRole?: LibrarySemanticRole;

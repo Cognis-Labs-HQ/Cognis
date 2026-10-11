@@ -1,3 +1,4 @@
+import { LIBRARY_COMPOSER_LIMITS } from "../composer-limits.js";
 import { chooseLookupSuggestion } from "./lookup-choice.js";
 import { separateLookupDefinitions } from "./lookup-definitions.js";
 import { resolveLookupReferences } from "./lookup-references.js";
@@ -180,6 +181,12 @@ export function bindLookupProviders(
             );
             for (const definition of separateLookupDefinitions(
                 suggestion.definitions,
+            ).slice(
+                0,
+                Math.min(
+                    LIBRARY_COMPOSER_LIMITS.definitions,
+                    definitionRelationship?.maximum ?? Infinity,
+                ),
             )) {
                 if (!definitionRelationship) break;
                 const result = await createDefinition({
@@ -277,9 +284,18 @@ export function bindLookupProviders(
                 form.elements.label.value = suggestion.label ?? label;
             }
             form.libraryGeneratedPronunciation = [];
-            applyLookupFields(form, suggestion.fields ?? {}, draft);
+            const fields = { ...(suggestion.fields ?? {}) };
+            if (Array.isArray(fields.pronunciation))
+                fields.pronunciation = fields.pronunciation.slice(
+                    0,
+                    LIBRARY_COMPOSER_LIMITS.pronunciations,
+                );
+            applyLookupFields(form, fields, draft);
             if (suggestion.class) form.elements.class.value = suggestion.class;
-            const tags = [...new Set(suggestion.tags ?? [])];
+            const tags = [...new Set(suggestion.tags ?? [])].slice(
+                0,
+                LIBRARY_COMPOSER_LIMITS.tags,
+            );
             if (form.setLibraryTags) form.setLibraryTags(tags);
             else form.elements.tags.value = tags.join("\u001f");
             form.elements.tags.dispatchEvent(

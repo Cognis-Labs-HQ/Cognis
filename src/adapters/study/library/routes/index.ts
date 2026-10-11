@@ -66,6 +66,28 @@ export function createLibraryRoutes(
             role: claims.role,
         };
         try {
+            if (
+                url.pathname === "/api/v1/study/library/import" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    location: LibraryLocation;
+                    document: unknown;
+                };
+                const data = await library.importEntries(
+                    actor,
+                    body.location,
+                    body.document,
+                );
+                await log?.("info", "Library batch imported.", {
+                    component: "study-library",
+                    operation: "import",
+                    accountId: actor.accountId,
+                    entryCount: data.entries.length,
+                });
+                sendJson(res, 201, { data });
+                return true;
+            }
             const assetMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/assets\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
             );

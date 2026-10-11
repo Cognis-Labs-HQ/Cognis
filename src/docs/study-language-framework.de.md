@@ -118,7 +118,7 @@ Eine untergeordnete Komponente ist eine unabhängig durchzuführende Lernfunktio
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,7 @@ Wenn eine untergeordnete Komponente selbst Unterabschnitte erfordert (z. B. Stri
   – Jedes Sprachmodul sollte eine untergeordnete Komponentenroute **Klassenzimmer** registrieren, damit sowohl Lehrer als auch Schüler auf sprachspezifische Klassenansichten zugreifen können.
 - Die Klassenzimmerseiten müssen eine Klassenauswahl, eine Visualisierung der Sitzplatzkapazität und rollenbasiertes Verhalten (Lehrerverwaltungskontrollen vs. überwiegend lesender + verlassender Schülerfluss) enthalten.
   – Sprachmodule besitzen ihre Bibliotheks- und Klassenzimmer-UI-Implementierungen und machen sie über ihre deklarierten Routen für untergeordnete Komponenten verfügbar.
+
+Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<navigationSlug>`. Module können pro Ebene einen eindeutigen `navigationSlug` angeben; andernfalls gilt die Ebenen-ID. Bibliothek und Anfragen behalten ihre Routen. Nur Satzvorschauen kürzen lange Titel und Definitionen.
+
+[Strukturierter Bibliotheksimport](/docs/adapters/study/library/import)

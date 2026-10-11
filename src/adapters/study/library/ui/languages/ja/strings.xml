@@ -175,4 +175,7 @@
     <string name="gateway.study.library_merge_requested">統合要求を審査に提出しました。</string>
     <string name="gateway.study.library_create_success">カードを作成しました。</string>
       <string name="gateway.study.library_merge_scope_error">統合には移動先の範囲で表示できる参照先が必要です。入力内容は保持されています。</string>
+  <string name="gateway.study.library_import">ライブラリーのカードをインポート</string>
+  <string name="gateway.study.library_import_success">{{ count }} 枚のカードをインポートしました。</string>
+  <string name="gateway.study.library_import_error">インポートに失敗しました: {{ reason }}。カードは追加されていません。</string>
 </resources>

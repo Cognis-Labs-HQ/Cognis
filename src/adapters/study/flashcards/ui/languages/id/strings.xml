@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="adapter.study.flashcards.page_title">Kartu Latihan</string>
+  <string name="adapter.study.flashcards.flashcard_reveal">Tampilkan jawaban</string>
+  <string name="adapter.study.flashcards.flashcard_again">Ulangi</string>
+  <string name="adapter.study.flashcards.flashcard_good">Baik</string>
+  <string name="adapter.study.flashcards.flashcard_easy">Mudah</string>
+  <string name="adapter.study.flashcards.deck_import">Impor kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_edit">Edit kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_create">Buat kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_layer">Lapisan kartu</string>
+  <string name="adapter.study.flashcards.deck_saved">Kumpulan kartu disimpan.</string>
+  <string name="adapter.study.flashcards.deck_deleted">Kumpulan kartu dihapus.</string>
+  <string name="adapter.study.flashcards.deck_save_error">Kumpulan kartu tidak dapat disimpan. Periksa kartu yang dipilih dan format catatan impor.</string>
+  <string name="adapter.study.flashcards.deck_load_error">Kumpulan kartu atau kartu pustaka tidak dapat dimuat.</string>
+  <string name="adapter.study.flashcards.deck_empty">Buat kumpulan kartu dari pustaka atau impor catatan yang kompatibel dengan Anki.</string>
+  <string name="adapter.study.flashcards.deck_study">Pelajari kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_due_only">Pelajari hanya kartu baru atau yang sudah jatuh tempo</string>
+  <string name="adapter.study.flashcards.deck_finished">Semua kartu yang dipilih telah ditinjau.</string>
+  <string name="adapter.study.flashcards.deck_review_error">Hasil tinjauan tidak dapat disimpan. Silakan coba lagi.</string>
+  <string name="adapter.study.flashcards.deck_unavailable">{{ count }} kartu tidak lagi tersedia dan dilewati.</string>
+</resources>

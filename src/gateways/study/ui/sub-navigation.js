@@ -226,26 +226,34 @@ export async function loadStudySubNavigationModel({
         status: "pending",
     }).catch(() => []);
     const activeLocale = document.documentElement.lang;
-    for (const schema of schemas) {
-        for (const layer of schema.layers ?? []) {
-            if (
-                ["definition", "meaning", "particle"].includes(
-                    layer.semanticRole,
-                )
-            ) {
-                continue;
-            }
-            const labels = layer.metadata?.labels ?? {};
-            const label = labels[activeLocale] ?? layer.id;
-            modules.push({
-                id: `library-${schema.id}-${layer.id}`,
-                label,
-                pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
-                order: 200,
-            });
-        }
-    }
     const spaRoutes = await loadSpaRoutes();
+    if (spaRoutes.some((route) => route.base === "/study/explore"))
+        modules.push({
+            id: "explore",
+            labelKey: "gateway.study.explore",
+            pageUrl: "/study/explore",
+            order: 200,
+        });
+    for (const route of spaRoutes.filter(
+        (route) =>
+            Object.values(route.navigationLabels ?? {}).some(
+                (label) => typeof label === "string" && label.trim(),
+            ) &&
+            route.base.startsWith("/study/") &&
+            route.base !== "/study/library/requests" &&
+            !modules.some((page) => page.pageUrl === route.base),
+    )) {
+        const labels = route.navigationLabels;
+        modules.push({
+            id: route.id,
+            label:
+                labels[activeLocale] ??
+                labels[activeLocale.split("-")[0]] ??
+                labels.en,
+            pageUrl: route.base,
+            order: 210,
+        });
+    }
     if (spaRoutes.some((route) => route.base === "/study/leaderboard")) {
         modules.push({
             id: "leaderboard",
@@ -358,7 +366,12 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 translatedLabel && translatedLabel !== component?.labelKey
                     ? translatedLabel
                     : String(component?.label ?? pageUrl);
-            const activeClass = rawPageUrl === currentPath ? " active" : "";
+            const activeClass =
+                rawPageUrl === currentPath ||
+                (rawPageUrl === "/study/explore" &&
+                    currentPath.startsWith("/study/explore/"))
+                    ? " active"
+                    : "";
             const attentionClass = component.attention
                 ? " study-subnav-attention"
                 : "";

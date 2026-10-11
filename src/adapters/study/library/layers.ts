@@ -263,8 +263,14 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
     validateMetadata(schema.metadata, "schema_metadata_required");
     if (schema.layers.length === 0) throw new Error("layers_required");
     const layerIds = new Set<string>();
+    const navigationSlugs = new Set<string>();
     for (const layer of schema.layers) {
         assertIdentifier(layer.id, "invalid_layer_id");
+        if (layer.navigationSlug !== undefined)
+            assertIdentifier(layer.navigationSlug, "invalid_layer_id");
+        const slug = layer.navigationSlug ?? layer.id;
+        if (navigationSlugs.has(slug)) throw new Error("duplicate_layer");
+        navigationSlugs.add(slug);
         if (layerIds.has(layer.id)) throw new Error("duplicate_layer");
         validateMetadata(layer.metadata, "layer_metadata_required");
         if (

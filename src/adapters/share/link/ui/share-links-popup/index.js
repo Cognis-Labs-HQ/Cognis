@@ -143,6 +143,17 @@ async function openLocalizedShareLinksPopup(options) {
     return openShareLinksPopup({
         ...options,
         labels: {
+            empty: i18n.t("adapter.share.link.popup.empty"),
+            statusActive: i18n.t("adapter.share.link.popup.active"),
+            statusExpired: i18n.t("adapter.share.link.popup.expired"),
+            expiresAtLabel: i18n.t("adapter.share.link.popup.expires"),
+            expiredAtLabel: i18n.t("adapter.share.link.popup.expired"),
+            copyLink: i18n.t("adapter.share.link.popup.copy"),
+            revoke: i18n.t("adapter.share.link.popup.revoke"),
+            copySuccess: i18n.t("adapter.share.link.popup.copied"),
+            copyFailed: i18n.t("adapter.share.link.popup.copy_failed"),
+            createFailed: i18n.t("adapter.share.link.popup.create_failed"),
+            deleteFailed: i18n.t("adapter.share.link.popup.delete_failed"),
             ...options.labels,
             send:
                 options.labels?.send || i18n.t("adapter.share.link.email.send"),

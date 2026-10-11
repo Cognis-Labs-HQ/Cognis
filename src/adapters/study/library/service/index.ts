@@ -1,3 +1,4 @@
+import { importLibraryBatch } from "./import.js";
 import { mergeLibraryDraft, validateMergeProposal } from "./merge.js";
 import { runOperation } from "../reuse/operation.js";
 import { LibraryEntryWriter } from "./entries.js";
@@ -630,6 +631,28 @@ export class LibraryService implements LibraryCapability {
             },
         });
         return result;
+    }
+
+    async importEntries(
+        actor: LibraryActor,
+        location: LibraryLocation,
+        document: unknown,
+    ): Promise<{ entries: LibraryEntry[]; ids: Record<string, string> }> {
+        return importLibraryBatch(actor, location, document, {
+            flow: this.flow,
+            schema: (id) => {
+                const schema = this.listSchemas().find(
+                    (schema) => schema.id === id,
+                );
+                if (!schema) throw new Error("schema_not_found");
+                return schema;
+            },
+            transaction: this.store.transaction.bind(this.store),
+            authorize: this.authorize.bind(this),
+            create: (input, id, destination) =>
+                this.writer.create(actor, destination, input, id, new Map()),
+            notify: this.notifyNewContent,
+        });
     }
 
     async create(

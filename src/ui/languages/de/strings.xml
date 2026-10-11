@@ -598,4 +598,8 @@
   <string name="ui.reuse.toggle_secret_visibility">Sichtbarkeit des Geheimnisses umschalten</string>
   <string name="ui.reuse.lookup">Nachschlagen</string>
   <string name="ui.reuse.continue">Weiter</string>
+  <string name="ui.reuse.import">Importieren</string>
+  <string name="ui.reuse.export">Exportieren</string>
+  <string name="ui.reuse.file">Datei</string>
+  <string name="ui.reuse.search">Suchen</string>
 </resources>

@@ -57,16 +57,13 @@ test("Study language controls suppress hover translation overflow", () => {
     );
 });
 
-test("Study submenu promotes Library layers and Leaderboard to pages", () => {
+test("Study submenu promotes Explore and available Study adapters to pages", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",
     );
     assert.match(source, /fetchLibrarySchemas/);
-    assert.match(
-        source,
-        /\/study\/layers\/\$\{encodeURIComponent\(schema\.id\)\}/,
-    );
+    assert.match(source, /pageUrl: "\/study\/explore"/);
     assert.match(source, /pageUrl: "\/study\/leaderboard"/);
     assert.match(source, /labelKey: "gateway\.study\.leaderboard_label"/);
     assert.match(source, /requestsRoute\.navigationLabels/);

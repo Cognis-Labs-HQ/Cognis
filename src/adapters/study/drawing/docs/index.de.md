@@ -41,3 +41,5 @@ Beim Auswählen zeichnbarer Library-Karten mit geöffneter Schreibfläche wird j
 Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieben und Größenändern gelten die Grenzen des scrollbaren Seiteninhalts, sodass die Schreibfläche weder Kopf- noch Fußzeile überdecken kann. In niedrigeren Fenstern behält sie ihre natürliche Zeichenhöhe; durch vertikales Scrollen der Hauptseite bleiben alle Bedienelemente erreichbar.
 
 Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten Schreibfelds erhalten, auch nach dem Verschieben. Die Standardposition wird nur beim Öffnen eines neuen Schreibfelds angewendet.
+
+Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-SVGs. Bei vollständig sichtbaren Strichhilfen ist die Hilfetaste deaktiviert. Ein Zeichenwechsel erhält die vom Benutzer gewählte Fensterposition.

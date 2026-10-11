@@ -592,6 +592,32 @@ Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben beh
 
 Aufgeklappte Kinder belegen die nächsten freien Positionen am aktiven Zweig; abgeblendete Hintergrundkarten verdrängen sie nicht quer durch das Raster. Bereits platzierte Vorfahren bleiben beim Öffnen tieferer Kinder stabil. Benötigt der Zweig mehr Höhe, reserviert das Raster zusätzlichen scrollbar erreichbaren Platz und gibt ihn beim Schließen frei. Größenänderungen des Fensters oder der Karten lösen eine neue Platzierung aus. Zeiger und Tastaturfokus steuern die Zweigsichtbarkeit einheitlich; langes Drücken auf ein Kind setzt den aktuellen Zweig fort. Ausstehende Layoutberechnungen werden zusammengefasst und beim Schließen abgebrochen.
 
+## Erkunden-Navigation
+
+Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<navigationSlug>`. Module können pro Ebene einen eindeutigen `navigationSlug` angeben; andernfalls gilt die Ebenen-ID. Bibliothek und Anfragen behalten ihre Routen. Nur Satzvorschauen kürzen lange Titel und Definitionen.
+
+## Strukturierter JSON-Import
+
+Mit **Importieren** unten links in der Kartentypauswahl lässt sich JSON hochladen. Wählen Sie einen beschreibbaren Bereich für den gesamten Stapel. Das Format enthält `format: "cognis-library"`, `version: 1` und ein nicht leeres Array `entries`.
+
+In `references` und `referenceGroups` kann `entryId` den `key` eines anderen Eintrags enthalten. Cognis vergibt UUIDs vorab, ersetzt diese Schlüssel und verarbeitet verfügbare Abhängigkeiten in Ebenenstapeln. Bestehende UUIDs müssen im Zielbereich sichtbar sein. Fehlende Ziele, falsche Ebenen, Zyklen, ungültige Striche, fehlende Pflichtfelder oder doppelte Inhalte verwerfen die gesamte Transaktion. Die Antwort enthält Einträge und die UUID-Zuordnung `ids`.
+
+## Grenzen für Wörterbuchimporte
+
+Pro Karte sind höchstens 8 Tags, 16 Aussprachen und 10 Definitionen erlaubt; Feldlängen und Beziehungsmengen gelten zusätzlich. JSON-Importe prüfen diese Grenzen. Wörterbuchimporte begrenzen überzählige Werte vor dem Übernehmen. Der Editor verhindert eine elfte Definition.
+
+## Lernkartenadapter
+
+Der Study-Lernkartenadapter erstellt benannte Stapel aus allen lesbaren Bibliotheksebenen und importiert Anki-kompatible TSV-Notizen. Routen, Speicherung, Darstellung, Lernplan, Oberfläche und Texte gehören dem Adapter. Nach dem Umdrehen werden Aussprache und Definitionen sichtbar. Erneut wiederholt nach einer Minute; Gut beginnt mit einem Tag und verdoppelt; Einfach beginnt mit vier Tagen und verdreifacht.
+
+Stapel verwenden den Ressourcentyp `studyDeck` und die Leseberechtigung `study:flashcards:read`. Die Cognis-Freigabe unterstützt Benutzer, öffentliche Links, Ablauf, Passwörter und Widerruf. Nur Eigentümer bearbeiten oder löschen Stapel. Empfänger lernen und exportieren mit getrennten Kontolernplänen. Linkgäste lernen vorübergehend ohne Änderung eines Kontolernplans. Jede Stapeloperation prüft Ablauf und Widerruf.
+
+Import und Export verwenden UTF-8-Text mit zitierten, tabulatorgetrennten Spalten Front, Back und optional Pronunciation. Exporte enthalten Anki-Kopfzeilen für Trennzeichen, Stapel und Klartext sowie optionalen Cognis-Kontext. Anki kann diese Zusatzspalte ignorieren. Anführungszeichen, Tabulatoren und Zeilenumbrüche bleiben erhalten. Es handelt sich um TSV-Austausch, nicht um `.apkg`-Archive. Privater Lernfortschritt wird nicht exportiert.
+
+## Zeichensteuerung
+
+Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-SVGs. Bei vollständig sichtbaren Strichhilfen ist die Hilfetaste deaktiviert. Ein Zeichenwechsel erhält die vom Benutzer gewählte Fensterposition.
+
 ## Commits
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -730,3 +756,4 @@ Aufgeklappte Kinder belegen die nächsten freien Positionen am aktiven Zweig; ab
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6

@@ -1,3 +1,4 @@
+import { validateCardLimits } from "./card-limits.js";
 import { randomUUID } from "node:crypto";
 import type { FlowApi } from "@cognis/core";
 import type {
@@ -75,6 +76,7 @@ export class LibraryEntryWriter {
                     if (isImmutableLayer(layer))
                         throw new Error("immutable_layer");
                     normalizeEntryClass(input, layer);
+                    validateCardLimits(schema, input);
 
                     const conflict = await findContentConflict(
                         this.context.store,
@@ -180,6 +182,7 @@ export class LibraryEntryWriter {
                     if (isImmutableLayer(layer))
                         throw new Error("immutable_layer");
                     normalizeEntryClass(input, layer);
+                    validateCardLimits(schema, input);
 
                     fields = structuredClone(input.fields ?? {});
                     for (const field of layer.fields ?? []) {

@@ -107,6 +107,11 @@ export interface LibraryCapability {
         location: LibraryLocation,
         filters?: LibraryEntryFilters,
     ): Promise<LibraryEntry[]>;
+    importEntries(
+        actor: LibraryActor,
+        location: LibraryLocation,
+        document: unknown,
+    ): Promise<{ entries: LibraryEntry[]; ids: Record<string, string> }>;
     read(actor: LibraryActor, entryId: string): Promise<LibraryEntry | null>;
     viewedEntryIds(actor: LibraryActor): Promise<string[]>;
     markEntriesViewed(

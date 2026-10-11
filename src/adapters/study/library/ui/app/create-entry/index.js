@@ -1,3 +1,4 @@
+import { openLibraryImport } from "./import.js";
 import { referencedLinkedEntries } from "../linked-entries.js";
 import { DEFINITION_LANGUAGES } from "../definition-languages.js";
 import {
@@ -79,6 +80,11 @@ export async function chooseCreateLayer({
         body: `<label><span>${escapeHtml(i18n.t("gateway.study.library_composer_layer"))}</span><select data-library-create-layer>${permitted.map((layer) => `<option value="${escapeHtml(layer.id)}"${layer.id === preferredLayerId ? " selected" : ""}>${escapeHtml(localizedLabel(layer.metadata, schema.language) || layer.id)}</option>`).join("")}</select></label>`,
         actions: [
             {
+                id: "import",
+                label: i18n.t("ui.reuse.import"),
+                variant: "neutral",
+            },
+            {
                 id: "continue",
                 label: i18n.t("ui.reuse.next"),
                 variant: "confirm",
@@ -91,8 +97,12 @@ export async function chooseCreateLayer({
         ],
         onOpen(overlay) {
             select = overlay.querySelector("[data-library-create-layer]");
+            overlay.querySelector(
+                '[data-popup-action="import"]',
+            ).style.marginInlineEnd = "auto";
         },
     });
+    if (action === "import") await openLibraryImport(i18n);
     return action === "continue" ? select.value : null;
 }
 

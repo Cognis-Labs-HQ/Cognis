@@ -594,6 +594,32 @@ Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahank
 
 Kartu anak yang dibuka menempati posisi kosong terdekat di sekitar cabang aktif; kartu latar yang diredupkan tidak mendorongnya ke ujung kisi. Posisi leluhur tetap stabil ketika anak yang lebih dalam dibuka. Jika cabang membutuhkan lebih banyak ruang vertikal, kisi menyediakan ruang tambahan yang dapat digulir dan melepaskannya saat ditutup. Perubahan ukuran jendela atau kartu menghitung ulang posisi. Penunjuk dan fokus papan ketik mengendalikan visibilitas cabang secara konsisten; menekan lama kartu anak melanjutkan cabang yang sedang aktif. Perhitungan tata letak tertunda digabungkan dan dibatalkan ketika cabang ditutup.
 
+## Navigasi Jelajahi
+
+Lapisan belajar berada pada menu samping Jelajahi di `/study/explore/<bahasa ISO>/<navigationSlug>`. Modul dapat menetapkan `navigationSlug` unik per lapisan; jika tidak diberikan, ID lapisan digunakan. Rute Pustaka dan Permintaan tetap sama. Hanya pratinjau kalimat yang memotong judul dan definisi panjang.
+
+## Impor JSON Terstruktur
+
+Gunakan **Impor** di kiri bawah pemilih jenis kartu untuk mengunggah JSON. Pilih cakupan yang dapat ditulis untuk seluruh kelompok. Format berisi `format: "cognis-library"`, `version: 1`, dan larik `entries` yang tidak kosong.
+
+Gunakan `key` entri lain sebagai `entryId` di `references` atau `referenceGroups`. Cognis membuat UUID terlebih dahulu, mengganti kunci, dan memproses ketergantungan yang siap dalam kelompok per lapisan. UUID yang sudah ada harus terlihat dalam cakupan tujuan. Target hilang, lapisan tidak cocok, siklus, goresan tidak valid, bidang wajib kosong, atau konten duplikat membatalkan seluruh transaksi. Respons berisi entri dan pemetaan UUID `ids`.
+
+## Batas Impor Kamus
+
+Setiap kartu mendukung maksimal 8 tag, 16 pelafalan, dan 10 definisi, selain batas panjang bidang dan jumlah hubungan. Impor JSON memvalidasi batas tersebut. Impor kamus memangkas nilai berlebih sebelum menyimpan. Penyusun menolak definisi kesebelas.
+
+## Adaptor Kartu Belajar
+
+Aktifkan adaptor Kartu Belajar Study untuk membuat dek bernama dari lapisan pustaka yang dapat dibaca atau mengimpor catatan TSV kompatibel Anki. Adaptor memiliki rute, penyimpanan, perender, jadwal, antarmuka, dan teksnya sendiri. Balik kartu untuk melihat pelafalan dan definisi. Lagi mengulang setelah satu menit; Baik dimulai dari satu hari dan berlipat dua; Mudah dimulai dari empat hari dan berlipat tiga.
+
+Dek menggunakan jenis sumber daya `studyDeck` dan kemampuan baca `study:flashcards:read`. Kontrol Berbagi Cognis mendukung pengguna, tautan publik, masa berlaku, kata sandi, dan pencabutan. Hanya pemilik dapat mengubah atau menghapus dek. Penerima dapat belajar dan mengekspor dengan jadwal terpisah per akun. Tamu tautan belajar sementara tanpa mengubah jadwal akun. Masa berlaku dan pencabutan diperiksa pada setiap operasi dek.
+
+Impor dan ekspor memakai teks UTF-8 dengan kolom berpetik yang dipisahkan tab: Front, Back, dan Pronunciation opsional. Ekspor menyertakan kepala Anki untuk pemisah, dek, dan teks biasa serta konteks Cognis opsional yang dapat diabaikan Anki. Kutipan, tab, dan baris baru dipertahankan. Format ini adalah TSV, bukan arsip `.apkg`. Riwayat belajar pribadi tidak diekspor.
+
+## Kontrol Gambar
+
+Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinonaktifkan saat semua panduan goresan terlihat. Pergantian karakter mempertahankan posisi jendela pilihan pengguna.
+
 ## Komit
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -732,3 +758,4 @@ Kartu anak yang dibuka menempati posisi kosong terdekat di sekitar cabang aktif;
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6

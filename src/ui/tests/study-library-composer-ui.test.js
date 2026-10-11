@@ -163,11 +163,9 @@ test("Study Library selects newly created dependencies through the carousel", ()
     );
 });
 
-test("Study Library registers schema layer views as SPA routes", () => {
+test("Study Library registers Explore layer navigation as SPA routes", () => {
     assert.ok(
-        adapterSource.includes(
-            'pattern: "^/study/layers/[^/]+/[^/]+(?:/[^/]+)?$"',
-        ),
+        adapterSource.includes('pattern: "^/study/explore(?:/[^/]+/[^/]+)?$"'),
     );
 });
 

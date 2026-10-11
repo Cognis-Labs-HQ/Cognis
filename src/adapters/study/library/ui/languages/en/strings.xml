@@ -175,4 +175,7 @@
     <string name="gateway.study.library_merge_requested">Your merge request was submitted for review.</string>
     <string name="gateway.study.library_create_success">The card was created.</string>
       <string name="gateway.study.library_merge_scope_error">The merge requires dependencies visible in the destination scope. Your draft has been kept.</string>
+  <string name="gateway.study.library_import">Import Library Cards</string>
+  <string name="gateway.study.library_import_success">Imported {{ count }} cards.</string>
+  <string name="gateway.study.library_import_error">Import failed: {{ reason }}. No cards were added.</string>
 </resources>

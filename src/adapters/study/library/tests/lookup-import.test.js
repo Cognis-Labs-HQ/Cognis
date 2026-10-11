@@ -1,3 +1,4 @@
+import { LIBRARY_COMPOSER_LIMITS } from "../ui/app/composer-limits.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -87,6 +88,7 @@ test("dictionary results directly import definitions, source fields, readings, g
     const context = {
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
+        LIBRARY_COMPOSER_LIMITS,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
         Event,
@@ -176,6 +178,7 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
     const context = {
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
+        LIBRARY_COMPOSER_LIMITS,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
         fetchLibraryLookupSuggestions: async () => [
@@ -227,6 +230,7 @@ test("canceling replacement avoids the request and preserves existing values", a
     const context = {
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
+        LIBRARY_COMPOSER_LIMITS,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
         hasLookupValues: () => true,
@@ -259,6 +263,7 @@ test("failed and empty stroke lookups leave the lookup button available", async 
         const context = {
             resolveLookupPrerequisites: async (suggestion) => suggestion,
             resolveLookupReferences,
+            LIBRARY_COMPOSER_LIMITS,
             separateLookupDefinitions,
             chooseLookupSuggestion: async (suggestions) => suggestions[0],
             hasLookupValues: () => false,
@@ -312,6 +317,7 @@ test("lookup populates the visible composition input when no authored spelling c
     const context = {
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
+        LIBRARY_COMPOSER_LIMITS,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
         Event,
@@ -429,6 +435,7 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
         structuredClone,
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
+        LIBRARY_COMPOSER_LIMITS,
         separateLookupDefinitions,
         chooseLookupSuggestion: async (suggestions) => suggestions[0],
         hasLookupValues: () => true,

@@ -41,3 +41,5 @@ Selecting drawable Library cards while the pad is open now redraws every newly l
 Drawing Practice now stays inside the main page. Dragging and resizing use the main page’s scrollable content bounds, so the pad cannot cover the header or footer. In shorter windows the pad retains its natural drawing height and the main page scrolls vertically to reveal the remaining controls.
 
 Loading another character into an open drawing pad preserves its current position, including placement chosen by dragging. The default position is applied only when opening a new pad.
+
+The drawing window close control uses the standard themed close SVGs. The guidance control is disabled while all stroke guides are visible. Loading another character preserves a user-positioned drawing window.

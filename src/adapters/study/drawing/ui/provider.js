@@ -248,7 +248,7 @@ function openDrawingPad({
     fitHost();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
-    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-pronunciations></span><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance hidden aria-label="${i18n.t("adapter.study.drawing.guidance")}">?</button><button class="btn-cancel" type="button" data-close>×</button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
+    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-pronunciations></span><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance aria-label="${i18n.t("adapter.study.drawing.guidance")}">?</button><button class="btn-close btn-cancel" type="button" data-close aria-label="${i18n.t("adapter.study.drawing.close")}"><img class="study-drawing-close-light" src="/static/assets/reuse/icons/close-light.svg" alt=""><img class="study-drawing-close-dark" src="/static/assets/reuse/icons/close-dark.svg" alt=""></button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("adapter.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("adapter.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("adapter.study.drawing.reset")}</button></div>`;
     host.append(pad);
     const canvas = pad.querySelector("canvas");
     const stage = pad.querySelector(".study-drawing-stage");
@@ -404,6 +404,8 @@ function openDrawingPad({
         context.restore();
     };
     const draw = () => {
+        pad.querySelector("[data-guidance]").disabled =
+            revealHiddenGuides || hiddenGuideIndices.size === 0;
         context.clearRect(0, 0, canvas.width, canvas.height);
         const viewport = drawingViewport(
             canvas,
@@ -706,7 +708,7 @@ function openDrawingPad({
         () => {
             hasAttemptedPiece = false;
             revealHiddenGuides = true;
-            pad.querySelector("[data-guidance]").hidden = true;
+            pad.querySelector("[data-guidance]").disabled = true;
             draw();
         },
         { signal: controller.signal },
@@ -756,8 +758,8 @@ function openDrawingPad({
             .filter(Boolean)
             .join(" · ");
         pad.querySelector("[data-definition]").textContent = currentDefinition;
-        pad.querySelector("[data-guidance]").hidden =
-            !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
+        pad.querySelector("[data-guidance]").disabled =
+            hiddenGuideIndices.size === 0;
         resize();
         window.requestAnimationFrame(resize);
         return true;

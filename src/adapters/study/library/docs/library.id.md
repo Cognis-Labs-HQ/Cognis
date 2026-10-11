@@ -68,7 +68,7 @@ Peningkatan paket memangkas rekaman yang tidak lagi disertakan penerbit karena p
 
 `/study/library` adalah editor data khusus administrator. Menu samping mengelompokkan seluruh rekaman bahasa terpilih berdasarkan skema dan lapisan, termasuk rekaman definisi dan relasi. Memilih lapisan langsung memindahkan status menu aktif dan menampilkan daftar baris yang bersih. Klik pada baris membuka varian hanya-baca dari popup edit berbasis skema; klik kanan mengaktifkan mode multi-pilih, sedangkan pensil kecil yang mengikuti tema membuka varian yang dapat disunting.
 
-Lapisan untuk pelajar menggunakan rute SPA mandiri `/study/layers/:schema/:layer` yang ditautkan langsung dari subnavigasi Study. Halaman ini menggunakan kembali renderer kartu kaya dengan filter, varian, definisi, metadata, dan popup detail tanpa menampilkan kontrol penyuntingan administratif.
+Lapisan belajar berada pada menu samping Jelajahi di `/study/explore/<bahasa ISO>/<navigationSlug>`. Modul dapat menetapkan `navigationSlug` unik per lapisan; jika tidak diberikan, ID lapisan digunakan. Rute Pustaka dan Permintaan tetap sama. Hanya pratinjau kalimat yang memotong judul dan definisi panjang.
 
 ## Kartu dan penyuntingan terfokus
 
@@ -444,3 +444,5 @@ Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahank
 ## Tata letak kartu anak
 
 Kartu anak yang dibuka menempati posisi kosong terdekat di sekitar cabang aktif; kartu latar yang diredupkan tidak mendorongnya ke ujung kisi. Posisi leluhur tetap stabil ketika anak yang lebih dalam dibuka. Jika cabang membutuhkan lebih banyak ruang vertikal, kisi menyediakan ruang tambahan yang dapat digulir dan melepaskannya saat ditutup. Perubahan ukuran jendela atau kartu menghitung ulang posisi. Penunjuk dan fokus papan ketik mengendalikan visibilitas cabang secara konsisten; menekan lama kartu anak melanjutkan cabang yang sedang aktif. Perhitungan tata letak tertunda digabungkan dan dibatalkan ketika cabang ditutup.
+
+[Impor Pustaka Terstruktur](/docs/adapters/study/library/import)

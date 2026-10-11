@@ -175,4 +175,7 @@
     <string name="gateway.study.library_merge_requested">Permintaan penggabungan Anda dikirim untuk ditinjau.</string>
     <string name="gateway.study.library_create_success">Kartu berhasil dibuat.</string>
       <string name="gateway.study.library_merge_scope_error">Penggabungan memerlukan dependensi yang terlihat di cakupan tujuan. Draf Anda tetap disimpan.</string>
+  <string name="gateway.study.library_import">Impor kartu pustaka</string>
+  <string name="gateway.study.library_import_success">{{ count }} kartu diimpor.</string>
+  <string name="gateway.study.library_import_error">Impor gagal: {{ reason }}. Tidak ada kartu yang ditambahkan.</string>
 </resources>

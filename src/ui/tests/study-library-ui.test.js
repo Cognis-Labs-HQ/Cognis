@@ -392,7 +392,7 @@ test("Study Library integrates definitions and particles into item details", () 
 test("Study Library separates admin data browsing from learner layer pages", () => {
     assert.match(indexSource, /if \(!isAdminScope\(\)\)/);
     assert.match(layerPageSource, /renderBrowser\(/);
-    assert.match(layerPageSource, /parts\[1\] !== "layers"/);
+    assert.match(layerPageSource, /parts\[1\] !== "explore"/);
     assert.match(
         source,
         /requestedLayer \? "" : `<div class="library-layer-tabs"/,
@@ -400,7 +400,7 @@ test("Study Library separates admin data browsing from learner layer pages", () 
     assert.match(adapterSource, /pattern: "\^\/study\/library\$"/);
     assert.match(
         adapterSource,
-        /pattern: "\^\/study\/layers\/\[\^\/\]\+\/\[\^\/\]\+\(\?:\/\[\^\/\]\+\)\?\$"/,
+        /pattern: "\^\/study\/explore\(\?:\/\[\^\/\]\+\/\[\^\/\]\+\)\?\$"/,
     );
 });
 test("Study Library creation is driven by language card constructors", () => {

@@ -592,6 +592,32 @@ Filters reflect visible content in the selected layer. Relocation preserves entr
 
 Expanded children occupy the closest available positions around the active branch; dimmed background cards do not push them across the grid. Fitted ancestors remain stable while deeper children open. When a branch needs more vertical space, the grid reserves scrollable space and releases it on close. Resize and card-size changes trigger a fresh fit. Branch visibility is controlled consistently for pointer and keyboard focus, and long-pressing a child continues the current branch. Pending layout work is coalesced and cancelled when the branch closes.
 
+## Explore Navigation
+
+Learner layers appear in the Explore side menu at `/study/explore/<ISO language>/<navigationSlug>`. Modules declare the optional unique `navigationSlug` on each layer; its layer ID is used when omitted. Library and Requests keep their existing routes. Only sentence previews truncate long titles and definitions; other layers retain their rendering.
+
+## Structured JSON Import
+
+Use **Import** at the bottom-left of the Create Card type selector to upload JSON. Choose a writable scope; the entire batch goes into that scope. The supported envelope is `format: "cognis-library"`, `version: 1`, and a nonempty `entries` array.
+
+Use another entry’s `key` as `entryId` in `references` or `referenceGroups`. Cognis allocates UUIDs before writing, substitutes those keys, and processes ready dependencies in layer batches. Existing Library UUIDs may also be referenced when visible in the destination scope. Missing targets, incompatible layers, cycles, invalid strokes, missing required fields, and duplicate content reject the whole transaction. The response returns created entries and the key-to-UUID `ids` map.
+
+## Dictionary Import Limits
+
+Cards support at most 8 tags, 16 pronunciations, and 10 definitions, together with field lengths and layer-specific cardinalities. JSON imports validate these limits rather than silently discard data. Dictionary imports prune surplus tags, pronunciations, and definitions before committing them; the composer blocks an eleventh definition.
+
+## Flashcards Adapter
+
+Enable the Study Flashcards adapter to build named decks from any readable Library layer or import Anki-compatible plain-text TSV notes. The adapter owns its routes, deck persistence, renderer, schedules, UI, and strings. Flip a card to reveal pronunciation and definitions, then grade Again, Good, or Easy. Again retries after one minute; Good starts at one day and doubles; Easy starts at four days and triples.
+
+Decks are shareable resources of type `studyDeck` with the read capability `study:flashcards:read`. The standard Cognis Share control supports user recipients and public links, expiry, passwords, and revocation. Owners alone may edit or delete decks. User recipients can study and export; their review schedules are stored separately per account. A link guest studies in a temporary session without changing account schedules. Revocation and expiry are checked on every authenticated deck operation.
+
+Import and export UTF-8, quoted tab-separated text with Front, Back, and optional Pronunciation columns. Exports include Anki separator, deck, and plain-text headers plus an optional Cognis context column; Anki can ignore that column. Embedded quotes, tabs, and newlines round-trip safely. This is TSV interchange, not an `.apkg` archive. Review history is private and is not exported.
+
+## Drawing Controls
+
+The drawing window close control uses the standard themed close SVGs. The guidance control is disabled while all stroke guides are visible. Loading another character preserves a user-positioned drawing window.
+
 ## Commits
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -730,3 +756,4 @@ Expanded children occupy the closest available positions around the active branc
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6

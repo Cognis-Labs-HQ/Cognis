@@ -208,6 +208,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     for (const flow of [
         {
+            id: "study:library:import",
+            stages: ["authorize", "validate", "persist"],
+        },
+        {
             id: "study:library:create",
             stages: ["normalize", "resolve", "validate", "persist"],
         },

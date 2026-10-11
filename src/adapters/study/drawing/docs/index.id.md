@@ -41,3 +41,5 @@ Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang
 Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman yang dapat digulir digunakan saat menyeret dan mengubah ukuran, sehingga pad tidak menutupi header atau footer. Pada jendela pendek, pad mempertahankan tinggi gambar alaminya dan halaman utama dapat digulir secara vertikal untuk menjangkau kontrol lainnya.
 
 Memuat karakter berikutnya ke papan tulis yang terbuka mempertahankan posisi saat ini, termasuk posisi yang dipilih dengan menyeret. Posisi awal hanya diterapkan saat membuka papan baru.
+
+Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinonaktifkan saat semua panduan goresan terlihat. Pergantian karakter mempertahankan posisi jendela pilihan pengguna.

@@ -319,3 +319,14 @@ export async function mergeLibraryEntry(entryId, proposedEntry) {
     }
     return (await response.json()).data;
 }
+
+export async function importLibraryEntries(location, document) {
+    const response = await apiFetch("/api/v1/study/library/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ location, document }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error?.code ?? "import_failed");
+    return result.data;
+}

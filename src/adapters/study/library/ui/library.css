@@ -845,3 +845,12 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     pointer-events: none;
     transform: translateX(-50%);
 }
+
+.library-entry-card--orderedLexicalSequence .library-card-reading strong,
+.library-entry-card--orderedLexicalSequence .library-card-definition {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}

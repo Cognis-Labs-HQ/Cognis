@@ -598,4 +598,8 @@
   <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
   <string name="ui.reuse.lookup">Lookup</string>
   <string name="ui.reuse.continue">Continue</string>
+  <string name="ui.reuse.import">Import</string>
+  <string name="ui.reuse.export">Export</string>
+  <string name="ui.reuse.file">File</string>
+  <string name="ui.reuse.search">Search</string>
 </resources>

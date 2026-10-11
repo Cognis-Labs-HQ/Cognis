@@ -68,7 +68,7 @@ Paketaktualisierungen entfernen vom Herausgeber ausgelassene Einträge, da ein i
 
 `/study/library` ist ein Dateneditor ausschließlich für Administratoren. Das Seitenmenü gruppiert alle Datensätze der ausgewählten Sprache nach Schema und Ebene, einschließlich Definitionen und Beziehungen. Beim Auswählen einer Ebene wechselt der aktive Menüstatus sofort und eine übersichtliche Zeilenliste erscheint. Ein Klick auf eine Zeile öffnet eine schreibgeschützte Variante des schemagesteuerten Bearbeitungsfensters; ein Rechtsklick aktiviert die Mehrfachauswahl, während der kleine themengerechte Stift die bearbeitbare Variante öffnet.
 
-Lernenden-Ebenen verwenden eigenständige SPA-Routen unter `/study/layers/:schema/:layer`, die direkt in der Study-Unternavigation verlinkt sind. Diese Seiten verwenden den reichhaltigen Kartenrenderer mit Filtern, Varianten, Definitionen, Metadaten und Detailfenstern, ohne administrative Bearbeitungssteuerungen anzuzeigen.
+Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<navigationSlug>`. Module können pro Ebene einen eindeutigen `navigationSlug` angeben; andernfalls gilt die Ebenen-ID. Bibliothek und Anfragen behalten ihre Routen. Nur Satzvorschauen kürzen lange Titel und Definitionen.
 
 ## Fokussierte Karten und Bearbeitung
 
@@ -444,3 +444,5 @@ Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben beh
 ## Layout verschachtelter Karten
 
 Aufgeklappte Kinder belegen die nächsten freien Positionen am aktiven Zweig; abgeblendete Hintergrundkarten verdrängen sie nicht quer durch das Raster. Bereits platzierte Vorfahren bleiben beim Öffnen tieferer Kinder stabil. Benötigt der Zweig mehr Höhe, reserviert das Raster zusätzlichen scrollbar erreichbaren Platz und gibt ihn beim Schließen frei. Größenänderungen des Fensters oder der Karten lösen eine neue Platzierung aus. Zeiger und Tastaturfokus steuern die Zweigsichtbarkeit einheitlich; langes Drücken auf ein Kind setzt den aktuellen Zweig fort. Ausstehende Layoutberechnungen werden zusammengefasst und beim Schließen abgebrochen.
+
+[Strukturierter Bibliotheksimport](/docs/adapters/study/library/import)

@@ -82,7 +82,7 @@ Pack upgrades prune records omitted by the publisher because an installed provid
 
 `/study/library` is an administrator-only data editor. Its side menu groups every record for the selected language by schema and layer, including definition and relationship records. Selecting a layer immediately moves the active menu state and shows a clean row list. Clicking a row opens a read-only variant of the schema-driven edit popup; right-clicking enters multi-select mode, while the small theme-aware pencil opens the editable variant.
 
-Learner-facing layers use independent `/study/layers/:schema/:layer` SPA routes linked directly from Study sub-navigation. These pages reuse the rich card renderer, filters, variants, definitions, metadata, and detail popups without exposing administrative editing controls.
+Learner layers appear in the Explore side menu at `/study/explore/<ISO language>/<navigationSlug>`. Modules declare the optional unique `navigationSlug` on each layer; its layer ID is used when omitted. Library and Requests keep their existing routes. Only sentence previews truncate long titles and definitions; other layers retain their rendering.
 
 ## Focused cards and editing
 
@@ -457,3 +457,5 @@ Filters reflect visible content in the selected layer. Relocation preserves entr
 ## Nested child card layout
 
 Expanded children occupy the closest available positions around the active branch; dimmed background cards do not push them across the grid. Fitted ancestors remain stable while deeper children open. When a branch needs more vertical space, the grid reserves scrollable space and releases it on close. Resize and card-size changes trigger a fresh fit. Branch visibility is controlled consistently for pointer and keyboard focus, and long-pressing a child continues the current branch. Pending layout work is coalesced and cancelled when the branch closes.
+
+[Structured Library Import](/docs/adapters/study/library/import)

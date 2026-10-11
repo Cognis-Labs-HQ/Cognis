@@ -598,4 +598,8 @@
   <string name="ui.reuse.toggle_secret_visibility">Alihkan visibilitas rahasia</string>
   <string name="ui.reuse.lookup">Cari</string>
   <string name="ui.reuse.continue">Lanjutkan</string>
+  <string name="ui.reuse.import">Impor</string>
+  <string name="ui.reuse.export">Ekspor</string>
+  <string name="ui.reuse.file">Berkas</string>
+  <string name="ui.reuse.search">Cari</string>
 </resources>

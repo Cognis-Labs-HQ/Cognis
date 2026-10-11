@@ -299,3 +299,22 @@ body[data-theme="dark"] .study-drawing-pad {
         animation: none;
     }
 }
+
+.study-drawing-pad [data-close] {
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0.4rem;
+}
+.study-drawing-pad [data-close] img {
+    width: 1rem;
+    height: 1rem;
+}
+.study-drawing-close-dark {
+    display: none;
+}
+body[data-theme="dark"] .study-drawing-close-light {
+    display: none;
+}
+body[data-theme="dark"] .study-drawing-close-dark {
+    display: block;
+}
