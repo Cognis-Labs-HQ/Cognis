@@ -37,3 +37,7 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`     | 接続タイムアウト（ミリ秒、100～120,000）                     |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`    | 起動準備を待機する最大時間（ミリ秒、1,000～600,000）         |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`     | 準備確認を再試行する間隔（ミリ秒、100～30,000）              |
+
+## スキーマの整合
+
+MariaDB はスキーマ初期化時に既存の主キーを現在のテーブル宣言と整合させます。行は保持され、互換性のない宣言はデータを破棄せずエラーになります。変更は記録されます。バージョン固有の移行や列名変更の互換処理は使用しません。

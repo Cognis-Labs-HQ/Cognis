@@ -60,4 +60,7 @@
   <string name="gateway.study.library_revisions">改訂履歴</string>
   <string name="gateway.study.library_progress">進捗</string>
   <string name="gateway.study.library_strokes">筆画</string>
+  <string name="gateway.study.dictionary_search">辞書検索</string>
+  <string name="gateway.study.dictionary_provider">辞書の提供元</string>
+  <string name="gateway.study.dictionary_search_with">{{ provider }}で検索</string>
 </resources>

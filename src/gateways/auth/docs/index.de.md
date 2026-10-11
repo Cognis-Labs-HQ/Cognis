@@ -123,3 +123,7 @@ Beim Löschen eines extern authentifizierten Kontos wird vor dem Entfernen der k
 ### Anbieterbezogene Kontonamen
 
 Neue externe Konten verwenden den Anbieter-Namensraum sowohl im lokalen Kontoschlüssel als auch im Profilnamen. Eine Anbietersitzung für den Namen `firehawksystems` mit `accountNamespace` auf `x` wird daher zu `x:firehawksystems`; ein lokales Konto `firehawksystems` und Identitäten wie `line:firehawksystems` bleiben getrennt. Bestehende Zuordnungen aus `(provider, external_user_id)` bleiben bei späteren Anmeldungen maßgeblich, auch wenn sich ein Anbietername ändert.
+
+## Medienrichtlinie im Browser
+
+Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und browsererzeugten `blob:`-URLs. Vertrauenswürdige UI-Clients können dadurch authentifizierte Audioantworten wiedergeben, ohne beliebige externe Medienquellen zuzulassen.

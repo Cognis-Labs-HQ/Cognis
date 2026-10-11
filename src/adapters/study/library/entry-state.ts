@@ -63,10 +63,11 @@ export async function moveEntry(
     await db.executeCommand({
         option: "UPDATE",
         table: "study_library_entries",
-        values: {
+        set: {
             scope: destination.scope,
             scope_id: destination.scopeId ?? destination.scope,
             updated_at: new Date().toISOString(),
+            relocated_at: new Date().toISOString(),
         },
         where: [{ column: "id", value: id }],
     });

@@ -583,6 +583,83 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     }
 });
 
+test("study language modules register their canonical capability and API space", async () => {
+    const externalModulesRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-study-language-"),
+    );
+    const moduleUuid = "e905927f-b133-572a-92ce-2ea8645e5ceb";
+    const moduleRoot = path.join(externalModulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export async function bootstrapModule(ctx) {
+            ctx.contributePublicCapability("study:language:ja", { languageCode: "ja" });
+            ctx.contributePublicCapability("study:language:ja:library", { snapshot: () => ({}) });
+            ctx.router.get("/api/v1/study/languages/ja/library/snapshot", (_req, res) => { res.writeHead(200); res.end(); });
+            ctx.flow.extend("bootstrap-platform", "register-flows", { id: "study-language-ja:register-language" }, () => ({ languageCode: "ja" }));
+        }`,
+    );
+    const previousExternalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = externalModulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.registerFlow({
+        id: "bootstrap-platform",
+        stages: ["register-flows"],
+    });
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "study-language-ja",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: systemCtx.getCapability.bind(systemCtx),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.deepEqual(systemCtx.getCapability("study:language:ja"), {
+            languageCode: "ja",
+        });
+        let status = 0;
+        assert.equal(
+            await extensions.handle(
+                { method: "GET" } as any,
+                {
+                    writeHead(code: number) {
+                        status = code;
+                    },
+                    end() {},
+                } as any,
+                new URL(
+                    "http://localhost/api/v1/study/languages/ja/library/snapshot",
+                ),
+            ),
+            true,
+        );
+        assert.equal(status, 200);
+    } finally {
+        if (previousExternalModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT =
+                previousExternalModulesRoot;
+        }
+        await rm(externalModulesRoot, { recursive: true, force: true });
+    }
+});
+
 test("unprivileged modules cooperate through provider-owned capabilities", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const whiteboardUuid = "93c08730-acde-4a13-ae5c-9bb176989ed4";

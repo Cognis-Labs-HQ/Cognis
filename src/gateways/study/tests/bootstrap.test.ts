@@ -98,6 +98,7 @@ async function bootstrapStudyGateway() {
     } as any);
 
     return {
+        capabilities,
         routeRegistry,
         systemCtx,
         uiRegistry,
@@ -169,7 +170,8 @@ test("direct Study requests redirect to unavailable when no language is valid", 
 });
 
 test("study registered languages reflect installed language capabilities", async () => {
-    const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
+    const { capabilities, routeRegistry, systemCtx } =
+        await bootstrapStudyGateway();
     const userToken = issueAccessToken("learner", "user", 60);
 
     const disabledResponse = new ResponseRecorder();
@@ -206,6 +208,30 @@ test("study registered languages reflect installed language capabilities", async
         enabledPayload.data.some((language) => language.code === "ja"),
         true,
     );
+
+    capabilities.get<(moduleId: string, enabled: boolean) => void>(
+        "modules:onStateChanged",
+    )?.("study-language-ja", false);
+    const lifecycleDisabledResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        lifecycleDisabledResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(lifecycleDisabledResponse.payload), {
+        data: [],
+    });
+
+    systemCtx.removeCapability("study:language:ja");
+    const removedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        removedResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(removedResponse.payload), { data: [] });
 });
 
 test("study child components come from installed language capabilities", async () => {
@@ -339,4 +365,42 @@ test("study adapter routes announce controls and support disable toggles", async
         (adapter) => adapter.id === "classes",
     );
     assert.equal(updatedClassesAdapter?.active, false);
+});
+
+test("Study registers an executable Library move flow before advertising the provider", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "move", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:move",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:move", {
+        entryId: "authored-card",
+    });
+    assert.deepEqual(stages, ["authorize", "validate", "move", "audit"]);
+});
+
+test("Study registers an executable dictionary search flow", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "search", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:search",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:search", { query: "word" });
+    assert.deepEqual(stages, ["authorize", "validate", "search", "audit"]);
 });

@@ -375,3 +375,55 @@ test("ctx.flow.run throws for unknown flow", async () => {
         /is not registered/,
     );
 });
+
+test("ctx executes owner stages before extensions and isolates concurrent invocations", async () => {
+    const ctx = createCtx();
+    ctx.registerFlow({ id: "operation", stages: ["validate", "persist"] });
+    const observed: string[] = [];
+    ctx.addFlowStageHook(
+        "operation",
+        "persist",
+        { id: "observer" },
+        ({ data }) => {
+            assert.equal(data.saved, true);
+            observed.push(String(data.id));
+        },
+    );
+    await Promise.all(
+        ["first", "second"].map((id) =>
+            ctx.runFlow("operation", id, {
+                data: { id },
+                handlers: {
+                    validate: async ({ data }) => {
+                        await Promise.resolve();
+                        data.valid = true;
+                    },
+                    persist: ({ data }) => {
+                        assert.equal(data.valid, true);
+                        data.saved = true;
+                    },
+                },
+            }),
+        ),
+    );
+    assert.deepEqual(observed.toSorted(), ["first", "second"]);
+    await assert.rejects(
+        ctx.runFlow("operation", null, { handlers: { missing: () => {} } }),
+        /has no stage/,
+    );
+    let persisted = false;
+    await assert.rejects(
+        ctx.runFlow("operation", null, {
+            handlers: {
+                validate: () => {
+                    throw new Error("invalid");
+                },
+                persist: () => {
+                    persisted = true;
+                },
+            },
+        }),
+        /invalid/,
+    );
+    assert.equal(persisted, false);
+});

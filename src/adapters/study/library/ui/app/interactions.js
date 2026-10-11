@@ -1,14 +1,14 @@
 import { showToast } from "/static/reuse/toast.js";
 import {
-    deleteLibraryEntries,
     fetchLibraryLocations,
     markLibraryEntriesViewed,
 } from "/static/gateways/study/ui/library-client.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";
+import { loadDrawing } from "./drawing.js";
 import {
-    confirmEntryDeletion,
+    deselectAllEntries,
     selectAllVisibleEntries,
     selectedEntryIds,
     selectionForCard,
@@ -20,9 +20,11 @@ import {
     closeUnrelatedVariantViews,
 } from "./variants.js";
 import { createLibraryVisibilityActions } from "./visibility-actions.js";
-
+import { bindTransformationInteractions } from "./transformation-interactions.js";
+import { mergeEntryCollectionUpdate } from "./entry-collection.js";
+import { deleteLibrarySelection } from "./deletion-actions.js";
 let activeEntryPopup = null;
-
+const interactionControllers = new WeakMap();
 export function bindLibraryInteractions(root, context) {
     const {
         i18n,
@@ -32,11 +34,26 @@ export function bindLibraryInteractions(root, context) {
         readOnly = false,
         schemas,
         showReferenceTree = false,
-        signal,
+        signal: ownerSignal,
     } = context;
+    interactionControllers.get(root)?.abort();
+    const controller = new AbortController();
+    interactionControllers.set(root, controller);
+    const signal = controller.signal;
+    if (ownerSignal?.aborted) controller.abort();
+    else
+        ownerSignal?.addEventListener("abort", () => controller.abort(), {
+            once: true,
+        });
     let entries = context.entries;
     const requests = context.requests ?? [];
     let locations;
+    const renderEntries = (update = entries) => {
+        entries = mergeEntryCollectionUpdate(entries, update);
+        root.querySelector(".library-browser").innerHTML =
+            context.renderContent?.(entries) ??
+            renderBrowser(schemas, entries, i18n, requestedLayer);
+    };
     void fetchLibraryLocations().then((value) => {
         locations = value;
         updateSelectionActions(root, entries, requests, locations);
@@ -50,11 +67,7 @@ export function bindLibraryInteractions(root, context) {
         requests,
         getLocations: () => locations,
         i18n,
-        render: (updated) => {
-            root.querySelector(".library-browser").innerHTML =
-                context.renderContent?.(updated) ??
-                renderBrowser(schemas, updated, i18n, requestedLayer);
-        },
+        render: renderEntries,
     });
     let suppressEntryClick = false;
     const markViewed = (control) => {
@@ -92,7 +105,7 @@ export function bindLibraryInteractions(root, context) {
                         : null),
             );
         },
-        { signal },
+        { capture: true, signal },
     );
     bindVariantInteractions(root, {
         signal,
@@ -100,6 +113,7 @@ export function bindLibraryInteractions(root, context) {
             suppressEntryClick = true;
         },
     });
+    bindTransformationInteractions(root, { signal });
     root.addEventListener(
         "contextmenu",
         (event) => {
@@ -112,7 +126,7 @@ export function bindLibraryInteractions(root, context) {
             selection.checked = true;
             updateSelectionActions(root, entries, requests, locations);
         },
-        { signal },
+        { capture: true, signal },
     );
     root.addEventListener(
         "change",
@@ -132,7 +146,13 @@ export function bindLibraryInteractions(root, context) {
     root.addEventListener(
         "click",
         (event) => {
-            if (event.target.closest("[data-library-select-all]")) {
+            if (event.target.closest(".library-admin-entry-row")) return;
+            const selectAll = event.target.closest("[data-library-select-all]");
+            if (selectAll) {
+                if (selectAll.dataset.selectionAction === "deselect") {
+                    deselectAllEntries(root);
+                    return;
+                }
                 selectAllVisibleEntries(root);
                 updateSelectionActions(root, entries, requests, locations);
                 return;
@@ -142,7 +162,7 @@ export function bindLibraryInteractions(root, context) {
                 return;
             }
             const publish = event.target.closest("[data-library-publish]");
-            if (publish) {
+            if (publish && !publish.disabled) {
                 void visibilityActions.publish(publish.dataset.libraryPublish);
                 return;
             }
@@ -150,8 +170,9 @@ export function bindLibraryInteractions(root, context) {
                 void visibilityActions.withdraw();
                 return;
             }
-            if (event.target.closest("[data-library-send-back-selection]")) {
-                void visibilityActions.sendBack();
+            const move = event.target.closest("[data-library-move-selection]");
+            if (move && !move.disabled) {
+                void visibilityActions.moveToUser();
                 return;
             }
             if (event.target.matches("[data-library-select-entry]")) return;
@@ -171,6 +192,10 @@ export function bindLibraryInteractions(root, context) {
             }
             const control = event.target.closest("[data-library-entry]");
             if (!control) return;
+            const closedTransformCard = control.closest(
+                ".library-transform-card:not(.library-transform-card--open)",
+            );
+            if (closedTransformCard) return;
             const openedAsNew = entries.some(
                 ({ id, isNew }) =>
                     id === control.dataset.libraryEntry && isNew === true,
@@ -194,6 +219,9 @@ export function bindLibraryInteractions(root, context) {
             const entry = entries.find(
                 (candidate) => candidate.id === control.dataset.libraryEntry,
             );
+            const schema = schemas.find(({ id }) => id === entry?.schemaId);
+            const layer = schema?.layers.find(({ id }) => id === entry?.layer);
+            if (entry && loadDrawing(entry, layer, entries, schemas)) return;
             if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(
@@ -204,7 +232,12 @@ export function bindLibraryInteractions(root, context) {
                 i18n,
                 languageCode,
                 signal,
-                { readOnly, showReferenceTree, showNew: openedAsNew },
+                {
+                    readOnly,
+                    showReferenceTree,
+                    showNew: openedAsNew,
+                    onEntryUpdated: renderEntries,
+                },
             )
                 .catch(() =>
                     showToast(i18n.t("gateway.study.library_load_error"), {
@@ -217,33 +250,19 @@ export function bindLibraryInteractions(root, context) {
         },
         { signal },
     );
-
+    signal?.addEventListener("abort", () => setSelectionMode(root, false), {
+        once: true,
+    });
     async function deleteSelection() {
-        const request = await confirmEntryDeletion(
+        await deleteLibrarySelection({
             root,
             entries,
             schemas,
             i18n,
-        );
-        if (!request) return;
-        try {
-            const deletion = await deleteLibraryEntries(request.entryIds, {
-                blacklistContentHashes: request.blacklistContentHashes,
-            });
-            entries = entries.filter(
-                (entry) => !deletion.entryIds.includes(entry.id),
-            );
-            root.querySelector(".library-browser").innerHTML =
-                context.renderContent?.(entries) ??
-                renderBrowser(schemas, entries, i18n, requestedLayer);
-            setSelectionMode(root, false);
-            showToast(i18n.t("gateway.study.library_delete_success"), {
-                variant: "success",
-            });
-        } catch {
-            showToast(i18n.t("gateway.study.library_delete_error"), {
-                variant: "error",
-            });
-        }
+            onDeleted: (updated) => {
+                entries = updated;
+                renderEntries();
+            },
+        });
     }
 }

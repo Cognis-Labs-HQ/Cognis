@@ -60,4 +60,7 @@
   <string name="gateway.study.library_revisions">Revisions</string>
   <string name="gateway.study.library_progress">Progress</string>
   <string name="gateway.study.library_strokes">Strokes</string>
+  <string name="gateway.study.dictionary_search">Dictionary search</string>
+  <string name="gateway.study.dictionary_provider">Dictionary provider</string>
+  <string name="gateway.study.dictionary_search_with">Search with {{ provider }}</string>
 </resources>

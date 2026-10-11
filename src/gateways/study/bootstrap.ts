@@ -212,8 +212,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             stages: ["normalize", "resolve", "validate", "persist"],
         },
         {
+            id: "study:library:update",
+            stages: ["authorize", "validate", "persist", "audit"],
+        },
+        {
             id: "study:library:resolve",
             stages: ["normalize", "propose", "rank"],
+        },
+        {
+            id: "study:library:search",
+            stages: ["authorize", "validate", "search", "audit"],
         },
         {
             id: "study:library:lookup",
@@ -222,6 +230,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         {
             id: "study:library:ingest",
             stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+        {
+            id: "study:library:merge",
+            stages: ["authorize", "validate", "merge", "audit"],
+        },
+        {
+            id: "study:library:move",
+            stages: ["authorize", "validate", "move", "audit"],
         },
         {
             id: "study:library:delete",
@@ -237,10 +253,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
 
+    const languageModuleStates = new Map<string, boolean>();
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
         const capabilityIds =
             systemCtx?.listCapabilities() ?? ctx.capabilities.list();
+        const activeModuleIds = new Set<string>();
         for (const capabilityId of capabilityIds.filter((id) =>
             /^study:language:[^:]+$/.test(id),
         )) {
@@ -266,6 +284,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!languageCode) continue;
             const moduleId =
                 descriptor?.moduleId ?? `study-language-${languageCode}`;
+            activeModuleIds.add(moduleId);
             gateway.registerLanguageModule(
                 {
                     languageCode,
@@ -291,7 +310,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
                 { moduleId },
             );
-            gateway.setLanguageModuleEnabled(moduleId, true);
+            gateway.setLanguageModuleEnabled(
+                moduleId,
+                languageModuleStates.get(moduleId) !== false,
+            );
+        }
+        for (const registered of gateway.listRegisteredLanguageModules()) {
+            if (
+                registered.moduleClass !== "core" &&
+                !activeModuleIds.has(registered.moduleId)
+            )
+                gateway.setLanguageModuleEnabled(registered.moduleId, false);
         }
     };
 
@@ -306,6 +335,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         moduleId: string,
         enabled: boolean,
     ): void => {
+        languageModuleStates.set(moduleId, enabled);
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
     /**

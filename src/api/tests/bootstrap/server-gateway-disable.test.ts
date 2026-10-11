@@ -16,6 +16,7 @@ import {
     resolveHardDependencyDisableOrder,
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
+    isModuleCapabilityAvailable,
     buildServer,
     discoverCoreComponentDependencies,
 } from "../../server.js";
@@ -103,6 +104,28 @@ test("module enable validation resolves browser and server capabilities", () => 
         (error) =>
             (error as { code?: string }).code ===
             "module_capability_unavailable",
+    );
+});
+
+test("module enable validation resolves public ctx capabilities", () => {
+    const systemCtx = createCtx();
+    systemCtx.contributePublicCapability("study:library:provider", {
+        registerLookupProvider: () => {},
+    });
+    systemCtx.contributeCapability("study:library:private", true);
+    const routeContext = createDefaultRouteContext({
+        getCapability: <T>(capabilityId: string) =>
+            (capabilityId === "system:ctx" ? systemCtx : undefined) as
+                T | undefined,
+    });
+
+    assert.equal(
+        isModuleCapabilityAvailable("study:library:provider", routeContext),
+        true,
+    );
+    assert.equal(
+        isModuleCapabilityAvailable("study:library:private", routeContext),
+        false,
     );
 });
 

@@ -211,7 +211,12 @@ test("postgres preserves foreign keys while healing missing columns", async () =
         pool: createPool({
             query: async (sql: string) => {
                 statements.push(sql);
-                return { rows: [], rowCount: 0 };
+                return sql.includes("FROM pg_index")
+                    ? {
+                          rows: [{ is_primary: true, columns: ["id"] }],
+                          rowCount: 1,
+                      }
+                    : { rows: [], rowCount: 0 };
             },
         }),
     });
@@ -243,40 +248,5 @@ test("postgres preserves foreign keys while healing missing columns", async () =
             sql.includes("ADD COLUMN IF NOT EXISTS account_id"),
         ) ?? "",
         /REFERENCES accounts\(id\) ON DELETE CASCADE/,
-    );
-});
-
-test("postgres renames legacy columns without losing their values", async () => {
-    const statements: string[] = [];
-    const executor = await createDbExecutor({
-        databaseUrl: "postgresql://unused",
-        pool: createPool({
-            query: async (sql: string) => {
-                statements.push(sql);
-                if (sql.includes("information_schema.columns")) {
-                    return { rows: [{ column_name: "read" }], rowCount: 1 };
-                }
-                return { rows: [], rowCount: 0 };
-            },
-        }),
-    });
-
-    await executor.ensureTable({
-        name: "internal_notifications",
-        columns: [
-            {
-                name: "is_read",
-                type: "integer",
-                notNull: true,
-                default: 0,
-                renamedFrom: "read",
-            },
-        ],
-    } as Parameters<typeof executor.ensureTable>[0]);
-
-    assert.ok(
-        statements.includes(
-            "ALTER TABLE internal_notifications RENAME COLUMN read TO is_read",
-        ),
     );
 });

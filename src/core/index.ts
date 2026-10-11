@@ -19,3 +19,5 @@ export * from "./services/health-service.js";
 export * from "./services/gateway-service.js";
 export * from "./smtp-verification-codes.js";
 export * from "./contracts/local-account-store.js";
+
+export * from "./services/cache/index.js";

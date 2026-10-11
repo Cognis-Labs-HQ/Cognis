@@ -34,3 +34,9 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu klien menganggur dalam milidetik (1.000–600.000)           |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                      |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Batas waktu pernyataan opsional dalam milidetik (1–3.600.000)          |
+
+## Penyelarasan skema
+
+PostgreSQL menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.
+
+Kendala unik dan indeks unik biasa diselaraskan dengan kunci unik yang dideklarasikan dalam transaksi yang sama. Deklarasi tabel bersifat otoritatif; indeks ekspresi dan parsial tetap dikelola secara terpisah.

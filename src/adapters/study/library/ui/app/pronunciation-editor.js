@@ -1,0 +1,878 @@
+import { pronunciationComponents } from "./pronunciation-components.js";
+import {
+    clearHorizontalCarouselSelection,
+    mountHorizontalCarousels,
+} from "/static/reuse/horizontal-carousel.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { showToast } from "/static/reuse/toast.js";
+import {
+    bindCompositionReordering,
+    renderCompositionItems,
+} from "/static/reuse/composition-input.js";
+import {
+    compositionTokenEntryId,
+    compositionTokenLabel,
+} from "./composition-tokens.js";
+import { derivedPronunciation } from "./composer-contract.js";
+import { transformationTokenDetails } from "./composition-tokens.js";
+
+export function mountEditableRelationshipCarousels(
+    form,
+    overlay,
+    entries,
+    schema,
+    layer,
+    {
+        onChange = () => {},
+        onAdd = () => {},
+        onActivate = () => {},
+        selectionOrder,
+        inputCarouselIds = new Set(),
+        pronunciationCarouselLayers = new Set(),
+        maxPronunciations = Number.POSITIVE_INFINITY,
+        i18n,
+    } = {},
+) {
+    const pronunciationRelationshipIds = new Set(
+        pronunciationRelationshipsFor(
+            layer,
+            schema,
+            pronunciationCarouselLayers,
+        ).map(({ id }) => id),
+    );
+    const controller = new AbortController();
+    const compositionState = document.createElement("input");
+    compositionState.type = "hidden";
+    compositionState.name = "compositionState";
+    compositionState.dataset.formDirtyTrack = "true";
+    form.append(compositionState);
+    const syncCompositionState = () => {
+        compositionState.value = JSON.stringify({
+            order: form.compositionOrder ?? [],
+            staged: Array.from(stagedValues),
+            groups: form.referenceGroups ?? {},
+        });
+        if (inputCarouselIds.size) {
+            const input = form.querySelector("[data-library-composer-text]");
+            form.elements.label.value =
+                (form.compositionOrder ?? [])
+                    .map((token) => compositionTokenLabel(token, entries))
+                    .join("") + (input?.value.trim() ?? "");
+        }
+    };
+
+    const draftValues = new Map();
+    const stagedValues = new Map();
+    pronunciationRelationshipIds.forEach((relationshipId) => {
+        const select = form.elements[`relationship:${relationshipId}`];
+        draftValues.set(
+            relationshipId,
+            Array.from(select?.selectedOptions ?? [], (option) =>
+                String(option.value),
+            ),
+        );
+    });
+    const compositionFieldForKind = (kind) =>
+        form.querySelector(`[data-library-composition-field="${kind}"]`);
+    const isMultiValueKind = (kind) =>
+        compositionFieldForKind(kind)?.dataset.multiValue === "true";
+    const kindForRelationshipId = (relationshipId) =>
+        pronunciationRelationshipIds.has(relationshipId)
+            ? "pronunciation"
+            : "input";
+    const selectedReferenceIds = (relationshipIds, kind) => {
+        const selected = relationshipIds.flatMap((relationshipId) =>
+            isMultiValueKind(kind)
+                ? (stagedValues.get(relationshipId) ?? [])
+                : Array.from(
+                      form.elements[`relationship:${relationshipId}`]
+                          ?.selectedOptions ?? [],
+                      ({ value }) => value,
+                  ),
+        );
+        const authoredOrder = form.compositionOrder ?? [];
+        return selected.toSorted((left, right) => {
+            const leftIndex = authoredOrder.indexOf(left);
+            const rightIndex = authoredOrder.indexOf(right);
+            return (
+                (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex) -
+                (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex)
+            );
+        });
+    };
+    const relationshipIdsForKind = (kind) =>
+        kind === "pronunciation"
+            ? Array.from(pronunciationRelationshipIds)
+            : Array.from(inputCarouselIds);
+    const renderSelectedReferences = () => {
+        for (const container of form.querySelectorAll(
+            "[data-library-selected-references]",
+        )) {
+            const relationshipIds = relationshipIdsForKind(
+                container.dataset.librarySelectedReferences,
+            );
+            const kind = container.dataset.librarySelectedReferences;
+            const selected =
+                kind === "input"
+                    ? (form.compositionOrder ?? [])
+                          .map((value) => ({
+                              id: value,
+                              label: compositionTokenLabel(value, entries),
+                          }))
+                          .filter(({ label }) => label)
+                    : selectedReferenceIds(relationshipIds, kind)
+                          .map((id) => entries.find((entry) => entry.id === id))
+                          .filter(Boolean);
+            container.innerHTML = renderCompositionItems({
+                items: selected.map((entry) => ({
+                    value: entry.id,
+                    label: entry.label,
+                })),
+                removeLabel: (label) =>
+                    i18n
+                        .t("gateway.study.library_remove_selected_card")
+                        .replace("{{ card }}", label),
+                itemAttributes: ({ value }, index) => ({
+                    "data-library-selected-reference": value,
+                    "data-library-composition-index": String(index),
+                    "data-composition-index": String(index),
+                    draggable: "true",
+                    ...(kind === "input"
+                        ? {
+                              "data-library-composition-id": value,
+                          }
+                        : {}),
+                }),
+            });
+        }
+    };
+    const entriesForKind = (kind) => {
+        const targetLayers = new Set(
+            relationshipIdsForKind(kind).map(
+                (relationshipId) =>
+                    layer?.relationships?.find(
+                        ({ id }) => id === relationshipId,
+                    )?.targetLayer,
+            ),
+        );
+        return entries.filter(
+            ({ layer: entryLayer, hidden }) =>
+                hidden !== true && targetLayers.has(entryLayer),
+        );
+    };
+    const carouselItem = (kind, entryId, selectedOnly = false) =>
+        relationshipIdsForKind(kind)
+            .map((relationshipId) =>
+                form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value="${CSS.escape(entryId)}"]${selectedOnly ? ".is-selected" : ""}`,
+                ),
+            )
+            .find(Boolean);
+    const valuesForField = (field) =>
+        field.value
+            .split(/\r?\n/u)
+            .map((value) => value.trim())
+            .filter(Boolean);
+    const clearCarouselItemSelection = (item) => {
+        item.classList.remove("is-selected");
+        item.setAttribute("aria-pressed", "false");
+        const counter = item.querySelector("[data-carousel-order]");
+        if (counter) counter.textContent = "";
+    };
+    const renderSavedValues = (compositionField) => {
+        const container =
+            compositionField
+                .closest("fieldset")
+                ?.querySelector("[data-library-saved-values]") ??
+            compositionField.previousElementSibling;
+        const field = form.elements["field:pronunciation"];
+        if (!container?.matches("[data-library-saved-values]") || !field)
+            return;
+        const values = valuesForField(field);
+        container.hidden = values.length === 0;
+        if (compositionField.dataset.multiValue !== "true") {
+            container.hidden = true;
+            container.replaceChildren();
+            return;
+        }
+        container.innerHTML = values
+            .map(
+                (value, index) =>
+                    `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${
+                        pronunciationComponents(
+                            form,
+                            value,
+                            index,
+                            entries,
+                            schema,
+                        )
+                            .map(
+                                ({ id, label }) =>
+                                    `<span class="library-pronunciation-component" data-library-pronunciation-entry="${escapeHtml(id)}">${escapeHtml(label)}</span>`,
+                            )
+                            .join("") || escapeHtml(value)
+                    }</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", "Pronunciation"))}">×</button></span>`,
+            )
+            .join("");
+    };
+    overlay.addEventListener("close", () => controller.abort(), { once: true });
+    for (const kind of ["input", "pronunciation"]) {
+        if (!isMultiValueKind(kind)) continue;
+        for (const relationshipId of relationshipIdsForKind(kind)) {
+            stagedValues.set(relationshipId, []);
+            form.querySelectorAll(
+                `[data-horizontal-carousel="${CSS.escape(relationshipId)}"] [data-carousel-value].is-selected`,
+            ).forEach(clearCarouselItemSelection);
+        }
+    }
+    mountHorizontalCarousels(form, {
+        signal: controller.signal,
+        selectionOrder,
+        onActivate: async (activation) => {
+            const relationship = layer.relationships?.find(
+                ({ id }) => id === activation.id,
+            );
+            if (
+                activation.selected &&
+                (relationship?.ordered || relationship?.grouped)
+            ) {
+                const value = activation.item.dataset.carouselValue;
+                const kind = kindForRelationshipId(activation.id);
+                if (isMultiValueKind(kind)) {
+                    const staged = stagedValues.get(activation.id) ?? [];
+                    staged.push(value);
+                    stagedValues.set(activation.id, staged);
+                } else if (kind === "input") {
+                    form.compositionOrder.push(value);
+                } else {
+                    const values = draftValues.get(activation.id) ?? [];
+                    values.push(value);
+                    draftValues.set(activation.id, values);
+                }
+                form.dispatchEvent(
+                    new Event("library-composition-change", { bubbles: true }),
+                );
+                return false;
+            }
+            return onActivate(activation);
+        },
+        onChange: ({ id, values }) => {
+            const select = form.elements[`relationship:${id}`];
+            if (!select) return;
+            const kind = kindForRelationshipId(id);
+            if (isMultiValueKind(kind)) {
+                stagedValues.set(id, values);
+                syncCompositionState();
+                renderSelectedReferences();
+                return;
+            }
+            onChange({ id, values });
+            syncCompositionState();
+            if (pronunciationRelationshipIds.has(id))
+                draftValues.set(id, values);
+            const selected = new Set(values.map(compositionTokenEntryId));
+            Array.from(select.options).forEach((option) => {
+                option.selected = selected.has(option.value);
+            });
+            values.forEach((value) => {
+                const option = Array.from(select.options).find(
+                    (candidate) =>
+                        candidate.value === compositionTokenEntryId(value),
+                );
+                if (option) select.append(option);
+            });
+            const pronunciation = form.elements["field:pronunciation"];
+            if (pronunciation && pronunciationRelationshipIds.has(id)) {
+                const selectedEntries = Array.from(pronunciationRelationshipIds)
+                    .flatMap(
+                        (relationshipId) =>
+                            draftValues.get(relationshipId) ?? [],
+                    )
+                    .map((value) =>
+                        entries.find((candidate) => candidate.id === value),
+                    )
+                    .filter(Boolean);
+                pronunciation.value = selectedEntries
+                    .map((candidate) => candidate.label)
+                    .join("");
+                pronunciation.dispatchEvent(
+                    new Event("input", { bubbles: true }),
+                );
+            }
+            renderSelectedReferences();
+        },
+        onAdd,
+    });
+    const renderDerivedPronunciation = () => {
+        const output = form.querySelector(
+            "[data-library-derived-pronunciation]",
+        );
+        if (!output) return;
+        const components = (form.compositionOrder ?? [])
+            .map((token) => {
+                const transformed = transformationTokenDetails(token);
+                const entry = entries.find(
+                    ({ id }) => id === compositionTokenEntryId(token),
+                );
+                return (
+                    transformed?.pronunciation ??
+                    (entry ? derivedPronunciation(entry, entries, schema) : "")
+                );
+            })
+            .filter(Boolean);
+        output.innerHTML = components
+            .map(
+                (value) =>
+                    `<span class="btn-neutral composition-input-item">${escapeHtml(value)}</span>`,
+            )
+            .join("");
+        const field = form.elements["field:pronunciation"];
+        if (field) field.value = components.join("");
+    };
+    bindCompositionReordering(form, {
+        signal: controller.signal,
+        onMove({ kind, from, to }) {
+            if (kind === "input") {
+                const [token] = form.compositionOrder.splice(from, 1);
+                form.compositionOrder.splice(to, 0, token);
+            } else {
+                const relationshipIds = relationshipIdsForKind(kind);
+                const collection = isMultiValueKind(kind)
+                    ? stagedValues
+                    : draftValues;
+                const placements = relationshipIds.flatMap((id) =>
+                    (collection.get(id) ?? []).map((value) => ({ id, value })),
+                );
+                const [placement] = placements.splice(from, 1);
+                if (!placement) return;
+                placements.splice(to, 0, placement);
+                for (const id of relationshipIds)
+                    collection.set(
+                        id,
+                        placements
+                            .filter((item) => item.id === id)
+                            .map(({ value }) => value),
+                    );
+            }
+            form.dispatchEvent(
+                new Event("library-composition-change", { bubbles: true }),
+            );
+        },
+    });
+    const highlightPlacements = (event, active) => {
+        const item = event.target.closest(
+            "[data-carousel-value], [data-library-tag-carousel-entry]",
+        );
+        if (!item) return;
+        if (
+            event.relatedTarget instanceof Node &&
+            item.contains(event.relatedTarget)
+        )
+            return;
+        const relationshipId =
+            item.closest("[data-horizontal-carousel]")?.dataset
+                .horizontalCarousel ??
+            item.dataset.libraryTagCarouselRelationship;
+        const kind = kindForRelationshipId(relationshipId);
+        const entryId = compositionTokenEntryId(
+            item.dataset.carouselValue ?? item.dataset.libraryTagCarouselEntry,
+        );
+        form.querySelectorAll(
+            `[data-library-selected-references="${kind}"] [data-library-selected-reference]`,
+        ).forEach((placement) =>
+            placement.classList.toggle(
+                "is-carousel-highlight",
+                active &&
+                    compositionTokenEntryId(
+                        placement.dataset.librarySelectedReference,
+                    ) === entryId,
+            ),
+        );
+    };
+    for (const eventName of ["pointerover", "focusin"])
+        form.addEventListener(
+            eventName,
+            (event) => highlightPlacements(event, true),
+            { signal: controller.signal },
+        );
+    for (const eventName of ["pointerout", "focusout"])
+        form.addEventListener(
+            eventName,
+            (event) => highlightPlacements(event, false),
+            { signal: controller.signal },
+        );
+    renderDerivedPronunciation();
+    syncCompositionState();
+    renderSelectedReferences();
+    form.querySelectorAll("[data-library-composition-field]").forEach(
+        renderSavedValues,
+    );
+    form.addEventListener(
+        "library-lookup-replace",
+        (event) => {
+            const preserved = new Set(
+                event.detail?.preservedRelationshipIds ?? [],
+            );
+            for (const relation of draftValues.keys())
+                if (!preserved.has(relation)) draftValues.delete(relation);
+            for (const relation of stagedValues.keys())
+                if (!preserved.has(relation)) stagedValues.delete(relation);
+            form.querySelectorAll("[data-horizontal-carousel]").forEach(
+                (carousel) => {
+                    if (!preserved.has(carousel.dataset.horizontalCarousel))
+                        clearHorizontalCarouselSelection(carousel);
+                },
+            );
+            form.querySelectorAll(
+                '[data-library-composition-field="pronunciation"] input',
+            ).forEach((input) => {
+                input.value = "";
+                input.setCustomValidity("");
+            });
+        },
+        { signal: controller.signal },
+    );
+    form.addEventListener(
+        "library-composition-change",
+        () => {
+            renderSelectedReferences();
+            renderDerivedPronunciation();
+            syncCompositionState();
+            form.querySelectorAll("[data-library-composition-field]").forEach(
+                renderSavedValues,
+            );
+        },
+        { signal: controller.signal },
+    );
+    form.addEventListener(
+        "click",
+        async (event) => {
+            const selected = event.target.closest(
+                "[data-library-selected-reference]",
+            );
+            if (selected) {
+                if (!event.target.matches("[data-composition-remove]")) return;
+                const kind = selected.closest(
+                    "[data-library-selected-references]",
+                )?.dataset.librarySelectedReferences;
+                if (isMultiValueKind(kind)) {
+                    const value = selected.dataset.librarySelectedReference;
+                    let index = Number(
+                        selected.dataset.libraryCompositionIndex,
+                    );
+                    const relationshipId = relationshipIdsForKind(kind).find(
+                        (id) => {
+                            const count = (stagedValues.get(id) ?? []).length;
+                            if (index < count) return true;
+                            index -= count;
+                            return false;
+                        },
+                    );
+                    const values = stagedValues.get(relationshipId) ?? [];
+                    values.splice(index, 1);
+                    if (!values.includes(value)) {
+                        const item = carouselItem(kind, value, true);
+                        if (item) clearCarouselItemSelection(item);
+                    }
+                    renderSelectedReferences();
+                    form.dispatchEvent(
+                        new Event("library-composition-change", {
+                            bubbles: true,
+                        }),
+                    );
+                    return;
+                }
+                const confirmed = await openPopup({
+                    title: i18n.t("gateway.study.library_remove_selection"),
+                    body: `<p>${escapeHtml(i18n.t("gateway.study.library_remove_selection_confirm"))}</p>`,
+                    actions: [
+                        {
+                            id: "remove",
+                            label: i18n.t("ui.reuse.delete"),
+                            variant: "cancel",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "neutral",
+                        },
+                    ],
+                });
+                if (confirmed !== "remove") return;
+                const item = carouselItem(
+                    kind,
+                    selected.dataset.librarySelectedReference,
+                    true,
+                );
+                if (kind === "input") {
+                    const index = Number(
+                        selected.dataset.libraryCompositionIndex,
+                    );
+                    form.compositionOrder.splice(index, 1);
+                    const value = selected.dataset.librarySelectedReference;
+                    if (!form.compositionOrder.includes(value)) {
+                        if (item) clearCarouselItemSelection(item);
+                        const entryId = compositionTokenEntryId(value);
+                        if (
+                            !form.compositionOrder.some(
+                                (token) =>
+                                    compositionTokenEntryId(token) === entryId,
+                            )
+                        ) {
+                            for (const relationshipId of inputCarouselIds) {
+                                const select =
+                                    form.elements[
+                                        `relationship:${relationshipId}`
+                                    ];
+                                for (const option of select?.options ?? [])
+                                    if (option.value === entryId)
+                                        option.selected = false;
+                            }
+                        }
+                    }
+                    form.dispatchEvent(
+                        new Event("library-composition-change", {
+                            bubbles: true,
+                        }),
+                    );
+                } else if (item) {
+                    item.click();
+                }
+                return;
+            }
+            const suggestion = event.target.closest(
+                "[data-library-carousel-suggestion]",
+            );
+            if (suggestion) {
+                const compositionField = suggestion.closest(
+                    "[data-library-composition-field]",
+                );
+                carouselItem(
+                    compositionField.dataset.libraryCompositionField,
+                    suggestion.dataset.libraryCarouselSuggestion,
+                )?.click();
+                const input = compositionField.querySelector(
+                    "[data-library-carousel-text]",
+                );
+                input.value = "";
+                input.setCustomValidity("");
+                compositionField.querySelector(
+                    "[data-composition-suggestions]",
+                ).innerHTML = "";
+                return;
+            }
+            const savedValue = event.target.closest(
+                "[data-library-saved-index]",
+            );
+            if (!savedValue) return;
+            const compositionField = savedValue.closest(
+                "[data-library-saved-values]",
+            ).nextElementSibling;
+            const field = form.elements["field:pronunciation"];
+            const values = valuesForField(field);
+            const index = Number(savedValue.dataset.librarySavedIndex);
+            if (event.target.closest("[data-library-delete-saved-value]")) {
+                const confirmed = await openPopup({
+                    title: i18n.t(
+                        "gateway.study.library_delete_saved_value_title",
+                    ),
+                    body: `<p>${escapeHtml(i18n.t("gateway.study.library_delete_saved_value_confirm"))}</p>`,
+                    actions: [
+                        {
+                            id: "delete",
+                            label: i18n.t("ui.reuse.delete"),
+                            variant: "cancel",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "neutral",
+                        },
+                    ],
+                });
+                if (confirmed !== "delete") return;
+            } else if (!event.target.closest("[data-library-edit-saved-value]"))
+                return;
+            const kanaComponents = pronunciationComponents(
+                form,
+                values[index],
+                index,
+                entries,
+                schema,
+            );
+            const editingGroups = new Map();
+            const editingGroupIndices = new Map();
+            for (const relationshipId of relationshipIdsForKind(
+                compositionField.dataset.libraryCompositionField,
+            )) {
+                const groups = form.referenceGroups?.[relationshipId] ?? [];
+                const groupIndex = groups.findIndex(
+                    (group) =>
+                        group
+                            .map(
+                                ({ entryId }) =>
+                                    entries.find(({ id }) => id === entryId)
+                                        ?.label ?? "",
+                            )
+                            .join("") === values[index],
+                );
+                editingGroupIndices.set(relationshipId, groupIndex);
+                editingGroups.set(
+                    relationshipId,
+                    groupIndex >= 0
+                        ? (groups[groupIndex] ?? []).map(
+                              ({ entryId }) => entryId,
+                          )
+                        : kanaComponents
+                              .filter(
+                                  ({ id }) =>
+                                      form.elements[
+                                          `relationship:${relationshipId}`
+                                      ]?.options &&
+                                      Array.from(
+                                          form.elements[
+                                              `relationship:${relationshipId}`
+                                          ].options,
+                                      ).some((option) => option.value === id),
+                              )
+                              .map(({ id }) => id),
+                );
+            }
+            const readingEntries = new Map(
+                entries.map((entry) => [entry.id, entry]),
+            );
+            for (const { key, entry } of form.libraryLinkedEntries ?? [])
+                readingEntries.set(key, entry);
+            for (const relationship of layer.relationships ?? []) {
+                if (
+                    relationship.presentationRole !== "pronunciation" ||
+                    editingGroupIndices.has(relationship.id)
+                )
+                    continue;
+                const groups = form.referenceGroups?.[relationship.id] ?? [];
+                editingGroupIndices.set(
+                    relationship.id,
+                    groups.findIndex(
+                        (group) =>
+                            group
+                                .map(
+                                    ({ entryId }) =>
+                                        readingEntries.get(entryId)?.label ??
+                                        "",
+                                )
+                                .join("") === values[index],
+                    ),
+                );
+            }
+            values.splice(index, 1);
+            for (const relationshipId of editingGroupIndices.keys()) {
+                const groups = form.referenceGroups?.[relationshipId];
+                if (!groups) continue;
+                const groupIndex = editingGroupIndices.get(relationshipId);
+                if (groupIndex >= 0) groups.splice(groupIndex, 1);
+                if (!groups.length) delete form.referenceGroups[relationshipId];
+            }
+            field.value = values.join("\n");
+            renderSavedValues(compositionField);
+            if (event.target.closest("[data-library-edit-saved-value]")) {
+                for (const [relationshipId, entryIds] of editingGroups) {
+                    stagedValues.set(relationshipId, []);
+                    for (const entryId of entryIds)
+                        carouselItem(
+                            compositionField.dataset.libraryCompositionField,
+                            entryId,
+                        )?.click();
+                }
+                renderSelectedReferences();
+            }
+        },
+        { signal: controller.signal },
+    );
+    form.addEventListener(
+        "input",
+        (event) => {
+            if (event.target === form.elements["field:pronunciation"]) {
+                const derived = form.querySelector(
+                    "[data-library-derived-pronunciation]",
+                );
+                if (derived) renderDerivedPronunciation();
+                form.querySelectorAll(
+                    '[data-library-composition-field="pronunciation"]',
+                ).forEach(renderSavedValues);
+                return;
+            }
+            const input = event.target.closest("[data-library-carousel-text]");
+            if (!input) return;
+            const compositionField = input.closest(
+                "[data-library-composition-field]",
+            );
+            if (
+                compositionField?.dataset.libraryCompositionField !==
+                "pronunciation"
+            )
+                return;
+            const text = input.value.trim().normalize("NFKC");
+            input.setCustomValidity(
+                text ? i18n.t("gateway.study.library_select_suggestion") : "",
+            );
+            compositionField.querySelector(
+                "[data-composition-suggestions]",
+            ).innerHTML = text
+                ? entriesForKind(
+                      compositionField.dataset.libraryCompositionField,
+                  )
+                      .filter(({ label }) =>
+                          label.normalize("NFKC").includes(text),
+                      )
+                      .slice(0, 8)
+                      .map(
+                          (entry) =>
+                              `<button class="btn-neutral" type="button" data-library-carousel-suggestion="${escapeHtml(entry.id)}">${escapeHtml(entry.label)}</button>`,
+                      )
+                      .join("")
+                : "";
+        },
+        { signal: controller.signal },
+    );
+    form.addEventListener(
+        "click",
+        (event) => {
+            const save = event.target.closest(
+                "[data-library-save-composed-value]",
+            );
+            if (!save) return;
+            event.preventDefault();
+            const compositionField = save.closest(
+                "[data-library-composition-field]",
+            );
+            const input = compositionField.querySelector(
+                "[data-library-carousel-text]",
+            );
+            if (input.value.trim()) {
+                input.reportValidity();
+                return;
+            }
+            const kind = compositionField.dataset.libraryCompositionField;
+            const relationshipIds = relationshipIdsForKind(kind);
+            const value = selectedReferenceIds(relationshipIds, kind)
+                .map((id) => entries.find((entry) => entry.id === id)?.label)
+                .filter(Boolean)
+                .join("");
+            if (!value) {
+                showToast(
+                    i18n.t("gateway.study.library_pronunciation_stage_empty"),
+                    { variant: "error" },
+                );
+                return;
+            }
+            const field = form.elements["field:pronunciation"];
+            const values = valuesForField(field);
+            if (
+                kind === "pronunciation" &&
+                !values.includes(value) &&
+                values.length >= maxPronunciations
+            ) {
+                showToast(
+                    i18n
+                        .t("gateway.study.library_pronunciation_limit")
+                        .replace("{{ count }}", String(maxPronunciations)),
+                    { variant: "error" },
+                );
+                return;
+            }
+            if (!values.includes(value)) values.push(value);
+            field.value = values.join("\n");
+            for (const relationshipId of relationshipIds) {
+                const staged = stagedValues.get(relationshipId) ?? [];
+                const select = form.elements[`relationship:${relationshipId}`];
+                const relationship = layer?.relationships?.find(
+                    ({ id }) => id === relationshipId,
+                );
+                if (relationship?.grouped) {
+                    if (staged.length) {
+                        const groups = (form.referenceGroups[relationshipId] ??=
+                            []);
+                        const references = staged.map((entryId, position) => ({
+                            entryId,
+                            relation: relationshipId,
+                            position,
+                        }));
+                        const matching = groups.findIndex(
+                            (group) =>
+                                group
+                                    .map(
+                                        ({ entryId }) =>
+                                            entries.find(
+                                                ({ id }) => id === entryId,
+                                            )?.label ?? "",
+                                    )
+                                    .join("") === value,
+                        );
+                        if (matching < 0) groups.push(references);
+                        else groups[matching] = references;
+                    }
+                    stagedValues.set(relationshipId, []);
+                } else {
+                    const committed = new Set(
+                        Array.from(
+                            select.selectedOptions,
+                            ({ value }) => value,
+                        ),
+                    );
+                    staged.forEach((entryId) => committed.add(entryId));
+                    for (const option of select.options)
+                        option.selected = committed.has(option.value);
+                    onChange({
+                        id: relationshipId,
+                        values: Array.from(committed),
+                    });
+                    stagedValues.set(relationshipId, []);
+                }
+                const carousel = form.querySelector(
+                    `[data-horizontal-carousel="${CSS.escape(relationshipId)}"]`,
+                );
+                if (carousel) clearHorizontalCarouselSelection(carousel);
+            }
+            renderSelectedReferences();
+            renderSavedValues(compositionField);
+            form.dispatchEvent(new CustomEvent("library-composition-change"));
+            showToast(i18n.t("gateway.study.library_pronunciation_saved"), {
+                variant: "success",
+            });
+        },
+        { signal: controller.signal },
+    );
+    controller.commitPendingValues = () => {
+        for (const compositionField of form.querySelectorAll(
+            '[data-library-composition-field="pronunciation"][data-multi-value="true"]',
+        )) {
+            if (
+                selectedReferenceIds(
+                    relationshipIdsForKind("pronunciation"),
+                    "pronunciation",
+                ).length
+            )
+                compositionField
+                    .querySelector("[data-library-save-composed-value]")
+                    ?.click();
+        }
+    };
+    return controller;
+}
+
+export function pronunciationRelationshipsFor(layer, schema, configuredIds) {
+    if (layer?.semanticRole === "orderedLexicalSequence") return [];
+    const configured = (layer?.relationships ?? []).filter(({ targetLayer }) =>
+        configuredIds.has(targetLayer),
+    );
+    const explicit = configured.filter(
+        ({ presentationRole }) => presentationRole === "pronunciation",
+    );
+    if (explicit.length > 0) return explicit;
+    if (layer?.semanticRole !== "compoundWritingUnit") return [];
+    return configured.filter(({ targetLayer }) => {
+        const target = schema?.layers?.find(({ id }) => id === targetLayer);
+        return !["definition", "meaning"].includes(target?.semanticRole);
+    });
+}

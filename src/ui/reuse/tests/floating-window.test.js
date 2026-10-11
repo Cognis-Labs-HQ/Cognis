@@ -96,6 +96,101 @@ class FakeElement {
     }
 }
 
+test("container-bound windows use scroll coordinates and stay inside the content bounds", () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
+    const previousResizeObserver = globalThis.ResizeObserver;
+    globalThis.window = {
+        innerWidth: 1200,
+        innerHeight: 700,
+        addEventListener() {},
+    };
+    globalThis.document = {
+        head: new FakeElement(),
+        body: new FakeElement(),
+        querySelector: () => null,
+        createElement: () => new FakeElement(),
+    };
+    globalThis.ResizeObserver = class {
+        observe() {}
+        disconnect() {}
+    };
+    try {
+        const container = new FakeElement({
+            left: 100,
+            top: 80,
+            width: 600,
+            height: 300,
+        });
+        Object.assign(container, {
+            clientLeft: 0,
+            clientTop: 0,
+            clientWidth: 600,
+            clientHeight: 300,
+            scrollLeft: 0,
+            scrollTop: 200,
+            scrollHeight: 1000,
+        });
+        const panel = new FakeElement({
+            left: 500,
+            top: 100,
+            width: 280,
+            height: 220,
+        });
+        container.append(panel);
+        const release = makeFloatingWindow(panel, {
+            boundaryElement: container,
+        });
+        assert.equal(panel.parentElement, container);
+        assert.equal(panel.style.position, "absolute");
+        assert.equal(panel.style.left, "320px");
+        assert.equal(panel.style.top, "220px");
+        assert.equal(panel.popoverOpen, undefined);
+        panel.dispatch("pointerdown", {
+            pointerId: 1,
+            clientX: 510,
+            clientY: 110,
+        });
+        panel.dispatch("pointermove", {
+            pointerId: 1,
+            clientX: -1000,
+            clientY: -1000,
+        });
+        assert.equal(panel.style.left, "0px");
+        assert.equal(panel.style.top, "0px");
+        panel.dispatch("pointermove", {
+            pointerId: 1,
+            clientX: 2000,
+            clientY: 2000,
+        });
+        assert.equal(panel.style.left, "320px");
+        assert.equal(panel.style.top, "780px");
+        panel.dispatch("pointerup", { pointerId: 1 });
+        const resizeHandle = panel.children.find(
+            (child) => child.dataset.resizeEdge === "bottom-right",
+        );
+        resizeHandle.dispatch("pointerdown", {
+            pointerId: 2,
+            clientX: 780,
+            clientY: 320,
+        });
+        resizeHandle.dispatch("pointermove", {
+            pointerId: 2,
+            clientX: 2000,
+            clientY: 2000,
+        });
+        assert.equal(panel.style.width, "200px");
+        assert.equal(panel.style.height, "780px");
+        release();
+        assert.equal(panel.parentElement, container);
+        assert.equal(panel.style.position, "");
+    } finally {
+        globalThis.window = previousWindow;
+        globalThis.document = previousDocument;
+        globalThis.ResizeObserver = previousResizeObserver;
+    }
+});
+
 test("floating windows move, resize, remain visible, and release cleanly", () => {
     assert.equal(
         uiCtx.capabilities.get("ui:makeFloatingWindow"),

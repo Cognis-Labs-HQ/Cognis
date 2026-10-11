@@ -2,6 +2,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
 import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
+import { referencedTransformation } from "./transformations.js";
+import { resolveReferenceTitleComposition } from "./composition-links.js";
 
 export function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -89,18 +91,23 @@ export function definitionText(entry, layer, languageCode) {
     return localizedTextValue(translations);
 }
 
-export function metadataFields(layer) {
+export function visibleDetailFields(layer) {
     return (layer?.fields ?? []).filter(
-        (field) => field.detail?.renderer === "badge" && !field.detail.hidden,
+        (field) => !field.hidden && !field.detail?.hidden,
+    );
+}
+
+export function metadataFields(layer) {
+    return visibleDetailFields(layer).filter(
+        (field) => field.detail?.renderer === "badge",
     );
 }
 
 export function filterFields(layer) {
-    return (layer?.fields ?? []).filter(
+    return visibleDetailFields(layer).filter(
         (field) =>
-            !field.detail?.hidden &&
-            (field.detail?.renderer === "badge" ||
-                field.detail?.filterable === true),
+            field.detail?.renderer === "badge" ||
+            field.detail?.filterable === true,
     );
 }
 
@@ -147,14 +154,13 @@ export function scopeLabel(entry, i18n) {
     return i18n.t(`gateway.study.library_scope_${entry.scope}`);
 }
 
-export function renderScope(entry, i18n) {
+export function renderScope(entry, i18n, label = scopeLabel(entry, i18n)) {
     const icon =
         entry.scope === "global"
             ? "globe"
             : entry.scope === "class"
               ? "class"
               : "user";
-    const label = scopeLabel(entry, i18n);
     return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
 }
 
@@ -184,7 +190,10 @@ export function pronunciationValues(entry) {
     const pronunciation = entry.fields?.pronunciation;
     if (!pronunciation) return [];
     return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
-        (value) => String(value),
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 
@@ -200,7 +209,7 @@ export function relationshipPresentationRole(
     if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
     if (targetLayer?.id === sourceLayer?.id && relationship.variant)
         return "alternateSpelling";
-    return "composition";
+    return relationship.resolverRole ? "composition" : undefined;
 }
 
 export function compositionReferenceGroups(detail, schemas) {
@@ -212,6 +221,49 @@ export function compositionReferenceGroups(detail, schemas) {
         (sourceLayer?.relationships ?? [])
             .filter((relationship) => relationship.resolverRole)
             .map((relationship) => [relationship.id, relationship]),
+    );
+    const grouped = Object.entries(detail.entry.referenceGroups ?? {}).flatMap(
+        ([relation, groups]) =>
+            groups.map((references, groupIndex) => ({
+                relation,
+                groupIndex,
+                references,
+            })),
+    );
+    const groupedResults = grouped.flatMap(
+        ({ relation, groupIndex, references }) => {
+            const relationship = relationshipsById.get(relation);
+            if (!relationship) return [];
+            const entries = references
+                .slice()
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map((reference) => {
+                    const entry = entriesById.get(reference.entryId);
+                    return entry
+                        ? {
+                              ...entry,
+                              referenceTransformation: reference.transformation,
+                          }
+                        : null;
+                })
+                .filter(Boolean);
+            return entries.length
+                ? [
+                      {
+                          id: `${relation}:${groupIndex}`,
+                          presentationRole: relationshipPresentationRole(
+                              relationship,
+                              sourceLayer,
+                              schemas,
+                          ),
+                          entries,
+                      },
+                  ]
+                : [];
+        },
     );
     const groupsByRole = new Map();
     for (const reference of detail.entry.references ?? []) {
@@ -233,39 +285,156 @@ export function compositionReferenceGroups(detail, schemas) {
             presentationRole,
             references: [],
         };
-        group.references.push({ entry, position: reference.position ?? 0 });
+        group.references.push({
+            entry: {
+                ...entry,
+                referenceTransformation: reference.transformation,
+            },
+            position: reference.position ?? 0,
+        });
         groupsByRole.set(presentationRole, group);
     }
-    return Array.from(groupsByRole.values(), (group) => ({
-        id: group.id,
-        presentationRole: group.presentationRole,
-        entries: group.references
-            .sort((left, right) => left.position - right.position)
-            .map(({ entry }) => entry),
-    }));
+    return [
+        ...groupedResults,
+        ...Array.from(groupsByRole.values(), (group) => ({
+            id: group.id,
+            presentationRole: group.presentationRole,
+            entries: group.references
+                .sort((left, right) => left.position - right.position)
+                .map(({ entry }) => entry),
+        })),
+    ];
 }
 
 export function headingCompositionReferences(detail, schemas) {
-    return (
-        compositionReferenceGroups(detail, schemas).find(
-            (group) =>
-                group.presentationRole === "composition" &&
-                group.entries.length > 0 &&
-                group.entries.map(({ label }) => label).join("") ===
-                    detail.entry.label,
-        )?.entries ?? []
-    );
+    const schema = schemas.find(({ id }) => id === detail.entry.schemaId);
+    const literals = (
+        layerForEntry(schemas, detail.entry)?.cardConstructor
+            ?.literal_carousels ?? []
+    ).flatMap(({ values }) => values);
+    for (const group of compositionReferenceGroups(detail, schemas)) {
+        if (group.presentationRole !== "composition") continue;
+        const references = group.entries.map((entry) => {
+            const transformation = referencedTransformation(
+                entry,
+                schema,
+                entry.referenceTransformation,
+            );
+            return transformation
+                ? { ...entry, label: transformation.node.value }
+                : entry;
+        });
+        const title = resolveReferenceTitleComposition(
+            detail.entry.label,
+            references,
+            literals,
+        );
+        if (title.length) return title;
+    }
+    return [];
 }
 
-export function renderAudio(entry, layer) {
+function entryAudio(entry, layer) {
     const audioField = (layer?.fields ?? []).find(
         (field) => field.id === "audio" && field.type === "audio",
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
-    if (typeof value !== "string" || !value) return "";
-    const label =
-        localizedLabel(audioField.metadata, entry.language) || audioField.id;
-    return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
+    return {
+        audioField,
+        valid: typeof value === "string" && value.startsWith("file:"),
+    };
+}
+
+function allEntryReferences(entry) {
+    return [
+        ...(entry.references ?? []),
+        ...Object.values(entry.referenceGroups ?? {}).flat(2),
+    ];
+}
+
+export function renderAudio(
+    entry,
+    layer,
+    entries = [],
+    schemas = [],
+    fallbackLabel = "",
+    missingDependencyLabel = "",
+) {
+    const own = entryAudio(entry, layer);
+    const useRelatedProviderAudio =
+        own.valid &&
+        layer?.semanticRole === "compoundWritingUnit" &&
+        entry.createdBy?.startsWith("content-pack:") &&
+        allEntryReferences(entry).length > 0;
+    let sources =
+        own.valid && !useRelatedProviderAudio
+            ? [{ entry, field: own.audioField }]
+            : [];
+    let complete = sources.length > 0;
+    if (!complete && allEntryReferences(entry).length) {
+        const resolveSources = (candidate, visited = new Set()) => {
+            if (!candidate || visited.has(candidate.id)) return null;
+            visited.add(candidate.id);
+            const candidateLayer = layerForEntry(schemas, candidate);
+            const audio = entryAudio(candidate, candidateLayer);
+            if (audio.valid)
+                return [{ entry: candidate, field: audio.audioField }];
+            const content = allEntryReferences(candidate)
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+                .filter(Boolean)
+                .filter(
+                    (target) =>
+                        !["definition", "meaning"].includes(
+                            layerForEntry(schemas, target)?.semanticRole,
+                        ),
+                );
+            if (!content.length) return null;
+            const nested = content.map((target) =>
+                resolveSources(target, new Set(visited)),
+            );
+            return nested.every(Boolean) ? nested.flat() : null;
+        };
+        const resolved = resolveSources(entry);
+        sources = resolved ?? [];
+        complete = Boolean(resolved?.length);
+    }
+    if (!complete && own.valid) {
+        sources = [{ entry, field: own.audioField }];
+        complete = true;
+    }
+    const label = own.audioField
+        ? localizedLabel(own.audioField.metadata, entry.language) ||
+          own.audioField.id
+        : fallbackLabel;
+    if (!complete || !sources.length) {
+        const dependenciesMissingAudio =
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer?.semanticRole,
+            ) && allEntryReferences(entry).length > 0;
+        const unavailableLabel = dependenciesMissingAudio
+            ? missingDependencyLabel
+            : "";
+        const button = `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(unavailableLabel || label)}">${speakerPicture()}</button>`;
+        return unavailableLabel
+            ? `<span class="library-audio-unavailable">${button}<span class="library-audio-unavailable-tooltip" role="tooltip">${escapeHtml(unavailableLabel)}</span></span>`
+            : button;
+    }
+    return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
+        .map(
+            ({ entry: source, field }) =>
+                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"></audio>`,
+        )
+        .join(
+            "",
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
+}
+
+function speakerPicture() {
+    return '<img class="library-speaker-icon library-speaker-icon-light" src="/static/adapters/study/library/assets/speaker-light.svg" alt="" aria-hidden="true"><img class="library-speaker-icon library-speaker-icon-dark" src="/static/adapters/study/library/assets/speaker-dark.svg" alt="" aria-hidden="true">';
 }
 
 export function formatAudioTime(value) {
@@ -348,4 +517,27 @@ export async function loadLibraryAudio(
             },
         ),
     );
+    overlay
+        .querySelectorAll("[data-library-audio-sequence]")
+        .forEach((group) => {
+            const audio = Array.from(group.querySelectorAll("audio"));
+            const toggle = group.querySelector(
+                "[data-library-audio-sequence-toggle]",
+            );
+            if (!toggle || audio.some((item) => !item.src)) {
+                if (toggle) toggle.disabled = true;
+                return;
+            }
+            toggle.addEventListener("click", async () => {
+                toggle.disabled = true;
+                for (const item of audio) {
+                    item.currentTime = 0;
+                    await item.play();
+                    await new Promise((resolve) =>
+                        item.addEventListener("ended", resolve, { once: true }),
+                    );
+                }
+                toggle.disabled = false;
+            });
+        });
 }

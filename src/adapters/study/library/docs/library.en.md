@@ -1,5 +1,7 @@
 # Library Adapter
 
+Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
+
 ## Consumer-defined schemas
 
 The Library adapter stores generic, related study records. Consumers register immutable, versioned schemas through the `study:library` ctx capability. A schema defines its language, layers, typed fields, and directed relationships. Layer metadata supplies the localized user-facing name—such as “Kanji” instead of a generic “Compound Characters”—and the UI always prefers that name.
@@ -52,7 +54,7 @@ Resolver relationships may declare `presentationRole` as `composition`, `alterna
 
 ## Writing-unit pronunciation and audio
 
-Layers with the `atomicWritingUnit` or `compoundWritingUnit` role declare required standard `pronunciation` (`stringList`) and `audio` (`audio`) fields. Content packs may supply MP3, Ogg, WAV, WebM, or M4A files, or an HTTPS URL. Local files remain authenticated pack assets. Remote audio is fetched through the entry-authorized Library route and restricted to public HTTPS hosts and supported audio media types. The Library registers a component-managed `study-library-audio` namespace with the Files gateway and stores each URL once under a deterministic key without an adapter-level size limit. Persistent storage, quotas, and physical file handling remain the Files gateway's responsibility, while every playback request still enforces the entry's scope. Character and alternative-character pronunciations appear beside the writing unit in cards and detail titles; word and sentence pronunciations remain below their text. A module may model a meaningful single-character word by giving a lexical-unit record one character reference. Character details then list those inbound word relationships without synthesizing content in the Library. Writing-unit pronunciation beside a popup title uses the popup’s escaped secondary-title contract, with smaller regular-weight text. Audio surfaces opt out of forced-color substitution and neutralize native control saturation in dark mode.
+Layers with the `atomicWritingUnit` or `compoundWritingUnit` role declare required standard `pronunciation` (`stringList`) and `audio` (`audio`) fields. Content packs supply MP3, Ogg, WAV, WebM, or M4A files as authenticated pack assets. The Library stores these files in its component-managed `study-library-audio` namespace through the Files gateway. Persistent storage, quotas, and physical file handling remain the Files gateway's responsibility, while every playback request still enforces the entry's scope. Character and alternative-character pronunciations appear beside the writing unit in cards and detail titles; word and sentence pronunciations remain below their text. A module may model a meaningful single-character word by giving a lexical-unit record one character reference. Character details then list those inbound word relationships without synthesizing content in the Library. Writing-unit pronunciation beside a popup title uses the popup’s escaped secondary-title contract, with smaller regular-weight text. Audio surfaces opt out of forced-color substitution and neutralize native control saturation in dark mode.
 
 ## Metadata filter groups
 
@@ -74,7 +76,7 @@ A pronunciation identical to the primary or a secondary spelling is displayed on
 
 ## Content-pack upgrades
 
-Pack upgrades retain records omitted by the publisher unless the manifest explicitly sets `pruneOmittedRecords` to `true`. Publishers should enable pruning only when the pack is authoritative for the complete record set.
+Pack upgrades prune records omitted by the publisher because an installed provider is authoritative for its namespace. A manifest may explicitly set `pruneOmittedRecords` to `false` only when it intentionally publishes a partial record set.
 
 ## Administration and learner pages
 
@@ -90,7 +92,7 @@ The administrator edit popup derives controls from each layer's field and relati
 
 ## Provider-owned editor contracts
 
-Every editable field must declare an `input.control`; its localized label and choice labels come exclusively from provider metadata. Providers choose free text, tag lists, single- or multi-select controls, checkboxes, numbers, localized text, or an audio-file browser, and may mark classification fields immutable after creation. An `audioFile` control declares its Files-gateway namespace and optional language-relative prefix so selection and upload never escape that language's audio area. A field may declare `linkRelationship` to make its reading or pronunciation values navigable through provider-authored relationships rather than guessed matches.
+Every editable field must declare an `input.control`; its localized label and choice labels come exclusively from provider metadata. Providers choose free text, tag lists, single- or multi-select controls, checkboxes, numbers, localized text, or an audio-file browser, and may mark classification fields immutable after creation. An `audioFile` control declares its Files-gateway namespace and optional language-relative prefix so selection and upload never escape that language's audio area. A field may declare `input.linkRelationships` to make its reading or pronunciation values navigable through multiple provider-authored relationships. The host merges matching references by authored position and resolves each displayed segment against the target card label or pronunciation aliases while keeping that original card as the link target.
 
 Composition references must always target the closest available structural unit. For example, 日本語 references the lexical unit 日本 and the compound unit 語 when 日本 exists; 日本 then references 日 and 本. The resolver prefers the longest higher-level match and only descends to smaller writing units when no closer record exists.
 
@@ -100,6 +102,8 @@ Expanded variant branches remain clipped to the base grid. Cognis first honors e
 
 A displayed card keeps its assigned position while descendants are fitted independently. When path pruning leaves fewer directions than siblings, additional children stack outward in the same row or column rather than overlapping or displacing their parent.
 
+While a child-card branch is open, unrelated parent cards retain their normal surface instead of reacting to hover, and their scope/visibility icons join the blurred background. The active parent and its visible descendant path remain crisp and interactive.
+
 Lexical-unit detail popups keep the vocabulary label solely in the popup title. Their title detail contains only the definition localized for the active Cognis language, avoiding duplicate spellings or pronunciations beside the heading.
 
 When a related-entry link opens a lexical unit without its own definition, the popup inherits the localized definition displayed by the source card. A definition supplied by the vocabulary record always wins, allowing several vocabulary records linked to one writing unit to retain distinct niche meanings. Previous/next controls and title-composition links do not carry this fallback context.
@@ -108,13 +112,17 @@ Cards may reference multiple definition records in provider order. The first loc
 
 Runtime fitting reserves the root card and every child card already placed in the visible branch. A child keeps its provider-preferred direction when that bounded slot is free; otherwise Cognis chooses the bounded candidate with the least card overlap. This prevents siblings from collapsing into one slot while retaining outward row or column stacking when nearby positions are exhausted.
 
+For ordered lexical sequences, only relationships whose `presentationRole` is `composition` (the default presentation role) contribute to label reconstruction. Pronunciation and alternate-spelling links may target lexical layers and reuse positions without being mistaken for sentence constituents.
+
+Detail views omit the `composite` class. Other content classes are reduced to their human-facing final segment and rendered as pills (for example, `lexical:noun` becomes **Noun**). Composite headings place alternate readings and pronunciation beneath the primary reading while retaining the definition in the adjacent column. Reverse vocabulary navigation suppresses same-label lexical entries so a correct word-to-writing-unit spelling edge does not appear to recurse back into itself. A linked title-detail spelling is also omitted when both its normalized text and target match a link already composing the primary title. Relationships without a resolver or presentation role are dependency-only edges: they remain available to reverse navigation and deletion policies without being inferred as title composition. Detail views combine vocabulary usage and other inbound dependencies into one **Used By** section, preferring the vocabulary target when multiple records have the same normalized label. Composite popup headings use a compact row gap between the primary title and its reading detail, while card previews keep remaining title and definition text centered after deduplication.
+
 ## New-content tracking
 
-The Library stores viewed entry UUIDs per account. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
+The Library stores viewed entry UUIDs per account. Provider updates preserve this state and notify enabled accounts only for newly introduced stable entry IDs, not for the pack's complete updated contents. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
 
 ## Contributions, visibility requests, and search
 
-Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerConstructor`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation.
+Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerConstructor`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation. The creator defaults to personal scope; eligible administrators can opt into global publication, while teachers can opt into only those writable classes whose language matches the active schema.
 
 Personal cards can be published to an enrolled class for its teacher to review or to the global collection for an administrator to review. A pending request can be withdrawn by its submitter; after approval, ownership leaves the user and the original card is moved rather than copied. Only the responsible teacher or an administrator can then edit, delete, or send it back to the original submitter's personal namespace. Provider manifests may set `protected: true`; protected entries cannot be moved or deleted. Imported and user-created records persist normalized search text, and the Library side menu searches every layer while hiding empty results.
 
@@ -122,4 +130,330 @@ Personal cards can be published to an enrolled class for its teacher to review o
 
 A language pack can place a `cardConstructor` on each creatable layer in its schema. The specification supplies the localized primary-label prompt, ordered field and relationship IDs, provider defaults, and whether Cognis should expose the hidden-card or preview-definition switches. Cognis adds role-authorized visibility and class controls around that specification; a layer without a constructor is deliberately read-only for creation.
 
+Creation presents every relationship collection without scrollbars or directional controls. Hover previews use the current UI language definition. Selected or suggested items become draggable composition blocks, their stable IDs generate relationship references, and pronunciation is derived recursively from referenced writing units. Definition creation requests all supported UI-language translations.
+
 A runtime language module may instead resolve the public `study:library:provider` ctx capability, call `ingestContentPack(moduleRoot)`, and call `registerConstructor(...)`. Constructor IDs are validated against the registered schema before the form is exposed. The returned remover lets module disablement cleanly unregister a runtime constructor.
+
+## External package contract
+
+`study:library` is the authoritative boundary for executable providers and data-only content packs. A pack owns exactly the namespace named by both its manifest and schema. Schema, layer, field, relationship, constructor, and option labels are localized maps. Provider metadata may add JSON-compatible values; Cognis validates every value, stores the complete schema, and returns it unchanged from `listSchemas()` and `GET /api/v1/study/library/schemas`. Unknown field types are accepted only with a declarative `validation` rule, so extensions cannot bypass content validation. Built-in types cover strings, finite numbers, safe integers, booleans, string lists, localized text, and singular or list asset/audio references. Pack protection, semantic roles, grids, detail hints, activity compatibility, definition localization, interest veins, licenses, and assets are part of this versioned contract. The synthetic external-pack fixture under `tests/fixtures/` is the compatibility reference for provider CI; external providers should inspect their production pack with the installed `study:library` capability before release.
+
+Direct executable schema registrations remain immutable by schema version. A newer release of an authoritative content pack may, however, revise the stored schema document at the same compatibility version when every installed owner of that schema version has the same publisher and pack ID. Cognis rejects collisions with independently registered or differently owned schemas, updates the schema and entries in one transaction, and refreshes the in-memory schema after the transaction succeeds.
+
+Content records may declare a namespaced `class` value such as `lexical:noun` or `lexical:verb`. The Library validates and preserves this provider-neutral classification for future class-aware rendering and activities. List-valued local audio references are cached individually, list-valued assets are rewritten to authenticated URLs, and installation receipts preserve manifest metadata.
+
+## Publishing requests
+
+Library publishing requests live on the dedicated **Requests** Study sub-navigation page rather than in page toolbars. When an administrator or teacher has a pending request they can review, the Requests link uses an accessible red breathing outline; resolving the final review removes the attention state. The animation becomes a static outline when reduced motion is requested.
+
+## Administration and creation
+
+The administrator Library shows only layers for the already selected Study language and uses a non-collapsible layer menu. Editors place the label and content class first, distinguish View from Edit mode, protect unsaved edits, and provide Save only while editing. Definition records are always hidden, carry the `definition` class, and do not expose preview or visibility switches; ordered sequences carry the `composite` class. A content record may set `editable: false`, and particle layers are never editable. Creation is available only as a `+` page action on user-facing layer pages and guides the user through visibility, content, and relationships. Submitters can inspect and withdraw their own publishing requests on the Requests page.
+
+Creation keeps resolved cards inside the Input control and derives pronunciation from both selected records and unresolved atomic characters in real time. Duplicate carousel labels collapse to the best localized definition preview. Relationships are displayed as a read-only parent/card/child map, while the Definitions tab can create and link multiple complete translation sets in nested dialogs. Personal and classroom authors never receive the administrative Hidden control; global publishing is labelled Publish and explains its review request in an information tooltip.
+
+Direct creation excludes definition layers; definitions exist only when created and linked from another card composer. Composer dialogs use shared unsaved-change protection after type selection. Detail audio uses a compact speaker control: a card plays its own audio or, for a composite, each ordered component audio in sequence, and remains disabled when any component lacks audio. The `strokePattern` field stores ordered normalized coordinates, monotonic timing, optional pressure, and an acceptance tolerance for deterministic drawing practice.
+
+Card construction limits each relationship carousel to two vertically scrolling rows and uses the shared anchored-popup controller for stable, viewport-aware previews. Definition relationships never render a carousel; their dedicated localized-set dialog creates and links the record privately. Input resolution compares the complete normalized value for exact matches and relationship diagrams show only explicitly selected composition records. Publish controls remain on one line, create actions use a borderless centered plus, drawing/edit header actions expose hover labels, and speaker assets include explicit light and dark variants.
+
+Relationship carousels retain two rows but now scroll horizontally. Stroke-pattern payloads are reserved implementation data and never appear in card details. Drawing and audio actions use paired light/dark assets, and entering drawing practice closes the detail dialog.
+
+Study Library pages use document scrolling so the page never competes with an inner content scrollbar. Cards use a consistent preview height. Composer relationship add controls open a type-locked nested composer whose heading identifies that card type; nested dialogs stack above their parent. Carousel previews render only through a content-sized body portal and are removed immediately when their item loses hover or focus.
+
+The floating create action uses a two-rem black or white plus according to the active theme. Composer carousel headings come from the provider’s target-layer metadata and their items remain restricted to that target layer. Audio speaker icons switch from explicit light and dark assets according to the application theme rather than the operating-system color preference.
+
+Library cards accept searchable tags such as proficiency levels. Runtime providers can register the existing lookup-provider contract through `study:library:provider`; lookup results may supply validated fields, including a `strokePattern`, with provenance and confidence.
+
+## Composer lookup providers
+
+A runtime content provider registers a lookup implementation through `study:library:provider.registerLookupProvider`. It supplies a stable ID, localized service labels, a schema/layer support predicate, and an asynchronous lookup that receives the raw composer label. Cognis lists each compatible provider as **Lookup with: service name** below the input. The selected provider may return a canonical label, validated field values, ordered relationship references, provenance, and confidence; the composer applies the highest-confidence result while keeping endpoint ownership in the Study gateway client.
+
+Module enablement validates required server capabilities against both the injected route context and public capabilities contributed to the system ctx. Therefore, a module may safely declare `study:library:provider` in `requiresCapabilities`; private ctx capabilities remain unavailable.
+
+Creation and editing preserve unordered relationships without emitting position metadata. Relationship structure is visible only in View mode; edit and create forms retain those references through hidden controls. Compound-writing-unit forms present a free **Input** field, label their atomic-reference carousel from the provider’s pronunciation field, and expose lookup actions inline only after input is entered. Stroke patterns remain hidden provider data. Definition add actions use a larger neutral control, and carousel previews size their surface to their complete contents.
+
+Existing compound-writing-unit cards place their pronunciation selector inside the Pronunciation field instead of above the Content tabs or beside a tag-entry control. Carousel headings use the content provider’s localized target-layer names. The editor orders selected atomic writing units by their occurrence in the card pronunciation or label, then derives the stored pronunciation from that sequence. Existing audio fields show the stored filename, newly uploaded files retain a recognizable filename, and speaker assets follow the active application theme.
+
+## Provider-linked pronunciation editing
+
+A provider can set `input.linkRelationships` on a pronunciation field. The editor then replaces free-form tag entry with ordered carousels for exactly those relationships, using each target layer's localized provider label. Saving a provider-installed card marks that record as user-modified, so later content-pack reconciliation preserves the user's fields and relationships.
+
+Pronunciation editing is a repeatable two-step process: select provider-compatible component cards, then commit the derived reading. Carousel items show their pronunciation rather than their primary label. Compound writing units draw from atomic writing units, while ordered lexical sequences draw from lexical units such as vocabulary and particles. Audio uploads use a stable card-and-field object key, so replacing an upload overwrites the previous object.
+
+While Drawing Practice is open, selecting another card with a stroke pattern loads that card into the existing pad instead of opening its detail dialog.
+
+Vocabulary, sentences, and composite cards derive drawing guidance recursively from their ordered writing-unit references and cannot declare their own stroke patterns. Provider-owned alternate characters reuse related character audio when possible; a user-owned card's explicitly uploaded audio remains authoritative.
+
+Creation forms use the shared form builder for required labels and localized definition fields. Alternate-character input is free text but becomes valid only after a dictionary provider confirms it; provider results persist hidden required fields such as stroke patterns. Pronunciation selectors are embedded in the Pronunciation field, words may compose pronunciations from character cards, and particle is no longer an author-selectable content class. Composite drawing resolution follows the primary written label before pronunciation links.
+
+Editing validates existing records against the provider's current schema and migrates their stored schema version, so audio retrieval and updates remain valid after a provider upgrade. Detail traces retain edit permissions after the editor closes. Drawing is limited to writing units and vocabulary, and vocabulary stroke resolution uses the primary written label rather than pronunciation links.
+
+Creation excludes particle layers. Vocabulary input uses provider-declared character, alternate-character, and vocabulary carousels. Sentence and composite input uses provider-declared particle, alternate-character, and vocabulary carousels. These layers derive pronunciation recursively from their ordered input and do not render a separate pronunciation editor. Alternate-character input remains unrestricted, while its provider-declared character carousel appears inside Pronunciation.
+Alternate-character pronunciation composition accepts atomic character cards from the provider-declared pronunciation carousel. Vocabulary, sentence, and composite constructors omit the pronunciation field because their saved pronunciation is recalculated from the complete ordered relationship graph.
+
+Every `cardConstructor` payload exposes `input_carousels` and `pronunciation_carousels`. Each array contains target layer IDs from that constructor: input carousels compose the primary value, while pronunciation carousels satisfy every declared reading relationship targeting that layer. For alternate characters, only pronunciation-carousel minimums are required; unresolved primary references do not block creation. Lookup providers may omit provider-owned provenance and ranking metadata because the Library normalizes those values from the registered provider.
+
+Card-constructor carousel arrays are mandatory; missing arrays are rejected rather than inferred. Runtime form contributions are applied during server-side relationship validation as well as schema presentation. Edit forms use the same declared pronunciation carousel as creation forms. Audio uploads use the normalized card label and field ID as their storage filename, so uploading a replacement overwrites the same object.
+
+Card constructors are the single form contract for both creation and editing. Their `fields` list determines visible scalar fields, while `relationships`, `input_carousels`, and `pronunciation_carousels` determine the available relationship carousels. Alternate-character constructors can keep Input unrestricted and place character relationships in Pronunciation. Vocabulary constructors can place character, alternate-character, and vocabulary relationships in Input; sentence and composite constructors can place particle, alternate-character, and vocabulary relationships there. Vocabulary, sentence, and composite pronunciation is derived recursively from their ordered parts, so their constructors omit the pronunciation field.
+
+Whenever a pronunciation field is visible in a create or edit form, Library renders the pronunciation composer rather than a generic list textarea. The constructor’s `pronunciation_carousels` continue to determine which layer-specific relationship carousels appear inside it.
+
+Vocabulary, sentence, and composite forms never render the generic list-value editor for pronunciation, even if a provider payload includes that derived field. Other list-valued provider fields use a plain newline-separated text area rather than removable tag chips; entry classification tags retain their dedicated metadata control.
+
+Vocabulary and sentence cards play their ordered dependencies’ audio as one sequence when they have no uploaded audio of their own. An optional audio upload on the card overrides that derived sequence. If any dependency is missing audio, the disabled speaker explains the missing dependency on hover.
+
+Pronunciation carousels now load every relationship implied by the constructor’s carousel layer declarations, even when a runtime form contribution omits that relationship from its scalar relationship list. Selecting carousel items updates the pronunciation value immediately; the redundant free-text pronunciation input and commit button have been removed from both create and edit forms.
+
+Compound writing units compose pronunciations from atomic writing units. Lexical units use atomic writing units for pronunciation and writing or lexical units for input. Ordered lexical sequences derive pronunciations from their selected lexical units and particles. These semantic roles define the current composer contract.
+
+The built-in semantic composer profile now applies the requested carousel contract directly: alternate characters use unrestricted Input and an atomic-character Pronunciation carousel; vocabulary uses atomic-character, alternate-character, and vocabulary Input carousels plus an atomic-character Pronunciation carousel; sentences use particle, alternate-character, and vocabulary Input carousels and expose no editable pronunciation. Vocabulary pronunciation is pre-populated recursively from character-layer values, while sentence pronunciation remains fully derived.
+
+Atomic character and particle layers are immutable catalog data. The Library API now rejects create, update, update-request, and delete operations for those layers for every role, including administrators and owners. UI capability responses suppress edit and delete controls while retaining read-only browsing.
+
+Ordered selections now share one composition-wide position sequence across every Input carousel. Position badges therefore describe the saved card order rather than restarting at one for each relationship carousel.
+
+Authoring forms no longer expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.
+
+Derived-field serialization resolves its contract from the provider schema rather than the constructor-filtered editor layer. Required pronunciation fields therefore remain discoverable even when the composer intentionally omits their direct input control.
+
+Whenever a constructor declares Input or Pronunciation carousel layers, the corresponding heading includes a persistent selected-card field above those carousels. The field is initialized for existing entries, updates immediately with carousel selection, preserves composition order, and lets authors remove a selected card directly.
+
+Carousel-backed fields accept the provider-owned field-level `multi_value` boolean. Multi-value fields add an explicit **Save {field}** action, keep committed values as removable pills above the active composition, and allow a committed value to be reopened for replacement. Every carousel composition field accepts only text resolved to cards offered by its configured carousels; unresolved text makes the form invalid. Removing a selected card or committed value requires the dedicated × control and confirmation. Existing-card editors mount the same relationship carousels as creation forms.
+
+The field-level `multi_value` boolean is the sole multi-value declaration. Committed pills no longer repopulate the staging composition when clicked. Multi-value staging starts empty, its compact × controls remove only staged cards without confirmation, and references are committed only by the visible field-specific Save action. Saved values remain unchanged when their staged cards are removed. Card labels are generated from the ordered primary Input composition rather than exposed as a separate editable value, and successful edits immediately refresh the visible card preview.
+
+Carousel cards once again show a hover and keyboard-focus preview for every item, including entries without a definition. Carousel previews and missing-audio tooltips are rendered in body-level anchored portals so card, carousel, and popup overflow cannot clip them.
+
+Grouped relationships preserve nested reference arrays for multi-value fields. Each pronunciation can therefore own an independent ordered character sequence, which remains grouped through content-pack inspection, validation, persistence, API editing, and linked title presentation instead of being flattened into one ambiguous list.
+
+Hidden cards are excluded from every carousel and type-ahead candidate list. Existing hidden dependencies remain preserved in the underlying relationship controls when editing a card, but they are never offered as author-selectable carousel choices.
+
+Grouped relationships loaded from storage are compacted before their entries are position-sorted. A missing group index therefore cannot make the Library entries endpoint fail, while the order of every stored pronunciation group remains deterministic.
+
+Library card previews show at most the first two distinct pronunciations. The entry detail view continues to expose the complete pronunciation set without making browsing cards excessively tall or dense.
+
+Pronunciation display normalizes each nested character sequence into its complete reading before comparing it with the card label. A grouped pronunciation such as `["さ", "き"]` therefore renders as `さき` and is omitted when the card already uses that same value.
+
+Linked pronunciation titles are also de-duplicated from what the UI actually renders: the linked character labels are joined, whitespace and Unicode forms are normalized, and the resulting reading is compared with the card value. This prevents a linked `さ` + `き` sequence from repeating a `さき` title even when its stored pronunciation representation differs.
+
+A single multi-value field group may span several declared link relationships. Group indexes align across those relationships, so validation compares the field value count with the greatest linked relationship group count rather than adding the counts together. This supports pronunciations composed jointly from meaningful reading segments and direct character suffixes.
+
+When a linked pronunciation spells the card's primary value exactly, title details descend one presentation level and show the linked cards' own pronunciation values. A Kana spelling such as `さ` + `き` can therefore present its character-layer readings instead of redundantly repeating `さき`.
+
+Title reference de-duplication now treats an ordered spelling as one unit instead of removing individual matching characters. When that complete spelling matches the primary value, its linked character cards display their pronunciation values; partial fragments can no longer produce a title whose visible pronunciation disagrees with its primary value. Kanji detail views continue to show the provider's complete authored reading list rather than readings inferred from neighboring cards.
+
+Removing a staged composer card requires clicking its compact × button exactly; the surrounding selected-card pill and empty composition area do not activate deletion. Before a creation popup closes, the composer also verifies every provider-required relationship minimum. Missing definitions now produce the standard validation toast and leave the popup, selected cards, typed input, and nested definitions intact for correction.
+
+Long pronunciation and definition details in entry headings keep their original starting position but use at most 40% of the heading width and wrap onto additional rows. An em dash now separates definitions from pronunciations. Creation composers accept no more than 8 tags, 10 definitions, and 16 pronunciations, showing a localized toast when an author reaches a limit.
+
+Dense pronunciation headings now use a four-column arrangement only when readings are present: the speaker sits beneath the scope icon, the pronunciation cluster retains up to 40% of the heading, and definitions wrap independently to its right. The 8-tag, 10-definition, and 16-pronunciation limits now apply equally to create and edit composers.
+
+When an expanded character-child branch would cross the visible Library grid, runtime fitting now evaluates every diagonal slot before falling back to the opposite cardinal directions. It also treats all visible root cards as occupied, selecting the first in-bounds, collision-free diagonal and keeping both the child card and its connector on the canvas.
+
+Fallback title composition follows the library hierarchy: sentences may link to words, words may link to compound and atomic writing units, and compound writing units may link to atomic writing units. A homographic vocabulary entry is therefore never treated as the spelling component of another vocabulary entry; entries such as the Japanese flower and nose readings `はな` both link independently to `は` and `な`.
+
+## Sentence composition and transformations
+
+Providers mark sentence-ending or transition vocabulary with a stable tag such as `sentence-transition`, then declare a `tag_carousels` item on the sentence card constructor. Those entries are removed from the ordinary vocabulary view and appear in their own sentence-only carousel. `literal_carousels` supplies a one-line, read-only set of repeatable punctuation literals; providers should list the punctuation used by their language, such as `, . ? !` for English or `？！。、` for Japanese.
+
+Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a layer `views` item using `layout: transformTree`. Entries claimed by such a view are removed from the ordinary vocabulary page and exposed through the separate provider-named page. Content packs must ship only the base lexical entry (for example `歩く`), never one card per inflection. A schema-level `transformSets` declaration supplies deterministic state transitions. Every rule identifies its source and target state and performs one suffix replacement with `removeSuffix` plus `append`; multiple rules can leave a state, and later rules can continue from generated states. `matchTags` selects the applicable base-form class, allowing providers to distinguish conjugation families with tags such as `godan-ku`.
+
+```json
+{
+    "transformSets": [
+        {
+            "id": "godan-ku",
+            "matchTags": ["verb", "godan-ku"],
+            "baseState": "base",
+            "rules": [
+                {
+                    "id": "potential",
+                    "fromState": "base",
+                    "toState": "potential",
+                    "removeSuffix": "く",
+                    "append": "ける"
+                },
+                {
+                    "id": "negative",
+                    "fromState": "base",
+                    "toState": "negative",
+                    "removeSuffix": "く",
+                    "append": "かない"
+                },
+                {
+                    "id": "desiderative",
+                    "fromState": "base",
+                    "toState": "desiderative",
+                    "removeSuffix": "く",
+                    "append": "きたい"
+                }
+            ]
+        }
+    ]
+}
+```
+
+Sentence transition tags are now excluded from the ordinary input carousel as well as the vocabulary page, so their filtered composer carousel is genuinely separate. Edit composers reconstruct repeatable punctuation tokens from the stored sentence label and ordered references. Transformation trees now expose actionable nodes: selecting a generated form updates the pathway preview, while the base card remains the canonical stored entry. Contract validation rejects duplicate punctuation literals, empty transform sets, duplicate state transitions, and no-op rules.
+
+Child-card branches now retain every fitted card position while deeper descendants open. Newly revealed descendants are measured in depth order and redirected only into visible, collision-free canvas slots, preventing ancestor jumps, card overlap, and connector crowding during natural tree navigation.
+
+Diagonal child-card paths now provide a larger continuous pointer corridor, branch changes wait for brief hover intent, and active cards use a steady focus ring rather than a pulsing animation. Direction fallbacks stay near the preferred axis before considering distant slots, producing denser and more consistent initial layouts.
+
+Input and pronunciation composition now share the reusable token-input renderer and the same relationship-carousel implementation. Input carousels render immediately below their token field, use the same compact remove control and selected state, and expose dependency creation only when the target layer supports user-created cards. Newly created dependencies are inserted through the canonical reusable carousel item renderer in both create and edit composers.
+
+New dependencies created from a relationship carousel are inserted through that carousel's normal selection path, so the returned card is immediately selected and added to the active composition stage. Alternate-character pronunciation composers also treat every atomic-character relationship as a pronunciation source, even when a provider uses a broader relationship presentation role.
+
+Stroke-capable card composers display a dedicated **Stroke Pattern** section. Lookup providers declare the field IDs they populate; providers that advertise the stroke field are rendered there as a concise **Lookup** action, and loaded normalized stroke data is drawn in a compact four-rem square preview. Multi-tab editor validation marks every tab containing invalid required data, opens the tab containing the earliest invalid field, and moves focus to that field or to the definition creation action when a required definition is missing.
+
+Popup title definitions now render without a leading em dash. Pronunciation and definition groups occupy the title row and align vertically with the primary card title.
+
+Layer schemas can set `dictionary_lookup: false` to suppress lookup providers that declare the `dictionary` capability. Lookup providers declare their neutral capabilities and populated field IDs so stroke lookup actions are placed only in the Stroke Pattern section. Alternate-character composers treat non-definition relationships as pronunciation sources and do not require definitions. Tags render last in every Content form. Required tabs retain their normal styling and show only a red asterisk; a missing required definition also marks its add action.
+
+The Library editor delegates tab activation, invalid-tab markers, and earliest-invalid-field focus to the reusable form composer’s `bindTabbedFormValidation` controller. Library code supplies only its domain-specific definition focus target and required-marker class.
+
+Alternate-character form payloads copy `pronunciation_carousels` directly from the same schema’s vocabulary form payload. The composer consumes that aligned payload without alternate-character-specific carousel inference or relationship filtering. Stroke lookup routing continues to place the provider’s **Lookup** action inside Stroke Pattern. Library layer routes accept the optional view segment used by provider-declared Verbs and Adverbs views.
+
+Alternate-character form payload alignment now updates both `pronunciation_carousels` and the relationship IDs that render those carousels. Relationships belonging to the replaced Vocabulary pronunciation carousel are removed, and the character relationships used by the Vocabulary card’s pronunciation carousel are inserted. The alt-character form therefore renders the character carousel and no longer renders Vocabulary beneath Pronunciation.
+
+Pronunciation derivation now stops at the first explicit pronunciation and only falls back to a label for atomic character cards, preventing newly created words and sentences from being flattened into character readings. Creation rejects visible duplicates by normalized input alone; the confirmation explains that continuing selects the existing card rather than creating another row. Push-request persistence and review recognize both `update` and `merge` request kinds.
+
+Popup definitions now occupy the second grid row beginning directly beneath the card title instead of a dedicated right-hand column. Readings remain centered in the title row, while long definitions wrap naturally under the title.
+
+Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver no longer descends through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.
+
+Saving an empty pronunciation stage now shows an error toast. Saved pronunciation cards keep their remove control inside the card; selecting a saved card moves its grouped component references back into the stage and reselects the corresponding carousel cards for editing.
+
+The “Always show definition(s) in card preview” control now lives in the Definitions tab beside definition summaries. Existing-card editors also expose the add-definition action; a newly created definition is selected immediately and added to the visible definition summary.
+
+Parent attribution in card popup headings now shares the reading placement and is inserted before the definition placement. Cards that inherit a parent definition therefore keep the attribution together on the title row while the definition remains intact beneath the title.
+
+Content-pack entry tags are now validated, included in content identity, and persisted in the Library entry tag column and search text. Provider-tagged vocabulary therefore remains available to declared views such as Verbs and Adverbs after ingestion.
+
+Transformation sets support arbitrarily chained and branching rules, including optional pronunciation suffix operations and localized definition overrides. Verb and adverb views render these paths as connected technology trees. Selecting a transformable carousel card opens the same tree and inserts the chosen form into a composed sentence while retaining the reference to its canonical base card. Reopening a transformed reference detects its authored form, opens the base card under that form, and displays the complete path with transformation-specific pronunciation and definition details.
+
+Child-card fitting treats every ancestor card as a hard exclusion zone. It evaluates diagonal and cardinal directions at progressively greater distances, so a blocked child moves two or more slots outward when necessary instead of crossing or disappearing behind any card in its parent chain.
+
+Transform-tree views now begin as a dense, full-width card grid. Cards without available transformations remain inert. Opening an expandable card moves it to the top, animates the remaining cards away, and grows the tree directly beneath the centered root across the full content width; its close control restores the grid. Selecting a transformation highlights and continuously animates its complete route back to the root, while transformation labels stack above values to avoid narrow-card overflow.
+
+Transformation trees now keep the source verb or adverb card as the unchanged visual root and omit the redundant selected-form summary beneath it. Connector segments meet without gaps and animate continuously throughout the tree, while the selected ancestry remains visibly emphasized. Clicking the already-open source card now opens its standard detail view.
+
+Verb and adverb entries remain on the Vocabulary page, where provider-declared transformation tags appear as filters. Each transform rule can declare a localized `definitionTransform` with optional `matchPrefix` and `matchSuffix` boundaries and a required `template`. Templates compose along the selected transformation path and support `{{ definition }}`, `{{ stem }}`, `{{ prefix }}`, and `{{ suffix }}`, allowing providers to express grammatical changes instead of inserting a fixed marker. Form names appear in per-node information tooltips. The detail popup exposes a Variants action; selecting a node redraws the entry with its transformed title, pronunciation, definitions, and drawing input while suppressing editing.
+
+Transformation graphs place every depth on one horizontal row, keep definitions below cards, provide fourteen-rem definition columns, and constrain both horizontal and vertical overflow to the graph viewport. Popup controls therefore remain visible while deep or highly branched conjugation families retain readable cards and definitions.
+
+Definition transforms may also declare ordered localized `replacements`. The first matching substitution rewrites an earlier transformation before any fallback template is used, enabling context-sensitive chains such as `to (want to) exist` → `to (have wanted to) exist`; templates using `{{ definition }}` can instead append semantics, such as `to (want to) exist (and then)`. The untransformed entry is rendered as the centered root card above the first transformation row.
+
+A sentence reference may declare `transformation: { "setId": "...", "path": ["rule-id", "..."] }`. Cognis validates that the path applies to the referenced base entry, persists it with the relationship, and resolves the exact generated form without relying on label heuristics. A transformed detail uses the standard child marker to show **From: {parent}**; selecting that parent annotation opens the canonical verb or adverb.
+
+Inline card creation now commits staged pronunciation character selections before saving. Saving a reading already supplied by a lookup attaches its selected character links without adding a duplicate pronunciation. Lookup values immediately redraw using the pronunciation list’s newline format, and automatically composed vocabulary and sentence readings remain visible as the main input changes. Detail headings resolve reading groups by their complete reading rather than their field-list position, and can resolve unlinked readings to canonical writing-unit cards.
+
+Transformed vocabulary headings and readings link to the canonical writing units of the displayed form. Used By also includes complete canonical spelling and pronunciation compositions, so compound kana links resolve upward even when stored references identify smaller units. Direct relationships remain visible; incomplete compositions do not create partial links.
+
+Detail relationship lists show immediate neighbors. Used By, Usage Examples, and the relationship tree exclude dependants reached only through another spelling or pronunciation parent, including grouped references. Direct links remain available, and cyclic references do not cause repeated traversal. Similar Items continues to show same-layer peers.
+
+A direct relationship remains visible even when an intermediate route reaches the same card. Authored references, grouped references, and canonical title components retain their direct links, supporting both あ → ある + あるく and あ → ある → あるく. Only relationships reached exclusively through another parent are excluded.
+
+Transformed cards omit a pronunciation identical to their displayed title after normalization. Distinct readings retain their character links. A localized Return to {{ verb }} action restores the base card and clears the selected transformation while preserving normal card navigation.
+
+Dependency writes now enforce the visibility of every edge, including grouped references. Personal cards may use readable shared cards and their own private components; class cards require global or same-class components; global cards require global components. Update proposals validate their reference schema before submission, publication approvals recheck current dependencies, and edits cannot invalidate a pending publication. Moving shared content back to personal scope is blocked when shared dependants or pending requests still need its wider visibility. Permission hints are returned after creation and editing and respect class write access.
+
+Deletion confirms all deletable cascade and restricted dependants, including grouped references, while detached cards remain. The transaction checks ownership, class access, protection, and pending review for every affected card before deleting anything. Restricted dependants reached by another cascade no longer fail due to traversal order. Shared creation offers a personal save when dependencies are too narrow. Publication assistance can request eligible leaf components, including hidden definitions, before submitting the parent after approval.
+
+Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
+
+## Dictionary imports and drafts
+
+Dictionary results can be reviewed before applying their pronunciations, classifications, tags, references, and separate sense definitions. Imported readings immediately use the same saved-value controls as manually committed readings. Generated readings update as the main input changes while preserving authored alternatives. Required tabs have one marker and the definition add action is compact.
+
+The common lookup contract accepts `class`, `tags`, `definitions` (localized translations and provenance), and `sourceUrl`. Source-specific data belongs in provider-declared fields; the Japanese module declares hidden `dictionary_data` containing the full Jisho record. Existing scoped creation, conflict detection, dependency validation, and cancellation cleanup apply to imported definitions.
+
+The Retrieve missing translations action calls `POST /api/v1/study/library/definitions/localize` with `{ translations, languages }`. It requests missing UI languages through `localization:translateString`, preserves supplied translations, and reports `missingLanguages` when a provider is absent or fails. Missing translations remain editable; English is not copied into other language fields. This is also available when adding a definition manually.
+
+## Administrator creation and focused stroke lookup
+
+Administrators create cards directly in the global namespace without Publish controls. Inline and dictionary-imported definitions use the same global destination; private dependencies must be published before saving. Stroke Pattern Lookup applies the provider’s stroke pattern immediately without opening the dictionary preview.
+
+## Lookup fills the open composer
+
+Dictionary lookup now fills the open card composer directly and commits all returned definitions and pronunciations without a result popup or Apply step. Existing values require replacement confirmation before the request; cancellation and empty or failed lookups preserve the current card. Successful Stroke Pattern lookup hides its button. Dictionary source URLs are retained in hidden source data instead of displayed as links.
+
+## Resolvable imports and editable definitions
+
+Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
+
+## Composer lookup corrections
+
+Stroke lookup is hidden whenever a retrieved pattern is present, including patterns loaded from dictionary results or saved cards. Clearing the pattern restores lookup. Definition editors keep translations in Content and omit the redundant Definitions tab. Dictionary meanings separated by semicolons become individually committed definitions, preserving aligned translations and original source metadata. Structured imported meanings replace aggregate source-definition links.
+
+## Dictionary pronunciation links
+
+Dictionary imports resolve complete pronunciations to installed Kana using longest complete matches, preserving compound characters such as きょ and っく and repeated positions. Canonical entry IDs are stored in ordered reading groups; a reading with missing characters is never partially linked. Definitions reuse matching cards or create cards through the normal composer flow. Carousels remain the primary way to create downstream cards. Characters and particles remain provider-owned read-only layers. Sentence composers do not offer dictionary lookup.
+
+## Dictionary match selection
+
+Vocabulary creation uses one composed card input without the redundant Input heading. Dictionary lookup sits directly beneath it and searches the complete text, including selected component cards. Vocabulary pronunciations are entered manually or imported from the dictionary instead of being generated from Kanji readings. One result fills the composer directly; multiple results open a horizontal list of card previews headed “Multiple Matches Found”. Click a candidate and Confirm to import its fields, pronunciations, definitions, tags, and relationships. Confirmation is disabled until a candidate is selected. Cancel preserves the current composer and creates no definitions. Dictionary-confirmed card text can be submitted, while subsequent text changes require resolution again. Sentence pronunciation remains derived from its constituents, and sentence dictionary lookup remains disabled.
+
+## Preserved vocabulary input
+
+Vocabulary dictionary lookup preserves the authored text, composed token order, and selected input cards while importing supporting fields, pronunciations, and definitions. The composer reuses matching definitions using the same normalized comparison as the API; newly imported definitions are cached immediately so repeated meanings do not cause conflicts. Reuse respects the destination scope and retains the existing definition translations.
+
+## Transformed sentences and scope moves
+
+Sentence creation, editing, and detail views derive pronunciations from each ordered reference’s selected transformation. Repeated roots retain separate positions and transformation paths. Declared punctuation remains visible without preventing adjacent title links; transformed title and reading links open the selected form and retain navigation back to its root. Scope moves execute the registered Study Library move flow, return updated permissions, and keep an owned card visible after moving it. The action reads “Move to: User” because shared cards return to the original creator’s user scope. Provider-owned content, shared dependants, pending requests, and ACL restrictions continue to block invalid moves. Contributor instructions explicitly prohibit advertising capabilities, actions, routes, or flows without executable implementations.
+
+## Lean component implementation
+
+Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
+
+## Dictionary search and caching
+
+Cognis core owns dictionary caching through `core:cache`. A cached query becomes cold after one hour; its next use probes the provider for changes. Changed results remain pending until the twelve-hour publication boundary, and unchanged results retain their content. Concurrent queries share one probe, and failed probes preserve the last successful result. Cache state survives restarts. Modules retrieve provider data without scheduling queries or maintaining provider-response caches. Jisho has no lightweight change feed, so a probe requires the ordinary search response. There is no manual Refresh control. Local pronunciation and card links always resolve against currently accessible content.
+
+## Review and relocation
+
+Administrators and owners relocate personal cards directly into authorized shared scopes; ordinary learners submit review requests. The full text-and-icon destination control is clickable. Requests show the submitted card, proposed edits, scope, author, dates, decision status, and compact authorized actions. Decision history remains visible, including withdrawals. Card changes and decisions run in one database transaction with conditional pending-status transitions. Failed validation rolls back the decision; stale or repeated decisions report an error. Submission snapshots preserve reviewed content and prevent approval after the source changes.
+
+## Efficient dictionary resolution
+
+Dictionary results render after reference hydration succeeds. Preview resolution requests only referenced entry IDs or provider record IDs and the atomic characters needed for pronunciations; the complete carousel library loads when opening a composer or navigating a linked card. Entry lists hydrate references in one batch rather than querying each card. Request lists read source existence only after authorization and use saved downstream context for completed request previews. Hidden fields use the same visibility selector in search and review previews. Expired dictionary-cache rows are removed on cache writes using an expiry index. Approved relocations invoke the same registered move flow as direct relocations, inside the decision transaction.
+
+Search also invokes the registered search flow on cache hits, so extension hooks apply consistently.
+
+Study navigation requests only pending review items; the Requests page retains complete status history.
+
+My Requests is a read-only history of every submitted status. Pending is the sole review queue. Request headers show requester/reviewer profile avatars and links; decision time is available on the status pill. The card title, primary pronunciation and definition share an expandable summary, with related cards grouped by relationship. Visibility downgrades use the cancel button style. Mixed relocation directions or unchanged destinations disable the control until the conflicting selection is removed.
+
+## Dictionary reading graphs
+
+Dictionary source data remains invisible metadata in composers and detail views. Imported pronunciations use hidden Vocabulary readings with the same scope as their parent. Multi-reading Kanji uses one hidden record per reading, with a title link to its source Kanji and ordered Kana pronunciation links; single-reading Kanji links directly to Kana. Complete word readings compose from the nearest authored Kanji-reading segments and remaining Kana when available. Definitions are linked directly to hidden readings. Cognis resolves provider identities and commits the graph atomically through normal field, layer, dependency and ACL validation. Characters and particles remain provider-owned. Redundant Katakana echoes of an equivalent Hiragana reading are filtered unless the dictionary declares that Katakana spelling; authoritative Kanji on-readings and genuine loanword readings are preserved.
+
+## Validated operation stages
+
+Repeated dictionary imports reuse matching hidden reading cards instead of producing duplicate conflicts. Owner validation and persistence execute within their named ctx stages; edits have an update flow and rejected hooks roll back writes. Invalid lookup bodies receive safe validation codes; unexpected internal failures return generic server errors. Shared definition validation lives in component-local reuse.
+
+Core 0.3.109 · Library 2.24.43 · Study 1.8.44
+
+## Composer and relocation
+
+Hovering a carousel card highlights every matching placement instead of showing position counters. Pointer dragging reorders individual placements without selecting text. Typed verb suggestions use the transformation chooser, whose wider two-column layout preserves readable cards. Committed definitions support unlinking with a trash control and retain dictionary sense order. Rebinding page interactions removes previous listeners, and batch deletion has one in-flight confirmation.
+
+Shared-to-private relocation requires confirmation and an administrator review request, including requests submitted by administrators. Approval recomputes inaccessible dependents and deletes their cascades atomically with the move; compatible personal cards remain. Protected or provider-owned cards and pending dependent requests prevent approval. Ordinary deletion permissions remain unchanged. Successful requests show a toast; owners of removed cards receive notifications in the Study category. The move-to-personal endpoint now returns HTTP 201 with a pending request rather than a relocated card.
+
+## Dictionary transformations
+
+Transformation choices align titles, readings and definitions in a single column within each card. The base-form action uses the neutral button style. Dragging displays a vertical insertion marker before or after the destination placement. Jisho imports retain supported conjugation-family tags on vocabulary cards; newly created verbs enter the transformation chooser before being added to a parent composition. Adverbs retain their lexical classification; the current Japanese schema declares no adverb transform sets.
+
+Dictionary providers may return prerequisites: an array of { key, layer, label } lookup targets. After a composer match is selected, Cognis resolves existing compound-writing cards at the intended scope or retrieves and creates missing cards with their definitions and reading graph. Atomic characters and particles cannot be created through this path. Alias keys resolve to canonical IDs in root and hidden-reading references. Vocabulary input remains unchanged, and imported spelling references are used only while the input still matches the lookup. Search result browsing never creates prerequisites.
+
+Missing required fields are completed through registered auxiliary lookup providers before persistence; Kanji stroke patterns come from KanjiVG. Each Kanji, its definitions and hidden readings commit as one validated scoped graph.
+
+## Card identity and import flows
+
+Merge conflicts invoke the registered merge flow: administrators apply additions immediately, while learners request review for shared cards. Canonical input composition and scalar values remain intact; alternate readings, meanings, tags and eligible hidden reading graphs are added. Private dependencies cannot enter shared graphs, and failed merges keep the draft. Dictionary matches with identical composition combine readings and meanings; expanded spellings apply immediately when selected, while Continue or closing the chooser uses the exact composition. Imported reading chips resolve through hidden cards to individual Kana, and editing removes the old grouped links before replacement. Successful creation shows a toast. Carousels sharing a relationship preserve each other’s selections, including sentence connectors.
+
+Filters reflect visible content in the selected layer. Relocation preserves entry identity and records `relocatedAt`; moved cards are excluded from new-content indicators and announcements, even after repeated private/shared moves. New global cards and new provider records retain their normal notifications. Request snapshots include original downstream context for card details and definitions; authorized history keeps that context after relocation, while a deleted source is reported as unavailable.
+
+## Nested child card layout
+
+Expanded children occupy the closest available positions around the active branch; dimmed background cards do not push them across the grid. Fitted ancestors remain stable while deeper children open. When a branch needs more vertical space, the grid reserves scrollable space and releases it on close. Resize and card-size changes trigger a fresh fit. Branch visibility is controlled consistently for pointer and keyboard focus, and long-pressing a child continues the current branch. Pending layout work is coalesced and cancelled when the branch closes.

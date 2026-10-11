@@ -35,3 +35,7 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                              |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`  | Maximales Zeitfenster für die Startbereitschaft in Millisekunden (1.000–600.000) |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`   | Pause zwischen Bereitschaftsversuchen in Millisekunden (100–30.000)              |
+
+## Schemaabgleich
+
+MariaDB gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.

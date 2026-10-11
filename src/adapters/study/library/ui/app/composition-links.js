@@ -1,16 +1,39 @@
 /** Resolve complete labels into links to their canonical Library writing units. */
 
+function layerRank(layer) {
+    return {
+        atomicWritingUnit: 1,
+        compoundWritingUnit: 2,
+        lexicalUnit: 3,
+        orderedLexicalSequence: 4,
+    }[layer?.semanticRole];
+}
+
 function composableLayerIds(entry, schemas) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const sourceRank = layerRank(
+        schema?.layers.find(({ id }) => id === entry.layer),
+    );
     return new Set(
         (schema?.layers ?? [])
             .filter(
-                ({ semanticRole }) =>
-                    semanticRole === "atomicWritingUnit" ||
-                    semanticRole === "compoundWritingUnit" ||
-                    semanticRole === "lexicalUnit",
+                (layer) =>
+                    layerRank(layer) &&
+                    sourceRank &&
+                    layerRank(layer) < sourceRank,
             )
             .map(({ id }) => id),
+    );
+}
+
+function pronunciationValues(entry) {
+    const pronunciation = entry.fields?.pronunciation;
+    if (!pronunciation) return [];
+    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
+        (value) =>
+            Array.isArray(value)
+                ? value.flat(Infinity).map(String).join("")
+                : String(value),
     );
 }
 
@@ -25,19 +48,15 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
                 candidate.language === entry.language &&
                 layerIds.has(candidate.layer) &&
                 typeof candidate.label === "string" &&
-                candidate.label,
+                candidate.label &&
+                label.includes(candidate.label),
         )
         .sort((left, right) => {
             const schema = schemas.find(({ id }) => id === entry.schemaId);
-            const role = (candidate) =>
-                schema?.layers.find(({ id }) => id === candidate.layer)
-                    ?.semanticRole;
             const rank = (candidate) =>
-                role(candidate) === "lexicalUnit"
-                    ? 3
-                    : role(candidate) === "compoundWritingUnit"
-                      ? 2
-                      : 1;
+                layerRank(
+                    schema?.layers.find(({ id }) => id === candidate.layer),
+                );
             return (
                 right.label.length - left.label.length ||
                 rank(right) - rank(left)
@@ -56,22 +75,199 @@ export function resolveLabelComposition(label, entry, schemas, entries) {
     return resolved.get(0) ?? [];
 }
 
+export function resolveReferenceTitleComposition(
+    label,
+    references,
+    literals = [],
+) {
+    if (!references.length) return [];
+    const values = literals.toSorted(
+        (left, right) => right.length - left.length,
+    );
+    const result = [];
+    let offset = 0;
+    let referenceIndex = 0;
+    while (offset < label.length) {
+        const reference = references[referenceIndex];
+        if (reference && label.startsWith(reference.label, offset)) {
+            result.push(reference);
+            offset += reference.label.length;
+            referenceIndex += 1;
+            continue;
+        }
+        const literal = values.find(
+            (value) => value && label.startsWith(value, offset),
+        );
+        if (!literal) return [];
+        result.push({ label: literal });
+        offset += literal.length;
+    }
+    return referenceIndex === references.length ? result : [];
+}
+
+export function resolveCompositionDependants(entry, schemas, entries) {
+    return entries.filter((candidate) => {
+        if (
+            candidate.id === entry.id ||
+            candidate.schemaId !== entry.schemaId ||
+            candidate.language !== entry.language
+        )
+            return false;
+        return [candidate.label, ...pronunciationValues(candidate)]
+            .filter(
+                (label) =>
+                    typeof label === "string" && label.includes(entry.label),
+            )
+            .some((label) =>
+                resolveLabelComposition(
+                    label,
+                    candidate,
+                    schemas,
+                    entries,
+                ).some(({ id }) => id === entry.id),
+            );
+    });
+}
+
+export function filterImmediateDependants(entry, dependants, schemas, entries) {
+    const catalog = Array.from(
+        new Map(
+            [...entries, ...dependants, entry].map((candidate) => [
+                candidate.id,
+                candidate,
+            ]),
+        ).values(),
+    );
+    const entriesById = new Map(
+        catalog.map((candidate) => [candidate.id, candidate]),
+    );
+    const parentIds = new Map();
+    const parentsOf = (candidate) => {
+        if (!parentIds.has(candidate.id)) {
+            const references = [
+                ...(candidate.references ?? []),
+                ...Object.values(candidate.referenceGroups ?? {}).flat(2),
+            ].map(({ entryId }) => entryId);
+            const compositions = [
+                candidate.label,
+                ...pronunciationValues(candidate),
+            ]
+                .flatMap((label) =>
+                    resolveLabelComposition(label, candidate, schemas, catalog),
+                )
+                .map(({ id }) => id);
+            parentIds.set(
+                candidate.id,
+                [...new Set([...references, ...compositions])].filter(
+                    (id) => id !== candidate.id,
+                ),
+            );
+        }
+        return parentIds.get(candidate.id);
+    };
+    const reachesEntry = (parentId, sourceId) => {
+        const pending = [parentId];
+        const visited = new Set([sourceId]);
+        while (pending.length) {
+            const id = pending.pop();
+            if (id === entry.id) return true;
+            if (visited.has(id)) continue;
+            visited.add(id);
+            const parent = entriesById.get(id);
+            if (parent) pending.push(...parentsOf(parent));
+        }
+        return false;
+    };
+    return dependants.filter((candidate) => {
+        const references = [
+            ...(candidate.references ?? []),
+            ...Object.values(candidate.referenceGroups ?? {}).flat(2),
+        ];
+        if (references.some(({ entryId }) => entryId === entry.id)) return true;
+        if (
+            resolveLabelComposition(
+                candidate.label,
+                candidate,
+                schemas,
+                catalog,
+            ).some(({ id }) => id === entry.id)
+        )
+            return true;
+        return !parentsOf(candidate).some(
+            (parentId) =>
+                parentId !== entry.id && reachesEntry(parentId, candidate.id),
+        );
+    });
+}
+
 function normalizedLabel(value) {
-    return String(value).trim().normalize();
+    return String(value).trim().normalize("NFKC");
+}
+
+function entryAliases(entry) {
+    return Array.from(
+        new Set(
+            [entry.label, ...pronunciationValues(entry)]
+                .map(normalizedLabel)
+                .filter(Boolean),
+        ),
+    ).sort((left, right) => right.length - left.length);
+}
+
+export function resolveReferenceAliasComposition(
+    label,
+    entries,
+    useAliasLabels = false,
+) {
+    const normalized = normalizedLabel(label);
+    if (!normalized || !entries.length) return [];
+    let offset = 0;
+    const resolved = [];
+    for (const entry of entries) {
+        const alias = entryAliases(entry).find((candidate) =>
+            normalized.startsWith(candidate, offset),
+        );
+        if (!alias) return [];
+        offset += alias.length;
+        resolved.push(useAliasLabels ? { ...entry, label: alias } : entry);
+    }
+    return offset === normalized.length ? resolved : [];
+}
+
+export function resolveGroupedPronunciation(
+    label,
+    groups,
+    useAliasLabels = false,
+) {
+    for (const group of groups) {
+        const entries = resolveReferenceAliasComposition(
+            label,
+            group,
+            useAliasLabels,
+        );
+        if (entries.length) return entries;
+    }
+    return [];
+}
+
+function entryLinkKey(entry) {
+    return `${entry.id}\u0000${normalizedLabel(entry.label)}`;
+}
+
+export function excludeTitleReferenceDuplicates(groups, titleReferences) {
+    const titleReferenceKey = titleReferences.map(entryLinkKey).join("\u0001");
+    return groups.filter(
+        (group) => group.map(entryLinkKey).join("\u0001") !== titleReferenceKey,
+    );
 }
 
 export function distinctPronunciationLabels(entry, secondaryLabels = []) {
     const blocked = new Set(
         [entry.label, ...secondaryLabels].map(normalizedLabel),
     );
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return [];
-    const labels = Array.isArray(pronunciation)
-        ? pronunciation
-        : [pronunciation];
     return Array.from(
         new Set(
-            labels
+            pronunciationValues(entry)
                 .map(normalizedLabel)
                 .filter((label) => label && !blocked.has(label)),
         ),

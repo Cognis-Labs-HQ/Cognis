@@ -16,7 +16,7 @@ export type KeyringRouteHandler = (
     url: URL,
 ) => Promise<boolean>;
 
-const DEFAULT_MAX_VAULT_BYTES = 2 * 1024 * 1024;
+const DEFAULT_MAX_VAULT_BYTES = 2_000 * 1024 * 1024;
 
 function validVault(value: unknown): value is Record<string, unknown> {
     if (!value || typeof value !== "object" || Array.isArray(value))

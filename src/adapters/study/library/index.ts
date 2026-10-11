@@ -1,3 +1,4 @@
+import { CORE_CACHE_CAPABILITY, type ProbeCacheFactory } from "@cognis/core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
@@ -13,7 +14,10 @@ import type {
 } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
-import { LibraryService, type LibraryProviderCapability } from "./service.js";
+import {
+    LibraryService,
+    type LibraryProviderCapability,
+} from "./service/index.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import {
@@ -88,7 +92,7 @@ export async function bootstrapStudyAdapter(
     }
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
-    )?.("study-library", "Study Library");
+    )?.("study", "Study");
     const dispatchNotification =
         ctx.capabilities.get<
             (envelope: {
@@ -122,7 +126,7 @@ export async function bootstrapStudyAdapter(
                               .filter(({ enabled }) => enabled)
                               .map(({ username }) =>
                                   dispatchNotification({
-                                      category: "study-library",
+                                      category: "study",
                                       recipientUsername: username,
                                       subject: "New Study Library content",
                                       body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
@@ -146,6 +150,51 @@ export async function bootstrapStudyAdapter(
                   }
               }
             : undefined,
+        ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
+        dispatchNotification
+            ? async (entries, actor) => {
+                  const recipients = new Map<string, string[]>();
+                  for (const entry of entries) {
+                      const recipient =
+                          entry.scope === "user"
+                              ? entry.scopeId
+                              : entry.createdBy;
+                      if (
+                          recipient === actor.accountId ||
+                          recipient.startsWith("content-pack:")
+                      )
+                          continue;
+                      const labels = recipients.get(recipient) ?? [];
+                      labels.push(entry.label);
+                      recipients.set(recipient, labels);
+                  }
+                  const results = await Promise.allSettled(
+                      Array.from(recipients, ([recipientUsername, labels]) =>
+                          dispatchNotification({
+                              category: "study",
+                              recipientUsername,
+                              subject: "Study cards removed",
+                              body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
+                              actionUrl: "/study/library",
+                          }),
+                      ),
+                  );
+                  for (const result of results)
+                      if (result.status === "rejected")
+                          await ctx.log?.(
+                              "error",
+                              "Could not notify affected Study card owner.",
+                              {
+                                  component: "study-library",
+                                  operation: "notify-deletion",
+                                  errorName:
+                                      result.reason instanceof Error
+                                          ? result.reason.name
+                                          : "Error",
+                              },
+                          );
+              }
+            : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);
@@ -161,8 +210,11 @@ export async function bootstrapStudyAdapter(
         );
     if (!systemCtx?.hasCapability("study:library:provider"))
         systemCtx?.contributePublicCapability("study:library:provider", {
+            inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
             registerConstructor,
+            registerLookupProvider:
+                service.registerLookupProvider.bind(service),
         } satisfies LibraryProviderCapability);
     ctx.registerRoute(
         createLibraryRoutes(
@@ -190,7 +242,7 @@ export async function bootstrapStudyAdapter(
     });
     ctx.registerSpaRoute?.({
         id: "study-library-layer-page",
-        pattern: "^/study/layers/[^/]+/[^/]+$",
+        pattern: "^/study/layers/[^/]+/[^/]+(?:/[^/]+)?$",
         base: "/study/layers",
         scriptUrl: "/static/adapters/study/library/app/layer/index.js",
         stylesheets: [
@@ -203,7 +255,41 @@ export async function bootstrapStudyAdapter(
         requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+    ctx.registerSpaRoute?.({
+        id: "study-library-requests-page",
+        pattern: "^/study/library/requests$",
+        base: "/study/library/requests",
+        scriptUrl: "/static/adapters/study/library/app/requests/index.js",
+        navigationLabels: {
+            de: "Anfragen",
+            en: "Requests",
+            id: "Permintaan",
+            ja: "リクエスト",
+        },
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     adapterReady = true;
+    ctx.registerSpaRoute?.({
+        id: "study-library-search-page",
+        pattern: "^/study/library/search$",
+        base: "/study/library/search",
+        scriptUrl: "/static/adapters/study/library/app/search/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     await ctx.log?.("info", "Study/library adapter bootstrapped.", {
         component: "study-library",
         operation: "bootstrap",

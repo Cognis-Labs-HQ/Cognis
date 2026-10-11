@@ -35,3 +35,7 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                 |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Jendela maksimum kesiapan startup dalam milidetik (1.000–600.000) |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Jeda antarpercobaan kesiapan dalam milidetik (100–30.000)         |
+
+## Penyelarasan skema
+
+MariaDB menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.

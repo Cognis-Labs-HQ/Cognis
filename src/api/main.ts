@@ -7,6 +7,8 @@ import type {
 } from "@cognis/core";
 import {
     createCtx,
+    createProbeCache,
+    CORE_CACHE_CAPABILITY,
     GatewayService,
     GatewayRegistry,
     CapabilityStore,
@@ -276,6 +278,7 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+capabilities.contribute(CORE_CACHE_CAPABILITY, createProbeCache);
 capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
 systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);
 const shutdownHandlers = new Set<() => Promise<void>>();

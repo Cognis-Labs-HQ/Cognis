@@ -2,8 +2,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
 
-function filterDescriptors(layer, layerEntries, contentLanguage) {
-    return filterFields(layer).flatMap((field) => {
+function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
+    layerEntries = layerEntries.filter((entry) => !entry.hidden);
+    const fieldFilters = filterFields(layer).flatMap((field) => {
         const values = [
             ...new Set(
                 layerEntries.flatMap((entry) =>
@@ -26,10 +27,39 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
               ]
             : [];
     });
+    const transformTags = [
+        ...new Set(
+            (layer.views ?? [])
+                .filter(({ layout }) => layout === "transformTree")
+                .flatMap(({ includeTags }) => includeTags)
+                .filter((tag) =>
+                    layerEntries.some(
+                        (entry) =>
+                            !entry.hidden && (entry.tags ?? []).includes(tag),
+                    ),
+                ),
+        ),
+    ];
+    return transformTags.length
+        ? [
+              ...fieldFilters,
+              {
+                  id: "__tags",
+                  label: i18n.t("gateway.study.library_word_type"),
+                  values: transformTags,
+                  detail: { exclusive: false },
+              },
+          ]
+        : fieldFilters;
 }
 
 export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
-    const filters = filterDescriptors(layer, layerEntries, contentLanguage);
+    const filters = filterDescriptors(
+        layer,
+        layerEntries,
+        contentLanguage,
+        i18n,
+    );
     if (!filters.length) return "";
     const groups = groupByToMap(
         filters,
@@ -58,7 +88,9 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
             );
             const selectedTag =
                 tags.find(({ value }) => value === defaultTag) ??
-                (required || tags.length === 1 ? tags[0] : undefined);
+                (required || (tags.length === 1 && groupId !== "__tags")
+                    ? tags[0]
+                    : undefined);
             return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}" data-library-filter-required="${required}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${tags
                 .map((tag) => {
                     const { filter, value } = tag;

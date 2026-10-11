@@ -20,7 +20,7 @@ Not responsible for: authenticating users, deriving encryption keys, or interpre
 
 ## Configuration
 
-The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created.
+The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created. The default encrypted-vault capacity is 2,000 MiB.
 
 ## API Routes
 

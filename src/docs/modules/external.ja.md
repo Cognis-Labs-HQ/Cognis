@@ -130,3 +130,7 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 ### 有効化後のガイダンス
 
 Cognis の別の場所に設定画面を提供するモジュールは、空のモジュール設定フォームを作成する代わりに `ui.activationGuidance` を宣言できます。この契約には、ローカライズされた `titleKey`、任意の `descriptionKey`、順序付きの `steps` を指定します。各ステップには、安定した `id`、ローカライズされた `labelKey`、任意の `descriptionKey` と `targets` があります。アダプター対象は `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }` を使用します。有効化に成功すると、Cognis はすべての手順を表示し、管理画面を開く選択肢を提示します。Core がプロバイダー名を認識しなくても、モジュールは複数のアダプター対象を列挙できます。
+
+### 公開ケイパビリティの取得
+
+外部モジュールは `ctx.contributePublicCapability(key, value)` で共有サーバーケイパビリティを公開します。`ctx.getCapability` と `ctx.capabilities.get`、`has`、`require` は、利用側の初期化後に公開されたものも含め、現在のシステムレジストリから公開ケイパビリティを取得します。非公開のシステムケイパビリティは公開されず、`system:ctx` はモジュールに渡されません。更新要求は順番に実行され、後処理と登録が重複するのを防ぎます。提供側を無効にすると登録が削除され、再度有効にすると再公開されます。更新に失敗すると呼び出し元にエラーが返されますが、後続の更新は妨げられません。

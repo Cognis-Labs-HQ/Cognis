@@ -311,6 +311,7 @@
   <string name="ui.reuse.reset_layout">Reset Layout</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
+  <string name="ui.reuse.delete">Delete</string>
   <string name="ui.reuse.return_to_dashboard">Return to Dashboard</string>
 
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
@@ -595,4 +596,6 @@
   <string name="ui.reuse.name">Name</string>
   <string name="ui.reuse.uninstall">Uninstall</string>
   <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
+  <string name="ui.reuse.lookup">Lookup</string>
+  <string name="ui.reuse.continue">Continue</string>
 </resources>
