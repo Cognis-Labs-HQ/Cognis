@@ -1,3 +1,4 @@
+import { cardPreview } from "../reuse/card-preview.js";
 import { renderDefinitionActions } from "../reuse/definition-actions.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -29,7 +30,6 @@ import {
 } from "../pronunciation-editor.js";
 import {
     applyDerivedPronunciation,
-    derivedPronunciation,
     resolveComposerContract,
 } from "../composer-contract.js";
 import {
@@ -117,30 +117,8 @@ function relationshipEditor(
             candidate.hidden !== true &&
             !(candidate.tags ?? []).some((tag) => excludedTags.has(tag)),
     );
-    const previewFor = (target) => {
-        const definition = (target.references ?? [])
-            .toSorted(
-                (left, right) => (left.position ?? 0) - (right.position ?? 0),
-            )
-            .map(({ entryId }) => entries.find(({ id }) => id === entryId))
-            .find((candidate) => {
-                const targetLayer = candidate
-                    ? layerForEntry([schema], candidate)
-                    : null;
-                return ["definition", "meaning"].includes(
-                    targetLayer?.semanticRole,
-                );
-            });
-        const pronunciation = derivedPronunciation(target, entries, schema);
-        const meaning = definition
-            ? definitionText(
-                  definition,
-                  layerForEntry([schema], definition),
-                  document.documentElement.lang,
-              )
-            : "";
-        return [pronunciation, meaning].filter(Boolean).join("\n");
-    };
+    const previewFor = (target) =>
+        cardPreview(target, entries, schema, document.documentElement.lang);
     const targets = carousel
         ? [...visibleTargets]
               .sort(

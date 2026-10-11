@@ -1,4 +1,4 @@
-# Benutzerbezogene Nachverfolgung neuer Bibliotheksinhalte
+# Verbesserungen der Bibliothek
 
 **Feature-Zweig:** feature-update-external-package-contract-definitions
 
@@ -10,7 +10,7 @@ Cognis speichert nun die UUIDs angesehener Bibliothekseinträge pro Konto. Das �
 
 ## Kennzeichnung und Benachrichtigung neuer Inhalte
 
-Nicht angesehene Einträge zeigen in Vorschau und Detailfenster einmalig **Neu**. Anbieteraktualisierungen und genehmigte globale Beiträge benachrichtigen aktivierte Benutzer über neue Sprachinhalte.
+Noch nicht angesehene und nie verschobene Einträge zeigen in Vorschau und Detailfenster einmalig **Neu**. Neue globale Karten und neue Anbieterinhalte benachrichtigen aktivierte Benutzer; das Verschieben vorhandener Karten zwischen Sichtbarkeiten nicht.
 
 ## Bereichsbezogene Beiträge und Prüfabläufe
 
@@ -582,8 +582,15 @@ Fehlende Pflichtfelder werden vor dem Speichern über registrierte ergänzende A
 
 Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten Schreibfelds erhalten, auch nach dem Verschieben. Die Standardposition wird nur beim Öffnen eines neuen Schreibfelds angewendet.
 
+## Kartenidentität und Import
+
+Bei Zusammenführungskonflikten wird der registrierte Ablauf ausgeführt: Administratoren übernehmen Ergänzungen sofort, Lernende beantragen eine Prüfung für gemeinsame Karten. Die ursprüngliche Eingabezusammensetzung und Einzelwerte bleiben erhalten; alternative Lesungen, Bedeutungen, Tags und zulässige verborgene Lesekarten werden ergänzt. Private Abhängigkeiten dürfen nicht in gemeinsame Graphen gelangen; fehlgeschlagene Zusammenführungen behalten den Entwurf. Wörterbuchtreffer gleicher Zusammensetzung bündeln Lesungen und Bedeutungen. Erweiterte Schreibweisen werden bei Auswahl sofort übernommen; Weiter oder Schließen verwendet die genaue Zusammensetzung. Importierte Lesungen werden über verborgene Karten in einzelne Kana aufgelöst. Beim Bearbeiten werden alte gruppierte Verknüpfungen ersetzt. Erfolgreiche Erstellung zeigt eine Meldung. Karussells mit derselben Beziehung behalten gegenseitig ihre Auswahl, einschließlich Satzverbindungen.
+
+Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben behält die Kartenidentität und speichert `relocatedAt`; verschobene Karten werden auch bei wiederholtem Wechsel zwischen privater und gemeinsamer Sichtbarkeit nicht als neu gemeldet. Neue globale Karten und neue Anbieterinhalte erhalten weiterhin Benachrichtigungen. Anfragen speichern den ursprünglichen nachgelagerten Kartenkontext mit Details und Bedeutungen. Berechtigte Verlaufsansichten behalten ihn nach dem Verschieben; gelöschte Quellkarten werden als nicht verfügbar angezeigt.
+
 ## Commits
 
+- [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
 - [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)

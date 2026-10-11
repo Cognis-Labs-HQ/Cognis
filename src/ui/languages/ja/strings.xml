@@ -597,4 +597,5 @@
   <string name="ui.reuse.uninstall">アンインストール</string>
   <string name="ui.reuse.toggle_secret_visibility">シークレットの表示を切り替える</string>
   <string name="ui.reuse.lookup">検索</string>
+  <string name="ui.reuse.continue">続行</string>
 </resources>

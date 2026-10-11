@@ -142,6 +142,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
                 default: "",
             },
             { name: "created_by", type: "text", notNull: true },
+            { name: "relocated_at", type: "timestamp" },
             {
                 name: "created_at",
                 type: "timestamp",

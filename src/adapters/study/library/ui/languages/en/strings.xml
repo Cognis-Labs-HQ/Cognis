@@ -171,4 +171,8 @@
     <string name="gateway.study.library_relocation_review_warning">Moving these shared cards to private scope requires administrator review. Cards that depend on them and can no longer access them will be deleted when approved. Their owners will be notified.</string>
     <string name="gateway.study.library_request_relocation">Request Relocation</string>
     <string name="gateway.study.library_relocation_approval_warning">Approving this relocation will delete dependent cards that cannot access the private card, including other users’ cards. Their owners will be notified.</string>
+    <string name="gateway.study.library_merge_completed">The card additions were merged.</string>
+    <string name="gateway.study.library_merge_requested">Your merge request was submitted for review.</string>
+    <string name="gateway.study.library_create_success">The card was created.</string>
+      <string name="gateway.study.library_merge_scope_error">The merge requires dependencies visible in the destination scope. Your draft has been kept.</string>
 </resources>

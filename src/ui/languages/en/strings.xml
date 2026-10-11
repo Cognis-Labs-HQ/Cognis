@@ -597,4 +597,5 @@
   <string name="ui.reuse.uninstall">Uninstall</string>
   <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
   <string name="ui.reuse.lookup">Lookup</string>
+  <string name="ui.reuse.continue">Continue</string>
 </resources>

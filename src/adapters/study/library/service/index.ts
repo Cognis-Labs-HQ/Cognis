@@ -1,3 +1,4 @@
+import { mergeLibraryDraft, validateMergeProposal } from "./merge.js";
 import { runOperation } from "../reuse/operation.js";
 import { LibraryEntryWriter } from "./entries.js";
 import { createLinkedEntryGraph } from "./linked-entries.js";
@@ -114,6 +115,18 @@ export class LibraryService implements LibraryCapability {
             this.read.bind(this),
             this.authorize.bind(this),
             async (actor, input, destination, sourceId) => {
+                if (input.linkedEntries?.length && sourceId) {
+                    const current = await this.read(actor, sourceId);
+                    if (!current) throw new Error("entry_not_found");
+                    await validateMergeProposal(
+                        actor,
+                        current,
+                        input,
+                        this.schema(input.schemaId),
+                        this.read.bind(this),
+                    );
+                    return;
+                }
                 await validateDependencyVisibility(
                     input,
                     destination,
@@ -123,23 +136,6 @@ export class LibraryService implements LibraryCapability {
                 );
             },
             flow,
-            async (input) => {
-                try {
-                    await notifyNewContent?.(input);
-                } catch (error) {
-                    await log?.(
-                        "error",
-                        "Could not notify global Library content.",
-                        {
-                            component: "study-library",
-                            operation: "notify-content",
-                            entryCount: input.entryCount,
-                            errorName:
-                                error instanceof Error ? error.name : "Error",
-                        },
-                    );
-                }
-            },
             this.update.bind(this),
             async (actor, source, destination) => {
                 const dependents = (
@@ -823,6 +819,22 @@ export class LibraryService implements LibraryCapability {
         const entry = await this.read(actor, entryId);
         if (entry && this.immutable(entry)) throw new Error("immutable_layer");
         return this.visibility.requestPush(actor, entryId, destination);
+    }
+
+    async merge(
+        actor: LibraryActor,
+        entryId: string,
+        input: LibraryEntryInput,
+    ): Promise<{ entry: LibraryEntry; request?: LibraryPushRequest }> {
+        return mergeLibraryDraft(actor, entryId, input, {
+            flow: this.flow,
+            transaction: this.store.transaction.bind(this.store),
+            read: this.read.bind(this),
+            schema: this.schema.bind(this),
+            immutable: this.immutable.bind(this),
+            update: this.update.bind(this),
+            request: this.visibility.requestMerge.bind(this.visibility),
+        });
     }
 
     async requestUpdate(

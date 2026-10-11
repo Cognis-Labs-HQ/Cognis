@@ -1,4 +1,4 @@
-# Per-user tracking for new Study Library content
+# Study Library Improvements
 
 **Feature Branch:** feature-update-external-package-contract-definitions
 
@@ -10,7 +10,7 @@ Cognis now stores viewed Library entry UUIDs per account. Hovering a card or ope
 
 ## New-content indicators and notifications
 
-Unviewed entries display a one-time **New** pill in previews and detail popups. Provider updates and approved global contributions notify enabled users when new language content becomes available.
+Unviewed entries that have never been relocated display a one-time **New** pill in previews and detail popups. New global cards and new provider records notify enabled users; moving existing cards between scopes does not.
 
 ## Scoped contributions and review workflows
 
@@ -582,8 +582,15 @@ Missing required fields are completed through registered auxiliary lookup provid
 
 Loading another character into an open drawing pad preserves its current position, including placement chosen by dragging. The default position is applied only when opening a new pad.
 
+## Card identity and import flows
+
+Merge conflicts invoke the registered merge flow: administrators apply additions immediately, while learners request review for shared cards. Canonical input composition and scalar values remain intact; alternate readings, meanings, tags and eligible hidden reading graphs are added. Private dependencies cannot enter shared graphs, and failed merges keep the draft. Dictionary matches with identical composition combine readings and meanings; expanded spellings apply immediately when selected, while Continue or closing the chooser uses the exact composition. Imported reading chips resolve through hidden cards to individual Kana, and editing removes the old grouped links before replacement. Successful creation shows a toast. Carousels sharing a relationship preserve each other’s selections, including sentence connectors.
+
+Filters reflect visible content in the selected layer. Relocation preserves entry identity and records `relocatedAt`; moved cards are excluded from new-content indicators and announcements, even after repeated private/shared moves. New global cards and new provider records retain their normal notifications. Request snapshots include original downstream context for card details and definitions; authorized history keeps that context after relocation, while a deleted source is reported as unavailable.
+
 ## Commits
 
+- [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
 - [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)

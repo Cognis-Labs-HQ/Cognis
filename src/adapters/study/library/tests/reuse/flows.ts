@@ -10,6 +10,7 @@ export function createLibraryFlow(onRun?: (id: string) => void): FlowApi {
         lookup: ["discover", "lookup", "rank"],
         search: ["authorize", "validate", "search", "audit"],
         ingest: ["inspect", "validate", "stage", "persist", "audit"],
+        merge: ["authorize", "validate", "merge", "audit"],
         move: ["authorize", "validate", "move", "audit"],
         delete: ["authorize", "validate", "delete", "audit"],
     }))

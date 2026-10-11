@@ -171,4 +171,8 @@
     <string name="gateway.study.library_relocation_review_warning">Memindahkan kartu bersama ini ke ruang pribadi memerlukan tinjauan administrator. Kartu yang bergantung padanya dan tidak lagi memiliki akses akan dihapus setelah disetujui. Pemiliknya akan diberi tahu.</string>
     <string name="gateway.study.library_request_relocation">Ajukan Pemindahan</string>
     <string name="gateway.study.library_relocation_approval_warning">Persetujuan ini akan menghapus kartu terkait yang tidak dapat mengakses kartu pribadi, termasuk kartu pengguna lain. Pemiliknya akan diberi tahu.</string>
+    <string name="gateway.study.library_merge_completed">Tambahan kartu berhasil digabungkan.</string>
+    <string name="gateway.study.library_merge_requested">Permintaan penggabungan Anda dikirim untuk ditinjau.</string>
+    <string name="gateway.study.library_create_success">Kartu berhasil dibuat.</string>
+      <string name="gateway.study.library_merge_scope_error">Penggabungan memerlukan dependensi yang terlihat di cakupan tujuan. Draf Anda tetap disimpan.</string>
 </resources>

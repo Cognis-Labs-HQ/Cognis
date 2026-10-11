@@ -87,7 +87,7 @@ export function clearHorizontalCarouselSelection(carousel) {
 }
 
 /**
- * Bind every horizontal carousel below a root element.
+ * Bind every horizontal carousel below a root element. Carousels sharing an id share their selected values.
  * @param {ParentNode} root Carousel container.
  * @param {{signal?: AbortSignal, onChange?: (detail: {id: string, values: string[]}) => void, onAdd?: (detail: {id: string, carousel: HTMLElement}) => void, onActivate?: (detail: {id: string, item: HTMLElement, selected: boolean}) => Promise<{value?: string, label?: string} | false | void> | {value?: string, label?: string} | false | void, selectionOrder?: (detail: {id: string, value: string, localIndex: number}) => number | undefined}} options Event callbacks and optional shared selection ordering.
  * @returns {void}
@@ -216,7 +216,19 @@ export function mountHorizontalCarousels(
             refresh(carousel);
             onChange({
                 id: carousel.dataset.horizontalCarousel,
-                values: values(carousel),
+                values: [
+                    ...new Set(
+                        Array.from(
+                            root.querySelectorAll("[data-horizontal-carousel]"),
+                        )
+                            .filter(
+                                (candidate) =>
+                                    candidate.dataset.horizontalCarousel ===
+                                    carousel.dataset.horizontalCarousel,
+                            )
+                            .flatMap(values),
+                    ),
+                ],
             });
             root.querySelectorAll("[data-horizontal-carousel]").forEach(
                 refresh,

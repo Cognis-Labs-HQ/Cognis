@@ -38,10 +38,6 @@ export class LibraryVisibilityService {
             sourceId?: string,
         ) => Promise<void>,
         private readonly flow?: FlowApi,
-        private readonly notifyNewContent?: (input: {
-            entryCount: number;
-            language?: string;
-        }) => Promise<void>,
         private readonly applyUpdate?: (
             actor: VisibilityActor,
             entryId: string,
@@ -93,6 +89,30 @@ export class LibraryVisibilityService {
             throw new Error("request_pending");
         await this.validateDependencies(actor, source, normalized, source.id);
         return this.store.createPush(entryId, normalized, actor.accountId);
+    }
+
+    async requestMerge(
+        actor: VisibilityActor,
+        entryId: string,
+        proposedEntry: LibraryEntryInput,
+    ): Promise<LibraryPushRequest> {
+        const source = await this.read(actor, entryId);
+        if (!source) throw new Error("not_found");
+        if (source.protected) throw new Error("protected_content");
+        if (source.scope === "user") throw new Error("forbidden");
+        if (
+            (await this.store.listPushRequests("pending")).some(
+                (request) => request.sourceEntryId === entryId,
+            )
+        )
+            throw new Error("request_pending");
+        return this.store.createPush(
+            entryId,
+            { scope: source.scope, scopeId: source.scopeId },
+            actor.accountId,
+            "merge",
+            proposedEntry,
+        );
     }
 
     async requestUpdate(
@@ -166,13 +186,12 @@ export class LibraryVisibilityService {
             }
             const owned = request.requestedBy === actor.accountId;
             if (!owned && !canReview) continue;
-            const source =
-                request.status === "pending" || !request.sourceSnapshot
-                    ? await this.store.get(request.sourceEntryId)
-                    : request.sourceSnapshot;
+            const source = await this.store.get(request.sourceEntryId);
             visible.push({
                 ...request,
-                source: request.sourceSnapshot ?? source ?? undefined,
+                source: source ? (request.sourceSnapshot ?? source) : undefined,
+                sourceSnapshot: source ? request.sourceSnapshot : undefined,
+                sourceContext: source ? request.sourceContext : undefined,
                 canReview:
                     canReview && !!source && request.status === "pending",
                 canWithdraw: owned && !!source && request.status === "pending",
@@ -310,13 +329,6 @@ export class LibraryVisibilityService {
         });
         if (deletedEntries.length)
             await this.notifyDeletion?.(deletedEntries, actor);
-        if (
-            decision === "approved" &&
-            reviewed.destination.scope === "global" &&
-            reviewed.kind !== "update" &&
-            reviewed.kind !== "merge"
-        )
-            await this.notifyNewContent?.({ entryCount: 1 });
         return reviewed;
     }
 
@@ -330,9 +342,12 @@ export class LibraryVisibilityService {
                 throw new Error("forbidden");
             const source = await this.store.get(request.sourceEntryId);
             const validUpdateSource =
-                request.kind === "update" &&
-                source?.scope === "global" &&
-                source.createdBy === actor.accountId;
+                (request.kind === "update" &&
+                    source?.scope === "global" &&
+                    source.createdBy === actor.accountId) ||
+                (request.kind === "merge" &&
+                    !!source &&
+                    source.scope !== "user");
             const validPromotionSource =
                 source?.scope === "user" && source.scopeId === actor.accountId;
             const validRelocationSource =
@@ -400,8 +415,6 @@ export class LibraryVisibilityService {
             );
             return relocated;
         });
-        if (moved.scope === "global")
-            await this.notifyNewContent?.({ entryCount: 1 });
         return moved;
     }
 

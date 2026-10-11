@@ -313,6 +313,8 @@ export interface LibraryEntry extends LibraryEntryInput {
     createdBy: string;
     createdAt: string;
     updatedAt: string;
+    /** Relocated cards retain their identity and are excluded from new-content indicators. */
+    relocatedAt?: string;
     /** Provider-owned content cannot be moved or deleted by users. */
     protected: boolean;
     /** Request-scoped permission hint; never persisted. */
@@ -424,6 +426,8 @@ export interface LibraryPushRequest {
     /** Included only in authorized review listings. */
     source?: LibraryEntry;
     sourceSnapshot?: LibraryEntry;
+    /** Original downstream context for authorized request previews. */
+    sourceContext?: LibraryEntry[];
     /** Request-scoped action hints; never persisted. */
     canReview?: boolean;
     canWithdraw?: boolean;

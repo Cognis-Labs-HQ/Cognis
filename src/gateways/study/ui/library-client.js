@@ -298,3 +298,24 @@ export async function localizeLibraryDefinition(translations, languages) {
         throw new Error(result.error?.code || "localization_failed");
     return result.data;
 }
+
+/** Merge a duplicate draft or submit its additions for review at the canonical card's scope.
+ * @example const { entry, request } = await mergeLibraryEntry(existing.id, draft);
+ */
+export async function mergeLibraryEntry(entryId, proposedEntry) {
+    const response = await apiFetch(
+        `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/merge`,
+        {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(proposedEntry),
+        },
+    );
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const error = new Error(payload.error?.code ?? "request_failed");
+        error.details = payload.error;
+        throw error;
+    }
+    return (await response.json()).data;
+}

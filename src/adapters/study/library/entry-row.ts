@@ -34,5 +34,6 @@ export function mapEntry(row: Record<string, unknown>): LibraryEntry {
         createdBy: String(row.created_by),
         createdAt: String(row.created_at),
         updatedAt: String(row.updated_at),
+        relocatedAt: row.relocated_at ? String(row.relocated_at) : undefined,
     };
 }

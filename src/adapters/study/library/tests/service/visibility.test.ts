@@ -339,3 +339,46 @@ test("request history accepts an explicit status filter and rejects invalid valu
     );
     assert.equal(filters.length, 1);
 });
+
+test("relocation never announces existing cards as newly created global content", async () => {
+    const source = {
+        id: "personal-card",
+        schemaId: "test-language",
+        schemaVersion: 1,
+        language: "x-test",
+        layer: "units",
+        label: "Existing",
+        fields: {},
+        references: [],
+        scope: "user",
+        scopeId: "alice",
+        createdBy: "alice",
+        protected: false,
+    };
+    const announcements: unknown[] = [];
+    const store = {
+        get: async () => source,
+        saveSchema: async () => {},
+        listPushRequests: async () => [],
+        transaction: async <T>(operation: () => Promise<T>) => operation(),
+        move: async (_id: string, destination: object) => ({
+            ...source,
+            ...destination,
+        }),
+    };
+    const library = new LibraryService(
+        store as never,
+        undefined,
+        createLibraryFlow(),
+        undefined,
+        undefined,
+        async (input) => {
+            announcements.push(input);
+        },
+    );
+    await library.registerSchema(schema(1));
+    await library.relocate({ accountId: "alice", role: "admin" }, source.id, {
+        scope: "global",
+    });
+    assert.deepEqual(announcements, []);
+});

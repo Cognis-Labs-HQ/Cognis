@@ -693,3 +693,14 @@ body[data-theme="light"]
 .library-admin-editor--read-only [data-library-drop-definition] {
     display: none;
 }
+
+.library-pronunciation-component {
+    display: inline-block;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+[data-library-edit-saved-value]:has(.library-pronunciation-component) {
+    gap: 0.25rem;
+    padding: 0.2rem;
+}

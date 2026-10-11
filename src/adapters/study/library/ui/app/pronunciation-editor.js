@@ -1,3 +1,4 @@
+import { pronunciationComponents } from "./pronunciation-components.js";
 import {
     clearHorizontalCarouselSelection,
     mountHorizontalCarousels,
@@ -198,7 +199,20 @@ export function mountEditableRelationshipCarousels(
         container.innerHTML = values
             .map(
                 (value, index) =>
-                    `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${escapeHtml(value)}</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", "Pronunciation"))}">×</button></span>`,
+                    `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${
+                        pronunciationComponents(
+                            form,
+                            value,
+                            index,
+                            entries,
+                            schema,
+                        )
+                            .map(
+                                ({ id, label }) =>
+                                    `<span class="library-pronunciation-component" data-library-pronunciation-entry="${escapeHtml(id)}">${escapeHtml(label)}</span>`,
+                            )
+                            .join("") || escapeHtml(value)
+                    }</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", "Pronunciation"))}">×</button></span>`,
             )
             .join("");
     };
@@ -580,6 +594,13 @@ export function mountEditableRelationshipCarousels(
                 if (confirmed !== "delete") return;
             } else if (!event.target.closest("[data-library-edit-saved-value]"))
                 return;
+            const kanaComponents = pronunciationComponents(
+                form,
+                values[index],
+                index,
+                entries,
+                schema,
+            );
             const editingGroups = new Map();
             const editingGroupIndices = new Map();
             for (const relationshipId of relationshipIdsForKind(
@@ -599,13 +620,53 @@ export function mountEditableRelationshipCarousels(
                 editingGroupIndices.set(relationshipId, groupIndex);
                 editingGroups.set(
                     relationshipId,
-                    (groups[groupIndex] ?? []).map(({ entryId }) => entryId),
+                    groupIndex >= 0
+                        ? (groups[groupIndex] ?? []).map(
+                              ({ entryId }) => entryId,
+                          )
+                        : kanaComponents
+                              .filter(
+                                  ({ id }) =>
+                                      form.elements[
+                                          `relationship:${relationshipId}`
+                                      ]?.options &&
+                                      Array.from(
+                                          form.elements[
+                                              `relationship:${relationshipId}`
+                                          ].options,
+                                      ).some((option) => option.value === id),
+                              )
+                              .map(({ id }) => id),
+                );
+            }
+            const readingEntries = new Map(
+                entries.map((entry) => [entry.id, entry]),
+            );
+            for (const { key, entry } of form.libraryLinkedEntries ?? [])
+                readingEntries.set(key, entry);
+            for (const relationship of layer.relationships ?? []) {
+                if (
+                    relationship.presentationRole !== "pronunciation" ||
+                    editingGroupIndices.has(relationship.id)
+                )
+                    continue;
+                const groups = form.referenceGroups?.[relationship.id] ?? [];
+                editingGroupIndices.set(
+                    relationship.id,
+                    groups.findIndex(
+                        (group) =>
+                            group
+                                .map(
+                                    ({ entryId }) =>
+                                        readingEntries.get(entryId)?.label ??
+                                        "",
+                                )
+                                .join("") === values[index],
+                    ),
                 );
             }
             values.splice(index, 1);
-            for (const relationshipId of relationshipIdsForKind(
-                compositionField.dataset.libraryCompositionField,
-            )) {
+            for (const relationshipId of editingGroupIndices.keys()) {
                 const groups = form.referenceGroups?.[relationshipId];
                 if (!groups) continue;
                 const groupIndex = editingGroupIndices.get(relationshipId);

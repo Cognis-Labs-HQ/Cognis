@@ -24,6 +24,7 @@ import { mapEntry } from "./entry-row.js";
 import { hydrateEntries } from "./store/hydrate.js";
 import { ensureLibraryStoreSchema } from "./db-schema.js";
 import {
+    captureRequestContext,
     createPushRequest,
     getPushRequest,
     listPushRequests,
@@ -808,10 +809,15 @@ export class LibraryStore {
         kind: "promotion" | "update" | "merge" = "promotion",
         proposedEntry?: LibraryEntryInput,
     ): Promise<LibraryPushRequest> {
-        const sourceSnapshot = (await this.get(sourceEntryId)) ?? undefined;
         try {
-            return await this.transaction(() =>
-                createPushRequest(
+            return await this.transaction(async () => {
+                const sourceSnapshot = await this.get(sourceEntryId);
+                if (!sourceSnapshot) throw new Error("reference_not_found");
+                const sourceContext = await captureRequestContext(
+                    sourceSnapshot,
+                    this.get.bind(this),
+                );
+                return createPushRequest(
                     this.db,
                     sourceEntryId,
                     destination,
@@ -819,8 +825,9 @@ export class LibraryStore {
                     kind,
                     proposedEntry,
                     sourceSnapshot,
-                ),
-            );
+                    sourceContext,
+                );
+            });
         } catch (error) {
             if (
                 (await this.listPushRequests("pending")).some(

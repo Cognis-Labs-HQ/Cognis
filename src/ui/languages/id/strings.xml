@@ -597,4 +597,5 @@
   <string name="ui.reuse.uninstall">Copot</string>
   <string name="ui.reuse.toggle_secret_visibility">Alihkan visibilitas rahasia</string>
   <string name="ui.reuse.lookup">Cari</string>
+  <string name="ui.reuse.continue">Lanjutkan</string>
 </resources>

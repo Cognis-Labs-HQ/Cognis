@@ -171,4 +171,8 @@
     <string name="gateway.study.library_relocation_review_warning">Das Verschieben dieser geteilten Karten in den privaten Bereich erfordert eine Administratorprüfung. Abhängige Karten, die danach keinen Zugriff mehr haben, werden bei Genehmigung gelöscht. Ihre Besitzer werden benachrichtigt.</string>
     <string name="gateway.study.library_request_relocation">Verlagerung beantragen</string>
     <string name="gateway.study.library_relocation_approval_warning">Bei Genehmigung werden abhängige Karten ohne Zugriff auf die private Karte gelöscht, auch Karten anderer Nutzer. Ihre Besitzer werden benachrichtigt.</string>
+    <string name="gateway.study.library_merge_completed">Die Ergänzungen wurden mit der Karte zusammengeführt.</string>
+    <string name="gateway.study.library_merge_requested">Deine Zusammenführungsanfrage wurde zur Prüfung eingereicht.</string>
+    <string name="gateway.study.library_create_success">Die Karte wurde erstellt.</string>
+      <string name="gateway.study.library_merge_scope_error">Die Zusammenführung erfordert im Zielbereich sichtbare Abhängigkeiten. Dein Entwurf wurde beibehalten.</string>
 </resources>

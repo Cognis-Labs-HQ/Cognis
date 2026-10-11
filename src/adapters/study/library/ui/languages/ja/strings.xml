@@ -171,4 +171,8 @@
     <string name="gateway.study.library_relocation_review_warning">共有カードを非公開へ移動するには管理者の審査が必要です。承認時には、参照先へアクセスできなくなる依存カードが削除され、所有者へ通知されます。</string>
     <string name="gateway.study.library_request_relocation">移動を申請</string>
     <string name="gateway.study.library_relocation_approval_warning">承認すると、非公開カードへアクセスできない依存カードが削除されます。他のユーザーのカードも対象になり、所有者へ通知されます。</string>
+    <string name="gateway.study.library_merge_completed">カードへの追加内容を統合しました。</string>
+    <string name="gateway.study.library_merge_requested">統合要求を審査に提出しました。</string>
+    <string name="gateway.study.library_create_success">カードを作成しました。</string>
+      <string name="gateway.study.library_merge_scope_error">統合には移動先の範囲で表示できる参照先が必要です。入力内容は保持されています。</string>
 </resources>

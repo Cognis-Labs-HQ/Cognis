@@ -378,7 +378,6 @@ test("Study Library commits multi-value fields and resolves typed prefixes", () 
         adminInteractionsSource,
         /libraryCompositionField !==[\s\S]*"pronunciation"[\s\S]*return/,
     );
-    assert.match(createEntrySource, /return existing\.entry/);
 });
 
 test("Study Library exposes tagged sentence components and repeatable literals", () => {
@@ -387,9 +386,6 @@ test("Study Library exposes tagged sentence components and repeatable literals",
     assert.match(composerExtrasSource, /constructor\.literal_carousels/);
     assert.match(composerExtrasSource, /aria-readonly="true"/);
     assert.match(composerExtrasSource, /compositionOrder\.push/);
-    assert.match(composerExtrasSource, /option\.selected = selected/);
-    assert.match(composerExtrasSource, /compositionOrder\.push\(entryId\)/);
-    assert.match(composerExtrasSource, /aria-pressed="false"/);
     assert.match(composerExtrasSource, /library-composition-change/);
     assert.match(createEntrySource, /bindComposerExtras\(form\)/);
     assert.match(adminInteractionsSource, /bindComposerExtras\(form,/);

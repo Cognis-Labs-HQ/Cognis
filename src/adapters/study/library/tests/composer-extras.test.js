@@ -1,92 +1,86 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import vm from "node:vm";
+import { literalCompositionToken } from "../ui/app/composition-tokens.js";
 
 const source = readFileSync(
     new URL("../ui/app/composer-extras.js", import.meta.url),
     "utf8",
 )
-    .replace(
-        'import { escapeHtml } from "/static/reuse/escape-html.js";',
-        "const escapeHtml = (value) => String(value);",
-    )
-    .replace(
-        'import { localizedLabel } from "./presentation.js";',
-        "const localizedLabel = (metadata) => metadata?.labels?.en ?? '';",
-    )
-    .replace(
-        /import \{[\s\S]*?\} from "\.\/composition-tokens\.js";/,
-        `const compositionTokenEntryId = (value) => value;
-const literalCompositionToken = (value) => \`literal:\${value}\`;`,
+    .replace(/^import .*;\n/gm, "")
+    .replace(/\bexport /g, "");
+const carouselSource = readFileSync(
+    new URL("../../../../ui/reuse/horizontal-carousel.js", import.meta.url),
+    "utf8",
+)
+    .replace(/^import .*;\n/gm, "")
+    .replace(/\bexport /g, "");
+function extras() {
+    const context = {
+        escapeHtml: String,
+        localizedLabel: (metadata) => metadata?.labels?.en ?? "",
+        literalCompositionToken,
+        cardPreview: () => "primary reading\nprimary meaning",
+        document: { documentElement: { lang: "en" } },
+        CustomEvent,
+    };
+    vm.runInNewContext(carouselSource + "\n" + source, context);
+    return context;
+}
+test("sentence structure uses the shared relationship carousel and its primary preview", () => {
+    const context = extras();
+    const html = context.renderComposerExtras(
+        {
+            tag_carousels: [
+                {
+                    relationship: "words",
+                    tag: "sentence-structure",
+                    metadata: { labels: { en: "Sentence Structure" } },
+                },
+            ],
+        },
+        { relationships: [{ id: "words", targetLayer: "words" }] },
+        [
+            {
+                id: "desu",
+                label: "です",
+                layer: "words",
+                schemaId: "ja",
+                tags: ["sentence-structure"],
+            },
+        ],
+        { id: "ja", language: "ja" },
     );
-const { bindComposerExtras } = await import(
-    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`
-);
+    assert.match(html, /data-horizontal-carousel="words"/);
+    assert.match(html, /data-carousel-value="desu"/);
+    assert.match(html, /primary reading/);
+    assert.match(html, /primary meaning/);
+});
 
-test("tag carousels append repeated sentence structure entries", () => {
-    const option = { value: "word:structure", selected: false };
-    const select = {
-        options: [option],
-        get selectedOptions() {
-            return this.options.filter(({ selected }) => selected);
-        },
-        append() {},
-    };
-    const classes = new Set();
-    const attributes = new Map();
-    const control = {
-        dataset: {
-            libraryTagCarouselEntry: option.value,
-            libraryTagCarouselRelationship: "words",
-        },
-        classList: {
-            toggle(name, enabled) {
-                if (enabled) classes.add(name);
-                else classes.delete(name);
-            },
-        },
-        setAttribute(name, value) {
-            attributes.set(name, value);
-        },
-    };
-    let click;
-    let changes = 0;
-    let events = 0;
+test("literal controls preserve repeated punctuation placements", () => {
+    const context = extras();
+    let click,
+        changes = 0;
     const form = {
-        elements: { "relationship:words": select },
         compositionOrder: [],
-        querySelectorAll: () => [control],
-        addEventListener(type, listener) {
-            if (type === "click") click = listener;
+        querySelectorAll: () => [],
+        addEventListener: (_event, listener) => {
+            click = listener;
         },
-        dispatchEvent() {
-            events += 1;
+        dispatchEvent: () => {
+            changes++;
         },
     };
+    context.bindComposerExtras(form);
     const event = {
-        target: {
-            closest(selector) {
-                return selector === "[data-library-tag-carousel-entry]"
-                    ? control
-                    : null;
-            },
-        },
+        target: { closest: () => ({ dataset: { libraryLiteral: "！" } }) },
     };
-
-    bindComposerExtras(form, () => {
-        changes += 1;
-    });
     click(event);
-    assert.equal(option.selected, true);
-    assert.deepEqual(form.compositionOrder, [option.value]);
-    assert.equal(classes.has("is-selected"), true);
-    assert.equal(attributes.get("aria-pressed"), "true");
-
     click(event);
-    assert.equal(option.selected, true);
-    assert.deepEqual(form.compositionOrder, [option.value, option.value]);
-    assert.equal(classes.has("is-selected"), true);
-    assert.equal(attributes.get("aria-pressed"), "true");
+    assert.deepEqual(form.compositionOrder, [
+        literalCompositionToken("！"),
+        literalCompositionToken("！"),
+    ]);
     assert.equal(changes, 2);
-    assert.equal(events, 2);
 });

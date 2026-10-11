@@ -1,3 +1,4 @@
+import { referencedLinkedEntries } from "../linked-entries.js";
 import { DEFINITION_LANGUAGES } from "../definition-languages.js";
 import {
     openDefinitionPopup,
@@ -19,6 +20,7 @@ import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { appendHorizontalCarouselItem } from "/static/reuse/horizontal-carousel.js";
 import {
     createLibraryEntry,
+    mergeLibraryEntry,
     deleteLibraryEntries,
     fetchLibraryForms,
     fetchLibraryLookupProviders,
@@ -336,6 +338,10 @@ export async function openCreateEntryPopup({
                 form.elements.hidden?.value === "true" ||
                 form.elements.hidden?.checked === true,
         };
+        candidate.linkedEntries = referencedLinkedEntries(
+            candidate,
+            candidate.linkedEntries,
+        );
         let location = { scope, scopeId };
         const intended = publishEveryone
             ? { scope: "global", scopeId: "global" }
@@ -383,6 +389,9 @@ export async function openCreateEntryPopup({
                 }
             }
             nestedDefinitionIds.length = 0;
+            showToast(i18n.t("gateway.study.library_create_success"), {
+                variant: "success",
+            });
             return created;
         } catch (error) {
             if (error.message === "content_conflict") {
@@ -395,7 +404,7 @@ export async function openCreateEntryPopup({
                             {
                                 id: "continue",
                                 label: i18n.t(
-                                    "gateway.study.library_create_anyway",
+                                    "gateway.study.library_request_merge",
                                 ),
                                 variant: "confirm",
                             },
@@ -408,11 +417,31 @@ export async function openCreateEntryPopup({
                     });
                     if (decision !== "continue") return null;
                     try {
-                        const existing = await fetchLibraryEntry(conflictId);
+                        const result = await mergeLibraryEntry(
+                            conflictId,
+                            candidate,
+                        );
                         nestedDefinitionIds.length = 0;
-                        return existing.entry;
-                    } catch (fetchError) {
-                        void fetchError;
+                        showToast(
+                            i18n.t(
+                                result.request
+                                    ? "gateway.study.library_merge_requested"
+                                    : "gateway.study.library_merge_completed",
+                            ),
+                            { variant: "success" },
+                        );
+                        return result.entry;
+                    } catch (mergeError) {
+                        showToast(
+                            i18n.t(
+                                mergeError.message ===
+                                    "reference_visibility_too_low"
+                                    ? "gateway.study.library_merge_scope_error"
+                                    : "gateway.study.library_create_error",
+                            ),
+                            { variant: "error" },
+                        );
+                        return null;
                     }
                 }
             }

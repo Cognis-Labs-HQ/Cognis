@@ -1,4 +1,4 @@
-# Pelacakan konten Pustaka baru per pengguna
+# Penyempurnaan Pustaka Studi
 
 **Cabang Fitur:** feature-update-external-package-contract-definitions
 
@@ -10,7 +10,7 @@ Cognis kini menyimpan UUID entri Pustaka yang telah dilihat untuk setiap akun. M
 
 ## Indikator dan notifikasi konten baru
 
-Entri yang belum dilihat menampilkan pil **Baru** satu kali pada pratinjau dan popup detail. Pembaruan penyedia serta kontribusi global yang disetujui memberi tahu pengguna aktif ketika konten bahasa baru tersedia.
+Entri yang belum dilihat dan belum pernah dipindahkan menampilkan pil **Baru** satu kali pada pratinjau dan popup detail. Kartu global baru dan konten penyedia baru memberi tahu pengguna aktif; pemindahan kartu yang sudah ada antarlingkup tidak.
 
 ## Kontribusi terbatas dan alur peninjauan
 
@@ -584,8 +584,15 @@ Kolom wajib yang belum ada dilengkapi melalui penyedia pencarian tambahan yang t
 
 Memuat karakter berikutnya ke papan tulis yang terbuka mempertahankan posisi saat ini, termasuk posisi yang dipilih dengan menyeret. Posisi awal hanya diterapkan saat membuka papan baru.
 
+## Identitas dan Impor Kartu
+
+Konflik penggabungan menjalankan alur terdaftar: administrator menerapkan tambahan langsung, sedangkan pelajar mengajukan tinjauan untuk kartu bersama. Komposisi masukan dan nilai tunggal asli dipertahankan; bacaan, makna, tag, dan graf bacaan tersembunyi yang memenuhi syarat ditambahkan. Dependensi pribadi tidak dapat masuk ke graf bersama; penggabungan gagal mempertahankan draf. Hasil kamus dengan komposisi sama menggabungkan bacaan dan makna. Ejaan diperluas langsung diterapkan saat dipilih, sedangkan Lanjutkan atau menutup pemilih menggunakan komposisi persis. Bacaan impor ditelusuri melalui kartu tersembunyi ke Kana individual; penyuntingan mengganti tautan kelompok lama. Pembuatan berhasil menampilkan notifikasi singkat. Karusel dengan relasi sama mempertahankan pilihan satu sama lain, termasuk penghubung kalimat.
+
+Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahankan identitas kartu dan mencatat `relocatedAt`; kartu yang dipindahkan tidak dilaporkan sebagai baru, termasuk setelah perpindahan pribadi/bersama berulang. Kartu global baru dan konten penyedia baru tetap mendapat notifikasi. Permintaan menyimpan konteks kartu turunan asli beserta detail dan makna. Riwayat berizin mempertahankannya setelah relokasi; sumber yang dihapus ditampilkan sebagai tidak tersedia.
+
 ## Komit
 
+- [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
 - [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)

@@ -174,6 +174,11 @@ export interface LibraryCapability {
         entryId: string,
         destination: LibraryLocation,
     ): Promise<LibraryPushRequest>;
+    merge(
+        actor: LibraryActor,
+        entryId: string,
+        input: LibraryEntryInput,
+    ): Promise<{ entry: LibraryEntry; request?: LibraryPushRequest }>;
     requestUpdate(
         actor: LibraryActor,
         entryId: string,

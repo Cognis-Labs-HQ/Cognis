@@ -172,7 +172,6 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(source, /data-library-filter-exclusive/);
     assert.match(source, /data-library-filter-required/);
     assert.match(source, /filter\.detail\?\.defaultTag/);
-    assert.match(source, /required \|\| tags\.length === 1/);
     assert.match(source, /function refreshLibraryFilterResults/);
     assert.match(source, /field\.detail\?\.filterable === true/);
     assert.match(source, /function deduplicateDisplayEntries/);

@@ -148,6 +148,7 @@ export function bindLookupProviders(
                 layer,
                 entries,
                 i18n,
+                label,
             );
             if (!selectedSuggestion) return;
             const preparedSuggestion = await resolveLookupPrerequisites(
@@ -192,7 +193,9 @@ export function bindLookupProviders(
                 importedDefinitions.push(result.entry);
             }
             const preserveInput =
-                layer.semanticRole === "lexicalUnit" && !imported;
+                layer.semanticRole === "lexicalUnit" &&
+                !imported &&
+                !selectedSuggestion.replaceInput;
             clearLookupValues(form, draft, {
                 preserveComposition: preserveInput,
                 preservedRelationshipIds: preserveInput

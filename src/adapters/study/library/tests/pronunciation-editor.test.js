@@ -1,3 +1,4 @@
+import { pronunciationComponents } from "../ui/app/pronunciation-components.js";
 import { setGeneratedPronunciation } from "../ui/app/create-entry/pronunciation-draft.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -88,6 +89,7 @@ function editor(value = "ab") {
     };
     let carousel;
     const context = {
+        pronunciationComponents,
         document: { createElement: () => ({ dataset: {} }) },
         AbortController,
         Event,

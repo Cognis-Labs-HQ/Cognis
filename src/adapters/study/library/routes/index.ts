@@ -464,6 +464,30 @@ export function createLibraryRoutes(
                 sendJson(res, 201, { data: request });
                 return true;
             }
+            const mergeMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/merge$/,
+            );
+            if (mergeMatch && req.method === "POST") {
+                const proposed = (await readJson(req)) as LibraryEntryInput;
+                const result = await library.merge(
+                    actor,
+                    decodeURIComponent(mergeMatch[1]),
+                    proposed,
+                );
+                await log?.(
+                    "info",
+                    "Merged Library content or submitted merge request.",
+                    {
+                        component: "study-library",
+                        operation: "merge",
+                        accountId: actor.accountId,
+                        entryId: result.entry.id,
+                        requestId: result.request?.id,
+                    },
+                );
+                sendJson(res, result.request ? 201 : 200, { data: result });
+                return true;
+            }
             const relocateMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/relocate$/,
             );

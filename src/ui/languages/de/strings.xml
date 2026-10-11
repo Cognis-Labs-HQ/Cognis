@@ -597,4 +597,5 @@
   <string name="ui.reuse.uninstall">Deinstallieren</string>
   <string name="ui.reuse.toggle_secret_visibility">Sichtbarkeit des Geheimnisses umschalten</string>
   <string name="ui.reuse.lookup">Nachschlagen</string>
+  <string name="ui.reuse.continue">Weiter</string>
 </resources>

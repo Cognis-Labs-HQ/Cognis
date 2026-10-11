@@ -206,14 +206,21 @@ export function renderLibraryRequests(
                       );
                       const canAct =
                           filter === "pending" && request.status === "pending";
-                      const previewEntries = request.source
-                          ? [
-                                ...entries.filter(
-                                    ({ id }) => id !== request.source.id,
-                                ),
-                                request.source,
-                            ]
-                          : entries;
+                      const previewEntries = [
+                          ...new Map(
+                              [
+                                  ...entries,
+                                  ...(request.sourceContext ?? []),
+                                  ...(
+                                      request.proposedEntry?.linkedEntries ?? []
+                                  ).map(({ key, entry }) => ({
+                                      ...entry,
+                                      id: key,
+                                  })),
+                                  ...(request.source ? [request.source] : []),
+                              ].map((entry) => [entry.id, entry]),
+                          ).values(),
+                      ];
                       const proposed = request.proposedEntry
                           ? {
                                 ...request.source,

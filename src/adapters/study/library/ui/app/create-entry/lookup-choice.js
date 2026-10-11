@@ -1,3 +1,4 @@
+import { groupLookupSuggestions } from "./lookup-matches.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderCardContents } from "../cards.js";
@@ -9,13 +10,22 @@ export async function chooseLookupSuggestion(
     layer,
     entries,
     i18n,
+    query = suggestions[0]?.label,
 ) {
-    if (suggestions.length < 2) return suggestions[0] ?? null;
+    const matches = groupLookupSuggestions(suggestions, layer);
+    const normalized = (value) =>
+        String(value ?? "")
+            .trim()
+            .normalize("NFKC");
+    const exact =
+        matches.find(({ label }) => normalized(label) === normalized(query)) ??
+        null;
+    if (matches.length < 2 && exact) return exact;
     let selected = null;
     const definitionLayer = schema.layers.find(
         ({ semanticRole }) => semanticRole === "definition",
     );
-    const previews = suggestions
+    const previews = matches
         .map((suggestion, index) => {
             const definitions = definitionLayer
                 ? (suggestion.definitions ?? []).map(
@@ -46,43 +56,27 @@ export async function chooseLookupSuggestion(
         body: `<div class="library-lookup-choices">${previews}</div>`,
         actions: [
             {
-                id: "confirm",
-                label: i18n.t("ui.reuse.confirm"),
+                id: "continue",
+                label: i18n.t("ui.reuse.continue"),
                 variant: "confirm",
-                disabled: true,
-            },
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "neutral",
+                disabled: !exact,
             },
         ],
-        onOpen(overlay) {
+        onOpen(overlay, close) {
             overlay.addEventListener("click", (event) => {
                 const button = event.target.closest(
                     "[data-library-lookup-choice]",
                 );
                 if (!button) return;
-                selected = Number(button.dataset.libraryLookupChoice);
-                overlay
-                    .querySelectorAll("[data-library-lookup-choice]")
-                    .forEach((choice) => {
-                        const active =
-                            Number(choice.dataset.libraryLookupChoice) ===
-                            selected;
-                        choice.classList.toggle("is-selected", active);
-                        choice.setAttribute("aria-pressed", String(active));
-                    });
-                overlay.querySelector(
-                    '[data-popup-action="confirm"]',
-                ).disabled = false;
+                selected = matches[Number(button.dataset.libraryLookupChoice)];
+                void close();
             });
         },
-        onAction(actionId) {
-            return actionId !== "confirm" || selected !== null;
-        },
     });
-    return action === "confirm" && selected !== null
-        ? suggestions[selected]
-        : null;
+    if (selected)
+        return {
+            ...selected,
+            replaceInput: normalized(selected.label) !== normalized(query),
+        };
+    return action === "continue" || action === null ? exact : null;
 }

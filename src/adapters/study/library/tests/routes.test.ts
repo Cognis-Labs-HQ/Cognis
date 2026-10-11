@@ -368,3 +368,53 @@ test("unexpected persistence failures return a generic server error", async () =
     assert.equal(JSON.parse(response.payload).error.code, "request_failed");
     assert.equal(response.payload.includes("private_index"), false);
 });
+
+for (const role of ["admin", "user"] as const) {
+    test(`merge route returns the ${role === "admin" ? "immediate result" : "review request"} from its owning service`, async () => {
+        let merged: unknown;
+        const input = {
+            schemaId: "mock-language",
+            layer: "words",
+            label: "年",
+        };
+        const route = createLibraryRoutes(
+            {
+                merge: async (
+                    actor: unknown,
+                    id: string,
+                    proposal: unknown,
+                ) => {
+                    merged = { actor, id, proposal };
+                    return {
+                        entry: { id: "canonical" },
+                        ...(role === "user"
+                            ? { request: { id: "request", status: "pending" } }
+                            : {}),
+                    };
+                },
+            } as never,
+            createAuthContext(
+                new Map([["token", { sub: "account", role }]]),
+            ) as never,
+        );
+        const response = new ResponseRecorder();
+        await route(
+            new RequestRecorder({
+                method: "POST",
+                token: "token",
+                body: JSON.stringify(input),
+            }) as never,
+            response as never,
+            new URL(
+                "http://localhost/api/v1/study/library/entries/canonical/merge",
+            ),
+        );
+        assert.equal(response.statusCode, role === "admin" ? 200 : 201);
+        assert.deepEqual(merged, {
+            actor: { accountId: "account", role },
+            id: "canonical",
+            proposal: input,
+        });
+        assert.equal(JSON.parse(response.payload).data.entry.id, "canonical");
+    });
+}

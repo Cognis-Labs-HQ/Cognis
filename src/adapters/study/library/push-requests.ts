@@ -5,6 +5,28 @@ import type {
     LibraryLocation,
     LibraryPushRequest,
 } from "./types.js";
+import { allInputReferences } from "./service/dependencies.js";
+
+export async function captureRequestContext(
+    source: LibraryEntry,
+    read: (id: string) => Promise<LibraryEntry | null>,
+): Promise<LibraryEntry[]> {
+    const visited = new Set([source.id]);
+    const context: LibraryEntry[] = [];
+    const queue = [source];
+    for (const entry of queue) {
+        const ids = [
+            ...new Set(allInputReferences(entry).map(({ entryId }) => entryId)),
+        ].filter((id) => !visited.has(id));
+        ids.forEach((id) => visited.add(id));
+        for (const target of await Promise.all(ids.map(read))) {
+            if (!target) continue;
+            context.push(target);
+            queue.push(target);
+        }
+    }
+    return context;
+}
 
 export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
     await db.ensureTable({
@@ -33,6 +55,7 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
             },
             { name: "proposed_entry_json", type: "text" },
             { name: "source_entry_json", type: "text" },
+            { name: "source_context_json", type: "text" },
             {
                 name: "created_at",
                 type: "timestamp",
@@ -57,6 +80,7 @@ export async function createPushRequest(
     kind: "promotion" | "update" | "merge" = "promotion",
     proposedEntry?: LibraryPushRequest["proposedEntry"],
     sourceSnapshot?: LibraryEntry,
+    sourceContext: LibraryEntry[] = [],
 ): Promise<LibraryPushRequest> {
     const id = randomUUID();
     await db.executeCommand({
@@ -80,6 +104,7 @@ export async function createPushRequest(
             source_entry_json: sourceSnapshot
                 ? JSON.stringify(sourceSnapshot)
                 : null,
+            source_context_json: JSON.stringify(sourceContext),
         },
     });
     return {
@@ -91,6 +116,7 @@ export async function createPushRequest(
         kind,
         proposedEntry,
         sourceSnapshot,
+        sourceContext,
     };
 }
 
@@ -131,6 +157,9 @@ function mapPushRequest(row: Record<string, unknown>): LibraryPushRequest {
         sourceSnapshot: row.source_entry_json
             ? JSON.parse(String(row.source_entry_json))
             : undefined,
+        sourceContext: row.source_context_json
+            ? JSON.parse(String(row.source_context_json))
+            : [],
         requestedAt: String(row.created_at),
         reviewedAt: row.reviewed_by ? String(row.updated_at) : undefined,
         reviewedBy: row.reviewed_by ? String(row.reviewed_by) : undefined,
