@@ -1,5 +1,7 @@
 import { VARIANT_DIRECTIONS } from "./variant-directions.js";
 
+const pendingFits = new WeakMap();
+
 const DIRECTION_ALTERNATIVES = {
     up: [
         "up-left",
@@ -200,6 +202,12 @@ function visibleVariantSlots(rootShell) {
 }
 
 export function restorePreferredVariantDirections(rootShell) {
+    const pending = pendingFits.get(rootShell);
+    if (pending !== undefined) window.cancelAnimationFrame(pending);
+    pendingFits.delete(rootShell);
+    rootShell
+        .closest(".library-entry-grid")
+        ?.style.removeProperty("--library-branch-space");
     rootShell
         .querySelectorAll("[data-library-preferred-direction]")
         .forEach((slot) => {
@@ -214,23 +222,36 @@ export function restorePreferredVariantDirections(rootShell) {
 }
 
 export function fitVariantBranchWithinGrid(rootShell) {
-    window.requestAnimationFrame(() => {
+    if (pendingFits.has(rootShell)) return;
+    const frame = window.requestAnimationFrame(() => {
+        pendingFits.delete(rootShell);
+        if (
+            !rootShell.isConnected ||
+            !rootShell.classList.contains("library-entry-variants-open")
+        )
+            return;
         const grid = rootShell.closest(".library-entry-grid");
         if (!grid) return;
         const gridRect = grid.getBoundingClientRect();
+        const reserved =
+            Number.parseFloat(
+                grid.style.getPropertyValue("--library-branch-space"),
+            ) || 0;
+        const naturalBottom = gridRect.bottom - reserved;
         const boundary = {
-            top: gridRect.top + 2,
-            right: gridRect.right - 2,
-            bottom: gridRect.bottom - 2,
-            left: gridRect.left + 2,
+            top: Math.max(gridRect.top + 14, 14),
+            right: Math.min(gridRect.right - 6, window.innerWidth - 6),
+            bottom: Math.min(naturalBottom - 6, window.innerHeight - 6),
+            left: Math.max(gridRect.left + 6, 6),
         };
         const slots = visibleVariantSlots(rootShell);
-        const occupiedRects = Array.from(
-            grid.querySelectorAll(
-                ":scope > .library-entry-card-shell > .library-entry-card",
-            ),
-            (card) => collisionBounds(card.getBoundingClientRect()),
+        // Background cards are dimmed, not part of the active branch's layout.
+        const rootCard = rootShell.querySelector(
+            ":scope > .library-entry-card",
         );
+        const occupiedRects = [
+            collisionBounds(rootCard.getBoundingClientRect()),
+        ];
         for (const slot of slots) {
             if (slot.dataset.libraryFittedDirection) {
                 occupiedRects.push(collisionBounds(cardBounds(slot)));
@@ -238,45 +259,56 @@ export function fitVariantBranchWithinGrid(rootShell) {
         }
         for (const slot of slots) {
             if (slot.dataset.libraryFittedDirection) continue;
-            const preferred = slot.dataset.libraryPreferredDirection;
-            const candidates = variantDirectionCandidates(preferred);
-            const ancestorRects = ancestorCardBounds(slot);
-            const preferredDistance = Number(
-                slot.dataset.libraryPreferredDistance ?? 1,
+            const candidates = variantDirectionCandidates(
+                slot.dataset.libraryPreferredDirection,
             );
-            const maximumDistance =
-                slots.length + ancestorRects.length + preferredDistance + 1;
+            const ancestorRects = ancestorCardBounds(slot);
             let best = null;
-            for (
-                let distance = preferredDistance;
-                distance <= maximumDistance;
-                distance += 1
-            ) {
+            // Always start next to the parent, regardless of the static grid plan.
+            // Additional rows are available when the active branch cannot fit.
+            const maximumDistance = slots.length + ancestorRects.length + 1;
+            for (let distance = 1; distance <= maximumDistance; distance += 1) {
                 for (const direction of candidates) {
                     setVariantDirection(slot, direction);
                     setVariantDistance(slot, distance);
                     const rect = cardBounds(slot);
                     if (!isAncestorSafe(rect, ancestorRects)) continue;
+                    if (collisionScore(rect, occupiedRects) > 0) continue;
+                    // Never accept horizontal clipping or children above the grid.
+                    if (
+                        rect.left < boundary.left ||
+                        rect.right > boundary.right ||
+                        rect.top < boundary.top
+                    )
+                        continue;
                     const overflow = overflowScore(rect, boundary);
-                    const collision = collisionScore(rect, occupiedRects);
                     const candidate = {
                         direction,
                         distance,
                         overflow,
-                        collision,
+                        collision: 0,
                     };
-                    if (isBetterVariantFit(candidate, best)) {
-                        best = candidate;
-                    }
-                    if (collision === 0 && overflow === 0) break;
+                    if (isBetterVariantFit(candidate, best)) best = candidate;
+                    if (overflow === 0) break;
                 }
-                if (best?.collision === 0 && best.overflow === 0) break;
+                if (best?.overflow === 0) break;
             }
+            // The downward ray is always extendable, even in a one-column grid.
+            if (!best) continue;
             setVariantDirection(slot, best.direction);
             setVariantDistance(slot, best.distance);
             slot.dataset.libraryFittedDirection = best.direction;
             slot.dataset.libraryFittedDistance = String(best.distance);
             occupiedRects.push(collisionBounds(cardBounds(slot)));
         }
+        const bottom = Math.max(
+            naturalBottom,
+            ...occupiedRects.map((rect) => rect.bottom + 12),
+        );
+        grid.style.setProperty(
+            "--library-branch-space",
+            `${Math.max(0, bottom - naturalBottom)}px`,
+        );
     });
+    pendingFits.set(rootShell, frame);
 }

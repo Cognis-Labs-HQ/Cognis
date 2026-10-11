@@ -588,6 +588,10 @@ Merge conflicts invoke the registered merge flow: administrators apply additions
 
 Filters reflect visible content in the selected layer. Relocation preserves entry identity and records `relocatedAt`; moved cards are excluded from new-content indicators and announcements, even after repeated private/shared moves. New global cards and new provider records retain their normal notifications. Request snapshots include original downstream context for card details and definitions; authorized history keeps that context after relocation, while a deleted source is reported as unavailable.
 
+## Nested child card layout
+
+Expanded children occupy the closest available positions around the active branch; dimmed background cards do not push them across the grid. Fitted ancestors remain stable while deeper children open. When a branch needs more vertical space, the grid reserves scrollable space and releases it on close. Resize and card-size changes trigger a fresh fit. Branch visibility is controlled consistently for pointer and keyboard focus, and long-pressing a child continues the current branch. Pending layout work is coalesced and cancelled when the branch closes.
+
 ## Commits
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -725,3 +729,4 @@ Filters reflect visible content in the selected layer. Relocation preserves entr
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739

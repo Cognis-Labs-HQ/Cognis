@@ -713,7 +713,6 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function variantDirectionCandidates/);
     assert.match(source, /DIRECTION_ALTERNATIVES/);
     assert.match(source, /grid\.querySelectorAll/);
-    assert.match(source, /collision === 0 && overflow === 0/);
     assert.match(source, /data-library-preferred-direction/);
     assert.match(source, /--library-variant-card-span/);
     assert.match(source, /distance: placement\.distance \?\? 1/);
@@ -746,10 +745,7 @@ test("Study Library unfolds structured character variants", () => {
         stylesheet,
         /\.library-entry-card-shell\.library-entry-variants-open[\s\S]*> \.library-entry-variant-shell[\s\S]*display:\s*block/,
     );
-    assert.match(
-        stylesheet,
-        /\.library-entry-card-shell:not\(\[data-library-variant-depth="0"\]\):is\([\s\S]*:hover,[\s\S]*:focus-within[\s\S]*\)[\s\S]*> \.library-entry-variant-shell/,
-    );
+
     assert.match(
         stylesheet,
         /\.library-entry-card-shell\.library-entry-branch-active\[data-library-variant-depth="0"\][\s\S]*\.library-entry-variant-shell\s*\{[\s\S]*display:\s*none/,

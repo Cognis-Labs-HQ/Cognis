@@ -43,6 +43,7 @@ export function activateVariantBranch(root, card) {
     if (shell.dataset.libraryVariantDepth === "0") {
         if (shell.classList.contains("library-entry-variants-open")) {
             clearVariantBranch(root);
+            fitVariantBranchWithinGrid(shell);
         }
         return;
     }
@@ -71,6 +72,34 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
     let longPressOrigin = null;
     let branchHoverTimer = null;
     let pendingBranchShell = null;
+    const refitOpenBranches = () => {
+        root.querySelectorAll(".library-entry-variants-open").forEach(
+            (shell) => {
+                restorePreferredVariantDirections(shell);
+                fitVariantBranchWithinGrid(shell);
+            },
+        );
+    };
+    window.addEventListener("resize", refitOpenBranches, { signal });
+    const dimensions = new WeakMap();
+    const observer = new ResizeObserver((records) => {
+        let changed = false;
+        for (const { target, contentRect } of records) {
+            const size = `${contentRect.width}:${contentRect.height}`;
+            const previous = dimensions.get(target);
+            dimensions.set(target, size);
+            if (previous !== undefined && previous !== size) changed = true;
+        }
+        if (changed) refitOpenBranches();
+    });
+    // Opening hidden descendants is a visibility change, not a resize of the
+    // available space. Observe root cards so it cannot move fitted ancestors.
+    root.querySelectorAll(
+        ".library-entry-grid, .library-entry-grid > .library-entry-card-shell > .library-entry-card",
+    ).forEach((element) => observer.observe(element));
+    signal?.addEventListener("abort", () => observer.disconnect(), {
+        once: true,
+    });
     const cancelLongPress = () => {
         if (longPressTimer !== null) window.clearTimeout(longPressTimer);
         longPressTimer = null;
@@ -80,6 +109,8 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
         "abort",
         () => {
             cancelLongPress();
+            closeUnrelatedVariantViews(root, null);
+            clearVariantBranch(root);
             if (branchHoverTimer !== null)
                 window.clearTimeout(branchHoverTimer);
         },
@@ -97,6 +128,12 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
             cancelLongPress();
             longPressOrigin = { x: event.clientX, y: event.clientY };
             longPressTimer = window.setTimeout(() => {
+                if (shell.dataset.libraryVariantDepth !== "0") {
+                    activateVariantBranch(root, card);
+                    suppressNextClick();
+                    cancelLongPress();
+                    return;
+                }
                 clearVariantBranch(root);
                 root.querySelectorAll(".library-entry-variants-open").forEach(
                     (openShell) => {
@@ -104,6 +141,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
                             openShell.classList.remove(
                                 "library-entry-variants-open",
                             );
+                            restorePreferredVariantDirections(openShell);
                         }
                     },
                 );
@@ -158,6 +196,14 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
             window.clearTimeout(branchHoverTimer);
             branchHoverTimer = null;
             pendingBranchShell = null;
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "focusin",
+        (event) => {
+            const card = event.target.closest("button[data-library-entry]");
+            if (card) activateVariantBranch(root, card);
         },
         { signal },
     );

@@ -590,6 +590,10 @@ Konflik penggabungan menjalankan alur terdaftar: administrator menerapkan tambah
 
 Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahankan identitas kartu dan mencatat `relocatedAt`; kartu yang dipindahkan tidak dilaporkan sebagai baru, termasuk setelah perpindahan pribadi/bersama berulang. Kartu global baru dan konten penyedia baru tetap mendapat notifikasi. Permintaan menyimpan konteks kartu turunan asli beserta detail dan makna. Riwayat berizin mempertahankannya setelah relokasi; sumber yang dihapus ditampilkan sebagai tidak tersedia.
 
+## Tata letak kartu anak
+
+Kartu anak yang dibuka menempati posisi kosong terdekat di sekitar cabang aktif; kartu latar yang diredupkan tidak mendorongnya ke ujung kisi. Posisi leluhur tetap stabil ketika anak yang lebih dalam dibuka. Jika cabang membutuhkan lebih banyak ruang vertikal, kisi menyediakan ruang tambahan yang dapat digulir dan melepaskannya saat ditutup. Perubahan ukuran jendela atau kartu menghitung ulang posisi. Penunjuk dan fokus papan ketik mengendalikan visibilitas cabang secara konsisten; menekan lama kartu anak melanjutkan cabang yang sedang aktif. Perhitungan tata letak tertunda digabungkan dan dibatalkan ketika cabang ditutup.
+
 ## Komit
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -727,3 +731,4 @@ Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahank
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739

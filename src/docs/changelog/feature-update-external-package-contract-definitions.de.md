@@ -588,6 +588,10 @@ Bei Zusammenführungskonflikten wird der registrierte Ablauf ausgeführt: Admini
 
 Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben behält die Kartenidentität und speichert `relocatedAt`; verschobene Karten werden auch bei wiederholtem Wechsel zwischen privater und gemeinsamer Sichtbarkeit nicht als neu gemeldet. Neue globale Karten und neue Anbieterinhalte erhalten weiterhin Benachrichtigungen. Anfragen speichern den ursprünglichen nachgelagerten Kartenkontext mit Details und Bedeutungen. Berechtigte Verlaufsansichten behalten ihn nach dem Verschieben; gelöschte Quellkarten werden als nicht verfügbar angezeigt.
 
+## Layout verschachtelter Karten
+
+Aufgeklappte Kinder belegen die nächsten freien Positionen am aktiven Zweig; abgeblendete Hintergrundkarten verdrängen sie nicht quer durch das Raster. Bereits platzierte Vorfahren bleiben beim Öffnen tieferer Kinder stabil. Benötigt der Zweig mehr Höhe, reserviert das Raster zusätzlichen scrollbar erreichbaren Platz und gibt ihn beim Schließen frei. Größenänderungen des Fensters oder der Karten lösen eine neue Platzierung aus. Zeiger und Tastaturfokus steuern die Zweigsichtbarkeit einheitlich; langes Drücken auf ein Kind setzt den aktuellen Zweig fort. Ausstehende Layoutberechnungen werden zusammengefasst und beim Schließen abgebrochen.
+
 ## Commits
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -725,3 +729,4 @@ Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben beh
 - [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
