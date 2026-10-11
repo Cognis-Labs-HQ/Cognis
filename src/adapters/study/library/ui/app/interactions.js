@@ -1,3 +1,4 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLibraryLocations,
@@ -23,6 +24,7 @@ import { createLibraryVisibilityActions } from "./visibility-actions.js";
 import { bindTransformationInteractions } from "./transformation-interactions.js";
 import { mergeEntryCollectionUpdate } from "./entry-collection.js";
 import { deleteLibrarySelection } from "./deletion-actions.js";
+import { bindBrowseControls } from "./browse-controls.js";
 let activeEntryPopup = null;
 const interactionControllers = new WeakMap();
 export function bindLibraryInteractions(root, context) {
@@ -36,15 +38,19 @@ export function bindLibraryInteractions(root, context) {
         showReferenceTree = false,
         signal: ownerSignal,
     } = context;
-    interactionControllers.get(root)?.abort();
-    const controller = new AbortController();
+    const controller = replaceMountScope(
+        interactionControllers.get(root),
+        ownerSignal,
+    );
     interactionControllers.set(root, controller);
     const signal = controller.signal;
-    if (ownerSignal?.aborted) controller.abort();
-    else
-        ownerSignal?.addEventListener("abort", () => controller.abort(), {
-            once: true,
-        });
+    if (root.querySelector(".library-browser"))
+        void bindBrowseControls(root, context.entries, schemas, i18n, signal);
+    window.addEventListener(
+        "cognis:route-will-change",
+        () => controller.abort(),
+        { signal, once: true },
+    );
     let entries = context.entries;
     const requests = context.requests ?? [];
     let locations;

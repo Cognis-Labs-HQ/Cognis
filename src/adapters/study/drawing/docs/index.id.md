@@ -45,3 +45,7 @@ Memuat karakter berikutnya ke papan tulis yang terbuka mempertahankan posisi saa
 Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinonaktifkan saat semua panduan goresan terlihat. Pergantian karakter mempertahankan posisi jendela pilihan pengguna.
 
 Popup detail mempertahankan wadah gulir dokumen dan ruang bilah gulir agar menu samping tetap pada posisinya. Papan gambar menggunakan batas mengambang terpisah tanpa mengubah tinggi atau luapan halaman.
+
+## Siklus Sesi Papan Gambar
+
+Papan gambar ditutup saat rute dashboard berubah dan melepaskan kanvas, observer, serta penangan peristiwa. Batas mengambang tetap memakai gaya milik komponen tanpa menimpa kelas composer atau shell.

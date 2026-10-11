@@ -130,7 +130,7 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     filterMenu.mount(root, { signal });
-    bindStudySubNavigation(root, { signal });
+    bindStudySubNavigation(root, { signal, i18n });
     bindLibraryRequestReviews(root, requests, { i18n, signal, render, reload });
     uiCtx.capabilities.get("ui:profileAvatarRenderer")?.hydrate(root);
     root.addEventListener(

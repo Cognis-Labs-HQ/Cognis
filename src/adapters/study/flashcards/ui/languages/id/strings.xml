@@ -13,10 +13,13 @@
   <string name="adapter.study.flashcards.deck_deleted">Kumpulan kartu dihapus.</string>
   <string name="adapter.study.flashcards.deck_save_error">Kumpulan kartu tidak dapat disimpan. Periksa kartu yang dipilih dan format catatan impor.</string>
   <string name="adapter.study.flashcards.deck_load_error">Kumpulan kartu atau kartu pustaka tidak dapat dimuat.</string>
-  <string name="adapter.study.flashcards.deck_empty">Buat kumpulan kartu dari pustaka atau impor catatan yang kompatibel dengan Anki.</string>
+  <string name="adapter.study.flashcards.deck_empty">Tidak ada dek kartu belajar</string>
   <string name="adapter.study.flashcards.deck_study">Pelajari kumpulan kartu</string>
   <string name="adapter.study.flashcards.deck_due_only">Pelajari hanya kartu baru atau yang sudah jatuh tempo</string>
   <string name="adapter.study.flashcards.deck_finished">Semua kartu yang dipilih telah ditinjau.</string>
   <string name="adapter.study.flashcards.deck_review_error">Hasil tinjauan tidak dapat disimpan. Silakan coba lagi.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} kartu tidak lagi tersedia dan dilewati.</string>
+  <string name="adapter.study.flashcards.page_subtitle">Jelajahi Dek Kartu Belajar yang Terlihat</string>
+  <string name="adapter.study.flashcards.deck_import">Impor Dek</string>
+  <string name="adapter.study.flashcards.deck_cards">Kartu</string>
 </resources>

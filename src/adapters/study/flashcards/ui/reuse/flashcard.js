@@ -7,6 +7,7 @@
  * @param {object} detail Entry, direct references, and optional dependant cards.
  * @returns {string} Escaped card markup.
  */
+import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
 /**
@@ -71,11 +72,19 @@ export function flashcardValues(detail, schemas = [], language = "en") {
  * @param {object[]} entries Library context used by callers of card renderers.
  * @param {{t: function}} i18n Localized labels.
  * @param {string} language Viewer language.
+ * @param {{favourites?: boolean}} options Authenticated favourite controls.
  * @returns {string} Escaped reversible card markup.
  */
-export function renderFlashcard(detail, schemas, entries, i18n, language) {
+export function renderFlashcard(
+    detail,
+    schemas,
+    entries,
+    i18n,
+    language,
+    options = {},
+) {
     const values = flashcardValues(detail, schemas, language);
-    return `<section class="study-flashcard" data-flashcard><button type="button" class="study-flashcard-flip btn-neutral" data-flashcard-flip aria-label="${escapeHtml(i18n.t("adapter.study.flashcards.flashcard_reveal"))}" aria-pressed="false"><span class="study-flashcard-inner"><span class="study-flashcard-face study-flashcard-front"><strong>${escapeHtml(values.front)}</strong><span>${escapeHtml(values.layer)}</span></span><span class="study-flashcard-face study-flashcard-back" aria-hidden="true"><strong>${escapeHtml(values.pronunciation || values.front)}</strong><span>${escapeHtml(values.back)}</span></span></span></button><div class="study-flashcard-grades">${["again", "good", "easy"].map((grade) => `<button type="button" class="btn-${grade === "again" ? "cancel" : "confirm"}" disabled data-flashcard-grade="${grade}">${escapeHtml(i18n.t(`adapter.study.flashcards.flashcard_${grade}`))}</button>`).join("")}</div></section>`;
+    return `<section class="study-flashcard" data-flashcard>${options.favourites ? renderFavourite("flashcard", detail.entry.id, i18n) : ""}<button type="button" class="study-flashcard-flip btn-neutral" data-flashcard-flip aria-label="${escapeHtml(i18n.t("adapter.study.flashcards.flashcard_reveal"))}" aria-pressed="false"><span class="study-flashcard-inner"><span class="study-flashcard-face study-flashcard-front"><strong>${escapeHtml(values.front)}</strong><span>${escapeHtml(values.layer)}</span></span><span class="study-flashcard-face study-flashcard-back" aria-hidden="true"><strong>${escapeHtml(values.pronunciation || values.front)}</strong><span>${escapeHtml(values.back)}</span></span></span></button><div class="study-flashcard-grades">${["again", "good", "easy"].map((grade) => `<button type="button" class="btn-${grade === "again" ? "cancel" : "confirm"}" disabled data-flashcard-grade="${grade}">${escapeHtml(i18n.t(`adapter.study.flashcards.flashcard_${grade}`))}</button>`).join("")}</div></section>`;
 }
 
 /** @param {HTMLElement} root Card container. @param {object} options Abort signal and asynchronous grade handler. @returns {void} */

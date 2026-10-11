@@ -446,3 +446,11 @@ Filter entsprechen den sichtbaren Inhalten der gewählten Ebene. Verschieben beh
 Aufgeklappte Kinder belegen die nächsten freien Positionen am aktiven Zweig; abgeblendete Hintergrundkarten verdrängen sie nicht quer durch das Raster. Bereits platzierte Vorfahren bleiben beim Öffnen tieferer Kinder stabil. Benötigt der Zweig mehr Höhe, reserviert das Raster zusätzlichen scrollbar erreichbaren Platz und gibt ihn beim Schließen frei. Größenänderungen des Fensters oder der Karten lösen eine neue Platzierung aus. Zeiger und Tastaturfokus steuern die Zweigsichtbarkeit einheitlich; langes Drücken auf ein Kind setzt den aktuellen Zweig fort. Ausstehende Layoutberechnungen werden zusammengefasst und beim Schließen abgebrochen.
 
 [Strukturierter Bibliotheksimport](/docs/adapters/study/library/import)
+
+## Study-Ansicht und Favoriten
+
+Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks und vollständiger Startdecks aktivierter Sprachanbieter. Linkfreigaben behalten ihre Zugriffsregeln und bilden kein öffentliches Verzeichnis. Das +-Menü rechts oben bietet Deck erstellen und Deck importieren. Erkunden, Library und Flashcards verwenden gespeicherte Study-Favoriten und gemeinsame Sortierung (Anbieterreihenfolge, A–Z, Z–A, neueste oder älteste zuerst). Der goldene Stern filtert die Ergebnisse nach Favoriten. Library-Einträge, Decks und einzelne Lernkarten haben getrennte Favoriten. Favoriten gewähren keinen zusätzlichen Zugriff. Das Zeichenfeld beendet seine Sitzung bei Routenwechseln und überschreibt keine Composer- oder Shell-Klassen.
+
+## Wörterbuch-Suchergebnisse
+
+Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gateway-Client speichert Abfrage, Sprache und Anbieter kontobezogen auf dem Server; die authentifizierte Sitzung liest diesen Zustand, andere Konten erhalten keinen Zugriff. Mehrere Treffer erscheinen als horizontal scrollbare Vorschauen. Die Auswahl aktualisiert eine einzelne Detailansicht und erhält die Scrollposition. Ein Treffer öffnet direkt die Detailansicht. Abzeichen erscheinen nur einmal, Anbieter-Rohdaten bleiben verborgen. Die Kartenerstellung verwendet den bestehenden Composer und die Abhängigkeitsauflösung. Cache-Ablauf und Aktualisierung bleiben Aufgabe von Cognis Core.

@@ -13,10 +13,13 @@
   <string name="adapter.study.flashcards.deck_deleted">Kartensatz gelöscht.</string>
   <string name="adapter.study.flashcards.deck_save_error">Der Kartensatz konnte nicht gespeichert werden. Prüfen Sie die gewählten Karten und das Notizformat.</string>
   <string name="adapter.study.flashcards.deck_load_error">Kartensatz oder Bibliothekskarten konnten nicht geladen werden.</string>
-  <string name="adapter.study.flashcards.deck_empty">Erstellen Sie einen Kartensatz aus Bibliothekskarten oder importieren Sie Anki-kompatible Notizen.</string>
+  <string name="adapter.study.flashcards.deck_empty">Keine Lernkartendecks gefunden</string>
   <string name="adapter.study.flashcards.deck_study">Kartensatz lernen</string>
   <string name="adapter.study.flashcards.deck_due_only">Nur neue oder fällige Karten lernen</string>
   <string name="adapter.study.flashcards.deck_finished">Alle ausgewählten Karten wurden wiederholt.</string>
   <string name="adapter.study.flashcards.deck_review_error">Diese Wiederholung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} Karte(n) sind nicht mehr verfügbar und wurden übersprungen.</string>
+  <string name="adapter.study.flashcards.page_subtitle">Sichtbare Lernkartendecks durchsuchen</string>
+  <string name="adapter.study.flashcards.deck_import">Deck importieren</string>
+  <string name="adapter.study.flashcards.deck_cards">Karten</string>
 </resources>

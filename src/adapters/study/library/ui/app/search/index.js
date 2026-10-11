@@ -1,3 +1,4 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -10,6 +11,7 @@ import {
     renderStudySubNavigation,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
+    dictionarySearchContext,
     fetchLibrarySchemas,
     searchLibraryDictionary,
 } from "/static/gateways/study/ui/library-client.js";
@@ -18,7 +20,7 @@ import { loadDictionaryReferences } from "./references.js";
 import { renderCardContents } from "../cards.js";
 import {
     renderDetailFields,
-    renderMetadataPills,
+    metadataValues,
     layerForEntry,
     localizedTextValue,
     relationSection,
@@ -30,27 +32,35 @@ import { openEntryPopup } from "../entry-popup.js";
 import { canCreateLayerEntries } from "../editability.js";
 import { openCreateEntryPopup } from "../create-entry/index.js";
 
-export async function mount(root, { signal } = {}) {
+let mountController = null;
+
+export async function mount(root, { signal: routerSignal } = {}) {
+    mountController = replaceMountScope(mountController, routerSignal);
+    const controller = mountController;
+    const signal = controller.signal;
+    window.addEventListener(
+        "cognis:route-will-change",
+        () => controller.abort(),
+        { signal, once: true },
+    );
     const i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/gateways/study/languages",
             "/static/adapters/study/library/languages",
         ],
     });
-    const parameters = new URLSearchParams(location.search);
+    if (location.search || location.hash)
+        history.replaceState(history.state, "", location.pathname);
+    const input = await dictionarySearchContext();
+    signal.throwIfAborted();
     const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: parameters.get("language"),
+        fallbackLanguageCode: input?.language,
     });
     const schemas = await fetchLibrarySchemas(model.selectedLanguageCode);
     let entries = [];
-    const input = {
-        providerId: parameters.get("providerId"),
-        schemaId: parameters.get("schemaId"),
-        query: parameters.get("query") || "",
-    };
     const selectedProvider = model.dictionaryProviders.find(
         ({ id, schemaId }) =>
-            id === input.providerId && schemaId === input.schemaId,
+            id === input?.providerId && schemaId === input?.schemaId,
     );
     let results = [],
         selected = 0,
@@ -60,35 +70,44 @@ export async function mount(root, { signal } = {}) {
     const entryFor = (result, index) => ({
         ...result,
         id: `dictionary:${index}`,
-        label: result.label || input.query,
+        label: result.label || input?.query,
         language: model.selectedLanguageCode,
         fields: result.fields ?? {},
     });
     const render =
         () => `<section class="library-dictionary-results" data-library-dictionary-results>
-        <h2>${escapeHtml(input.query)}</h2>
+        ${results.length === 1 ? "" : `<header class="library-dictionary-heading"><h2>${escapeHtml(input?.query || i18n.t("gateway.study.library_search_results"))}</h2></header>`}
         ${loading ? `<p role="status">${escapeHtml(i18n.t("ui.reuse.loading"))}</p>` : ""}
         ${failed ? `<p role="alert">${escapeHtml(i18n.t("gateway.study.library_dictionary_error"))}</p>` : ""}
         ${response?.cached ? `<p>${escapeHtml(i18n.t("gateway.study.library_dictionary_cached").replace("{{ time }}", formatDateTime(response.cachedAt)))}</p>` : ""}
-        <div class="library-dictionary-cards">${results
-            .map((result, index) => {
-                const entry = entryFor(result, index),
-                    schema = schemas.find(({ id }) => id === result.schemaId),
-                    layer = layerForEntry(schemas, entry);
-                const hasDefinition = entries.some(
-                    (candidate) =>
-                        (entry.references ?? []).some(
-                            ({ entryId }) => entryId === candidate.id,
-                        ) && isMeaningLayer(layerForEntry(schemas, candidate)),
-                );
-                const definition = !hasDefinition
-                    ? localizedTextValue(
-                          result.definitions?.[0]?.translations ?? {},
-                      )
-                    : "";
-                return `<button class="library-entry-card btn-neutral${index === selected ? " active" : ""}" type="button" data-dictionary-result="${index}" aria-pressed="${index === selected}">${renderCardContents(entry, layer, entries, schema, i18n)}${definition ? `<span class="library-card-definition">${escapeHtml(definition)}</span>` : ""}</button>`;
-            })
-            .join("")}</div>
+        ${
+            results.length > 1
+                ? `<div class="library-dictionary-cards" role="group" aria-label="${escapeHtml(i18n.t("gateway.study.library_lookup_multiple_title"))}">${results
+                      .map((result, index) => {
+                          const entry = entryFor(result, index),
+                              schema = schemas.find(
+                                  ({ id }) => id === result.schemaId,
+                              ),
+                              layer = layerForEntry(schemas, entry);
+                          const hasDefinition = entries.some(
+                              (candidate) =>
+                                  (entry.references ?? []).some(
+                                      ({ entryId }) => entryId === candidate.id,
+                                  ) &&
+                                  isMeaningLayer(
+                                      layerForEntry(schemas, candidate),
+                                  ),
+                          );
+                          const definition = !hasDefinition
+                              ? localizedTextValue(
+                                    result.definitions?.[0]?.translations ?? {},
+                                )
+                              : "";
+                          return `<button class="library-entry-card btn-neutral${index === selected ? " active" : ""}" type="button" data-dictionary-result="${index}" aria-pressed="${index === selected}">${renderCardContents(entry, layer, entries, schema, i18n)}${definition ? `<span class="library-card-definition">${escapeHtml(definition)}</span>` : ""}</button>`;
+                      })
+                      .join("")}</div>`
+                : ""
+        }
         ${
             results.length
                 ? (() => {
@@ -103,20 +122,32 @@ export async function mount(root, { signal } = {}) {
                               ).flat(2),
                           ].map(({ entryId }) => entryId),
                       );
-                      return `<section class="library-dictionary-detail"><h3>${escapeHtml(entry.label)}</h3>${renderMetadataPills(entry, layer)}
-                <div class="library-metadata-pills">${[
-                    result.class,
-                    ...(result.tags ?? []),
-                ]
-                    .filter(Boolean)
-                    .map(
-                        (tag) =>
-                            `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
-                    )
-                    .join("")}</div>
+                      const related = entries.filter(({ id }) =>
+                          relatedIds.has(id),
+                      );
+                      const metadata = [
+                          ...new Set([
+                              ...metadataValues(entry, layer).map(
+                                  ({ value }) => value,
+                              ),
+                              ...(result.tags ?? []).filter(
+                                  (tag) =>
+                                      tag !== result.class &&
+                                      !String(tag).startsWith("jlpt-"),
+                              ),
+                          ]),
+                      ];
+                      return `<section class="library-dictionary-detail"><h3>${escapeHtml(entry.label)}</h3>
+                ${metadata.length ? `<div class="library-metadata-pills">${metadata.map((tag) => `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
                 ${renderDetailFields(
                     Object.fromEntries(
                         visibleDetailFields(layer)
+                            .filter(
+                                (field) =>
+                                    field.id !== layer?.detail?.titleField &&
+                                    field.id !== layer?.detail?.subtitleField &&
+                                    field.detail?.renderer !== "badge",
+                            )
                             .filter((field) => {
                                 const value = entry.fields[field.id];
                                 return (
@@ -151,10 +182,10 @@ export async function mount(root, { signal } = {}) {
                     )
                     .join("")}</ul>
                 ${
-                    relatedIds.size
+                    related.length
                         ? relationSection(
                               i18n.t("gateway.study.library_relation_parents"),
-                              entries.filter(({ id }) => relatedIds.has(id)),
+                              related,
                               "",
                           )
                         : ""
@@ -166,12 +197,19 @@ export async function mount(root, { signal } = {}) {
                   : ""
         }
     </section>`;
+    const refreshResults = () => {
+        const previous =
+            root.querySelector(".library-dictionary-cards")?.scrollLeft ?? 0;
+        root.querySelector("[data-library-dictionary-results]").outerHTML =
+            render();
+        const slider = root.querySelector(".library-dictionary-cards");
+        if (slider) slider.scrollLeft = previous;
+    };
     const search = async () => {
         if (loading) return;
         loading = true;
         failed = false;
-        root.querySelector("[data-library-dictionary-results]").outerHTML =
-            render();
+        refreshResults();
 
         try {
             if (!selectedProvider)
@@ -207,9 +245,7 @@ export async function mount(root, { signal } = {}) {
         } finally {
             loading = false;
             if (!signal?.aborted) {
-                root.querySelector(
-                    "[data-library-dictionary-results]",
-                ).outerHTML = render();
+                refreshResults();
             }
         }
     };
@@ -248,7 +284,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
-    bindStudySubNavigation(root, { signal });
+    bindStudySubNavigation(root, { signal, i18n });
     root.addEventListener(
         "click",
         async (event) => {
@@ -285,9 +321,7 @@ export async function mount(root, { signal } = {}) {
             const result = event.target.closest("[data-dictionary-result]");
             if (result) {
                 selected = Number(result.dataset.dictionaryResult);
-                root.querySelector(
-                    "[data-library-dictionary-results]",
-                ).outerHTML = render();
+                refreshResults();
             }
             const create = event.target.closest("[data-dictionary-create]");
             if (create && !create.disabled) {
@@ -304,7 +338,7 @@ export async function mount(root, { signal } = {}) {
                         schemaId: result.schemaId,
                         layerId: result.layer,
                         i18n,
-                        initialLabel: result.label || input.query,
+                        initialLabel: result.label || input?.query,
                         initialLookup: {
                             providerId: input.providerId,
                             suggestion: result,
@@ -321,7 +355,7 @@ export async function mount(root, { signal } = {}) {
         },
         { signal },
     );
-    await search();
+    if (input) await search();
 }
 
 await mountWhenDirect(mount);

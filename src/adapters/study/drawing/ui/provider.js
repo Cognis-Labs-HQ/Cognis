@@ -240,6 +240,10 @@ function openDrawingPad({
         const bottom =
             footer?.getBoundingClientRect().top ?? window.innerHeight;
         const top = Math.max(0, pageMain.getBoundingClientRect().top);
+        const bounds = pageMain.getBoundingClientRect();
+        host.style.left = `${bounds.left}px`;
+        host.style.top = `${top}px`;
+        host.style.width = `${bounds.width}px`;
         host.style.setProperty(
             "--drawing-host-height",
             `${Math.max(0, bottom - top - 16)}px`,
@@ -630,6 +634,10 @@ function openDrawingPad({
     const pageHeader = document.querySelector(".site-header");
     if (pageHeader) hostObserver.observe(pageHeader);
     window.addEventListener("resize", fitHost, { signal: controller.signal });
+    window.addEventListener("scroll", fitHost, {
+        signal: controller.signal,
+        passive: true,
+    });
     let closing = false;
     let closed = false;
     const finishClose = () => {
@@ -644,6 +652,9 @@ function openDrawingPad({
         host.remove();
         activeDrawingSession = null;
     };
+    window.addEventListener("cognis:route-will-change", finishClose, {
+        signal: controller.signal,
+    });
     const close = () => {
         if (closing) return;
         closing = true;

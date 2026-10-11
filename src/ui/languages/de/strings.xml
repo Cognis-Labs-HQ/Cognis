@@ -602,4 +602,12 @@
   <string name="ui.reuse.export">Exportieren</string>
   <string name="ui.reuse.file">Datei</string>
   <string name="ui.reuse.search">Suchen</string>
+  <string name="ui.reuse.favourite">Favorit</string>
+  <string name="ui.reuse.favourites_only">Nur Favoriten anzeigen</string>
+  <string name="ui.reuse.sort">Sortieren</string>
+  <string name="ui.reuse.sort_default">Anbieterreihenfolge</string>
+  <string name="ui.reuse.sort_az">A–Z</string>
+  <string name="ui.reuse.sort_za">Z–A</string>
+  <string name="ui.reuse.sort_newest">Neueste zuerst</string>
+  <string name="ui.reuse.sort_oldest">Älteste zuerst</string>
 </resources>

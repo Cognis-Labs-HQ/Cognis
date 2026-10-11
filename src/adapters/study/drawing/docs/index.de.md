@@ -45,3 +45,7 @@ Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten 
 Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-SVGs. Bei vollständig sichtbaren Strichhilfen ist die Hilfetaste deaktiviert. Ein Zeichenwechsel erhält die vom Benutzer gewählte Fensterposition.
 
 Detaildialoge behalten den bestehenden Scrollcontainer und den Platz für die Bildlaufleiste bei, sodass fixierte Seitenmenüs an ihrer Position bleiben. Das Zeichenfeld verwendet eine separate schwebende Begrenzung, ohne Höhe oder Überlauf der Seite zu ändern.
+
+## Lebenszyklus des Zeichenfelds
+
+Das Zeichenfeld schließt bei Routenwechseln und gibt Canvas, Beobachter und Ereignishandler frei. Seine feste schwebende Begrenzung verwendet eigene Stile und überschreibt keine Composer- oder Shell-Klassen.

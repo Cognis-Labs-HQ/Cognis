@@ -553,7 +553,7 @@ async function mountHub(
     });
 
     await composer.init();
-    bindStudySubNavigation(root, { signal });
+    bindStudySubNavigation(root, { signal, i18n });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {

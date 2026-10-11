@@ -622,6 +622,20 @@ Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-S
 
 Detaildialoge behalten den bestehenden Scrollcontainer und den Platz für die Bildlaufleiste bei, sodass fixierte Seitenmenüs an ihrer Position bleiben. Das Zeichenfeld verwendet eine separate schwebende Begrenzung, ohne Höhe oder Überlauf der Seite zu ändern.
 
+## Study-Ansicht und Favoriten
+
+Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks und vollständiger Startdecks aktivierter Sprachanbieter. Linkfreigaben behalten ihre Zugriffsregeln und bilden kein öffentliches Verzeichnis. Das +-Menü rechts oben bietet Deck erstellen und Deck importieren. Erkunden, Library und Flashcards verwenden gespeicherte Study-Favoriten und gemeinsame Sortierung (Anbieterreihenfolge, A–Z, Z–A, neueste oder älteste zuerst). Der goldene Stern filtert die Ergebnisse nach Favoriten. Library-Einträge, Decks und einzelne Lernkarten haben getrennte Favoriten. Favoriten gewähren keinen zusätzlichen Zugriff. Das Zeichenfeld beendet seine Sitzung bei Routenwechseln und überschreibt keine Composer- oder Shell-Klassen.
+
+## Startdecks von Anbietern
+
+Ein Sprachdeskriptor kann `starterDecks` mit `{ key, name, schemaId, sourceRecordIds }` deklarieren. Der Schlüssel bleibt innerhalb des Pakets stabil, Namen sind lokalisiert und bis zu 500 eindeutige Quelldatensatzschlüssel legen die Lernreihenfolge fest. Cognis löst globale Library-Einträge zu kanonischen Library-IDs auf. Deck-IDs bleiben bei Inhaltsrevisionen stabil. Unvollständige Decks und deaktivierte Anbieter werden ausgelassen. Startdecks sind schreibgeschützt; Lernfortschritt und Favoriten bleiben persönlich. Erst beim Öffnen werden Kartendetails geladen.
+
+## Wörterbuch-Suchergebnisse
+
+Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gateway-Client speichert Abfrage, Sprache und Anbieter kontobezogen auf dem Server; die authentifizierte Sitzung liest diesen Zustand, andere Konten erhalten keinen Zugriff. Mehrere Treffer erscheinen als horizontal scrollbare Vorschauen. Die Auswahl aktualisiert eine einzelne Detailansicht und erhält die Scrollposition. Ein Treffer öffnet direkt die Detailansicht. Abzeichen erscheinen nur einmal, Anbieter-Rohdaten bleiben verborgen. Die Kartenerstellung verwendet den bestehenden Composer und die Abhängigkeitsauflösung. Cache-Ablauf und Aktualisierung bleiben Aufgabe von Cognis Core.
+
+Nach erfolgreicher Deck-Erstellung oder Import schließt der geschützte Editor vor der Navigation zur aktualisierten Übersicht. Gespeicherte Änderungen lösen keinen Verwerfen-Dialog aus. Die Favoritenansicht zeigt ausgewählte Unterkarten unabhängig; die Anbieterreihenfolge stellt ihre ursprüngliche Verschachtelung wieder her.
+
 ## Commits
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -762,3 +776,4 @@ Detaildialoge behalten den bestehenden Scrollcontainer und den Platz für die Bi
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea

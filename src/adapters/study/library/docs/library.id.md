@@ -446,3 +446,11 @@ Filter mencerminkan konten terlihat pada lapisan terpilih. Relokasi mempertahank
 Kartu anak yang dibuka menempati posisi kosong terdekat di sekitar cabang aktif; kartu latar yang diredupkan tidak mendorongnya ke ujung kisi. Posisi leluhur tetap stabil ketika anak yang lebih dalam dibuka. Jika cabang membutuhkan lebih banyak ruang vertikal, kisi menyediakan ruang tambahan yang dapat digulir dan melepaskannya saat ditutup. Perubahan ukuran jendela atau kartu menghitung ulang posisi. Penunjuk dan fokus papan ketik mengendalikan visibilitas cabang secara konsisten; menekan lama kartu anak melanjutkan cabang yang sedang aktif. Perhitungan tata letak tertunda digabungkan dan dibatalkan ketika cabang ditutup.
 
 [Impor Pustaka Terstruktur](/docs/adapters/study/library/import)
+
+## Penelusuran dan Favorit Study
+
+Flashcards membuka daftar dek milik sendiri, dek yang dibagikan kepada akun, dan dek awal lengkap dari penyedia bahasa aktif. Tautan berbagi tetap memerlukan izin yang berlaku dan bukan direktori publik. Menu + di kanan atas menawarkan Buat Dek dan Impor Dek. Jelajahi, Library, dan Flashcards menggunakan favorit Study tersimpan per akun dan kontrol urutan bersama. Pilih urutan penyedia, A–Z, Z–A, terbaru atau terlama. Bintang menjadi emas saat menyaring hasil favorit. Item Library, dek, dan kartu belajar memiliki favorit terpisah. Favorit tidak memberikan hak akses. Papan gambar mengakhiri sesi saat rute berubah dan tidak menimpa kelas composer atau shell.
+
+## Hasil Pencarian Kamus
+
+Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gateway menyimpan kueri, bahasa, dan penyedia terakhir dalam preferensi server per akun, yang diambil melalui sesi terautentikasi; akun lain tidak dapat membacanya. Beberapa hasil ditampilkan dalam baris pratinjau horizontal. Memilih pratinjau memperbarui satu tampilan detail dan mempertahankan posisi gulir. Satu hasil langsung membuka detail. Lencana tampil sekali, data mentah penyedia disembunyikan, dan pembuatan kartu memakai composer serta resolusi dependensi yang ada. Masa berlaku dan penyegaran cache tetap menjadi tanggung jawab Cognis core.

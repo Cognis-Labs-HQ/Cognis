@@ -627,9 +627,16 @@ body[data-theme="light"]
 }
 
 .library-dictionary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+    display: flex;
     gap: 0.65rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 0.6rem;
+}
+
+.library-dictionary-cards > button {
+    flex: 0 0 14rem;
+    scroll-snap-align: start;
 }
 
 .library-dictionary-cards button.active {
@@ -703,4 +710,33 @@ body[data-theme="light"]
 [data-library-edit-saved-value]:has(.library-pronunciation-component) {
     gap: 0.25rem;
     padding: 0.2rem;
+}
+
+.library-dictionary-detail {
+    max-width: 62rem;
+    width: 100%;
+}
+.library-dictionary-detail .library-detail-facts {
+    display: grid;
+    gap: 0.75rem;
+}
+.library-dictionary-detail .library-detail-fact {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+}
+.library-dictionary-detail ul {
+    margin-block: 0.25rem;
+}
+@media (max-width: 40rem) {
+    .library-dictionary-detail .library-detail-fact {
+        grid-template-columns: 1fr;
+    }
+}
+
+.library-dictionary-heading h2,
+.library-dictionary-detail h3,
+.library-dictionary-detail h4 {
+    margin: 0;
 }

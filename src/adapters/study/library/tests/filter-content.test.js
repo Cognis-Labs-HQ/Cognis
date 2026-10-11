@@ -13,6 +13,7 @@ test("word-type filters reflect visible selected-layer content rather than every
     const context = {
         escapeHtml: String,
         groupByToMap,
+        renderBrowseControls: () => "<select data-study-sort></select>",
         filterFields: () => [],
         localizedLabel: () => "",
         fieldValues: () => [],
@@ -35,8 +36,12 @@ test("word-type filters reflect visible selected-layer content rather than every
     assert.match(html, /data-library-filter-value="verb"/);
     assert.match(html, /aria-pressed="false"/);
     assert.equal((html.match(/data-library-filter-value=/g) ?? []).length, 1);
-    assert.equal(
-        context.renderLayerFilters(layer, [], { t: (key) => key }, "ja"),
-        "",
+    const empty = context.renderLayerFilters(
+        layer,
+        [],
+        { t: (key) => key },
+        "ja",
     );
+    assert.doesNotMatch(empty, /data-library-filter-value=/);
+    assert.match(empty, /data-study-sort/);
 });

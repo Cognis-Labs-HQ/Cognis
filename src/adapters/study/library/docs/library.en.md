@@ -459,3 +459,11 @@ Filters reflect visible content in the selected layer. Relocation preserves entr
 Expanded children occupy the closest available positions around the active branch; dimmed background cards do not push them across the grid. Fitted ancestors remain stable while deeper children open. When a branch needs more vertical space, the grid reserves scrollable space and releases it on close. Resize and card-size changes trigger a fresh fit. Branch visibility is controlled consistently for pointer and keyboard focus, and long-pressing a child continues the current branch. Pending layout work is coalesced and cancelled when the branch closes.
 
 [Structured Library Import](/docs/adapters/study/library/import)
+
+## Study Browsing and Favourites
+
+Flashcards opens a browse page containing owned decks, decks shared with the current account, and complete starter decks from enabled language providers. Bearer-link shares retain their existing access rules and are not a public directory. The widget’s top-right + menu offers Create Deck and Import Deck. Explore, Library, and Flashcards reuse account-persisted Study favourites and sorting controls (provider order, A–Z, Z–A, newest first, oldest first). An outlined star filters the current results to favourites and turns gold when enabled. Library items, decks, and individual study flashcards have independent favourite toggles. Favourites never grant access to content. The drawing pad releases its session on route changes, and its floating boundary no longer overrides composer or shell classes.
+
+## Dictionary Search Results
+
+Dictionary searches open at `/study/library/search` without URL parameters. The owning gateway client saves the latest query, language and provider in account-scoped server preferences, retrieved through the authenticated session; another account cannot read that state. Multiple matches appear in a horizontally scrolling preview row. Selecting a preview updates the single detail view while preserving horizontal scroll. A single match opens directly in the detail view. Badge fields appear once as metadata, provider source data stays hidden, and creating a card uses the existing composer and dependency resolution. Dictionary cache expiry and refresh policy remain owned by Cognis core.

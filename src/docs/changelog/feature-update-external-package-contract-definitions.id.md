@@ -624,6 +624,20 @@ Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinona
 
 Popup detail mempertahankan wadah gulir dokumen dan ruang bilah gulir agar menu samping tetap pada posisinya. Papan gambar menggunakan batas mengambang terpisah tanpa mengubah tinggi atau luapan halaman.
 
+## Penelusuran dan Favorit Study
+
+Flashcards membuka daftar dek milik sendiri, dek yang dibagikan kepada akun, dan dek awal lengkap dari penyedia bahasa aktif. Tautan berbagi tetap memerlukan izin yang berlaku dan bukan direktori publik. Menu + di kanan atas menawarkan Buat Dek dan Impor Dek. Jelajahi, Library, dan Flashcards menggunakan favorit Study tersimpan per akun dan kontrol urutan bersama. Pilih urutan penyedia, A–Z, Z–A, terbaru atau terlama. Bintang menjadi emas saat menyaring hasil favorit. Item Library, dek, dan kartu belajar memiliki favorit terpisah. Favorit tidak memberikan hak akses. Papan gambar mengakhiri sesi saat rute berubah dan tidak menimpa kelas composer atau shell.
+
+## Dek Awal dari Penyedia
+
+Deskriptor bahasa dapat menetapkan `starterDecks` berupa `{ key, name, schemaId, sourceRecordIds }`. Kunci stabil dalam paket, nama dipetakan per bahasa, dan hingga 500 kunci rekaman unik menentukan urutan belajar. Cognis menyelesaikan rekaman Library global menjadi ID Library kanonis. ID dek tetap stabil lintas revisi. Dek tidak lengkap dan penyedia nonaktif disembunyikan. Dek awal hanya-baca; jadwal dan favorit tetap pribadi. Detail kartu baru dimuat ketika dek dibuka.
+
+## Hasil Pencarian Kamus
+
+Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gateway menyimpan kueri, bahasa, dan penyedia terakhir dalam preferensi server per akun, yang diambil melalui sesi terautentikasi; akun lain tidak dapat membacanya. Beberapa hasil ditampilkan dalam baris pratinjau horizontal. Memilih pratinjau memperbarui satu tampilan detail dan mempertahankan posisi gulir. Satu hasil langsung membuka detail. Lencana tampil sekali, data mentah penyedia disembunyikan, dan pembuatan kartu memakai composer serta resolusi dependensi yang ada. Masa berlaku dan penyegaran cache tetap menjadi tanggung jawab Cognis core.
+
+Pembuatan dan impor dek yang berhasil menutup editor terlindungi sebelum membuka halaman jelajah yang diperbarui, sehingga perubahan tersimpan tidak memicu dialog pembuangan. Hasil Library khusus favorit menampilkan kartu anak terpilih secara mandiri; urutan penyedia memulihkan penempatan bersarang asli.
+
 ## Komit
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -764,3 +778,4 @@ Popup detail mempertahankan wadah gulir dokumen dan ruang bilah gulir agar menu 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea

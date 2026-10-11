@@ -1,11 +1,5 @@
-.app-page__main:has(> .study-drawing-host) {
-    position: relative;
-}
-
 .study-drawing-host {
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
+    position: fixed;
     height: var(--drawing-host-height);
     pointer-events: none;
 }
@@ -15,6 +9,7 @@
 }
 
 .study-drawing-pad {
+    max-height: none;
     --drawing-canvas: #ffffff;
     --drawing-ink: #172033;
     --drawing-guide: #c8cdd8;
@@ -31,10 +26,6 @@
     color: var(--text);
     overflow: hidden;
     max-width: 40vw;
-}
-
-.study-drawing-pad.floating-window {
-    max-height: none;
 }
 
 .study-drawing-pad.is-opening {

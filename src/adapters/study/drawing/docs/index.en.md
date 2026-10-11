@@ -45,3 +45,7 @@ Loading another character into an open drawing pad preserves its current positio
 The drawing window close control uses the standard themed close SVGs. The guidance control is disabled while all stroke guides are visible. Loading another character preserves a user-positioned drawing window.
 
 Detail popups preserve the existing document scroll container and scrollbar gutter, keeping sticky side menus in place. The drawing pad uses a separate floating boundary without changing the underlying page height or overflow.
+
+## Drawing Session Lifecycle
+
+The drawing pad closes on dashboard route changes, releasing its canvas, observers, and event handlers. Its fixed floating boundary uses component-owned styles and does not override page composer or dashboard shell classes.

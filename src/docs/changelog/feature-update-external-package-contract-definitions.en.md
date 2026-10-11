@@ -600,7 +600,7 @@ Learner layers appear in the Explore side menu at `/study/explore/<ISO language>
 
 Use **Import** at the bottom-left of the Create Card type selector to upload JSON. Choose a writable scope; the entire batch goes into that scope. The supported envelope is `format: "cognis-library"`, `version: 1`, and a nonempty `entries` array.
 
-Use another entry’s `key` as `entryId` in `references` or `referenceGroups`. Cognis allocates UUIDs before writing, substitutes those keys, and processes ready dependencies in layer batches. Existing Library UUIDs may also be referenced when visible in the destination scope. Missing targets, incompatible layers, cycles, invalid strokes, missing required fields, and duplicate content reject the whole transaction. The response returns created entries and the key-to-UUID `ids` map.
+Use another entry’s `key` as `entryId` in `references` or `referenceGroups`. Cognis allocates UUIDs before writing, substitutes those keys, and processes ready dependencies in layer batches. Existing 正規 Library IDs may also be referenced when visible in the destination scope. Missing targets, incompatible layers, cycles, invalid strokes, missing required fields, and duplicate content reject the whole transaction. The response returns created entries and the key-to-UUID `ids` map.
 
 ## Dictionary Import Limits
 
@@ -621,6 +621,20 @@ The drawing window close control uses the standard themed close SVGs. The guidan
 ## Stable Background Layout
 
 Detail popups preserve the existing document scroll container and scrollbar gutter, keeping sticky side menus in place. The drawing pad uses a separate floating boundary without changing the underlying page height or overflow.
+
+## Study Browsing and Favourites
+
+Flashcards opens a browse page containing owned decks, decks shared with the current account, and complete starter decks from enabled language providers. Bearer-link shares retain their existing access rules and are not a public directory. The widget’s top-right + menu offers Create Deck and Import Deck. Explore, Library, and Flashcards reuse account-persisted Study favourites and sorting controls (provider order, A–Z, Z–A, newest first, oldest first). An outlined star filters the current results to favourites and turns gold when enabled. Library items, decks, and individual study flashcards have independent favourite toggles. Favourites never grant access to content. The drawing pad releases its session on route changes, and its floating boundary no longer overrides composer or shell classes.
+
+## Provider Starter Decks
+
+A language descriptor may declare `starterDecks`: an array of `{ key, name, schemaId, sourceRecordIds }`. `key` is stable within the pack, `name` maps locale codes to deck names, and `sourceRecordIds` contains up to 500 distinct existing provider record keys in study order. Cognis resolves the keys from the global Library to canonical Library IDs. IDs remain stable across content revisions. Incomplete decks and disabled providers are omitted. Starter decks are read-only; learner schedules and favourites remain personal. Browsing resolves membership only, while opening a deck loads its card detail context.
+
+## Dictionary Search Results
+
+Dictionary searches open at `/study/library/search` without URL parameters. The owning gateway client saves the latest query, language and provider in account-scoped server preferences, retrieved through the authenticated session; another account cannot read that state. Multiple matches appear in a horizontally scrolling preview row. Selecting a preview updates the single detail view while preserving horizontal scroll. A single match opens directly in the detail view. Badge fields appear once as metadata, provider source data stays hidden, and creating a card uses the existing composer and dependency resolution. Dictionary cache expiry and refresh policy remain owned by Cognis core.
+
+Successful deck creation and import dismiss the protected editor before navigating to the refreshed browse page, so saved changes do not trigger a discard prompt. Favourite-only Library results display selected child cards independently; restoring provider order restores their original nested placement.
 
 ## Commits
 
@@ -762,3 +776,4 @@ Detail popups preserve the existing document scroll container and scrollbar gutt
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea

@@ -1,3 +1,6 @@
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import { DictionarySearchState } from "./service/search-context.js";
+import { createDictionarySearchContextRoutes } from "./routes/search-context.js";
 import { CORE_CACHE_CAPABILITY, type ProbeCacheFactory } from "@cognis/core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -216,6 +219,25 @@ export async function bootstrapStudyAdapter(
             registerLookupProvider:
                 service.registerLookupProvider.bind(service),
         } satisfies LibraryProviderCapability);
+    const preferences =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");
+    if (preferences && auth) {
+        if (!systemCtx?.hasFlow("study:library:search-context"))
+            systemCtx?.registerFlow({
+                id: "study:library:search-context",
+                stages: ["authorize", "persist"],
+            });
+        ctx.registerRoute(
+            createDictionarySearchContextRoutes(
+                new DictionarySearchState(preferences),
+                auth,
+                ctx.flow,
+                ctx.log,
+            ),
+            "study",
+        );
+    }
     ctx.registerRoute(
         createLibraryRoutes(
             service,

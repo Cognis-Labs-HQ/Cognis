@@ -9,6 +9,7 @@ export interface DeckCard {
     schemaId?: string;
     layer?: string;
     fields?: Record<string, unknown>;
+    sourceRecordId?: string;
     language?: string;
 }
 export interface DeckDetail {
@@ -17,6 +18,11 @@ export interface DeckDetail {
     usedBy?: DeckCard[];
 }
 export interface DeckLibrary {
+    list?(
+        actor: DeckActor,
+        location: { scope: "global"; scopeId: string },
+        filters: { schemaId: string; sourceRecordIds: string[] },
+    ): Promise<DeckCard[]>;
     listSchemas?(): Array<{ id: string }>;
     read(actor: DeckActor, id: string): Promise<DeckCard | null>;
     trace(actor: DeckActor, id: string): Promise<DeckDetail>;
@@ -35,6 +41,10 @@ export interface DeckProgress {
 export interface StudyDeck {
     id: string;
     ownerAccountId: string;
+    createdAt?: string;
+    provider?: boolean;
+    language?: string;
+    names?: Record<string, string>;
     cards: DeckDetail[];
     schemas: unknown[];
     canEdit?: boolean;

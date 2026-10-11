@@ -10,6 +10,7 @@ async function drawingSession() {
     const elements = new Map();
     const moves = [];
     const frames = [];
+    const events = new Map();
     let paints = 0;
     const context = {
         clearRect() {
@@ -99,7 +100,9 @@ async function drawingSession() {
         window: {
             innerWidth: 1440,
             innerHeight: 900,
-            addEventListener() {},
+            addEventListener(name, handler) {
+                events.set(name, handler);
+            },
             setTimeout() {},
             requestAnimationFrame(callback) {
                 frames.push(callback);
@@ -119,6 +122,7 @@ async function drawingSession() {
     ).replace(/^import .*;\n/gm, "");
     await vm.runInNewContext(`(async () => { ${source} })()`, environment);
     return {
+        navigate: () => events.get("cognis:route-will-change")?.(),
         open: capabilities.get("study:drawing:open"),
         load: capabilities.get("study:drawing:load"),
         elements,
@@ -219,4 +223,12 @@ test("loading another character preserves the moved pad position", async () => {
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
     assert.equal(session.pad.style.top, "80px");
+});
+
+test("navigation releases the drawing session so a later Explore page can open a fresh pad", async () => {
+    const session = await drawingSession();
+    session.open(card(1));
+    session.navigate();
+    assert.equal(session.load(card(2)), undefined);
+    assert.ok(session.open(card(2)));
 });

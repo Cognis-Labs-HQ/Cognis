@@ -1,3 +1,4 @@
+import { providerDecks } from "./providers.js";
 import type { Ctx } from "@cognis/core";
 import type {
     StudyAdapter,
@@ -73,6 +74,13 @@ export async function bootstrapStudyAdapter(
                 resourceId: deck.id,
             });
         },
+        (actor, id) =>
+            providerDecks(
+                ctx,
+                ctx.capabilities.get<DeckLibrary>("study:library"),
+                actor,
+                id,
+            ),
     );
     ctx.capabilities.contribute("study:decks", service);
     ctx.registerRoute(createDeckRoutes(service, auth, ctx.log), "study");
@@ -87,6 +95,8 @@ export async function bootstrapStudyAdapter(
         base: "/study/flashcards",
         scriptUrl: "/static/adapters/study/flashcards/app/flashcards/index.js",
         stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
             "/static/gateways/study/study.css",
             "/static/adapters/study/flashcards/flashcards.css",
         ],

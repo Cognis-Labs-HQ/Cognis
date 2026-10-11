@@ -321,3 +321,17 @@ body[data-theme="dark"] .library-speaker-icon-light {
 body[data-theme="dark"] .library-speaker-icon-dark {
     display: block;
 }
+
+.library-entry-card-shell > .study-favourite {
+    position: absolute;
+    inset-inline-end: 0.4rem;
+    bottom: 0.4rem;
+    padding: 0.1rem 0.4rem;
+}
+.library-entry-card-shell > .study-favourite {
+    opacity: 0;
+}
+.library-entry-card-shell:is(:hover, :focus-within) > .study-favourite,
+.library-entry-card-shell > .study-favourite.is-favourite {
+    opacity: 1;
+}

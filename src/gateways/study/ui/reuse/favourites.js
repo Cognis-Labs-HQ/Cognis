@@ -1,0 +1,112 @@
+/**
+ * Shared Study favourites and browse sorting for Library cards and flashcard decks.
+ * Exports: loadFavourites() creates an account-scoped favourite controller;
+ * renderFavourite(kind, id, i18n) renders a toggle; renderBrowseControls(i18n) renders sort/filter controls;
+ * sortItems(items, order) sorts copies without changing provider order.
+ * Example: const favourites = await loadFavourites(); favourites.bind(root, {signal, onChange: render});
+ * @param {object[]} items Visible items with id, label/name and optional createdAt.
+ * @returns {object[]} Sorted visible items.
+ */
+import { apiFetch } from "/static/reuse/api-client.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { showToast } from "/static/reuse/toast.js";
+let active = new Set();
+const key = (kind, id) => `${kind}:${id}`;
+
+/** @param {string} kind Resource kind. @param {string} id Resource identity. @param {object} i18n Labels. @returns {string} Toggle markup. */
+export function renderFavourite(kind, id, i18n) {
+    const selected = active.has(key(kind, id));
+    return `<button type="button" class="btn-neutral study-favourite${selected ? " is-favourite" : ""}" data-study-favourite="${escapeHtml(id)}" data-study-favourite-kind="${kind}" aria-pressed="${selected}" aria-label="${escapeHtml(i18n.t("ui.reuse.favourite"))}">${selected ? "★" : "☆"}</button>`;
+}
+/** @param {object} i18n Labels. @returns {string} Sort and favourite-filter controls. */
+export function renderBrowseControls(i18n) {
+    return `<span class="study-browse-controls"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
+}
+/** @param {object[]} items Items. @param {string} order Sort selection. @returns {object[]} Sorted copy. */
+export function sortItems(items, order) {
+    const result = [...items];
+    if (order === "az" || order === "za")
+        result.sort(
+            (a, b) =>
+                String(a.label ?? a.name).localeCompare(
+                    String(b.label ?? b.name),
+                ) * (order === "za" ? -1 : 1),
+        );
+    if (order === "newest" || order === "oldest")
+        result.sort(
+            (a, b) =>
+                ((Date.parse(a.createdAt ?? "") || 0) -
+                    (Date.parse(b.createdAt ?? "") || 0)) *
+                (order === "newest" ? -1 : 1),
+        );
+    return result;
+}
+/** @returns {Promise<object>} Controller with has, bind and refresh methods. */
+export async function loadFavourites() {
+    const response = await apiFetch("/api/v1/study/favourites");
+    if (!response.ok) throw new Error("favourites_failed");
+    active = new Set(
+        (await response.json()).data.map((item) => key(item.kind, item.id)),
+    );
+    const refresh = (root) =>
+        root.querySelectorAll("[data-study-favourite]").forEach((button) => {
+            const selected = active.has(
+                key(
+                    button.dataset.studyFavouriteKind,
+                    button.dataset.studyFavourite,
+                ),
+            );
+            button.classList.toggle("is-favourite", selected);
+            button.setAttribute("aria-pressed", String(selected));
+            button.textContent = selected ? "★" : "☆";
+        });
+    return {
+        has: (kind, id) => active.has(key(kind, id)),
+        refresh,
+        bind(root, { signal, i18n, onChange = () => {} } = {}) {
+            refresh(root);
+            root.addEventListener(
+                "click",
+                async (event) => {
+                    const button = event.target.closest(
+                        "[data-study-favourite]",
+                    );
+                    if (!button) return;
+                    event.stopPropagation();
+                    button.disabled = true;
+                    try {
+                        const kind = button.dataset.studyFavouriteKind,
+                            id = button.dataset.studyFavourite;
+                        const response = await apiFetch(
+                            "/api/v1/study/favourites",
+                            {
+                                method: "PUT",
+                                headers: { "content-type": "application/json" },
+                                body: JSON.stringify({
+                                    kind,
+                                    id,
+                                    favourite: !active.has(key(kind, id)),
+                                }),
+                            },
+                        );
+                        if (!response.ok) throw new Error("favourites_failed");
+                        active = new Set(
+                            (await response.json()).data.map((item) =>
+                                key(item.kind, item.id),
+                            ),
+                        );
+                        refresh(root);
+                        onChange();
+                    } catch {
+                        showToast(i18n.t("gateway.study.favourite_failed"), {
+                            variant: "error",
+                        });
+                    } finally {
+                        button.disabled = false;
+                    }
+                },
+                { signal },
+            );
+        },
+    };
+}

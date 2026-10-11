@@ -49,9 +49,16 @@ export class DeckService {
         private readonly revoke: (
             deck: StudyDeck,
         ) => Promise<void> = async () => {},
+        private readonly providers: (
+            actor: DeckActor,
+            id?: string,
+        ) => Promise<StudyDeck[]> = async () => [],
     ) {}
     async list(actor: DeckActor): Promise<StudyDeck[]> {
-        const owned = await this.store.list(actor.accountId);
+        const owned = [
+            ...(await this.store.list(actor.accountId)),
+            ...(await this.providers(actor)),
+        ];
         const shared = await Promise.all(
             (await this.received(actor.accountId)).map(async (id) => {
                 const deck = await this.store.find(id);
@@ -68,7 +75,8 @@ export class DeckService {
                 ).values(),
             ].map(async (deck) => ({
                 ...deck,
-                canEdit: deck.ownerAccountId === actor.accountId,
+                canEdit:
+                    !deck.provider && deck.ownerAccountId === actor.accountId,
                 progress: await this.store.progress(actor.accountId, deck.id),
             })),
         );
@@ -81,16 +89,19 @@ export class DeckService {
         actor: DeckActor,
         id: string,
     ): Promise<StudyDeck> {
-        const deck = await store.find(id);
+        const deck =
+            (await store.find(id)) ??
+            (await this.providers(actor, id)).find((deck) => deck.id === id);
         if (
             !deck ||
-            (deck.ownerAccountId !== actor.accountId &&
+            (!deck.provider &&
+                deck.ownerAccountId !== actor.accountId &&
                 !(await this.access(actor, deck)))
         )
             throw new Error("deck_not_found");
         return {
             ...deck,
-            canEdit: deck.ownerAccountId === actor.accountId,
+            canEdit: !deck.provider && deck.ownerAccountId === actor.accountId,
             progress: await store.progress(actor.accountId, id),
         };
     }

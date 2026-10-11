@@ -228,3 +228,7 @@ Jika komponen anak itu sendiri memerlukan sub-bagian (misalnya urutan guratan da
 Lapisan belajar berada pada menu samping Jelajahi di `/study/explore/<bahasa ISO>/<navigationSlug>`. Modul dapat menetapkan `navigationSlug` unik per lapisan; jika tidak diberikan, ID lapisan digunakan. Rute Pustaka dan Permintaan tetap sama. Hanya pratinjau kalimat yang memotong judul dan definisi panjang.
 
 [Impor Pustaka Terstruktur](/docs/adapters/study/library/import)
+
+## Penelusuran dan Favorit Study
+
+Flashcards membuka daftar dek milik sendiri, dek yang dibagikan kepada akun, dan dek awal lengkap dari penyedia bahasa aktif. Tautan berbagi tetap memerlukan izin yang berlaku dan bukan direktori publik. Menu + di kanan atas menawarkan Buat Dek dan Impor Dek. Jelajahi, Library, dan Flashcards menggunakan favorit Study tersimpan per akun dan kontrol urutan bersama. Pilih urutan penyedia, A–Z, Z–A, terbaru atau terlama. Bintang menjadi emas saat menyaring hasil favorit. Item Library, dek, dan kartu belajar memiliki favorit terpisah. Favorit tidak memberikan hak akses. Papan gambar mengakhiri sesi saat rute berubah dan tidak menimpa kelas composer atau shell.

@@ -11,6 +11,7 @@ export class DeckStore {
                 { name: "id", type: "text", primaryKey: true },
                 { name: "account_id", type: "text", notNull: true },
                 { name: "name", type: "text", notNull: true },
+                { name: "created_at", type: "text" },
                 { name: "entries_json", type: "text", notNull: true },
                 { name: "notes_json", type: "text", notNull: true },
                 { name: "cards_json", type: "text", notNull: true },
@@ -41,6 +42,7 @@ export class DeckStore {
         return {
             id: String(row.id),
             name: String(row.name),
+            createdAt: row.created_at ? String(row.created_at) : undefined,
             entryIds: JSON.parse(String(row.entries_json)),
             notes: JSON.parse(String(row.notes_json)),
             ownerAccountId: String(row.account_id),
@@ -114,6 +116,9 @@ export class DeckStore {
             ownerAccountId: accountId,
             progress: {},
             id: id ?? randomUUID(),
+            createdAt: id
+                ? (await this.read(accountId, id))?.createdAt
+                : new Date().toISOString(),
         };
         const values = {
             name: deck.name,
@@ -136,7 +141,12 @@ export class DeckStore {
                 : {
                       option: "INSERT",
                       table: "study_decks",
-                      values: { id: deck.id, account_id: accountId, ...values },
+                      values: {
+                          id: deck.id,
+                          account_id: accountId,
+                          created_at: deck.createdAt,
+                          ...values,
+                      },
                   },
         );
         return deck;

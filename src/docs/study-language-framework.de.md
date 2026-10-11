@@ -228,3 +228,7 @@ Wenn eine untergeordnete Komponente selbst Unterabschnitte erfordert (z. B. Stri
 Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<navigationSlug>`. Module können pro Ebene einen eindeutigen `navigationSlug` angeben; andernfalls gilt die Ebenen-ID. Bibliothek und Anfragen behalten ihre Routen. Nur Satzvorschauen kürzen lange Titel und Definitionen.
 
 [Strukturierter Bibliotheksimport](/docs/adapters/study/library/import)
+
+## Study-Ansicht und Favoriten
+
+Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks und vollständiger Startdecks aktivierter Sprachanbieter. Linkfreigaben behalten ihre Zugriffsregeln und bilden kein öffentliches Verzeichnis. Das +-Menü rechts oben bietet Deck erstellen und Deck importieren. Erkunden, Library und Flashcards verwenden gespeicherte Study-Favoriten und gemeinsame Sortierung (Anbieterreihenfolge, A–Z, Z–A, neueste oder älteste zuerst). Der goldene Stern filtert die Ergebnisse nach Favoriten. Library-Einträge, Decks und einzelne Lernkarten haben getrennte Favoriten. Favoriten gewähren keinen zusätzlichen Zugriff. Das Zeichenfeld beendet seine Sitzung bei Routenwechseln und überschreibt keine Composer- oder Shell-Klassen.

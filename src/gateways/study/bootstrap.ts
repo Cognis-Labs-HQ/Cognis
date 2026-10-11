@@ -13,6 +13,9 @@ import {
 } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
+import { StudyFavourites } from "./reuse/favourites.js";
+import { createFavouriteRoutes } from "./reuse/favourite-routes.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 export type {
@@ -206,6 +209,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    const preferences =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    if (preferences) {
+        if (!systemCtx?.hasFlow("study:favourites:save"))
+            systemCtx?.registerFlow({
+                id: "study:favourites:save",
+                stages: ["authorize", "validate", "persist"],
+            });
+        const favourites = new StudyFavourites(preferences);
+        ctx.capabilities.contribute("study:favourites", favourites);
+        ctx.routeRegistry.register(
+            createFavouriteRoutes(favourites, routeHelpers, ctx.flow, ctx.log),
+            "study",
+        );
+    }
     for (const flow of [
         {
             id: "study:library:import",

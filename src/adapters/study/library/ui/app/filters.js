@@ -1,3 +1,4 @@
+import { renderBrowseControls } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
@@ -60,7 +61,6 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
         contentLanguage,
         i18n,
     );
-    if (!filters.length) return "";
     const groups = groupByToMap(
         filters,
         (filter) =>
@@ -99,7 +99,7 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
                 })
                 .join("")}</div></fieldset>`;
         })
-        .join("")}</div>`;
+        .join("")}${renderBrowseControls(i18n)}</div>`;
 }
 
 export function applyLibraryFilters(filter) {
@@ -142,15 +142,16 @@ export function refreshLibraryFilterResults(panel) {
     );
     filterableCards.forEach((card) => {
         const values = JSON.parse(card.dataset.libraryFilterValues);
-        const visible = Array.from(selections.entries()).every(
-            ([fieldId, controls]) =>
+        const visible =
+            card.dataset.studyFavouriteHidden !== "true" &&
+            Array.from(selections.entries()).every(([fieldId, controls]) =>
                 controls.some((control) =>
                     (Array.isArray(values[fieldId])
                         ? values[fieldId]
                         : []
                     ).includes(control.dataset.libraryFilterValue),
                 ),
-        );
+            );
         card.hidden = !visible;
         card.closest(".library-entry-card-shell").hidden = !visible;
         if (visible) visibleCount += 1;

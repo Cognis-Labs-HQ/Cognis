@@ -8,7 +8,7 @@ const context = { escapeHtml };
 vm.createContext(context);
 vm.runInContext(
     readFileSync(new URL("../ui/reuse/flashcard.js", import.meta.url), "utf8")
-        .replace(/import[^;]+;/u, "")
+        .replace(/^import.*;$/gm, "")
         .replaceAll("export function", "function"),
     context,
 );

@@ -1,3 +1,4 @@
+import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -24,11 +25,30 @@ const schema = {
     ],
 };
 
-async function searchPage(lookup) {
+async function searchPage(lookup, selectedIndex) {
     const target = { outerHTML: "" };
-    const root = { querySelector: () => target, addEventListener() {} };
+    let click;
+    const root = {
+        querySelector: (selector) =>
+            selector === ".library-dictionary-cards" ? null : target,
+        addEventListener(type, handler) {
+            if (type === "click") click = handler;
+        },
+    };
     const context = vm.createContext({
         URLSearchParams,
+        replaceMountScope,
+        window: new EventTarget(),
+        history: {
+            replaceState: (_state, _unused, path) =>
+                assert.equal(path, "/study/library/search"),
+        },
+        dictionarySearchContext: async () => ({
+            providerId: "dictionary",
+            schemaId: "test",
+            query: "greeting",
+            language: "ja",
+        }),
         location: {
             search: "?providerId=dictionary&schemaId=test&query=greeting",
             pathname: "/study/library/search",
@@ -49,7 +69,7 @@ async function searchPage(lookup) {
         layerForEntry: () => schema.layers[0],
         isMeaningLayer: () => false,
         localizedTextValue: (translations) => translations.en || "",
-        renderMetadataPills: () => "",
+        metadataValues: () => [],
         visibleDetailFields: (layer) => layer.fields,
         renderDetailFields: (fields) =>
             Object.entries(fields)
@@ -70,6 +90,19 @@ async function searchPage(lookup) {
         source("../ui/app/search/index.js") + "\nmount(root)",
         vm.createContext({ ...context, root }),
     );
+    if (selectedIndex !== undefined)
+        await click({
+            target: {
+                closest: (selector) =>
+                    selector === "[data-dictionary-result]"
+                        ? {
+                              dataset: {
+                                  dictionaryResult: String(selectedIndex),
+                              },
+                          }
+                        : null,
+            },
+        });
     return target.outerHTML;
 }
 
@@ -90,7 +123,8 @@ test("dictionary details separate meanings from absent pronunciation fields", as
         /<h4>gateway.study.library_definitions<\/h4>\s*<ul><li>en: hello<\/li>/,
     );
     assert.equal((html.match(/Pronunciation:/g) || []).length, 0);
-    assert.match(html, /<strong>greeting<\/strong>/);
+    assert.match(html, /<h3>greeting<\/h3>/);
+    assert.doesNotMatch(html, /data-dictionary-result=/);
 });
 
 test("failed searches render a retryable error state rather than successful results", async () => {
@@ -207,4 +241,23 @@ test("request headers show linked identities and decision time on the status pil
         html,
         /library-metadata-pill" title="Decision time" tabindex="0"/,
     );
+});
+
+test("multiple dictionary matches use one selected detail view, and selecting another replaces it", async () => {
+    const results = ["first", "second"].map((label) => ({
+        schemaId: "test",
+        layer: "words",
+        label,
+        fields: {},
+        definitions: [{ translations: { en: label } }],
+    }));
+    const html = await searchPage(async () => ({ results }), 1);
+    assert.equal(
+        (html.match(/class="library-dictionary-detail"/g) ?? []).length,
+        1,
+    );
+    assert.equal((html.match(/data-dictionary-result=/g) ?? []).length, 2);
+    assert.match(html, /<h3>second<\/h3>/);
+    assert.match(html, /data-dictionary-result="1" aria-pressed="true"/);
+    assert.match(html, /role="group"/);
 });

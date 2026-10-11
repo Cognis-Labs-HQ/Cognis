@@ -330,3 +330,19 @@ export async function importLibraryEntries(location, document) {
     if (!response.ok) throw new Error(result.error?.code ?? "import_failed");
     return result.data;
 }
+
+/** Store or retrieve the latest account-owned search without exposing its parameters in the URL. */
+export async function dictionarySearchContext(input) {
+    const response = await apiFetch(
+        "/api/v1/study/library/dictionary/context",
+        input
+            ? {
+                  method: "PUT",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(input),
+              }
+            : {},
+    );
+    if (!response.ok) throw new Error("search_context_failed");
+    return (await response.json()).data;
+}

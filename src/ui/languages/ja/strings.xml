@@ -602,4 +602,12 @@
   <string name="ui.reuse.export">エクスポート</string>
   <string name="ui.reuse.file">ファイル</string>
   <string name="ui.reuse.search">検索</string>
+  <string name="ui.reuse.favourite">お気に入り</string>
+  <string name="ui.reuse.favourites_only">お気に入りのみ表示</string>
+  <string name="ui.reuse.sort">並べ替え</string>
+  <string name="ui.reuse.sort_default">提供順</string>
+  <string name="ui.reuse.sort_az">A–Z</string>
+  <string name="ui.reuse.sort_za">Z–A</string>
+  <string name="ui.reuse.sort_newest">新しい順</string>
+  <string name="ui.reuse.sort_oldest">古い順</string>
 </resources>

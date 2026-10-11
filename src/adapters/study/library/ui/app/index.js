@@ -169,7 +169,7 @@ export async function mount(root, { signal } = {}) {
             refreshLibraryFilterResults(panel);
         }
     });
-    bindStudySubNavigation(root, { signal });
+    bindStudySubNavigation(root, { signal, i18n });
     bindLibraryInteractions(root, {
         entries,
         i18n,

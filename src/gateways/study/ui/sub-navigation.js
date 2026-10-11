@@ -1,3 +1,5 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
+import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -10,6 +12,7 @@ import {
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
 import {
+    dictionarySearchContext,
     fetchLibraryPushRequests,
     fetchLibrarySchemas,
     fetchSearchableDictionaryProviders,
@@ -45,7 +48,23 @@ export function readSelectedStudyLanguageCode() {
     );
 }
 
-export function bindStudySubNavigation(root, { signal } = {}) {
+const navigationScopes = new WeakMap();
+
+export function bindStudySubNavigation(
+    root,
+    { signal: externalSignal, i18n } = {},
+) {
+    const controller = replaceMountScope(
+        navigationScopes.get(root),
+        externalSignal,
+    );
+    navigationScopes.set(root, controller);
+    const signal = controller.signal;
+    window.addEventListener(
+        "cognis:route-will-change",
+        () => controller.abort(),
+        { signal, once: true },
+    );
     root.addEventListener(
         "change",
         (event) => {
@@ -62,22 +81,36 @@ export function bindStudySubNavigation(root, { signal } = {}) {
     );
     root.addEventListener(
         "submit",
-        (event) => {
+        async (event) => {
             const form = event.target.closest("[data-study-dictionary-search]");
             if (!form) return;
             event.preventDefault();
             const query = form.elements.query.value.trim();
             if (!query) return;
             const provider = JSON.parse(form.elements.provider.value);
-            const parameters = new URLSearchParams({
-                query,
-                providerId: provider.id,
-                schemaId: provider.schemaId,
-                language: form.dataset.language,
-            });
-            uiCtx.capabilities.get("ui:navigate")?.(
-                `/study/library/search?${parameters}`,
-            );
+            const button = form.querySelector("button[type=submit]");
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
+                await dictionarySearchContext({
+                    query,
+                    providerId: provider.id,
+                    schemaId: provider.schemaId,
+                    language: form.dataset.language,
+                });
+                if (!signal?.aborted)
+                    uiCtx.capabilities.get("ui:navigate")?.(
+                        "/study/library/search",
+                    );
+            } catch {
+                showToast(
+                    i18n?.t("gateway.study.library_dictionary_error") ??
+                        form.elements.query.getAttribute("aria-label"),
+                    { variant: "error" },
+                );
+            } finally {
+                button.disabled = false;
+            }
         },
         { signal },
     );

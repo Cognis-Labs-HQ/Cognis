@@ -1,9 +1,15 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
+import {
+    loadFavourites,
+    renderFavourite,
+    renderBrowseControls,
+    sortItems,
+} from "/static/gateways/study/reuse/favourites.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { createSideMenu } from "/static/reuse/side-menu.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -46,6 +52,7 @@ function download(name, text) {
 
 async function editDeck(deck, schemas, entries, i18n, importing = false) {
     let form;
+    let saved = false;
     let notes = deck?.notes ?? [];
     const layers = schemas.flatMap((schema) =>
         schema.layers.map((layer) => ({
@@ -184,7 +191,7 @@ async function editDeck(deck, schemas, entries, i18n, importing = false) {
                 showToast(i18n.t("adapter.study.flashcards.deck_saved"), {
                     variant: "success",
                 });
-                await navigateTo("/study/flashcards");
+                saved = true;
                 return true;
             } catch {
                 showToast(i18n.t("adapter.study.flashcards.deck_save_error"), {
@@ -194,9 +201,20 @@ async function editDeck(deck, schemas, entries, i18n, importing = false) {
             }
         },
     });
+    if (saved) await navigateTo("/study/flashcards");
 }
 
-export async function mount(root, { signal } = {}) {
+let mountController = null;
+
+export async function mount(root, { signal: routerSignal } = {}) {
+    mountController = replaceMountScope(mountController, routerSignal);
+    const controller = mountController;
+    const signal = controller.signal;
+    window.addEventListener(
+        "cognis:route-will-change",
+        () => controller.abort(),
+        { signal, once: true },
+    );
     const i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/gateways/study/languages",
@@ -214,12 +232,6 @@ export async function mount(root, { signal } = {}) {
             fetchStudyDecks(),
             fetchLibrarySchemas(),
         ]);
-        const { readable } = await fetchLibraryLocations();
-        entries = (
-            await Promise.all(
-                readable.map((location) => fetchLibraryEntries(location)),
-            )
-        ).flat();
     } catch {
         showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
             variant: "error",
@@ -236,37 +248,39 @@ export async function mount(root, { signal } = {}) {
             });
         }
     }
-    let selected = decks.find((deck) => deck.id === requestedId) ?? decks[0];
+    decks = decks.map((deck) => ({
+        ...deck,
+        name: deck.names?.[document.documentElement.lang] ?? deck.name,
+    }));
+    let selected = decks.find((deck) => deck.id === requestedId);
+    const favourites = await loadFavourites();
+    let sortOrder = "default",
+        favouritesOnly = false;
     let queue = [];
     let session = null;
     let dueOnly = true;
     let generation = 0;
-    const menu = createSideMenu({
-        groups: [
-            {
-                id: "decks",
-                label: i18n.t("adapter.study.flashcards.page_title"),
-                collapsible: false,
-                items: decks.map((deck) => ({ id: deck.id, label: deck.name })),
-            },
-        ],
-        activeId: selected?.id ?? "",
-        storageKeyPrefix: "study-decks",
-        onSelect: (id) => {
-            selected = decks.find((deck) => deck.id === id);
-            session = null;
-            generation++;
-            renderDeck();
-        },
-    });
     const renderDeck = () => {
         const target = root.querySelector("[data-study-deck]");
         if (!target) return;
         if (!selected) {
-            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_empty"))}</p>`;
+            const visible = sortItems(
+                decks.filter(
+                    (deck) =>
+                        !favouritesOnly || favourites.has("deck", deck.id),
+                ),
+                sortOrder,
+            );
+            target.innerHTML = `<header class="study-deck-browser-header"><h2>${escapeHtml(i18n.t("adapter.study.flashcards.page_title"))}</h2><button type="button" class="btn-neutral" data-deck-action="add" aria-label="${escapeHtml(i18n.t("adapter.study.flashcards.deck_create"))}">+</button></header><div class="library-filters">${renderBrowseControls(i18n)}</div><div class="study-deck-browser">${visible.length ? visible.map((deck) => `<article class="study-deck-preview"><button type="button" class="btn-neutral" data-deck-open="${escapeHtml(deck.id)}"><strong>${escapeHtml(deck.name)}</strong><span>${deck.entryIds.length + deck.notes.length} ${escapeHtml(i18n.t("adapter.study.flashcards.deck_cards"))}</span></button>${renderFavourite("deck", deck.id, i18n)}</article>`).join("") : `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_empty"))}</p>`}</div>`;
+            const select = target.querySelector("[data-study-sort]");
+            select.value = sortOrder;
+            const toggle = target.querySelector("[data-study-favourites-only]");
+            toggle.classList.toggle("is-favourite", favouritesOnly);
+            toggle.setAttribute("aria-pressed", String(favouritesOnly));
+            toggle.textContent = favouritesOnly ? "★" : "☆";
             return;
         }
-        target.innerHTML = `<h2>${escapeHtml(selected.name)}</h2><div class="study-deck-actions"><button class="btn-confirm" data-deck-action="study">${escapeHtml(i18n.t("adapter.study.flashcards.deck_study"))}</button>${!selected.canEdit ? `<button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button>` : ""}${selected.canEdit ? `<span data-deck-share></span><button class="btn-neutral" data-deck-action="edit">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button><button class="btn-cancel" data-deck-action="delete">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>` : ""}</div><label><input type="checkbox" data-deck-due${dueOnly ? " checked" : ""}>${escapeHtml(i18n.t("adapter.study.flashcards.deck_due_only"))}</label><div data-study-session></div>`;
+        target.innerHTML = `<div class="study-deck-browser-header"><button class="btn-neutral" data-deck-action="browse">${escapeHtml(i18n.t("ui.reuse.back"))}</button>${renderFavourite("deck", selected.id, i18n)}</div><h2>${escapeHtml(selected.name)}</h2><div class="study-deck-actions"><button class="btn-confirm" data-deck-action="study">${escapeHtml(i18n.t("adapter.study.flashcards.deck_study"))}</button>${!selected.canEdit ? `<button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button>` : ""}${selected.canEdit ? `<span data-deck-share></span><button class="btn-neutral" data-deck-action="edit">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-neutral" data-deck-action="export">${escapeHtml(i18n.t("ui.reuse.export"))}</button><button class="btn-cancel" data-deck-action="delete">${escapeHtml(i18n.t("ui.reuse.delete"))}</button>` : ""}</div><label><input type="checkbox" data-deck-due${dueOnly ? " checked" : ""}>${escapeHtml(i18n.t("adapter.study.flashcards.deck_due_only"))}</label><div data-study-session></div>`;
         if (selected.canEdit && uiCtx.capabilities.get("share:openPopup"))
             uiCtx.capabilities
                 .get("share:uiGateway")
@@ -309,6 +323,7 @@ export async function mount(root, { signal } = {}) {
             entries,
             i18n,
             document.documentElement.lang,
+            { favourites: true },
         );
         const current = ++generation;
         mountFlashcard(target, {
@@ -343,7 +358,7 @@ export async function mount(root, { signal } = {}) {
         preferenceKey: "study-flashcards-layout",
         pageContext: {
             title: i18n.t("adapter.study.flashcards.page_title"),
-            subtitle: "",
+            subtitle: i18n.t("adapter.study.flashcards.page_subtitle"),
         },
         elements: [
             {
@@ -355,15 +370,6 @@ export async function mount(root, { signal } = {}) {
                 render: () => "<section data-study-deck></section>",
             },
         ],
-        toolbar: [
-            {
-                id: "study-decks",
-                label: i18n.t("adapter.study.flashcards.page_title"),
-                render: () =>
-                    `<button class="btn-confirm" data-deck-action="create">${escapeHtml(i18n.t("adapter.study.flashcards.deck_create"))}</button><button class="btn-neutral" data-deck-action="import">${escapeHtml(i18n.t("ui.reuse.import"))}</button>${menu.render()}`,
-            },
-        ],
-        toolbarScrollable: true,
         subNavigation: [
             {
                 id: "study-subnav",
@@ -379,12 +385,22 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
-    menu.mount(root, { signal });
-    bindStudySubNavigation(root, { signal });
+    favourites.bind(root, {
+        signal,
+        i18n,
+        onChange: () => {
+            if (!selected) renderDeck();
+        },
+    });
+    bindStudySubNavigation(root, { signal, i18n });
     renderDeck();
     root.addEventListener(
         "change",
         (event) => {
+            if (event.target.matches("[data-study-sort]")) {
+                sortOrder = event.target.value;
+                renderDeck();
+            }
             if (event.target.matches("[data-deck-due]"))
                 dueOnly = event.target.checked;
         },
@@ -393,12 +409,65 @@ export async function mount(root, { signal } = {}) {
     root.addEventListener(
         "click",
         async (event) => {
+            const favouriteToggle = event.target.closest(
+                "[data-study-favourites-only]",
+            );
+            if (favouriteToggle) {
+                favouritesOnly = !favouritesOnly;
+                renderDeck();
+                return;
+            }
+            const preview = event.target.closest("[data-deck-open]");
+            if (preview) {
+                await navigateTo(
+                    `/study/flashcards/${preview.dataset.deckOpen}`,
+                );
+                return;
+            }
             const button = event.target.closest("[data-deck-action]");
             if (!button) return;
             button.disabled = true;
             try {
-                const action = button.dataset.deckAction;
+                let action = button.dataset.deckAction;
+                if (action === "browse") {
+                    await navigateTo("/study/flashcards");
+                    return;
+                }
+                if (action === "add") {
+                    const choice = await openPopup({
+                        title: i18n.t("adapter.study.flashcards.page_title"),
+                        body: "",
+                        actions: [
+                            {
+                                id: "create",
+                                label: i18n.t(
+                                    "adapter.study.flashcards.deck_create",
+                                ),
+                                variant: "neutral",
+                            },
+                            {
+                                id: "import",
+                                label: i18n.t(
+                                    "adapter.study.flashcards.deck_import",
+                                ),
+                                variant: "neutral",
+                            },
+                        ],
+                    });
+                    if (!choice) return;
+                    action = choice;
+                }
                 if (["create", "edit", "import"].includes(action)) {
+                    if (!entries) {
+                        const { readable } = await fetchLibraryLocations();
+                        entries = (
+                            await Promise.all(
+                                readable.map((location) =>
+                                    fetchLibraryEntries(location),
+                                ),
+                            )
+                        ).flat();
+                    }
                     await editDeck(
                         action === "edit" ? selected : null,
                         schemas,
