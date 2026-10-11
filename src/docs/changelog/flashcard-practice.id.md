@@ -21,3 +21,5 @@ Tindakan peramban menjalankan alur study:decks dengan tahap before, execute, dan
 ## Commits
 
 - [6711b43](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
+
+- [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
