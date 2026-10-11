@@ -39,3 +39,5 @@ Die anfängliche Höhe der Schreibfläche richtet sich jetzt nach Zeichenfläche
 Beim Auswählen zeichnbarer Library-Karten mit geöffneter Schreibfläche wird jedes neu geladene Muster jetzt auch dann neu gezeichnet, wenn aufeinanderfolgende Karten dieselben Zeichenflächenmaße verwenden. Der Kartenwechsel aktualisiert die Anleitung sofort, ohne dass die Fenstergröße geändert oder das Fenster erneut geöffnet werden muss.
 
 Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieben und Größenändern gelten die Grenzen des scrollbaren Seiteninhalts, sodass die Schreibfläche weder Kopf- noch Fußzeile überdecken kann. In niedrigeren Fenstern behält sie ihre natürliche Zeichenhöhe; durch vertikales Scrollen der Hauptseite bleiben alle Bedienelemente erreichbar.
+
+Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten Schreibfelds erhalten, auch nach dem Verschieben. Die Standardposition wird nur beim Öffnen eines neuen Schreibfelds angewendet.

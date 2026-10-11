@@ -39,3 +39,5 @@ Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, buka
 Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang setiap pola baru, meskipun kartu berturut-turut menggunakan ukuran kanvas yang sama. Beralih kartu langsung memperbarui panduan tanpa perlu mengubah ukuran atau membuka kembali jendela.
 
 Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman yang dapat digulir digunakan saat menyeret dan mengubah ukuran, sehingga pad tidak menutupi header atau footer. Pada jendela pendek, pad mempertahankan tinggi gambar alaminya dan halaman utama dapat digulir secara vertikal untuk menjangkau kontrol lainnya.
+
+Memuat karakter berikutnya ke papan tulis yang terbuka mempertahankan posisi saat ini, termasuk posisi yang dipilih dengan menyeret. Posisi awal hanya diterapkan saat membuka papan baru.

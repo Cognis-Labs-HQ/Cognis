@@ -184,7 +184,30 @@ test("drawing opens inside the main page through a container-bound floating wind
     session.open(card(1));
     assert.equal(session.pad.parentElement, session.host);
     assert.equal(session.floatingOptions().boundaryElement, session.host);
+    assert.equal(session.pad.style.top, "16px");
+    assert.equal(session.pad.style.left, "584px");
+});
+
+test("loading another character preserves the moved pad position", async () => {
+    const session = await drawingSession();
+    session.open(card(1));
+    session.flushFrames();
+    session.pad.style.left = "120px";
+    session.pad.style.top = "80px";
     session.host.scrollTop = 200;
-    session.load(card(2));
-    assert.equal(session.pad.style.top, "216px");
+    const next = card(2);
+    next.strokePattern.columns = 2;
+    next.strokePattern.aspectRatio = 2;
+    assert.equal(session.load(next), true);
+    session.flushFrames();
+    assert.equal(session.pad.style.left, "120px");
+    assert.equal(session.pad.style.top, "80px");
+    assert.equal(
+        session.elements.get("[data-card-label]").textContent,
+        "Character 2",
+    );
+    session.open(card(3));
+    session.flushFrames();
+    assert.equal(session.pad.style.left, "120px");
+    assert.equal(session.pad.style.top, "80px");
 });

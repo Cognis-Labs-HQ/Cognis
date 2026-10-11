@@ -758,14 +758,14 @@ function openDrawingPad({
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").hidden =
             !attemptedCardIds.has(nextCard.id) && !hiddenGuideIndices.size;
-        pad.style.top = `${host.scrollTop + 16}px`;
-        pad.style.left = `${Math.max(16, host.clientWidth - pad.getBoundingClientRect().width - 16)}px`;
         resize();
         window.requestAnimationFrame(resize);
         return true;
     };
     activeDrawingSession = { close, load };
     load({ card, definition, pronunciations, strokePattern });
+    pad.style.top = `${host.scrollTop + 16}px`;
+    pad.style.left = `${Math.max(16, host.clientWidth - pad.getBoundingClientRect().width - 16)}px`;
     return activeDrawingSession;
 }
 

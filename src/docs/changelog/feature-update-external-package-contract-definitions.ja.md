@@ -578,8 +578,13 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
 不足する必須フィールドは、保存前に登録済みの補助検索プロバイダーから取得します。漢字の筆順パターンにはKanjiVGを使います。各漢字、定義、非表示の読みは、公開範囲を検証した１つのグラフとして保存します。
 
+## 書き取りパッドの位置を保持
+
+開いている書き取りパッドに別の文字を読み込んでも、ドラッグで移動した位置を含め、現在の位置を保持します。初期位置は新しいパッドを開くときだけ適用します。
+
 ## コミット
 
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e
 - [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
 - [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
 - [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
