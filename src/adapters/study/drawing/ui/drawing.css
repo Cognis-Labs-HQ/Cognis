@@ -1,8 +1,17 @@
-.app-page__main:has(> .study-drawing-pad) {
+.app-page__main:has(> .study-drawing-host) {
     position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: var(--drawing-host-height);
+}
+
+.study-drawing-host {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: var(--drawing-host-height);
+    pointer-events: none;
+}
+
+.study-drawing-host > .study-drawing-pad {
+    pointer-events: auto;
 }
 
 .study-drawing-pad {

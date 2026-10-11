@@ -43,3 +43,5 @@ Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieb
 Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten Schreibfelds erhalten, auch nach dem Verschieben. Die Standardposition wird nur beim Öffnen eines neuen Schreibfelds angewendet.
 
 Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-SVGs. Bei vollständig sichtbaren Strichhilfen ist die Hilfetaste deaktiviert. Ein Zeichenwechsel erhält die vom Benutzer gewählte Fensterposition.
+
+Detaildialoge behalten den bestehenden Scrollcontainer und den Platz für die Bildlaufleiste bei, sodass fixierte Seitenmenüs an ihrer Position bleiben. Das Zeichenfeld verwendet eine separate schwebende Begrenzung, ohne Höhe oder Überlauf der Seite zu ändern.

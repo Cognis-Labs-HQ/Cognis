@@ -230,16 +230,16 @@ function openDrawingPad({
     const makeFloatingWindow = uiCtx.capabilities.get("ui:makeFloatingWindow");
     if (!makeFloatingWindow) throw new Error("floating_window_unavailable");
     const controller = new AbortController();
-    const host = document.querySelector(".app-page__main");
-    if (!host) throw new Error("drawing_host_unavailable");
-    const previousHostHeight = host.style.getPropertyValue(
-        "--drawing-host-height",
-    );
+    const pageMain = document.querySelector(".app-page__main");
+    if (!pageMain) throw new Error("drawing_host_unavailable");
+    const host = document.createElement("div");
+    host.className = "study-drawing-host";
+    pageMain.append(host);
     const footer = document.querySelector(".global-footer");
     const fitHost = () => {
         const bottom =
             footer?.getBoundingClientRect().top ?? window.innerHeight;
-        const top = Math.max(0, host.getBoundingClientRect().top);
+        const top = Math.max(0, pageMain.getBoundingClientRect().top);
         host.style.setProperty(
             "--drawing-host-height",
             `${Math.max(0, bottom - top - 16)}px`,
@@ -625,7 +625,7 @@ function openDrawingPad({
     });
     const observer = new ResizeObserver(resize);
     const hostObserver = new ResizeObserver(fitHost);
-    hostObserver.observe(host);
+    hostObserver.observe(pageMain);
     if (footer) hostObserver.observe(footer);
     const pageHeader = document.querySelector(".site-header");
     if (pageHeader) hostObserver.observe(pageHeader);
@@ -641,9 +641,7 @@ function openDrawingPad({
         hostObserver.disconnect();
         release?.();
         pad.remove();
-        if (previousHostHeight)
-            host.style.setProperty("--drawing-host-height", previousHostHeight);
-        else host.style.removeProperty("--drawing-host-height");
+        host.remove();
         activeDrawingSession = null;
     };
     const close = () => {

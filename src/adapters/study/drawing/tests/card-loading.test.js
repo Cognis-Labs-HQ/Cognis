@@ -30,6 +30,11 @@ async function drawingSession() {
         fillText() {},
     };
     const element = () => ({
+        clientWidth: 1000,
+        scrollTop: 0,
+        append(child) {
+            child.parentElement = this;
+        },
         style: { setProperty() {} },
         classList: { add() {}, remove() {} },
         addEventListener() {},
@@ -179,11 +184,15 @@ test("every card selection paints its guide when the open pad keeps the same siz
     }
 });
 
-test("drawing opens inside the main page through a container-bound floating window", async () => {
+test("drawing uses an independent floating boundary without resizing the main page", async () => {
     const session = await drawingSession();
     session.open(card(1));
-    assert.equal(session.pad.parentElement, session.host);
-    assert.equal(session.floatingOptions().boundaryElement, session.host);
+    const boundary = session.pad.parentElement;
+    assert.equal(boundary.parentElement, session.host);
+    assert.equal(boundary.className, "study-drawing-host");
+    assert.equal(session.floatingOptions().boundaryElement, boundary);
+    assert.equal(session.host.style.overflow, undefined);
+    assert.equal(session.host.style.maxHeight, undefined);
     assert.equal(session.pad.style.top, "16px");
     assert.equal(session.pad.style.left, "584px");
 });

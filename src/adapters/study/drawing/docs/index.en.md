@@ -43,3 +43,5 @@ Drawing Practice now stays inside the main page. Dragging and resizing use the m
 Loading another character into an open drawing pad preserves its current position, including placement chosen by dragging. The default position is applied only when opening a new pad.
 
 The drawing window close control uses the standard themed close SVGs. The guidance control is disabled while all stroke guides are visible. Loading another character preserves a user-positioned drawing window.
+
+Detail popups preserve the existing document scroll container and scrollbar gutter, keeping sticky side menus in place. The drawing pad uses a separate floating boundary without changing the underlying page height or overflow.

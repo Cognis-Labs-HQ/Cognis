@@ -123,11 +123,14 @@ const scrollLockState = {
     count: 0,
     bodyOverflow: null,
     bodyScrollbarGutter: null,
+    rootScrollbarGutter: null,
     mainOverflowValues: [],
 };
 
 function getScrollableMainElements() {
-    return Array.from(document.querySelectorAll("main"));
+    return Array.from(document.querySelectorAll("main")).filter((element) =>
+        /^(auto|scroll)$/.test(getComputedStyle(element).overflowY),
+    );
 }
 
 function lockPageScroll() {
@@ -135,6 +138,8 @@ function lockPageScroll() {
         scrollLockState.bodyOverflow = document.body.style.overflow;
         scrollLockState.bodyScrollbarGutter =
             document.body.style.scrollbarGutter;
+        scrollLockState.rootScrollbarGutter =
+            document.documentElement.style.scrollbarGutter;
         scrollLockState.mainOverflowValues = getScrollableMainElements().map(
             (element) => ({
                 element,
@@ -145,10 +150,12 @@ function lockPageScroll() {
         // Reserve each scrolling surface's gutter before hiding its scrollbar.
         // Without this, opening or closing a modal changes the available inline
         // space and forces the page beneath it to redraw at a different width.
-        document.body.style.scrollbarGutter = "stable";
+        if (window.innerWidth > document.documentElement.clientWidth)
+            document.documentElement.style.scrollbarGutter = "stable";
         document.body.style.overflow = "hidden";
         scrollLockState.mainOverflowValues.forEach(({ element }) => {
-            element.style.scrollbarGutter = "stable";
+            if (element.scrollHeight > element.clientHeight)
+                element.style.scrollbarGutter = "stable";
             element.style.overflow = "hidden";
         });
     }
@@ -162,6 +169,8 @@ function unlockPageScroll() {
     document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
     document.body.style.scrollbarGutter =
         scrollLockState.bodyScrollbarGutter ?? "";
+    document.documentElement.style.scrollbarGutter =
+        scrollLockState.rootScrollbarGutter ?? "";
     scrollLockState.mainOverflowValues.forEach(
         ({ element, overflow, scrollbarGutter }) => {
             element.style.overflow = overflow;
@@ -170,6 +179,7 @@ function unlockPageScroll() {
     );
     scrollLockState.bodyOverflow = null;
     scrollLockState.bodyScrollbarGutter = null;
+    scrollLockState.rootScrollbarGutter = null;
     scrollLockState.mainOverflowValues = [];
 }
 
@@ -882,7 +892,7 @@ export async function openPopup({
         const firstFocusable =
             overlay.querySelector("input, textarea, select") ??
             overlay.querySelector("button:not(.popup-close-btn)");
-        firstFocusable?.focus();
+        firstFocusable?.focus({ preventScroll: true });
     });
 }
 

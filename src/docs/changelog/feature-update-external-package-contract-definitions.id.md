@@ -620,6 +620,10 @@ Impor dan ekspor memakai teks UTF-8 dengan kolom berpetik yang dipisahkan tab: F
 
 Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinonaktifkan saat semua panduan goresan terlihat. Pergantian karakter mempertahankan posisi jendela pilihan pengguna.
 
+## Tata Letak Latar Tetap Stabil
+
+Popup detail mempertahankan wadah gulir dokumen dan ruang bilah gulir agar menu samping tetap pada posisinya. Papan gambar menggunakan batas mengambang terpisah tanpa mengubah tinggi atau luapan halaman.
+
 ## Komit
 
 - [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
@@ -759,3 +763,4 @@ Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinona
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
