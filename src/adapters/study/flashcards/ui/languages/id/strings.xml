@@ -27,4 +27,14 @@
   <string name="adapter.study.flashcards.deck_shared">Dek Bersama</string>
   <string name="adapter.study.flashcards.deck_due_count">{{ count }} Baru atau Jatuh Tempo</string>
   <string name="adapter.study.flashcards.deck_search">Cari Dek</string>
+  <string name="adapter.study.flashcards.practice_total">Total</string>
+  <string name="adapter.study.flashcards.practice_done">Selesai</string>
+  <string name="adapter.study.flashcards.practice_due">Jatuh Tempo</string>
+  <string name="adapter.study.flashcards.practice_new">Baru</string>
+  <string name="adapter.study.flashcards.practice_writing">Menulis</string>
+  <string name="adapter.study.flashcards.practice_reading">Membaca</string>
+  <string name="adapter.study.flashcards.practice_next">Kartu Berikutnya</string>
+  <string name="adapter.study.flashcards.practice_unavailable">Latihan tidak tersedia untuk kartu ini.</string>
+  <string name="adapter.study.flashcards.practice_leave">Keluar dari latihan?</string>
+  <string name="adapter.study.flashcards.practice_leave_body">Buka kartu ini di Jelajahi dan tinggalkan sesi latihan saat ini?</string>
 </resources>

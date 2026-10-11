@@ -77,20 +77,23 @@ export function renderDeckBrowser(templates, decks, i18n, query = "") {
     });
 }
 
-export function renderDeckDetail(templates, deck, dueOnly, i18n) {
+export function renderDeckDetail(templates, deck, summary, filter, i18n) {
     const labelText = (key) => escapeHtml(i18n.t(key));
     return formatTemplate(templates.detail, {
         name: escapeHtml(deck.name),
         favourite: renderFavourite("deck", deck.id, i18n),
         back_label: labelText("ui.reuse.back"),
-        study_label: labelText("adapter.study.flashcards.deck_study"),
         export_action: deck.canExport
             ? formatTemplate(templates.export, {
                   export_label: labelText("ui.reuse.export"),
               })
             : "",
-        due_label: labelText("adapter.study.flashcards.deck_due_only"),
-        checked: dueOnly ? " checked" : "",
+        summary: Object.entries(summary)
+            .map(
+                ([key, count]) =>
+                    `<button type="button" class="btn-neutral" data-practice-filter="${key}" aria-pressed="${filter === key}"><strong>${count}</strong><span>${labelText(`adapter.study.flashcards.practice_${key}`)}</span></button>`,
+            )
+            .join(""),
         editable_actions: deck.canEdit
             ? formatTemplate(templates["edit-actions"], {
                   edit_label: labelText("ui.reuse.edit"),

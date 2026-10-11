@@ -4,21 +4,21 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const source = readFileSync(
-    resolve("src/adapters/study/drawing/ui/provider.js"),
+    resolve("src/gateways/study/ui/reuse/drawing.js"),
     "utf8",
 );
 const stylesheet = readFileSync(
-    resolve("src/adapters/study/drawing/ui/drawing.css"),
+    resolve("src/gateways/study/ui/reuse/drawing.css"),
     "utf8",
 );
 const viewportSource = readFileSync(
-    resolve("src/adapters/study/drawing/ui/viewport.js"),
+    resolve("src/gateways/study/ui/reuse/drawing-viewport.js"),
     "utf8",
 );
 
 test("drawing practice uses the PiP capability and requires card stroke data", () => {
-    assert.match(source, /study:drawing:open/);
-    assert.match(source, /study:drawing:load/);
+    assert.match(source, /export async function openDrawingPad/);
+    assert.match(source, /export async function loadDrawingPad/);
     assert.match(source, /ui:makeFloatingWindow/);
     assert.match(source, /card\?\.id/);
     assert.match(source, /strokePattern\?\.strokes/);
@@ -47,7 +47,7 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /viewport\.y \+ point\.y \* viewport\.height/);
     assert.match(source, /fillText\(String\(index \+ 1\)/);
     assert.match(source, /successiveMistakes >= 10/);
-    assert.match(source, /adapter\.study\.drawing\.loser/);
+    assert.match(source, /gateway\.study\.drawing\.loser/);
     assert.match(source, /difficultyByCardId/);
     assert.match(source, /hiddenGuideIndicesByCardId/);
     assert.match(source, /function addRandomHiddenGuide/);
@@ -119,4 +119,11 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
         /\[data-close\][\s\S]*width:\s*auto[\s\S]*height:\s*auto/,
     );
     assert.match(stylesheet, /prefers-reduced-motion: reduce/);
+});
+
+test("embedded controls respect hidden state within the owning drawing container", () => {
+    assert.match(
+        stylesheet,
+        /\.study-drawing-embedded \[hidden\]\s*\{\s*display:\s*none;/,
+    );
 });

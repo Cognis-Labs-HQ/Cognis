@@ -67,4 +67,13 @@
   <string name="gateway.study.favourite_failed">Study-Favoriten konnten nicht aktualisiert werden.</string>
   <string name="gateway.study.favourite_added">Zu Favoriten hinzugefügt.</string>
   <string name="gateway.study.favourite_removed">Aus Favoriten entfernt.</string>
+<string name="gateway.study.drawing.title">Schreibübung</string>
+  <string name="gateway.study.drawing.reset">Zurücksetzen</string>
+  <string name="gateway.study.drawing.guidance">Vollständige Anleitung zeigen</string>
+  <string name="gateway.study.drawing.well_done">Gut gemacht</string>
+  <string name="gateway.study.drawing.loser">Verloren!</string>
+  <string name="gateway.study.drawing.mistakes">Fehler: {{ count }}</string>
+  <string name="gateway.study.drawing.close">Schließen</string>
+  <string name="gateway.study.drawing.try_again">Erneut versuchen</string>
+  <string name="gateway.study.drawing.error">Die Schreibübung konnte nicht geladen werden.</string>
 </resources>

@@ -1,51 +1,15 @@
 # Schreibübung
 
-## Zweck
+Study besitzt das vollständige Schreibfeld in `src/gateways/study/ui/reuse/drawing.js`: Zeichenfläche, Steuerung, Hilfen, Bewertung und Ergebnis. Der optionale Zeichenadapter stellt `study:drawing:open` und `study:drawing:load` über Browser-`uiCtx` bereit. Aufrufer warten auf diese Aktionen und übergeben eine vollständige Bibliothekskarte mit geprüftem `strokePattern`.
 
-Der Drawing-Adapter stellt `study:drawing:open` im Browser-`uiCtx` bereit. Aufrufer übergeben eine vollständige Library-Karte und ihr validiertes `strokePattern`; der Adapter öffnet ein bewegliches, skalierbares PiP-Schreibfeld.
+## Anwendungsbeispiele
 
-## Übungsmodell
+Dieselbe Engine `openDrawingPad` akzeptiert `container`, Abbruch-`signal` und `onResult`. Ohne Container öffnet sie ein verschiebbares, skalierbares Fenster innerhalb der Seite und behält beim Kartenwechsel die Position. Mit Container wird das ganze Schreibfeld eingebettet, das ursprüngliche Zeichen gesperrt und Erfolg erst nach allen korrekten Strichen gemeldet. Eingebettetes Schreiben benötigt keinen optionalen Zeichenadapter.
 
-Das Feld unterstützt Stift, Touch und Maus, prüft die vom Anbieter festgelegte Strichreihenfolge, bewertet Richtung und Pfadnähe und ersetzt jede akzeptierte Eingabe durch den kanonischen Strich des Anbieters. Zu Beginn eines Versuchs sind alle Striche sichtbar. Nach dem ersten akzeptierten Strich zeigt das Feld nur noch den jeweils nächsten erforderlichen Strich und behält die abgeschlossenen kanonischen Striche bei.
+## Technische Spezifikation
 
-Falsche Striche erzeugen eine zurückhaltende rote Rückmeldung, ohne die Öffnungsanimation des Feldes neu zu starten. Nach Abschluss des Zeichens ertönt ein kurzer Erfolgsklang und eine stabile Abschlussanzeige zeigt ein Häkchen, die Fehlerzahl des Versuchs sowie die Aktionen Schließen und Erneut versuchen. Erneut versuchen beginnt einen neuen Versuch mit allen sichtbaren Vorgaben. Zeigereingaben werden höchstens einmal pro Animationsbild gezeichnet, damit die Zeichenfläche stabil bleibt.
+Maus, Stift und Berührung werden nach Reihenfolge, Richtung und Nähe bewertet. Akzeptierte Striche werden durch Vorlagen ersetzt. Nummerierte Hilfen, fortschreitende Strichanzeige und Zeichengrenzen bleiben erhalten. Die Hilfe ist deaktiviert, solange alle Striche sichtbar sind. Zehn aufeinanderfolgende Fehler beenden den Versuch; das Ergebnis zeigt Fehlerzahl und Wiederholung. Gute Versuche erhöhen die Schwierigkeit im Arbeitsspeicher.
 
-Die Überschrift wird an der gerenderten Zeichenfläche gemessen und direkt darüber zentriert. Kartentext und lokalisierte Definition bleiben ausgerichtet, und die inhaltsgroße Schließen-Schaltfläche verwendet eine eigene Schließanimation.
+Zusammengesetzte Muster behalten Proportionen, Reihenfolge, Zeit, Druck und Zeigerposition ohne Anbieterinhalte zu verändern. Beschriftungen vermeiden Strichpfade. Die Anzeige wird höchstens einmal je Bild aktualisiert. Schwebende Fenster verwenden das normale Schließen-SVG, eingebettete Felder bleiben im Container. Eigene Stile verändern weder Composer noch Seitengerüst oder Seitenmenü.
 
-Die erste Hilfsansicht nummeriert jeden Strich und zeigt seine Richtung. Zehn aufeinanderfolgende Fehler beenden den Versuch mit einem Misserfolg. Erfolgreiche Versuche mit höchstens einem Fehler erhöhen den im Speicher gehaltenen Schwierigkeitsgrad dieser Karte für spätere Versuche; außerdem kann ein geöffnetes Zeichenfeld direkt zu einer anderen Bibliothekskarte wechseln.
-
-Die Anleitungsschaltfläche **?** bewahrt akzeptierte Striche und Versuchsergebnisse und zeigt Anmerkungen nur für noch nicht abgeschlossene Striche. Beim erneuten Versuch bleibt die fortschreitende Anleitung erhalten. Zusammengesetzte Muster enthalten Abschnittsgrenzen, sodass jedes neu erreichte Zeichen einmal vollständig mit Anmerkungen angezeigt wird. Die Anmerkungsrichtung wird in den gerenderten Canvas-Koordinaten berechnet, sodass Pfeile auch bei längeren Mustern mit mehreren Zeichen korrekt bleiben.
-
-Zusammengesetzte Karten ordnen jetzt alle Schreibmuster des primären Schriftwerts nebeneinander in einheitlicher Größe und mit minimalem Abstand an. Der Zeichenblock wird entsprechend breiter; seine kompakte Überschrift zeigt verfügbare Aussprachen und die lokalisierte Definition.
-
-Der Zeichenblock bleibt innerhalb des Ansichtsbereichs, verwendet eine kompakte inhaltsabhängige Höhe und begrenzt seine Breite auf vierzig Prozent des Ansichtsbereichs, sodass längere Wörter skaliert werden, statt ein übergroßes Fenster zu erzeugen. Beim Ändern der Größe werden die Mindestmaße nicht mehr vertauscht, und jede einzelne Strichhilfe behält ihre Reihenfolge- und Richtungsmarkierung.
-
-Anmerkungsbeschriftungen prüfen nahe Positionen um jeden Strichanfang und wählen die erste Stelle, die genügend Abstand zu anderen Beschriftungen und allen gerenderten Strichpfaden hat. Dadurch bleiben nummerierte Markierungen lesbar und nahe am Strich, ohne abgeschlossene Benutzerstriche zu verdecken.
-
-Erfolgreiche Versuche mit höchstens einem Fehler erhöhen nun die kartenspezifische Erinnerungsschwierigkeit, indem eine weitere zufällig ausgewählte Strichhilfe ausgeblendet wird. Ausgeblendete Striche werden durch ein Fragezeichen in der Ecke der Zeichenfläche dargestellt und weiterhin normal validiert. Die Anleitungsschaltfläche oben rechts zeigt ausgeblendete Striche für den aktuellen Versuch, ohne akzeptierte Eingaben zu löschen oder die erlernte Schwierigkeit der Karte zu verringern. Anmerkungen bevorzugen die erste nahe, kollisionsfreie Position, statt den größtmöglichen freien Abstand zu suchen, und bleiben dadurch näher am Strichanfang.
-
-Das Fragezeichen für eine ausgeblendete Führung erscheint erst, wenn Lernende einen tatsächlich ausgeblendeten Strich erreichen; es weist nicht mehr vorzeitig auf spätere ausgeblendete Striche hin.
-
-Beim Wechsel eines geöffneten Zeichenübungsfensters zu einer Karte mit einer anderen Spaltenzahl wird nun das Seitenverhältnis der Zeichenfläche erneut angewendet und die Canvas-Bitmap nach dem Layout synchronisiert. Mehrteilige Zeichenmuster werden beim Neuzeichnen des schwebenden Fensters nicht mehr vertikal gestreckt.
-
-Durch Drücken der Escape-Taste wird das aktive Zeichenübungsfenster über denselben animierten und vollständig bereinigten Schließpfad wie bei den Schaltflächen geschlossen.
-
-Die Zeichenfläche leitet nun aus ihrer tatsächlich gerenderten Breite und Höhe einen zentrierten, seitenverhältnistreuen Darstellungsbereich ab. Beim Ändern der Größe des schwebenden Fensters wird der logische Strichbereich daher bei Bedarf mit Freiräumen eingepasst, statt die Zeichengeometrie zu strecken. Zeigerkoordinaten, Hilfslinien, Anmerkungen, abgeschlossene Striche und aktive Tinte verwenden denselben eingepassten Bereich.
-
-Bei Schreibflächen mit mehreren Zeichen wird ungenutzter horizontaler Raum anhand der Strichgrenzen jedes Zeichens entfernt; ein kleiner, gleichmäßiger Abstand bleibt erhalten. Das Fenster wird an das kompakte Muster angepasst, während Zeichenproportionen, Strichreihenfolge, Zeitangaben, Druckwerte und Zeigerausrichtung beim Größenändern und Kartenwechsel erhalten bleiben.
-
-Die anfängliche Höhe der Schreibfläche richtet sich jetzt nach Zeichenfläche, Kopfzeile und Bedienelementen statt nach einem festen Zuschlag mit einer Begrenzung auf siebzig Prozent der Fensterhöhe. Bei niedrigen Fenstern wird die verfügbare Zeichenhöhe reduziert, ohne die Strichproportionen zu verzerren oder die Zurücksetzen-Schaltfläche zu verdecken. Beim Laden einer anderen Karte werden Inhalt und Position neu angepasst.
-
-Beim Auswählen zeichnbarer Library-Karten mit geöffneter Schreibfläche wird jedes neu geladene Muster jetzt auch dann neu gezeichnet, wenn aufeinanderfolgende Karten dieselben Zeichenflächenmaße verwenden. Der Kartenwechsel aktualisiert die Anleitung sofort, ohne dass die Fenstergröße geändert oder das Fenster erneut geöffnet werden muss.
-
-Die Schreibübung bleibt jetzt innerhalb des Hauptseitenbereichs. Beim Verschieben und Größenändern gelten die Grenzen des scrollbaren Seiteninhalts, sodass die Schreibfläche weder Kopf- noch Fußzeile überdecken kann. In niedrigeren Fenstern behält sie ihre natürliche Zeichenhöhe; durch vertikales Scrollen der Hauptseite bleiben alle Bedienelemente erreichbar.
-
-Beim Laden eines weiteren Zeichens bleibt die aktuelle Position des geöffneten Schreibfelds erhalten, auch nach dem Verschieben. Die Standardposition wird nur beim Öffnen eines neuen Schreibfelds angewendet.
-
-Das Zeichenfenster verwendet die standardisierten themenabhängigen Schließen-SVGs. Bei vollständig sichtbaren Strichhilfen ist die Hilfetaste deaktiviert. Ein Zeichenwechsel erhält die vom Benutzer gewählte Fensterposition.
-
-Detaildialoge behalten den bestehenden Scrollcontainer und den Platz für die Bildlaufleiste bei, sodass fixierte Seitenmenüs an ihrer Position bleiben. Das Zeichenfeld verwendet eine separate schwebende Begrenzung, ohne Höhe oder Überlauf der Seite zu ändern.
-
-## Lebenszyklus des Zeichenfelds
-
-Das Zeichenfeld schließt bei Routenwechseln und gibt Canvas, Beobachter und Ereignishandler frei. Seine feste schwebende Begrenzung verwendet eigene Stile und überschreibt keine Composer- oder Shell-Klassen.
+Öffnen, Laden, Strich, Zurücksetzen, Hilfe, Wiederholung und Schließen führen deklarierte `study:drawing`-Abläufe mit before, execute und after aus. Navigation oder Abbruch beendet Ereignisse, Beobachter und Darstellung. Bibliothek und Lernkarten verwenden ausschließlich die öffentliche Study-Wiederverwendung.

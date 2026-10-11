@@ -318,3 +318,18 @@ body[data-theme="dark"] .study-drawing-close-light {
 body[data-theme="dark"] .study-drawing-close-dark {
     display: block;
 }
+
+.study-drawing-embedded {
+    width: 100%;
+}
+.study-drawing-embedded .study-drawing-pad {
+    max-width: 100%;
+    margin-inline: auto;
+}
+.study-drawing-embedded .study-drawing-pad header {
+    cursor: default;
+}
+
+.study-drawing-embedded [hidden] {
+    display: none;
+}

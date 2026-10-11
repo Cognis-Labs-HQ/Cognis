@@ -401,8 +401,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     : String(component?.label ?? pageUrl);
             const activeClass =
                 rawPageUrl === currentPath ||
-                (rawPageUrl === "/study/explore" &&
-                    currentPath.startsWith("/study/explore/"))
+                currentPath.startsWith(`${rawPageUrl}/`)
                     ? " active"
                     : "";
             const attentionClass = component.attention

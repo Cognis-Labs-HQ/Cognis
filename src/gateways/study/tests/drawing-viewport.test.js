@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { drawingViewport } from "../ui/viewport.js";
+import { drawingViewport } from "../ui/reuse/drawing-viewport.js";
 
 test("drawing viewport preserves single-column geometry while resizing", () => {
     assert.deepEqual(drawingViewport({ width: 720, height: 160 }, 1), {

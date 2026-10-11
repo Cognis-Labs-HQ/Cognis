@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { similarEntries } from "../ui/app/similar-items.js";
+import { similarEntries } from "../ui/reuse/similar-items.js";
 
 const source = {
     id: "school",

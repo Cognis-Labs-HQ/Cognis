@@ -67,4 +67,13 @@
   <string name="gateway.study.favourite_failed">Could not update Study favourites.</string>
   <string name="gateway.study.favourite_added">Added to favourites.</string>
   <string name="gateway.study.favourite_removed">Removed from favourites.</string>
+<string name="gateway.study.drawing.title">Writing Practice</string>
+  <string name="gateway.study.drawing.reset">Reset</string>
+  <string name="gateway.study.drawing.guidance">Show full guidance</string>
+  <string name="gateway.study.drawing.well_done">Well Done</string>
+  <string name="gateway.study.drawing.loser">Loser!</string>
+  <string name="gateway.study.drawing.mistakes">Mistakes: {{ count }}</string>
+  <string name="gateway.study.drawing.close">Close</string>
+  <string name="gateway.study.drawing.try_again">Try Again</string>
+  <string name="gateway.study.drawing.error">Drawing practice could not be loaded.</string>
 </resources>

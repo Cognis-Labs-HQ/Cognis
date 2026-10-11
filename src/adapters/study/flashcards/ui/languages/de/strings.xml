@@ -27,4 +27,14 @@
   <string name="adapter.study.flashcards.deck_shared">Geteilter Stapel</string>
   <string name="adapter.study.flashcards.deck_due_count">{{ count }} neu oder fällig</string>
   <string name="adapter.study.flashcards.deck_search">Stapel suchen</string>
+  <string name="adapter.study.flashcards.practice_total">Gesamt</string>
+  <string name="adapter.study.flashcards.practice_done">Erledigt</string>
+  <string name="adapter.study.flashcards.practice_due">Fällig</string>
+  <string name="adapter.study.flashcards.practice_new">Neu</string>
+  <string name="adapter.study.flashcards.practice_writing">Schreiben</string>
+  <string name="adapter.study.flashcards.practice_reading">Lesen</string>
+  <string name="adapter.study.flashcards.practice_next">Nächste Karte</string>
+  <string name="adapter.study.flashcards.practice_unavailable">Für diese Karte ist keine Übung verfügbar.</string>
+  <string name="adapter.study.flashcards.practice_leave">Übung verlassen?</string>
+  <string name="adapter.study.flashcards.practice_leave_body">Diese Karte in Erkunden öffnen und die aktuelle Übung verlassen?</string>
 </resources>

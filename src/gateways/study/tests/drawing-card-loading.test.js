@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
-import { compactDrawingPattern } from "../ui/layout.js";
-import { drawingViewport } from "../ui/viewport.js";
+import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
+import { compactDrawingPattern } from "../ui/reuse/drawing-layout.js";
+import { drawingViewport } from "../ui/reuse/drawing-viewport.js";
 
 async function drawingSession() {
     const capabilities = new Map();
@@ -30,6 +31,7 @@ async function drawingSession() {
         fill() {},
         fillText() {},
     };
+    const handlers = new Map();
     const element = () => ({
         clientWidth: 1000,
         scrollTop: 0,
@@ -38,7 +40,9 @@ async function drawingSession() {
         },
         style: { setProperty() {} },
         classList: { add() {}, remove() {} },
-        addEventListener() {},
+        addEventListener(event, handler) {
+            handlers.set(event, handler);
+        },
         getBoundingClientRect: () => ({
             width: 400,
             height: 400,
@@ -84,11 +88,13 @@ async function drawingSession() {
         compactDrawingPattern,
         drawingViewport,
         uiCtx: {
+            ...uiCtx,
             capabilities: {
                 get: (key) => capabilities.get(key),
                 contribute: (key, value) => capabilities.set(key, value),
             },
         },
+        showToast() {},
         createI18n: async () => ({ t: (key) => key }),
         document: {
             querySelector: (selector) =>
@@ -113,20 +119,39 @@ async function drawingSession() {
         getComputedStyle: () => ({ getPropertyValue: () => "#ffffff" }),
         ResizeObserver: class {
             observe() {}
+
             disconnect() {}
         },
     };
     const source = readFileSync(
-        new URL("../ui/provider.js", import.meta.url),
+        new URL("../ui/reuse/drawing.js", import.meta.url),
         "utf8",
-    ).replace(/^import .*;\n/gm, "");
-    await vm.runInNewContext(`(async () => { ${source} })()`, environment);
+    )
+        .replace(/^import .*;\n/gm, "")
+        .replaceAll("export function", "function")
+        .replaceAll("export async function", "async function");
+    const actionSource = readFileSync(
+        new URL("../ui/reuse/action-flows.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/^import .*;\n/gm, "")
+        .replaceAll("export function", "function")
+        .replaceAll("export async function", "async function");
+    vm.runInNewContext(
+        actionSource + "; globalThis.createActionRunner = createActionRunner;",
+        environment,
+    );
+    await vm.runInNewContext(
+        `(async () => { ${source}; uiCtx.capabilities.contribute("study:drawing:open", openDrawingPad); uiCtx.capabilities.contribute("study:drawing:load", loadDrawingPad); })()`,
+        environment,
+    );
     return {
         navigate: () => events.get("cognis:route-will-change")?.(),
         open: capabilities.get("study:drawing:open"),
         load: capabilities.get("study:drawing:load"),
         elements,
         moves,
+        handlers,
         canvas,
         host,
         pad,
@@ -160,11 +185,11 @@ function card(index) {
 
 test("every card selection paints its guide when the open pad keeps the same size", async () => {
     const session = await drawingSession();
-    session.open(card(1));
+    await session.open(card(1));
     session.flushFrames();
     for (let index = 2; index <= 5; index += 1) {
         const previousPaints = session.paints();
-        assert.equal(session.load(card(index)), true);
+        assert.equal(await session.load(card(index)), true);
         session.flushFrames();
         assert.ok(
             session.paints() > previousPaints,
@@ -190,7 +215,7 @@ test("every card selection paints its guide when the open pad keeps the same siz
 
 test("drawing uses an independent floating boundary without resizing the main page", async () => {
     const session = await drawingSession();
-    session.open(card(1));
+    await session.open(card(1));
     const boundary = session.pad.parentElement;
     assert.equal(boundary.parentElement, session.host);
     assert.equal(boundary.className, "study-drawing-host");
@@ -203,7 +228,7 @@ test("drawing uses an independent floating boundary without resizing the main pa
 
 test("loading another character preserves the moved pad position", async () => {
     const session = await drawingSession();
-    session.open(card(1));
+    await session.open(card(1));
     session.flushFrames();
     session.pad.style.left = "120px";
     session.pad.style.top = "80px";
@@ -211,7 +236,7 @@ test("loading another character preserves the moved pad position", async () => {
     const next = card(2);
     next.strokePattern.columns = 2;
     next.strokePattern.aspectRatio = 2;
-    assert.equal(session.load(next), true);
+    assert.equal(await session.load(next), true);
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
     assert.equal(session.pad.style.top, "80px");
@@ -219,7 +244,7 @@ test("loading another character preserves the moved pad position", async () => {
         session.elements.get("[data-card-label]").textContent,
         "Character 2",
     );
-    session.open(card(3));
+    await session.open(card(3));
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
     assert.equal(session.pad.style.top, "80px");
@@ -227,8 +252,37 @@ test("loading another character preserves the moved pad position", async () => {
 
 test("navigation releases the drawing session so a later Explore page can open a fresh pad", async () => {
     const session = await drawingSession();
-    session.open(card(1));
+    await session.open(card(1));
     session.navigate();
-    assert.equal(session.load(card(2)), undefined);
-    assert.ok(session.open(card(2)));
+    assert.equal(await session.load(card(2)), undefined);
+    assert.ok(await session.open(card(2)));
+});
+
+test("embedded drawing uses the same scoring, rejects a different character, and aborts cleanly", async () => {
+    const session = await drawingSession();
+    const controller = new AbortController();
+    const results = [];
+    const opened = await session.open({
+        ...card(1),
+        container: session.host,
+        signal: controller.signal,
+        onResult: (result) => results.push(result),
+    });
+    assert.equal(session.pad.parentElement.className, "study-drawing-embedded");
+    assert.equal(session.floatingOptions(), undefined);
+    assert.equal(await opened.load(card(2)), false);
+    const point = (x, y) => ({
+        clientX: 16 + x * 400,
+        clientY: 16 + y * 400,
+        pointerId: 1,
+        pressure: 0.5,
+        preventDefault() {},
+    });
+    session.canvas.setPointerCapture = () => {};
+    session.handlers.get("pointerdown")(point(0.1, 0.2));
+    await session.handlers.get("pointerup")(point(0.8, 0.9));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(results.at(-1).correct, true);
+    controller.abort();
+    assert.equal(controller.signal.aborted, true);
 });

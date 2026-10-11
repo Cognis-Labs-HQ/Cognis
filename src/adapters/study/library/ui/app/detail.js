@@ -22,7 +22,7 @@ import {
     filterImmediateDependants,
 } from "./composition-links.js";
 import { definitionDisplay } from "./definition-display.js";
-import { similarEntries } from "./similar-items.js";
+import { similarEntries } from "/static/gateways/study/reuse/similar-items.js";
 import { uniqueRelatedEntries } from "./related-entries.js";
 import {
     dependantsMatchingTransformation,

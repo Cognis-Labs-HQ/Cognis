@@ -7,6 +7,7 @@ import type {
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import type { DeckLibrary } from "./service/types.js";
+import { registerDeckFlows } from "./service/flows.js";
 import { DeckStore } from "./service/store.js";
 import { DeckService } from "./service/service.js";
 import { createDeckRoutes } from "./service/routes.js";
@@ -37,13 +38,7 @@ export async function bootstrapStudyAdapter(
     if (!databaseExecutor || !system || !auth) return;
     const store = new DeckStore(databaseExecutor);
     await store.initialize();
-    for (const [id, stages] of Object.entries({
-        save: ["authorize", "validate", "persist", "audit"],
-        review: ["authorize", "validate", "persist", "audit"],
-        delete: ["authorize", "persist", "audit"],
-    }))
-        if (!system.hasFlow(`study:decks:${id}`))
-            system.registerFlow({ id: `study:decks:${id}`, stages });
+    registerDeckFlows(system);
     const service = new DeckService(
         store,
         () => ctx.capabilities.get<DeckLibrary>("study:library"),

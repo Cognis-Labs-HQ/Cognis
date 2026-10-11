@@ -1,51 +1,17 @@
 # Drawing Practice
 
-## Purpose
+Study owns the complete drawing pad in `src/gateways/study/ui/reuse/drawing.js`, including its canvas, controls, guidance, scoring and completion feedback. The optional Drawing adapter contributes the public `study:drawing:open` and `study:drawing:load` capabilities through browser `uiCtx`; callers await these actions and pass a complete Library card and validated `strokePattern`.
 
-The Drawing adapter contributes `study:drawing:open` to browser `uiCtx`. Callers pass a complete Library card and its validated `strokePattern`; the adapter opens a movable, resizable PiP writing pad.
+## Usage Examples
 
-## Practice model
+The same `openDrawingPad` engine accepts an optional `container`, abort `signal` and `onResult` callback. Without a container it opens a movable, resizable floating window within the page; loading a different card preserves its position. With a container it embeds the entire pad, locks the original character and reports success only when every ordered stroke is accepted. Flashcards requires no optional Drawing adapter for embedded Writing.
 
-The pad accepts pen, touch, and mouse input, enforces provider stroke order, scores direction and path proximity, and replaces every accepted input with the provider's canonical stroke. At the beginning of an attempt, every stroke is visible. After the first accepted stroke, the pad reveals only the next required stroke while retaining completed canonical strokes.
+## Technical Specification
 
-Incorrect strokes produce restrained red feedback without restarting the pad's opening animation. Completing the character plays a short success chime and displays a stable completion overlay with a tick, the attempt's mistake count, and Close and Try Again actions. Try Again starts a fresh attempt with every guide visible. Pointer input is painted at most once per animation frame to keep the canvas stable.
+The pad accepts mouse, touch and pen input, checks stroke order, direction and proximity, and replaces accepted ink with canonical strokes. An attempt begins with full numbered guides. Progressive guidance retains accepted strokes, shows the next stroke and respects per-character boundaries in composite patterns. The guidance button is disabled when all guides are visible.
 
-The heading is measured to the rendered canvas and centered directly above it. The card text and localized definition remain aligned, and the content-sized close control uses an explicit close animation.
+Ten consecutive misses end an attempt. Completion displays the mistake count and retry control. A retry clears the attempt and respects learned guide difficulty. Successful attempts with at most one mistake increase in-memory character difficulty. Direction arrows and annotation labels share the rendered canvas coordinates; labels avoid stroke paths and other labels. Rendering runs once per animation frame.
 
-The first guide view labels every stroke and shows its direction. Ten consecutive misses end the attempt with a failure result. Successful attempts with at most one mistake raise that card's in-memory difficulty for later attempts, and an open pad can switch directly to another Library card.
+Ordered writing-unit references compose multi-character patterns without mutating provider content. Patterns trim unused space while preserving aspect ratio, timing, pressure, order and pointer alignment. Floating controls use the standard themed close SVG; embedded completion remains in its container without a separate close window. Component-owned styles preserve composer, shell, scroll container and side-menu behavior.
 
-The **?** guidance action preserves accepted strokes and attempt results while revealing annotations only for unfinished strokes. Retrying keeps progressive guidance. Composite patterns carry piece boundaries so each newly reached character receives one complete annotated preview. Annotation direction is calculated in rendered canvas coordinates, keeping arrows accurate across extended multi-character patterns.
-
-Composite cards now arrange every writing-unit pattern from the primary written value side by side at a consistent scale with minimal spacing. The pad expands to preserve character size, and its compact heading includes available pronunciations and the localized definition.
-
-The pad remains inside the viewport, uses a compact content-derived height, and caps its width at forty percent of the viewport so longer words scale rather than producing an oversized window. Resizing no longer swaps the pad's minimum dimensions, and every single-stroke guide retains its order and direction annotation.
-
-Annotation labels evaluate nearby placements around each stroke start and choose the first position that clears other labels and every rendered stroke path. This keeps numbered bubbles readable and close to their strokes without covering completed user work.
-
-Successful attempts with no more than one mistake now increase card-specific recall difficulty by hiding one additional randomly selected stroke guide. Hidden strokes are represented by a question mark in the canvas corner and are still validated normally. The top-right guidance action reveals hidden strokes for the current attempt without clearing accepted input or reducing the card’s learned difficulty. Annotation placement prefers the first nearby collision-free position instead of maximizing empty distance, keeping labels closer to their stroke starts.
-
-The hidden-guide question mark appears only when the learner reaches a stroke whose guide is hidden; it no longer warns early about hidden strokes later in the pattern.
-
-Switching an open Drawing Practice window to a card with a different column count now reapplies the stage aspect ratio and synchronizes the canvas bitmap after layout. Multi-character patterns no longer stretch vertically while the floating window redraws.
-
-Pressing Escape closes the active Drawing Practice window through the same animated and fully cleaned-up close path as its close controls.
-
-The drawing surface now derives a centered, aspect-preserving viewport from its actual rendered width and height. Resizing the floating pad therefore letterboxes the logical stroke area when necessary instead of stretching character geometry, while pointer coordinates, guides, annotations, completed strokes, and live ink all use the same fitted viewport.
-
-Multi-character pads now trim unused horizontal space around each character’s stroke bounds and keep a small, consistent gap. The window narrows to the compact pattern while preserving character proportions, stroke order, timing, pressure, and pointer alignment during resizing and card changes.
-
-The initial pad height now follows the rendered canvas, heading, and controls instead of a fixed allowance capped at seventy percent of the viewport. Short viewports reduce the available canvas height while preserving stroke proportions and keeping the Reset control visible. Loading another card refits the content and keeps the pad inside the viewport.
-
-Selecting drawable Library cards while the pad is open now redraws every newly loaded pattern even when consecutive cards use the same canvas dimensions. Switching cards updates the guide immediately without requiring a resize or reopening the window.
-
-Drawing Practice now stays inside the main page. Dragging and resizing use the main page’s scrollable content bounds, so the pad cannot cover the header or footer. In shorter windows the pad retains its natural drawing height and the main page scrolls vertically to reveal the remaining controls.
-
-Loading another character into an open drawing pad preserves its current position, including placement chosen by dragging. The default position is applied only when opening a new pad.
-
-The drawing window close control uses the standard themed close SVGs. The guidance control is disabled while all stroke guides are visible. Loading another character preserves a user-positioned drawing window.
-
-Detail popups preserve the existing document scroll container and scrollbar gutter, keeping sticky side menus in place. The drawing pad uses a separate floating boundary without changing the underlying page height or overflow.
-
-## Drawing Session Lifecycle
-
-The drawing pad closes on dashboard route changes, releasing its canvas, observers, and event handlers. Its fixed floating boundary uses component-owned styles and does not override page composer or dashboard shell classes.
+Open, load, stroke, reset, guidance, retry and close execute declared `study:drawing` action flows with before, execute and after stages. Route departure or parent abort releases pointer handlers, resize observers, pending rendering and the pad. Library and Flashcards call the public Study reuse contract rather than importing optional-adapter internals.

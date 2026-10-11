@@ -232,3 +232,7 @@ Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<n
 ## Study-Ansicht und Favoriten
 
 Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks und vollständiger Startdecks aktivierter Sprachanbieter. Linkfreigaben behalten ihre Zugriffsregeln und bilden kein öffentliches Verzeichnis. Das +-Menü rechts oben bietet Deck erstellen und Deck importieren. Erkunden, Library und Flashcards verwenden gespeicherte Study-Favoriten und gemeinsame Sortierung (Anbieterreihenfolge, A–Z, Z–A, neueste oder älteste zuerst). Der goldene Stern filtert die Ergebnisse nach Favoriten. Library-Einträge, Decks und einzelne Lernkarten haben getrennte Favoriten. Favoriten gewähren keinen zusätzlichen Zugriff. Das Zeichenfeld beendet seine Sitzung bei Routenwechseln und überschreibt keine Composer- oder Shell-Klassen.
+
+## Lernkarten üben
+
+Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute und after. Serverseitiges Auflisten und Details verwenden authorize, read und audit; Speichern, Bewerten und Löschen behalten Prüfung, Berechtigung und Transaktionen. Study besitzt gemeinsame Zeichenoberfläche, Musterzusammenstellung, Ähnlichkeiten und Aktionsabläufe. Der optionale Zeichenadapter integriert nur das schwebende Schreibfeld; eingebettetes Schreiben funktioniert ohne ihn. Seiten und Sitzungen werden beim Verlassen abgebrochen.

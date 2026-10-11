@@ -55,7 +55,7 @@ export class DeckService {
         ) => Promise<StudyDeck[]> = async () => [],
     ) {}
 
-    async list(actor: DeckActor): Promise<StudyDeck[]> {
+    private async listVisible(actor: DeckActor): Promise<StudyDeck[]> {
         const owned = [
             ...(await this.store.list(actor.accountId)),
             ...(await this.providers(actor)),
@@ -85,6 +85,31 @@ export class DeckService {
                 progress: await this.store.progress(actor.accountId, deck.id),
             })),
         );
+    }
+
+    async list(actor: DeckActor): Promise<StudyDeck[]> {
+        let decks: StudyDeck[] = [];
+        await this.flow.run(
+            "study:decks:list",
+            { actor },
+            {
+                handlers: {
+                    authorize: () => {
+                        if (!actor.accountId) throw new Error("unauthorized");
+                    },
+                    read: async () => {
+                        decks = await this.listVisible(actor);
+                    },
+                    audit: () =>
+                        this.log?.("info", "Study decks browsed.", {
+                            component: "study-flashcards",
+                            operation: "deckList",
+                            accountId: actor.accountId,
+                        }),
+                },
+            },
+        );
+        return decks;
     }
 
     async owned(accountId: string, id: string): Promise<StudyDeck | undefined> {
@@ -141,11 +166,35 @@ export class DeckService {
         actor: DeckActor,
         id: string,
     ): Promise<{ deck: StudyDeck; cards: DeckDetail[]; unavailable: number }> {
-        const deck = await this.readable(this.store, actor, id);
-        if (deck.ownerAccountId !== actor.accountId)
-            return { deck, cards: deck.cards, unavailable: 0 };
-        const cards = await Promise.all(
-            deck.entryIds.map((entryId) => this.card(actor, entryId)),
+        let deck!: StudyDeck;
+        let cards: Array<DeckDetail | null> = [];
+        await this.flow.run(
+            "study:decks:details",
+            { actor, deckId: id },
+            {
+                handlers: {
+                    authorize: async () => {
+                        deck = await this.readable(this.store, actor, id);
+                    },
+                    read: async () => {
+                        cards =
+                            deck.ownerAccountId !== actor.accountId
+                                ? deck.cards
+                                : await Promise.all(
+                                      deck.entryIds.map((entryId) =>
+                                          this.card(actor, entryId),
+                                      ),
+                                  );
+                    },
+                    audit: () =>
+                        this.log?.("info", "Study deck opened.", {
+                            component: "study-flashcards",
+                            operation: "deckDetails",
+                            accountId: actor.accountId,
+                            deckId: id,
+                        }),
+                },
+            },
         );
         return {
             deck,

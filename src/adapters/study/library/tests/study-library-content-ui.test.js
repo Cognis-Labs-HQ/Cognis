@@ -106,8 +106,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(stylesheet, /::-webkit-slider-thumb/);
     assert.match(stylesheet, /::-moz-range-thumb/);
     assert.match(source, /loadDrawing/);
-    assert.match(source, /groups: pieces\.map/);
-    assert.match(source, /ownDrawingPattern/);
+    assert.match(source, /static\/gateways\/study\/reuse\/drawing-pattern\.js/);
 });
 test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /function canDeleteEntry/);

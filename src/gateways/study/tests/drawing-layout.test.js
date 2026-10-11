@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compactDrawingPattern } from "../ui/layout.js";
-import { drawingViewport } from "../ui/viewport.js";
+import { compactDrawingPattern } from "../ui/reuse/drawing-layout.js";
+import { drawingViewport } from "../ui/reuse/drawing-viewport.js";
 
 function compositePattern(bounds) {
     return {

@@ -67,4 +67,13 @@
   <string name="gateway.study.favourite_failed">Favorit Study tidak dapat diperbarui.</string>
   <string name="gateway.study.favourite_added">Ditambahkan ke favorit.</string>
   <string name="gateway.study.favourite_removed">Dihapus dari favorit.</string>
+<string name="gateway.study.drawing.title">Latihan Menulis</string>
+  <string name="gateway.study.drawing.reset">Atur Ulang</string>
+  <string name="gateway.study.drawing.guidance">Tampilkan panduan lengkap</string>
+  <string name="gateway.study.drawing.well_done">Bagus Sekali</string>
+  <string name="gateway.study.drawing.loser">Kalah!</string>
+  <string name="gateway.study.drawing.mistakes">Kesalahan: {{ count }}</string>
+  <string name="gateway.study.drawing.close">Tutup</string>
+  <string name="gateway.study.drawing.try_again">Coba Lagi</string>
+  <string name="gateway.study.drawing.error">Latihan menulis tidak dapat dimuat.</string>
 </resources>

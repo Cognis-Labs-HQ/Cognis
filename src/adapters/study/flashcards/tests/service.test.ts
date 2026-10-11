@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCtx } from "@cognis/core";
 import { DeckService, nextReview } from "../service/service.js";
+import { registerDeckFlows } from "../service/flows.js";
 import { DeckStore } from "../service/store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
@@ -71,12 +72,7 @@ function session(
         },
     };
     const ctx = createCtx();
-    for (const [id, stages] of Object.entries({
-        save: ["authorize", "validate", "persist", "audit"],
-        review: ["authorize", "validate", "persist", "audit"],
-        delete: ["authorize", "persist", "audit"],
-    }))
-        ctx.registerFlow({ id: `study:decks:${id}`, stages });
+    registerDeckFlows(ctx);
     let readable = true;
     const library = {
         read: async () => null,
@@ -86,6 +82,7 @@ function session(
         },
     };
     return {
+        ctx,
         service: new DeckService(
             new DeckStore(db),
             () => library,
@@ -249,4 +246,61 @@ test("link guests cannot persist personal decks or learner review history", asyn
         () => service.review(guest, "deck", "public", "good"),
         /deck_read_only/,
     );
+});
+
+test("deck reads and mutations execute the owning ctx stages", async () => {
+    const { service, ctx } = session();
+    const observed: string[] = [];
+    for (const [action, stages] of Object.entries({
+        list: ["authorize", "read", "audit"],
+        details: ["authorize", "read", "audit"],
+        save: ["authorize", "validate", "persist", "audit"],
+        review: ["authorize", "validate", "persist", "audit"],
+        delete: ["authorize", "persist", "audit"],
+    })) {
+        for (const stage of stages)
+            ctx.flow.extend(
+                `study:decks:${action}`,
+                stage,
+                { id: `test:${action}:${stage}` },
+                () => {
+                    observed.push(`${action}:${stage}`);
+                },
+            );
+    }
+    const deck = await service.save(owner, {
+        name: "Flows",
+        entryIds: ["public"],
+    });
+    assert.deepEqual(observed.splice(0), [
+        "save:authorize",
+        "save:validate",
+        "save:persist",
+        "save:audit",
+    ]);
+    await service.list(owner);
+    assert.deepEqual(observed.splice(0), [
+        "list:authorize",
+        "list:read",
+        "list:audit",
+    ]);
+    await service.details(owner, deck.id);
+    assert.deepEqual(observed.splice(0), [
+        "details:authorize",
+        "details:read",
+        "details:audit",
+    ]);
+    await service.review(owner, deck.id, "public", "good");
+    assert.deepEqual(observed.splice(0), [
+        "review:authorize",
+        "review:validate",
+        "review:persist",
+        "review:audit",
+    ]);
+    await service.delete(owner, deck.id);
+    assert.deepEqual(observed.splice(0), [
+        "delete:authorize",
+        "delete:persist",
+        "delete:audit",
+    ]);
 });

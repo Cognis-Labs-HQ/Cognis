@@ -1,3 +1,5 @@
+import { openEntryPopup } from "../entry-popup.js";
+import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
@@ -213,6 +215,21 @@ export async function mount(root, { signal } = {}) {
         schemas,
         signal,
     });
+    const requestedEntryId = history.state?.studyEntryId;
+    if (requestedEntryId) {
+        const entry =
+            entries.find(({ id }) => id === requestedEntryId) ??
+            (await fetchLibraryEntry(requestedEntryId)).entry;
+        await openEntryPopup(
+            root,
+            entry,
+            schemas,
+            entries,
+            i18n,
+            languageCode,
+            signal,
+        );
+    }
 }
 
 await mountWhenDirect(mount);

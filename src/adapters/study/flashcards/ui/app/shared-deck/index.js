@@ -1,8 +1,10 @@
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { renderFlashcard, mountFlashcard } from "../../reuse/flashcard.js";
+import { mountPractice } from "../flashcards/practice.js";
+import { loadDeckTemplates } from "../flashcards/markup.js";
+import { runDeckAction } from "../flashcards/actions.js";
 
-/** Renders the explicitly shared deck snapshot without granting Library access. */
+/** Shared snapshots are new cards in a temporary session without granting Library access. */
 export async function mount(root, { shareContext, i18n, signal } = {}) {
     const deck = shareContext.payload.deck;
     const schemas = deck.schemas;
@@ -20,6 +22,11 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
             references: [],
         })),
     ];
+    const templates = await runDeckAction(
+        "load",
+        () => loadDeckTemplates(signal),
+        signal,
+    );
     const composer = createPageComposer(root, {
         allowCustomization: false,
         i18n,
@@ -37,27 +44,37 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         ],
     });
     await composer.init();
+    signal?.throwIfAborted();
+    let release;
     const next = () => {
+        release?.();
         const target = root.querySelector("[data-shared-card]");
         if (!queue.length) {
             target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>`;
             return;
         }
-        target.innerHTML = renderFlashcard(
-            queue[0],
+        release = mountPractice(target, {
+            detail: queue[0],
+            templates,
             schemas,
-            [],
+            entries: [],
+            progress: {},
+            filter: "new",
+            mode: "reading",
             i18n,
-            document.documentElement.lang,
-        );
-        mountFlashcard(target, {
             signal,
-            onGrade: async (grade) => {
-                const card = queue.shift();
-                if (grade === "again") queue.push(card);
-                next();
-            },
+            authenticated: false,
+            onNext: async () =>
+                runDeckAction(
+                    "review",
+                    () => {
+                        queue.shift();
+                        next();
+                    },
+                    signal,
+                ),
         });
     };
+    signal.addEventListener("abort", () => release?.(), { once: true });
     next();
 }

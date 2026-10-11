@@ -67,4 +67,13 @@
   <string name="gateway.study.favourite_failed">Study のお気に入りを更新できませんでした。</string>
   <string name="gateway.study.favourite_added">お気に入りに追加しました。</string>
   <string name="gateway.study.favourite_removed">お気に入りから削除しました。</string>
+<string name="gateway.study.drawing.title">書き取り練習</string>
+  <string name="gateway.study.drawing.reset">リセット</string>
+  <string name="gateway.study.drawing.guidance">全ガイドを表示</string>
+  <string name="gateway.study.drawing.well_done">よくできました</string>
+  <string name="gateway.study.drawing.loser">負け！</string>
+  <string name="gateway.study.drawing.mistakes">間違い: {{ count }}</string>
+  <string name="gateway.study.drawing.close">閉じる</string>
+  <string name="gateway.study.drawing.try_again">もう一度</string>
+  <string name="gateway.study.drawing.error">書く練習を読み込めませんでした。</string>
 </resources>

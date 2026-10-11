@@ -117,7 +117,7 @@ export function bindLibraryInteractions(root, context) {
     );
     root.addEventListener(
         "click",
-        (event) => {
+        async (event) => {
             if (event.target.closest(".library-admin-entry-row")) return;
             const selectAll = event.target.closest("[data-library-select-all]");
             if (selectAll) {
@@ -193,7 +193,8 @@ export function bindLibraryInteractions(root, context) {
             );
             const schema = schemas.find(({ id }) => id === entry?.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry?.layer);
-            if (entry && loadDrawing(entry, layer, entries, schemas)) return;
+            if (entry && (await loadDrawing(entry, layer, entries, schemas)))
+                return;
             if (!openDetails) return;
             if (!entry || activeEntryPopup) return;
             activeEntryPopup = openEntryPopup(

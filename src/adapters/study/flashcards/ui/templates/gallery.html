@@ -39,20 +39,17 @@
 </template>
 
 <template data-deck-template="detail">
-    <div class="study-deck-browser-header">
+    <header class="study-deck-browser-header">
         <button type="button" class="btn-neutral" data-deck-action="browse">
             {back_label}
         </button>
-        <span data-deck-favourite>{favourite}</span>
-    </div>
+        <div class="study-deck-actions">
+            <span data-deck-favourite>{favourite}</span>{export_action}
+        </div>
+    </header>
     <h2>{name}</h2>
-    <div class="study-deck-actions">
-        <button type="button" class="btn-confirm" data-deck-action="study">
-            {study_label}
-        </button>
-        {editable_actions} {export_action}
-    </div>
-    <label><input type="checkbox" data-deck-due{checked} />{due_label}</label>
+    <div class="study-deck-actions">{editable_actions}</div>
+    <div class="study-practice-summary">{summary}</div>
     <div data-study-session></div>
 </template>
 
@@ -68,6 +65,27 @@
 
 <template data-deck-template="export">
     <button type="button" class="btn-neutral" data-deck-action="export">
-        {export_label}
+        <picture
+            ><source
+                media="(prefers-color-scheme: dark)"
+                srcset="/static/assets/reuse/download-dark.svg" />
+            <img
+                src="/static/assets/reuse/download-light.svg"
+                alt="{export_label}"
+        /></picture>
     </button>
+</template>
+
+<template data-deck-template="practice">
+    <section class="study-practice" data-practice>
+        <div class="study-practice-heading">{favourite}{entry_heading}</div>
+        <div class="study-practice-modes">{modes}</div>
+        <div data-practice-task>{task}</div>
+        <section class="study-flashcard-answer" data-practice-answer hidden>
+            {answer}
+        </section>
+        <button type="button" class="btn-neutral" data-practice-next>
+            {next_label}
+        </button>
+    </section>
 </template>

@@ -1,51 +1,15 @@
 # Latihan Menulis
 
-## Tujuan
+Study memiliki papan gambar lengkap di `src/gateways/study/ui/reuse/drawing.js`, termasuk kanvas, kontrol, panduan, penilaian dan hasil. Adaptor Gambar opsional menyediakan `study:drawing:open` dan `study:drawing:load` melalui `uiCtx` browser. Pemanggil menunggu tindakan ini dan memberikan kartu Library lengkap serta `strokePattern` tervalidasi.
 
-Adapter Drawing menyediakan `study:drawing:open` melalui `uiCtx` peramban. Pemanggil memberikan kartu Library lengkap beserta `strokePattern` tervalidasi; adapter membuka papan tulis PiP yang dapat dipindahkan dan diubah ukurannya.
+## Contoh Penggunaan
 
-## Model latihan
+Mesin `openDrawingPad` yang sama menerima `container`, `signal` pembatalan dan `onResult`. Tanpa kontainer, jendela dapat dipindahkan dan diubah ukurannya; memuat karakter lain mempertahankan posisi. Dengan kontainer, seluruh papan ditanam, karakter asal dikunci dan keberhasilan dilaporkan hanya setelah semua goresan berurutan diterima. Menulis tertanam tidak memerlukan adaptor Gambar opsional.
 
-Papan menerima pena, sentuhan, dan tetikus, menegakkan urutan goresan dari penyedia, menilai arah serta kedekatan jalur, dan mengganti setiap masukan yang diterima dengan goresan kanonis milik penyedia. Pada awal percobaan, semua goresan terlihat. Setelah goresan pertama diterima, papan hanya menampilkan goresan berikutnya yang diperlukan sambil mempertahankan goresan kanonis yang sudah selesai.
+## Spesifikasi Teknis
 
-Goresan salah menghasilkan umpan balik merah yang lembut tanpa memulai ulang animasi pembukaan papan. Saat karakter selesai, aplikasi memainkan bunyi keberhasilan singkat dan menampilkan lapisan penyelesaian stabil berisi tanda centang, jumlah kesalahan percobaan, serta tindakan Tutup dan Coba Lagi. Coba Lagi memulai percobaan baru dengan semua panduan terlihat. Masukan penunjuk digambar paling banyak sekali per bingkai animasi agar kanvas tetap stabil.
+Masukan pena, sentuhan dan tetikus dinilai menurut urutan, arah dan kedekatan. Goresan yang diterima diganti dengan pola baku. Panduan bernomor, panduan bertahap dan batas karakter tetap digunakan. Tombol panduan dinonaktifkan ketika semua panduan terlihat. Sepuluh kesalahan beruntun mengakhiri percobaan; hasil menunjukkan jumlah kesalahan dan kontrol ulang. Percobaan baik meningkatkan kesulitan karakter dalam memori.
 
-Judul diukur mengikuti kanvas yang dirender dan dipusatkan tepat di atasnya. Teks kartu dan definisi terlokalisasi tetap sejajar, dan tombol tutup seukuran konten memakai animasi penutupan khusus.
+Pola gabungan mempertahankan proporsi, urutan, waktu, tekanan dan keselarasan penunjuk tanpa mengubah data penyedia. Label menghindari lintasan goresan, dan kanvas diperbarui sekali per bingkai. Jendela mengambang memakai SVG tutup standar; papan tertanam tetap berada di kontainer. Gaya milik komponen tidak mengubah composer, kerangka halaman atau menu samping.
 
-Tampilan panduan pertama memberi nomor pada setiap goresan dan menunjukkan arahnya. Sepuluh kesalahan berturut-turut mengakhiri percobaan dengan hasil gagal. Percobaan berhasil dengan paling banyak satu kesalahan meningkatkan tingkat kesulitan kartu tersebut dalam memori untuk percobaan berikutnya, dan pad yang terbuka dapat langsung beralih ke kartu Pustaka lain.
-
-Tindakan panduan **?** mempertahankan goresan yang diterima dan hasil percobaan sambil menampilkan anotasi hanya untuk goresan yang belum selesai. Mencoba lagi mempertahankan panduan progresif. Pola gabungan membawa batas tiap bagian sehingga setiap karakter yang baru dicapai memperoleh satu pratinjau beranotasi lengkap. Arah anotasi dihitung dalam koordinat kanvas yang dirender agar panah tetap akurat pada pola panjang dengan banyak karakter.
-
-Kartu gabungan kini menyusun semua pola unit tulisan dari nilai tulisan utama secara berdampingan dengan skala konsisten dan jarak minimal. Papan gambar melebar agar ukuran karakter tetap terjaga, sedangkan judul ringkasnya menampilkan pelafalan dan definisi yang tersedia.
-
-Papan gambar tetap berada di dalam area pandang, memakai tinggi ringkas yang mengikuti konten, dan membatasi lebarnya hingga empat puluh persen area pandang agar kata yang lebih panjang diperkecil alih-alih menghasilkan jendela terlalu besar. Pengubahan ukuran tidak lagi menukar ukuran minimum papan, dan setiap panduan satu goresan tetap menampilkan anotasi urutan serta arah.
-
-Label anotasi mengevaluasi posisi terdekat di sekitar awal setiap goresan dan memilih tempat pertama yang bebas dari label lain serta semua jalur goresan yang dirender. Dengan demikian, penanda bernomor tetap terbaca dan dekat dengan goresannya tanpa menutupi goresan pengguna yang sudah selesai.
-
-Percobaan berhasil dengan paling banyak satu kesalahan kini meningkatkan kesulitan ingatan khusus kartu dengan menyembunyikan satu panduan goresan tambahan yang dipilih secara acak. Goresan tersembunyi diwakili tanda tanya di sudut kanvas dan tetap divalidasi seperti biasa. Tindakan panduan kanan atas menampilkan goresan tersembunyi untuk percobaan saat ini tanpa menghapus input yang diterima atau mengurangi kesulitan kartu yang telah dipelajari. Penempatan anotasi memilih posisi dekat pertama yang bebas benturan alih-alih memaksimalkan jarak kosong, sehingga label tetap lebih dekat ke awal goresan.
-
-Tanda tanya panduan tersembunyi hanya muncul saat pelajar mencapai goresan yang panduannya disembunyikan; tanda tersebut tidak lagi muncul terlalu awal untuk goresan tersembunyi berikutnya.
-
-Saat jendela Latihan Menggambar yang terbuka beralih ke kartu dengan jumlah kolom berbeda, rasio aspek area gambar kini diterapkan ulang dan bitmap kanvas diselaraskan setelah tata letak. Pola multikarakter tidak lagi meregang secara vertikal ketika jendela mengambang digambar ulang.
-
-Menekan Escape menutup jendela Latihan Menggambar aktif melalui alur penutupan beranimasi dan pembersihan penuh yang sama seperti kontrol tutupnya.
-
-Permukaan gambar kini membentuk viewport terpusat yang mempertahankan rasio aspek dari lebar dan tinggi hasil render sebenarnya. Saat ukuran panel mengambang diubah, area goresan logis diberi ruang tepi bila diperlukan alih-alih meregangkan geometri karakter; koordinat penunjuk, panduan, anotasi, goresan selesai, dan tinta aktif semuanya memakai viewport yang sama.
-
-Pad dengan beberapa karakter kini memangkas ruang horizontal yang tidak terpakai berdasarkan batas goresan setiap karakter dan mempertahankan jarak kecil yang seragam. Jendela menyempit mengikuti pola yang ringkas sambil mempertahankan proporsi karakter, urutan goresan, waktu, tekanan, dan keselarasan penunjuk saat ukuran atau kartu berubah.
-
-Tinggi awal pad kini mengikuti kanvas, judul, dan kontrol yang ditampilkan, bukan tambahan tetap yang dibatasi hingga tujuh puluh persen tinggi layar. Pada layar pendek, tinggi kanvas yang tersedia diperkecil sambil mempertahankan proporsi goresan dan menjaga tombol Atur Ulang tetap terlihat. Memuat kartu lain menyesuaikan kembali konten dan mempertahankan pad di dalam layar.
-
-Memilih kartu Library yang dapat digambar saat pad terbuka kini menggambar ulang setiap pola baru, meskipun kartu berturut-turut menggunakan ukuran kanvas yang sama. Beralih kartu langsung memperbarui panduan tanpa perlu mengubah ukuran atau membuka kembali jendela.
-
-Latihan Menulis kini tetap berada di dalam halaman utama. Batas konten halaman yang dapat digulir digunakan saat menyeret dan mengubah ukuran, sehingga pad tidak menutupi header atau footer. Pada jendela pendek, pad mempertahankan tinggi gambar alaminya dan halaman utama dapat digulir secara vertikal untuk menjangkau kontrol lainnya.
-
-Memuat karakter berikutnya ke papan tulis yang terbuka mempertahankan posisi saat ini, termasuk posisi yang dipilih dengan menyeret. Posisi awal hanya diterapkan saat membuka papan baru.
-
-Tombol tutup papan gambar memakai SVG standar sesuai tema. Tombol panduan dinonaktifkan saat semua panduan goresan terlihat. Pergantian karakter mempertahankan posisi jendela pilihan pengguna.
-
-Popup detail mempertahankan wadah gulir dokumen dan ruang bilah gulir agar menu samping tetap pada posisinya. Papan gambar menggunakan batas mengambang terpisah tanpa mengubah tinggi atau luapan halaman.
-
-## Siklus Sesi Papan Gambar
-
-Papan gambar ditutup saat rute dashboard berubah dan melepaskan kanvas, observer, serta penangan peristiwa. Batas mengambang tetap memakai gaya milik komponen tanpa menimpa kelas composer atau shell.
+Buka, muat, goresan, reset, panduan, ulang dan tutup menjalankan alur `study:drawing` dengan tahap before, execute dan after. Navigasi atau pembatalan melepaskan penangan penunjuk, pengamat ukuran dan render. Library dan Flashcards menggunakan kontrak reuse publik Study.

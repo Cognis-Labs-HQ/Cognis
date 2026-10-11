@@ -232,3 +232,7 @@ Learner layers appear in the Explore side menu at `/study/explore/<ISO language>
 ## Study Browsing and Favourites
 
 Flashcards opens a browse page containing owned decks, decks shared with the current account, and complete starter decks from enabled language providers. Bearer-link shares retain their existing access rules and are not a public directory. The widget’s top-right + menu offers Create Deck and Import Deck. Explore, Library, and Flashcards reuse account-persisted Study favourites and sorting controls (provider order, A–Z, Z–A, newest first, oldest first). An outlined star filters the current results to favourites and turns gold when enabled. Library items, decks, and individual study flashcards have independent favourite toggles. Favourites never grant access to content. The drawing pad releases its session on route changes, and its floating boundary no longer overrides composer or shell classes.
+
+## Flashcard Practice
+
+Browser actions run declared study:decks flows with before, execute and after stages. Server list and details run authorize, read and audit stages; saves, reviews and deletion retain validation, authorization and transaction stages. Study owns public drawing, pattern composition, similarities and action-flow reuse; the optional Drawing adapter contributes only floating-pad integration. Its absence does not disable embedded Writing. All mounts and embedded sessions abort on departure.

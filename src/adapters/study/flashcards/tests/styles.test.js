@@ -23,10 +23,7 @@ const shellClasses = [
     "btn-cancel",
 ];
 test("Study adapter styles do not override composer, shell, or reusable button classes", () => {
-    for (const path of [
-        "../ui/flashcards.css",
-        "../../drawing/ui/drawing.css",
-    ]) {
+    for (const path of ["../ui/flashcards.css"]) {
         const source = readFileSync(new URL(path, import.meta.url), "utf8");
         for (const name of [...composerClasses, ...shellClasses])
             assert.doesNotMatch(

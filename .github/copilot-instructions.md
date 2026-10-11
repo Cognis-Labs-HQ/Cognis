@@ -11,6 +11,7 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 ### Ownership and integration
 
 - Keep code, routes, tests, styles, CLI contributions and lifecycle cleanup in their owning component. An optional component must be removable without breaking its siblings or core.
+- Treat ctx as the backbone of every supported application action, on the server and in the browser. Declare and execute named staged flows for reads, navigation, practice, imports, exports and mutations; register capabilities through ctx and fail when required contracts are unavailable. Add behavioral contract tests that fail if actions bypass their declared flow or component boundary.
 - Use injected ctx capabilities and registered flows across component boundaries. Never instantiate another component's concrete services or import its private implementation, including in tests.
 - Only publish capabilities that are fully implemented, registered and tested. Check the actual host capability used by bootstrap, disable and uninstall; reject unavailable contracts rather than falling back to broader or older APIs.
 - Core owns host behavior and policy; modules provide language data and dictionary enrichment. Modules must not dictate app navigation, permissions or query-cache refresh schedules.

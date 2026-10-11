@@ -1,4 +1,6 @@
-import { isCardDue } from "../../reuse/review.js";
+import { practiceSummary, practiceQueue } from "./practice-model.js";
+import { mountPractice } from "./practice.js";
+import { runDeckAction } from "./actions.js";
 import { createSearchMatchResolver } from "/static/reuse/search-util/matching.js";
 import {
     loadDeckTemplates,
@@ -9,7 +11,6 @@ import {
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import {
     loadFavourites,
-    renderFavourite,
     sortItems,
 } from "/static/gateways/study/reuse/favourites.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -39,11 +40,7 @@ import {
     deleteStudyDeck,
     reviewStudyCard,
 } from "../../decks-client.js";
-import {
-    renderFlashcard,
-    mountFlashcard,
-    flashcardValues,
-} from "../../reuse/flashcard.js";
+import { flashcardValues } from "../../reuse/flashcard.js";
 import { parseAnkiNotes, exportAnkiNotes } from "../../anki.js";
 
 function download(name, text) {
@@ -236,14 +233,19 @@ export async function mount(root, { signal: routerSignal } = {}) {
     let entries;
     let templates;
     try {
-        [model, decks, schemas, templates] = await Promise.all([
-            loadStudySubNavigationModel({
-                fallbackLanguageCode: readSelectedStudyLanguageCode(),
-            }),
-            fetchStudyDecks(),
-            fetchLibrarySchemas(),
-            loadDeckTemplates(signal),
-        ]);
+        [model, decks, schemas, templates] = await runDeckAction(
+            "load",
+            () =>
+                Promise.all([
+                    loadStudySubNavigationModel({
+                        fallbackLanguageCode: readSelectedStudyLanguageCode(),
+                    }),
+                    fetchStudyDecks(),
+                    fetchLibrarySchemas(),
+                    loadDeckTemplates(signal),
+                ]),
+            signal,
+        );
     } catch {
         if (signal.aborted) return;
         showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
@@ -272,7 +274,8 @@ export async function mount(root, { signal: routerSignal } = {}) {
     let deckQuery = "";
     let queue = [];
     let session = null;
-    let dueOnly = true;
+    let filter = "total";
+    let releasePractice;
     let generation = 0;
     const visibleDecks = () => {
         const match = createSearchMatchResolver(deckQuery);
@@ -303,7 +306,13 @@ export async function mount(root, { signal: routerSignal } = {}) {
             toggle.textContent = favouritesOnly ? "★" : "☆";
             return;
         }
-        target.innerHTML = renderDeckDetail(templates, selected, dueOnly, i18n);
+        target.innerHTML = renderDeckDetail(
+            templates,
+            selected,
+            practiceSummary(session?.cards ?? [], selected.progress),
+            filter,
+            i18n,
+        );
         if (selected.canEdit && uiCtx.capabilities.get("share:openPopup"))
             uiCtx.capabilities
                 .get("share:uiGateway")
@@ -337,45 +346,104 @@ export async function mount(root, { signal: routerSignal } = {}) {
         const favourite = root.querySelector("[data-deck-favourite]");
         if (favourite) favourite.hidden = queue.length > 0;
         const target = root.querySelector("[data-study-session]");
+        releasePractice?.();
+        const current = ++generation;
         if (!queue.length) {
             target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>`;
             return;
         }
         const detail = queue[0];
-        target.innerHTML = renderFlashcard(
+        releasePractice = mountPractice(target, {
             detail,
-            schemas,
+            templates,
             entries,
+            schemas,
+            progress: selected.progress,
+            filter,
+            mode: "reading",
             i18n,
-            document.documentElement.lang,
-            { favourites: true },
-        );
-        const current = ++generation;
-        mountFlashcard(target, {
             signal,
-            onGrade: async (grade) => {
+            onNext: async (grade) => {
                 try {
-                    const updated = await reviewStudyCard(
-                        session.deck.id,
-                        detail.entry.id,
-                        grade,
-                    );
-                    if (current !== generation) return;
-                    selected = updated;
-                    session.deck = updated;
+                    if (grade) {
+                        const updated = await runDeckAction(
+                            "review",
+                            () =>
+                                reviewStudyCard(
+                                    session.deck.id,
+                                    detail.entry.id,
+                                    grade,
+                                ),
+                            signal,
+                        );
+                        if (signal.aborted || current !== generation) return;
+                        selected = updated;
+                        session.deck = updated;
+                    }
                     queue.shift();
+                    const summary = practiceSummary(
+                        session.cards,
+                        selected.progress,
+                    );
+                    root.querySelectorAll("[data-practice-filter]").forEach(
+                        (button) => {
+                            button.querySelector("strong").textContent =
+                                summary[button.dataset.practiceFilter];
+                        },
+                    );
                     nextCard();
                 } catch {
                     showToast(
                         i18n.t("adapter.study.flashcards.deck_review_error"),
-                        {
-                            variant: "error",
-                        },
+                        { variant: "error" },
                     );
                 }
             },
         });
     };
+    const loadSession = async () => {
+        session = await fetchStudyDeck(selected.id);
+        session.cards = [
+            ...session.cards,
+            ...session.deck.notes.map((note) => ({
+                entry: {
+                    id: note.id,
+                    label: note.front,
+                    fields: {
+                        definition: note.back,
+                        pronunciation: note.pronunciation,
+                    },
+                },
+                references: [],
+            })),
+        ];
+        selected = {
+            ...session.deck,
+            name:
+                session.deck.names?.[document.documentElement.lang] ??
+                session.deck.name,
+        };
+        if (!entries) {
+            const { readable } = await fetchLibraryLocations();
+            entries = (
+                await Promise.all(
+                    readable.map((location) => fetchLibraryEntries(location)),
+                )
+            ).flat();
+        }
+        signal.throwIfAborted();
+        if (session.unavailable)
+            showToast(
+                i18n
+                    .t("adapter.study.flashcards.deck_unavailable")
+                    .replace("{{ count }}", String(session.unavailable)),
+                { variant: "warning" },
+            );
+        queue = practiceQueue(session.cards, selected.progress, filter);
+        renderDeck();
+        nextCard();
+    };
+
     const composer = createPageComposer(root, {
         allowCustomization: false,
         contentScrolling: false,
@@ -436,14 +504,31 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 sortOrder = event.target.value;
                 renderDeck();
             }
-            if (event.target.matches("[data-deck-due]"))
-                dueOnly = event.target.checked;
         },
         { signal },
     );
     root.addEventListener(
         "click",
         async (event) => {
+            const filterButton = event.target.closest("[data-practice-filter]");
+            if (filterButton) {
+                await runDeckAction(
+                    "filter",
+                    () => {
+                        filter = filterButton.dataset.practiceFilter;
+                        releasePractice?.();
+                        queue = practiceQueue(
+                            session.cards,
+                            selected.progress,
+                            filter,
+                        );
+                        renderDeck();
+                        nextCard();
+                    },
+                    signal,
+                );
+                return;
+            }
             const favouriteToggle = event.target.closest(
                 "[data-study-favourites-only]",
             );
@@ -454,8 +539,13 @@ export async function mount(root, { signal: routerSignal } = {}) {
             }
             const preview = event.target.closest("[data-deck-open]");
             if (preview) {
-                await navigateTo(
-                    `/study/flashcards/${preview.dataset.deckOpen}`,
+                await runDeckAction(
+                    "browse",
+                    () =>
+                        navigateTo(
+                            `/study/flashcards/${preview.dataset.deckOpen}`,
+                        ),
+                    signal,
                 );
                 return;
             }
@@ -464,130 +554,122 @@ export async function mount(root, { signal: routerSignal } = {}) {
             button.disabled = true;
             try {
                 let action = button.dataset.deckAction;
-                if (action === "browse") {
-                    await navigateTo("/study/flashcards");
-                    return;
-                }
-                if (action === "add") {
-                    const choice = await openPopup({
-                        title: i18n.t("adapter.study.flashcards.page_title"),
-                        body: "",
-                        actions: [
-                            {
-                                id: "create",
-                                label: i18n.t(
-                                    "adapter.study.flashcards.deck_create",
-                                ),
-                                variant: "neutral",
-                            },
-                            {
-                                id: "import",
-                                label: i18n.t(
-                                    "adapter.study.flashcards.deck_import",
-                                ),
-                                variant: "neutral",
-                            },
-                        ],
-                    });
-                    if (!choice) return;
-                    action = choice;
-                }
-                if (["create", "edit", "import"].includes(action)) {
-                    if (!entries) {
-                        const { readable } = await fetchLibraryLocations();
-                        entries = (
-                            await Promise.all(
-                                readable.map((location) =>
-                                    fetchLibraryEntries(location),
-                                ),
-                            )
-                        ).flat();
-                    }
-                    await editDeck(
-                        action === "edit" ? selected : null,
-                        schemas,
-                        entries,
-                        i18n,
-                        action === "import",
-                    );
-                    return;
-                }
-                if (action === "delete") {
-                    const choice = await openPopup({
-                        title: i18n.t("ui.reuse.delete"),
-                        body: escapeHtml(selected.name),
-                        actions: [
-                            {
-                                id: "delete",
-                                label: i18n.t("ui.reuse.delete"),
-                                variant: "cancel",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.cancel"),
-                                variant: "neutral",
-                            },
-                        ],
-                    });
-                    if (choice === "delete") {
-                        await deleteStudyDeck(selected.id);
-                        showToast(
-                            i18n.t("adapter.study.flashcards.deck_deleted"),
-                            {
-                                variant: "success",
-                            },
-                        );
+                await runDeckAction(action, async () => {
+                    if (action === "browse") {
                         await navigateTo("/study/flashcards");
+                        return;
                     }
-                    return;
-                }
-                session = await fetchStudyDeck(selected.id);
-                const notes = session.deck.notes.map((note) => ({
-                    entry: {
-                        id: note.id,
-                        label: note.front,
-                        fields: {
-                            definition: note.back,
-                            pronunciation: note.pronunciation,
-                        },
-                    },
-                    references: [],
-                }));
-                if (action === "export") {
-                    if (!session.deck.canExport) return;
-                    const all = [...session.cards, ...notes];
-                    download(
-                        `${selected.name.replace(/[^\p{L}\p{N}._-]/gu, "_")}.tsv`,
-                        exportAnkiNotes(
-                            selected.name,
-                            all.map((detail) => ({
-                                ...flashcardValues(
-                                    detail,
-                                    schemas,
-                                    document.documentElement.lang,
-                                ),
-                                context: detail,
-                            })),
-                        ),
-                    );
-                    return;
-                }
-                if (session.unavailable)
-                    showToast(
-                        i18n
-                            .t("adapter.study.flashcards.deck_unavailable")
-                            .replace(
-                                "{{ count }}",
-                                String(session.unavailable),
+                    if (action === "add") {
+                        const choice = await openPopup({
+                            title: i18n.t(
+                                "adapter.study.flashcards.page_title",
                             ),
-                        { variant: "warning" },
-                    );
-                queue = [...session.cards, ...notes].filter(
-                    (detail) =>
-                        !dueOnly ||
-                        isCardDue(session.deck.progress, detail.entry.id),
-                );
-                nextCard();
+                            body: "",
+                            actions: [
+                                {
+                                    id: "create",
+                                    label: i18n.t(
+                                        "adapter.study.flashcards.deck_create",
+                                    ),
+                                    variant: "neutral",
+                                },
+                                {
+                                    id: "import",
+                                    label: i18n.t(
+                                        "adapter.study.flashcards.deck_import",
+                                    ),
+                                    variant: "neutral",
+                                },
+                            ],
+                        });
+                        if (!choice) return;
+                        action = choice;
+                    }
+                    if (["create", "edit", "import"].includes(action)) {
+                        if (!entries) {
+                            const { readable } = await fetchLibraryLocations();
+                            entries = (
+                                await Promise.all(
+                                    readable.map((location) =>
+                                        fetchLibraryEntries(location),
+                                    ),
+                                )
+                            ).flat();
+                        }
+                        const edit = () =>
+                            editDeck(
+                                action === "edit" ? selected : null,
+                                schemas,
+                                entries,
+                                i18n,
+                                action === "import",
+                            );
+                        if (button.dataset.deckAction === "add")
+                            await runDeckAction(action, edit, signal);
+                        else await edit();
+                        return;
+                    }
+                    if (action === "delete") {
+                        const choice = await openPopup({
+                            title: i18n.t("ui.reuse.delete"),
+                            body: escapeHtml(selected.name),
+                            actions: [
+                                {
+                                    id: "delete",
+                                    label: i18n.t("ui.reuse.delete"),
+                                    variant: "cancel",
+                                },
+                                {
+                                    id: "cancel",
+                                    label: i18n.t("ui.reuse.cancel"),
+                                    variant: "neutral",
+                                },
+                            ],
+                        });
+                        if (choice === "delete") {
+                            await deleteStudyDeck(selected.id);
+                            showToast(
+                                i18n.t("adapter.study.flashcards.deck_deleted"),
+                                {
+                                    variant: "success",
+                                },
+                            );
+                            await navigateTo("/study/flashcards");
+                        }
+                        return;
+                    }
+                    const exportSession = await fetchStudyDeck(selected.id);
+                    const notes = exportSession.deck.notes.map((note) => ({
+                        entry: {
+                            id: note.id,
+                            label: note.front,
+                            fields: {
+                                definition: note.back,
+                                pronunciation: note.pronunciation,
+                            },
+                        },
+                        references: [],
+                    }));
+                    if (action === "export") {
+                        if (!exportSession.deck.canExport) return;
+                        const all = [...exportSession.cards, ...notes];
+                        download(
+                            `${selected.name.replace(/[^\p{L}\p{N}._-]/gu, "_")}.tsv`,
+                            exportAnkiNotes(
+                                selected.name,
+                                all.map((detail) => ({
+                                    ...flashcardValues(
+                                        detail,
+                                        schemas,
+                                        document.documentElement.lang,
+                                    ),
+                                    context: detail,
+                                })),
+                            ),
+                        );
+                        return;
+                    }
+                });
             } catch {
                 showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
                     variant: "error",
@@ -598,6 +680,16 @@ export async function mount(root, { signal: routerSignal } = {}) {
         },
         { signal },
     );
+    signal.addEventListener("abort", () => releasePractice?.(), { once: true });
+    if (selected) {
+        try {
+            await runDeckAction("load", loadSession, signal);
+        } catch {
+            showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
+                variant: "error",
+            });
+        }
+    }
 }
 
 await mountWhenDirect(mount);

@@ -78,7 +78,7 @@ test("Study Library composer exposes provider-owned raw-input lookup", () => {
         [adminInteractionsSource, /configuredIds\.has\(targetLayer\)/],
         [adminInteractionsSource, /presentationRole === "pronunciation"/],
         [adminInteractionsSource, /target\.label/],
-        [drawingSource, /orderedLexicalSequence/],
+        [drawingSource, /static\/gateways\/study\/reuse\/drawing-pattern\.js/],
         [adapterSource, /registerLookupProvider/],
     ])
         assert.match(content, pattern);
