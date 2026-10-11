@@ -793,3 +793,5 @@ Pengujian Study berada di adapter atau gateway pemiliknya. Ekstraksi bacaan, pem
 Flashcards 1.2.0 menampilkan semua dek yang terlihat dalam ubin responsif dengan sumber, bahasa, jumlah kartu, serta jumlah kartu baru/jatuh tempo. Pencarian dek memakai pencocok pencarian Study yang ada. Urutan, filter favorit, dan tata letak filter menggunakan kontrol gateway bersama. Tampilan galeri dan detail menggunakan templat HTML milik Flashcards. Pola judul dan metadata mengikuti [Brainscape](https://www.brainscape.com/subjects) dan [Knowt](https://knowt.com/explore).
 
 Bintang favorit pratinjau Library berada di samping kontrol pilihan dan tidak tertutup petunjuk kartu anak. Perubahan favorit menampilkan notifikasi sukses. Escape menghapus pilihan jamak jika popup belum menangani tombol tersebut. Detail dek menampilkan favorit dek; sesi belajar aktif menampilkan favorit kartu saat ini sebagai gantinya. Ekspor hanya terlihat jika `canExport` mengizinkan pembuat atau administrator, termasuk dek penyedia yang dilihat administrator.
+
+[6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)

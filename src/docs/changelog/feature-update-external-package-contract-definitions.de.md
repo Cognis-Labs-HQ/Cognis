@@ -791,3 +791,5 @@ Study-Tests liegen beim zuständigen Adapter oder Gateway. Gemeinsame Leseextrak
 Flashcards 1.2.0 zeigt alle sichtbaren Stapel als responsive Kacheln mit Herkunft, Sprache, Kartenanzahl und neuen/fälligen Karten. Die Suche verwendet den bestehenden Study-Suchabgleich. Sortierung, Favoritenfilter und Filterlayout liegen gemeinsam im Gateway. Galerie- und Detailansichten nutzen eigene HTML-Vorlagen. Die klaren Titel- und Metadatenmuster orientieren sich an [Brainscape](https://www.brainscape.com/subjects) und [Knowt](https://knowt.com/explore).
 
 Favoritensterne in Library-Vorschauen liegen neben der Auswahl und bleiben über Hinweisen für untergeordnete Karten erreichbar. Erfolgreiche Änderungen zeigen eine Meldung. Escape beendet die Mehrfachauswahl, wenn kein Popup die Taste bereits verarbeitet hat. Stapeldetails zeigen den Stapelfavoriten; beim Lernen erscheint stattdessen der Favorit der aktuellen Karte. Export ist nur sichtbar, wenn `canExport` den Ersteller oder einen Administrator zulässt, einschließlich Provider-Stapeln für Administratoren.
+
+[6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)

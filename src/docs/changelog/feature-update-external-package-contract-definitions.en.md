@@ -791,3 +791,5 @@ Study regressions live in their owning adapter or gateway. Shared reading extrac
 Flashcards 1.2.0 browses all visible decks in responsive tiles with source labels, language, card totals and new/due counts. Deck search uses the existing Study search matcher; sorting and favourite filtering use the shared gateway controls and layout. Browse/detail markup lives in Flashcards-owned HTML templates. The gallery follows the clear title/metadata patterns of [Brainscape](https://www.brainscape.com/subjects) and [Knowt](https://knowt.com/explore).
 
 Library preview stars sit beside selection controls, clear of child-card hover hints. Favourite changes show success toasts, and Escape clears multi-selection unless a popup already consumed the key. Deck detail shows the deck favourite; an active review session shows the current card favourite instead. The Export action appears only when `canExport` permits the creator or an administrator, including administrators viewing provider decks.
+
+[6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
