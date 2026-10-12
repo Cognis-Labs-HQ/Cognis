@@ -46,8 +46,8 @@ export function sortItems(items, order) {
 }
 /** @returns {Promise<object>} Controller with has, bind and refresh methods. */
 
-export async function loadFavourites() {
-    const response = await apiFetch("/api/v1/study/favourites");
+export async function loadFavourites({ signal } = {}) {
+    const response = await apiFetch("/api/v1/study/favourites", { signal });
     if (!response.ok) throw new Error("favourites_failed");
     active = new Set(
         (await response.json()).data.map((item) => key(item.kind, item.id)),

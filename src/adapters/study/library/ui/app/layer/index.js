@@ -1,3 +1,4 @@
+import { exploreLayers } from "/static/gateways/study/reuse/explore.js";
 import { openEntryPopup } from "../entry-popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
@@ -53,16 +54,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
     );
     const entries = loadedEntries;
-    const browseable = schemas.flatMap((schema) =>
-        schema.layers
-            .filter(
-                (layer) =>
-                    !["definition", "meaning", "particle"].includes(
-                        layer.semanticRole,
-                    ),
-            )
-            .map((layer) => ({ schema, layer })),
-    );
+    const browseable = exploreLayers(schemas);
     const selected =
         browseable.find(
             ({ layer }) =>

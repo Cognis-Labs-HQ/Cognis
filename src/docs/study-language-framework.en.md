@@ -236,3 +236,7 @@ Flashcards opens a browse page containing owned decks, decks shared with the cur
 ## Flashcard Practice
 
 Browser actions run declared study:decks flows with before, execute and after stages. Server list and details run authorize, read and audit stages; saves, reviews and deletion retain validation, authorization and transaction stages. Study owns public drawing, pattern composition, similarities and action-flow reuse; the optional Drawing adapter contributes only floating-pad integration. Its absence does not disable embedded Writing. All mounts and embedded sessions abort on departure.
+
+## Shared Language Pages
+
+Language selection opens Cognis-owned Explore pages even when content providers declare no child pages. Switching languages preserves the equivalent writing, vocabulary or sentence role; Flashcards, Library and Requests keep their shared page context. English declares alphabet, letter combinations, vocabulary and sentences using its opinionated slugs. Aborted favourites loads release their mount without misleading failure toasts.

@@ -652,6 +652,10 @@ Favoritensterne in Library-Vorschauen liegen neben der Auswahl und bleiben über
 
 Stapel und geteilte Momentaufnahmen nutzen dieselbe verlinkte Antwortdarstellung und Notizumwandlung. Unbenutzte Wende-/Bewertungsdarstellung, Stile und Texte entfallen. Bibliotheksladen ist innerhalb der Stapelseite gemeinsam. Sichtbarkeit, ctx-Stufen, Freigaben und Bewertungsrechte bleiben erhalten. Mehrzeichen-Schreibmuster behalten die Zeichengrenzen des Anbieters.
 
+## Gemeinsame Sprachseiten
+
+Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten des Inhaltsanbieters. Ein Sprachwechsel behält die entsprechende Schrift-, Wortschatz- oder Satzrolle. Lernkarten, Bibliothek und Anfragen behalten ihren gemeinsamen Seitenkontext. Englisch deklariert Alphabet, Buchstabenverbindungen, Wortschatz und Sätze über eigene Pfadnamen. Abgebrochene Favoritenabfragen beenden die Einbindung ohne irreführende Fehlermeldung.
+
 ## Commits
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

@@ -1,3 +1,4 @@
+import { languageExploreUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
@@ -252,9 +253,7 @@ export async function loadStudySubNavigationModel({
     const modulesByLanguage = requestedModel.pagesByGroup;
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
-    const schemas = selectedLanguageCode
-        ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
-        : [];
+    const schemas = await fetchLibrarySchemas().catch(() => []);
     const pendingLibraryRequests = await fetchLibraryPushRequests({
         status: "pending",
     }).catch(() => []);
@@ -331,7 +330,28 @@ export async function loadStudySubNavigationModel({
                 languageCode,
                 rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
                     ? rememberedPageUrl
-                    : resolveDefaultChildPageUrl(languageModules),
+                    : rememberedPageUrl &&
+                        spaRoutes.some(
+                            (route) =>
+                                route.base !== "/study/explore" &&
+                                route.base.startsWith("/study/") &&
+                                (route.base === rememberedPageUrl ||
+                                    rememberedPageUrl.startsWith(
+                                        `${route.base}/`,
+                                    )),
+                        )
+                      ? rememberedPageUrl
+                      : languageModules.length
+                        ? resolveDefaultChildPageUrl(languageModules)
+                        : spaRoutes.some(
+                                (route) => route.base === "/study/explore",
+                            )
+                          ? (languageExploreUrl(
+                                schemas,
+                                languageCode,
+                                rememberedPageUrl,
+                            ) ?? "/study")
+                          : "/study",
             ];
         }),
     );
@@ -339,7 +359,8 @@ export async function loadStudySubNavigationModel({
     return {
         selectedLanguageCode,
         dictionaryProviders:
-            selectedLanguageCode && schemas.length
+            selectedLanguageCode &&
+            schemas.some((schema) => schema.language === selectedLanguageCode)
                 ? await fetchSearchableDictionaryProviders(selectedLanguageCode)
                 : [],
         modules,

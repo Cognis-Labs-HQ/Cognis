@@ -654,6 +654,10 @@ Bintang favorit pratinjau Library berada di samping kontrol pilihan dan tidak te
 
 Latihan dek dan snapshot bersama memakai satu renderer jawaban bertautan dan satu konversi catatan. Renderer balik/penilaian, gaya dan label yang tidak digunakan dihapus. Pemuatan Library digunakan bersama dalam halaman dek. Visibilitas, tahap ctx, berbagi dan izin penilaian tetap ditegakkan. Pola gambar banyak karakter mempertahankan batas karakter penyedia.
 
+## Halaman Bahasa Bersama
+
+Pilihan bahasa membuka halaman Jelajahi milik Cognis meskipun penyedia konten tidak mendeklarasikan halaman anak. Pergantian bahasa mempertahankan peran tulisan, kosakata atau kalimat yang setara; Flashcards, Library dan Permintaan mempertahankan konteks halaman bersama. Inggris mendeklarasikan alfabet, gabungan huruf, kosakata dan kalimat melalui slug sendiri. Pemuatan favorit yang dibatalkan melepaskan pemasangan tanpa pesan kegagalan yang menyesatkan.
+
 ## Komit
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

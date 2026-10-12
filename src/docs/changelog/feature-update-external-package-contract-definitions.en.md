@@ -652,6 +652,10 @@ Library preview stars sit beside selection controls, clear of child-card hover h
 
 Deck practice and shared snapshots use one linked-answer renderer and one imported-note conversion. The unused flip/grade renderer, styles and labels are removed. Library loading is shared within the deck page. Practice visibility, ctx stages, sharing and review permissions remain enforced. Multi-character drawing patterns retain provider-authored character boundaries.
 
+## Shared Language Pages
+
+Language selection opens Cognis-owned Explore pages even when content providers declare no child pages. Switching languages preserves the equivalent writing, vocabulary or sentence role; Flashcards, Library and Requests keep their shared page context. English declares alphabet, letter combinations, vocabulary and sentences using its opinionated slugs. Aborted favourites loads release their mount without misleading failure toasts.
+
 ## Commits
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

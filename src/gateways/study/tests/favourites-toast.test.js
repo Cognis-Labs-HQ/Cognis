@@ -8,7 +8,7 @@ test("favourite success toasts follow persisted add/remove state", async () => {
     const toasts = [];
     const ctx = vm.createContext({
         apiFetch: async (_url, options) => {
-            if (options) {
+            if (options?.method === "PUT") {
                 const item = JSON.parse(options.body);
                 saved = item.favourite
                     ? [{ kind: item.kind, id: item.id }]

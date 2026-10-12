@@ -10,7 +10,8 @@ import { refreshLibraryFilterResults } from "./filters.js";
 /** Binds Study's shared controls without changing provider grid ordering by default. */
 export async function bindBrowseControls(root, entries, schemas, i18n, signal) {
     try {
-        const favourites = await loadFavourites();
+        const favourites = await loadFavourites({ signal });
+        if (signal?.aborted) return;
         const original = new WeakMap();
         const refresh = () => {
             favourites.refresh(root);
@@ -23,6 +24,7 @@ export async function bindBrowseControls(root, entries, schemas, i18n, signal) {
                     panel.querySelector("[data-study-sort]")?.value ??
                     "default";
                 const grid = panel.querySelector(".library-entry-grid");
+                if (!grid) return;
                 if (!original.has(grid)) original.set(grid, [...grid.children]);
                 const nodes = original.get(grid);
                 if (only) {
@@ -145,6 +147,7 @@ export async function bindBrowseControls(root, entries, schemas, i18n, signal) {
         });
         refresh();
     } catch {
+        if (signal?.aborted) return;
         showToast(i18n.t("gateway.study.favourite_failed"), {
             variant: "error",
         });

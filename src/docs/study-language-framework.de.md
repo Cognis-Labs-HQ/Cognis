@@ -236,3 +236,7 @@ Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks 
 ## Lernkarten üben
 
 Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute und after. Serverseitiges Auflisten und Details verwenden authorize, read und audit; Speichern, Bewerten und Löschen behalten Prüfung, Berechtigung und Transaktionen. Study besitzt gemeinsame Zeichenoberfläche, Musterzusammenstellung, Ähnlichkeiten und Aktionsabläufe. Der optionale Zeichenadapter integriert nur das schwebende Schreibfeld; eingebettetes Schreiben funktioniert ohne ihn. Seiten und Sitzungen werden beim Verlassen abgebrochen.
+
+## Gemeinsame Sprachseiten
+
+Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten des Inhaltsanbieters. Ein Sprachwechsel behält die entsprechende Schrift-, Wortschatz- oder Satzrolle. Lernkarten, Bibliothek und Anfragen behalten ihren gemeinsamen Seitenkontext. Englisch deklariert Alphabet, Buchstabenverbindungen, Wortschatz und Sätze über eigene Pfadnamen. Abgebrochene Favoritenabfragen beenden die Einbindung ohne irreführende Fehlermeldung.

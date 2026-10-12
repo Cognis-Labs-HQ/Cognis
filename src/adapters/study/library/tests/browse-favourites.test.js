@@ -86,3 +86,30 @@ test("favourite children render independently of unfavourited ancestors, and pro
     await change({ target: { matches: () => true } });
     assert.equal(grid.children[0], node);
 });
+
+test("leaving a layer while favourites load prevents stale binding and misleading errors", async () => {
+    const controller = new AbortController();
+    const context = vm.createContext({
+        loadFavourites: async () => {
+            controller.abort();
+            throw new Error("aborted");
+        },
+        showToast: () =>
+            assert.fail("An abandoned mount must not show an error"),
+        root: {
+            addEventListener: () =>
+                assert.fail("An abandoned mount must not bind"),
+        },
+        signal: controller.signal,
+    });
+    const source = readFileSync(
+        new URL("../ui/app/browse-controls.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
+        .replace(/\bexport /g, "");
+    await vm.runInContext(
+        source + "\nbindBrowseControls(root, [], [], {}, signal)",
+        context,
+    );
+});
