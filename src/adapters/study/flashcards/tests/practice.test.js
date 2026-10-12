@@ -185,6 +185,7 @@ function practiceHarness(filter, status = "due") {
             source.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? ""),
         renderFavourite: () => "",
         flashcardValues: environment.flashcardValues,
+        renderFlashcard: environment.renderFlashcard,
         cardStatus: () => status,
         readingChoices: () =>
             [true, false, false, false].map((correct, index) => ({
@@ -202,7 +203,6 @@ function practiceHarness(filter, status = "due") {
         runDeckAction: vm.runInContext("runDeckAction", environment),
         showToast: () => assert.fail("Unexpected practice failure"),
     });
-    loadModule("../ui/app/flashcards/practice-answer.js", context);
     loadModule("../ui/app/flashcards/practice.js", context);
     const controller = new AbortController();
     const grades = [];
@@ -337,7 +337,7 @@ test("full answers group canonical reading and meaning links without duplicating
             ],
         },
     ];
-    const html = harness.context.practiceAnswer(
+    const html = harness.context.renderFlashcard(
         detail,
         schemas,
         "en",

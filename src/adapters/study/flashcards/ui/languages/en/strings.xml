@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">Flashcards</string>
-  <string name="adapter.study.flashcards.flashcard_reveal">Reveal the answer</string>
-  <string name="adapter.study.flashcards.flashcard_again">Again</string>
-  <string name="adapter.study.flashcards.flashcard_good">Good</string>
-  <string name="adapter.study.flashcards.flashcard_easy">Easy</string>
   <string name="adapter.study.flashcards.deck_import">Import Deck</string>
   <string name="adapter.study.flashcards.deck_edit">Edit Deck</string>
   <string name="adapter.study.flashcards.deck_create">Create Deck</string>
@@ -14,8 +10,6 @@
   <string name="adapter.study.flashcards.deck_save_error">Could not save the deck. Check the selected cards and imported note format.</string>
   <string name="adapter.study.flashcards.deck_load_error">Could not load the deck or library cards.</string>
   <string name="adapter.study.flashcards.deck_empty">No flashcard decks found</string>
-  <string name="adapter.study.flashcards.deck_study">Study Deck</string>
-  <string name="adapter.study.flashcards.deck_due_only">Study only new or due cards</string>
   <string name="adapter.study.flashcards.deck_finished">All selected cards have been reviewed.</string>
   <string name="adapter.study.flashcards.deck_review_error">Could not save this review. Please try again.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} card(s) are no longer available and were skipped.</string>

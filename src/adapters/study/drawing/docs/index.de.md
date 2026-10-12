@@ -13,3 +13,5 @@ Maus, Stift und Berührung werden nach Reihenfolge, Richtung und Nähe bewertet.
 Zusammengesetzte Muster behalten Proportionen, Reihenfolge, Zeit, Druck und Zeigerposition ohne Anbieterinhalte zu verändern. Beschriftungen vermeiden Strichpfade. Die Anzeige wird höchstens einmal je Bild aktualisiert. Schwebende Fenster verwenden das normale Schließen-SVG, eingebettete Felder bleiben im Container. Eigene Stile verändern weder Composer noch Seitengerüst oder Seitenmenü.
 
 Öffnen, Laden, Strich, Zurücksetzen, Hilfe, Wiederholung und Schließen führen deklarierte `study:drawing`-Abläufe mit before, execute und after aus. Navigation oder Abbruch beendet Ereignisse, Beobachter und Darstellung. Bibliothek und Lernkarten verwenden ausschließlich die öffentliche Study-Wiederverwendung.
+
+Das gemeinsame Schreibfeld lädt seine eigene HTML-Vorlage einmal je Browsermodul. Fehlgeschlagene Anfragen lehnen die Öffnungsaktion ab; Navigation während des Ladens bricht die Einbindung ab. Zeichengruppen des Anbieters bleiben in Mehrzeichenmustern erhalten.

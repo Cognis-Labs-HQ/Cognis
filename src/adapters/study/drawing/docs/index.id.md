@@ -13,3 +13,5 @@ Masukan pena, sentuhan dan tetikus dinilai menurut urutan, arah dan kedekatan. G
 Pola gabungan mempertahankan proporsi, urutan, waktu, tekanan dan keselarasan penunjuk tanpa mengubah data penyedia. Label menghindari lintasan goresan, dan kanvas diperbarui sekali per bingkai. Jendela mengambang memakai SVG tutup standar; papan tertanam tetap berada di kontainer. Gaya milik komponen tidak mengubah composer, kerangka halaman atau menu samping.
 
 Buka, muat, goresan, reset, panduan, ulang dan tutup menjalankan alur `study:drawing` dengan tahap before, execute dan after. Navigasi atau pembatalan melepaskan penangan penunjuk, pengamat ukuran dan render. Library dan Flashcards menggunakan kontrak reuse publik Study.
+
+Papan gambar bersama memuat templat HTML miliknya sekali per modul browser. Permintaan gagal menolak tindakan buka; navigasi saat pemuatan membatalkan pemasangan. Kelompok karakter penyedia tetap utuh dalam pola banyak karakter.

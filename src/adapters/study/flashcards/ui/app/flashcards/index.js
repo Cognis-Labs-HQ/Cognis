@@ -40,7 +40,7 @@ import {
     deleteStudyDeck,
     reviewStudyCard,
 } from "../../decks-client.js";
-import { flashcardValues } from "../../reuse/flashcard.js";
+import { flashcardValues, noteDetails } from "../../reuse/flashcard.js";
 import { parseAnkiNotes, exportAnkiNotes } from "../../anki.js";
 
 function download(name, text) {
@@ -401,36 +401,25 @@ export async function mount(root, { signal: routerSignal } = {}) {
             },
         });
     };
+    const loadEntries = async () => {
+        if (entries) return;
+        const { readable } = await fetchLibraryLocations();
+        entries = (
+            await Promise.all(
+                readable.map((location) => fetchLibraryEntries(location)),
+            )
+        ).flat();
+    };
     const loadSession = async () => {
         session = await fetchStudyDeck(selected.id);
-        session.cards = [
-            ...session.cards,
-            ...session.deck.notes.map((note) => ({
-                entry: {
-                    id: note.id,
-                    label: note.front,
-                    fields: {
-                        definition: note.back,
-                        pronunciation: note.pronunciation,
-                    },
-                },
-                references: [],
-            })),
-        ];
+        session.cards = [...session.cards, ...noteDetails(session.deck.notes)];
         selected = {
             ...session.deck,
             name:
                 session.deck.names?.[document.documentElement.lang] ??
                 session.deck.name,
         };
-        if (!entries) {
-            const { readable } = await fetchLibraryLocations();
-            entries = (
-                await Promise.all(
-                    readable.map((location) => fetchLibraryEntries(location)),
-                )
-            ).flat();
-        }
+        await loadEntries();
         signal.throwIfAborted();
         if (session.unavailable)
             showToast(
@@ -586,16 +575,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                         action = choice;
                     }
                     if (["create", "edit", "import"].includes(action)) {
-                        if (!entries) {
-                            const { readable } = await fetchLibraryLocations();
-                            entries = (
-                                await Promise.all(
-                                    readable.map((location) =>
-                                        fetchLibraryEntries(location),
-                                    ),
-                                )
-                            ).flat();
-                        }
+                        await loadEntries();
                         const edit = () =>
                             editDeck(
                                 action === "edit" ? selected : null,

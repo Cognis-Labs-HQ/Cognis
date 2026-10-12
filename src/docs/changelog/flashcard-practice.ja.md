@@ -18,8 +18,7 @@
 
 ブラウザー操作はbefore、execute、afterの段階を持つstudy:decksフローを実行します。サーバーの一覧と詳細はauthorize、read、auditを実行し、保存、復習、削除は検証、権限、トランザクションを維持します。Studyは共通の描画、パターン合成、類似項目、操作フローを所有します。任意の描画アダプターは浮動パッドの統合のみ提供し、不在でも埋め込み練習は動作します。移動時はページと練習を終了します。
 
-## Commits
+## コミット
 
-- [6711b43](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
-
+- [6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)

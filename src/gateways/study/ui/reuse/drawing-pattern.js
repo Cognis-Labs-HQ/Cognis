@@ -52,7 +52,7 @@ export function drawingPattern(entry, layer, entries = [], schemas = []) {
             layer?.semanticRole,
         )
     )
-        return { ...own, groups: [own.strokes.length] };
+        return { ...own, groups: own.groups ?? [own.strokes.length] };
     const pieces = orderedDrawingPieces(entry, entries, schemas);
     if (!pieces.length) return undefined;
     const columns = pieces.length;

@@ -57,7 +57,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.2`  |
 | Library (Study)       | `src/adapters/study/library/`       | `2.27.0` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.0`  |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.3.0`  |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.3.1`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -77,7 +77,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `1.11.0`  |
+| Study                 | `src/gateways/study/`         | `1.11.1`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Core contracts

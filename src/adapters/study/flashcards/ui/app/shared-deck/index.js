@@ -1,3 +1,4 @@
+import { noteDetails } from "../../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { mountPractice } from "../flashcards/practice.js";
@@ -10,17 +11,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     const schemas = deck.schemas;
     const queue = [
         ...(shareContext.payload.cards ?? []),
-        ...deck.notes.map((note) => ({
-            entry: {
-                id: note.id,
-                label: note.front,
-                fields: {
-                    definition: note.back,
-                    pronunciation: note.pronunciation,
-                },
-            },
-            references: [],
-        })),
+        ...noteDetails(deck.notes),
     ];
     const templates = await runDeckAction(
         "load",
@@ -30,7 +21,10 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     const composer = createPageComposer(root, {
         allowCustomization: false,
         i18n,
-        pageContext: { title: escapeHtml(deck.name), subtitle: "" },
+        pageContext: {
+            title: deck.name,
+            subtitle: i18n.t("adapter.study.flashcards.page_subtitle"),
+        },
         elements: [
             {
                 id: "shared-deck",

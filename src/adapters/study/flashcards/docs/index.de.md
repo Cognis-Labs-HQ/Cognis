@@ -33,3 +33,7 @@ Lesen bietet die Hauptaussprache und drei unterschiedliche Aussprachen aus dense
 Bibliotheksnamen, Aussprachen und Definitionen verlinken die Quellkarte in Erkunden. Eine Bestätigung schützt die Übung beim Verlassen. Nicht zugängliche Quellen bleiben geschützt und lassen sich nicht über geteilte Momentaufnahmen öffnen. Der Export nutzt das themengerechte Downloadsymbol oben rechts und ist nur für Ersteller oder Administratoren verfügbar. Das Lernkartenmenü bleibt auf Stapelseiten aktiv.
 
 Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute und after. Serverseitiges Auflisten und Details verwenden authorize, read und audit; Speichern, Bewerten und Löschen behalten Prüfung, Berechtigung und Transaktionen. Study besitzt gemeinsame Zeichenoberfläche, Musterzusammenstellung, Ähnlichkeiten und Aktionsabläufe. Der optionale Zeichenadapter integriert nur das schwebende Schreibfeld; eingebettetes Schreiben funktioniert ohne ihn. Seiten und Sitzungen werden beim Verlassen abgebrochen.
+
+### Zusammengeführte Stapelübung
+
+Darstellungsvertrag: `flashcardValues(detail, schemas, language)` löst übersetzte Inhalte auf; `renderFlashcard(detail, schemas, language, link)` zeigt vollständige Antworten mit kanonischen Links; `noteDetails(notes)` wandelt importierte Notizen ohne Änderung der Quelle um. Die Übung steuert Sichtbarkeit und Animation für Konto- und Freigabestapel. Geteilte Stapel verwenden einen übersetzten Seitenuntertitel.

@@ -1,3 +1,5 @@
+import { formatTemplate } from "../../../ui/reuse/format-template.js";
+import { escapeHtml } from "../../../ui/reuse/escape-html.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -6,7 +8,8 @@ import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { compactDrawingPattern } from "../ui/reuse/drawing-layout.js";
 import { drawingViewport } from "../ui/reuse/drawing-viewport.js";
 
-async function drawingSession() {
+async function drawingSession({ templateAvailable = true } = {}) {
+    let templateRequests = 0;
     const capabilities = new Map();
     const elements = new Map();
     const moves = [];
@@ -94,6 +97,20 @@ async function drawingSession() {
                 contribute: (key, value) => capabilities.set(key, value),
             },
         },
+        formatTemplate,
+        escapeHtml,
+        fetch: async (url) => {
+            templateRequests++;
+            assert.equal(url, "/static/gateways/study/reuse/drawing.html");
+            return {
+                ok: templateAvailable,
+                text: async () =>
+                    readFileSync(
+                        new URL("../ui/reuse/drawing.html", import.meta.url),
+                        "utf8",
+                    ),
+            };
+        },
         showToast() {},
         createI18n: async () => ({ t: (key) => key }),
         document: {
@@ -146,6 +163,7 @@ async function drawingSession() {
         environment,
     );
     return {
+        templateRequests: () => templateRequests,
         navigate: () => events.get("cognis:route-will-change")?.(),
         open: capabilities.get("study:drawing:open"),
         load: capabilities.get("study:drawing:load"),
@@ -285,4 +303,17 @@ test("embedded drawing uses the same scoring, rejects a different character, and
     assert.equal(results.at(-1).correct, true);
     controller.abort();
     assert.equal(controller.signal.aborted, true);
+});
+
+test("drawing templates are loaded once and unavailable templates fail before mounting", async () => {
+    const session = await drawingSession();
+    await session.open(card(1));
+    session.navigate();
+    await session.open(card(2));
+    assert.equal(session.templateRequests(), 1);
+    const unavailable = await drawingSession({ templateAvailable: false });
+    await assert.rejects(
+        unavailable.open(card(1)),
+        /drawing_template_unavailable/,
+    );
 });

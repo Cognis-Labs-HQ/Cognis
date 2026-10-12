@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">Lernkarten</string>
-  <string name="adapter.study.flashcards.flashcard_reveal">Antwort aufdecken</string>
-  <string name="adapter.study.flashcards.flashcard_again">Erneut</string>
-  <string name="adapter.study.flashcards.flashcard_good">Gut</string>
-  <string name="adapter.study.flashcards.flashcard_easy">Leicht</string>
   <string name="adapter.study.flashcards.deck_import">Kartensatz importieren</string>
   <string name="adapter.study.flashcards.deck_edit">Kartensatz bearbeiten</string>
   <string name="adapter.study.flashcards.deck_create">Kartensatz erstellen</string>
@@ -14,8 +10,6 @@
   <string name="adapter.study.flashcards.deck_save_error">Der Kartensatz konnte nicht gespeichert werden. Prüfen Sie die gewählten Karten und das Notizformat.</string>
   <string name="adapter.study.flashcards.deck_load_error">Kartensatz oder Bibliothekskarten konnten nicht geladen werden.</string>
   <string name="adapter.study.flashcards.deck_empty">Keine Lernkartendecks gefunden</string>
-  <string name="adapter.study.flashcards.deck_study">Kartensatz lernen</string>
-  <string name="adapter.study.flashcards.deck_due_only">Nur neue oder fällige Karten lernen</string>
   <string name="adapter.study.flashcards.deck_finished">Alle ausgewählten Karten wurden wiederholt.</string>
   <string name="adapter.study.flashcards.deck_review_error">Diese Wiederholung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} Karte(n) sind nicht mehr verfügbar und wurden übersprungen.</string>

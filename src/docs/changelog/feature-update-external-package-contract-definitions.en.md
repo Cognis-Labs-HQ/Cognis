@@ -636,155 +636,11 @@ Dictionary searches open at `/study/library/search` without URL parameters. The 
 
 Successful deck creation and import dismiss the protected editor before navigating to the refreshed browse page, so saved changes do not trigger a discard prompt. Favourite-only Library results display selected child cards independently; restoring provider order restores their original nested placement.
 
-## Commits
-
-- [608f38a](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e
-- [88b9bdf](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
-- [70bf58e](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
-- [5c5cb3d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c5cb3d4)
-- [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
-- [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
-- [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
-- [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
-- [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
-- [64d53397](https://github.com/Cognis-Labs-HQ/Cognis/commit/64d53397)
-- [84bedc67](https://github.com/Cognis-Labs-HQ/Cognis/commit/84bedc67)
-- [617a2161](https://github.com/Cognis-Labs-HQ/Cognis/commit/617a2161)
-- [365d5444](https://github.com/Cognis-Labs-HQ/Cognis/commit/365d5444)
-- [11bec51d](https://github.com/Cognis-Labs-HQ/Cognis/commit/11bec51d)
-- [b996336d](https://github.com/Cognis-Labs-HQ/Cognis/commit/b996336d)
-- [8d4c4129](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d4c4129)
-- [d16a50d5](https://github.com/Cognis-Labs-HQ/Cognis/commit/d16a50d5)
-- [ea24056d](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea24056d)
-- [bcb4e781](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcb4e781)
-- [87f30e20](https://github.com/Cognis-Labs-HQ/Cognis/commit/87f30e20)
-- [d3ba08ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3ba08ef)
-- [6d6e4e53](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d6e4e53)
-- [5f8b129c](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f8b129c)
-- [9c374e3f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9c374e3f)
-- [05838355](https://github.com/Cognis-Labs-HQ/Cognis/commit/05838355)
-- [a0016fcd](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0016fcd)
-- [0287eb84](https://github.com/Cognis-Labs-HQ/Cognis/commit/0287eb84)
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/344ccb5b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/40da0c7a
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8893689
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/71c842e2
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f72cfb6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/47821a9b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f2afaa13
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e894f166
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/64d1ac04
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/23587bd7
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c8c8deb9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/039dc5c1
-- [8b08718f](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b08718f)
-- [7841f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/7841f27)
-- [9aedc46](https://github.com/Cognis-Labs-HQ/Cognis/commit/9aedc46)
-- [f405a3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/f405a3e)
-- [641d87a](https://github.com/Cognis-Labs-HQ/Cognis/commit/641d87a)
-- [bbed779](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbed779)
-- [efd006d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/efd006d2)
-- [fb046ce2](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb046ce2)
-- [004b39e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/004b39e5)
-- [3e48b191](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e48b191)
-- [5cd8e7ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cd8e7ff)
-- [b00c41df](https://github.com/Cognis-Labs-HQ/Cognis/commit/b00c41df)
-- [a0af7d1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0af7d1a)
-- [54242971](https://github.com/Cognis-Labs-HQ/Cognis/commit/54242971)
-- [125495f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/125495f3)
-- [109f583e](https://github.com/Cognis-Labs-HQ/Cognis/commit/109f583e)
-- [b17ebe21](https://github.com/Cognis-Labs-HQ/Cognis/commit/b17ebe21)
-- [aef137a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/aef137a4)
-- [82df83ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/82df83ce)
-- [501b4459](https://github.com/Cognis-Labs-HQ/Cognis/commit/501b4459)
-- [65340e2d](https://github.com/Cognis-Labs-HQ/Cognis/commit/65340e2d)
-- [b6dfb282](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6dfb282)
-- [79e872ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e872ea)
-- [6d0dd4d8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d0dd4d8)
-- [2802b0c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/2802b0c7)
-- [17702138](https://github.com/Cognis-Labs-HQ/Cognis/commit/17702138)
-- [e60aee76](https://github.com/Cognis-Labs-HQ/Cognis/commit/e60aee76)
-- [8f63ef4a](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f63ef4a)
-- [3d525fb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/3d525fb3)
-- [7b93c7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7b93c7dc)
-- [e4f2d16d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4f2d16d)
-- [698a4624](https://github.com/Cognis-Labs-HQ/Cognis/commit/698a4624)
-- [a6b16d13](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6b16d13)
-- [20a83b7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/20a83b7e)
-- [85eee85f](https://github.com/Cognis-Labs-HQ/Cognis/commit/85eee85f)
-- [bdd1961e](https://github.com/Cognis-Labs-HQ/Cognis/commit/bdd1961e)
-- [e397588c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e397588c)
-- [21e3d8ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/21e3d8ae)
-- [fd2d93e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fd2d93e)
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/34fd7e7d6ff01fa613a0c8d9aef006fcbb1c49d0
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/dc044846df3a4944e984ed27f7e87a2cd68ca5c3
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/38b4662a16a76798c6df10f0e8b489fdda17795b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/02761dc7e8cd2abc96bcf1b593ee78674b03b8ed
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e644ccb16bcf5873ae95d373d84432b9a4bd2bbd
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/efe439a8e4171e9e37d5040bb500b079e77a169e
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2f3df8bd0a160131db564451806303e24af77072
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ac5f84b55f918e7e6121eeedbb32d5dc383099c1
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c81f0310c9966c5d4783b51bac6bbb52ff0fb5d5
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/19956a2031ff88c897f18799d5a01ac688166bc9
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2b40ad028ac75b37d161c075b04db41a85fdcaad
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c5d3f42d059d2aee21377f0f28d4ab2c2f026679
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8a9bf125fa71a51cd45ac1e389d932c2bf1ca71e
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6aab168c82f96e8991583d14d45e7f43f7c32efe
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/caecf066d84d75cdf09fc337052e5df1d9393195
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/618ba4f547fbde0d4dc2a9145ef02aa9451b180b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0bb340a8bce6ce96596bfbfe36647743b696574d
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/884b73f2286cfd8922494c2fe65ac3b51833ea54
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad
-- [e13f1ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
-- [f5c4a1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea
-
 ## Review and lifecycle fixes
 
 Library 2.26.0 exposes `deleteContentPack(root)` on the public provider capability. It removes provider records, dependent cards, pack receipts and assets in one deletion-flow transaction; failed audit hooks roll back the operation. Cascaded deletions use existing Study notifications. Schemas remain available for independent authored content, and uninstall does not blacklist content, so reinstall can restore the pack.
 
 Study regressions live in their owning adapter or gateway. Shared reading extraction, complete-label segmentation, JSON responses and UI test fixtures remove duplication. Content ingestion and viewed-entry handling have focused modules; readable declaration spacing is checked without relaxing file-size limits. Sort selects use `theme-select`, and favourite controls use themed square icon-button dimensions.
-
-[835f7889](https://github.com/Cognis-Labs-HQ/Cognis/commit/835f7889aab52125ab607d1cbaca4a85340e9377)
 
 ## Deck gallery and favourites
 
@@ -792,4 +648,81 @@ Flashcards 1.2.0 browses all visible decks in responsive tiles with source label
 
 Library preview stars sit beside selection controls, clear of child-card hover hints. Favourite changes show success toasts, and Escape clears multi-selection unless a popup already consumed the key. Deck detail shows the deck favourite; an active review session shows the current card favourite instead. The Export action appears only when `canExport` permits the creator or an administrator, including administrators viewing provider decks.
 
-[6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
+## Consolidated Deck Practice
+
+Deck practice and shared snapshots use one linked-answer renderer and one imported-note conversion. The unused flip/grade renderer, styles and labels are removed. Library loading is shared within the deck page. Practice visibility, ctx stages, sharing and review permissions remain enforced. Multi-character drawing patterns retain provider-authored character boundaries.
+
+## Commits
+
+- [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)
+- [3dbb7248](https://github.com/Cognis-Labs-HQ/Cognis/commit/3dbb72488ea7564c1d2eeaa33b3928f64e46563e)
+- [88b9bdf1](https://github.com/Cognis-Labs-HQ/Cognis/commit/88b9bdf17d59edfc6726deacb42487d382ef8fca)
+- [70bf58e8](https://github.com/Cognis-Labs-HQ/Cognis/commit/70bf58e8761b41b554d9710bd908c4e7b1717cee)
+- [c1874177](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1874177fc1875ceab65c8b7aac58d60c5c5e091)
+- [d6f1cf21](https://github.com/Cognis-Labs-HQ/Cognis/commit/d6f1cf219f2739174c01019b358ab939a24659f7)
+- [8e38ded6](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e38ded6f03e8e36d225e8d425625c1b719fa112)
+- [c916c66f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c916c66f2095da249058883026fa7eba94005316)
+- [227f2166](https://github.com/Cognis-Labs-HQ/Cognis/commit/227f21669b5ab0a3473f0bf5f547bfdb424f4ca2)
+- [7d00b6a7](https://github.com/Cognis-Labs-HQ/Cognis/commit/7d00b6a7c8e6c0eaaf5315d595618f33c32dc3dc)
+- [0c9c4e37](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c9c4e376ffde5af485772367430d3122b589b0e)
+- [32ca0df4](https://github.com/Cognis-Labs-HQ/Cognis/commit/32ca0df41b363566394ac0d4026ec73ed53ce9ae)
+- [a66d0837](https://github.com/Cognis-Labs-HQ/Cognis/commit/a66d08376445e937ea0e57d64c5975c9c02ed504)
+- [800b1809](https://github.com/Cognis-Labs-HQ/Cognis/commit/800b1809b0378fcf6aaa480461d0e22b703c2ca4)
+- [ea81a944](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea81a944257040a042c1d0c0c9b2447768390221)
+- [3b51abc1](https://github.com/Cognis-Labs-HQ/Cognis/commit/3b51abc17cc6ed3a75921bfa242d16c33aae2ce0)
+- [2e2d0928](https://github.com/Cognis-Labs-HQ/Cognis/commit/2e2d092813312978c2f69640389f6401ec0230f5)
+- [cff7223c](https://github.com/Cognis-Labs-HQ/Cognis/commit/cff7223cd64c36372e64484c362ba9b1a1f4e2f7)
+- [bbb6bb8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbb6bb8bd8e2d70a6ec571c2a69e58665a90ca04)
+- [e1e564bf](https://github.com/Cognis-Labs-HQ/Cognis/commit/e1e564bf66580e7a1e8eaf24080c646f686d982c)
+- [584fb0b4](https://github.com/Cognis-Labs-HQ/Cognis/commit/584fb0b46ebb77bd43e585b3b41a279a0e6e9bfa)
+- [7d597603](https://github.com/Cognis-Labs-HQ/Cognis/commit/7d597603b3b1faf6df9d5c7a98973362312236d9)
+- [61002cd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/61002cd2578510ff6d823b8ebb454364e2c930cd)
+- [e8dac803](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dac803472e1dfc8a5bb2acf3082da88dad8a05)
+- [a6aa6fe8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6aa6fe85403331903570c9cd20f115ea48576be)
+- [1337d0a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/1337d0a332a5ccb2d1081816d55e453f90a0c0bc)
+- [eda8cb2a](https://github.com/Cognis-Labs-HQ/Cognis/commit/eda8cb2ab208b458f73e79f5b89fd6413ccbab77)
+- [337b2351](https://github.com/Cognis-Labs-HQ/Cognis/commit/337b23512bb9fd25e0ffce0d94058e4dcc959e84)
+- [67b413b5](https://github.com/Cognis-Labs-HQ/Cognis/commit/67b413b535c0a8662cfe92c1170ccfc4742e6eae)
+- [79cbfa05](https://github.com/Cognis-Labs-HQ/Cognis/commit/79cbfa05a5409f780bb42f4ea5ac7c0f8ec67f01)
+- [e4daa661](https://github.com/Cognis-Labs-HQ/Cognis/commit/e4daa661ee08b05a48ecba33182c490d4352e660)
+- [274fc626](https://github.com/Cognis-Labs-HQ/Cognis/commit/274fc626dbea45d3c8d66c82b98f1a0ba87a8052)
+- [024d7dfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/024d7dfe05f713f390d7b9fb00410591018c9bf6)
+- [281d2ac4](https://github.com/Cognis-Labs-HQ/Cognis/commit/281d2ac4dca994692513c8069ad21fe9affebedc)
+- [f5214c14](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5214c148cab6eac78e3f8ee8aed3847ffba2201)
+- [bec24655](https://github.com/Cognis-Labs-HQ/Cognis/commit/bec24655948ca3a64ea6ab4f95f7897aecee68ac)
+- [1501e390](https://github.com/Cognis-Labs-HQ/Cognis/commit/1501e390dce637fb660c5b540a4235e3e7c98f29)
+- [48d14c1b](https://github.com/Cognis-Labs-HQ/Cognis/commit/48d14c1ba63d887a04305306f8c9de7565361dfa)
+- [87248429](https://github.com/Cognis-Labs-HQ/Cognis/commit/872484294f2d3b777c6123286db62c78dc08f7f8)
+- [452e3eb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/452e3eb3fc5b9e2ca86464904e7f6477992b7c32)
+- [34fd7e7d](https://github.com/Cognis-Labs-HQ/Cognis/commit/34fd7e7d6ff01fa613a0c8d9aef006fcbb1c49d0)
+- [dc044846](https://github.com/Cognis-Labs-HQ/Cognis/commit/dc044846df3a4944e984ed27f7e87a2cd68ca5c3)
+- [38b4662a](https://github.com/Cognis-Labs-HQ/Cognis/commit/38b4662a16a76798c6df10f0e8b489fdda17795b)
+- [02761dc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/02761dc7e8cd2abc96bcf1b593ee78674b03b8ed)
+- [e644ccb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/e644ccb16bcf5873ae95d373d84432b9a4bd2bbd)
+- [efe439a8](https://github.com/Cognis-Labs-HQ/Cognis/commit/efe439a8e4171e9e37d5040bb500b079e77a169e)
+- [2f3df8bd](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f3df8bd0a160131db564451806303e24af77072)
+- [ac5f84b5](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac5f84b55f918e7e6121eeedbb32d5dc383099c1)
+- [c81f0310](https://github.com/Cognis-Labs-HQ/Cognis/commit/c81f0310c9966c5d4783b51bac6bbb52ff0fb5d5)
+- [19956a20](https://github.com/Cognis-Labs-HQ/Cognis/commit/19956a2031ff88c897f18799d5a01ac688166bc9)
+- [2b40ad02](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b40ad028ac75b37d161c075b04db41a85fdcaad)
+- [c5d3f42d](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5d3f42d059d2aee21377f0f28d4ab2c2f026679)
+- [8a9bf125](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a9bf125fa71a51cd45ac1e389d932c2bf1ca71e)
+- [f3c01246](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3c012463c0a0a10018d8111a93cd61be82c8b00)
+- [6aab168c](https://github.com/Cognis-Labs-HQ/Cognis/commit/6aab168c82f96e8991583d14d45e7f43f7c32efe)
+- [caecf066](https://github.com/Cognis-Labs-HQ/Cognis/commit/caecf066d84d75cdf09fc337052e5df1d9393195)
+- [618ba4f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/618ba4f547fbde0d4dc2a9145ef02aa9451b180b)
+- [0bb340a8](https://github.com/Cognis-Labs-HQ/Cognis/commit/0bb340a8bce6ce96596bfbfe36647743b696574d)
+- [884b73f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/884b73f2286cfd8922494c2fe65ac3b51833ea54)
+- [370b8072](https://github.com/Cognis-Labs-HQ/Cognis/commit/370b8072cdf1426028d40cd35876a970639a8380)
+- [2134b228](https://github.com/Cognis-Labs-HQ/Cognis/commit/2134b22899bec50afe497bb76cc8502e4f5e23ad)
+- [e13f1ae7](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13f1ae7cb2aadf237fd68efb03ca6f99fbf1304)
+- [f5c4a1b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5c4a1b0f7ca4e702c8acd009d456e6c259f45fa)
+- [71214834](https://github.com/Cognis-Labs-HQ/Cognis/commit/71214834eda07dce6a66d5ab936af0619057035e)
+- [102676cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/102676cc7129164be361c769878169ce4e416962)
+- [1755abca](https://github.com/Cognis-Labs-HQ/Cognis/commit/1755abcae0467c199e1ff2206c205f5e84eb2739)
+- [c44c924c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c44c924cd0856b818eca7b26a165c61af58e4de6)
+- [129d45e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/129d45e0eee66ab1c691d850c93b8c5dacb363de)
+- [6994d3de](https://github.com/Cognis-Labs-HQ/Cognis/commit/6994d3de2dbb35c0321566ccc75fdc9d0bc621ea)
+- [835f7889](https://github.com/Cognis-Labs-HQ/Cognis/commit/835f7889aab52125ab607d1cbaca4a85340e9377)
+- [6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
+- [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)

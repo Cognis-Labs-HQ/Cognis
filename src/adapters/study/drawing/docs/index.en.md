@@ -15,3 +15,5 @@ Ten consecutive misses end an attempt. Completion displays the mistake count and
 Ordered writing-unit references compose multi-character patterns without mutating provider content. Patterns trim unused space while preserving aspect ratio, timing, pressure, order and pointer alignment. Floating controls use the standard themed close SVG; embedded completion remains in its container without a separate close window. Component-owned styles preserve composer, shell, scroll container and side-menu behavior.
 
 Open, load, stroke, reset, guidance, retry and close execute declared `study:drawing` action flows with before, execute and after stages. Route departure or parent abort releases pointer handlers, resize observers, pending rendering and the pad. Library and Flashcards call the public Study reuse contract rather than importing optional-adapter internals.
+
+The shared drawing pad loads its owned HTML template once per browser module. Failed template requests reject the open action; leaving before loading completes aborts the mount. Provider-authored character groups remain intact in multi-character patterns.

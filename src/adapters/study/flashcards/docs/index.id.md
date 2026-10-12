@@ -33,3 +33,7 @@ Membaca menawarkan pelafalan utama serta tiga pelafalan berbeda dari kemiripan P
 Label, pelafalan, dan definisi dari Perpustakaan menautkan kartu sumber di Jelajahi. Konfirmasi melindungi sesi saat meninggalkan latihan. Sumber yang tidak dapat diakses tetap dilindungi izin Perpustakaan dan tidak dapat dibuka melalui salinan bersama. Ekspor menggunakan ikon unduh bertema di kanan atas, hanya untuk pembuat atau administrator. Menu Kartu Belajar tetap aktif pada halaman dek.
 
 Tindakan peramban menjalankan alur study:decks dengan tahap before, execute, dan after. Daftar dan detail server menjalankan authorize, read, dan audit; penyimpanan, ulasan, dan penghapusan mempertahankan validasi, izin, dan transaksi. Study memiliki papan gambar, penyusunan pola, kemiripan, dan alur tindakan bersama. Adaptor Gambar opsional hanya mengintegrasikan papan mengambang; Menulis tertanam tetap tersedia tanpanya. Halaman dan sesi dibatalkan saat ditinggalkan.
+
+### Latihan Dek Terpadu
+
+Kontrak renderer: `flashcardValues(detail, schemas, language)` menyelesaikan konten lokal; `renderFlashcard(detail, schemas, language, link)` menampilkan jawaban lengkap dengan tautan kanonis; `noteDetails(notes)` mengadaptasi catatan impor tanpa mengubah sumber. Latihan mengendalikan visibilitas jawaban dan animasi untuk dek akun maupun bersama. Dek bersama menggunakan subtitel halaman lokal.

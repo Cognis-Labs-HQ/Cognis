@@ -33,3 +33,7 @@ Reading offers the primary pronunciation and three distinct pronunciations from 
 Library-derived labels, readings and definitions link to the source card in Explore. A departure confirmation protects the practice session. Inaccessible sources retain Library authorization and cannot be opened through a shared snapshot. Export uses the themed download icon in the upper-right corner and is available only to the creator or an administrator. The Flashcards menu stays active on deck routes.
 
 Browser actions run declared study:decks flows with before, execute and after stages. Server list and details run authorize, read and audit stages; saves, reviews and deletion retain validation, authorization and transaction stages. Study owns public drawing, pattern composition, similarities and action-flow reuse; the optional Drawing adapter contributes only floating-pad integration. Its absence does not disable embedded Writing. All mounts and embedded sessions abort on departure.
+
+### Consolidated Deck Practice
+
+Renderer contract: `flashcardValues(detail, schemas, language)` resolves localized content; `renderFlashcard(detail, schemas, language, link)` renders the complete answer with canonical links; `noteDetails(notes)` adapts imported notes without mutating them. Practice mounts control answer visibility and animation for both account and shared decks. Shared decks use the localized page subtitle.

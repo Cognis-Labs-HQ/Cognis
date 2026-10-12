@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">フラッシュカード</string>
-  <string name="adapter.study.flashcards.flashcard_reveal">答えを表示</string>
-  <string name="adapter.study.flashcards.flashcard_again">もう一度</string>
-  <string name="adapter.study.flashcards.flashcard_good">できた</string>
-  <string name="adapter.study.flashcards.flashcard_easy">簡単</string>
   <string name="adapter.study.flashcards.deck_import">デッキをインポート</string>
   <string name="adapter.study.flashcards.deck_edit">デッキを編集</string>
   <string name="adapter.study.flashcards.deck_create">デッキを作成</string>
@@ -14,8 +10,6 @@
   <string name="adapter.study.flashcards.deck_save_error">デッキを保存できませんでした。選択したカードとインポート形式を確認してください。</string>
   <string name="adapter.study.flashcards.deck_load_error">デッキまたはライブラリーのカードを読み込めませんでした。</string>
   <string name="adapter.study.flashcards.deck_empty">フラッシュカードデッキが見つかりません</string>
-  <string name="adapter.study.flashcards.deck_study">デッキを学習</string>
-  <string name="adapter.study.flashcards.deck_due_only">新しいカードと復習期限のカードのみ学習</string>
   <string name="adapter.study.flashcards.deck_finished">選択したカードをすべて復習しました。</string>
   <string name="adapter.study.flashcards.deck_review_error">復習結果を保存できませんでした。もう一度お試しください。</string>
   <string name="adapter.study.flashcards.deck_unavailable">利用できなくなった {{ count }} 枚のカードをスキップしました。</string>

@@ -59,3 +59,18 @@ test("shared drawing patterns compose ordered writing units without changing pro
         undefined,
     );
 });
+
+test("provider-authored multi-character patterns preserve ordered character groups", () => {
+    const authored = {
+        ...pattern,
+        columns: 2,
+        groups: [1, 2],
+        strokes: [pattern.strokes[0], pattern.strokes[0], pattern.strokes[0]],
+    };
+    const layer = { ...atomic, semanticRole: "compoundWritingUnit" };
+    const entry = { ...letters[0], label: "ch", fields: { strokes: authored } };
+    const result = drawingPattern(entry, layer);
+    assert.deepEqual(result.groups, [1, 2]);
+    assert.equal(result.columns, 2);
+    assert.deepEqual(authored.groups, [1, 2]);
+});

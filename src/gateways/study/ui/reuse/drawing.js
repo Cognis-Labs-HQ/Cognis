@@ -1,3 +1,5 @@
+import { formatTemplate } from "/static/reuse/format-template.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createActionRunner } from "./action-flows.js";
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -27,6 +29,7 @@ const difficultyByCardId = new Map();
 const hiddenGuideIndicesByCardId = new Map();
 const attemptedCardIds = new Set();
 let activeDrawingSession = null;
+let padTemplate;
 
 function distance(left, right) {
     return Math.hypot(left.x - right.x, left.y - right.y);
@@ -242,6 +245,15 @@ async function createDrawingPad({
         });
         return activeDrawingSession;
     }
+    if (!padTemplate) {
+        const response = await fetch(
+            "/static/gateways/study/reuse/drawing.html",
+            { signal },
+        );
+        if (!response.ok) throw new Error("drawing_template_unavailable");
+        padTemplate = await response.text();
+    }
+    signal?.throwIfAborted();
     const makeFloatingWindow = uiCtx.capabilities.get("ui:makeFloatingWindow");
     if (!container && !makeFloatingWindow)
         throw new Error("floating_window_unavailable");
@@ -271,7 +283,15 @@ async function createDrawingPad({
     if (!container) fitHost();
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
-    pad.innerHTML = `<header><span class="study-drawing-heading"><strong data-card-label></strong><span data-pronunciations></span><span data-definition></span></span><span class="study-drawing-header-actions"><button class="btn-neutral" type="button" data-guidance aria-label="${i18n.t("gateway.study.drawing.guidance")}">?</button><button class="btn-close btn-cancel" type="button" data-close aria-label="${i18n.t("gateway.study.drawing.close")}"><img class="study-drawing-close-light" src="/static/assets/reuse/icons/close-light.svg" alt=""><img class="study-drawing-close-dark" src="/static/assets/reuse/icons/close-dark.svg" alt=""></button></span></header><div class="study-drawing-stage"><canvas></canvas><section class="study-drawing-complete" data-complete hidden aria-live="polite"><span class="study-drawing-result" aria-hidden="true"></span><strong data-result-message></strong><p data-mistakes></p><div><button class="btn-neutral" type="button" data-complete-close>${i18n.t("gateway.study.drawing.close")}</button><button class="btn-neutral" type="button" data-try-again>${i18n.t("gateway.study.drawing.try_again")}</button></div></section></div><div class="study-drawing-controls"><button class="btn-cancel" type="button" data-reset>${i18n.t("gateway.study.drawing.reset")}</button></div>`;
+    pad.innerHTML = formatTemplate(
+        padTemplate,
+        Object.fromEntries(
+            ["guidance", "close", "try_again", "reset"].map((key) => [
+                key,
+                escapeHtml(i18n.t(`gateway.study.drawing.${key}`)),
+            ]),
+        ),
+    );
     host.append(pad);
     if (container) {
         pad.querySelector("[data-close]").hidden = true;

@@ -5,8 +5,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { openDrawingPad } from "/static/gateways/study/reuse/drawing.js";
 import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
-import { practiceAnswer } from "./practice-answer.js";
-import { flashcardValues } from "../../reuse/flashcard.js";
+import { flashcardValues, renderFlashcard } from "../../reuse/flashcard.js";
 import {
     cardStatus,
     readingChoices,
@@ -82,7 +81,7 @@ export function mountPractice(
               : activeMode === "reading"
                 ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral" data-reading-choice="${index}">${escapeHtml(choice.text)}</button>${entryLink(choice.entry, "↗", schemas)}</div>`).join("")}</div>`
                 : `<p>${label("unavailable")}</p>`;
-        const answer = practiceAnswer(detail, schemas, language, entryLink);
+        const answer = renderFlashcard(detail, schemas, language, entryLink);
         target.innerHTML = formatTemplate(templates.practice, {
             favourite: authenticated
                 ? renderFavourite("flashcard", detail.entry.id, i18n)

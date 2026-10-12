@@ -17,38 +17,13 @@
     border: 1px solid var(--border);
     border-radius: 10px;
 }
-.study-deck-actions,
-.study-flashcard-grades {
+.study-deck-actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.75rem;
 }
-.study-flashcard {
-    width: min(100%, 42rem);
-    margin: auto;
-    display: grid;
-    gap: 1rem;
-}
-.study-flashcard-flip {
-    display: block;
-    width: 100%;
-    min-height: 20rem;
-    padding: 0;
-    perspective: 1000px;
-    background: transparent;
-}
-.study-flashcard-inner {
-    display: grid;
-    min-height: 20rem;
-    transform-style: preserve-3d;
-    transition: transform 0.45s ease;
-}
-.study-flashcard.is-revealed .study-flashcard-inner {
-    transform: rotateY(180deg);
-}
 .study-flashcard-face {
-    grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -57,30 +32,17 @@
     padding: 2rem;
     border-radius: 14px;
     background: var(--surface-2);
-    backface-visibility: hidden;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 .study-flashcard-face strong {
     font-size: 1.75rem;
 }
-.study-flashcard-back {
-    transform: rotateY(180deg);
-}
-@media (prefers-reduced-motion: reduce) {
-    .study-flashcard-inner {
-        transition: none;
-    }
-}
 .study-deck-browser-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-}
-
-.study-flashcard > .study-favourite {
-    justify-self: end;
 }
 
 .study-deck-preview {

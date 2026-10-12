@@ -58,7 +58,7 @@ test("flashcards render both related definitions and definition-layer cards in t
     assert.equal(values.pronunciation, "しつ");
 });
 
-test("flashcards escape imported text and keep recall grading disabled until reveal", () => {
+test("practice answers escape imported text", () => {
     const html = context.renderFlashcard(
         {
             entry: {
@@ -69,11 +69,28 @@ test("flashcards escape imported text and keep recall grading disabled until rev
             references: [],
         },
         [],
-        [],
-        { t: (key) => key },
         "en",
+        (_entry, text) => escapeHtml(text),
     );
     assert.match(html, /&lt;script&gt;/);
-    assert.match(html, /disabled data-flashcard-grade="good"/);
-    assert.match(html, /aria-pressed="false"/);
+    assert.match(html, /&lt;img onerror=/);
+});
+
+test("both deck surfaces preserve imported note identity and answer context", () => {
+    const notes = [
+        {
+            id: "one",
+            front: "Question",
+            back: "Answer",
+            pronunciation: "Reading",
+        },
+    ];
+    const [detail] = context.noteDetails(notes);
+    assert.equal(detail.entry.id, "one");
+    const values = context.flashcardValues(detail);
+    assert.equal(values.front, "Question");
+    assert.equal(values.back, "Answer");
+    assert.equal(values.pronunciation, "Reading");
+    detail.entry.fields.definition = "Changed";
+    assert.equal(notes[0].back, "Answer");
 });

@@ -18,8 +18,7 @@ Label, pelafalan, dan definisi dari Perpustakaan menautkan kartu sumber di Jelaj
 
 Tindakan peramban menjalankan alur study:decks dengan tahap before, execute, dan after. Daftar dan detail server menjalankan authorize, read, dan audit; penyimpanan, ulasan, dan penghapusan mempertahankan validasi, izin, dan transaksi. Study memiliki papan gambar, penyusunan pola, kemiripan, dan alur tindakan bersama. Adaptor Gambar opsional hanya mengintegrasikan papan mengambang; Menulis tertanam tetap tersedia tanpanya. Halaman dan sesi dibatalkan saat ditinggalkan.
 
-## Commits
+## Komit
 
-- [6711b43](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
-
+- [6711b43b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6711b43b9e01071fb2870536ac31e40157fc7354)
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
