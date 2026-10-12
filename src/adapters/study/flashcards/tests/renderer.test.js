@@ -94,3 +94,24 @@ test("both deck surfaces preserve imported note identity and answer context", ()
     detail.entry.fields.definition = "Changed";
     assert.equal(notes[0].back, "Answer");
 });
+
+test("the front contains the question while the flipside owns pronunciation and meaning", () => {
+    const detail = {
+        entry: {
+            id: "word",
+            label: "dog",
+            schemaId: "language",
+            layer: "word",
+            fields: { pronunciation: ["/dɒɡ/"], definition: "a canine" },
+        },
+        references: [],
+    };
+    const link = (_entry, label) => label;
+    const front = context.renderFlashcard(detail, schemas, "en", link, "front");
+    assert.ok(front.includes("dog"));
+    assert.ok(!front.includes("/dɒɡ/"));
+    assert.ok(!front.includes("a canine"));
+    const back = context.renderFlashcard(detail, schemas, "en", link, "back");
+    assert.ok(back.includes("/dɒɡ/"));
+    assert.ok(back.includes("a canine"));
+});

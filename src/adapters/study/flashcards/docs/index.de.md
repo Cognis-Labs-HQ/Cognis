@@ -37,3 +37,7 @@ Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute u
 ### Zusammengeführte Stapelübung
 
 Darstellungsvertrag: `flashcardValues(detail, schemas, language)` löst übersetzte Inhalte auf; `renderFlashcard(detail, schemas, language, link)` zeigt vollständige Antworten mit kanonischen Links; `noteDetails(notes)` wandelt importierte Notizen ohne Änderung der Quelle um. Die Übung steuert Sichtbarkeit und Animation für Konto- und Freigabestapel. Geteilte Stapel verwenden einen übersetzten Seitenuntertitel.
+
+## Sprachgalerien und zweiseitige Übungen
+
+Deckgalerien verwenden `/study/<iso>/flashcards`, einzelne Decks `/study/<iso>/flashcards/<deck-id>`. Die Sprachauswahl öffnet die entsprechende Galerie ohne andere Sprachen. Neue Decks speichern ihre Sprache einschließlich importierter Notizen; Bibliotheksdecks leiten sie ab und weisen widersprüchliche Angaben zurück. Die Vorderseite zeigt die Frage, die Rückseite Definitionen und Lesungen. Neue Karten können sofort Lesen oder Schreiben üben. Vorherige Karten behalten die Sitzungsantwort ohne zweite Bewertung; bereits richtige Karten erscheinen als Vorderseitenvorschau und lassen sich umdrehen. Kanonische Bibliothekslinks verwenden gestaltete Kästen und eine Bestätigung vor dem Verlassen.

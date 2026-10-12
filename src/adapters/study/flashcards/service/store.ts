@@ -12,6 +12,7 @@ export class DeckStore {
                 { name: "id", type: "text", primaryKey: true },
                 { name: "account_id", type: "text", notNull: true },
                 { name: "name", type: "text", notNull: true },
+                { name: "language", type: "text" },
                 { name: "created_at", type: "text" },
                 { name: "entries_json", type: "text", notNull: true },
                 { name: "notes_json", type: "text", notNull: true },
@@ -45,6 +46,7 @@ export class DeckStore {
         return {
             id: String(row.id),
             name: String(row.name),
+            language: row.language ? String(row.language) : undefined,
             createdAt: row.created_at ? String(row.created_at) : undefined,
             entryIds: JSON.parse(String(row.entries_json)),
             notes: JSON.parse(String(row.notes_json)),
@@ -114,6 +116,7 @@ export class DeckStore {
         input: Pick<StudyDeck, "name" | "entryIds" | "notes"> & {
             cards?: DeckDetail[];
             schemas?: unknown[];
+            language?: string;
         },
         id?: string,
     ): Promise<StudyDeck> {
@@ -130,6 +133,7 @@ export class DeckStore {
         };
         const values = {
             name: deck.name,
+            language: deck.language ?? null,
             entries_json: JSON.stringify(deck.entryIds),
             notes_json: JSON.stringify(deck.notes),
             cards_json: JSON.stringify(deck.cards),

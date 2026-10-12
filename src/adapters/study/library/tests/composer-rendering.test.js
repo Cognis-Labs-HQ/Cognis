@@ -56,6 +56,7 @@ test("definition editors render translations in Content and ordinary cards retai
         inputForField: () => "<fieldset>Translations</fieldset>",
     };
     vm.createContext(context);
+    vm.runInContext(source("../ui/app/transformation-opt-ins.js"), context);
     vm.runInContext(
         source("../ui/app/admin-interactions/editor-body.js"),
         context,
@@ -105,6 +106,7 @@ test("vocabulary has one composed input and lookup precedes component carousels"
         }),
     };
     vm.createContext(context);
+    vm.runInContext(source("../ui/app/transformation-opt-ins.js"), context);
     vm.runInContext(
         source("../ui/app/admin-interactions/editor-body.js"),
         context,

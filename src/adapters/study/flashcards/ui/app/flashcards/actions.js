@@ -12,6 +12,8 @@ export const DECK_ACTIONS = [
     "filter",
     "practiceMode",
     "answer",
+    "flip",
+    "previous",
     "review",
     "depart",
 ];

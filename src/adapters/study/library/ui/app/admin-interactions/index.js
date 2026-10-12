@@ -1,3 +1,4 @@
+import { bindTransformationOptIns } from "../transformation-opt-ins.js";
 import { bindDefinitionRemoval } from "../reuse/definition-actions.js";
 import { activateCompositionEntry } from "../composition-activation.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -189,6 +190,7 @@ export function bindLibraryEditorControls(
         const list = field.querySelector(".library-tag-list");
         form.setLibraryTags = (tags) => {
             hidden.value = tags.join("\u001f");
+            hidden.dispatchEvent(new Event("change", { bubbles: true }));
             list.innerHTML = tags
                 .map(
                     (value) =>
@@ -206,6 +208,7 @@ export function bindLibraryEditorControls(
             if (!tag) return;
             tag.remove();
             hidden.value = values().join("\u001f");
+            hidden.dispatchEvent(new Event("change", { bubbles: true }));
         });
         input.addEventListener("keydown", (event) => {
             if (event.key !== "Enter") return;
@@ -229,9 +232,11 @@ export function bindLibraryEditorControls(
             tag.textContent = `${value} ×`;
             list.append(tag);
             hidden.value = values().join("\u001f");
+            hidden.dispatchEvent(new Event("change", { bubbles: true }));
             input.value = "";
         });
     });
+    bindTransformationOptIns(form, maxTags);
 }
 
 function syncGeneratedCardLabel(form, inputCarouselIds, entries) {

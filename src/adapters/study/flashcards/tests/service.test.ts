@@ -13,6 +13,7 @@ function session(
         deck: { id: string },
     ) => Promise<boolean> = async () => false,
     received: (accountId: string) => Promise<string[]> = async () => [],
+    language?: string,
 ) {
     const records: (Record<string, unknown> & { table: string })[] = [];
     const execute = async (command: StructuredDbCommand) => {
@@ -75,10 +76,14 @@ function session(
     registerDeckFlows(ctx);
     let readable = true;
     const library = {
+        listSchemas: () => (language ? [{ id: "schema", language }] : []),
         read: async () => null,
         trace: async (actor: { accountId: string }, id: string) => {
             if (!readable || id !== "public") throw new Error("forbidden");
-            return { entry: { id, label: "Card" }, references: [] };
+            return {
+                entry: { id, label: "Card", schemaId: "schema" },
+                references: [],
+            };
         },
     };
     return {
@@ -303,4 +308,29 @@ test("deck reads and mutations execute the owning ctx stages", async () => {
         "delete:persist",
         "delete:audit",
     ]);
+});
+
+test("deck language is inferred and persisted while mismatched imports are rejected", async () => {
+    const { service, records } = session(undefined, undefined, "en");
+    const deck = await service.save(owner, {
+        name: "English",
+        entryIds: ["public"],
+    });
+    assert.equal(deck.language, "en");
+    assert.equal(
+        records.find((row) => row.table === "study_decks")?.language,
+        "en",
+    );
+    await assert.rejects(
+        service.save(owner, {
+            name: "Wrong",
+            language: "ja",
+            entryIds: ["public"],
+        }),
+        /deck_language_mismatch/,
+    );
+    assert.equal(
+        records.filter((row) => row.table === "study_decks").length,
+        1,
+    );
 });

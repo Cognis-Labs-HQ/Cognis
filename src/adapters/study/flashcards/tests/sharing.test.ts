@@ -43,6 +43,7 @@ function fixture() {
         id: "deck",
         ownerAccountId: "owner",
         name: "Shared Deck",
+        language: "en",
         entryIds: [],
         notes: [{ id: "note", front: "Question", back: "Answer" }],
         cards: [],
@@ -80,6 +81,14 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
         (minted.stageResults["authorize-minter"][0] as { authorized: boolean })
             .authorized,
         true,
+    );
+    assert.equal(
+        (
+            minted.stageResults["validate-resource"][0] as {
+                metadata: { contentUrl: string };
+            }
+        ).metadata.contentUrl,
+        "/study/en/flashcards/deck",
     );
     const denied = await system.flow.run("mint-share-token", {
         resourceType: "studyDeck",

@@ -135,7 +135,7 @@ test("reading choices come from ranked visible Library similarities and contain 
     );
 });
 
-function practiceHarness(filter, status = "due") {
+function practiceHarness(filter, status = "due", options = {}) {
     const nodes = new Map();
     const target = {
         innerHTML: "",
@@ -143,8 +143,11 @@ function practiceHarness(filter, status = "due") {
             if (!nodes.has(selector))
                 nodes.set(selector, {
                     dataset: {},
-                    hidden: false,
+                    hidden: selector === "[data-practice-back]",
                     disabled: false,
+                    setAttribute(name, value) {
+                        this[name] = value;
+                    },
                 });
             return nodes.get(selector);
         },
@@ -217,6 +220,7 @@ function practiceHarness(filter, status = "due") {
         i18n: { t: (key) => key },
         signal: controller.signal,
         onNext: async (grade) => grades.push(grade),
+        ...options,
     });
     return {
         context,
@@ -350,4 +354,33 @@ test("full answers group canonical reading and meaning links without duplicating
             harness.context.exploreUrl({ schemaId: "ja", layer }, schemas),
             "/study/explore/ja/vocabulary",
         );
+});
+
+test("New cards hide their answer on the back while permitting immediate Reading or Writing practice", async () => {
+    const harness = practiceHarness("new", "new");
+    assert.equal(
+        harness.target.querySelector("[data-practice-back]").hidden,
+        true,
+    );
+    // The real template supplies hidden on the initial back; inspect that markup too.
+    assert.match(harness.target.innerHTML, /data-practice-back hidden/);
+    await harness.click("[data-practice-flip]", {});
+    await harness.click("[data-practice-mode]", { practiceMode: "writing" });
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
+    assert.equal(harness.drawing().card.id, "one");
+    harness.dispose();
+});
+
+test("a correctly answered previous card uses its front preview and can flip without repeating practice", async () => {
+    let previous = 0;
+    const harness = practiceHarness("due", "done", {
+        answeredGrade: "good",
+        onPrevious: () => previous++,
+    });
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    assert.equal(harness.drawing(), undefined);
+    await harness.click("[data-practice-previous]", {});
+    assert.equal(previous, 1);
+    await harness.click("[data-practice-flip]", {});
+    harness.dispose();
 });

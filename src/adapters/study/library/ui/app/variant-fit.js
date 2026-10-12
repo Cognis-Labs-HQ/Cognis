@@ -148,6 +148,39 @@ export function isAncestorSafe(rect, ancestorRects) {
     );
 }
 
+export function hasReachableVariantPath(parent, child, obstacles) {
+    const start = {
+        x: (parent.left + parent.right) / 2,
+        y: (parent.top + parent.bottom) / 2,
+    };
+    const end = {
+        x: (child.left + child.right) / 2,
+        y: (child.top + child.bottom) / 2,
+    };
+    return obstacles
+        .filter((rect) => overlapArea(rect, parent) === 0)
+        .every((rect) => {
+            let enter = 0;
+            let leave = 1;
+            for (const [axis, lower, upper] of [
+                ["x", "left", "right"],
+                ["y", "top", "bottom"],
+            ]) {
+                const delta = end[axis] - start[axis];
+                if (delta === 0) {
+                    if (start[axis] < rect[lower] || start[axis] > rect[upper])
+                        return true;
+                } else {
+                    const first = (rect[lower] - start[axis]) / delta;
+                    const second = (rect[upper] - start[axis]) / delta;
+                    enter = Math.max(enter, Math.min(first, second));
+                    leave = Math.min(leave, Math.max(first, second));
+                }
+            }
+            return enter > leave;
+        });
+}
+
 function collisionScore(rect, occupiedRects) {
     const candidateBounds = collisionBounds(rect);
     return occupiedRects.reduce(
@@ -263,6 +296,9 @@ export function fitVariantBranchWithinGrid(rootShell) {
                 slot.dataset.libraryPreferredDirection,
             );
             const ancestorRects = ancestorCardBounds(slot);
+            const parentRect = slot.parentElement
+                .querySelector(":scope > .library-entry-card")
+                .getBoundingClientRect();
             let best = null;
             // Always start next to the parent, regardless of the static grid plan.
             // Additional rows are available when the active branch cannot fit.
@@ -274,6 +310,14 @@ export function fitVariantBranchWithinGrid(rootShell) {
                     const rect = cardBounds(slot);
                     if (!isAncestorSafe(rect, ancestorRects)) continue;
                     if (collisionScore(rect, occupiedRects) > 0) continue;
+                    if (
+                        !hasReachableVariantPath(
+                            parentRect,
+                            rect,
+                            occupiedRects,
+                        )
+                    )
+                        continue;
                     // Never accept horizontal clipping or children above the grid.
                     if (
                         rect.left < boundary.left ||
@@ -291,7 +335,7 @@ export function fitVariantBranchWithinGrid(rootShell) {
                     if (isBetterVariantFit(candidate, best)) best = candidate;
                     if (overflow === 0) break;
                 }
-                if (best?.overflow === 0) break;
+                if (best) break;
             }
             // The downward ray is always extendable, even in a one-column grid.
             if (!best) continue;

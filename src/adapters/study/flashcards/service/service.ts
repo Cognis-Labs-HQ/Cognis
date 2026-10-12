@@ -212,6 +212,7 @@ export class DeckService {
             name: string;
             entryIds: string[];
             notes?: DeckNote[];
+            language?: string;
         };
         return this.store.transact(async (store) => {
             let result!: StudyDeck;
@@ -288,6 +289,31 @@ export class DeckService {
                         pronunciation: note.pronunciation,
                         id: previousNotes.has(note.id) ? note.id : randomUUID(),
                     }));
+                    const schemaLanguages = new Set(
+                        (this.library()?.listSchemas?.() ?? [])
+                            .filter((schema) =>
+                                snapshots.some(
+                                    (detail) =>
+                                        detail.entry.schemaId === schema.id,
+                                ),
+                            )
+                            .map((schema) => schema.language)
+                            .filter(Boolean),
+                    );
+                    let language = input.language;
+                    if (language !== undefined) {
+                        if (typeof language !== "string")
+                            throw new Error("invalid_language");
+                        [language] = Intl.getCanonicalLocales(language);
+                        if (
+                            !language ||
+                            [...schemaLanguages].some(
+                                (value) => value !== language,
+                            )
+                        )
+                            throw new Error("deck_language_mismatch");
+                    } else if (schemaLanguages.size === 1)
+                        language = [...schemaLanguages][0];
                     const currentIds = new Set([
                         ...input.entryIds,
                         ...notes.map((note) => note.id),
@@ -301,6 +327,7 @@ export class DeckService {
                         actor.accountId,
                         {
                             name: input.name.trim(),
+                            language,
                             entryIds: input.entryIds,
                             notes,
                             schemas: (

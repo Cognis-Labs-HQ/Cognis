@@ -740,3 +740,7 @@ body[data-theme="light"]
 .library-dictionary-detail h4 {
     margin: 0;
 }
+
+[data-library-transform-opt-in][hidden] {
+    display: none;
+}

@@ -175,6 +175,8 @@ export interface LibraryTransformSet {
     id: string;
     metadata: LibraryMetadata;
     matchTags: readonly string[];
+    /** Explicit card tag required to enable this optional word-form family. */
+    optInTag?: string;
     baseState: string;
     rules: readonly {
         id: string;

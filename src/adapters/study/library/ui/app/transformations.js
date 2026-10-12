@@ -6,7 +6,11 @@ function applySuffix(value, operation) {
 export function transformationPathways(entry, schema) {
     const tags = new Set(entry.tags ?? []);
     return (schema?.transformSets ?? []).flatMap((set) => {
-        if (!set.matchTags.every((tag) => tags.has(tag))) return [];
+        if (
+            !set.matchTags.every((tag) => tags.has(tag)) ||
+            (set.optInTag !== undefined && !tags.has(set.optInTag))
+        )
+            return [];
         const nodes = [
             {
                 state: set.baseState,

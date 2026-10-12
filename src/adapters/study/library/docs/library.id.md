@@ -454,3 +454,7 @@ Flashcards membuka daftar dek milik sendiri, dek yang dibagikan kepada akun, dan
 ## Hasil Pencarian Kamus
 
 Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gateway menyimpan kueri, bahasa, dan penyedia terakhir dalam preferensi server per akun, yang diambil melalui sesi terautentikasi; akun lain tidak dapat membacanya. Beberapa hasil ditampilkan dalam baris pratinjau horizontal. Memilih pratinjau memperbarui satu tampilan detail dan mempertahankan posisi gulir. Satu hasil langsung membuka detail. Lencana tampil sekali, data mentah penyedia disembunyikan, dan pembuatan kartu memakai composer serta resolusi dependensi yang ada. Masa berlaku dan penyegaran cache tetap menjadi tanggung jawab Cognis core.
+
+## Bentuk kata opsional dan pratinjau yang terjangkau
+
+Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. Kartu harus memiliki `matchTags` keluarga dan tag pilihan tersebut sebelum Cognis menampilkan atau menerima bentuknya. Penyusun menampilkan sakelar berlabel penyedia untuk keluarga yang cocok; referensi kalimat menyimpan UUID dasar dan `{setId, path}`. Menghapus pilihan mencegah referensi transformasi baru. Penyedia menetapkan keterhitungan, ejaan tidak beraturan, dan perubahan pelafalan; Cognis menangani pemilihan, penyimpanan, dan validasi. Cabang bersarang memakai posisi bebas benturan terdekat dengan jalur terbuka ke induknya. Pratinjau kalimat memotong judul dan membatasi definisi tanpa mengubah ukuran kisi.

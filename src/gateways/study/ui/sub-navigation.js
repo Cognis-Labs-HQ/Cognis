@@ -1,4 +1,4 @@
-import { languageExploreUrl } from "./reuse/explore.js";
+import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
@@ -282,7 +282,10 @@ export async function loadStudySubNavigationModel({
                 labels[activeLocale] ??
                 labels[activeLocale.split("-")[0]] ??
                 labels.en,
-            pageUrl: route.base,
+            pageUrl:
+                route.base === "/study/flashcards"
+                    ? languageFlashcardsUrl(selectedLanguageCode)
+                    : route.base,
             order: 210,
         });
     }
@@ -328,30 +331,35 @@ export async function loadStudySubNavigationModel({
             );
             return [
                 languageCode,
-                rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
-                    ? rememberedPageUrl
+                /^\/study(?:\/[^/]+)?\/flashcards(?:\/|$)/.test(
+                    rememberedPageUrl ?? "",
+                )
+                    ? languageFlashcardsUrl(languageCode)
                     : rememberedPageUrl &&
-                        spaRoutes.some(
-                            (route) =>
-                                route.base !== "/study/explore" &&
-                                route.base.startsWith("/study/") &&
-                                (route.base === rememberedPageUrl ||
-                                    rememberedPageUrl.startsWith(
-                                        `${route.base}/`,
-                                    )),
-                        )
+                        registeredPageUrls.has(rememberedPageUrl)
                       ? rememberedPageUrl
-                      : languageModules.length
-                        ? resolveDefaultChildPageUrl(languageModules)
-                        : spaRoutes.some(
-                                (route) => route.base === "/study/explore",
-                            )
-                          ? (languageExploreUrl(
-                                schemas,
-                                languageCode,
-                                rememberedPageUrl,
-                            ) ?? "/study")
-                          : "/study",
+                      : rememberedPageUrl &&
+                          spaRoutes.some(
+                              (route) =>
+                                  route.base !== "/study/explore" &&
+                                  route.base.startsWith("/study/") &&
+                                  (route.base === rememberedPageUrl ||
+                                      rememberedPageUrl.startsWith(
+                                          `${route.base}/`,
+                                      )),
+                          )
+                        ? rememberedPageUrl
+                        : languageModules.length
+                          ? resolveDefaultChildPageUrl(languageModules)
+                          : spaRoutes.some(
+                                  (route) => route.base === "/study/explore",
+                              )
+                            ? (languageExploreUrl(
+                                  schemas,
+                                  languageCode,
+                                  rememberedPageUrl,
+                              ) ?? "/study")
+                            : "/study",
             ];
         }),
     );

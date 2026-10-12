@@ -82,10 +82,24 @@
         <div class="study-practice-modes">{modes}</div>
         <div data-practice-task>{task}</div>
         <section class="study-flashcard-answer" data-practice-answer hidden>
-            {answer}
+            <div data-practice-front>{front}</div>
+            <div data-practice-back hidden>{answer}</div>
+            <button
+                type="button"
+                class="btn-neutral"
+                data-practice-flip
+                aria-pressed="false"
+            >
+                {flip_label}
+            </button>
         </section>
-        <button type="button" class="btn-neutral" data-practice-next>
-            {next_label}
-        </button>
+        <div class="study-practice-navigation">
+            <button type="button" class="btn-neutral" data-practice-previous>
+                {previous_label}
+            </button>
+            <button type="button" class="btn-neutral" data-practice-next>
+                {next_label}
+            </button>
+        </div>
     </section>
 </template>

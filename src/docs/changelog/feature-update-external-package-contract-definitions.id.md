@@ -658,6 +658,14 @@ Latihan dek dan snapshot bersama memakai satu renderer jawaban bertautan dan sat
 
 Pilihan bahasa membuka halaman Jelajahi milik Cognis meskipun penyedia konten tidak mendeklarasikan halaman anak. Pergantian bahasa mempertahankan peran tulisan, kosakata atau kalimat yang setara; Flashcards, Library dan Permintaan mempertahankan konteks halaman bersama. Inggris mendeklarasikan alfabet, gabungan huruf, kosakata dan kalimat melalui slug sendiri. Pemuatan favorit yang dibatalkan melepaskan pemasangan tanpa pesan kegagalan yang menyesatkan.
 
+## Bentuk kata opsional dan pratinjau yang terjangkau
+
+Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. Kartu harus memiliki `matchTags` keluarga dan tag pilihan tersebut sebelum Cognis menampilkan atau menerima bentuknya. Penyusun menampilkan sakelar berlabel penyedia untuk keluarga yang cocok; referensi kalimat menyimpan UUID dasar dan `{setId, path}`. Menghapus pilihan mencegah referensi transformasi baru. Penyedia menetapkan keterhitungan, ejaan tidak beraturan, dan perubahan pelafalan; Cognis menangani pemilihan, penyimpanan, dan validasi. Cabang bersarang memakai posisi bebas benturan terdekat dengan jalur terbuka ke induknya. Pratinjau kalimat memotong judul dan membatasi definisi tanpa mengubah ukuran kisi.
+
+## Galeri bahasa dan latihan dua sisi
+
+Galeri dek memakai `/study/<iso>/flashcards`, dan dek individual memakai `/study/<iso>/flashcards/<deck-id>`. Pemilihan bahasa membuka galeri terkait tanpa bahasa lain. Dek baru menyimpan bahasanya, termasuk catatan impor; dek dari pustaka menentukannya otomatis dan menolak penetapan yang bertentangan. Sisi depan menampilkan pertanyaan, sedangkan definisi dan bacaan berada di baliknya. Kartu baru dapat langsung memulai Membaca atau Menulis. Tindakan kartu sebelumnya mempertahankan jawaban sesi tanpa mencatat ulasan kedua; kartu yang sudah benar kembali sebagai pratinjau depan dan dapat dibalik. Tautan kanonis pustaka memakai kotak bertema dan konfirmasi sebelum meninggalkan latihan.
+
 ## Komit
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

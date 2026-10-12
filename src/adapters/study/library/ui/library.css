@@ -166,12 +166,24 @@ body[data-theme="light"] .library-browser {
     white-space: normal;
     overflow-wrap: anywhere;
 }
-.library-entry-card--orderedLexicalSequence .library-card-reading > strong,
+.library-entry-card--orderedLexicalSequence .library-card-reading {
+    display: block;
+    width: 100%;
+}
+.library-entry-card--orderedLexicalSequence .library-card-reading > strong {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 .library-entry-card--orderedLexicalSequence .library-card-definition {
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    max-height: 2.8em;
+    line-height: 1.4;
 }
 .library-entry-grid--minimal {
     overflow: clip;

@@ -31,4 +31,6 @@
   <string name="adapter.study.flashcards.practice_unavailable">Latihan tidak tersedia untuk kartu ini.</string>
   <string name="adapter.study.flashcards.practice_leave">Keluar dari latihan?</string>
   <string name="adapter.study.flashcards.practice_leave_body">Buka kartu ini di Jelajahi dan tinggalkan sesi latihan saat ini?</string>
+  <string name="adapter.study.flashcards.practice_flip">Balik kartu</string>
+  <string name="adapter.study.flashcards.practice_previous">Kartu sebelumnya</string>
 </resources>

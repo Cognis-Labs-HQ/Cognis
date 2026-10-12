@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     fitVariantBranchWithinGrid,
+    hasReachableVariantPath,
     restorePreferredVariantDirections,
 } from "../ui/app/variant-fit.js";
 
@@ -196,4 +197,28 @@ test("layout requests coalesce and closing cancels pending work", () => {
     flush();
     assert.equal(frames.size, 0);
     assert.equal(child.slot.dataset.libraryFittedDirection, undefined);
+});
+
+test("a descendant cannot be placed across its root even when its card itself fits", () => {
+    const { root, add, flush } = fixture({
+        width: 500,
+        height: 300,
+        rootX: 200,
+        rootY: 80,
+    });
+    const child = add(root, "left", 1);
+    fitVariantBranchWithinGrid(root);
+    flush();
+    const grandchild = add(child.shell, "right", 1);
+    fitVariantBranchWithinGrid(root);
+    flush();
+    assert.equal(
+        hasReachableVariantPath(
+            child.card.getBoundingClientRect(),
+            grandchild.card.getBoundingClientRect(),
+            [root.querySelector().getBoundingClientRect()],
+        ),
+        true,
+    );
+    assert.equal(grandchild.slot.dataset.libraryFittedDistance, "1");
 });

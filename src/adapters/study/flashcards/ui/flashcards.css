@@ -186,3 +186,33 @@
         animation: none;
     }
 }
+
+.study-entry-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-2);
+    color: var(--text);
+    text-decoration: none;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+.study-entry-link:is(:hover, :focus-visible) {
+    border-color: var(--accent-2);
+}
+.study-flashcard-face {
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+}
+.study-practice-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.study-practice [hidden] {
+    display: none;
+}

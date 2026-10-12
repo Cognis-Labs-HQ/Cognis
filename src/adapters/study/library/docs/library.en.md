@@ -467,3 +467,7 @@ Flashcards opens a browse page containing owned decks, decks shared with the cur
 ## Dictionary Search Results
 
 Dictionary searches open at `/study/library/search` without URL parameters. The owning gateway client saves the latest query, language and provider in account-scoped server preferences, retrieved through the authenticated session; another account cannot read that state. Multiple matches appear in a horizontally scrolling preview row. Selecting a preview updates the single detail view while preserving horizontal scroll. A single match opens directly in the detail view. Badge fields appear once as metadata, provider source data stays hidden, and creating a card uses the existing composer and dependency resolution. Dictionary cache expiry and refresh policy remain owned by Cognis core.
+
+## Optional word forms and reachable previews
+
+A provider transformation set may declare `optInTag`, for example `plural`. A card must carry both the family’s `matchTags` and that opt-in tag before Cognis exposes or accepts its forms. The composer shows the provider-labelled switch for matching families; saved sentence references retain the base UUID and `{setId, path}`. Removing the opt-in prevents new transformed references. Providers define countability, irregular spellings and pronunciation changes; Cognis supplies selection, persistence and validation. Nested branches use the closest collision-free placement with an unobstructed path to their parent. Sentence previews truncate their title and clamp their definition without resizing the grid.

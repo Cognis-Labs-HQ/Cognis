@@ -31,3 +31,8 @@ export function languageExploreUrl(schemas, languageCode, currentPath = "") {
         ? `/study/explore/${encodeURIComponent(languageCode)}/${encodeURIComponent(selected.layer.navigationSlug ?? selected.layer.id)}`
         : null;
 }
+
+export function languageFlashcardsUrl(languageCode, deckId) {
+    if (!languageCode) return "/study/flashcards";
+    return `/study/${encodeURIComponent(languageCode)}/flashcards${deckId ? `/${encodeURIComponent(deckId)}` : ""}`;
+}

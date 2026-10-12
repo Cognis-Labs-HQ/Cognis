@@ -1,3 +1,4 @@
+import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -24,6 +25,7 @@ test("deck save closes the protected editor before navigating to the refreshed b
         },
         createFormBuilder: () => ({ render: () => "" }),
         escapeHtml: String,
+        languageFlashcardsUrl,
         saveStudyDeck: async () => {},
         showToast() {},
         navigateTo: async (path) => {

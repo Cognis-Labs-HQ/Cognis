@@ -26,7 +26,7 @@ export interface DeckLibrary {
         location: { scope: "global"; scopeId: string },
         filters: { schemaId: string; sourceRecordIds: string[] },
     ): Promise<DeckCard[]>;
-    listSchemas?(): Array<{ id: string }>;
+    listSchemas?(): Array<{ id: string; language?: string }>;
     read(actor: DeckActor, id: string): Promise<DeckCard | null>;
     trace(actor: DeckActor, id: string): Promise<DeckDetail>;
 }

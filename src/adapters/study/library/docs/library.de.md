@@ -454,3 +454,7 @@ Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks 
 ## Wörterbuch-Suchergebnisse
 
 Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gateway-Client speichert Abfrage, Sprache und Anbieter kontobezogen auf dem Server; die authentifizierte Sitzung liest diesen Zustand, andere Konten erhalten keinen Zugriff. Mehrere Treffer erscheinen als horizontal scrollbare Vorschauen. Die Auswahl aktualisiert eine einzelne Detailansicht und erhält die Scrollposition. Ein Treffer öffnet direkt die Detailansicht. Abzeichen erscheinen nur einmal, Anbieter-Rohdaten bleiben verborgen. Die Kartenerstellung verwendet den bestehenden Composer und die Abhängigkeitsauflösung. Cache-Ablauf und Aktualisierung bleiben Aufgabe von Cognis Core.
+
+## Optionale Wortformen und erreichbare Vorschauen
+
+Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, deklarieren. Karten benötigen die passenden `matchTags` und dieses Opt-in-Tag, bevor Cognis Formen anbietet oder akzeptiert. Der Editor zeigt den vom Anbieter benannten Schalter für passende Gruppen. Satzreferenzen behalten die Basis-UUID und `{setId, path}`. Ohne Opt-in sind neue transformierte Referenzen unzulässig. Anbieter bestimmen Zählbarkeit, unregelmäßige Schreibweisen und Ausspracheänderungen; Cognis übernimmt Auswahl, Speicherung und Prüfung. Verschachtelte Zweige erhalten die nächste kollisionsfreie Position mit freiem Weg zum Elternteil. Satzvorschauen kürzen Titel und begrenzen Definitionen, ohne das Raster zu vergrößern.

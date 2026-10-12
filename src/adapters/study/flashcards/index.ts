@@ -88,7 +88,7 @@ export async function bootstrapStudyAdapter(
     );
     ctx.registerSpaRoute?.({
         id: "adapter.study.flashcards",
-        pattern: "^/study/flashcards(?:/[^/]+)?$",
+        pattern: "^/study(?:/flashcards|/[^/]+/flashcards(?:/[^/]+)?)$",
         base: "/study/flashcards",
         scriptUrl: "/static/adapters/study/flashcards/app/flashcards/index.js",
         stylesheets: [

@@ -656,6 +656,14 @@ Stapel und geteilte Momentaufnahmen nutzen dieselbe verlinkte Antwortdarstellung
 
 Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten des Inhaltsanbieters. Ein Sprachwechsel behält die entsprechende Schrift-, Wortschatz- oder Satzrolle. Lernkarten, Bibliothek und Anfragen behalten ihren gemeinsamen Seitenkontext. Englisch deklariert Alphabet, Buchstabenverbindungen, Wortschatz und Sätze über eigene Pfadnamen. Abgebrochene Favoritenabfragen beenden die Einbindung ohne irreführende Fehlermeldung.
 
+## Optionale Wortformen und erreichbare Vorschauen
+
+Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, deklarieren. Karten benötigen die passenden `matchTags` und dieses Opt-in-Tag, bevor Cognis Formen anbietet oder akzeptiert. Der Editor zeigt den vom Anbieter benannten Schalter für passende Gruppen. Satzreferenzen behalten die Basis-UUID und `{setId, path}`. Ohne Opt-in sind neue transformierte Referenzen unzulässig. Anbieter bestimmen Zählbarkeit, unregelmäßige Schreibweisen und Ausspracheänderungen; Cognis übernimmt Auswahl, Speicherung und Prüfung. Verschachtelte Zweige erhalten die nächste kollisionsfreie Position mit freiem Weg zum Elternteil. Satzvorschauen kürzen Titel und begrenzen Definitionen, ohne das Raster zu vergrößern.
+
+## Sprachgalerien und zweiseitige Übungen
+
+Deckgalerien verwenden `/study/<iso>/flashcards`, einzelne Decks `/study/<iso>/flashcards/<deck-id>`. Die Sprachauswahl öffnet die entsprechende Galerie ohne andere Sprachen. Neue Decks speichern ihre Sprache einschließlich importierter Notizen; Bibliotheksdecks leiten sie ab und weisen widersprüchliche Angaben zurück. Die Vorderseite zeigt die Frage, die Rückseite Definitionen und Lesungen. Neue Karten können sofort Lesen oder Schreiben üben. Vorherige Karten behalten die Sitzungsantwort ohne zweite Bewertung; bereits richtige Karten erscheinen als Vorderseitenvorschau und lassen sich umdrehen. Kanonische Bibliothekslinks verwenden gestaltete Kästen und eine Bestätigung vor dem Verlassen.
+
 ## Commits
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

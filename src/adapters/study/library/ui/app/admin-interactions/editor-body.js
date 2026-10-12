@@ -1,3 +1,4 @@
+import { renderTransformationOptIns } from "../transformation-opt-ins.js";
 import { cardPreview } from "../reuse/card-preview.js";
 import { renderDefinitionActions } from "../reuse/definition-actions.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -445,7 +446,7 @@ export function editorBody(
         ? `<fieldset class="library-pronunciation-selector">${options.hideInputHeading ? "" : `<legend>${escapeHtml(i18n.t("gateway.study.library_composer_text"))}</legend>`}${selectedReferenceField("input", options.inputCarouselIds, { fieldLabel: options.labelText ?? i18n.t("gateway.study.library_composer_text"), inputValue: entry.id ? "" : entry.label, required: !entry.id })}${options.compositionLookupHtml ?? ""}${inlineInputCarousel}</fieldset>`
         : "";
     const tags = Array.isArray(entry.tags) ? entry.tags : [];
-    const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>`;
+    const tagsField = `<div class="library-tag-field" data-library-entry-tags><span>${escapeHtml(i18n.t("gateway.study.library_tags"))}</span><div class="library-tag-list">${tags.map((tag) => `<button type="button" class="btn-neutral" data-library-tag="${escapeHtml(tag)}">${escapeHtml(tag)} ×</button>`).join("")}</div><input data-library-tag-input aria-label="${escapeHtml(i18n.t("gateway.study.library_tags"))}"><input name="tags" type="hidden" value="${escapeHtml(tags.join("\u001f"))}"></div>${renderTransformationOptIns(schema)}`;
     const relationshipTab = options.showRelationshipTab
         ? `<button class="btn-neutral" type="button" role="tab" aria-selected="false" data-library-editor-tab="relationships" data-form-tab="relationships">${escapeHtml(i18n.t("gateway.study.library_editor_relationships"))}</button>`
         : "";

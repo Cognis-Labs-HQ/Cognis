@@ -1,3 +1,6 @@
+import { createPracticeSession } from "./practice-session.js";
+import { languageFlashcardsUrl } from "/static/gateways/study/reuse/explore.js";
+import { flashcardsRoute, deckMatchesLanguage } from "./language.js";
 import { practiceSummary, practiceQueue } from "./practice-model.js";
 import { mountPractice } from "./practice.js";
 import { runDeckAction } from "./actions.js";
@@ -54,7 +57,14 @@ function download(name, text) {
     URL.revokeObjectURL(url);
 }
 
-async function editDeck(deck, schemas, entries, i18n, importing = false) {
+async function editDeck(
+    deck,
+    schemas,
+    entries,
+    i18n,
+    importing = false,
+    language,
+) {
     let form;
     let saved = false;
     let notes = deck?.notes ?? [];
@@ -189,6 +199,7 @@ async function editDeck(deck, schemas, entries, i18n, importing = false) {
                         name: form.elements.name.value,
                         entryIds: [...ids],
                         notes,
+                        language,
                     },
                     deck?.id,
                 );
@@ -205,7 +216,7 @@ async function editDeck(deck, schemas, entries, i18n, importing = false) {
             }
         },
     });
-    if (saved) await navigateTo("/study/flashcards");
+    if (saved) await navigateTo(languageFlashcardsUrl(language));
 }
 
 let mountController = null;
@@ -227,6 +238,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "adapter.study.flashcards.page_title");
+    const route = flashcardsRoute(location.pathname);
     let model;
     let decks;
     let schemas;
@@ -238,7 +250,8 @@ export async function mount(root, { signal: routerSignal } = {}) {
             () =>
                 Promise.all([
                     loadStudySubNavigationModel({
-                        fallbackLanguageCode: readSelectedStudyLanguageCode(),
+                        fallbackLanguageCode:
+                            route.language ?? readSelectedStudyLanguageCode(),
                     }),
                     fetchStudyDecks(),
                     fetchLibrarySchemas(),
@@ -253,10 +266,20 @@ export async function mount(root, { signal: routerSignal } = {}) {
         });
         return;
     }
-    const requestedId = location.pathname.split("/")[3];
+    const languageCode = model.selectedLanguageCode;
+    if (route.language !== languageCode && languageCode) {
+        await navigateTo(languageFlashcardsUrl(languageCode));
+        return;
+    }
+    schemas = schemas.filter((schema) => schema.language === languageCode);
+    decks = decks.filter((deck) => deckMatchesLanguage(deck, languageCode));
+    const requestedId = route.deckId;
     if (requestedId && !decks.some((deck) => deck.id === requestedId)) {
         try {
-            decks.push((await fetchStudyDeck(requestedId)).deck);
+            const deck = (await fetchStudyDeck(requestedId)).deck;
+            if (!deckMatchesLanguage(deck, languageCode))
+                throw new Error("deck_language_mismatch");
+            decks.push(deck);
         } catch {
             showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
                 variant: "error",
@@ -273,6 +296,9 @@ export async function mount(root, { signal: routerSignal } = {}) {
     let favouritesOnly = false;
     let deckQuery = "";
     let queue = [];
+    let practiceSession = createPracticeSession([]);
+    let practiceMode = "reading";
+    let practiceImmediately = false;
     let session = null;
     let filter = "total";
     let releasePractice;
@@ -325,7 +351,10 @@ export async function mount(root, { signal: routerSignal } = {}) {
                             await openSharePopup({
                                 resourceType: "studyDeck",
                                 resourceId: selected.id,
-                                contentUrl: `/study/flashcards/${selected.id}`,
+                                contentUrl: languageFlashcardsUrl(
+                                    languageCode,
+                                    selected.id,
+                                ),
                                 grantedCapabilities: ["study:flashcards:read"],
                                 supportsReadOnly: true,
                                 allowedPermissions: ["read"],
@@ -348,11 +377,11 @@ export async function mount(root, { signal: routerSignal } = {}) {
         const target = root.querySelector("[data-study-session]");
         releasePractice?.();
         const current = ++generation;
-        if (!queue.length) {
-            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>`;
+        if (!practiceSession.current) {
+            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>${practiceSession.canPrevious ? `<button type="button" class="btn-neutral" data-practice-history-previous>${escapeHtml(i18n.t("adapter.study.flashcards.practice_previous"))}</button>` : ""}`;
             return;
         }
-        const detail = queue[0];
+        const detail = practiceSession.current;
         releasePractice = mountPractice(target, {
             detail,
             templates,
@@ -360,12 +389,24 @@ export async function mount(root, { signal: routerSignal } = {}) {
             schemas,
             progress: selected.progress,
             filter,
-            mode: "reading",
+            mode: practiceMode,
+            practiceImmediately,
+            answeredGrade: practiceSession.answeredGrade,
+            onModeChange: (mode) => {
+                practiceMode = mode;
+                practiceImmediately = true;
+            },
+            onPrevious: practiceSession.canPrevious
+                ? () => {
+                      practiceSession.previous();
+                      nextCard();
+                  }
+                : null,
             i18n,
             signal,
             onNext: async (grade) => {
                 try {
-                    if (grade) {
+                    if (grade && !practiceSession.answered) {
                         const updated = await runDeckAction(
                             "review",
                             () =>
@@ -380,7 +421,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                         selected = updated;
                         session.deck = updated;
                     }
-                    queue.shift();
+                    practiceSession.next(grade);
                     const summary = practiceSummary(
                         session.cards,
                         selected.progress,
@@ -412,7 +453,12 @@ export async function mount(root, { signal: routerSignal } = {}) {
     };
     const loadSession = async () => {
         session = await fetchStudyDeck(selected.id);
-        session.cards = [...session.cards, ...noteDetails(session.deck.notes)];
+        session.cards = [
+            ...session.cards.filter(({ entry }) =>
+                schemas.some((schema) => schema.id === entry.schemaId),
+            ),
+            ...noteDetails(session.deck.notes),
+        ];
         selected = {
             ...session.deck,
             name:
@@ -429,6 +475,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 { variant: "warning" },
             );
         queue = practiceQueue(session.cards, selected.progress, filter);
+        practiceSession = createPracticeSession(queue);
         renderDeck();
         nextCard();
     };
@@ -499,6 +546,17 @@ export async function mount(root, { signal: routerSignal } = {}) {
     root.addEventListener(
         "click",
         async (event) => {
+            if (event.target.closest("[data-practice-history-previous]")) {
+                await runDeckAction(
+                    "previous",
+                    () => {
+                        practiceSession.previous();
+                        nextCard();
+                    },
+                    signal,
+                );
+                return;
+            }
             const filterButton = event.target.closest("[data-practice-filter]");
             if (filterButton) {
                 await runDeckAction(
@@ -511,6 +569,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                             selected.progress,
                             filter,
                         );
+                        practiceSession = createPracticeSession(queue);
                         renderDeck();
                         nextCard();
                     },
@@ -532,7 +591,10 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     "browse",
                     () =>
                         navigateTo(
-                            `/study/flashcards/${preview.dataset.deckOpen}`,
+                            languageFlashcardsUrl(
+                                languageCode,
+                                preview.dataset.deckOpen,
+                            ),
                         ),
                     signal,
                 );
@@ -545,7 +607,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 let action = button.dataset.deckAction;
                 await runDeckAction(action, async () => {
                     if (action === "browse") {
-                        await navigateTo("/study/flashcards");
+                        await navigateTo(languageFlashcardsUrl(languageCode));
                         return;
                     }
                     if (action === "add") {
@@ -583,6 +645,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                                 entries,
                                 i18n,
                                 action === "import",
+                                languageCode,
                             );
                         if (button.dataset.deckAction === "add")
                             await runDeckAction(action, edit, signal);
@@ -614,7 +677,9 @@ export async function mount(root, { signal: routerSignal } = {}) {
                                     variant: "success",
                                 },
                             );
-                            await navigateTo("/study/flashcards");
+                            await navigateTo(
+                                languageFlashcardsUrl(languageCode),
+                            );
                         }
                         return;
                     }

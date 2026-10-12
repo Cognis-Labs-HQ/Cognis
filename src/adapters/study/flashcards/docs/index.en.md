@@ -37,3 +37,7 @@ Browser actions run declared study:decks flows with before, execute and after st
 ### Consolidated Deck Practice
 
 Renderer contract: `flashcardValues(detail, schemas, language)` resolves localized content; `renderFlashcard(detail, schemas, language, link)` renders the complete answer with canonical links; `noteDetails(notes)` adapts imported notes without mutating them. Practice mounts control answer visibility and animation for both account and shared decks. Shared decks use the localized page subtitle.
+
+## Language galleries and two-sided practice
+
+Deck galleries use `/study/<iso>/flashcards`; individual decks use `/study/<iso>/flashcards/<deck-id>`. Language selection opens the corresponding gallery and excludes other languages. New decks retain their language, including imported notes; library-backed decks infer it and reject conflicting language assignments. The front shows the question, with definitions and readings on the flipside. New cards can enter Reading or Writing immediately. A Previous card action keeps session answers without recording a second review; previously correct cards return as front previews and flip on request. Canonical Library links use themed boxes and the departure confirmation.

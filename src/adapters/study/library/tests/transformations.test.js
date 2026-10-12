@@ -424,3 +424,41 @@ test("definition substitutions correct earlier transformations in context", () =
         "to (want to) exist (and then)",
     );
 });
+
+test("optional plural families require card opt-in and preserve canonical sentence references", () => {
+    const entry = {
+        id: "dog",
+        label: "dog",
+        tags: ["noun", "countable-dog"],
+        fields: { pronunciation: ["dog"] },
+    };
+    const schema = {
+        transformSets: [
+            {
+                id: "noun-dog",
+                matchTags: ["noun", "countable-dog"],
+                optInTag: "plural",
+                baseState: "singular",
+                rules: [
+                    {
+                        id: "plural",
+                        fromState: "singular",
+                        toState: "plural",
+                        removeSuffix: "dog",
+                        append: "dogs",
+                    },
+                ],
+            },
+        ],
+    };
+    assert.deepEqual(transformationPathways(entry, schema), []);
+    entry.tags.push("plural");
+    const transformation = { setId: "noun-dog", path: ["plural"] };
+    assert.equal(
+        referencedTransformation(entry, schema, transformation).node.value,
+        "dogs",
+    );
+    assert.equal(entry.label, "dog");
+    entry.tags.pop();
+    assert.equal(referencedTransformation(entry, schema, transformation), null);
+});

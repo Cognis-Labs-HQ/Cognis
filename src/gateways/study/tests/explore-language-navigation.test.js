@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
-import { exploreLayers, languageExploreUrl } from "../ui/reuse/explore.js";
+import {
+    exploreLayers,
+    languageExploreUrl,
+    languageFlashcardsUrl,
+} from "../ui/reuse/explore.js";
 
 const schemas = [
     {
@@ -64,6 +68,7 @@ test("English and Japanese resolve the same Explore roles through their provider
 test("language choices resolve shared host pages even when provider child pages are empty", async () => {
     const context = vm.createContext({
         languageExploreUrl,
+        languageFlashcardsUrl,
         document: { documentElement: { lang: "en" } },
         window: { location: { pathname: "/study/explore/ja/kanji" } },
         history: { state: {} },
@@ -115,8 +120,5 @@ test("language choices resolve shared host pages even when provider child pages 
     const deck = await context.loadStudySubNavigationModel({
         fallbackLanguageCode: "en",
     });
-    assert.equal(
-        deck.languagePageUrlsByCode.get("en"),
-        "/study/flashcards/deck",
-    );
+    assert.equal(deck.languagePageUrlsByCode.get("en"), "/study/en/flashcards");
 });

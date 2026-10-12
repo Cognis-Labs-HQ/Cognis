@@ -1,3 +1,4 @@
+import { createPracticeSession } from "../flashcards/practice-session.js";
 import { noteDetails } from "../../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -13,6 +14,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         ...(shareContext.payload.cards ?? []),
         ...noteDetails(deck.notes),
     ];
+    const practiceSession = createPracticeSession(queue);
     const templates = await runDeckAction(
         "load",
         () => loadDeckTemplates(signal),
@@ -40,29 +42,55 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     let release;
+    let mode = "reading";
+    let practiceImmediately = false;
     const next = () => {
         release?.();
         const target = root.querySelector("[data-shared-card]");
-        if (!queue.length) {
-            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>`;
+        if (!practiceSession.current) {
+            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p><button class="btn-neutral" type="button" data-shared-previous>${escapeHtml(i18n.t("adapter.study.flashcards.practice_previous"))}</button>`;
+            target
+                .querySelector("[data-shared-previous]")
+                .addEventListener("click", () =>
+                    runDeckAction(
+                        "previous",
+                        () => {
+                            practiceSession.previous();
+                            next();
+                        },
+                        signal,
+                    ),
+                );
             return;
         }
         release = mountPractice(target, {
-            detail: queue[0],
+            detail: practiceSession.current,
+            answeredGrade: practiceSession.answeredGrade,
+            onPrevious: practiceSession.canPrevious
+                ? () => {
+                      practiceSession.previous();
+                      next();
+                  }
+                : null,
             templates,
             schemas,
             entries: [],
             progress: {},
             filter: "new",
-            mode: "reading",
+            mode,
+            practiceImmediately,
+            onModeChange: (selected) => {
+                mode = selected;
+                practiceImmediately = true;
+            },
             i18n,
             signal,
             authenticated: false,
-            onNext: async () =>
+            onNext: async (grade) =>
                 runDeckAction(
                     "review",
                     () => {
-                        queue.shift();
+                        practiceSession.next(grade);
                         next();
                     },
                     signal,

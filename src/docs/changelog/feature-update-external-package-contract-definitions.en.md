@@ -656,6 +656,14 @@ Deck practice and shared snapshots use one linked-answer renderer and one import
 
 Language selection opens Cognis-owned Explore pages even when content providers declare no child pages. Switching languages preserves the equivalent writing, vocabulary or sentence role; Flashcards, Library and Requests keep their shared page context. English declares alphabet, letter combinations, vocabulary and sentences using its opinionated slugs. Aborted favourites loads release their mount without misleading failure toasts.
 
+## Optional word forms and reachable previews
+
+A provider transformation set may declare `optInTag`, for example `plural`. A card must carry both the family’s `matchTags` and that opt-in tag before Cognis exposes or accepts its forms. The composer shows the provider-labelled switch for matching families; saved sentence references retain the base UUID and `{setId, path}`. Removing the opt-in prevents new transformed references. Providers define countability, irregular spellings and pronunciation changes; Cognis supplies selection, persistence and validation. Nested branches use the closest collision-free placement with an unobstructed path to their parent. Sentence previews truncate their title and clamp their definition without resizing the grid.
+
+## Language galleries and two-sided practice
+
+Deck galleries use `/study/<iso>/flashcards`; individual decks use `/study/<iso>/flashcards/<deck-id>`. Language selection opens the corresponding gallery and excludes other languages. New decks retain their language, including imported notes; library-backed decks infer it and reject conflicting language assignments. The front shows the question, with definitions and readings on the flipside. New cards can enter Reading or Writing immediately. A Previous card action keeps session answers without recording a second review; previously correct cards return as front previews and flip on request. Canonical Library links use themed boxes and the departure confirmation.
+
 ## Commits
 
 - [608f38a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/608f38a59532f0b294d7384576ca882f2d94a4ba)

@@ -1,3 +1,4 @@
+import { validateReferenceTransformation } from "./layers/reference-transformation.js";
 import {
     CONTENT_CLASS_PATTERN,
     CONTENT_RECORD_ID_PATTERN,
@@ -551,6 +552,8 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             throw new Error("duplicate_transform_set");
         transformSetIds.add(set.id);
         validateMetadata(set.metadata, "transform_set_metadata_required");
+        if (set.optInTag !== undefined)
+            assertIdentifier(set.optInTag, "invalid_transform_opt_in_tag");
         if (
             !set.baseState.trim() ||
             !Array.isArray(set.matchTags) ||
@@ -738,33 +741,6 @@ export function validateReferences(
     const relationships = new Map(
         (layer.relationships ?? []).map((item) => [item.id, item]),
     );
-    const validateTransformation = (
-        reference: LibraryReferenceInput,
-        target: LibraryEntry,
-    ) => {
-        if (!reference.transformation) return;
-        const set = (schema.transformSets ?? []).find(
-            ({ id }) => id === reference.transformation?.setId,
-        );
-        if (
-            !set ||
-            !set.matchTags.every((tag) => target.tags?.includes(tag)) ||
-            !reference.transformation.path.length
-        )
-            throw new Error("invalid_reference_transformation");
-        let state = set.baseState;
-        let value = target.label;
-        for (const ruleId of reference.transformation.path) {
-            const rule = set.rules.find(
-                (candidate) =>
-                    candidate.id === ruleId && candidate.fromState === state,
-            );
-            if (!rule || !value.endsWith(rule.removeSuffix))
-                throw new Error("invalid_reference_transformation");
-            value = `${value.slice(0, -rule.removeSuffix.length || undefined)}${rule.append}`;
-            state = rule.toState;
-        }
-    };
     for (const field of layer.fields ?? []) {
         if (!field.multi_value || !field.input?.linkRelationships?.length)
             continue;
@@ -826,7 +802,7 @@ export function validateReferences(
         ) {
             throw new Error("invalid_relationship_target");
         }
-        validateTransformation(reference, target);
+        validateReferenceTransformation(schema, reference, target);
     }
     for (const relationship of relationships.values()) {
         const matching = [...references, ...groupedReferences].filter(

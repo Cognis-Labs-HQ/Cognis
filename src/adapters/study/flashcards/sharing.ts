@@ -128,6 +128,11 @@ export function registerDeckSharing(
             !supportedDeckGrant(input)
         )
             return { valid: false, reason: "forbidden" };
+        const language =
+            deck.language ??
+            (deck.schemas as Array<{ language?: string }>).find(
+                (schema) => schema.language,
+            )?.language;
         return {
             valid: true,
             resourceType: DECK_RESOURCE,
@@ -136,7 +141,9 @@ export function registerDeckSharing(
             metadata: {
                 resourceName: deck.name,
                 resourceTypeLabel: "Flashcards",
-                contentUrl: `/study/flashcards/${deck.id}`,
+                contentUrl: language
+                    ? `/study/${encodeURIComponent(language)}/flashcards/${encodeURIComponent(deck.id)}`
+                    : "/study/flashcards",
             },
         };
     });
