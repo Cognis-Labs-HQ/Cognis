@@ -19,3 +19,7 @@ Die Auswahl „Neuer Raum“ verwendet die Parameter `category: "user"` und `typ
 Ein eingehender Anruf erscheint als beigesteuerte Aktionsleiste unmittelbar unter dem Thread-Kopf, mit der Beschriftung links und den vom Anbieter verwalteten SVG-Aktionen zum Annehmen und Ablehnen rechts. Historische Anrufereignisse bleiben einfache Zeitleisteneinträge statt interaktiver Hinweise.
 
 Der Adapter stellt die allgemeine Capability `social:messages:appendRoomEvent` für Komponenten bereit, die ein raumbezogenes Zeitleistenereignis aufzeichnen müssen. Die Nutzlast speichert nur neutrale Ereignismetadaten; die besitzenden Komponenten behalten ihre domänenspezifischen Ereignisnamen und Felder. Über den Browser-Flow `messages:formatRoomEvent` liefern diese Komponenten die lokalisierte Darstellung, ohne ihre Texte oder Darstellungsregeln in Messages einzufügen.
+
+### Ressourceneigene Konversationen
+
+`social:messages:resolveGroupChatUrl` akzeptiert `usernames` sowie optional `title`, `createdByAccountId`, `allowSingleMember`, `reuseExisting` und `roomId`. Standardmäßig wird eine Gruppe mit exakt gleichen Mitgliedern wiederverwendet. `reuseExisting: false` erzeugt eine eigene Konversation; eine bestehende `roomId` bleibt trotz Mitgliedschaftsänderungen erhalten und wird nach Löschung ersetzt. Neue Räume erhalten Schlüssel und Mitglieder, vorhandene behalten ihren Titel. Diese anbieterneutrale Option eignet sich für unabhängige Ressourcen, etwa Meetings.

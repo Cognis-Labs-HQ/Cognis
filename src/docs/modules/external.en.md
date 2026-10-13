@@ -21,11 +21,9 @@ The bootstrap contributes behavior only through its scoped context and returns c
 <!-- prettier-ignore -->
 ```js
 export async function bootstrapModule(ctx) {
-  const remove = ctx.flow.inject('construct-example-page', 'content', {
-    id: 'example-module.content',
-    handler: async () => ({ ready: true }),
-  });
-  return () => remove();
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
 }
 ```
 
@@ -39,9 +37,9 @@ Every module has a human-readable `id` and an RFC 4122 `uuid`. The ID may be ren
 
 ### Repository contract
 
-One Git repository delivers one module. Its root contains `manifest.json`, `package.json`, `routes.json`, and the optional orchestrator entry points `bootstrap.js`, `api/index.js`, `ui/index.js`, and `cli/index.js`. `bootstrap.js` is the sole system integration entry and receives `ctx`; it may import files within its repository as well as Cognis runtime resources that the deployment exposes. Exported capabilities and flow stages should still use `ctx` so lifecycle cleanup can track them. Security-sensitive registrations remain restricted and require `privileged: true`; ordinary imports, API URLs, and shared style classes do not make a module privileged.
+One Git repository delivers one module. Its root contains `manifest.json`, `package.json`, `routes.json`, and the required `bootstrap.js` and optional entry points `api/index.js`, `ui/index.js`, and `cli/index.js`. `bootstrap.js` is the sole system integration entry and receives `ctx`; it may import only files within its repository; host and foreign-component behavior comes through ctx capabilities and flows. Exported capabilities and flow stages must use `ctx` so lifecycle cleanup can track them. Security-sensitive registrations remain restricted and require `privileged: true`; ordinary imports, API URLs, and shared style classes do not make a module privileged.
 
-`package.json` must use `"type": "module"` and its version must exactly match `manifest.json`. `routes.json` is always present and contains an array, including an empty array when the module claims no routes. Every declared entry point must resolve to a regular file inside the checkout. Keep orchestration in the declared entry points and place freely organized implementation code behind them; Cognis does not import any other module path.
+`package.json` must use `"type": "module"` and its version must exactly match `manifest.json`. `routes.json` is always present and contains an array, including an empty array when the module claims no routes. Every declared entry point must resolve to a regular file inside the checkout. Keep orchestration in the declared entry points and place implementation code in the prescribed concern directories; Cognis does not import any other module path.
 
 Every external module declares `entrypoints.bootstrap`. Cognis imports only that file and calls `bootstrapModule(ctx)` when the module is enabled. The scoped context provides API route registration, module static directories, SPA routes, navigation, settings and page extensions, capability contribution, flow creation and stage injection. Put localized documentation under `docs/` and module release notes under `docs/changelog/`; both are discovered from installed repositories without core path registration. Browser assets remain module-owned and are exposed only through `ctx.registerStaticDir`. A module can publish a dedicated browser capability provider with `ctx.registerCapabilityProvider({ scriptUrl, providesCapabilities })`; Cognis includes it in the provider catalog only while that module is enabled and removes it during lifecycle cleanup.
 
@@ -134,3 +132,17 @@ A module that contributes configuration surfaces elsewhere in Cognis can declare
 ### Public capability lookup
 
 External modules publish shared server capabilities with `ctx.contributePublicCapability(key, value)`. Module `ctx.getCapability`, `ctx.capabilities.get`, `has`, and `require` resolve public capabilities from the live system registry, including capabilities published after the consumer bootstraps. Private system capabilities remain outside this surface; `system:ctx` is never exposed to modules. Refresh requests execute sequentially so teardown and registration cannot overlap. Disabling a provider removes its contributions; re-enabling it republishes them. A failed refresh rejects its caller without blocking later refreshes.
+
+### Template-based development
+
+All new modules must start from [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template), with a new product UUID and replaced identity, repository, artwork and example content. Keep its AGENTS.md guidance and validation scripts. Follow the [contributor standard](/docs/standard): API handlers under `api/routes/<domain>/index.js`, CSS under `ui/styles/`, templates under `ui/templates/`, layer-owned tests, and release notes under `docs/changelog/`. Jitsi Meet proves this layout while retaining its public route URLs. Imports remain repository-local; use ctx for every foreign component. Never import core internals or a sibling implementation.
+
+### Provider and resource lifecycle
+
+Server registrations that return cleanup functions must be attached with `ctx.registerDisposer(dispose)`. Cognis runs these in reverse order on refresh, disable and failed bootstrap, including disabled configuration entrypoints. The public `system:health:contribute(id, callback)` and `auth:registerKeyringDataOwner(id, purge)` return owned disposers. Keyring cleanup resets only dependent data; it does not delete account identity or unrelated shared content.
+
+Browser provider scripts export `mountProvider(scopedUiCtx)`, rather than contributing capabilities or binding listeners at import time. The scoped context owns capabilities, created flows and stage hooks; its AbortSignal cancels listeners, and a returned disposer releases other resources. Catalog reconciliation mounts a URL once even when both navbar and capability catalogs include it, and re-mounts cached scripts on re-enable. Use `ui:navbarLinks.contribute(id, { href, label, visible })` for host-owned navigation links. Route page scripts retain their own `mount`/`unmount` contract.
+
+### Command and compatibility scope
+
+Npm scripts run inside their repository; `npm --prefix <module-checkout> test` selects it explicitly. Installed module operations use `cognisctl modules:<module-id>:<action>`. These are distinct interfaces. Required capability declarations control availability; a reported tested provider version is diagnostic provenance, not an enforced minimum or tested ceiling. Declare actual dependencies and test the installed public contract; never advertise version enforcement that the code does not perform.

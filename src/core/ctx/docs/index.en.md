@@ -184,3 +184,7 @@ Providers must publish the capability ID in their component documentation and, f
 ## Per-invocation owner stages
 
 Core 0.3.109 adds optional per-invocation `handlers` to `FlowRunOptions`. Each owner handler runs before extension hooks in its registered stage, contributes its result to `stageResults`, and shares only that invocation’s `data`. Unknown stages reject before execution. A rejected stage stops later stages. Components keep persistence inside their own transaction so extension-hook failure rolls back writes; per-run handlers are not stored as global hooks.
+
+### Owned server and browser resources
+
+The external bootstrap context supports `registerDisposer(dispose)`. Cleanup runs in reverse registration order after disable, refresh or failed bootstrap; failures are logged while remaining cleanup proceeds. Browser providers export `mountProvider(scopedUiCtx)`, register their capabilities and flows through the scope, bind listeners to its signal and return additional cleanup. The loader reconciles both catalogs and reactivates cached scripts; `ui:navbarLinks` owns navigation DOM.

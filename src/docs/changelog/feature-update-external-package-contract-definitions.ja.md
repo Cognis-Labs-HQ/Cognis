@@ -668,6 +668,14 @@ Library のプレビューの星は選択操作の隣に置き、子カードの
 
 共通のポインタースタイルボタンは、マウス・レーザー・照準のアイコンにテーマ標準の前景色（`--text`）を使います。埋め込みコンポーネントページにも適用し、参加者のポインター色は変更しません。
 
+## テンプレートに基づくモジュール標準
+
+新しいモジュールはモジュールテンプレートから作成します。ドメインルート、スタイル、マークアップ、テスト、リリース文書の配置を定め、開発指針を同期し、古い文書標準を使用例と現行契約に置き換えます。
+
+## 限定された資源のライフサイクル
+
+所有するブラウザープロバイダー、カタログ同期、ナビゲーション、解除可能な Health と公開 Keyring 登録を追加します。Bootstrap 失敗時に部分的な資源とルートを除去します。Messages は別々のルーム作成と保存済み ID の解決に対応し、名前変更や参加者による再割り当てを避けます。
+
 ## コミット
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -745,5 +753,4 @@ Library のプレビューの星は選択操作の隣に置き、子カードの
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
 - [119e9b3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/119e9b3d21706fc6a65b049650ee484222f916b0)
 - [c9715ab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9715ab3d9b044e06a394e09fdda27ec5f60cf4d)
-
 - [89434568](https://github.com/Cognis-Labs-HQ/Cognis/commit/89434568d0d5865a260e3f515c5236eec7f940bd)

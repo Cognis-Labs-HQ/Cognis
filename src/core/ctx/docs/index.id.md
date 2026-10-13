@@ -87,3 +87,7 @@ Penyedia harus menerbitkan ID kapabilitas dalam dokumentasi komponennya dan mend
 ## Tahap pemilik per pemanggilan
 
 Core 0.3.109 menambahkan `handlers` opsional per pemanggilan pada `FlowRunOptions`. Handler pemilik berjalan sebelum hook ekstensi pada tahap terdaftarnya, menyumbangkan hasil ke `stageResults`, dan hanya berbagi `data` milik pemanggilan tersebut. Tahap tidak dikenal ditolak sebelum eksekusi. Kegagalan menghentikan tahap berikutnya. Komponen mempertahankan persistensi dalam transaksinya sendiri agar kegagalan hook membatalkan penulisan. Handler per pemanggilan tidak disimpan sebagai hook global.
+
+### Sumber daya server dan browser
+
+Konteks bootstrap eksternal mendukung `registerDisposer(dispose)`. Pembersihan berjalan dalam urutan registrasi terbalik setelah nonaktif, refresh atau bootstrap gagal; kegagalan dicatat dan pembersihan lain dilanjutkan. Penyedia browser mengekspor `mountProvider(scopedUiCtx)`, mendaftarkan kapabilitas serta alur dalam lingkupnya, memakai signal untuk listener dan mengembalikan pembersihan tambahan. Loader menyelaraskan kedua katalog dan mengaktifkan skrip cache kembali; `ui:navbarLinks` memiliki DOM navigasi.

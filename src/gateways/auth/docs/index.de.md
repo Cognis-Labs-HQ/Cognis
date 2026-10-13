@@ -127,3 +127,7 @@ Neue externe Konten verwenden den Anbieter-Namensraum sowohl im lokalen Kontosch
 ## Medienrichtlinie im Browser
 
 Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und browsererzeugten `blob:`-URLs. Vertrauenswürdige UI-Clients können dadurch authentifizierte Audioantworten wiedergeben, ohne beliebige externe Medienquellen zuzulassen.
+
+### Modul-Lebenszyklus
+
+`auth:registerKeyringDataOwner(ownerId, purge)` ist eine öffentliche Serverfähigkeit. Doppelte Eigentümer-IDs werden abgelehnt; zurückgegeben wird ein identitätsgeprüfter Disposer. Module verwenden `module:<id>` und registrieren die Bereinigung mit `ctx.registerDisposer`; purge erhält die normalisierte Konto-ID. Nur Keyring-abhängigen Zustand bereinigen, Kontenidentität und fremde gemeinsame Ressourcen erhalten.

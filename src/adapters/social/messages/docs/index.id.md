@@ -19,3 +19,7 @@ Pemilih Ruang Baru memakai parameter `category: "user"` dan `typeFilter: "user"`
 Panggilan masuk ditampilkan sebagai bilah tindakan kontribusi tepat di bawah tajuk utas, dengan label di kiri serta tindakan SVG Jawab dan Tolak milik penyedia di kanan. Peristiwa panggilan historis tetap menjadi catatan lini masa biasa, bukan prompt interaktif.
 
 Adapter menyediakan capability generik `social:messages:appendRoomEvent` bagi komponen yang perlu mencatat peristiwa linimasa dalam ruang. Payload hanya menyimpan metadata peristiwa yang netral; komponen pemilik tetap memiliki nama dan bidang peristiwa khusus domainnya. Flow browser `messages:formatRoomEvent` memungkinkan komponen tersebut menyediakan tampilan terlokalisasi tanpa menambahkan teks atau aturan render ke Messages.
+
+### Percakapan milik sumber daya
+
+`social:messages:resolveGroupChatUrl` menerima `usernames` serta `title`, `createdByAccountId`, `allowSingleMember`, `reuseExisting` dan `roomId` opsional. Default memakai ulang grup dengan anggota persis sama. `reuseExisting: false` membuat percakapan tersendiri; `roomId` tersimpan dipertahankan meski anggota berubah, dan diganti jika sudah terhapus. Ruang baru mendapat kunci dan anggota sendiri; ruang yang dipakai ulang mempertahankan judulnya. Opsi netral ini mendukung sumber daya independen, termasuk rapat.

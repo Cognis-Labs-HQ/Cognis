@@ -668,6 +668,14 @@ Deck galleries use `/study/<iso>/flashcards`; individual decks use `/study/<iso>
 
 The shared pointer-style button uses the standard theme foreground (`--text`) for mouse, laser and crosshair icons, including in embedded component pages. Participant pointer colours remain unchanged.
 
+## Template based module standard
+
+Require new modules to start from the module template. Define domain route, stylesheet, markup, test and release-note paths; synchronize contributor guidance and replace the outdated documentation standard with examples and complete current contracts.
+
+## Scoped module resource lifecycle
+
+Add owned browser provider mounts, catalog reconciliation and navbar contributions, plus disposable health and public keyring-data registrations. Failed bootstrap releases partial resources and routes. Messages supports distinct room creation and stable saved-room lookup without renaming or participant-based reassignment.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -745,5 +753,4 @@ The shared pointer-style button uses the standard theme foreground (`--text`) fo
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
 - [119e9b3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/119e9b3d21706fc6a65b049650ee484222f916b0)
 - [c9715ab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9715ab3d9b044e06a394e09fdda27ec5f60cf4d)
-
 - [89434568](https://github.com/Cognis-Labs-HQ/Cognis/commit/89434568d0d5865a260e3f515c5236eec7f940bd)

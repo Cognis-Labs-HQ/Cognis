@@ -670,6 +670,14 @@ Galeri dek memakai `/study/<iso>/flashcards`, dan dek individual memakai `/study
 
 Tombol gaya penunjuk bersama memakai warna teks standar tema (`--text`) untuk ikon mouse, laser, dan bidik, termasuk pada halaman komponen tertanam. Warna penunjuk peserta tetap sama.
 
+## Standar modul berbasis templat
+
+Modul baru wajib berasal dari templat modul. Tetapkan jalur rute domain, style, markup, pengujian dan catatan rilis; selaraskan panduan kontributor dan ganti standar dokumentasi lama dengan contoh serta kontrak terkini.
+
+## Siklus hidup sumber daya terbatas
+
+Tambahkan pemasangan penyedia browser, rekonsiliasi katalog dan navigasi milik host, serta registrasi health dan pemilik data keyring publik yang dapat dilepas. Bootstrap gagal membersihkan sumber daya dan rute parsial. Messages mendukung ruang terpisah dan identitas ruang tersimpan tanpa penggantian nama atau penetapan ulang berbasis anggota.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -747,5 +755,4 @@ Tombol gaya penunjuk bersama memakai warna teks standar tema (`--text`) untuk ik
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
 - [119e9b3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/119e9b3d21706fc6a65b049650ee484222f916b0)
 - [c9715ab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9715ab3d9b044e06a394e09fdda27ec5f60cf4d)
-
 - [89434568](https://github.com/Cognis-Labs-HQ/Cognis/commit/89434568d0d5865a260e3f515c5236eec7f940bd)

@@ -1,3 +1,7 @@
+import {
+    disposeModuleResources,
+    removeModuleRoutes,
+} from "./module-resource-disposal.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     BootstrapLog,
@@ -15,6 +19,9 @@ import type { UIRegistry } from "../../api/reuse/ui-registry.js";
 import type {
     ModuleApiRouter,
     ModuleRouteOptions,
+    ModuleBootstrapCtx,
+    ModuleBootstrapPlugin,
+    ModuleDisabledApiPlugin,
 } from "./module-extension-contracts.js";
 import {
     assertModuleOwnedCtxRegistration,
@@ -36,139 +43,6 @@ interface RouteHandler {
     handler: (
         req: IncomingMessage,
         res: ServerResponse,
-    ) => Promise<void> | void;
-}
-
-interface ModuleUiRegistrationContext {
-    moduleId: string;
-    moduleUuid: string;
-    moduleRoot: string;
-    registerNavbarPlugin(
-        plugin:
-            | {
-                  scriptUrl: string;
-                  access?: RoleAccessPolicy;
-                  providesCapabilities?: string[];
-              }
-            | string,
-    ): void;
-    registerCapabilityProvider(provider: {
-        scriptUrl: string;
-        providesCapabilities: string[];
-    }): void;
-    registerSpaRoute(route: {
-        id: string;
-        pattern: string;
-        base: string;
-        scriptUrl: string;
-        stylesheets?: string[];
-        access?: RoleAccessPolicy;
-        public?: boolean;
-        requiredCapabilities?: string[];
-        componentPage?: {
-            labelKey: string;
-            descriptionKey: string;
-            modes: Array<"overlay" | "fullscreen" | "pip">;
-        };
-    }): void;
-    registerAuthFooterPlugin(plugin: { scriptUrl: string }): void;
-    registerSettingsSection(section: {
-        id: string;
-        label: string;
-        scriptUrl: string;
-        access?: RoleAccessPolicy;
-        stringsBaseUrl?: string;
-    }): void;
-    registerPageExtension(
-        pageId: string,
-        element: {
-            id: string;
-            label: string;
-            scriptUrl: string;
-            access?: RoleAccessPolicy;
-        },
-    ): void;
-    registerAdminSection(section: {
-        id: string;
-        label: string;
-        scriptUrl: string;
-        access?: RoleAccessPolicy;
-        stringsBaseUrl?: string;
-    }): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
-    registerAuthTypingMessage(message: {
-        id: string;
-        textKey: string;
-        access?: RoleAccessPolicy;
-    }): void;
-}
-
-interface ModuleApiRegistrationContext {
-    moduleId: string;
-    moduleRoot: string;
-    getCapability<T>(capabilityId: string): T | undefined;
-    capabilities: {
-        contribute(key: string, value: unknown): void;
-        get<T>(key: string): T | undefined;
-        has(key: string): boolean;
-        require<T>(key: string): T;
-    };
-    log?: BootstrapLog;
-}
-interface ModuleBootstrapCtx
-    extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
-    flow: FlowApi;
-    registerApiGet(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPost(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPut(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPatch(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiDelete(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    router: ModuleApiRouter;
-    contributeCapability(key: string, value: unknown): void;
-    contributePublicCapability(key: string, value: unknown): void;
-    registerFlow(flow: FlowRegistration): void;
-    getModuleAssurance(moduleId: string): Promise<ModuleAssurance | null>;
-}
-
-interface ModuleBootstrapPlugin {
-    bootstrapModule?: (
-        ctx: ModuleBootstrapCtx,
-    ) =>
-        | Promise<void | (() => void | Promise<void>)>
-        | void
-        | (() => void | Promise<void>);
-    teardownModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
-    uninstallModule?: (
-        ctx: Pick<
-            ModuleBootstrapCtx,
-            "moduleId" | "moduleRoot" | "getCapability" | "log"
-        >,
-        options: { deleteContent: boolean },
-    ) => Promise<void> | void;
-}
-interface ModuleDisabledApiPlugin {
-    registerDisabledApiRoutes?: (
-        ctx: ModuleBootstrapCtx,
     ) => Promise<void> | void;
 }
 
@@ -217,6 +91,7 @@ export function createModuleExtensionRoutes(
             hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
             capabilities: string[];
             flows: string[];
+            disposers: Array<() => void | Promise<void>>;
         }
     >();
     const externalModulesRoot =
@@ -256,6 +131,7 @@ export function createModuleExtensionRoutes(
             hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
             capabilities: string[];
             flows: string[];
+            disposers: Array<() => void | Promise<void>>;
         },
         moduleEnabled: boolean,
         privilege: ModulePrivilege,
@@ -507,6 +383,12 @@ export function createModuleExtensionRoutes(
                 assuranceByModuleId.set(targetModuleId, assurance);
                 return { ...assurance };
             },
+            registerDisposer(dispose) {
+                requireActiveBootstrap();
+                if (typeof dispose !== "function")
+                    throw new TypeError("module_disposer_required");
+                scope.disposers.push(dispose);
+            },
             getCapability(capabilityId) {
                 if (capabilityId === "system:ctx") return undefined;
                 return resolveCapability(capabilityId);
@@ -665,25 +547,17 @@ export function createModuleExtensionRoutes(
 
     async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
-            for (const teardown of [
-                loaded.dispose,
-                loaded.plugin.teardownModule
-                    ? () => loaded.plugin.teardownModule?.(loaded.ctx)
-                    : undefined,
-            ]) {
-                try {
-                    await teardown?.();
-                } catch (error) {
-                    log?.("error", "Module teardown hook failed.", {
-                        component: "module-extension-routes",
-                        moduleId,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    });
-                }
-            }
+            await disposeModuleResources(
+                [
+                    loaded.plugin.teardownModule
+                        ? () => loaded.plugin.teardownModule?.(loaded.ctx)
+                        : undefined,
+                    loaded.dispose,
+                    ...loaded.disposers,
+                ],
+                moduleId,
+                log,
+            );
             const systemCtx =
                 options.routeContext.getCapability<Ctx>("system:ctx");
             for (const hook of loaded.hooks) {
@@ -755,6 +629,7 @@ export function createModuleExtensionRoutes(
                 hooks: [],
                 capabilities: [],
                 flows: [],
+                disposers: [],
             };
             const moduleCtx = createModuleCtx(
                 manifest,
@@ -786,6 +661,13 @@ export function createModuleExtensionRoutes(
                         ...scope,
                     });
                 } catch (error) {
+                    scope.active = false;
+                    await disposeModuleResources(
+                        scope.disposers,
+                        manifest.id,
+                        log,
+                    );
+                    removeModuleRoutes(nextHandlers, manifest.id);
                     log?.("error", "Disabled module API registration failed.", {
                         component: "module-extension-routes",
                         moduleId: manifest.id,
@@ -827,6 +709,7 @@ export function createModuleExtensionRoutes(
                 });
             } catch (error) {
                 scope.active = false;
+                await disposeModuleResources(scope.disposers, manifest.id, log);
                 const systemCtx =
                     options.routeContext.getCapability<Ctx>("system:ctx");
                 for (const hook of scope.hooks) {
@@ -843,11 +726,7 @@ export function createModuleExtensionRoutes(
                     systemCtx?.unregisterFlow(flowId);
                 }
                 options?.uiRegistry?.unregisterModuleContributions(manifest.id);
-                for (let index = nextHandlers.length - 1; index >= 0; index--) {
-                    if (nextHandlers[index].moduleId === manifest.id) {
-                        nextHandlers.splice(index, 1);
-                    }
-                }
+                removeModuleRoutes(nextHandlers, manifest.id);
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,

@@ -14,6 +14,7 @@ import { bootstrap } from "../bootstrap.js";
 import type { AuthProviderAdapter } from "../gateway.js";
 import {
     contributeTestKeyring,
+    createAuthTestContext,
     dispatchRoute,
     makeJsonRequest,
     makeInMemoryDb,
@@ -93,14 +94,6 @@ function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
 }
 
-function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
-    const systemCtx = createCtx();
-    capabilities.contribute(CTX_CAPABILITY, systemCtx);
-    capabilities.contribute("db:executor", dbExecutor);
-    contributeTestKeyring(capabilities);
-    return { flow: systemCtx.flow };
-}
-
 test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -112,7 +105,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     assert.equal(
@@ -136,7 +129,7 @@ test("keyring cleanup preserves account identity and unrelated account owners", 
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
     let profilePurges = 0;
     let messagePurges = 0;
@@ -184,7 +177,7 @@ test("auth gateway contributes account and token lifecycle capabilities", async 
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     assert.ok(
@@ -213,7 +206,7 @@ test("auth gateway exposes provider registration to modules", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     const registerProvider = capabilities.require<
@@ -359,7 +352,7 @@ test("runtime auth providers restore persisted activation before login UI regist
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
     let configuredClientId = "";
     const unregisterProvider = await capabilities.require<
@@ -405,7 +398,7 @@ test("registered auth providers own removable callback routes", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, createDbExecutor()),
+        ...createAuthTestContext(capabilities, createDbExecutor()),
     });
     const registerProvider = capabilities.require<
         (provider: AuthProviderAdapter) => Promise<() => void>
@@ -518,7 +511,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
@@ -600,7 +593,7 @@ test("auth bootstrap hook directory contributes route-level TFA login capabiliti
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     assert.equal(
@@ -638,7 +631,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     const staticDir = uiRegistry.getStaticDir("auth");
@@ -666,7 +659,7 @@ test("auth gateway registers adapter-owned UI directories", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
@@ -706,7 +699,7 @@ test("auth gateway bootstrap registers security section without redundant authen
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, dbExecutor),
     });
 
     const sections = uiRegistry.listAdminSections();

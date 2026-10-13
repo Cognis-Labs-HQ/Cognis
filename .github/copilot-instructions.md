@@ -189,9 +189,15 @@ surface instead of duplicating gateway knowledge in core code.
 
 Core API route factories and module extension routers must receive auth/request helpers through a route context assembled from `ctx` capabilities. Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.
 
-### Module CLI controls
+### External module skeleton
 
-For module-specific operational controls, add pluggable CLI subcommands at `modules/<id>/cli/index.js`. Use `cognisctl` as the primary operational control surface.
+Every new external module must start from https://github.com/Cognis-Labs-HQ/cognis-module-template using template creation or a fork. Assign its own product UUID and metadata, retain the template's AGENTS.md baseline, and preserve module-specific guidance in a final appendix. The template is the canonical contributor skeleton; do not create parallel module layouts.
+
+Use required root `manifest.json`, `package.json`, `routes.json` and `bootstrap.js`. Keep domain handlers under `api/routes/<domain>/index.js`, browser styles under `ui/styles/`, reusable markup under `ui/templates/`, locale XML under `ui/languages/<locale>/`, layer-owned tests beside their layer, and release notes under `docs/changelog/`. Implementation imports stay inside the module; host integration uses ctx. Existing entrypoint and route URLs remain stable during reorganizations. Jitsi Meet proves the standard through structure validation and executable public-contract tests.
+
+Npm scripts are checkout-local; document `npm --prefix <module-checkout> test` when the working directory could be ambiguous. Installed operational commands use `cognisctl modules:<module-id>:<action>` and register through the external module's `cli/index.js`. Do not add aliases or run another module's npm scripts from core.
+
+Browser providers export `mountProvider(scopedUiCtx)` without module-owned import-time registrations. Bind listeners to the scope's signal, return cleanup for other resources, and use `ui:navbarLinks` for host-owned navigation contributions. Server resources that return cleanup attach it with `ctx.registerDisposer`; tests must cover disable, failed bootstrap and re-enable. Keep core layout unchanged when the owning loader can handle lifecycle behavior.
 
 ### User namespace
 

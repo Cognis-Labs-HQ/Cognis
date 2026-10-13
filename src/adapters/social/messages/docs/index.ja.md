@@ -19,3 +19,7 @@ Messages ブラウザークライアントは、Social Messages アダプター�
 着信はスレッドヘッダーの直下に提供アクションバーとして表示され、左側にラベル、右側にプロバイダー所有の応答・拒否 SVG アクションを配置します。過去の通話イベントは操作プロンプトではなく通常のタイムライン記録として残ります。
 
 このアダプターは、ルーム単位のタイムラインイベントを記録するコンポーネント向けに、汎用 Capability `social:messages:appendRoomEvent` を公開します。ペイロードには中立的なイベントメタデータだけを保存し、ドメイン固有のイベント名とフィールドは所有コンポーネントが管理します。ブラウザ Flow `messages:formatRoomEvent` により、各コンポーネントは Messages に文字列や描画規則を追加せず、ローカライズ済みの表示を提供できます。
+
+### 資源ごとの会話
+
+`social:messages:resolveGroupChatUrl` は `usernames` と任意の `title`、`createdByAccountId`、`allowSingleMember`、`reuseExisting`、`roomId` を受け取ります。既定では同一メンバーのグループを再利用します。`reuseExisting: false` は独立した会話を作り、保存済み `roomId` はメンバー変更後も保持し、削除済みなら置き換えます。新規ルームには鍵とメンバーを設定し、再利用ルームの名前は維持します。ミーティングなどの独立資源に使える中立的契約です。

@@ -62,7 +62,12 @@ async function createFixture(context: test.TestContext) {
             },
         },
     );
-    async function addModule(id: string, source: string, privileged = false) {
+    async function addModule(
+        id: string,
+        source: string,
+        privileged = false,
+        disabledApi = false,
+    ) {
         const uuid = randomUUID();
         const moduleRoot = path.join(modulesRoot, uuid);
         await mkdir(moduleRoot);
@@ -76,7 +81,10 @@ async function createFixture(context: test.TestContext) {
             coreApiVersion: "0.3.107",
             capabilities: [],
             privileged,
-            entrypoints: { bootstrap: "./bootstrap.mjs" },
+            entrypoints: {
+                bootstrap: "./bootstrap.mjs",
+                ...(disabledApi ? { disabledApi: "./bootstrap.mjs" } : {}),
+            },
             files: [
                 {
                     path: "bootstrap.mjs",
@@ -254,4 +262,59 @@ test("a rejected refresh does not prevent subsequent refreshes", async (context)
         "function",
     );
     assert.deepEqual(fixture.failures, ["broken-module"]);
+});
+
+test("module resource disposers run on disable and failed bootstrap", async (context) => {
+    const fixture = await createFixture(context);
+    let releases = 0;
+    fixture.routeCapabilities.set("host:cleanup", () => {
+        releases += 1;
+    });
+    await fixture.addModule(
+        "resource-module",
+        `export function bootstrapModule(ctx) { ctx.registerDisposer(() => ctx.getCapability('host:cleanup')()); }`,
+    );
+    await fixture.extensions.refresh();
+    fixture.enabled.delete("resource-module");
+    await fixture.extensions.refresh();
+    assert.equal(releases, 1);
+    fixture.enabled.add("resource-module");
+    await fixture.extensions.refresh();
+    fixture.enabled.delete("resource-module");
+    await fixture.extensions.refresh();
+    assert.equal(releases, 2);
+    await fixture.addModule(
+        "failed-resource",
+        `export function bootstrapModule(ctx) { ctx.registerDisposer(() => ctx.getCapability('host:cleanup')()); throw new Error('bootstrap_failed'); }`,
+    );
+    await fixture.extensions.refresh();
+    assert.equal(releases, 3);
+    assert.ok(fixture.failures.includes("failed-resource"));
+});
+
+test("failed disabled configuration bootstrap removes partial routes and resources", async (context) => {
+    const fixture = await createFixture(context);
+    let releases = 0;
+    fixture.routeCapabilities.set("host:cleanup", () => {
+        releases += 1;
+    });
+    await fixture.addModule(
+        "disabled-resource",
+        `export function registerDisabledApiRoutes(ctx) {
+        ctx.registerApiGet('/api/v1/modules/disabled-resource/config', (_req, res) => { res.end('{}'); }, { allowWhenDisabled: true });
+        ctx.registerDisposer(() => ctx.getCapability('host:cleanup')());
+        throw new Error('config_failed');
+    }`,
+        false,
+        true,
+    );
+    fixture.enabled.delete("disabled-resource");
+    await fixture.extensions.refresh();
+    assert.equal(releases, 1);
+    const handled = await fixture.extensions.handle(
+        { method: "GET" } as IncomingMessage,
+        { end() {}, writeHead() {} } as unknown as ServerResponse,
+        new URL("http://localhost/api/v1/modules/disabled-resource/config"),
+    );
+    assert.equal(handled, false);
 });

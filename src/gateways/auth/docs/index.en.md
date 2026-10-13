@@ -127,3 +127,7 @@ New external accounts use the provider namespace in both the local account key a
 ## Browser media policy
 
 Authenticated pages permit media from same-origin routes and browser-generated `blob:` URLs. This allows trusted UI clients to play authenticated audio responses without permitting arbitrary remote media origins.
+
+### Module lifecycle integration
+
+`auth:registerKeyringDataOwner(ownerId, purge)` is a public server capability. It rejects duplicate owner IDs and returns an identity-checked disposer. A module uses its stable `module:<id>` owner and registers the disposer with `ctx.registerDisposer`; purge receives the normalized account ID. Purge only keyring-dependent state, preserving account identity and unrelated shared resources.

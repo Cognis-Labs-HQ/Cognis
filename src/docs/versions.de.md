@@ -50,7 +50,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.13` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.20` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.21` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
@@ -68,7 +68,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.69`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.70`  |
 | Share                 | `src/gateways/share/`         | `1.7.48`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
@@ -84,13 +84,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version   |
 | ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.117` |
+| Core Package | `src/core/` | `0.3.118` |
 
 ## API
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.6.5` |
+| API Server | `src/api/` | `0.6.6` |
 
 ## Werkzeuge
 

@@ -21,11 +21,9 @@ Der Bootstrap stellt Verhalten ausschließlich über seinen begrenzten Kontext b
 <!-- prettier-ignore -->
 ```js
 export async function bootstrapModule(ctx) {
-  const remove = ctx.flow.inject('construct-example-page', 'content', {
-    id: 'example-module.content',
-    handler: async () => ({ ready: true }),
-  });
-  return () => remove();
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
 }
 ```
 
@@ -39,9 +37,9 @@ Jedes Modul verfügt über einen menschenlesbaren `id` und einen RFC 4122 `uuid`
 
 ### Repository-Vertrag
 
-Ein Git-Repository liefert ein Modul. Sein Stamm enthält `manifest.json`, `package.json`, `routes.json` und die optionalen Orchestrator-Einstiegspunkte `bootstrap.js`, `api/index.js`, `ui/index.js` und `cli/index.js`. `bootstrap.js` ist der einzige Systemintegrationseintrag und erhält `ctx`; es darf Dateien innerhalb seines Repositorys sowie vom Deployment bereitgestellte Cognis-Laufzeitressourcen importieren. Exportierte Fähigkeiten und Flow-Stufen sollten weiterhin `ctx` verwenden, damit die Lebenszyklusbereinigung sie verfolgen kann. Sicherheitsrelevante Registrierungen bleiben eingeschränkt und erfordern `privileged: true`; gewöhnliche Importe, API-URLs und gemeinsame Stilklassen machen ein Modul nicht privilegiert.
+Ein Git-Repository liefert ein Modul. Sein Stamm enthält `manifest.json`, `package.json`, `routes.json` und den erforderlichen Einstieg `bootstrap.js` sowie optionale Einstiegspunkte `api/index.js`, `ui/index.js` und `cli/index.js`. `bootstrap.js` ist der einzige Systemintegrationseintrag und erhält `ctx`; es darf nur Dateien seines Repositorys importieren; Verhalten des Hosts und fremder Komponenten wird über ctx-Fähigkeiten und Flows bezogen. Exportierte Fähigkeiten und Flow-Stufen müssen `ctx` verwenden, damit die Lebenszyklusbereinigung sie verfolgen kann. Sicherheitsrelevante Registrierungen bleiben eingeschränkt und erfordern `privileged: true`; gewöhnliche Importe, API-URLs und gemeinsame Stilklassen machen ein Modul nicht privilegiert.
 
-`package.json` muss `"type": "module"` verwenden und seine Version muss genau mit `manifest.json` übereinstimmen. `routes.json` ist immer vorhanden und enthält ein Array, einschließlich eines leeren Arrays, wenn das Modul keine Routen beansprucht. Jeder deklarierte Einstiegspunkt muss innerhalb des Checkouts in eine reguläre Datei aufgelöst werden. Behalten Sie die Orchestrierung in den deklarierten Einstiegspunkten bei und platzieren Sie frei organisierten Implementierungscode dahinter; Cognis importiert keinen anderen Modulpfad.
+`package.json` muss `"type": "module"` verwenden und seine Version muss genau mit `manifest.json` übereinstimmen. `routes.json` ist immer vorhanden und enthält ein Array, einschließlich eines leeren Arrays, wenn das Modul keine Routen beansprucht. Jeder deklarierte Einstiegspunkt muss innerhalb des Checkouts in eine reguläre Datei aufgelöst werden. Behalten Sie die Orchestrierung in den deklarierten Einstiegspunkten bei und platzieren Sie Implementierungscode in den vorgeschriebenen Verzeichnissen; Cognis importiert keinen anderen Modulpfad.
 
 Jedes externe Modul deklariert `entrypoints.bootstrap`. Cognis importiert nur diese Datei und ruft `bootstrapModule(ctx)` auf, wenn das Modul aktiviert ist. Der bereichsbezogene Kontext bietet API-Routenregistrierung, statische Modulverzeichnisse, SPA-Routen, Navigation, Einstellungen und Seitenerweiterungen, Fähigkeitsbeiträge, Flow-Erstellung und Stufeninjektion. Platzieren Sie die lokalisierte Dokumentation unter `docs/` und die Versionshinweise für Module unter `docs/changelog/`. Beide werden aus installierten Repositorys ohne Registrierung des Kernpfads erkannt. Browser-Assets bleiben Eigentum des Moduls und werden nur über `ctx.registerStaticDir` verfügbar gemacht. Ein Modul kann einen dedizierten Browser-Fähigkeitsanbieter mit `ctx.registerCapabilityProvider({ scriptUrl, providesCapabilities })` veröffentlichen; Cognis nimmt ihn nur in den Anbieterkatalog auf, solange das Modul aktiviert ist, und entfernt ihn bei der Lebenszyklusbereinigung.
 
@@ -134,3 +132,17 @@ Ein Modul, das Konfigurationsoberflächen an anderer Stelle in Cognis beiträgt,
 ### Öffentliche Capabilities
 
 Externe Module veröffentlichen gemeinsame Server-Capabilities mit `ctx.contributePublicCapability(key, value)`. `ctx.getCapability` sowie `ctx.capabilities.get`, `has` und `require` beziehen öffentliche Capabilities aus der aktuellen Systemregistrierung, auch wenn der Anbieter erst nach dem Verbraucher startet. Private System-Capabilities bleiben verborgen; `system:ctx` wird Modulen niemals bereitgestellt. Aktualisierungen laufen nacheinander, damit Abbau und Registrierung sich nicht überschneiden. Das Deaktivieren entfernt die Beiträge des Anbieters; das erneute Aktivieren veröffentlicht sie wieder. Eine fehlgeschlagene Aktualisierung meldet dem Aufrufer einen Fehler, ohne spätere Aktualisierungen zu blockieren.
+
+### Entwicklung aus der Vorlage
+
+Alle neuen Module müssen aus [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template) entstehen: eigene Produkt-UUID sowie ersetzte Identität, Repositoryangaben, Grafiken und Beispiele. AGENTS.md und Prüfskripte beibehalten. Der [Beitragsstandard](/docs/standard) schreibt API-Handler in `api/routes/<domain>/index.js`, CSS in `ui/styles/`, Vorlagen in `ui/templates/`, schichteigene Tests und Release-Notizen in `docs/changelog/` vor. Jitsi Meet erprobt diese Struktur bei stabilen Routen-URLs. Importe bleiben repositorylokal; fremde Komponenten werden ausschließlich über ctx genutzt.
+
+### Lebenszyklus der Registrierungen
+
+Serverregistrierungen mit Rückgabebereinigung werden mit `ctx.registerDisposer(dispose)` verbunden. Cognis führt sie bei Aktualisierung, Deaktivierung und fehlgeschlagenem Bootstrap in umgekehrter Reihenfolge aus, auch für deaktivierte Konfigurationseinstiege. Die öffentlichen Verträge `system:health:contribute(id, callback)` und `auth:registerKeyringDataOwner(id, purge)` liefern eigene Disposer. Keyring-Bereinigung setzt nur abhängige Daten zurück und löscht weder Kontenidentität noch fremde geteilte Inhalte.
+
+Browseranbieter exportieren `mountProvider(scopedUiCtx)` statt beim Import Fähigkeiten oder Listener anzulegen. Der begrenzte Kontext besitzt Fähigkeiten, erstellte Flows und Stufenhooks; sein AbortSignal beendet Listener, ein zurückgegebener Disposer andere Ressourcen. Katalogabgleich mountet eine URL nur einmal, auch wenn beide Kataloge sie enthalten, und mountet gecachte Skripte nach erneuter Aktivierung wieder. `ui:navbarLinks.contribute(id, { href, label, visible })` registriert Navigation beim Host. Routenseiten behalten ihren `mount`/`unmount`-Vertrag.
+
+### Befehls- und Versionsumfang
+
+Npm-Skripte laufen im Repository; `npm --prefix <module-checkout> test` wählt es ausdrücklich. Installierte Modulaktionen verwenden `cognisctl modules:<module-id>:<action>`. Dies sind getrennte Schnittstellen. Erforderliche Fähigkeiten steuern Verfügbarkeit; eine angezeigte getestete Anbieterversion ist Diagnoseinformation, keine erzwungene Versionsgrenze. Tatsächliche Abhängigkeiten deklarieren und installierte öffentliche Verträge testen; keine nicht implementierten Versionsprüfungen versprechen.

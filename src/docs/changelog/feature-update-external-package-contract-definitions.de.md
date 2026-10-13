@@ -668,6 +668,14 @@ Deckgalerien verwenden `/study/<iso>/flashcards`, einzelne Decks `/study/<iso>/f
 
 Die gemeinsame Zeigerstil-Schaltfläche verwendet die normale Themen-Vordergrundfarbe (`--text`) für Maus-, Laser- und Fadenkreuzsymbole, auch auf eingebetteten Komponentenseiten. Die Zeigerfarben der Teilnehmer bleiben unverändert.
 
+## Modulstandard aus der Vorlage
+
+Neue Module müssen aus der Modulvorlage entstehen. Domänenrouten, Styles, Markup, Tests und Release-Notizen erhalten verbindliche Pfade; Beitragsregeln werden synchronisiert und der veraltete Dokumentationsstandard durch Beispiele und aktuelle Verträge ersetzt.
+
+## Begrenzter Ressourcenlebenszyklus
+
+Eigene Browseranbieter, Katalogabgleich und Navigation sowie freigebbare Health- und öffentliche Keyring-Registrierungen hinzufügen. Fehlgeschlagener Bootstrap entfernt Teilressourcen und Routen. Messages unterstützt getrennte Räume und stabile gespeicherte Raumidentitäten ohne Umbenennung oder Teilnehmer-Neuzuordnung.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -745,5 +753,4 @@ Die gemeinsame Zeigerstil-Schaltfläche verwendet die normale Themen-Vordergrund
 - [7dba3a24](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dba3a243376b31550328461840e869787092e5e)
 - [119e9b3d](https://github.com/Cognis-Labs-HQ/Cognis/commit/119e9b3d21706fc6a65b049650ee484222f916b0)
 - [c9715ab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/c9715ab3d9b044e06a394e09fdda27ec5f60cf4d)
-
 - [89434568](https://github.com/Cognis-Labs-HQ/Cognis/commit/89434568d0d5865a260e3f515c5236eec7f940bd)

@@ -51,6 +51,11 @@ function createFlowEngine() {
             capabilityValues.set(normalizedId, value);
             return true;
         },
+        remove(id, value) {
+            const normalizedId = String(id ?? "").trim();
+            if (capabilityValues.get(normalizedId) !== value) return false;
+            return capabilityValues.delete(normalizedId);
+        },
         get(id) {
             return capabilityValues.get(String(id ?? "").trim());
         },
@@ -88,7 +93,12 @@ function createFlowEngine() {
         for (const stageId of normalizedStages) {
             stageHooks.set(stageId, new Map());
         }
-        flows.set(normalizedId, { stages: normalizedStages, stageHooks });
+        const registration = { stages: normalizedStages, stageHooks };
+        flows.set(normalizedId, registration);
+        return () => {
+            if (flows.get(normalizedId) === registration)
+                flows.delete(normalizedId);
+        };
     }
 
     function extendFlow(flowId, stageId, hookMeta, handler) {

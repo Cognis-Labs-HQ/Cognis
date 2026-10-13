@@ -21,11 +21,9 @@ Bootstrap menyumbangkan perilaku hanya melalui konteks terbatasnya dan mengembal
 <!-- prettier-ignore -->
 ```js
 export async function bootstrapModule(ctx) {
-  const remove = ctx.flow.inject('construct-example-page', 'content', {
-    id: 'example-module.content',
-    handler: async () => ({ ready: true }),
-  });
-  return () => remove();
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
 }
 ```
 
@@ -39,9 +37,9 @@ Setiap modul memiliki `id` yang dapat dibaca manusia dan RFC 4122 `uuid`. ID dap
 
 ### Kontrak repositori
 
-Satu repositori Git mengirimkan satu modul. Akarnya berisi `manifest.json`, `package.json`, `routes.json`, dan titik masuk orkestrator opsional `bootstrap.js`, `api/index.js`, `ui/index.js`, dan `cli/index.js`. `bootstrap.js` adalah satu-satunya entri integrasi sistem dan menerima `ctx`; berkas ini dapat mengimpor berkas dalam repositorinya serta sumber daya runtime Cognis yang disediakan deployment. Kapabilitas dan tahap alur yang diekspor tetap sebaiknya menggunakan `ctx` agar pembersihan siklus hidup dapat melacaknya. Pendaftaran sensitif terhadap keamanan tetap dibatasi dan memerlukan `privileged: true`; impor biasa, URL API, dan kelas gaya bersama tidak membuat modul berprivilege.
+Satu repositori Git mengirimkan satu modul. Akarnya berisi `manifest.json`, `package.json`, `routes.json`, dan titik masuk wajib `bootstrap.js` serta titik masuk opsional `api/index.js`, `ui/index.js`, dan `cli/index.js`. `bootstrap.js` adalah satu-satunya entri integrasi sistem dan menerima `ctx`; berkas ini hanya boleh mengimpor berkas dalam repositorinya; perilaku host dan komponen lain diperoleh melalui kapabilitas ctx dan alur. Kapabilitas dan tahap alur yang diekspor wajib menggunakan `ctx` agar pembersihan siklus hidup dapat melacaknya. Pendaftaran sensitif terhadap keamanan tetap dibatasi dan memerlukan `privileged: true`; impor biasa, URL API, dan kelas gaya bersama tidak membuat modul berprivilege.
 
-`package.json` harus menggunakan `"type": "module"` dan versinya harus sama persis dengan `manifest.json`. `routes.json` selalu ada dan berisi array, termasuk array kosong ketika modul tidak mengklaim rute. Setiap titik masuk yang dinyatakan harus diselesaikan menjadi file biasa di dalam kasir. Pertahankan orkestrasi di titik masuk yang dinyatakan dan tempatkan kode implementasi yang terorganisir secara bebas di belakangnya; Cognis tidak mengimpor jalur modul lainnya.
+`package.json` harus menggunakan `"type": "module"` dan versinya harus sama persis dengan `manifest.json`. `routes.json` selalu ada dan berisi array, termasuk array kosong ketika modul tidak mengklaim rute. Setiap titik masuk yang dinyatakan harus diselesaikan menjadi file biasa di dalam kasir. Pertahankan orkestrasi di titik masuk yang dinyatakan dan tempatkan kode implementasi di direktori tanggung jawab yang ditentukan; Cognis tidak mengimpor jalur modul lainnya.
 
 Setiap modul eksternal mendeklarasikan `entrypoints.bootstrap`. Cognis hanya mengimpor file tersebut dan memanggil `bootstrapModule(ctx)` saat modul diaktifkan. Konteks cakupan menyediakan registrasi rute API, direktori statis modul, rute SPA, navigasi, pengaturan dan ekstensi halaman, kontribusi kemampuan, pembuatan aliran, dan injeksi tahapan. Letakkan dokumentasi yang dilokalkan di bawah `docs/` dan catatan rilis modul di bawah `docs/changelog/`; keduanya ditemukan dari repositori yang diinstal tanpa registrasi jalur inti. Aset browser tetap menjadi milik modul dan hanya diekspos melalui `ctx.registerStaticDir`. Modul dapat menerbitkan penyedia kemampuan browser khusus dengan `ctx.registerCapabilityProvider({ scriptUrl, providesCapabilities })`; Cognis memasukkannya ke katalog penyedia hanya selama modul diaktifkan dan menghapusnya saat pembersihan siklus hidup.
 
@@ -134,3 +132,17 @@ Modul yang menyediakan permukaan konfigurasi di bagian lain Cognis dapat mendekl
 ### Pencarian kapabilitas publik
 
 Modul eksternal menerbitkan kapabilitas server bersama melalui `ctx.contributePublicCapability(key, value)`. `ctx.getCapability` serta `ctx.capabilities.get`, `has`, dan `require` mengambil kapabilitas publik dari registri sistem yang aktif, termasuk kapabilitas yang diterbitkan setelah konsumen selesai melakukan bootstrap. Kapabilitas sistem privat tetap tersembunyi; `system:ctx` tidak pernah diberikan kepada modul. Permintaan penyegaran berjalan berurutan agar pembongkaran dan pendaftaran tidak bertumpang tindih. Menonaktifkan penyedia menghapus kontribusinya; mengaktifkannya kembali menerbitkan ulang kontribusi tersebut. Penyegaran yang gagal mengembalikan kesalahan kepada pemanggil tanpa menghalangi penyegaran berikutnya.
+
+### Pengembangan dari templat
+
+Semua modul baru wajib berasal dari [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template), dengan UUID produk baru serta identitas, repositori, gambar dan contoh yang diganti. Pertahankan AGENTS.md dan skrip validasi. Ikuti [standar kontributor](/docs/standard): handler API di `api/routes/<domain>/index.js`, CSS di `ui/styles/`, templat di `ui/templates/`, pengujian milik lapisan, dan catatan rilis di `docs/changelog/`. Jitsi Meet membuktikan struktur ini tanpa mengubah URL publik. Impor tetap lokal pada repositori; gunakan ctx untuk komponen lain.
+
+### Siklus hidup registrasi
+
+Pasang fungsi pembersihan registrasi server dengan `ctx.registerDisposer(dispose)`. Cognis menjalankannya dalam urutan terbalik saat refresh, penonaktifan dan bootstrap gagal, termasuk entry konfigurasi nonaktif. Kontrak publik `system:health:contribute(id, callback)` dan `auth:registerKeyringDataOwner(id, purge)` mengembalikan disposer miliknya. Pembersihan keyring hanya mereset data yang bergantung padanya, bukan identitas akun atau konten bersama yang tidak terkait.
+
+Skrip penyedia browser mengekspor `mountProvider(scopedUiCtx)`, bukan mendaftarkan kapabilitas atau listener saat diimpor. Konteks terbatas memiliki kapabilitas, alur dan hook tahap; AbortSignal membatalkan listener, dan disposer yang dikembalikan melepaskan sumber daya lain. Rekonsiliasi katalog memasang setiap URL sekali meski muncul di kedua katalog, dan memasang kembali skrip yang dicache setelah aktif ulang. Gunakan `ui:navbarLinks.contribute(id, { href, label, visible })` untuk tautan navigasi milik host. Halaman rute tetap memakai kontrak `mount`/`unmount` sendiri.
+
+### Lingkup perintah dan versi
+
+Skrip npm berjalan di repositorinya; `npm --prefix <module-checkout> test` memilihnya secara eksplisit. Operasi modul terpasang memakai `cognisctl modules:<module-id>:<action>`. Keduanya berbeda. Deklarasi kapabilitas wajib mengendalikan ketersediaan; versi penyedia yang diuji adalah informasi diagnostik, bukan batas versi yang dipaksakan. Deklarasikan dependensi sebenarnya dan uji kontrak publik terpasang; jangan menjanjikan pemeriksaan versi yang tidak dijalankan kode.

@@ -87,3 +87,7 @@ Anbieter müssen die Capability-ID in ihrer Komponentendokumentation veröffentl
 ## Eigentümerstufen je Aufruf
 
 Core 0.3.109 ergänzt optionale aufrufbezogene `handlers` in `FlowRunOptions`. Jede Eigentümerfunktion läuft vor Erweiterungshooks ihrer registrierten Stufe, trägt ihr Ergebnis zu `stageResults` bei und verwendet nur die `data` dieses Aufrufs. Unbekannte Stufen werden vor Ausführung abgewiesen. Ein Fehler stoppt nachfolgende Stufen. Komponenten halten die Speicherung in ihrer eigenen Transaktion, damit Hook-Fehler Änderungen zurückrollen. Aufrufbezogene Funktionen werden nicht als globale Hooks gespeichert.
+
+### Eigene Server- und Browserressourcen
+
+Der externe Bootstrap-Kontext unterstützt `registerDisposer(dispose)`. Bereinigung erfolgt nach Deaktivierung, Aktualisierung oder Bootstrap-Fehler in umgekehrter Registrierungsreihenfolge; Fehler werden protokolliert und weitere Bereinigung läuft weiter. Browseranbieter exportieren `mountProvider(scopedUiCtx)`, registrieren eigene Fähigkeiten und Flows im Scope, binden Listener an dessen Signal und liefern weitere Bereinigung. Der Loader gleicht beide Kataloge ab und aktiviert gecachte Skripte erneut; `ui:navbarLinks` besitzt das Navigations-DOM.

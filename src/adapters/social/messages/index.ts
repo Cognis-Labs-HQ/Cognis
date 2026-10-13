@@ -1,3 +1,4 @@
+import { createGroupChatResolver } from "./group-chat-resolution.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -407,85 +408,7 @@ export async function bootstrapSocialAdapter(
      */
     ctx.capabilities.contribute(
         "social:messages:resolveGroupChatUrl",
-        async (input: {
-            usernames: string[];
-            title?: string | null;
-            createdByAccountId?: string;
-            allowSingleMember?: boolean;
-        }): Promise<{
-            roomId: string;
-            url: string;
-            reused: boolean;
-        }> => {
-            const normalizedUsernames = Array.from(
-                new Set(
-                    (Array.isArray(input.usernames) ? input.usernames : [])
-                        .map((username) =>
-                            String(username ?? "")
-                                .trim()
-                                .replace(/^@+/, "")
-                                .toLowerCase(),
-                        )
-                        .filter(Boolean),
-                ),
-            );
-            const accountIds: string[] = [];
-            if (input.createdByAccountId) {
-                accountIds.push(String(input.createdByAccountId));
-            }
-            for (const username of normalizedUsernames) {
-                const profile = await profileStore.getProfileByHandle(username);
-                if (!profile?.accountId) continue;
-                if (!accountIds.includes(profile.accountId)) {
-                    accountIds.push(profile.accountId);
-                }
-            }
-            const minAccounts = input.allowSingleMember ? 1 : 2;
-            if (accountIds.length < minAccounts) {
-                throw new Error(
-                    minAccounts === 1
-                        ? "At least one valid participant is required for group chat resolution."
-                        : "At least two valid participants are required for group chat resolution.",
-                );
-            }
-
-            const title =
-                typeof input.title === "string" && input.title.trim().length > 0
-                    ? input.title.trim()
-                    : null;
-            const existing =
-                await messagesStore.findGroupByExactMembers(accountIds);
-            if (existing) {
-                return {
-                    roomId: existing.id,
-                    url: `/messages/${encodeURIComponent(existing.id)}`,
-                    reused: true,
-                };
-            }
-
-            const ownerAccountId = String(
-                input.createdByAccountId ?? accountIds[0],
-            );
-            const room = await messagesStore.createRoom(
-                "group",
-                title,
-                ownerAccountId,
-            );
-            await messagesStore.generateAndStoreRoomKey(room.id);
-            for (const accountId of accountIds) {
-                await membership.add({
-                    roomId: room.id,
-                    actorAccountId: ownerAccountId,
-                    userAccountId: accountId,
-                    role: accountId === ownerAccountId ? "owner" : "member",
-                });
-            }
-            return {
-                roomId: room.id,
-                url: `/messages/${encodeURIComponent(room.id)}`,
-                reused: false,
-            };
-        },
+        createGroupChatResolver(messagesStore, profileStore, membership),
     );
 
     ctx.capabilities.contribute("social:messages:uiResources", {

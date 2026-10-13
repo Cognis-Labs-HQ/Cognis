@@ -127,3 +127,7 @@ Akun eksternal baru memakai ruang nama penyedia pada kunci akun lokal dan handle
 ## Kebijakan media peramban
 
 Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL `blob:` yang dibuat peramban. Dengan demikian, klien UI tepercaya dapat memutar respons audio terautentikasi tanpa mengizinkan sumber media jarak jauh yang sewenang-wenang.
+
+### Integrasi siklus hidup modul
+
+`auth:registerKeyringDataOwner(ownerId, purge)` adalah kapabilitas server publik. ID pemilik duplikat ditolak dan disposer memeriksa identitas registrasinya. Modul memakai `module:<id>` dan memasang disposer dengan `ctx.registerDisposer`; purge menerima ID akun ternormalisasi. Bersihkan hanya keadaan yang bergantung pada keyring sambil mempertahankan identitas akun serta sumber daya bersama lainnya.

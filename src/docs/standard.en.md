@@ -1,127 +1,47 @@
-# Documentation Writing Standard
+# Contributor Standard
 
-## Overview
+Cognis components use predictable concern directories, public ctx contracts and localized documentation so contributors can extend a component without coupling it to another implementation.
 
-This document defines how documentation is written and organised in the Cognis codebase. Every gateway, adapter, module, and platform-level component ships its own documentation as Markdown files, discovered automatically by the docs route and served through the in-app documentation browser.
+## Usage examples
 
-The goal is consistency: a contributor who reads any doc should immediately recognise the section structure, find what they need, and know how to write a new doc that fits the same pattern. Docs are written for developer contributors, not end users. Assume the reader understands HTTP, Node.js, and TypeScript.
+Create an external module from [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template). Assign the new product its own UUID, replace template metadata, and retain its contributor guidance and validation tools. Jitsi Meet is the reference integration for the structure and lifecycle contracts below.
 
-Documentation lives alongside the code it describes. Gateway docs go in `src/gateways/<id>/docs/`, adapter docs go in `src/adapters/<gateway-id>/<adapter-id>/docs/`, and platform-level cross-cutting docs go in `src/docs/`. The docs route auto-discovers all `docs/` directories at startup so adding a new doc requires no central registration.
-
-## Responsibilities
-
-- Define the canonical section structure for all component documentation.
-- Define the canonical root layout for modules, gateways, adapters, and core-facing surfaces.
-- Define file naming conventions and language requirements.
-- Define depth tiers so authors know how detailed each doc should be.
-
-Not responsible for: enforcing docs exist (that is a code review concern), automated spell checking, or link validation.
-
-## Architecture
-
-### Canonical component root layout
-
-New or reorganised components should converge on the same top-level concern names so contributors do not have to relearn each directory tree. When a component exposes a documentation, server, or browser surface, reserve the matching `docs/`, `api/`, or `ui/` directory name at that component root and keep the entry file predictable.
-
-| Family                | Root                           | Canonical roots        | Notes                                                                                                                                                              |
-| --------------------- | ------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Platform / core layer | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` holds developer docs, `src/api/` HTTP/server code, and `src/ui/` browser assets. `src/core/` remains the provider-agnostic contract and service layer. |
-| Gateway               | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Keep gateway-owned server handlers, route registration, and bootstrap helpers under `api/`; keep admin/browser assets under `ui/`.                                 |
-| Adapter               | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Use `api/` for adapter-owned bootstrap or server helpers and `ui/` for adapter-owned browser assets when the adapter exposes them.                                 |
-| Module                | `<module-repository>/`         | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
-
-Support directories such as `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, and `reuse/` may live beside those roots, but they complement them and must not replace them. For new or reorganised components, prefer `api/routes/` over a top-level `routes/` sibling and `docs/index.<lang>.md` over custom documentation entry filenames.
-
-### Section structure
-
-Every doc file is a Markdown file. Sections appear in this order; omit a section only when explicitly noted in the depth tier rules:
-
-**1. `# Component Name`** — A clear H1 title. Use the full readable name of the component, not an identifier string (e.g. `# Authentication Gateway`, not `# auth`).
-
-**2. `## Overview`** — Two to four paragraphs aimed at a developer new to the codebase. Explain what this component is, what problem it solves, and why it exists in Cognis. Avoid jargon; save technical details for Architecture. Example:
-
-> The Authentication Gateway is the single point of entry for all login and identity operations in Cognis. It decouples the rest of the platform from any specific credential provider by sitting between route handlers and the concrete auth adapters. Adding a new identity provider — LDAP, SAML, or a custom in-house system — requires only a new adapter; no route handler needs to change.
-
-**3. `## Responsibilities`** — A bullet list of what this component owns and is accountable for. Follow the list with a short note starting `Not responsible for:` that draws a clear boundary, e.g. `Not responsible for: storing user profile data (that is the profile gateway's concern)`.
-
-**4. `## Architecture`** — Key design decisions, data flow, and key interfaces. Mix prose with file path citations like `src/gateways/auth/gateway.ts` and short code snippets showing key interfaces or type signatures where illuminating. This section should answer the question "how does it work at a high level?"
-
-**5. `## Configuration`** — Environment variables or manifest fields an operator touches when deploying or configuring this component. Present as a table with columns `Variable | Default | Description`. Omit this section entirely if there is nothing an operator configures.
-
-**6. `## Extension Points`** — How another contributor can extend or plug into this component: what interface to implement, what method registers the extension, what the lifecycle looks like. Omit if the component has no extension points.
-
-**7. `## API Routes`** — A table of HTTP routes with columns `Method | Path | Description | Auth`. Include all routes registered by this component. Omit if the component registers no routes.
-
-### Depth tiers
-
-Different component types warrant different depth:
-
-| Tier            | Components                     | Required sections                                             |
-| --------------- | ------------------------------ | ------------------------------------------------------------- |
-| Platform / core | `src/docs/` platform docs      | All sections fully                                            |
-| Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes      |
-| Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                       |
-| Module          | `<module-repository>/docs/`    | Full standard; include API Routes when the module serves them |
-
-### Code snippets
-
-- Use two-space indentation in all code blocks.
-- Use single quotes for TypeScript/JavaScript string literals.
-- Do not add comments to code snippets unless they explain a non-obvious constraint.
-- File path references use the repo-relative form: `src/gateways/auth/gateway.ts`.
-
-### Tables
-
-Use pipe syntax with a header separator row:
-
-```
-| Column A | Column B | Column C |
-| -------- | -------- | -------- |
-| value    | value    | value    |
+```sh
+npm --prefix <module-checkout> test
+cognisctl modules:jitsi-meet:ping
 ```
 
-## Configuration
+## Technical specification
 
-This standard applies to all documentation in the Cognis repository. No runtime configuration is required.
+### Component ownership
 
-## Extension Points
+Core contracts live in `src/core/`; gateways in `src/gateways/<id>/`; adapters in `src/adapters/<gateway>/<id>/`; external modules in their own repositories. Each component owns its server code, browser assets, CLI commands, documentation and cleanup. Imports stay inside the component; obtain cross-component behavior through ctx capabilities and named staged flows. Optional providers must be removable without breaking consumers.
 
-To add a new doc for a component:
+### Required module layout
 
-1. Create a `docs/` subdirectory inside the component directory.
-2. Add `index.en.md` as the primary English doc following the section structure above.
-3. Add translations as `index.de.md`, `index.ja.md`, `index.id.md` with values in the target language.
-4. The docs route discovers the file automatically at the next server start.
+The concern paths below are mandatory when a module implements that surface. Do not create empty directories for unsupported surfaces. Root `manifest.json`, `package.json`, `routes.json` and `bootstrap.js` are required. Bootstrap wires dependencies and registers behavior; domain handlers validate and orchestrate while stores and capabilities execute work. A declared `ui/index.html` may serve as a page shell. Keep existing route URLs stable when reorganizing files.
 
-For platform-level docs that span multiple components, add `<name>.en.md` directly in `src/docs/` (e.g. `src/docs/acl-matrix.en.md`). These are served at the slug `<name>`.
+| Path                                              | Responsibility        |
+| ------------------------------------------------- | --------------------- |
+| `api/routes/<domain>/index.js`                    | HTTP                  |
+| `api/<feature>/`, `api/reuse/`                    | Server                |
+| `ui/app/<page>/index.js`, `ui/<feature>/`         | Browser               |
+| `ui/styles/`, `ui/styles/reuse/`                  | CSS                   |
+| `ui/templates/`                                   | HTML                  |
+| `ui/languages/<locale>/strings.xml`               | i18n                  |
+| `api/tests/`, `ui/tests/`, `cli/tests/`, `tests/` | Tests                 |
+| `cli/index.js`                                    | CLI                   |
+| `docs/`, `docs/changelog/`                        | Markdown              |
+| `data/`, `assets/`, `scripts/`, `tooling/`        | Data, assets, tooling |
 
-### File naming
+### Reusable code and checks
 
-| Location                   | Primary file   | Translation files                              |
-| -------------------------- | -------------- | ---------------------------------------------- |
-| Platform (`src/docs/`)     | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
-| Component (`docs/` subdir) | `index.en.md`  | `index.de.md`, `index.ja.md`, `index.id.md`    |
+Use `reuse/` only for an abstraction consumed across features within its owning layer. Keep feature logic beside its feature, and use generic filenames inside domain directories. Do not create `shared/`, `utils/`, `helpers/` or `common/` directories. Keep readable declaration spacing and a 1000-line source ceiling. Structure checks reject misplaced styles and flat route-handler files; public-contract tests cover authorization, failure rollback, repeated mounts and enable-disable-enable. Npm scripts belong to the checkout: use `npm --prefix <module-checkout> test`. Installed operational commands use `cognisctl modules:<module-id>:<action>`.
 
-All four languages (en, de, ja, id) are required for any string visible in the UI. The docs browser falls back to `.en.md` when a translation is absent.
+### Documentation contract
 
-### Language requirements
+Every integration document begins with an H1 of at most 30 characters and an informative opening paragraph. Its first H2 gives concrete public-contract usage examples; the next H2 starts the technical specification. Follow `.github/DOCUMENTATION_TEMPLATE.<locale>.md`. Use H3 sections for inputs, outputs, validation, permissions, errors, state changes, persistence, security, extension stages and cleanup. Document required capabilities, optional dependencies, supported versions and failure behavior. Standard documents describe the current contract, not release history or individual bug fixes.
 
-Every string value in a translated doc must be written in the language that file represents. The only exceptions are brand names (`Cognis`), universal technical acronyms (`LDAP`, `TLS`, `STARTTLS`), format placeholders, and the Latin tagline (`Disce. Loquere. Vive.`).
+### Localization and release integrity
 
-When changing a Markdown doc that has translated variants, update the corresponding language files in the same change so all supported languages stay in sync.
-
-## Function documentation convention
-
-The hidden contributor template at `.github/DOCUMENTATION_TEMPLATE.en.md` defines the mandatory opening sequence for every real documentation file. Begin directly after the H1 with an informative statement of what the documented function or surface accomplishes. The next H2 contains concrete usage examples for imports, capability lookups, route calls, configuration, and expected results. The following H2 begins the exhaustive technical specification; place all inputs, outputs, lifecycle behavior, validation, authorization, errors, side effects, persistence, security, cleanup, and extension details there or in its H3 subsections. The architecture test compares every non-changelog doc's first three heading levels with the hidden template.
-
-## Review and lifecycle fixes
-
-Library 2.26.0 exposes `deleteContentPack(root)` on the public provider capability. It removes provider records, dependent cards, pack receipts and assets in one deletion-flow transaction; failed audit hooks roll back the operation. Cascaded deletions use existing Study notifications. Schemas remain available for independent authored content, and uninstall does not blacklist content, so reinstall can restore the pack.
-
-Study regressions live in their owning adapter or gateway. Shared reading extraction, complete-label segmentation, JSON responses and UI test fixtures remove duplication. Content ingestion and viewed-entry handling have focused modules; readable declaration spacing is checked without relaxing file-size limits. Sort selects use `theme-select`, and favourite controls use themed square icon-button dimensions.
-
-## Deck gallery and favourites
-
-Flashcards 1.2.0 browses all visible decks in responsive tiles with source labels, language, card totals and new/due counts. Deck search uses the existing Study search matcher; sorting and favourite filtering use the shared gateway controls and layout. Browse/detail markup lives in Flashcards-owned HTML templates. The gallery follows the clear title/metadata patterns of [Brainscape](https://www.brainscape.com/subjects) and [Knowt](https://knowt.com/explore).
-
-Library preview stars sit beside selection controls, clear of child-card hover hints. Favourite changes show success toasts, and Escape clears multi-selection unless a popup already consumed the key. Deck detail shows the deck favourite; an active review session shows the current card favourite instead. The Export action appears only when `canExport` permits the creator or an administrator, including administrators viewing provider decks.
+Provide German, English, Indonesian and Japanese variants with matching structure and genuine translations. Put an integration overview in `docs/index.<locale>.md` and focused contracts beside it. Release notes belong in `docs/changelog/` (`src/docs/changelog/` in core), with one four-language set per PR and contiguous commit links. Exclude release notes, symlinks, aliases and the manifest itself from module digests. Synchronize package, lockfile, manifest and tested dependency ceilings; regenerate and validate digests after the final shipped-file edit.

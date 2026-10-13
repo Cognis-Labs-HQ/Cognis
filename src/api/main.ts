@@ -234,6 +234,10 @@ const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/navbar-contributions.js",
+    providesCapabilities: ["ui:navbarLinks"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/feedback-capabilities.js",
     providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
 });

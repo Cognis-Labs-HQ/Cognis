@@ -21,11 +21,9 @@
 <!-- prettier-ignore -->
 ```js
 export async function bootstrapModule(ctx) {
-  const remove = ctx.flow.inject('construct-example-page', 'content', {
-    id: 'example-module.content',
-    handler: async () => ({ ready: true }),
-  });
-  return () => remove();
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
 }
 ```
 
@@ -39,9 +37,9 @@ export async function bootstrapModule(ctx) {
 
 ### リポジトリ契約
 
-1 つの Git リポジトリは 1 つのモジュールを提供します。そのルートには、`manifest.json`、`package.json`、`routes.json`、およびオプションのオーケストレーターエントリポイント `bootstrap.js`、`api/index.js`、`ui/index.js`、`cli/index.js` が含まれます。`bootstrap.js` は唯一のシステム統合エントリであり、`ctx` を受け取ります。リポジトリ内のファイルに加え、デプロイ環境が公開する Cognis ランタイムリソースをインポートできます。公開するケイパビリティとフローステージでは、ライフサイクルのクリーンアップが追跡できるよう、引き続き `ctx` を使用することを推奨します。セキュリティ上重要な登録は引き続き制限され、`privileged: true` が必要です。通常のインポート、API URL、共有スタイルクラスによってモジュールが特権扱いになることはありません。
+1 つの Git リポジトリは 1 つのモジュールを提供します。そのルートには、`manifest.json`、`package.json`、`routes.json`、および必須の `bootstrap.js` と任意のエントリポイント`api/index.js`、`ui/index.js`、`cli/index.js` が含まれます。`bootstrap.js` は唯一のシステム統合エントリであり、`ctx` を受け取ります。インポートはリポジトリ内のファイルに限定し、ホストと他のコンポーネントの動作は ctx の機能とフローを通じて取得します。公開するケイパビリティとフローステージでは、ライフサイクルのクリーンアップが追跡できるよう、必ず `ctx` を使用します。セキュリティ上重要な登録は引き続き制限され、`privileged: true` が必要です。通常のインポート、API URL、共有スタイルクラスによってモジュールが特権扱いになることはありません。
 
-`package.json` は `"type": "module"` を使用する必要があり、そのバージョンは `manifest.json` と正確に一致する必要があります。 `routes.json` は常に存在し、モジュールがルートを要求しない場合の空の配列を含む配列を含みます。宣言されたすべてのエントリ ポイントは、チェックアウト内の通常のファイルに解決される必要があります。宣言されたエントリ ポイントでオーケストレーションを維持し、その背後に自由に編成された実装コードを配置します。 Cognis は他のモジュール パスをインポートしません。
+`package.json` は `"type": "module"` を使用する必要があり、そのバージョンは `manifest.json` と正確に一致する必要があります。 `routes.json` は常に存在し、モジュールがルートを要求しない場合の空の配列を含む配列を含みます。宣言されたすべてのエントリ ポイントは、チェックアウト内の通常のファイルに解決される必要があります。宣言されたエントリ ポイントでオーケストレーションを維持し、指定された責務別ディレクトリに実装コードを配置します。 Cognis は他のモジュール パスをインポートしません。
 
 すべての外部モジュールは `entrypoints.bootstrap` を宣言します。 Cognis はそのファイルのみをインポートし、モジュールが有効な場合に `bootstrapModule(ctx)` を呼び出します。スコープ付きコンテキストは、API ルート登録、モジュール静的ディレクトリ、SPA ルート、ナビゲーション、設定とページ拡張、機能貢献、フロー作成、ステージ インジェクションを提供します。ローカライズされたドキュメントは `docs/` に、モジュール リリース ノートは `docs/changelog/` に配置します。どちらも、コア パスの登録なしで、インストールされたリポジトリから検出されます。ブラウザー アセットはモジュール所有のままであり、`ctx.registerStaticDir` を通じてのみ公開されます。モジュールは `ctx.registerCapabilityProvider({ scriptUrl, providesCapabilities })` で専用のブラウザー機能プロバイダーを公開できます。Cognis はモジュールが有効な間だけそのプロバイダーをカタログに含め、ライフサイクルのクリーンアップ時に削除します。
 
@@ -134,3 +132,17 @@ Cognis の別の場所に設定画面を提供するモジュールは、空の�
 ### 公開ケイパビリティの取得
 
 外部モジュールは `ctx.contributePublicCapability(key, value)` で共有サーバーケイパビリティを公開します。`ctx.getCapability` と `ctx.capabilities.get`、`has`、`require` は、利用側の初期化後に公開されたものも含め、現在のシステムレジストリから公開ケイパビリティを取得します。非公開のシステムケイパビリティは公開されず、`system:ctx` はモジュールに渡されません。更新要求は順番に実行され、後処理と登録が重複するのを防ぎます。提供側を無効にすると登録が削除され、再度有効にすると再公開されます。更新に失敗すると呼び出し元にエラーが返されますが、後続の更新は妨げられません。
+
+### テンプレートからの開発
+
+新しいモジュールは必ず [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template) から作成し、製品 UUID、識別情報、リポジトリ、画像、サンプルを置き換えます。AGENTS.md と検証スクリプトを保持します。[開発標準](/docs/standard) に従い、API ハンドラーを `api/routes/<domain>/index.js`、CSS を `ui/styles/`、テンプレートを `ui/templates/`、リリース文書を `docs/changelog/` に配置し、テストは所有する層に置きます。Jitsi Meet は公開 URL を維持してこの構造を実証します。インポートはリポジトリ内に限定し、他のコンポーネントには ctx を使います。
+
+### 登録のライフサイクル
+
+サーバー登録が返す後始末関数を `ctx.registerDisposer(dispose)` で登録します。Cognis は更新、無効化、Bootstrap 失敗時に逆順で実行し、無効時の設定エントリーも対象にします。公開契約 `system:health:contribute(id, callback)` と `auth:registerKeyringDataOwner(id, purge)` は所有する解除関数を返します。Keyring の後始末は依存データのみをリセットし、アカウント識別情報や無関係な共有内容を削除しません。
+
+ブラウザープロバイダーはインポート時に機能やリスナーを登録せず、`mountProvider(scopedUiCtx)` をエクスポートします。この限定コンテキストが機能、フロー、段階フックを所有し、AbortSignal がリスナーを停止し、返した解除関数が他の資源を解放します。カタログ同期は同じ URL が二つのカタログにあっても一度だけマウントし、再有効化時にキャッシュ済みスクリプトを再マウントします。ナビゲーションは `ui:navbarLinks.contribute(id, { href, label, visible })` でホストに登録します。ルートページは独自の `mount`/`unmount` 契約を維持します。
+
+### コマンドとバージョンの範囲
+
+npm スクリプトはリポジトリ内で実行します。`npm --prefix <module-checkout> test` で明示的に選択できます。導入済みモジュールの操作は `cognisctl modules:<module-id>:<action>` を使います。両者は別のインターフェースです。必須機能の宣言が可用性を決め、検証済みプロバイダーバージョンは診断情報であり強制的なバージョン制限ではありません。実際の依存関係を宣言し公開契約を検証し、コードにないバージョン判定を約束しないでください。
