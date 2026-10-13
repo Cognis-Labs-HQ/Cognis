@@ -666,6 +666,10 @@ Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. K
 
 Galeri dek memakai `/study/<iso>/flashcards`, dan dek individual memakai `/study/<iso>/flashcards/<deck-id>`. Pemilihan bahasa membuka galeri terkait tanpa bahasa lain. Dek baru menyimpan bahasanya, termasuk catatan impor; dek dari pustaka menentukannya otomatis dan menolak penetapan yang bertentangan. Sisi depan menampilkan pertanyaan, sedangkan definisi dan bacaan berada di baliknya. Kartu baru dapat langsung memulai Membaca atau Menulis. Tindakan kartu sebelumnya mempertahankan jawaban sesi tanpa mencatat ulasan kedua; kartu yang sudah benar kembali sebagai pratinjau depan dan dapat dibalik. Tautan kanonis pustaka memakai kotak bertema dan konfirmasi sebelum meninggalkan latihan.
 
+## Kontrol penunjuk mengikuti tema
+
+Tombol gaya penunjuk bersama memakai warna teks standar tema (`--text`) untuk ikon mouse, laser, dan bidik, termasuk pada halaman komponen tertanam. Warna penunjuk peserta tetap sama.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

@@ -664,6 +664,10 @@ A provider transformation set may declare `optInTag`, for example `plural`. A ca
 
 Deck galleries use `/study/<iso>/flashcards`; individual decks use `/study/<iso>/flashcards/<deck-id>`. Language selection opens the corresponding gallery and excludes other languages. New decks retain their language, including imported notes; library-backed decks infer it and reject conflicting language assignments. The front shows the question, with definitions and readings on the flipside. New cards can enter Reading or Writing immediately. A Previous card action keeps session answers without recording a second review; previously correct cards return as front previews and flip on request. Canonical Library links use themed boxes and the departure confirmation.
 
+## Theme-aware pointer controls
+
+The shared pointer-style button uses the standard theme foreground (`--text`) for mouse, laser and crosshair icons, including in embedded component pages. Participant pointer colours remain unchanged.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

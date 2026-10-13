@@ -664,6 +664,10 @@ Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, de
 
 Deckgalerien verwenden `/study/<iso>/flashcards`, einzelne Decks `/study/<iso>/flashcards/<deck-id>`. Die Sprachauswahl öffnet die entsprechende Galerie ohne andere Sprachen. Neue Decks speichern ihre Sprache einschließlich importierter Notizen; Bibliotheksdecks leiten sie ab und weisen widersprüchliche Angaben zurück. Die Vorderseite zeigt die Frage, die Rückseite Definitionen und Lesungen. Neue Karten können sofort Lesen oder Schreiben üben. Vorherige Karten behalten die Sitzungsantwort ohne zweite Bewertung; bereits richtige Karten erscheinen als Vorderseitenvorschau und lassen sich umdrehen. Kanonische Bibliothekslinks verwenden gestaltete Kästen und eine Bestätigung vor dem Verlassen.
 
+## Zeigersteuerung passend zum Thema
+
+Die gemeinsame Zeigerstil-Schaltfläche verwendet die normale Themen-Vordergrundfarbe (`--text`) für Maus-, Laser- und Fadenkreuzsymbole, auch auf eingebetteten Komponentenseiten. Die Zeigerfarben der Teilnehmer bleiben unverändert.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
