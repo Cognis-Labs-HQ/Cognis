@@ -10,20 +10,24 @@ export async function localizeModulePresentation(
     baseI18n,
     extend = extendI18n,
 ) {
-    const stringsBaseUrl = module.ui
-        ? module.ui.stringsBaseUrl
+    const presentation = module.catalogPresentation ?? module;
+    const stringsBaseUrl = presentation.ui
+        ? presentation.ui.stringsBaseUrl
         : module.id
           ? `/static/modules/${module.id}/languages`
           : undefined;
     const moduleI18n = await extend(baseI18n, stringsBaseUrl);
     module.localizedPresentation = {
-        name: resolveManifestString(moduleI18n, module.name),
-        summary: resolveManifestString(moduleI18n, module.summary),
-        description: resolveManifestString(moduleI18n, module.description),
-        categories: (module.categories ?? []).map((value) =>
+        name: resolveManifestString(moduleI18n, presentation.name),
+        summary: resolveManifestString(moduleI18n, presentation.summary),
+        description: resolveManifestString(
+            moduleI18n,
+            presentation.description,
+        ),
+        categories: (presentation.categories ?? []).map((value) =>
             resolveManifestString(moduleI18n, value),
         ),
-        tags: (module.tags ?? []).map((value) =>
+        tags: (presentation.tags ?? []).map((value) =>
             resolveManifestString(moduleI18n, value),
         ),
     };

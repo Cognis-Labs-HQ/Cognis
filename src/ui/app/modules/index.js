@@ -552,9 +552,15 @@ async function loadKnownModules(
                 name: known.name,
                 summary: known.summary,
                 description: known.description,
+                categories: known.categories,
+                tags: known.tags,
                 assets: known.assets,
             };
-            Object.assign(known, installedModule, { installed: true });
+            const catalogUi = known.ui;
+            Object.assign(known, installedModule, {
+                installed: true,
+                catalogPresentation: { ...catalogPresentation, ui: catalogUi },
+            });
             Object.assign(known, catalogPresentation);
         } else {
             modules.push(installedModule);
@@ -617,6 +623,7 @@ async function discoverConfiguredSources(
             if (known) {
                 const status = known.status;
                 Object.assign(known, module);
+                delete known.catalogPresentation;
                 if (status) known.status = status;
             } else if (!knownUuids.has(module.uuid)) {
                 modules.push(module);

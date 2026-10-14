@@ -718,6 +718,12 @@ Area gambar mengambang berada di atas dock tindakan halaman. Bagian kartu terkai
 
 Study menyediakan klasifikasi dan gaya pelafalan publik yang digunakan kembali oleh pratinjau Library, judul detail, varian, jawaban kartu, pilihan membaca, dan area gambar. IPA mempertahankan notasi aslinya; bacaan biasa mempertahankan tipografi aplikasi pilihan pengguna. Skema kalimat Jepang dan Inggris memerlukan sedikitnya dua referensi kata.
 
+## Pertahankan ID modul pada kunci
+
+Kunci terjemahan menggunakan `module.<manifest.id>.<feature>.<label>`. Pertahankan ID modul yang terdiri dari beberapa kata beserta tanda hubungnya; untuk `terms-of-service`, gunakan `module.terms-of-service.admin.title`. Sufiks setelah ID modul menggunakan kata huruf kecil yang dipisahkan titik. Metadata manifes, berkas XML, dan referensi kode harus memakai namespace yang sama.
+
+Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang tersimpan bersama berkas terjemahan katalognya ketika modul terpasang menggunakan namespace berbeda. Preferensi modul terpasang mempertahankan URL terjemahannya sendiri; penemuan katalog baru menggantikan tampilan yang tersimpan.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

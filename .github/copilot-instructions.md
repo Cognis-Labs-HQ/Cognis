@@ -637,7 +637,7 @@ Any UI avatar that represents a user must support the same interaction model eve
 - Use flat `ui.reuse.*` keys for all cross-component labels and generic phrases (for example `save`, `confirm`, `message`, `users`, `settings`, `modules`, `language`, `error`). Do not introduce `ui.reuse` sub-namespaces.
 - Basic phrases must never be monopolized inside feature, gateway, adapter, or module domains. Before adding a non-`ui.reuse.*` key, check whether the text is reusable; if yes, use or add a `ui.reuse.*` key and remove duplicates from specific domains.
 - Keep non-`ui.reuse.*` keys only for truly domain-specific strings that cannot reasonably be reused outside that domain.
-- Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
+- Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces. Preserve the manifest module ID as one segment, including hyphens: `module.terms-of-service.admin.title`. Only the suffix after the module ID uses period-delimited words.
 - For docs, prefer language-suffixed markdown files (`*.en.md`, `*.es.md`) and resolve by language key first, then fallback.
 - Documentation language parity is mandatory: when changing any `*.md` doc that has translated variants, update the corresponding language files in the same change so content stays in sync across supported languages.
 - Keep every docs markdown H1 title (`# ...`) at or below 30 characters so docs navigation labels stay compact without runtime truncation rules.

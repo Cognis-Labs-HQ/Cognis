@@ -160,3 +160,9 @@ Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf 
 Der Host-Helfer `mountWhenDirect` übergibt `mount(root, { signal })` ein AbortSignal, das bei ausgeführter Routennavigation oder Seitenende endet. Seiten binden Aufräumarbeiten daran und prüfen es nach asynchroner Initialisierung. Fehlgeschlagene Mounts brechen eigene Ressourcen ab; abgebrochene Arbeit veröffentlicht keine Fehler auf der Zielseite. Markdown-Linktexte unterscheiden maskierte von gewöhnlichen Zeichen, um mehrdeutiges Backtracking zu vermeiden. CI fordert ausschließlich Lesezugriff auf Repository-Inhalte an.
 
 Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch bei ausstehender Übersetzungs-, Anbieter- oder Composer-Initialisierung. Die Ressourcenbereinigung bleibt an dasselbe Host-Signal gebunden.
+
+## Modul-IDs in Übersetzungen erhalten
+
+Übersetzungsschlüssel verwenden `module.<manifest.id>.<feature>.<label>`. Eine mehrteilige Modul-ID bleibt mit ihren Bindestrichen erhalten; für `terms-of-service` lautet ein Schlüssel `module.terms-of-service.admin.title`. Der Suffix nach der Modul-ID verwendet kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, XML-Dateien und Codeverweise müssen denselben Namensraum verwenden.
+
+Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kategorien und Tags mit den zugehörigen Katalogübersetzungen zusammen, wenn das installierte Modul einen anderen Namensraum verwendet. Installierte Einstellungen behalten ihre eigene Übersetzungs-URL; eine neue Katalogsuche ersetzt die zwischengespeicherte Darstellung.

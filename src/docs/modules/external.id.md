@@ -160,3 +160,9 @@ Penyedia browser memperoleh `ui:scopedActions` dari ctx terbatasnya. Pemanggilan
 Helper host `mountWhenDirect` memberikan AbortSignal melalui `mount(root, { signal })`, yang berakhir saat navigasi rute dijalankan atau halaman ditinggalkan. Halaman mengikat pembersihan pada sinyal itu dan memeriksanya setelah inisialisasi asinkron. Mount yang gagal membatalkan sumber daya miliknya; pekerjaan yang dibatalkan tidak menerbitkan galat pada halaman tujuan. Label tautan Markdown memisahkan karakter escape dari karakter biasa untuk menghindari backtracking ambigu. CI hanya meminta akses baca konten repositori.
 
 Halaman langsung yang dibatalkan segera melepas token pemuatan bersama, meskipun inisialisasi terjemahan, penyedia, atau composer masih tertunda. Pembersihan sumber daya tetap terikat pada sinyal host yang sama.
+
+## Pertahankan ID modul pada kunci
+
+Kunci terjemahan menggunakan `module.<manifest.id>.<feature>.<label>`. Pertahankan ID modul yang terdiri dari beberapa kata beserta tanda hubungnya; untuk `terms-of-service`, gunakan `module.terms-of-service.admin.title`. Sufiks setelah ID modul menggunakan kata huruf kecil yang dipisahkan titik. Metadata manifes, berkas XML, dan referensi kode harus memakai namespace yang sama.
+
+Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang tersimpan bersama berkas terjemahan katalognya ketika modul terpasang menggunakan namespace berbeda. Preferensi modul terpasang mempertahankan URL terjemahannya sendiri; penemuan katalog baru menggantikan tampilan yang tersimpan.

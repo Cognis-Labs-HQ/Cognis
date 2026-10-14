@@ -160,3 +160,9 @@ Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it wi
 The host `mountWhenDirect` helper supplies `mount(root, { signal })` with an AbortSignal that ends on committed route navigation or page exit. Pages bind cleanup to that signal and check it after asynchronous initialization. Failed mounts abort owned resources; cancelled work cannot publish errors on the destination page. Markdown link labels separate escaped characters from ordinary characters to avoid ambiguous backtracking. CI requests read-only repository contents.
 
 A cancelled direct page releases its shared loading token immediately, even while translation, provider or composer initialization is pending. Resource cleanup remains bound to the same host signal.
+
+## Preserve module IDs in locale keys
+
+Locale keys use `module.<manifest.id>.<feature>.<label>`. Keep a multiword module ID intact with its hyphens; for `terms-of-service`, use `module.terms-of-service.admin.title`. The suffix after the module ID uses lowercase period-delimited words. Manifest metadata, XML bundles and code references must use the same namespace.
+
+Marketplace presentation keeps cached names, descriptions, categories and tags with their catalog locale bundle when an installed module uses a different namespace. Installed preferences retain their own locale URL; a fresh catalog discovery replaces the cached presentation.
