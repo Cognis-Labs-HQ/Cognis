@@ -1,3 +1,4 @@
+import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
@@ -85,7 +86,7 @@ export function mountPractice(
             : activeMode === "writing"
               ? "<div data-practice-drawing></div>"
               : activeMode === "reading"
-                ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral" data-reading-choice="${index}">${escapeHtml(choice.text)}</button>${entryLink(choice.entry, "↗", schemas)}</div>`).join("")}</div>`
+                ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral ${pronunciationClass(choice.text)}" data-reading-choice="${index}">${escapeHtml(choice.text)}</button>${entryLink(choice.entry, "↗", schemas)}</div>`).join("")}</div>`
                 : `<p>${label("unavailable")}</p>`;
         const answer = renderFlashcard(detail, schemas, language, entryLink);
         target.innerHTML = formatTemplate(templates.practice, {

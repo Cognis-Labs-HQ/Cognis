@@ -1,3 +1,4 @@
+import { pronunciationClass } from "./pronunciation.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createActionRunner } from "./action-flows.js";
@@ -850,6 +851,10 @@ async function createDrawingPad({
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");
         pad.querySelector("[data-card-label]").textContent = currentCard.label;
+        pad.querySelector("[data-pronunciations]").classList.toggle(
+            "study-ipa",
+            Boolean(pronunciationClass(currentPronunciations)),
+        );
         pad.querySelector("[data-pronunciations]").textContent = [
             currentPronunciations,
         ]

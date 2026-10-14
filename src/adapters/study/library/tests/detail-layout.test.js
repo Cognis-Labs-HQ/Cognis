@@ -1,11 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { bindDetailLayout } from "../ui/app/detail-layout.js";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import { pronunciationClass } from "../../../../gateways/study/ui/reuse/pronunciation.js";
+
+const context = { pronunciationClass };
+vm.createContext(context);
+vm.runInContext(
+    readFileSync(new URL("../ui/app/detail-layout.js", import.meta.url), "utf8")
+        .replace(/^import.*;$/gm, "")
+        .replace("export function", "function"),
+    context,
+);
+const { bindDetailLayout } = context;
 
 test("related cards scroll only beyond five rows and release their resize observer", () => {
     let resized;
     let disconnected = false;
-    globalThis.ResizeObserver = class {
+    context.ResizeObserver = class {
         constructor(callback) {
             resized = callback;
         }
@@ -37,7 +49,7 @@ test("related cards scroll only beyond five rows and release their resize observ
     };
     const controller = new AbortController();
     bindDetailLayout(root, controller.signal);
-    assert.ok(classes.has("library-ipa"));
+    assert.ok(classes.has("study-ipa"));
     assert.ok(!classes.has("library-related-entries--scrolling"));
     group.children.push({ offsetTop: 100 });
     resized([{ target: group, contentRect: { width: 300 } }]);

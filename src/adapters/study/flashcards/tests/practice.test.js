@@ -24,6 +24,7 @@ const environment = vm.createContext({
     isCardDue,
     escapeHtml: String,
 });
+loadModule("../../../../gateways/study/ui/reuse/pronunciation.js", environment);
 loadModule("../ui/reuse/flashcard.js", environment);
 loadModule("../../../../gateways/study/ui/reuse/action-flows.js", environment);
 loadModule("../ui/app/flashcards/actions.js", environment);
@@ -189,6 +190,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         renderFavourite: () => "",
         flashcardValues: environment.flashcardValues,
         renderFlashcard: environment.renderFlashcard,
+        pronunciationClass: environment.pronunciationClass,
         cardStatus: () => status,
         readingChoices: () =>
             [true, false, false, false].map((correct, index) => ({

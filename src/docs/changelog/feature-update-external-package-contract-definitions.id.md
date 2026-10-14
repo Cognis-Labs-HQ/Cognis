@@ -714,6 +714,10 @@ Rilis 2.0.14 — GET ketersediaan mengembalikan status unknown dengan respons be
 
 Area gambar mengambang berada di atas dock tindakan halaman. Bagian kartu terkait membungkus hingga lima baris, lalu bergulir horizontal dengan scrollbar tersembunyi. Perubahan ukuran menghitung ulang batas, dan penutupan popup melepaskan pengamat. Nilai pelafalan IPA mempertahankan notasi aslinya dan menggunakan tipografi fonetik yang mudah dibaca.
 
+## Satukan tampilan pelafalan Study
+
+Study menyediakan klasifikasi dan gaya pelafalan publik yang digunakan kembali oleh pratinjau Library, judul detail, varian, jawaban kartu, pilihan membaca, dan area gambar. IPA mempertahankan notasi aslinya; bacaan biasa mempertahankan tipografi aplikasi pilihan pengguna. Skema kalimat Jepang dan Inggris memerlukan sedikitnya dua referensi kata.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

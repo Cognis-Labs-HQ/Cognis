@@ -1,3 +1,5 @@
+@import url("/static/gateways/study/reuse/pronunciation.css");
+
 .study-deck-editor {
     display: grid;
     gap: 1rem;

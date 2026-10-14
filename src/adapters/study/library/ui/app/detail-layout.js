@@ -1,3 +1,5 @@
+import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
+
 export function bindDetailLayout(root, signal) {
     if (signal?.aborted) return;
     if (root.querySelector('[data-popup-title-placement="reading"]'))
@@ -28,9 +30,9 @@ export function bindDetailLayout(root, signal) {
         once: true,
     });
     for (const reading of root.querySelectorAll(
-        '[data-popup-title-placement="reading"]',
+        '[data-popup-title-placement="reading"], [data-library-transform-pronunciation]',
     )) {
-        if (/\/[^/]+\//u.test(reading.textContent))
-            reading.classList.add("library-ipa");
+        const className = pronunciationClass(reading.textContent);
+        if (className) reading.classList.add(className);
     }
 }

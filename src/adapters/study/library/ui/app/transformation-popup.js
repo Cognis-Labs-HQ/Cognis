@@ -1,3 +1,4 @@
+import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
 import { titleReferenceAction } from "./popup-title.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -57,7 +58,7 @@ export function renderTransformationTree(
     { showSummary = true, baseDefinitions = [] } = {},
 ) {
     const summary = showSummary
-        ? `<header><output data-library-transform-output>${escapeHtml(selectedNode.value)}</output><span data-library-transform-pronunciation>${escapeHtml(selectedNode.pronunciation)}</span><span data-library-transform-definition>${escapeHtml(localizedLabel(selectedNode.definition, schema.language))}</span></header>`
+        ? `<header><output data-library-transform-output>${escapeHtml(selectedNode.value)}</output><span class="${pronunciationClass(selectedNode.pronunciation)}" data-library-transform-pronunciation>${escapeHtml(selectedNode.pronunciation)}</span><span data-library-transform-definition>${escapeHtml(localizedLabel(selectedNode.definition, schema.language))}</span></header>`
         : "";
     return `<div class="library-transform-tech-tree"><div class="library-transform-graph" data-library-transform-tree data-library-transform-entry="${escapeHtml(entry.id)}">${summary}<svg class="library-transform-links" aria-hidden="true"></svg>${renderTransformationNodes(pathway.nodes, schema, selectedNode, baseDefinitions)}</div></div>`;
 }
@@ -254,7 +255,7 @@ export function renderTransformationOptions(
                         node,
                         schema.language,
                     );
-                    return `<button class="library-transform-option btn-neutral" type="button" data-library-transform-set="${pathwayIndex}" data-library-transform-index="${nodeOffset + 1}"><strong>${escapeHtml(node.value)}</strong>${node.pronunciation && node.pronunciation !== node.value ? `<span>${escapeHtml(node.pronunciation)}</span>` : ""}<span class="library-transform-option-definitions">${definitions.map((definition) => `<span>${escapeHtml(definition)}</span>`).join("")}</span></button>`;
+                    return `<button class="library-transform-option btn-neutral" type="button" data-library-transform-set="${pathwayIndex}" data-library-transform-index="${nodeOffset + 1}"><strong>${escapeHtml(node.value)}</strong>${node.pronunciation && node.pronunciation !== node.value ? `<span class="${pronunciationClass(node.pronunciation)}">${escapeHtml(node.pronunciation)}</span>` : ""}<span class="library-transform-option-definitions">${definitions.map((definition) => `<span>${escapeHtml(definition)}</span>`).join("")}</span></button>`;
                 })
                 .join(""),
         )

@@ -1,3 +1,5 @@
+@import url("/static/gateways/study/reuse/pronunciation.css");
+
 .library-filter-group {
     display: grid;
     gap: 0.4rem;
@@ -342,10 +344,4 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 }
 .library-related-entries--scrolling > .library-related-entry {
     white-space: nowrap;
-}
-.library-ipa {
-    font-family: sans-serif;
-    font-variant: normal;
-    letter-spacing: normal;
-    text-transform: none;
 }

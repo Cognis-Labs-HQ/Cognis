@@ -712,6 +712,10 @@ Release 2.0.14 — GET availability returns a successful unknown status for a mi
 
 The floating drawing host stacks above the page action dock. Related-card sections wrap normally through five rows, then scroll horizontally with hidden scrollbars; resizing recalculates the threshold and popup disposal releases the observer. IPA pronunciation values keep their authored notation and use readable phonetic typography.
 
+## Unify Study pronunciation presentation
+
+Study provides public pronunciation classification and styles reused by Library previews, detail headings, variants, flashcard answers and reading choices, and the drawing pad. IPA keeps its authored notation; ordinary readings keep the selected app typography. Both Japanese and English sentence schemas require at least two word references.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

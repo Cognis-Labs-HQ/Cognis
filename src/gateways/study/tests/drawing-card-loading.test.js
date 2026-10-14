@@ -1,3 +1,4 @@
+import { pronunciationClass } from "../ui/reuse/pronunciation.js";
 import { formatTemplate } from "../../../ui/reuse/format-template.js";
 import { escapeHtml } from "../../../ui/reuse/escape-html.js";
 import assert from "node:assert/strict";
@@ -42,7 +43,7 @@ async function drawingSession({ templateAvailable = true } = {}) {
             child.parentElement = this;
         },
         style: { setProperty() {} },
-        classList: { add() {}, remove() {} },
+        classList: { add() {}, remove() {}, toggle() {} },
         addEventListener(event, handler) {
             handlers.set(event, handler);
         },
@@ -87,6 +88,7 @@ async function drawingSession({ templateAvailable = true } = {}) {
         return () => {};
     });
     const environment = {
+        pronunciationClass,
         AbortController,
         compactDrawingPattern,
         drawingViewport,

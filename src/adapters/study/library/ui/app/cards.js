@@ -1,3 +1,4 @@
+import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
 import { pronunciationValues } from "./reuse/readings.js";
 import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -43,7 +44,7 @@ export function renderCardContents(entry, layer, _entries, _schema, i18n) {
                   .filter((pronunciation) => pronunciation !== entry.label)
                   .slice(0, 2);
     const pronunciationPreview = pronunciations.length
-        ? `<span class="library-card-pronunciation${pronunciations.some((reading) => /^\/[^/]+\/$/u.test(reading)) ? " library-ipa" : ""}">${escapeHtml(pronunciations.join(" · "))}</span>`
+        ? `<span class="library-card-pronunciation ${pronunciationClass(pronunciations)}">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";
     if (layer.minimal) {
         return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;

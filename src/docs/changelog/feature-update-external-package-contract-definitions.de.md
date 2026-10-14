@@ -712,6 +712,10 @@ Ausgabe 2.0.14 — GET-Verfügbarkeit liefert für fehlende oder durch Privatsph
 
 Der schwebende Zeichenbereich liegt über der Seitenaktionsleiste. Abschnitte mit verknüpften Karten umbrechen bis zu fünf Zeilen und scrollen danach horizontal mit ausgeblendeten Bildlaufleisten. Größenänderungen berechnen die Grenze neu; beim Schließen wird der Beobachter freigegeben. IPA-Aussprachewerte behalten ihre ursprüngliche Notation und verwenden gut lesbare phonetische Typografie.
 
+## Aussprachedarstellung vereinheitlichen
+
+Study stellt öffentliche Ausspracheklassifizierung und Stile für Library-Vorschauen, Detailüberschriften, Varianten, Lernkartenantworten und Leseoptionen sowie den Zeichenbereich bereit. IPA behält seine ursprüngliche Notation; normale Lesungen behalten die gewählte App-Typografie. Japanische und englische Satzschemata verlangen mindestens zwei Wortverweise.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

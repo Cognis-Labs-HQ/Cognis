@@ -1,3 +1,5 @@
+import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
+
 /** Resolve localized Library card values and render linked practice answers. */
 function localizedMeaning(entry, layer, language) {
     const field =
@@ -73,7 +75,7 @@ export function renderFlashcard(
                 (entry) =>
                     entry.label === reading && role(entry) === "lexicalUnit",
             ) ?? detail.entry;
-        return link(source, reading, schemas);
+        return `<span class="${pronunciationClass(reading)}">${link(source, reading, schemas)}</span>`;
     });
     const meanings = references
         .filter((entry) => ["definition", "meaning"].includes(role(entry)))
