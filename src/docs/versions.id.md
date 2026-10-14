@@ -49,7 +49,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.13` |
+| Profile (Social)      | `src/adapters/social/profile/`      | [pkg][p] |
 | Messages (Social)     | `src/adapters/social/messages/`     | [pkg][m] |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
@@ -101,3 +101,4 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
 [m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json
+[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/profile/package.json

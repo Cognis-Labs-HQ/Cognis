@@ -692,6 +692,10 @@ Installiert ein Administrator ein Modul, dessen ID bereits einer anderen UUID ge
 
 Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf mit `(ctx, moduleId, actions)` registriert einen ausführbaren Flow für jede benannte Aktion und liefert die veröffentlichten Funktionen zurück. Verwaltungsabfragen und Änderungen verwenden diese Funktionen; der Host entfernt die Flows und veraltete Handles werden nach dem Abbau zurückgewiesen. Administratorrechte stammen aus der aktuellen Rolle des aktivierten Kontos, nicht aus Rollenfeldern des Aufrufers.
 
+## Unbekannte Verfügbarkeit ohne Abfragefehler
+
+Ausgabe 2.0.14 — GET-Verfügbarkeit liefert für fehlende oder durch Privatsphäre geschützte Profile erfolgreich den Status unknown. Beide Fälle haben dieselbe Antwortstruktur und fragen weder manuelle Einstellungen noch Kalenderstatus ab. Bestehende Regeln für Besitzer, Blockierungen, Community, Freunde und private Profile gelten weiterhin; Änderungen erfordern den Besitzer. Avatar-Anzeigen zeigen unbekannt ohne wiederholte Nicht-gefunden-Fehler.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

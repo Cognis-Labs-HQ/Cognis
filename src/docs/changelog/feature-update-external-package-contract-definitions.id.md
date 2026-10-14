@@ -694,6 +694,10 @@ Tambahkan pemasangan penyedia browser, rekonsiliasi katalog dan navigasi milik h
 
 Alirkan ilustrasi terpisah dari pemasangan kode untuk menghindari batas JSON inline GitHub sambil mempertahankan akses privat terautentikasi dan cache hash yang dibatasi. Tolak unduhan kosong, catat kegagalan pengambilan dan cache, pertahankan ikon tidak dikenal dan tampilkan placeholder banner tidak tersedia yang dilokalkan.
 
+## Ketersediaan tidak diketahui tanpa kesalahan pencarian
+
+Rilis 2.0.14 — GET ketersediaan mengembalikan status unknown dengan respons berhasil untuk profil yang tidak ada atau dibatasi privasi. Kedua kasus memiliki bentuk respons yang sama dan tidak membaca preferensi manual atau status kalender. Aturan pemilik, pemblokiran, komunitas, teman, dan profil privat tetap berlaku; perubahan tetap memerlukan pemilik. Indikator avatar menampilkan tidak diketahui tanpa kesalahan tidak ditemukan berulang.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
