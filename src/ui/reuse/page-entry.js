@@ -320,6 +320,9 @@ export async function mountWhenDirect(
     }
     const finishPageLoading = beginPageLoading();
     const controller = new AbortController();
+    controller.signal.addEventListener("abort", finishPageLoading, {
+        once: true,
+    });
     if (typeof window !== "undefined") {
         for (const event of ["cognis:route-will-change", "pagehide"]) {
             window.addEventListener(event, () => controller.abort(), {

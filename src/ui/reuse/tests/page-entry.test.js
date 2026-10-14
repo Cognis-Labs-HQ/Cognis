@@ -317,3 +317,37 @@ for (const event of ["cognis:route-will-change", "pagehide"]) {
         assert.equal(disposed, 1);
     });
 }
+
+test("leaving a pending direct mount releases its loading token immediately", async (context) => {
+    const previous = {
+        document: globalThis.document,
+        window: globalThis.window,
+        router: globalThis.__spaRouter,
+    };
+    context.after(() => {
+        globalThis.document = previous.document;
+        globalThis.window = previous.window;
+        globalThis.__spaRouter = previous.router;
+    });
+    const target = new EventTarget();
+    target.location = { pathname: "/pending", search: "", hash: "" };
+    globalThis.window = target;
+    const body = createMockBody();
+    globalThis.document = {
+        body,
+        createElement: createMockElement,
+        querySelector: () => ({}),
+    };
+    globalThis.__spaRouter = false;
+    let release;
+    const pending = new Promise((resolve) => {
+        release = resolve;
+    });
+    const mounting = mountWhenDirect(async () => pending);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(body.dataset.pageReady, "false");
+    target.dispatchEvent(new Event("cognis:route-will-change"));
+    assert.equal(body.dataset.pageReady, "true");
+    release();
+    await mounting;
+});
