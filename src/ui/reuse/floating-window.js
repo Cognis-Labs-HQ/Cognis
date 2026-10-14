@@ -95,6 +95,7 @@ function createFloatingWindowChrome(element, closeButton, release) {
         closeControl.type = "button";
         closeControl.className = "floating-window-close btn-close btn-neutral";
         closeControl.setAttribute("aria-label", closeButton.label);
+        closeControl.setAttribute("title", closeButton.label);
         closeControl.addEventListener("click", () => {
             release();
             closeButton.onClose();

@@ -81,3 +81,5 @@ Modul yang memiliki elemen PiP terpisah, seperti bingkai rapat, memperoleh `ui:m
 Cognis mengangkat elemen penyedia yang sudah ada ke lapisan teratas peramban tanpa memindahkannya ke induk DOM lain. Dengan demikian, koneksi iframe dan rapat yang aktif tetap utuh ketika PiP dibuka atau ditutup. Peramban tanpa dukungan lapisan teratas mempertahankan elemen di panggung komponen asal dan membatasinya pada induk tersebut alih-alih memindahkan induknya.
 
 Pemanggil dapat meneruskan `boundaryElement` saat jendela mengambang berada dalam kontainer yang diposisikan dan dapat digulir. Jendela memakai posisi absolut serta koordinat gulir kontainer; pemindahan melalui portal dan tampilan lapisan teratas dinonaktifkan secara bawaan. Penyeretan dan perubahan ukuran tetap berada dalam lebar konten serta tinggi yang dapat digulir, dan luapan kontainer memotong jendela seperti biasa.
+
+Kontrol tutup jendela mengambang menggunakan SVG tutup bersama yang disajikan dengan warna sesuai tema. Tooltip saat diarahkan menggunakan label tindakan terlokalisasi yang sama dengan nama aksesibilitas, bukan mewarisi judul permukaan.

@@ -257,6 +257,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
                 "floating-window-close btn-close btn-neutral",
         );
         assert.equal(closeButton.attributes["aria-label"], "Return");
+        assert.equal(closeButton.attributes.title, "Return");
         assert.equal(panel.style.minWidth, "240px");
         assert.equal(panel.style.minHeight, "160px");
         assert.equal(panel.style.position, "fixed");
@@ -442,6 +443,10 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             floatingWindowStyles,
             /\.floating-window-close\s*{[\s\S]*?top: 0\.35rem;[\s\S]*?right: 0\.35rem;/,
         );
+        const iconPath = floatingWindowStyles.match(
+            /url\("([^\"]+toolbar-close\.svg)"\)/,
+        )[1];
+        assert.equal(iconPath, "/static/assets/reuse/icons/toolbar-close.svg");
 
         closeButton.dispatch("click", {});
         assert.equal(closeRequested, true);

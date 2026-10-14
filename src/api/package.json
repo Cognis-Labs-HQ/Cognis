@@ -5,7 +5,7 @@
     "type": "module",
     "main": "server.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.120",
+        "@cognis/core": "<=0.3.121",
         "mysql2": "^3.23.2",
         "pg": "^8.22.0"
     }

@@ -88,3 +88,5 @@ A provider can include `minSize: { width, height }` in its surface metadata to d
 Cognis promotes the existing provider element to the browser top layer without moving it to another DOM parent. This keeps live iframe and meeting connections intact when PiP opens or closes. Browsers without top-layer support keep the element in its original component stage and constrain it to that parent rather than reparenting it.
 
 A caller can pass `boundaryElement` when its floating window belongs to a positioned, scrollable container. The window then uses absolute positioning and container scroll coordinates; portalling and top-layer presentation default to disabled. Dragging and resizing stay within the container’s content width and scrollable height, and the container’s overflow clips the window normally.
+
+Floating-window close controls use the served shared close SVG with theme-aware color. Their visible hover tooltip uses the same localized action label as the accessible name, rather than inheriting a surface title.

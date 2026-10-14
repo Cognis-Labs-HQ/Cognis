@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@cognis/adapter-social-messages": "<=2.7.22",
-        "@cognis/core": "<=0.3.120",
+        "@cognis/core": "<=0.3.121",
         "@cognis/gateways": "<=0.1.18"
     }
 }

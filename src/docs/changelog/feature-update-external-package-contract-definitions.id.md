@@ -4,6 +4,10 @@
 
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
+## Kontrol tutup PiP
+
+Kontrol tutup jendela mengambang menggunakan SVG tutup bersama yang disajikan dengan warna sesuai tema. Tooltip saat diarahkan menggunakan label tindakan terlokalisasi yang sama dengan nama aksesibilitas, bukan mewarisi judul permukaan.
+
 ## Cache konten yang telah dilihat secara persisten
 
 Cognis kini menyimpan UUID entri Pustaka yang telah dilihat untuk setiap akun. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat tanpa mengungkap riwayat pengguna lain.

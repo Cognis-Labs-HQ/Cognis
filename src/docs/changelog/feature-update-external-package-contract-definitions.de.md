@@ -4,6 +4,10 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## PiP-Schließen-Steuerelement
+
+Schließen-Steuerelemente schwebender Fenster verwenden das ausgelieferte gemeinsame Schließen-SVG mit themenabhängiger Farbe. Ihr sichtbarer Hover-Hinweis verwendet dieselbe lokalisierte Aktionsbezeichnung wie der zugängliche Name statt eines geerbten Oberflächentitels.
+
 ## Dauerhafter Cache angesehener Inhalte
 
 Cognis speichert nun die UUIDs angesehener Bibliothekseinträge pro Konto. Das Überfahren einer Karte oder ihr direktes beziehungsweise über eine Beziehung erfolgendes Öffnen markiert sie als angesehen, ohne den Verlauf anderer Benutzer offenzulegen.
