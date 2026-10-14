@@ -772,3 +772,4 @@ Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf 
 - [89434568](https://github.com/Cognis-Labs-HQ/Cognis/commit/89434568d0d5865a260e3f515c5236eec7f940bd)
 - [7e4af45](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e4af451f4cd017081c54a3f11ff505d6e9c71c4)
 - [beedf4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/beedf4ef2bd4bdb7d6f54d71de91b61ced50c4fa)
+- [2bb66db](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bb66db7203c0e8dfdf66b847aa3e11081ff4c19)
