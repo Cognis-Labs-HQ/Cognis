@@ -722,6 +722,10 @@ Locale keys use `module.<manifest.id>.<feature>.<label>`. Keep a multiword modul
 
 Marketplace presentation keeps cached names, descriptions, categories and tags with their catalog locale bundle when an installed module uses a different namespace. Installed preferences retain their own locale URL; a fresh catalog discovery replaces the cached presentation.
 
+## Keep legal footer links available
+
+All browser clients use the footer registry owned by `ctx`, including separately loaded static and bundled scripts. Footer descriptors may request `target: "_blank"`; the renderer adds `noopener noreferrer`. Authentication providers supply translated labels and authentication contexts, while signed-in legal links explicitly belong to the application context. History and browser-cache restoration refresh published legal links without replacing core License or Changelogs links.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

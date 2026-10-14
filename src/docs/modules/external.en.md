@@ -166,3 +166,7 @@ A cancelled direct page releases its shared loading token immediately, even whil
 Locale keys use `module.<manifest.id>.<feature>.<label>`. Keep a multiword module ID intact with its hyphens; for `terms-of-service`, use `module.terms-of-service.admin.title`. The suffix after the module ID uses lowercase period-delimited words. Manifest metadata, XML bundles and code references must use the same namespace.
 
 Marketplace presentation keeps cached names, descriptions, categories and tags with their catalog locale bundle when an installed module uses a different namespace. Installed preferences retain their own locale URL; a fresh catalog discovery replaces the cached presentation.
+
+### Keep legal footer links available
+
+All browser clients use the footer registry owned by `ctx`, including separately loaded static and bundled scripts. Footer descriptors may request `target: "_blank"`; the renderer adds `noopener noreferrer`. Authentication providers supply translated labels and authentication contexts, while signed-in legal links explicitly belong to the application context. History and browser-cache restoration refresh published legal links without replacing core License or Changelogs links.

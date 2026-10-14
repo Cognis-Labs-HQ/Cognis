@@ -166,3 +166,7 @@ Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch
 Übersetzungsschlüssel verwenden `module.<manifest.id>.<feature>.<label>`. Eine mehrteilige Modul-ID bleibt mit ihren Bindestrichen erhalten; für `terms-of-service` lautet ein Schlüssel `module.terms-of-service.admin.title`. Der Suffix nach der Modul-ID verwendet kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, XML-Dateien und Codeverweise müssen denselben Namensraum verwenden.
 
 Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kategorien und Tags mit den zugehörigen Katalogübersetzungen zusammen, wenn das installierte Modul einen anderen Namensraum verwendet. Installierte Einstellungen behalten ihre eigene Übersetzungs-URL; eine neue Katalogsuche ersetzt die zwischengespeicherte Darstellung.
+
+### Rechtstextlinks im Footer erhalten
+
+Alle Browserclients verwenden die Footer-Registrierung von `ctx`, auch getrennt geladene statische Skripte und Bundles. Footer-Deskriptoren können `target: "_blank"` anfordern; die Darstellung ergänzt `noopener noreferrer`. Authentifizierungsanbieter liefern übersetzte Beschriftungen und Authentifizierungskontexte, während Rechtstextlinks angemeldeter Sitzungen ausdrücklich zum Anwendungskontext gehören. Verlauf und Browser-Cache-Wiederherstellung aktualisieren veröffentlichte Rechtstextlinks, ohne die Core-Links für Lizenz oder Änderungen zu ersetzen.

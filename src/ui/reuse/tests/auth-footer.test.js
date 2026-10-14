@@ -76,3 +76,32 @@ test("authentication footer replaces a provider's published link set", () => {
         [],
     );
 });
+
+test("cached auth footer clients reconcile the same provider and retain new-tab targets", async () => {
+    const other = await import("../auth-footer.js?client=static-module");
+    reconcileAuthFooterLinks("shared-provider", [
+        { id: "terms", href: "/terms", label: "Terms", target: "_blank" },
+    ]);
+    other.reconcileAuthFooterLinks("shared-provider", [
+        { id: "privacy", href: "/privacy", label: "Privacy", target: "_blank" },
+    ]);
+    const links = footerLinks
+        .list()
+        .filter(({ id }) => id.startsWith("shared-provider:"));
+    assert.equal(links.length, 1);
+    assert.equal(links[0].href, "/privacy");
+    assert.equal(links[0].target, "_blank");
+    assert.throws(
+        () =>
+            other.reconcileAuthFooterLinks("shared-provider", [
+                { id: "bad", href: "/bad", label: "Bad", target: "unexpected" },
+            ]),
+        /invalid_auth_footer_link_target/,
+    );
+    assert.equal(
+        footerLinks.list().find(({ id }) => id === "shared-provider:privacy")
+            .href,
+        "/privacy",
+    );
+    other.reconcileAuthFooterLinks("shared-provider", []);
+});

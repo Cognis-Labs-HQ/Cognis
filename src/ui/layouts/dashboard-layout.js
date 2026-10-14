@@ -42,19 +42,21 @@ const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
 
-footerLinks.add({
-    id: "core:license",
-    side: "left",
-    href: "/license",
-    labelKey: "ui.layout.footer.license",
-    contexts: ["application", "authentication"],
-});
-footerLinks.add({
-    id: "core:changelogs",
-    side: "left",
-    href: "/changelogs",
-    labelKey: "ui.layout.footer.changelogs",
-});
+if (!footerLinks.list().some(({ id }) => id === "core:license"))
+    footerLinks.add({
+        id: "core:license",
+        side: "left",
+        href: "/license",
+        labelKey: "ui.layout.footer.license",
+        contexts: ["application", "authentication"],
+    });
+if (!footerLinks.list().some(({ id }) => id === "core:changelogs"))
+    footerLinks.add({
+        id: "core:changelogs",
+        side: "left",
+        href: "/changelogs",
+        labelKey: "ui.layout.footer.changelogs",
+    });
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
