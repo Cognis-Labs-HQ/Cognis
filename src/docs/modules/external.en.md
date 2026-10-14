@@ -156,3 +156,5 @@ An administrator installing a module with an ID already owned by another UUID re
 ## Scoped browser actions and authoritative administration
 
 Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it with `(ctx, moduleId, actions)` registers an executable flow for each named action and returns the published action functions. Use these functions for administration reads and mutations; the host owns flow disposal and stale handles reject after teardown. Backend administrator privileges come from the current enabled account role, rather than caller-supplied role fields.
+
+The host `mountWhenDirect` helper supplies `mount(root, { signal })` with an AbortSignal that ends on committed route navigation or page exit. Pages bind cleanup to that signal and check it after asynchronous initialization. Failed mounts abort owned resources; cancelled work cannot publish errors on the destination page. Markdown link labels separate escaped characters from ordinary characters to avoid ambiguous backtracking. CI requests read-only repository contents.

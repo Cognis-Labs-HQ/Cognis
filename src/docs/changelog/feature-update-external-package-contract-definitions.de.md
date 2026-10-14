@@ -4,6 +4,10 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## Lebensdauer direkter Seiten und begrenzte Verarbeitung
+
+Der Host-Helfer `mountWhenDirect` übergibt `mount(root, { signal })` ein AbortSignal, das bei ausgeführter Routennavigation oder Seitenende endet. Seiten binden Aufräumarbeiten daran und prüfen es nach asynchroner Initialisierung. Fehlgeschlagene Mounts brechen eigene Ressourcen ab; abgebrochene Arbeit veröffentlicht keine Fehler auf der Zielseite. Markdown-Linktexte unterscheiden maskierte von gewöhnlichen Zeichen, um mehrdeutiges Backtracking zu vermeiden. CI fordert ausschließlich Lesezugriff auf Repository-Inhalte an.
+
 ## PiP-Schließen-Steuerelement
 
 Schließen-Steuerelemente schwebender Fenster verwenden das ausgelieferte gemeinsame Schließen-SVG mit themenabhängiger Farbe. Ihr sichtbarer Hover-Hinweis verwendet dieselbe lokalisierte Aktionsbezeichnung wie der zugängliche Name statt eines geerbten Oberflächentitels.

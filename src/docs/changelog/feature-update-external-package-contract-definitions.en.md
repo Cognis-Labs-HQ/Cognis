@@ -4,6 +4,10 @@
 
 Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
 
+## Direct-page lifetime and bounded parsing
+
+The host `mountWhenDirect` helper supplies `mount(root, { signal })` with an AbortSignal that ends on committed route navigation or page exit. Pages bind cleanup to that signal and check it after asynchronous initialization. Failed mounts abort owned resources; cancelled work cannot publish errors on the destination page. Markdown link labels separate escaped characters from ordinary characters to avoid ambiguous backtracking. CI requests read-only repository contents.
+
 ## PiP close control
 
 Floating-window close controls use the served shared close SVG with theme-aware color. Their visible hover tooltip uses the same localized action label as the accessible name, rather than inheriting a surface title.

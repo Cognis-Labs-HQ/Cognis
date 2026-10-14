@@ -156,3 +156,5 @@ Administrator yang memasang modul dengan ID yang dimiliki UUID lain menerima kon
 ## Tindakan browser terbatas dan administrasi terverifikasi
 
 Penyedia browser memperoleh `ui:scopedActions` dari ctx terbatasnya. Pemanggilan dengan `(ctx, moduleId, actions)` mendaftarkan alur yang dapat dijalankan untuk setiap tindakan bernama dan mengembalikan fungsi tindakan. Gunakan fungsi ini untuk membaca dan mengubah administrasi; host membuang alur dan menangani penolakan fungsi usang setelah penghentian. Hak administrator berasal dari peran terkini akun aktif, bukan bidang peran yang diberikan pemanggil.
+
+Helper host `mountWhenDirect` memberikan AbortSignal melalui `mount(root, { signal })`, yang berakhir saat navigasi rute dijalankan atau halaman ditinggalkan. Halaman mengikat pembersihan pada sinyal itu dan memeriksanya setelah inisialisasi asinkron. Mount yang gagal membatalkan sumber daya miliknya; pekerjaan yang dibatalkan tidak menerbitkan galat pada halaman tujuan. Label tautan Markdown memisahkan karakter escape dari karakter biasa untuk menghindari backtracking ambigu. CI hanya meminta akses baca konten repositori.

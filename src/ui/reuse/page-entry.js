@@ -303,7 +303,7 @@ function endPageLoading(token) {
  * mounting, so individual page modules do not need to call auth helpers
  * themselves.
  *
- * @param {(root: Element | null) => Promise<unknown>} mount - Page mount
+ * @param {(root: Element | null, options: { signal: AbortSignal }) => Promise<unknown>} mount - Page mount
  *   function for the current entry module.
  * @param {{ rootSelector?: string, public?: boolean }} [options] - Direct-mount options.
  * @returns {Promise<void>}
@@ -319,12 +319,21 @@ export async function mountWhenDirect(
         installRuntimeErrorHandlers();
     }
     const finishPageLoading = beginPageLoading();
+    const controller = new AbortController();
+    if (typeof window !== "undefined") {
+        for (const event of ["cognis:route-will-change", "pagehide"]) {
+            window.addEventListener(event, () => controller.abort(), {
+                signal: controller.signal,
+            });
+        }
+    }
     let mountError = null;
     try {
         const root = document.querySelector(rootSelector);
         const mountWithProviders = async (mountRoot) => {
             await ensureHostUiProviders();
-            return mount(mountRoot);
+            if (controller.signal.aborted) return;
+            return mount(mountRoot, { signal: controller.signal });
         };
         if (
             !publicPage &&
@@ -343,6 +352,8 @@ export async function mountWhenDirect(
             await mountWithProviders(root);
         }
     } catch (error) {
+        if (controller.signal.aborted) return;
+        controller.abort();
         console.error("[page-entry] Direct mount failed.", {
             operation: "mountWhenDirect",
             routePath:

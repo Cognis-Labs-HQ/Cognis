@@ -4,6 +4,10 @@
 
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
+## Masa hidup halaman langsung dan parsing terbatas
+
+Helper host `mountWhenDirect` memberikan AbortSignal melalui `mount(root, { signal })`, yang berakhir saat navigasi rute dijalankan atau halaman ditinggalkan. Halaman mengikat pembersihan pada sinyal itu dan memeriksanya setelah inisialisasi asinkron. Mount yang gagal membatalkan sumber daya miliknya; pekerjaan yang dibatalkan tidak menerbitkan galat pada halaman tujuan. Label tautan Markdown memisahkan karakter escape dari karakter biasa untuk menghindari backtracking ambigu. CI hanya meminta akses baca konten repositori.
+
 ## Kontrol tutup PiP
 
 Kontrol tutup jendela mengambang menggunakan SVG tutup bersama yang disajikan dengan warna sesuai tema. Tooltip saat diarahkan menggunakan label tindakan terlokalisasi yang sama dengan nama aksesibilitas, bukan mewarisi judul permukaan.
