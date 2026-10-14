@@ -802,3 +802,4 @@ Study は公開の発音分類とスタイルを提供し、Library のプレビ
 - [f8877c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8877c716570c9285fc7b2ce71791a27543053ba)
 - [a8a115f](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8a115f78a213a793a5b2fd27ccdb9fdf1c422ee)
 - [24b91f9](https://github.com/Cognis-Labs-HQ/Cognis/commit/24b91f948aee0815c0dec942cfef6a606c78a1f0)
+- [e461c37](https://github.com/Cognis-Labs-HQ/Cognis/commit/e461c37c4f4758e84300e8cab721eb92bb6a198d)
