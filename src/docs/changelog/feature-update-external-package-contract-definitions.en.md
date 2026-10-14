@@ -792,3 +792,5 @@ Release 2.0.14 — GET availability returns a successful unknown status for a mi
 - [a6d2410](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d2410144a73edac345feab9b6eb6e6b78e56ee)
 - [6136fcb](https://github.com/Cognis-Labs-HQ/Cognis/commit/6136fcbfec13cd57346e52a38d616782f0793960)
 - [f8877c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8877c716570c9285fc7b2ce71791a27543053ba)
+
+- [a8a115f](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8a115f78a213a793a5b2fd27ccdb9fdf1c422ee)
