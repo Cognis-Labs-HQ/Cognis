@@ -148,3 +148,11 @@ Browser provider scripts export `mountProvider(scopedUiCtx)`, rather than contri
 ### Command and compatibility scope
 
 Npm scripts run inside their repository; `npm --prefix <module-checkout> test` selects it explicitly. Installed module operations use `cognisctl modules:<module-id>:<action>`. These are distinct interfaces. Required capability declarations control availability; a reported tested provider version is diagnostic provenance, not an enforced minimum or tested ceiling. Declare actual dependencies and test the installed public contract; never advertise version enforcement that the code does not perform.
+
+## Module identity diagnostics and browser provider ownership
+
+An administrator installing a module with an ID already owned by another UUID receives a conflict containing `moduleId`, `installedModuleUuid` and `requestedModuleUuid`. The server and module lifecycle UI log these identities; non-administrators cannot access them. A matching ID and UUID remains a valid update. Do not change published UUIDs or overwrite a conflicting installation to bypass this check. Browser provider lifecycle ownership is shared through `ui:providerLifecycle`, so bundled and directly served loader instances reconcile one provider catalog and cannot mount the same provider twice.
+
+## Scoped browser actions and authoritative administration
+
+Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it with `(ctx, moduleId, actions)` registers an executable flow for each named action and returns the published action functions. Use these functions for administration reads and mutations; the host owns flow disposal and stale handles reject after teardown. Backend administrator privileges come from the current enabled account role, rather than caller-supplied role fields.

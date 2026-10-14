@@ -148,3 +148,11 @@ Browseranbieter exportieren `mountProvider(scopedUiCtx)` statt beim Import Fähi
 ### Befehls- und Versionsumfang
 
 Npm-Skripte laufen im Repository; `npm --prefix <module-checkout> test` wählt es ausdrücklich. Installierte Modulaktionen verwenden `cognisctl modules:<module-id>:<action>`. Dies sind getrennte Schnittstellen. Erforderliche Fähigkeiten steuern Verfügbarkeit; eine angezeigte getestete Anbieterversion ist Diagnoseinformation, keine erzwungene Versionsgrenze. Tatsächliche Abhängigkeiten deklarieren und installierte öffentliche Verträge testen; keine nicht implementierten Versionsprüfungen versprechen.
+
+## Modulidentität und Besitz von Browser-Anbietern
+
+Installiert ein Administrator ein Modul, dessen ID bereits einer anderen UUID gehört, enthält der Konflikt `moduleId`, `installedModuleUuid` und `requestedModuleUuid`. Server und Modulverwaltung protokollieren diese Identitäten; Nichtadministratoren erhalten keinen Zugriff. Eine übereinstimmende ID und UUID erlaubt weiterhin eine Aktualisierung. Veröffentlichte UUIDs dürfen nicht geändert und kollidierende Installationen nicht überschrieben werden, um diese Prüfung zu umgehen. Der Browser-Anbieter-Lebenszyklus wird über `ui:providerLifecycle` gemeinsam verwaltet, sodass gebündelte und direkt bereitgestellte Loader denselben Katalog abgleichen und einen Anbieter nicht doppelt einbinden.
+
+## Scoped Browser-Aktionen und verifizierte Administration
+
+Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf mit `(ctx, moduleId, actions)` registriert einen ausführbaren Flow für jede benannte Aktion und liefert die veröffentlichten Funktionen zurück. Verwaltungsabfragen und Änderungen verwenden diese Funktionen; der Host entfernt die Flows und veraltete Handles werden nach dem Abbau zurückgewiesen. Administratorrechte stammen aus der aktuellen Rolle des aktivierten Kontos, nicht aus Rollenfeldern des Aufrufers.

@@ -680,6 +680,18 @@ Eigene Browseranbieter, Katalogabgleich und Navigation sowie freigebbare Health-
 
 Bilder werden getrennt von der Codeinstallation gestreamt, ohne GitHubs Inline-JSON-Größenbegrenzung. Authentifizierter privater Zugriff und begrenztes Hash-Caching bleiben erhalten. Leere Downloads werden abgewiesen und Abruf- und Cachefehler protokolliert. Unbekannte Icons bleiben erhalten; Banner erhalten lokalisierte Platzhalter.
 
+## Modulidentität und Besitz von Browser-Anbietern
+
+Installiert ein Administrator ein Modul, dessen ID bereits einer anderen UUID gehört, enthält der Konflikt `moduleId`, `installedModuleUuid` und `requestedModuleUuid`. Server und Modulverwaltung protokollieren diese Identitäten; Nichtadministratoren erhalten keinen Zugriff. Eine übereinstimmende ID und UUID erlaubt weiterhin eine Aktualisierung. Veröffentlichte UUIDs dürfen nicht geändert und kollidierende Installationen nicht überschrieben werden, um diese Prüfung zu umgehen. Der Browser-Anbieter-Lebenszyklus wird über `ui:providerLifecycle` gemeinsam verwaltet, sodass gebündelte und direkt bereitgestellte Loader denselben Katalog abgleichen und einen Anbieter nicht doppelt einbinden.
+
+## Exklusive Quellzuordnung für Integrationen
+
+`social:messages:sourceBinding` bietet `bind` und `release` mit `{roomId, actorAccountId, sourceType, sourceId}`. Die Gruppenauflösung akzeptiert außerdem `source: {sourceType, sourceId}`. Berechtigte Raummitglieder können einen ungebundenen Raum zuordnen; eine andere Quelle erhält `source_conflict`, ohne die Zuordnung zu überschreiben. Wiederholte Zuordnungen derselben Quelle sind idempotent. Bedingte Aktualisierungen entscheiden gleichzeitige Anfragen; die Freigabe entfernt nur die passende Quelle. Gruppenauflösung und Zuordnungen verwenden registrierte ctx-Flows.
+
+## Scoped Browser-Aktionen und verifizierte Administration
+
+Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf mit `(ctx, moduleId, actions)` registriert einen ausführbaren Flow für jede benannte Aktion und liefert die veröffentlichten Funktionen zurück. Verwaltungsabfragen und Änderungen verwenden diese Funktionen; der Host entfernt die Flows und veraltete Handles werden nach dem Abbau zurückgewiesen. Administratorrechte stammen aus der aktuellen Rolle des aktivierten Kontos, nicht aus Rollenfeldern des Aufrufers.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

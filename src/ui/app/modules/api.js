@@ -13,6 +13,7 @@ async function data(response) {
         );
         error.code = detail?.code;
         error.status = response.status;
+        error.conflict = detail?.conflict;
         error.integrityFailures = detail?.integrityFailures;
         error.integrityToken = detail?.integrityToken;
         throw error;

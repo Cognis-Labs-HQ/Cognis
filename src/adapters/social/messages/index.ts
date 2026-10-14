@@ -194,9 +194,19 @@ export async function bootstrapSocialAdapter(
         "social:messages:appendRoomEvent",
         appendRoomEvent,
     );
+    const accountRoles = ctx.capabilities.get<{
+        getInfo(
+            accountId: string,
+        ): Promise<{ role: string; enabled: boolean } | null>;
+    }>("auth:accountStore");
+    const resolveActorRole = async (accountId: string) => {
+        const account = await accountRoles?.getInfo(accountId);
+        return account?.enabled ? account.role : null;
+    };
     const deleteChatroom = createChatroomDeletionCapability(
         messagesStore,
         ctx.log,
+        resolveActorRole,
     );
     if (systemCtx && !systemCtx.hasFlow("delete-chatroom")) {
         systemCtx.registerFlow({
@@ -406,9 +416,92 @@ export async function bootstrapSocialAdapter(
      * social:messages:resolveGroupChatUrl — resolves or creates a reusable
      * group-chat URL for participants.
      */
+    const resolveGroupChat = createGroupChatResolver(
+        messagesStore,
+        profileStore,
+        membership,
+    );
+    if (!systemCtx)
+        throw new Error("Messages group resolution requires the host context.");
+    if (!systemCtx.hasFlow("social:messages:resolveGroupChat"))
+        systemCtx.registerFlow({
+            id: "social:messages:resolveGroupChat",
+            stages: ["execute"],
+        });
+    ctx.flow.extend(
+        "social:messages:resolveGroupChat",
+        "execute",
+        { id: "social-messages-adapter:resolveGroupChat" },
+        (stage) => resolveGroupChat(stage.input as never),
+    );
+    const runResolveGroupChat = async (
+        input: Parameters<typeof resolveGroupChat>[0],
+    ) => {
+        const result = await ctx.flow.run(
+            "social:messages:resolveGroupChat",
+            input,
+        );
+        return result.stageResults.execute[0];
+    };
     ctx.capabilities.contribute(
         "social:messages:resolveGroupChatUrl",
-        createGroupChatResolver(messagesStore, profileStore, membership),
+        runResolveGroupChat,
+    );
+    systemCtx.contributePublicCapability(
+        "social:messages:resolveGroupChatUrl",
+        runResolveGroupChat,
+    );
+
+    const sourceBinding = {
+        bind: (input: Parameters<DbMessagesStore["bindSource"]>[0]) =>
+            messagesStore.bindSource(input),
+        release: async (
+            input: Parameters<DbMessagesStore["releaseSource"]>[0],
+        ) => {
+            const role = await resolveActorRole(input.actorAccountId);
+            return messagesStore.releaseSource(
+                input,
+                role === "admin" || role === "owner",
+            );
+        },
+    };
+    for (const [action, execute] of Object.entries(sourceBinding)) {
+        const flowId = `social:messages:${action}Source`;
+        if (!systemCtx)
+            throw new Error(
+                "Messages source binding requires the host context.",
+            );
+        if (!systemCtx.hasFlow(flowId))
+            systemCtx.registerFlow({ id: flowId, stages: ["execute"] });
+        ctx.flow.extend(flowId, "execute", { id: flowId }, async (stage) => {
+            try {
+                await execute(stage.input as never);
+                ctx.log?.("info", "Chatroom source binding updated.", {
+                    operation: flowId,
+                });
+            } catch (error) {
+                ctx.log?.("error", "Chatroom source binding failed.", {
+                    operation: flowId,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                throw error;
+            }
+        });
+    }
+    const publicSourceBinding = {
+        bind: (input: Parameters<DbMessagesStore["bindSource"]>[0]) =>
+            ctx.flow.run("social:messages:bindSource", input),
+        release: (input: Parameters<DbMessagesStore["releaseSource"]>[0]) =>
+            ctx.flow.run("social:messages:releaseSource", input),
+    };
+    ctx.capabilities.contribute(
+        "social:messages:sourceBinding",
+        publicSourceBinding,
+    );
+    systemCtx?.contributePublicCapability(
+        "social:messages:sourceBinding",
+        publicSourceBinding,
     );
 
     ctx.capabilities.contribute("social:messages:uiResources", {

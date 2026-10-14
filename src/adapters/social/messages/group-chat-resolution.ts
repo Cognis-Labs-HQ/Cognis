@@ -9,6 +9,7 @@ export interface GroupChatInput {
     allowSingleMember?: boolean;
     reuseExisting?: boolean;
     roomId?: string;
+    source?: { sourceType: string; sourceId: string };
 }
 
 export interface GroupChatResolution {
@@ -68,6 +69,14 @@ export function createGroupChatResolver(
               ? null
               : await messagesStore.findGroupByExactMembers(accountIds);
         if (existing) {
+            if (input.source)
+                await messagesStore.bindSource({
+                    roomId: existing.id,
+                    actorAccountId: String(
+                        input.createdByAccountId ?? accountIds[0],
+                    ),
+                    ...input.source,
+                });
             return {
                 roomId: existing.id,
                 url: `/messages/${encodeURIComponent(existing.id)}`,
@@ -83,6 +92,12 @@ export function createGroupChatResolver(
             title,
             ownerAccountId,
         );
+        if (input.source)
+            await messagesStore.bindSource({
+                roomId: room.id,
+                actorAccountId: ownerAccountId,
+                ...input.source,
+            });
         await messagesStore.generateAndStoreRoomKey(room.id);
         for (const accountId of accountIds) {
             await membership.add({

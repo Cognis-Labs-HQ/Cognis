@@ -680,6 +680,18 @@ Add owned browser provider mounts, catalog reconciliation and navbar contributio
 
 Stream artwork separately from code installation, avoiding GitHub’s inline JSON size limit while preserving private authentication and bounded content-hash caching. Reject empty downloads, log retrieval and cache failures, retain unknown icons and display localized unavailable banner placeholders.
 
+## Module identity diagnostics and browser provider ownership
+
+An administrator installing a module with an ID already owned by another UUID receives a conflict containing `moduleId`, `installedModuleUuid` and `requestedModuleUuid`. The server and module lifecycle UI log these identities; non-administrators cannot access them. A matching ID and UUID remains a valid update. Do not change published UUIDs or overwrite a conflicting installation to bypass this check. Browser provider lifecycle ownership is shared through `ui:providerLifecycle`, so bundled and directly served loader instances reconcile one provider catalog and cannot mount the same provider twice.
+
+## Exclusive integration source bindings
+
+`social:messages:sourceBinding` provides `bind` and `release` with `{roomId, actorAccountId, sourceType, sourceId}`. Group resolution also accepts `source: {sourceType, sourceId}`. Authorized room members can claim an unbound room; another source receives `source_conflict` without overwriting it. Repeated claims by the same source are idempotent. Conditional updates arbitrate concurrent claims, and release only removes the matching source. Group resolution and binding operations execute registered ctx flows.
+
+## Scoped browser actions and authoritative administration
+
+Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it with `(ctx, moduleId, actions)` registers an executable flow for each named action and returns the published action functions. Use these functions for administration reads and mutations; the host owns flow disposal and stale handles reject after teardown. Backend administrator privileges come from the current enabled account role, rather than caller-supplied role fields.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

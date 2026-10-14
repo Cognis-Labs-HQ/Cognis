@@ -840,6 +840,9 @@ function bindInteractions(root, signal) {
                         action,
                         moduleId: module.id,
                         moduleUuid: module.uuid,
+                        code: error.code,
+                        status: error.status,
+                        conflict: error.conflict,
                         error,
                     });
                     const dependencyMessage =

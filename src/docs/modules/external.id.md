@@ -148,3 +148,11 @@ Skrip penyedia browser mengekspor `mountProvider(scopedUiCtx)`, bukan mendaftark
 ### Lingkup perintah dan versi
 
 Skrip npm berjalan di repositorinya; `npm --prefix <module-checkout> test` memilihnya secara eksplisit. Operasi modul terpasang memakai `cognisctl modules:<module-id>:<action>`. Keduanya berbeda. Deklarasi kapabilitas wajib mengendalikan ketersediaan; versi penyedia yang diuji adalah informasi diagnostik, bukan batas versi yang dipaksakan. Deklarasikan dependensi sebenarnya dan uji kontrak publik terpasang; jangan menjanjikan pemeriksaan versi yang tidak dijalankan kode.
+
+## Diagnostik identitas modul dan kepemilikan penyedia browser
+
+Administrator yang memasang modul dengan ID yang dimiliki UUID lain menerima konflik berisi `moduleId`, `installedModuleUuid`, dan `requestedModuleUuid`. Server dan UI siklus hidup modul mencatat identitas ini; pengguna nonadministrator tidak dapat mengaksesnya. ID dan UUID yang cocok tetap memungkinkan pembaruan. Jangan mengubah UUID yang diterbitkan atau menimpa pemasangan yang bertentangan untuk melewati pemeriksaan ini. Kepemilikan siklus hidup penyedia browser dibagikan melalui `ui:providerLifecycle`, sehingga pemuat yang dibundel maupun dilayani langsung merekonsiliasi satu katalog dan tidak memasang penyedia yang sama dua kali.
+
+## Tindakan browser terbatas dan administrasi terverifikasi
+
+Penyedia browser memperoleh `ui:scopedActions` dari ctx terbatasnya. Pemanggilan dengan `(ctx, moduleId, actions)` mendaftarkan alur yang dapat dijalankan untuk setiap tindakan bernama dan mengembalikan fungsi tindakan. Gunakan fungsi ini untuk membaca dan mengubah administrasi; host membuang alur dan menangani penolakan fungsi usang setelah penghentian. Hak administrator berasal dari peran terkini akun aktif, bukan bidang peran yang diberikan pemanggil.

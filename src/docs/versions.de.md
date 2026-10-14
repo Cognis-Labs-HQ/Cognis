@@ -50,7 +50,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `2.0.13` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.21` |
+| Messages (Social)     | `src/adapters/social/messages/`     | [pkg][m] |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
@@ -82,18 +82,22 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Kernverträge
 
-| Komponente   | Pfad        | Version   |
-| ------------ | ----------- | --------- |
-| Core Package | `src/core/` | `0.3.119` |
+| Komponente   | Pfad        | Version  |
+| ------------ | ----------- | -------- |
+| Core Package | `src/core/` | [pkg][c] |
 
 ## API
 
-| Komponente | Pfad       | Version |
-| ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.6.6` |
+| Komponente | Pfad       | Version  |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | [pkg][a] |
 
 ## Werkzeuge
 
 | Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
 | Cognis CLI | `src/tooling/cli/` | `0.2.5` |
+
+[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
+[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
+[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json

@@ -16,6 +16,7 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 - Only publish capabilities that are fully implemented, registered and tested. Check the actual host capability used by bootstrap, disable and uninstall; reject unavailable contracts rather than falling back to broader or older APIs.
 - Core owns host behavior and policy; modules provide language data and dictionary enrichment. Modules must not dictate app navigation, permissions or query-cache refresh schedules.
 - Do not change core, routing, page shell or composer-owned classes merely to make a feature work. Diagnose missing styles, initialization and lifecycle handling in the owning page first. Intentional shared features require their own evidence and regression coverage.
+- Keep browser providers scoped to module lifetime and canvas instances scoped to page lifetime. Share provider ownership through ctx across bundled and directly served loader instances. Enforce exclusive integration-source bindings in the resource provider, and provide administrator recovery without guessing which historical reference to retain.
 - Unhook contributed UI/backend functions and event handlers when disabled or unmounted. Roll back registrations on failed bootstrap.
 
 ### Reuse, clarity and scope

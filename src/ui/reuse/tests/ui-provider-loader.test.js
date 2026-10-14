@@ -44,3 +44,32 @@ test("a lifecycle catalog refresh disposes and reactivates cached provider scrip
     enabled = false;
     await ensureUiProvidersLoaded({ force: true });
 });
+
+test("separate loader module instances share provider ownership", async (context) => {
+    const originalFetch = globalThis.fetch;
+    const originalStorage = globalThis.localStorage;
+    context.after(() => {
+        globalThis.fetch = originalFetch;
+        globalThis.localStorage = originalStorage;
+    });
+    const source = `export function mountProvider(ctx) { ctx.registerFlow('test:duplicateLoader', ['execute']); ctx.capabilities.contribute('test:duplicateLoaderAction', () => true); }`;
+    const scriptUrl = `data:text/javascript,${encodeURIComponent(source)}`;
+    let enabled = true;
+    globalThis.localStorage = { getItem: () => "test-token" };
+    globalThis.fetch = async () =>
+        Response.json({ data: enabled ? [{ scriptUrl }] : [] });
+    const otherLoader =
+        await import("../ui-provider-loader.js?separate-bundle");
+    await Promise.all([
+        ensureUiProvidersLoaded({ force: true }),
+        otherLoader.ensureUiProvidersLoaded({ force: true }),
+    ]);
+    assert.equal(uiCtx.flowExists("test:duplicateLoader"), true);
+    enabled = false;
+    await otherLoader.ensureUiProvidersLoaded({ force: true });
+    assert.equal(uiCtx.flowExists("test:duplicateLoader"), false);
+    assert.equal(
+        uiCtx.capabilities.get("test:duplicateLoaderAction"),
+        undefined,
+    );
+});

@@ -50,7 +50,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.38`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
 | Profile (Social)           | `src/adapters/social/profile/`      | `2.0.13`   |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.21`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | [pkg][m]   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
@@ -84,16 +84,20 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.119`  |
+| Core Package   | `src/core/` | [pkg][c]   |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.6`    |
+| API Server     | `src/api/` | [pkg][a]   |
 
 ## ツール
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
 | Cognis CLI     | `src/tooling/cli/` | `0.2.5`    |
+
+[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
+[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
+[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json

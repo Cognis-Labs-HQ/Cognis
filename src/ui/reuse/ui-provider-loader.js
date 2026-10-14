@@ -20,7 +20,11 @@ import { uiCtx } from "./ui-ctx.js";
 import { createProviderLifecycle } from "./provider-lifecycle.js";
 import "./navbar-contributions.js";
 
-const providerLifecycle = createProviderLifecycle({ uiCtx });
+const lifecycleCapability = "ui:providerLifecycle";
+const providerLifecycle =
+    uiCtx.capabilities.get(lifecycleCapability) ??
+    createProviderLifecycle({ uiCtx });
+uiCtx.capabilities.contribute(lifecycleCapability, providerLifecycle);
 
 let providersLoaded = false;
 let providersLoadPromise = null;

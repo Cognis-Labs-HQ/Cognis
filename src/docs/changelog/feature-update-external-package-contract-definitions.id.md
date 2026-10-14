@@ -532,6 +532,18 @@ Penyedia kamus mengaktifkan pencarian navigasi melalui `searchable: true` dan ka
 
 Administrator dan pemilik langsung memindahkan kartu pribadi ke cakupan bersama yang diizinkan; pelajar mengirim permintaan peninjauan. Seluruh teks dan ikon tujuan dapat diklik. Permintaan menampilkan kartu yang diajukan, perubahan yang diusulkan, cakupan, pembuat, waktu, status, dan tindakan ringkas sesuai izin. Riwayat keputusan, termasuk penarikan, tetap terlihat. Perubahan kartu dan keputusan berlangsung dalam satu transaksi basis data dengan perubahan status tertunda bersyarat. Validasi gagal membatalkan keputusan; keputusan usang atau berulang ditolak. Salinan pengajuan mempertahankan konten yang ditinjau dan mencegah persetujuan setelah sumber berubah.
 
+## Diagnostik identitas modul dan kepemilikan penyedia browser
+
+Administrator yang memasang modul dengan ID yang dimiliki UUID lain menerima konflik berisi `moduleId`, `installedModuleUuid`, dan `requestedModuleUuid`. Server dan UI siklus hidup modul mencatat identitas ini; pengguna nonadministrator tidak dapat mengaksesnya. ID dan UUID yang cocok tetap memungkinkan pembaruan. Jangan mengubah UUID yang diterbitkan atau menimpa pemasangan yang bertentangan untuk melewati pemeriksaan ini. Kepemilikan siklus hidup penyedia browser dibagikan melalui `ui:providerLifecycle`, sehingga pemuat yang dibundel maupun dilayani langsung merekonsiliasi satu katalog dan tidak memasang penyedia yang sama dua kali.
+
+## Pengikatan sumber integrasi eksklusif
+
+`social:messages:sourceBinding` menyediakan `bind` dan `release` dengan `{roomId, actorAccountId, sourceType, sourceId}`. Resolusi grup juga menerima `source: {sourceType, sourceId}`. Anggota ruang yang berwenang dapat mengikat ruang yang belum terikat; sumber lain menerima `source_conflict` tanpa menimpa pengikatan. Klaim ulang oleh sumber yang sama bersifat idempoten. Pembaruan bersyarat menentukan pemenang klaim bersamaan, dan pelepasan hanya menghapus sumber yang cocok. Resolusi grup dan pengikatan menjalankan alur ctx terdaftar.
+
+## Tindakan browser terbatas dan administrasi terverifikasi
+
+Penyedia browser memperoleh `ui:scopedActions` dari ctx terbatasnya. Pemanggilan dengan `(ctx, moduleId, actions)` mendaftarkan alur yang dapat dijalankan untuk setiap tindakan bernama dan mengembalikan fungsi tindakan. Gunakan fungsi ini untuk membaca dan mengubah administrasi; host membuang alur dan menangani penolakan fungsi usang setelah penghentian. Hak administrator berasal dari peran terkini akun aktif, bukan bidang peran yang diberikan pemanggil.
+
 ## Commit
 
 ## Resolusi Kamus yang Efisien
