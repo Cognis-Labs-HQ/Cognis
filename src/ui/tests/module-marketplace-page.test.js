@@ -524,7 +524,7 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
     assert.match(pageSource, /data-resource-fallback/);
     assert.match(
         pageSource,
-        /module-detail-banner module-picture[^>]+data-resource-fallback/,
+        /module-detail-banner module-picture[^>]+data-resource-fallback-text/,
     );
     assert.match(pageSource, /\/assets\/reuse\/module-icon-unknown\.svg/);
     assert.match(errorHandlerSource, /dataset\.resourceFallback/);

@@ -676,6 +676,10 @@ Neue Module müssen aus der Modulvorlage entstehen. Domänenrouten, Styles, Mark
 
 Eigene Browseranbieter, Katalogabgleich und Navigation sowie freigebbare Health- und öffentliche Keyring-Registrierungen hinzufügen. Fehlgeschlagener Bootstrap entfernt Teilressourcen und Routen. Messages unterstützt getrennte Räume und stabile gespeicherte Raumidentitäten ohne Umbenennung oder Teilnehmer-Neuzuordnung.
 
+## Modulbilder als Rohdaten abrufen
+
+Bilder werden getrennt von der Codeinstallation gestreamt, ohne GitHubs Inline-JSON-Größenbegrenzung. Authentifizierter privater Zugriff und begrenztes Hash-Caching bleiben erhalten. Leere Downloads werden abgewiesen und Abruf- und Cachefehler protokolliert. Unbekannte Icons bleiben erhalten; Banner erhalten lokalisierte Platzhalter.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

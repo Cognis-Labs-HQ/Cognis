@@ -678,6 +678,10 @@ Modul baru wajib berasal dari templat modul. Tetapkan jalur rute domain, style, 
 
 Tambahkan pemasangan penyedia browser, rekonsiliasi katalog dan navigasi milik host, serta registrasi health dan pemilik data keyring publik yang dapat dilepas. Bootstrap gagal membersihkan sumber daya dan rute parsial. Messages mendukung ruang terpisah dan identitas ruang tersimpan tanpa penggantian nama atau penetapan ulang berbasis anggota.
 
+## Ambil ilustrasi sebagai byte mentah
+
+Alirkan ilustrasi terpisah dari pemasangan kode untuk menghindari batas JSON inline GitHub sambil mempertahankan akses privat terautentikasi dan cache hash yang dibatasi. Tolak unduhan kosong, catat kegagalan pengambilan dan cache, pertahankan ikon tidak dikenal dan tampilkan placeholder banner tidak tersedia yang dilokalkan.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

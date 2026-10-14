@@ -610,4 +610,5 @@
   <string name="ui.reuse.sort_za">Z–A</string>
   <string name="ui.reuse.sort_newest">Newest First</string>
   <string name="ui.reuse.sort_oldest">Oldest First</string>
+    <string name="ui.reuse.image_unavailable">Image Not Available</string>
 </resources>

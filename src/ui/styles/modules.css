@@ -636,3 +636,12 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
     margin: 0.4rem 0 0;
     padding: 0;
 }
+
+.module-image-unavailable {
+    display: grid;
+    place-items: center;
+    min-height: 8rem;
+    padding: 2rem;
+    color: var(--text-muted);
+    background: var(--surface-color);
+}

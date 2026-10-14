@@ -676,6 +676,10 @@ Require new modules to start from the module template. Define domain route, styl
 
 Add owned browser provider mounts, catalog reconciliation and navbar contributions, plus disposable health and public keyring-data registrations. Failed bootstrap releases partial resources and routes. Messages supports distinct room creation and stable saved-room lookup without renaming or participant-based reassignment.
 
+## Retrieve module artwork as raw bytes
+
+Stream artwork separately from code installation, avoiding GitHub’s inline JSON size limit while preserving private authentication and bounded content-hash caching. Reject empty downloads, log retrieval and cache failures, retain unknown icons and display localized unavailable banner placeholders.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

@@ -1,3 +1,4 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
 
 const MODULE_INSTALL_TIMEOUT_MS = 2 * 60 * 1000;
@@ -138,18 +139,32 @@ export async function saveModuleReleaseChannel(moduleUuid, branch) {
 }
 
 export async function loadModuleAsset(assetUrl, { signal } = {}) {
-    let response;
+    const log = uiCtx.capabilities.get("ui:log");
     try {
-        response = await apiFetch(assetUrl, {
+        const response = await apiFetch(assetUrl, {
             signal,
             suppressAccessDeniedEvent: true,
         });
+        if (!response.ok) {
+            log?.("error", "Module image request was rejected.", {
+                component: "module-marketplace",
+                operation: "loadAsset",
+                assetUrl,
+                status: response.status,
+            });
+            return null;
+        }
+        return URL.createObjectURL(await response.blob());
     } catch (error) {
         if (error?.name === "AbortError") return null;
-        throw error;
+        log?.("error", "Module image request failed.", {
+            component: "module-marketplace",
+            operation: "loadAsset",
+            assetUrl,
+            reason: error?.message,
+        });
+        return null;
     }
-    if (!response.ok) return null;
-    return URL.createObjectURL(await response.blob());
 }
 
 export async function installModule(module, token, branch, wasEnabled) {
