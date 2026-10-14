@@ -708,6 +708,10 @@ Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it wi
 
 Release 2.0.14 — GET availability returns a successful unknown status for a missing or privacy-restricted profile. Both cases have the same response shape and never query its manual preference or calendar status. Existing owner, block, community, friend and private visibility rules remain enforced; writes still require the owner. Avatar indicators display unknown without repeated not-found errors.
 
+## Keep Study details usable
+
+The floating drawing host stacks above the page action dock. Related-card sections wrap normally through five rows, then scroll horizontally with hidden scrollbars; resizing recalculates the threshold and popup disposal releases the observer. IPA pronunciation values keep their authored notation and use readable phonetic typography.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -792,5 +796,4 @@ Release 2.0.14 — GET availability returns a successful unknown status for a mi
 - [a6d2410](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d2410144a73edac345feab9b6eb6e6b78e56ee)
 - [6136fcb](https://github.com/Cognis-Labs-HQ/Cognis/commit/6136fcbfec13cd57346e52a38d616782f0793960)
 - [f8877c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8877c716570c9285fc7b2ce71791a27543053ba)
-
 - [a8a115f](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8a115f78a213a793a5b2fd27ccdb9fdf1c422ee)

@@ -240,3 +240,5 @@ Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute u
 ## Gemeinsame Sprachseiten
 
 Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten des Inhaltsanbieters. Ein Sprachwechsel behält die entsprechende Schrift-, Wortschatz- oder Satzrolle. Lernkarten, Bibliothek und Anfragen behalten ihren gemeinsamen Seitenkontext. Englisch deklariert Alphabet, Buchstabenverbindungen, Wortschatz und Sätze über eigene Pfadnamen. Abgebrochene Favoritenabfragen beenden die Einbindung ohne irreführende Fehlermeldung.
+
+Der schwebende Zeichenbereich liegt über der Seitenaktionsleiste. Abschnitte mit verknüpften Karten umbrechen bis zu fünf Zeilen und scrollen danach horizontal mit ausgeblendeten Bildlaufleisten. Größenänderungen berechnen die Grenze neu; beim Schließen wird der Beobachter freigegeben. IPA-Aussprachewerte behalten ihre ursprüngliche Notation und verwenden gut lesbare phonetische Typografie.

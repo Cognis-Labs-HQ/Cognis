@@ -708,6 +708,10 @@ Library のプレビューの星は選択操作の隣に置き、子カードの
 
 リリース 2.0.14 — 在席状態の GET は、存在しないプロフィールとプライバシーで制限されたプロフィールのどちらにも成功応答で unknown を返します。応答の形を揃え、手動設定やカレンダーの状態は読みません。所有者、ブロック、コミュニティ、友達、非公開の既存ルールを維持し、変更は引き続き所有者だけが行えます。アバターの表示は不明となり、見つからないエラーを繰り返しません。
 
+## 学習詳細の使いやすさを維持
+
+フローティング描画領域はページ操作ドックより上に表示します。関連カードの一覧は5行まで折り返し、それを超えるとスクロールバーを隠して横方向にスクロールします。サイズ変更時に判定を更新し、ポップアップを閉じると監視を解除します。IPA の発音値は元の表記を維持し、読みやすい発音用の書体で表示します。
+
 ## コミット
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -792,5 +796,4 @@ Library のプレビューの星は選択操作の隣に置き、子カードの
 - [a6d2410](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d2410144a73edac345feab9b6eb6e6b78e56ee)
 - [6136fcb](https://github.com/Cognis-Labs-HQ/Cognis/commit/6136fcbfec13cd57346e52a38d616782f0793960)
 - [f8877c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8877c716570c9285fc7b2ce71791a27543053ba)
-
 - [a8a115f](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8a115f78a213a793a5b2fd27ccdb9fdf1c422ee)

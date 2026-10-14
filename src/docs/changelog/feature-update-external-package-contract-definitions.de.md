@@ -708,6 +708,10 @@ Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf 
 
 Ausgabe 2.0.14 — GET-Verfügbarkeit liefert für fehlende oder durch Privatsphäre geschützte Profile erfolgreich den Status unknown. Beide Fälle haben dieselbe Antwortstruktur und fragen weder manuelle Einstellungen noch Kalenderstatus ab. Bestehende Regeln für Besitzer, Blockierungen, Community, Freunde und private Profile gelten weiterhin; Änderungen erfordern den Besitzer. Avatar-Anzeigen zeigen unbekannt ohne wiederholte Nicht-gefunden-Fehler.
 
+## Lerndetails nutzbar halten
+
+Der schwebende Zeichenbereich liegt über der Seitenaktionsleiste. Abschnitte mit verknüpften Karten umbrechen bis zu fünf Zeilen und scrollen danach horizontal mit ausgeblendeten Bildlaufleisten. Größenänderungen berechnen die Grenze neu; beim Schließen wird der Beobachter freigegeben. IPA-Aussprachewerte behalten ihre ursprüngliche Notation und verwenden gut lesbare phonetische Typografie.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
@@ -792,5 +796,4 @@ Ausgabe 2.0.14 — GET-Verfügbarkeit liefert für fehlende oder durch Privatsph
 - [a6d2410](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6d2410144a73edac345feab9b6eb6e6b78e56ee)
 - [6136fcb](https://github.com/Cognis-Labs-HQ/Cognis/commit/6136fcbfec13cd57346e52a38d616782f0793960)
 - [f8877c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8877c716570c9285fc7b2ce71791a27543053ba)
-
 - [a8a115f](https://github.com/Cognis-Labs-HQ/Cognis/commit/a8a115f78a213a793a5b2fd27ccdb9fdf1c422ee)

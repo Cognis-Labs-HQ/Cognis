@@ -1,3 +1,4 @@
+import { bindDetailLayout } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { composeDetail } from "./detail.js";
@@ -7,7 +8,6 @@ import {
     loadLibraryAudio,
 } from "./presentation.js";
 import {
-    hasReadingDetails,
     popupTitleDetailItems,
     popupTitleItems,
     withParentTitleAttribution,
@@ -208,8 +208,7 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
-                if (hasReadingDetails(titleDetailItems))
-                    overlay.classList.add("library-entry-popup--composite");
+                bindDetailLayout(overlay, audioController.signal);
                 placeAudioSpeaker(overlay, audioController.signal);
                 void loadLibraryAudio(
                     overlay,

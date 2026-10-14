@@ -43,7 +43,7 @@ export function renderCardContents(entry, layer, _entries, _schema, i18n) {
                   .filter((pronunciation) => pronunciation !== entry.label)
                   .slice(0, 2);
     const pronunciationPreview = pronunciations.length
-        ? `<span class="library-card-pronunciation">${escapeHtml(pronunciations.join(" · "))}</span>`
+        ? `<span class="library-card-pronunciation${pronunciations.some((reading) => /^\/[^/]+\/$/u.test(reading)) ? " library-ipa" : ""}">${escapeHtml(pronunciations.join(" · "))}</span>`
         : "";
     if (layer.minimal) {
         return `<span class="library-entry-minimal-content"><strong>${escapeHtml(entry.label)}</strong>${pronunciationPreview}</span>`;

@@ -328,3 +328,24 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 .library-entry-card-shell > .study-favourite.is-favourite {
     opacity: 1;
 }
+
+.library-related-entries--scrolling {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    grid-template-rows: repeat(5, max-content);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.library-related-entries--scrolling::-webkit-scrollbar {
+    display: none;
+}
+.library-related-entries--scrolling > .library-related-entry {
+    white-space: nowrap;
+}
+.library-ipa {
+    font-family: sans-serif;
+    font-variant: normal;
+    letter-spacing: normal;
+    text-transform: none;
+}
