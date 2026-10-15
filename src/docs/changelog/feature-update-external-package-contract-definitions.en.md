@@ -838,3 +838,4 @@ Core adds the installed module revision to module-owned UI asset URLs when regis
 - [856cd80](https://github.com/Cognis-Labs-HQ/Cognis/commit/856cd809b37f3abe4026cea01f7ece234b1ced87)
 - [27f78bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/27f78bcb096f891fa3790c4bf89221d9b842ff84)
 - [eea52d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/eea52d437b3b8084e4bab393cb7e5f249a5447e3)
+- [ddf1772](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf17726e4ef3c73a44411aeb3e4356a384848aa)
