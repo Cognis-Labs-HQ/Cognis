@@ -742,6 +742,10 @@ Core’s shared `createI18n` and `extendI18n` resolve missing or empty preferred
 
 Marketplace image retrieval logs use stable event identifiers with the existing structured failure fields.
 
+## Refresh module assets independently
+
+Core adds the installed module revision to module-owned UI asset URLs when registering contributions. Module scripts and locale files revalidate instead of inheriting the host release’s immutable cache lifetime. The service worker fetches module assets directly without cached fallback and rotates its asset caches. Updating a module changes its entry import identity, preventing stale scripts from requesting removed dependencies.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

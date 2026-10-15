@@ -742,6 +742,10 @@ Die gemeinsamen Core-Funktionen `createI18n` und `extendI18n` lösen fehlende od
 
 Protokolle zum Abruf von Marktplatzbildern verwenden stabile Ereigniskennungen mit den vorhandenen strukturierten Fehlerfeldern.
 
+## Modulressourcen unabhängig aktualisieren
+
+Core ergänzt modulbezogene UI-Ressourcen-URLs bei der Registrierung um die installierte Modulrevision. Modulskripte und Sprachdateien werden neu validiert, statt die unveränderliche Cache-Laufzeit der Host-Version zu übernehmen. Der Service Worker lädt Modulressourcen direkt ohne zwischengespeicherte Ersatzantwort und erneuert seine Ressourcen-Caches. Ein Modulupdate ändert die Importadresse des Einstiegspunkts, damit veraltete Skripte keine entfernten Abhängigkeiten anfordern.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

@@ -1,3 +1,4 @@
+import { versionModuleUiAssets } from "./module-ui-assets.js";
 import {
     disposeModuleResources,
     removeModuleRoutes,
@@ -417,7 +418,11 @@ export function createModuleExtensionRoutes(
                         ? { scriptUrl: pluginDef }
                         : pluginDef;
                 options?.uiRegistry?.registerNavbarPlugin({
-                    scriptUrl: pluginConfig.scriptUrl,
+                    scriptUrl: versionModuleUiAssets(
+                        pluginConfig.scriptUrl,
+                        moduleId,
+                        manifest.version,
+                    ),
                     access: pluginConfig.access,
                     providesCapabilities: pluginConfig.providesCapabilities,
                     ownerId: moduleId,
@@ -428,7 +433,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerCapabilityProvider({
-                    ...provider,
+                    ...versionModuleUiAssets(
+                        provider,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -437,7 +446,7 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSpaRoute({
-                    ...route,
+                    ...versionModuleUiAssets(route, moduleId, manifest.version),
                     requiredCapabilities:
                         route.requiredCapabilities ??
                         manifest.requiresCapabilities?.filter((capability) =>
@@ -454,7 +463,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAuthFooterPlugin({
-                    ...plugin,
+                    ...versionModuleUiAssets(
+                        plugin,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -463,7 +476,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSettingsSection({
-                    ...section,
+                    ...versionModuleUiAssets(
+                        section,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -472,7 +489,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerPageExtension(pageId, {
-                    ...element,
+                    ...versionModuleUiAssets(
+                        element,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -481,7 +502,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAdminSection({
-                    ...section,
+                    ...versionModuleUiAssets(
+                        section,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });

@@ -744,6 +744,10 @@ Fungsi bersama Core `createI18n` dan `extendI18n` menyelesaikan nilai bahasa pil
 
 Log pengambilan gambar marketplace menggunakan pengenal peristiwa yang stabil dengan bidang kegagalan terstruktur yang sudah ada.
 
+## Perbarui aset modul secara mandiri
+
+Core menambahkan revisi modul terpasang ke URL aset UI milik modul saat mendaftarkan kontribusi. Skrip dan berkas bahasa modul divalidasi ulang tanpa mewarisi masa cache tetap milik rilis host. Service worker mengambil aset modul langsung tanpa cadangan cache dan mengganti cache asetnya. Pembaruan modul mengubah identitas impor titik masuk sehingga skrip lama tidak meminta dependensi yang telah dihapus.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
@@ -471,6 +472,34 @@ test("installed modules use their conventional language bundle when undeclared",
         );
         assert.equal(recorder.status, 200);
         assert.match(recorder.body, /module\.example\.name/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
+});
+
+test("module scripts revalidate despite the unchanged host asset version", async () => {
+    const moduleRoot = await mkdtemp(path.join(tmpdir(), "module-cache-"));
+    try {
+        await writeFile(
+            path.join(moduleRoot, "app.js"),
+            "export const release = 'current';",
+        );
+        const registry = new UIRegistry();
+        registry.registerModuleStaticDir("legal", moduleRoot);
+        const recorder = createResponseRecorder();
+        await createUiRoutes(undefined, registry)(
+            { headers: {} } as any,
+            recorder.res as any,
+            new URL(
+                "http://localhost/static/modules/legal/app.js?revision=1.0.1&v=development",
+            ),
+        );
+        assert.equal(recorder.status, 200);
+        assert.equal(
+            recorder.headers["cache-control"],
+            "public, max-age=0, must-revalidate",
+        );
+        assert.match(recorder.body, /current/);
     } finally {
         await rm(moduleRoot, { recursive: true, force: true });
     }

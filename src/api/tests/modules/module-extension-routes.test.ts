@@ -337,6 +337,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             listManifests: async () => [
                 {
                     id: "owned-module",
+                    version: "1.0.0",
                     uuid: moduleUuid,
                     entrypoints: {
                         bootstrap: "./bootstrap.js",
@@ -375,7 +376,8 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             })),
             [
                 {
-                    scriptUrl: "/static/modules/owned-module/whiteboard.js",
+                    scriptUrl:
+                        "/static/modules/owned-module/whiteboard.js?revision=1.0.0",
                     providesCapabilities: ["whiteboard:uiGateway"],
                 },
             ],
@@ -485,11 +487,13 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         message: string;
         meta?: Record<string, unknown>;
     }> = [];
+    let moduleVersion = "1.0.0";
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
                 {
                     id: "meetings",
+                    version: moduleVersion,
                     uuid: moduleUuid,
                     requiresCapabilities: [
                         "ui:profileAvatarRenderer",
@@ -526,7 +530,8 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                     providesCapabilities: ["ui:profileAvatarRenderer"],
                 },
                 {
-                    scriptUrl: "/static/modules/meetings/navbar.js",
+                    scriptUrl:
+                        "/static/modules/meetings/navbar.js?revision=1.0.0",
                     providesCapabilities: ["voip:startCall"],
                 },
                 {
@@ -572,6 +577,16 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             true,
         );
         assert.equal(status, 204);
+        assert.equal(
+            uiRegistry.listSpaRoutes()[0].scriptUrl,
+            "/static/modules/meetings/app.js?revision=1.0.0",
+        );
+        moduleVersion = "1.0.1";
+        await extensions.refresh();
+        assert.equal(
+            uiRegistry.listSpaRoutes()[0].scriptUrl,
+            "/static/modules/meetings/app.js?revision=1.0.1",
+        );
     } finally {
         if (previousExternalModulesRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
