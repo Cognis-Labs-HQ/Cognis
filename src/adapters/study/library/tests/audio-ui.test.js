@@ -186,3 +186,33 @@ test("failed audio retrieval logs safely, shows a localized toast, and permits r
     assert.equal(logs[0][2].operation, "playAudio");
     assert.equal(toggle.disabled, false);
 });
+
+test("sentence audio fields request one host-generated recording and allow explicit replacements", () => {
+    const layer = { ...layers[2], fields: [audio] };
+    const sentence = {
+        id: "sentence",
+        label: "I run.",
+        layer: "sentences",
+        schemaId: "test",
+        fields: {},
+        references: [{ entryId: "one", relation: "words" }],
+    };
+    const html = context.renderAudio(
+        sentence,
+        layer,
+        [],
+        [{ id: "test", layers: [layer] }],
+        "Audio",
+    );
+    assert.equal([...html.matchAll(/<audio /g)].length, 1);
+    assert.match(html, /data-library-audio-entry="sentence"/);
+    const kanji = { id: "kanji", label: "字", fields: {}, references: [] };
+    const writing = {
+        semanticRole: "compoundWritingUnit",
+        fields: [audio],
+        metadata: { audio: { requiresReading: true } },
+    };
+    assert.match(context.renderAudio(kanji, writing), /disabled/);
+    kanji.fields.audio = "file:manual.audio";
+    assert.doesNotMatch(context.renderAudio(kanji, writing), /disabled/);
+});

@@ -65,6 +65,7 @@ const DOMAIN_CODES = new Set([
     "invalid_always_show_definition",
     "invalid_asset_reference",
     "invalid_cached_audio",
+    "invalid_audio_composition",
     "invalid_cardinality",
     "invalid_child_relationship",
     "invalid_constructor_option",

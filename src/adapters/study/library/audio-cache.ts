@@ -35,7 +35,14 @@ export class LibraryAudioCache {
         Promise<{ mediaType: string; data: Buffer }>
     >();
 
-    constructor(private readonly files: NamespaceFileClient) {}
+    constructor(
+        private readonly files: NamespaceFileClient,
+        private readonly log?: (
+            level: string,
+            message: string,
+            metadata: Record<string, unknown>,
+        ) => unknown,
+    ) {}
 
     async store(
         key: string,
@@ -61,6 +68,13 @@ export class LibraryAudioCache {
             if (cached) return cached;
             const recording = await load();
             await this.store(key, recording.mediaType, recording.data);
+            this.log?.("info", "study_audio_cached", {
+                component: "study-library",
+                operation: "persistAudio",
+                key,
+                mediaType: recording.mediaType,
+                bytes: recording.data.byteLength,
+            });
             return {
                 mediaType: recording.mediaType,
                 data: Buffer.from(recording.data),

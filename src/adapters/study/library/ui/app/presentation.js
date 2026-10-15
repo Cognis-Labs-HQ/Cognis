@@ -334,8 +334,12 @@ function entryAudio(entry, layer) {
         audioField,
         valid:
             (typeof value === "string" && value.startsWith("file:")) ||
-            (audioField?.audioLookupAvailable === true &&
-                !entry.tags?.includes("punctuation")),
+            ((audioField?.audioLookupAvailable === true ||
+                (audioField &&
+                    layer?.semanticRole === "orderedLexicalSequence")) &&
+                !entry.tags?.includes("punctuation") &&
+                (!layer?.metadata?.audio?.requiresReading ||
+                    entry.fields?.pronunciation?.length > 0)),
     };
 }
 

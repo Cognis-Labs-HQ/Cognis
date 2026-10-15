@@ -1,6 +1,7 @@
 import { runOperation } from "../reuse/operation.js";
 import { findLayer } from "../layers.js";
-import { referencedTransformation } from "../ui/app/transformations.js";
+import { transformedAudioEntry } from "./audio-input.js";
+import { resolveCompositeAudio } from "./composite-audio.js";
 import type { FlowApi } from "@cognis/core";
 import type { LibraryActor } from "../contracts.js";
 import type { LibrarySchema, LibraryReferenceInput } from "../types.js";
@@ -32,9 +33,12 @@ export async function readEntryAudio(
             typeof readings === "string"
                 ? [readings]
                 : Array.isArray(readings)
-                  ? readings.filter(
-                        (value): value is string => typeof value === "string",
-                    )
+                  ? readings
+                        .slice(0, 1)
+                        .filter(
+                            (value): value is string =>
+                                typeof value === "string",
+                        )
                   : [],
     };
     const key = provider.cacheKey(input);
@@ -73,40 +77,61 @@ export async function readAuthorizedEntryAudio(
             layer = findLayer(dependencies.schema(entry.schemaId), entry.layer);
         },
         validate: () => {
-            const transformation = input.transformation;
-            if (transformation === undefined) return;
-            if (
-                !transformation ||
-                typeof transformation.setId !== "string" ||
-                !Array.isArray(transformation.path) ||
-                transformation.path.length > 8 ||
-                transformation.path.some((value) => typeof value !== "string")
-            )
-                throw new Error("invalid_reference_transformation");
-            const resolved = referencedTransformation(
+            entry = transformedAudioEntry(
                 entry,
                 dependencies.schema(entry.schemaId),
-                transformation,
+                input.transformation,
+                input.fieldId,
             );
-            if (!resolved) throw new Error("invalid_reference_transformation");
-            entry = {
-                ...entry,
-                label: resolved.node.value,
-                fields: {
-                    ...entry.fields,
-                    [input.fieldId]: undefined,
-                    pronunciation: [resolved.node.pronunciation],
-                },
-            };
         },
         resolve: async () => {
-            result = await readEntryAudio(
-                entry,
-                layer,
-                input.fieldId,
-                dependencies.cache,
-                dependencies.provider,
+            if (!dependencies.cache)
+                throw new Error("file_gateway_unavailable");
+            const field = layer.fields?.find(
+                (item) => item.id === input.fieldId,
             );
+            if (field?.type !== "audio")
+                throw new Error("audio_field_required");
+            const readRecording = (
+                candidate: LibraryEntry,
+                candidateLayer: LibraryLayerSchema,
+                fieldId: string,
+            ) =>
+                readEntryAudio(
+                    candidate,
+                    candidateLayer,
+                    fieldId,
+                    dependencies.cache,
+                    dependencies.provider,
+                );
+            if (
+                layer.semanticRole !== "orderedLexicalSequence" ||
+                String(entry.fields?.[input.fieldId] ?? "").startsWith("file:")
+            ) {
+                try {
+                    result = await readRecording(entry, layer, input.fieldId);
+                    return;
+                } catch (error) {
+                    if (
+                        !(error instanceof Error) ||
+                        ![
+                            "audio_not_found",
+                            "audio_lookup_unavailable",
+                        ].includes(error.message)
+                    )
+                        throw error;
+                }
+            }
+            const recording = await resolveCompositeAudio(entry, layer, {
+                read: (id) => dependencies.read(input.actor, id),
+                schema: dependencies.schema,
+                recording: readRecording,
+                cache: dependencies.cache,
+            });
+            result = {
+                mediaType: recording.mediaType,
+                data: Buffer.from(recording.data),
+            };
         },
     });
     return result!;

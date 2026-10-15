@@ -206,3 +206,43 @@ test("audio access checks ownership and derives transformed speech from the sche
         false,
     );
 });
+
+test("only the first pronunciation controls playback and cache identity", async () => {
+    const cache = createAudioCache();
+    const spoken: string[] = [];
+    const provider: StudyAudioCapability = {
+        registerProvider() {
+            throw new Error("not_used");
+        },
+        supports: () => true,
+        cacheKey: (input) => `reading-${input.readings?.[0]}.audio`,
+        fetchAudio: async (input) => {
+            assert.equal(input.readings?.length, 1);
+            spoken.push(input.readings![0]);
+            return { mediaType: "audio/mpeg", data: new Uint8Array([1, 2]) };
+        },
+    };
+    const entry = {
+        id: "kanji",
+        language: "ja",
+        label: "字",
+        fields: {
+            pronunciation: [
+                "first",
+                ...Array.from({ length: 20 }, (_, index) => `other-${index}`),
+            ],
+        },
+    } as LibraryEntry;
+    const layer = {
+        id: "kanji",
+        semanticRole: "compoundWritingUnit",
+        fields: [{ id: "audio", type: "audio" }],
+    } as LibraryLayerSchema;
+    await readEntryAudio(entry, layer, "audio", cache, provider);
+    entry.fields!.pronunciation = ["first", "changed-secondary"];
+    await readEntryAudio(entry, layer, "audio", cache, provider);
+    assert.deepEqual(spoken, ["first"]);
+    entry.fields!.pronunciation = ["second", "first"];
+    await readEntryAudio(entry, layer, "audio", cache, provider);
+    assert.deepEqual(spoken, ["first", "second"]);
+});

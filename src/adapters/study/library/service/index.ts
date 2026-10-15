@@ -303,6 +303,7 @@ export class LibraryService implements LibraryCapability {
         );
         for (const layer of result.layers) {
             if (
+                layer.semanticRole !== "orderedLexicalSequence" &&
                 !this.audioProvider?.supports(
                     result.language ?? "",
                     layer.semanticRole ?? "",
