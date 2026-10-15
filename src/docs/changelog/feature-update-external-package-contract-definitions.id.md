@@ -4,6 +4,14 @@
 
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
+## Jaga petunjuk hover agar tidak menutupi pratinjau
+
+Petunjuk tekan lama tetap satu baris di area bawah yang disediakan, dengan elipsis visual bila perlu dan teks terjemahan lengkap tetap tersimpan dalam tooltip. Petunjuk tidak lagi membungkus hingga menutupi pratinjau bahasa Inggris.
+
+## Tautkan unsur kalimat yang dipisahkan spasi
+
+Judul detail kalimat mempertahankan spasi di antara tautan kata kanonis dan transformasi terpilih. Kalimat bahasa Inggris kini menautkan kata penyusunnya; komposisi tidak lengkap tetap ditolak.
+
 ## Pisahkan navigasi transformasi
 
 Detail kartu hasil transformasi menempatkan Kembali ke pada baris tersendiri, dengan Sebelumnya dan Berikutnya tetap berpasangan di bawahnya.

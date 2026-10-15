@@ -77,6 +77,12 @@ export function resolveReferenceTitleComposition(
             referenceIndex += 1;
             continue;
         }
+        const whitespace = label.slice(offset).match(/^\s+/)?.[0];
+        if (whitespace) {
+            result.push({ label: whitespace });
+            offset += whitespace.length;
+            continue;
+        }
         const literal = values.find(
             (value) => value && label.startsWith(value, offset),
         );

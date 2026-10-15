@@ -4,6 +4,14 @@
 
 Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
 
+## Keep hover hints clear of previews
+
+Long-press hints stay on one line within the reserved footer space, with visual ellipsis when needed and the complete translated text retained in the tooltip. They no longer wrap over English preview content.
+
+## Link spaced sentence constituents
+
+Sentence detail headings preserve spaces between canonical word links and selected transformations. English sentences now expose their constituent words; incomplete compositions remain rejected.
+
 ## Separate transformation navigation
 
 Transformed-card details place Return to on its own row, keeping Previous and Next together below it.

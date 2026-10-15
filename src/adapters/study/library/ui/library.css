@@ -603,6 +603,9 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     color: var(--text-muted);
     font-size: 0.8125rem;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .library-entry-card-shell:has(> .library-entry-variant-hint)
     > .library-entry-card {

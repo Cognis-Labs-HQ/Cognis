@@ -4,6 +4,7 @@ import {
     distinctPronunciationLabels,
     excludeTitleReferenceDuplicates,
     resolveLabelComposition,
+    resolveReferenceTitleComposition,
     resolveReferenceAliasComposition,
     resolveGroupedPronunciation,
 } from "../ui/app/composition-links.js";
@@ -439,5 +440,36 @@ test("direct and intermediate kana routes remain available together", async () =
             catalog,
         ).map(({ id }) => id),
         ["aruku", "authored", "grouped", "indirect"],
+    );
+});
+
+test("explicit title composition preserves spacing and multiword cards without guessing words", () => {
+    const references = [
+        { id: "phrase", label: "as long as" },
+        { id: "subject", label: "you" },
+        { id: "verb", label: "stay" },
+    ];
+    const result = resolveReferenceTitleComposition(
+        "as long as  you stay!",
+        references,
+        ["!"],
+    );
+    assert.equal(
+        result.map(({ label }) => label).join(""),
+        "as long as  you stay!",
+    );
+    assert.deepEqual(
+        result.filter(({ id }) => id),
+        references,
+    );
+    assert.deepEqual(
+        resolveReferenceTitleComposition("as long as you wait!", references, [
+            "!",
+        ]),
+        [],
+    );
+    assert.deepEqual(
+        resolveReferenceTitleComposition("as long as you stay!", references),
+        [],
     );
 });

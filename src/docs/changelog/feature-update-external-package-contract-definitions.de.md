@@ -4,6 +4,14 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## Hover-Hinweise von Vorschauen trennen
+
+Hinweise zum langen Drücken bleiben einzeilig im reservierten Fußbereich. Bei Bedarf werden sie visuell mit Auslassungspunkten gekürzt, während der vollständige übersetzte Text im Tooltip erhalten bleibt. Sie verdecken englische Vorschauinhalte nicht mehr durch Zeilenumbruch.
+
+## Bestandteile von Sätzen mit Leerzeichen verlinken
+
+Satzüberschriften erhalten Leerzeichen zwischen kanonischen Wortlinks und ausgewählten Transformationen. Englische Sätze bieten jetzt Links zu ihren Bestandteilen; unvollständige Kompositionen werden weiterhin abgelehnt.
+
 ## Transformationsnavigation trennen
 
 Details transformierter Karten zeigen Zurück zu in einer eigenen Zeile. Zurück und Weiter bleiben darunter nebeneinander.

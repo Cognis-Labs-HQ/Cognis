@@ -316,3 +316,94 @@ test("editing restores literal separators between two transformations of one ver
     );
     assert.equal(tokens[3], literalCompositionToken("、"));
 });
+
+test("spaced sentence titles preserve canonical word, punctuation, and transformation links", () => {
+    const englishSchema = {
+        ...schema,
+        transformSets: [
+            {
+                id: "noun-number",
+                matchTags: ["plural"],
+                baseState: "singular",
+                rules: [
+                    {
+                        id: "plural",
+                        fromState: "singular",
+                        toState: "plural",
+                        removeSuffix: "dog",
+                        append: "dogs",
+                    },
+                ],
+            },
+        ],
+    };
+    const words = [
+        { id: "subject", schemaId: schema.id, layer: "words", label: "I" },
+        { id: "verb", schemaId: schema.id, layer: "words", label: "like" },
+        {
+            id: "noun",
+            schemaId: schema.id,
+            layer: "words",
+            label: "dog",
+            tags: ["plural"],
+        },
+        { id: "period", schemaId: schema.id, layer: "particles", label: "." },
+    ];
+    const plural = { setId: "noun-number", path: ["plural"] };
+    const record = {
+        id: "english-sentence",
+        schemaId: schema.id,
+        layer: "sentences",
+        label: "I like dogs.",
+        references: words.map((entry, position) => ({
+            entryId: entry.id,
+            relation: entry.layer,
+            position,
+            ...(entry.id === "noun" ? { transformation: plural } : {}),
+        })),
+    };
+    const presentation = load("../ui/app/presentation.js", {
+        referencedTransformation,
+        ...links,
+        orderedReadingReferences,
+    });
+    const title = presentation.headingCompositionReferences(
+        { entry: record, references: words },
+        [englishSchema],
+    );
+    assert.equal(
+        Array.from(title, ({ label }) => label).join(""),
+        record.label,
+    );
+    assert.deepEqual(
+        Array.from(title)
+            .filter(({ id }) => id)
+            .map(({ id }) => id),
+        words.map(({ id }) => id),
+    );
+    const popup = load("../ui/app/popup-title.js");
+    const items = popup.popupTitleItems(title);
+    const dog = items.find(({ label }) => label === "dogs");
+    const target = JSON.parse(
+        decodeURIComponent(dog.actionId.split(":").slice(1).join(":")),
+    );
+    assert.equal(target.entryId, "noun");
+    assert.deepEqual(target.transformation, plural);
+    assert.ok(
+        items
+            .filter(({ label }) => label === " ")
+            .every(({ actionId }) => actionId === undefined),
+    );
+    assert.deepEqual(
+        Array.from(
+            presentation.headingCompositionReferences(
+                {
+                    entry: { ...record, label: "I really like dogs." },
+                    references: words,
+                },
+                [englishSchema],
+            ),
+        ),
+        [],
+    );
+});

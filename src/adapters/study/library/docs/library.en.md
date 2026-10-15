@@ -22,7 +22,7 @@ Minimal grids derive a bounded chart width and proportional card scale from `gri
 
 ## API and UI
 
-Nested children remain available as a complete subtree: hovering or focusing any unfolded child reveals all of its direct children without collapsing sibling paths. The long-press hint appears only on hover as a floating element below its card. Hovered child cards keep a fully opaque raised surface so cards beneath them cannot show through.
+Nested children remain available as a complete subtree: hovering or focusing any unfolded child reveals all of its direct children without collapsing sibling paths. The long-press hint occupies one clipped line in the reserved card footer on hover, keeping wrapped help text clear of the preview content. Hovered child cards keep a fully opaque raised surface so cards beneath them cannot show through.
 
 Chart grids reserve an internal card-gap inset so card and focus borders remain fully visible. Spatial child placement measures the remaining capacity in every direction, reserves only coordinates used by the active ancestor path so descendants can reuse slots belonging to cursor-pruned alternate branches, and prefers a direction that can contain the descendant branch before falling back to the greatest visible capacity.
 
@@ -473,3 +473,5 @@ Dictionary searches open at `/study/library/search` without URL parameters. The 
 A provider transformation set may declare `optInTag`, for example `plural`. A card must carry both the family’s `matchTags` and that opt-in tag before Cognis exposes or accepts its forms. The composer shows the provider-labelled switch for matching families; saved sentence references retain the base UUID and `{setId, path}`. Removing the opt-in prevents new transformed references. Providers define countability, irregular spellings and pronunciation changes; Cognis supplies selection, persistence and validation. Nested branches use the closest collision-free placement with an unobstructed path to their parent. Sentence previews truncate their title and clamp their definition without resizing the grid.
 
 The Return to action occupies a separate full-width row above the paired Previous and Next controls.
+
+Explicit sentence title composition preserves whitespace between linked constituents, including multiword cards and selected transformations. Spacing remains plain text; canonical words and punctuation remain navigable. Missing constituents or undeclared punctuation still reject incomplete compositions.

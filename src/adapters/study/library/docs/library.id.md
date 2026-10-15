@@ -14,7 +14,7 @@ Lapisan dapat menargetkan dirinya sendiri dalam suatu hubungan sehingga satu ent
 
 ## Resolusi, API, dan UI
 
-Anak bersarang tetap tersedia sebagai subpohon lengkap: mengarahkan penunjuk atau memfokuskan anak yang terbuka menampilkan semua anak langsungnya tanpa menutup jalur saudara. Petunjuk tekan lama hanya muncul saat diarahkan sebagai elemen mengambang di bawah kartunya. Kartu anak yang diarahkan mempertahankan permukaan terangkat yang sepenuhnya opak agar kartu di bawahnya tidak terlihat menembus.
+Anak bersarang tetap tersedia sebagai subpohon lengkap: mengarahkan penunjuk atau memfokuskan anak yang terbuka menampilkan semua anak langsungnya tanpa menutup jalur saudara. Petunjuk tekan lama tampil dalam satu baris terpotong di area bawah kartu yang disediakan saat diarahkan, sehingga teks bantuan yang membungkus tidak menutupi isi pratinjau. Kartu anak yang diarahkan mempertahankan permukaan terangkat yang sepenuhnya opak agar kartu di bawahnya tidak terlihat menembus.
 
 Resolver `grapheme` memakai grafem Unicode, sedangkan `longest-match` memakai blok yang dipisahkan secara eksplisit. Keduanya mengembalikan usulan dan unit yang belum terselesaikan tanpa membuat entri diam-diam. Penyedia lookup dipasang melalui `registerLookupProvider`, mengembalikan saran berperingkat beserta asalnya, dan dapat dilepas melalui callback registrasi. Pembuatan, resolusi, dan lookup mengikuti flow ctx bernama.
 
@@ -460,3 +460,5 @@ Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gatew
 Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. Kartu harus memiliki `matchTags` keluarga dan tag pilihan tersebut sebelum Cognis menampilkan atau menerima bentuknya. Penyusun menampilkan sakelar berlabel penyedia untuk keluarga yang cocok; referensi kalimat menyimpan UUID dasar dan `{setId, path}`. Menghapus pilihan mencegah referensi transformasi baru. Penyedia menetapkan keterhitungan, ejaan tidak beraturan, dan perubahan pelafalan; Cognis menangani pemilihan, penyimpanan, dan validasi. Cabang bersarang memakai posisi bebas benturan terdekat dengan jalur terbuka ke induknya. Pratinjau kalimat memotong judul dan membatasi definisi tanpa mengubah ukuran kisi.
 
 Tindakan Kembali ke menempati baris tersendiri selebar area di atas pasangan kontrol Sebelumnya dan Berikutnya.
+
+Komposisi judul kalimat eksplisit mempertahankan spasi di antara unsur tertaut, termasuk kartu multikata dan transformasi terpilih. Spasi tetap berupa teks biasa; kata kanonis dan tanda baca tetap dapat dinavigasi. Unsur yang hilang atau tanda baca yang tidak dideklarasikan tetap menyebabkan komposisi tidak lengkap ditolak.

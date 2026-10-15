@@ -14,7 +14,7 @@ Ebenen können sich in einer Beziehung selbst als Ziel verwenden, sodass ein Ein
 
 ## Auflösung, API und UI
 
-Verschachtelte Kinder bleiben als vollständiger Teilbaum verfügbar: Beim Überfahren oder Fokussieren eines aufgeklappten Kindes werden alle direkten Kinder angezeigt, ohne Geschwisterpfade einzuklappen. Der Hinweis zum langen Drücken erscheint nur beim Darüberfahren als schwebendes Element unterhalb seiner Karte. Untergeordnete Karten behalten beim Darüberfahren eine vollständig deckende, erhöhte Oberfläche, sodass darunterliegende Karten nicht durchscheinen.
+Verschachtelte Kinder bleiben als vollständiger Teilbaum verfügbar: Beim Überfahren oder Fokussieren eines aufgeklappten Kindes werden alle direkten Kinder angezeigt, ohne Geschwisterpfade einzuklappen. Der Hinweis zum langen Drücken belegt beim Darüberfahren eine abgeschnittene Zeile im reservierten Kartenfußbereich, sodass umbrochener Hilfetext den Vorschauinhalt nicht verdeckt. Untergeordnete Karten behalten beim Darüberfahren eine vollständig deckende, erhöhte Oberfläche, sodass darunterliegende Karten nicht durchscheinen.
 
 Der `grapheme`-Resolver nutzt Unicode-Grapheme; `longest-match` verarbeitet ausdrücklich getrennte Blöcke. Beide liefern Vorschläge und ungelöste Einheiten, ohne still Einträge anzulegen. Lookup-Anbieter werden über `registerLookupProvider` beigetragen, liefern gewichtete Vorschläge mit Herkunft und lassen sich über den zurückgegebenen Callback entfernen. Erstellen, Auflösen und Nachschlagen laufen durch benannte ctx-Flows.
 
@@ -460,3 +460,5 @@ Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gatewa
 Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, deklarieren. Karten benötigen die passenden `matchTags` und dieses Opt-in-Tag, bevor Cognis Formen anbietet oder akzeptiert. Der Editor zeigt den vom Anbieter benannten Schalter für passende Gruppen. Satzreferenzen behalten die Basis-UUID und `{setId, path}`. Ohne Opt-in sind neue transformierte Referenzen unzulässig. Anbieter bestimmen Zählbarkeit, unregelmäßige Schreibweisen und Ausspracheänderungen; Cognis übernimmt Auswahl, Speicherung und Prüfung. Verschachtelte Zweige erhalten die nächste kollisionsfreie Position mit freiem Weg zum Elternteil. Satzvorschauen kürzen Titel und begrenzen Definitionen, ohne das Raster zu vergrößern.
 
 Die Aktion Zurück zu belegt eine eigene Zeile über die gesamte Breite oberhalb der nebeneinanderliegenden Steuerelemente Zurück und Weiter.
+
+Die ausdrückliche Titelkomposition von Sätzen erhält Leerraum zwischen verknüpften Bestandteilen, einschließlich Mehrwortkarten und ausgewählter Transformationen. Abstände bleiben einfacher Text; kanonische Wörter und Satzzeichen bleiben navigierbar. Fehlende Bestandteile oder nicht deklarierte Satzzeichen führen weiterhin zur Ablehnung unvollständiger Kompositionen.
