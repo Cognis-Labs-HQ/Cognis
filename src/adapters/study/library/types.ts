@@ -56,6 +56,8 @@ export interface LibraryDetailHint {
 
 export interface LibraryFieldSchema {
     id: string;
+    /** Runtime availability contributed by Study audio providers. */
+    audioLookupAvailable?: boolean;
     metadata: LibraryMetadata;
     /** Built-ins are validated directly; extension types require a declarative validator. */
     type: string;

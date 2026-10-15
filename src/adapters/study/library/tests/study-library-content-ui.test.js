@@ -76,14 +76,12 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
         /\.library-audio-unavailable-tooltip\.is-portal[\s\S]*position:\s*fixed/,
     );
     assert.match(source, /data-library-audio-sequence/);
-    assert.match(source, /own\.valid && !useRelatedProviderAudio/);
     assert.match(source, /data-library-audio-player/);
     assert.match(source, /data-library-audio-toggle/);
     assert.match(source, /data-library-audio-progress/);
     assert.match(source, /function connectLibraryAudioControls/);
     assert.match(source, /fetchLibraryAudioUrl/);
     assert.match(source, /audio\.src = objectUrl/);
-    assert.match(source, /replaceWith\(message\)/);
     assert.match(source, /gateway\.study\.library_audio_load_error/);
     assert.match(source, /value\.startsWith\("file:"\)/);
     assert.match(source, /URL\.revokeObjectURL/);

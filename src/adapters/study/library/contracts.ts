@@ -1,6 +1,7 @@
 import type { AccessRole } from "@cognis/core";
 import type {
     LibraryAsset,
+    LibraryReferenceInput,
     LibraryContentPackPlan,
     LibraryContentPackReceipt,
     LibraryEntry,
@@ -126,6 +127,7 @@ export interface LibraryCapability {
         actor: LibraryActor,
         entryId: string,
         fieldId: string,
+        transformation?: LibraryReferenceInput["transformation"],
     ): Promise<{ mediaType: string; data: Buffer }>;
     create(
         actor: LibraryActor,

@@ -4,6 +4,14 @@
 
 Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
 
+## Register scoped audio retrieval
+
+Both Study modules expose the same removable audio-provider contract and retrieve bundled recordings with bounded local reads. The host owns authorization, cache policy and composite playback.
+
+## Ship seeded pronunciation recordings
+
+Spoken seed cards include deduplicated offline-generated MP3 files and voice attribution. Sentences continue using ordered constituent playback.
+
 ## Keep hover hints clear of previews
 
 Long-press hints stay on one line within the reserved footer space, with visual ellipsis when needed and the complete translated text retained in the tooltip. They no longer wrap over English preview content.

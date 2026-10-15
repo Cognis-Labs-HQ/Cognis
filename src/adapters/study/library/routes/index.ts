@@ -1,3 +1,4 @@
+import type { LibraryReferenceInput } from "../types.js";
 import { sendJson } from "../../../../api/reuse/http-response.js";
 import { libraryFailure } from "./failures.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -196,16 +197,23 @@ export function createLibraryRoutes(
             const audioMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/audio\/([^/]+)$/,
             );
-            if (audioMatch && req.method === "GET") {
+            if (audioMatch && ["GET", "POST"].includes(req.method ?? "")) {
+                const body =
+                    req.method === "POST"
+                        ? ((await readJson(req)) as {
+                              transformation?: LibraryReferenceInput["transformation"];
+                          })
+                        : {};
                 const audio = await library.readAudio(
                     actor,
                     decodeURIComponent(audioMatch[1]),
                     decodeURIComponent(audioMatch[2]),
+                    body.transformation,
                 );
                 res.writeHead(200, {
                     "content-type": audio.mediaType,
                     "content-length": String(audio.data.byteLength),
-                    "cache-control": "private, max-age=86400",
+                    "cache-control": "private, no-cache",
                     "x-content-type-options": "nosniff",
                 });
                 res.end(audio.data);

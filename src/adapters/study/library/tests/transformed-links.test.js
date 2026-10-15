@@ -233,7 +233,12 @@ test("a transformed kana title does not repeat the same pronunciation", () => {
 
 test("Return to the verb root closes the transformed card and restores the base card", async () => {
     const transformation = {
-        node: { value: "行かなくて", pronunciation: "いかなくて" },
+        set: { id: "verb" },
+        node: {
+            value: "行かなくて",
+            pronunciation: "いかなくて",
+            path: ["negative"],
+        },
     };
     const popups = [];
     const context = {

@@ -12,6 +12,7 @@ const DOMAIN_CODES = new Set([
     "audio_asset_not_found",
     "audio_field_required",
     "audio_not_found",
+    "audio_lookup_unavailable",
     "class_access_unavailable",
     "class_id_required",
     "constructor_carousel_not_found",

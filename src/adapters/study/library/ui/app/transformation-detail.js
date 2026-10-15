@@ -31,6 +31,10 @@ export function transformedDetailEntry(entry, transformation) {
     return {
         ...entry,
         label: transformation.node.value,
+        referenceTransformation: {
+            setId: transformation.set.id,
+            path: transformation.node.path,
+        },
         fields: {
             ...entry.fields,
             pronunciation: transformation.node.pronunciation,

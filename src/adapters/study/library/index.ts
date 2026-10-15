@@ -1,3 +1,4 @@
+import type { StudyAudioCapability } from "@cognis/core";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { DictionarySearchState } from "./service/search-context.js";
 import { createDictionarySearchContextRoutes } from "./routes/search-context.js";
@@ -198,6 +199,7 @@ export async function bootstrapStudyAdapter(
                           );
               }
             : undefined,
+        ctx.capabilities.get<StudyAudioCapability>("study:audio"),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

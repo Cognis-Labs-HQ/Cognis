@@ -1,3 +1,4 @@
+import { StudyAudio } from "./audio.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -209,6 +210,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (!systemCtx)
+        throw new Error("Study requires the platform ctx capability.");
+    if (!systemCtx.hasFlow("study:audio:fetch"))
+        systemCtx?.registerFlow({
+            id: "study:audio:fetch",
+            stages: ["validate", "fetch"],
+        });
+    const audio = new StudyAudio(ctx.flow, ctx.log);
+    ctx.capabilities.contribute("study:audio", audio);
+    systemCtx.contributePublicCapability("study:audio:provider", {
+        registerProvider: audio.registerProvider.bind(audio),
+    });
     const preferences =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     if (preferences) {
@@ -244,6 +257,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         {
             id: "study:library:search",
             stages: ["authorize", "validate", "search", "audit"],
+        },
+        {
+            id: "study:library:audio",
+            stages: ["authorize", "validate", "resolve"],
         },
         {
             id: "study:library:lookup",

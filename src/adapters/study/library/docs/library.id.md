@@ -462,3 +462,11 @@ Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. K
 Tindakan Kembali ke menempati baris tersendiri selebar area di atas pasangan kontrol Sebelumnya dan Berikutnya.
 
 Komposisi judul kalimat eksplisit mempertahankan spasi di antara unsur tertaut, termasuk kartu multikata dan transformasi terpilih. Spasi tetap berupa teks biasa; kata kanonis dan tanda baca tetap dapat dinavigasi. Unsur yang hilang atau tanda baca yang tidak dideklarasikan tetap menyebabkan komposisi tidak lengkap ditolak.
+
+## Audio pelafalan
+
+Bootstrap memerlukan `study:audio:provider` dan mendaftarkan penyedia audio yang dapat dilepas bersama penyedia kamus dan goresan. Penyedia mencocokkan rekaman bawaan berdasarkan label ucapan dan bacaan pilihan, dengan pembacaan berkas terbatas serta kesalahan eksplisit bila audio tidak tersedia. Pelepasan membatalkan pengambilan yang tertunda. Cognis mengotorisasi akses kartu, menurunkan teks transformasi dari skema, dan menyimpan rekaman secara privat melalui Files tanpa mengubah bidang yang ditulis. Alur `study:library:audio` menjalankan otorisasi, validasi, dan resolusi; `study:audio:fetch` memvalidasi serta mengambil byte penyedia. Audio kalimat tetap memutar unsur penyusunnya secara berurutan.
+
+Kartu awal yang diucapkan menyertakan MP3 hasil sintesis di `data/library/assets/audio/`; teks ucapan identik memakai satu berkas bersama. Bahasa Inggris memakai Piper secara offline dengan suara berdasarkan dataset LJ Speech domain publik. Bahasa Jepang memakai Open JTalk secara offline dengan HTS Voice Mei, dengan atribusi kepada tim proyek MMDAgent dan Nagoya Institute of Technology di bawah CC BY. Pemberitahuan suara dan inventaris rekaman berada di `data/audio/`. Tanda baca tidak dibunyikan dan kalimat tidak memiliki rekaman sintesis: Cognis memutar audio unsur penyusunnya secara berurutan.
+
+Audio baru diambil ketika pelajar meminta pemutaran. Membuka kartu saja tidak membuat permintaan audio. Kegagalan pemutaran memakai toast terlokalisasi host dan log terstruktur. Unsur kalimat mempertahankan deskriptor transformasi terpilih; endpoint audio terautentikasi menurunkan bentuk ucapan dari skema, bukan menerima teks tampilan sembarang. Rekaman awal kombinasi huruf Inggris disintesis dari fonem IPA yang ditulis, sedangkan rekaman alfabet mengucapkan nama huruf.

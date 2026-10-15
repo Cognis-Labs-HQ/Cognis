@@ -267,7 +267,7 @@ test("packaged audio remains behind authenticated entry access", async () => {
     );
     assert.equal(response.statusCode, 200);
     assert.equal(response.headers["content-type"], "audio/mpeg");
-    assert.equal(response.headers["cache-control"], "private, max-age=86400");
+    assert.equal(response.headers["cache-control"], "private, no-cache");
     assert.equal(requestedEntry, "character-a");
     assert.equal(requestedField, "audio");
 });
@@ -418,3 +418,38 @@ for (const role of ["admin", "user"] as const) {
         assert.equal(JSON.parse(response.payload).data.entry.id, "canonical");
     });
 }
+
+test("transformed audio requests keep descriptors in an authenticated POST body", async () => {
+    const descriptor = { setId: "noun", path: ["plural"] };
+    let received: unknown;
+    const route = createLibraryRoutes(
+        {
+            readAudio: async (actor, entryId, fieldId, transformation) => {
+                received = { actor, entryId, fieldId, transformation };
+                return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "learner",
+            body: JSON.stringify({ transformation: descriptor }),
+        }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/entries/dog/audio/audio",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(received, {
+        actor: { accountId: "alice", role: "user" },
+        entryId: "dog",
+        fieldId: "audio",
+        transformation: descriptor,
+    });
+});

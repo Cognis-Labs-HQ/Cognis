@@ -1,3 +1,5 @@
+import { readAuthorizedEntryAudio } from "./audio.js";
+import type { StudyAudioCapability } from "@cognis/core";
 import { deleteProviderContent } from "./content-cleanup.js";
 import { importLibraryBatch } from "./import.js";
 import { mergeLibraryDraft, validateMergeProposal } from "./merge.js";
@@ -44,6 +46,7 @@ import { LibraryVisibilityService } from "../visibility.js";
 import { isImmutableEntry as immutableEntry } from "../immutability.js";
 import type {
     LibraryAsset,
+    LibraryReferenceInput,
     LibraryEntry,
     LibraryContentPackPlan,
     LibraryContentPackReceipt,
@@ -101,6 +104,7 @@ export class LibraryService implements LibraryCapability {
             entries: readonly LibraryEntry[],
             actor: LibraryActor,
         ) => Promise<void>,
+        private readonly audioProvider?: StudyAudioCapability,
     ) {
         this.writer = new LibraryEntryWriter({
             store,
@@ -293,7 +297,25 @@ export class LibraryService implements LibraryCapability {
     }
 
     private schemaWithFormConstructors(schema: LibrarySchema): LibrarySchema {
-        return applyFormContributions(schema, this.alignedFormContributions());
+        const result = applyFormContributions(
+            schema,
+            this.alignedFormContributions(),
+        );
+        for (const layer of result.layers) {
+            if (
+                !this.audioProvider?.supports(
+                    result.language ?? "",
+                    layer.semanticRole ?? "",
+                )
+            )
+                continue;
+            layer.fields = (layer.fields ?? []).map((field) =>
+                field.type === "audio"
+                    ? { ...field, audioLookupAvailable: true }
+                    : field,
+            );
+        }
+        return result;
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
@@ -490,20 +512,18 @@ export class LibraryService implements LibraryCapability {
         actor: LibraryActor,
         entryId: string,
         fieldId: string,
+        transformation?: LibraryReferenceInput["transformation"],
     ): Promise<{ mediaType: string; data: Buffer }> {
-        const entry = await this.read(actor, entryId);
-        if (!entry) throw new Error("not_found");
-        const layer = findLayer(this.schema(entry.schemaId), entry.layer);
-        const field = (layer.fields ?? []).find(({ id }) => id === fieldId);
-        const storedAudio = entry.fields?.[fieldId];
-        if (
-            field?.type !== "audio" ||
-            typeof storedAudio !== "string" ||
-            !storedAudio.startsWith("file:")
-        )
-            throw new Error("audio_not_found");
-        if (!this.audioCache) throw new Error("file_gateway_unavailable");
-        return this.audioCache.readStored(storedAudio.slice("file:".length));
+        return readAuthorizedEntryAudio(
+            { actor, entryId, fieldId, transformation },
+            {
+                read: this.read.bind(this),
+                schema: (id) => this.schema(id),
+                flow: this.flow,
+                cache: this.audioCache,
+                provider: this.audioProvider,
+            },
+        );
     }
 
     async resolve(

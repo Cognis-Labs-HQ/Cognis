@@ -66,10 +66,23 @@ export async function markLibraryEntriesViewed(entryIds) {
     if (!response.ok) throw new Error("mark_viewed_failed");
 }
 
-export async function fetchLibraryAudioUrl(entryId, fieldId, { signal } = {}) {
+export async function fetchLibraryAudioUrl(
+    entryId,
+    fieldId,
+    { signal, transformation } = {},
+) {
     const response = await apiFetch(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/audio/${encodeURIComponent(fieldId)}`,
-        { signal },
+        {
+            signal,
+            ...(transformation
+                ? {
+                      method: "POST",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify({ transformation }),
+                  }
+                : {}),
+        },
     );
     if (!response.ok) throw new Error("audio_failed");
     return URL.createObjectURL(await response.blob());

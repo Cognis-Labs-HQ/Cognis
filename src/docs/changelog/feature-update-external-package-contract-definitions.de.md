@@ -4,6 +4,14 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## Bereichsgebundenen Audioabruf registrieren
+
+Beide Study-Module verwenden denselben entfernbaren Audioanbieter-Vertrag und rufen mitgelieferte Aufnahmen durch begrenzte lokale Dateizugriffe ab. Autorisierung, Cache-Richtlinien und zusammengesetzte Wiedergabe gehören dem Host.
+
+## Vorbereitete Ausspracheaufnahmen ausliefern
+
+Gesprochene Seed-Karten enthalten deduplizierte, offline erzeugte MP3-Dateien und Stimmnachweise. Sätze behalten die geordnete Wiedergabe ihrer Bestandteile.
+
 ## Hover-Hinweise von Vorschauen trennen
 
 Hinweise zum langen Drücken bleiben einzeilig im reservierten Fußbereich. Bei Bedarf werden sie visuell mit Auslassungspunkten gekürzt, während der vollständige übersetzte Text im Tooltip erhalten bleibt. Sie verdecken englische Vorschauinhalte nicht mehr durch Zeilenumbruch.

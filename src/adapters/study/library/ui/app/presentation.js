@@ -1,3 +1,5 @@
+import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
@@ -330,7 +332,10 @@ function entryAudio(entry, layer) {
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
     return {
         audioField,
-        valid: typeof value === "string" && value.startsWith("file:"),
+        valid:
+            (typeof value === "string" && value.startsWith("file:")) ||
+            (audioField?.audioLookupAvailable === true &&
+                !entry.tags?.includes("punctuation")),
     };
 }
 
@@ -350,15 +355,7 @@ export function renderAudio(
     missingDependencyLabel = "",
 ) {
     const own = entryAudio(entry, layer);
-    const useRelatedProviderAudio =
-        own.valid &&
-        layer?.semanticRole === "compoundWritingUnit" &&
-        entry.createdBy?.startsWith("content-pack:") &&
-        allEntryReferences(entry).length > 0;
-    let sources =
-        own.valid && !useRelatedProviderAudio
-            ? [{ entry, field: own.audioField }]
-            : [];
+    let sources = own.valid ? [{ entry, field: own.audioField }] : [];
     let complete = sources.length > 0;
     if (!complete && allEntryReferences(entry).length) {
         const resolveSources = (candidate, visited = new Set()) => {
@@ -373,8 +370,19 @@ export function renderAudio(
                     (left, right) =>
                         (left.position ?? 0) - (right.position ?? 0),
                 )
-                .map(({ entryId }) => entries.find(({ id }) => id === entryId))
+                .map((reference) => {
+                    const target = entries.find(
+                        ({ id }) => id === reference.entryId,
+                    );
+                    return target
+                        ? {
+                              ...target,
+                              referenceTransformation: reference.transformation,
+                          }
+                        : undefined;
+                })
                 .filter(Boolean)
+                .filter((target) => !target.tags?.includes("punctuation"))
                 .filter(
                     (target) =>
                         !["definition", "meaning"].includes(
@@ -395,10 +403,11 @@ export function renderAudio(
         sources = [{ entry, field: own.audioField }];
         complete = true;
     }
-    const label = own.audioField
-        ? localizedLabel(own.audioField.metadata, entry.language) ||
-          own.audioField.id
-        : fallbackLabel;
+    const label =
+        (own.audioField &&
+            localizedLabel(own.audioField.metadata, entry.language)) ||
+        fallbackLabel;
+    if (!label) throw new Error("audio_label_required");
     if (!complete || !sources.length) {
         const dependenciesMissingAudio =
             ["lexicalUnit", "orderedLexicalSequence"].includes(
@@ -415,7 +424,7 @@ export function renderAudio(
     return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
         .map(
             ({ entry: source, field }) =>
-                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"></audio>`,
+                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"${source.referenceTransformation ? ` data-library-audio-transformation="${escapeHtml(JSON.stringify(source.referenceTransformation))}"` : ""}></audio>`,
         )
         .join(
             "",
@@ -472,40 +481,51 @@ export async function loadLibraryAudio(
     signal,
     errorMessage,
 ) {
-    await Promise.all(
-        Array.from(
-            overlay.querySelectorAll(
-                "audio[data-library-audio-entry][data-library-audio-field]",
-            ),
-            async (audio) => {
-                try {
-                    const objectUrl = await fetchLibraryAudioUrl(
-                        audio.dataset.libraryAudioEntry,
-                        audio.dataset.libraryAudioField,
-                        { signal },
-                    );
-                    if (!audio.isConnected || signal?.aborted) {
-                        URL.revokeObjectURL(objectUrl);
-                        return;
-                    }
-                    objectUrls.add(objectUrl);
-                    audio.src = objectUrl;
-                    connectLibraryAudioControls(audio);
-                } catch (error) {
-                    if (error?.name === "AbortError" || !audio.isConnected) {
-                        return;
-                    }
-                    const message = document.createElement("p");
-                    message.className = "library-audio library-audio-error";
-                    message.setAttribute("role", "status");
-                    message.textContent = errorMessage;
-                    audio
-                        .closest("[data-library-audio-player]")
-                        ?.replaceWith(message);
-                }
+    async function prepare(audio) {
+        if (audio.src) return;
+        const objectUrl = await fetchLibraryAudioUrl(
+            audio.dataset.libraryAudioEntry,
+            audio.dataset.libraryAudioField,
+            {
+                signal,
+                transformation: audio.dataset.libraryAudioTransformation
+                    ? JSON.parse(audio.dataset.libraryAudioTransformation)
+                    : undefined,
             },
-        ),
-    );
+        );
+        if (!audio.isConnected || signal?.aborted) {
+            URL.revokeObjectURL(objectUrl);
+            return;
+        }
+        objectUrls.add(objectUrl);
+        audio.src = objectUrl;
+        connectLibraryAudioControls(audio);
+    }
+
+    async function play(audio) {
+        if (signal?.aborted || !audio.isConnected) return;
+        await new Promise((resolve, reject) => {
+            const finish = (error) => {
+                audio.removeEventListener("ended", ended);
+                audio.removeEventListener("error", failed);
+                signal?.removeEventListener("abort", aborted);
+                if (error) reject(error);
+                else resolve();
+            };
+            const ended = () => finish();
+            const failed = () => finish(new Error("audio_playback_failed"));
+            const aborted = () => {
+                audio.pause();
+                finish();
+            };
+            audio.addEventListener("ended", ended, { once: true });
+            audio.addEventListener("error", failed, { once: true });
+            signal?.addEventListener("abort", aborted, { once: true });
+            audio.currentTime = 0;
+            audio.play().catch(finish);
+        });
+    }
+
     overlay
         .querySelectorAll("[data-library-audio-sequence]")
         .forEach((group) => {
@@ -513,20 +533,36 @@ export async function loadLibraryAudio(
             const toggle = group.querySelector(
                 "[data-library-audio-sequence-toggle]",
             );
-            if (!toggle || audio.some((item) => !item.src)) {
-                if (toggle) toggle.disabled = true;
-                return;
-            }
-            toggle.addEventListener("click", async () => {
-                toggle.disabled = true;
-                for (const item of audio) {
-                    item.currentTime = 0;
-                    await item.play();
-                    await new Promise((resolve) =>
-                        item.addEventListener("ended", resolve, { once: true }),
-                    );
-                }
-                toggle.disabled = false;
-            });
+            if (!toggle || !audio.length) return;
+            toggle.addEventListener(
+                "click",
+                async () => {
+                    if (toggle.disabled) return;
+                    toggle.disabled = true;
+                    try {
+                        await Promise.all(audio.map(prepare));
+                        for (const item of audio) await play(item);
+                    } catch (error) {
+                        if (signal?.aborted || error?.name === "AbortError")
+                            return;
+                        uiCtx.capabilities.get("ui:log")?.(
+                            "error",
+                            "Library audio playback failed.",
+                            {
+                                component: "study-library",
+                                operation: "playAudio",
+                                errorName:
+                                    error instanceof Error
+                                        ? error.name
+                                        : "Error",
+                            },
+                        );
+                        showToast(errorMessage, { variant: "error" });
+                    } finally {
+                        toggle.disabled = false;
+                    }
+                },
+                { signal },
+            );
         });
 }

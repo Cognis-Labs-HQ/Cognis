@@ -4,6 +4,14 @@
 
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
+## Daftarkan pengambilan audio terkelola
+
+Kedua modul Study memakai kontrak penyedia audio yang sama dan dapat dilepas, serta mengambil rekaman bawaan dengan pembacaan lokal terbatas. Host memiliki otorisasi, kebijakan cache, dan pemutaran komposit.
+
+## Sertakan rekaman pelafalan awal
+
+Kartu awal yang diucapkan menyertakan MP3 yang dibuat offline dan dideduplikasi, beserta atribusi suara. Kalimat tetap memutar unsur penyusunnya secara berurutan.
+
 ## Jaga petunjuk hover agar tidak menutupi pratinjau
 
 Petunjuk tekan lama tetap satu baris di area bawah yang disediakan, dengan elipsis visual bila perlu dan teks terjemahan lengkap tetap tersimpan dalam tooltip. Petunjuk tidak lagi membungkus hingga menutupi pratinjau bahasa Inggris.

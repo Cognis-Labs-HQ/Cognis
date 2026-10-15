@@ -38,16 +38,23 @@ export class LibraryAudioCache {
         if (!AUDIO_TYPES.has(mediaType))
             throw new Error("unsupported_audio_type");
         await this.files.put(CACHE_ACTOR, key, encodeAudio(mediaType, data), {
-            publicRead: true,
+            publicRead: false,
             contentType: mediaType,
         });
+    }
+
+    async findStored(
+        key: string,
+    ): Promise<{ mediaType: string; data: Buffer } | null> {
+        const cached = await this.files.get(CACHE_ACTOR, key);
+        return cached ? decodeAudio(cached) : null;
     }
 
     async readStored(
         key: string,
     ): Promise<{ mediaType: string; data: Buffer }> {
-        const cached = await this.files.get(CACHE_ACTOR, key);
+        const cached = await this.findStored(key);
         if (!cached) throw new Error("audio_not_found");
-        return decodeAudio(cached);
+        return cached;
     }
 }
