@@ -4,6 +4,10 @@
 
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
+## Tampilkan label navigasi adapter
+
+Navigasi Study menampilkan Permintaan dan tautan adapter lainnya dari label rute terlokalisasi yang dideklarasikan, tanpa memerlukan paket bahasa adapter pada halaman utama Study. Kesalahan ketat untuk terjemahan XML milik gateway yang hilang tetap berlaku dan tautan adapter ganda dihindari.
+
 ## Lepas status pemuatan saat pembatalan
 
 Halaman langsung yang dibatalkan segera melepas token pemuatan bersama, meskipun inisialisasi terjemahan, penyedia, atau composer masih tertunda. Pembersihan sumber daya tetap terikat pada sinyal host yang sama.

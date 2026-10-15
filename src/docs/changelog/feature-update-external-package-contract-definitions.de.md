@@ -4,6 +4,10 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## Adapter-Navigationslabels darstellen
+
+Die Study-Navigation stellt Anfragen und weitere Adapterlinks anhand ihrer deklarierten lokalisierten Routenlabels dar, ohne Adapter-Sprachpakete auf der Study-Startseite vorauszusetzen. Strenge Fehler bei fehlenden gatewayeigenen XML-Übersetzungen bleiben erhalten und doppelte Adapterlinks werden vermieden.
+
 ## Ladezustand bei Abbruch freigeben
 
 Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch bei ausstehender Übersetzungs-, Anbieter- oder Composer-Initialisierung. Die Ressourcenbereinigung bleibt an dasselbe Host-Signal gebunden.

@@ -289,15 +289,6 @@ export async function loadStudySubNavigationModel({
             order: 210,
         });
     }
-    if (spaRoutes.some((route) => route.base === "/study/leaderboard")) {
-        modules.push({
-            id: "leaderboard",
-            label: "Leaderboard",
-            labelKey: "gateway.study.leaderboard_label",
-            pageUrl: "/study/leaderboard",
-            order: 300,
-        });
-    }
     const requestsRoute = spaRoutes.find(
         (route) => route.base === "/study/library/requests",
     );
@@ -309,7 +300,6 @@ export async function loadStudySubNavigationModel({
                 navigationLabels[activeLocale] ??
                 navigationLabels[activeLocale.split("-")[0]] ??
                 navigationLabels.en,
-            labelKey: "gateway.study.library_requests",
             pageUrl: "/study/library/requests",
             order: 290,
             attention: pendingLibraryRequests.some(

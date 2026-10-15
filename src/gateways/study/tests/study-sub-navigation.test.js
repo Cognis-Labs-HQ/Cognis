@@ -64,8 +64,6 @@ test("Study submenu promotes Explore and available Study adapters to pages", () 
     );
     assert.match(source, /fetchLibrarySchemas/);
     assert.match(source, /pageUrl: "\/study\/explore"/);
-    assert.match(source, /pageUrl: "\/study\/leaderboard"/);
-    assert.match(source, /labelKey: "gateway\.study\.leaderboard_label"/);
     assert.match(source, /requestsRoute\.navigationLabels/);
     assert.match(source, /navigationLabels\[activeLocale\]/);
 });

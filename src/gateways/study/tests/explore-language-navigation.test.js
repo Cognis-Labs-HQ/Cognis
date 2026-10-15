@@ -65,11 +65,11 @@ test("English and Japanese resolve the same Explore roles through their provider
     assert.equal(languageExploreUrl(schemas, "unavailable"), null);
 });
 
-test("language choices resolve shared host pages even when provider child pages are empty", async () => {
+function navigationContext({ locale = "en", routes, pending = [] } = {}) {
     const context = vm.createContext({
         languageExploreUrl,
         languageFlashcardsUrl,
-        document: { documentElement: { lang: "en" } },
+        document: { documentElement: { lang: locale } },
         window: { location: { pathname: "/study/explore/ja/kanji" } },
         history: { state: {} },
         parseLanguageCode: (value) => value,
@@ -79,9 +79,13 @@ test("language choices resolve shared host pages even when provider child pages 
             json: async () => ({ data: { learningLanguages: ["ja", "en"] } }),
         }),
         fetchLibrarySchemas: async () => schemas,
-        fetchLibraryPushRequests: async () => [],
+        fetchLibraryPushRequests: async () => pending,
         fetchSearchableDictionaryProviders: async () => [],
+        escapeHtml: String,
+        buildLibraryUrl: () => "/study/library",
+        isAdminScope: () => false,
         loadSpaRoutes: async () =>
+            routes ??
             [
                 "/study/explore",
                 "/study/library",
@@ -109,6 +113,11 @@ test("language choices resolve shared host pages even when provider child pages 
         .replace(/^import[\s\S]*?;\n/gm, "")
         .replace(/export (async )?function/g, "$1function");
     vm.runInContext(source, context);
+    return context;
+}
+
+test("language choices resolve shared host pages even when provider child pages are empty", async () => {
+    const context = navigationContext();
     const model = await context.loadStudySubNavigationModel({
         fallbackLanguageCode: "ja",
     });
@@ -122,3 +131,79 @@ test("language choices resolve shared host pages even when provider child pages 
     });
     assert.equal(deck.languagePageUrlsByCode.get("en"), "/study/en/flashcards");
 });
+
+test("Study renders Requests from route translations without an adapter locale bundle", async () => {
+    const labels = {
+        de: "Anfragen",
+        en: "Requests",
+        id: "Permintaan",
+        ja: "リクエスト",
+    };
+    const rankings = {
+        de: "Rangliste",
+        en: "Leaderboard",
+        id: "Peringkat",
+        ja: "ランキング",
+    };
+    const english = localeStrings("en");
+    for (const locale of ["de", "en", "id", "ja", "de-AT", "fr"]) {
+        const context = navigationContext({
+            locale,
+            routes: [
+                { base: "/study/explore" },
+                { base: "/study/library/requests", navigationLabels: labels },
+                { base: "/study/leaderboard", navigationLabels: rankings },
+            ],
+            pending: [{ canReview: true }],
+        });
+        context.window.location.pathname = "/study";
+        const preferred = localeStrings(locale.split("-")[0]);
+        const lookups = [];
+        const model = await context.loadStudySubNavigationModel({
+            fallbackLanguageCode: "ja",
+        });
+        const html = context.renderStudySubNavigation({
+            model,
+            currentPath: "/study",
+            i18n: {
+                t(key) {
+                    lookups.push(key);
+                    const value = preferred.get(key) || english.get(key);
+                    if (!value) throw new Error(`missing_translation:${key}`);
+                    return value;
+                },
+            },
+        });
+        const label =
+            labels[locale] ?? labels[locale.split("-")[0]] ?? labels.en;
+        assert.match(
+            html,
+            new RegExp(`href="/study/library/requests"[^>]*>\\s*${label}`),
+        );
+        const rankingLabel =
+            rankings[locale] ?? rankings[locale.split("-")[0]] ?? rankings.en;
+        assert.match(
+            html,
+            new RegExp(`href="/study/leaderboard"[^>]*>\\s*${rankingLabel}`),
+        );
+        assert.equal(
+            [...html.matchAll(/href="\/study\/leaderboard"/g)].length,
+            1,
+        );
+        assert.match(html, /study-subnav-attention/);
+        assert.ok(lookups.length > 0);
+    }
+});
+
+function localeStrings(locale) {
+    if (!["de", "en", "id", "ja"].includes(locale)) return new Map();
+    const xml = readFileSync(
+        new URL(`../ui/languages/${locale}/strings.xml`, import.meta.url),
+        "utf8",
+    );
+    return new Map(
+        [...xml.matchAll(/<string name="([^"]+)">([^<]*)<\/string>/g)].map(
+            (match) => [match[1], match[2]],
+        ),
+    );
+}
