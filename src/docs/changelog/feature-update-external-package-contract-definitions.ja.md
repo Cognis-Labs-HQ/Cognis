@@ -843,3 +843,4 @@ Coreは登録時にモジュール所有のUI資源URLへインストール済�
 - [27f78bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/27f78bcb096f891fa3790c4bf89221d9b842ff84)
 - [eea52d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/eea52d437b3b8084e4bab393cb7e5f249a5447e3)
 - [ddf1772](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf17726e4ef3c73a44411aeb3e4356a384848aa)
+- [6d34532b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d34532b8a1346e5e83e67c7734c0f5d69191c1d)
