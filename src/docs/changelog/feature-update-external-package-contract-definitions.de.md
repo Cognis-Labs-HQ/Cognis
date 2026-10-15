@@ -734,6 +734,14 @@ Interne Links mit neuem Tab, modifizierte Klicks und Downloads behalten das Brow
 
 Die KI-Anweisungen verbieten fest kodierte englische Benutzertexte in allen Abläufen. Fehlende Werte der bevorzugten Sprache dürfen dieselben Schlüssel der englischen XML-Ressourcen verwenden. Fehlende oder leere englische Ersatzwerte müssen ausdrücklich einen Fehler auslösen, statt englische Literale, rohe Schlüssel oder leeren Text anzuzeigen. Fehler wegen fehlender Übersetzungen dürfen nicht unterdrückt werden.
 
+## Sprachersatz zentral in Core auflösen
+
+Die gemeinsamen Core-Funktionen `createI18n` und `extendI18n` lösen fehlende oder leere Werte der bevorzugten Sprache je Schlüssel aus englischen XML-Ressourcen für Core, Module und Komponenten auf. Nicht auflösbare Schlüssel lösen `missing_translation:<key>` aus. Module geben ihre Ressourcen-URLs an und verwenden den Host-Resolver, statt eine eigene Ersatzlogik zu implementieren.
+
+## Stabile Ereignisse für Bildfehler verwenden
+
+Protokolle zum Abruf von Marktplatzbildern verwenden stabile Ereigniskennungen mit den vorhandenen strukturierten Fehlerfeldern.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

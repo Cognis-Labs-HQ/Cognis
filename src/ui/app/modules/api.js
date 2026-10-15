@@ -147,7 +147,7 @@ export async function loadModuleAsset(assetUrl, { signal } = {}) {
             suppressAccessDeniedEvent: true,
         });
         if (!response.ok) {
-            log?.("error", "Module image request was rejected.", {
+            log?.("error", "module_image_request_rejected", {
                 component: "module-marketplace",
                 operation: "loadAsset",
                 assetUrl,
@@ -158,7 +158,7 @@ export async function loadModuleAsset(assetUrl, { signal } = {}) {
         return URL.createObjectURL(await response.blob());
     } catch (error) {
         if (error?.name === "AbortError") return null;
-        log?.("error", "Module image request failed.", {
+        log?.("error", "module_image_request_failed", {
             component: "module-marketplace",
             operation: "loadAsset",
             assetUrl,

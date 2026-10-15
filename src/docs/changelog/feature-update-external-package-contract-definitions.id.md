@@ -736,6 +736,14 @@ Tautan internal dengan target tab baru, klik dengan tombol pengubah, dan unduhan
 
 Instruksi AI melarang teks bahasa Inggris yang ditanam langsung untuk pengguna dalam setiap alur. Nilai yang tidak tersedia dalam bahasa pilihan dapat menggunakan kunci yang sama dari sumber daya XML bahasa Inggris. Nilai pengganti bahasa Inggris yang hilang atau kosong harus menimbulkan kegagalan eksplisit, bukan menampilkan teks Inggris literal, kunci mentah, atau teks kosong. Kesalahan terjemahan yang hilang tidak boleh disembunyikan.
 
+## Pusatkan penggantian bahasa di Core
+
+Fungsi bersama Core `createI18n` dan `extendI18n` menyelesaikan nilai bahasa pilihan yang hilang atau kosong melalui XML bahasa Inggris per kunci untuk bundel inti, modul, dan komponen. Kunci yang tidak terselesaikan menimbulkan `missing_translation:<key>`. Modul memasok URL bundelnya dan menggunakan resolver host tanpa menerapkan kebijakan pengganti sendiri.
+
+## Gunakan peristiwa kegagalan gambar yang stabil
+
+Log pengambilan gambar marketplace menggunakan pengenal peristiwa yang stabil dengan bidang kegagalan terstruktur yang sudah ada.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

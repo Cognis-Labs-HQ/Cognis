@@ -170,3 +170,5 @@ Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kate
 ### Rechtstextlinks im Footer erhalten
 
 Alle Browserclients verwenden die Footer-Registrierung von `ctx`, auch getrennt geladene statische Skripte und Bundles. Footer-Deskriptoren können `target: "_blank"` anfordern; die Darstellung ergänzt `noopener noreferrer`. Authentifizierungsanbieter liefern übersetzte Beschriftungen und Authentifizierungskontexte, während Rechtstextlinks angemeldeter Sitzungen ausdrücklich zum Anwendungskontext gehören. Verlauf und Browser-Cache-Wiederherstellung aktualisieren veröffentlichte Rechtstextlinks, ohne die Core-Links für Lizenz oder Änderungen zu ersetzen.
+
+Die gemeinsamen Core-Funktionen `createI18n` und `extendI18n` lösen fehlende oder leere Werte der bevorzugten Sprache je Schlüssel aus englischen XML-Ressourcen für Core, Module und Komponenten auf. Nicht auflösbare Schlüssel lösen `missing_translation:<key>` aus. Module geben ihre Ressourcen-URLs an und verwenden den Host-Resolver, statt eine eigene Ersatzlogik zu implementieren.

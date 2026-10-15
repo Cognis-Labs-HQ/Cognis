@@ -170,3 +170,5 @@ Marketplace presentation keeps cached names, descriptions, categories and tags w
 ### Keep legal footer links available
 
 All browser clients use the footer registry owned by `ctx`, including separately loaded static and bundled scripts. Footer descriptors may request `target: "_blank"`; the renderer adds `noopener noreferrer`. Authentication providers supply translated labels and authentication contexts, while signed-in legal links explicitly belong to the application context. History and browser-cache restoration refresh published legal links without replacing core License or Changelogs links.
+
+Core’s shared `createI18n` and `extendI18n` resolve missing or empty preferred-locale values from English XML per key across core, module and component bundles. Unresolved keys throw `missing_translation:<key>`. Modules supply their bundle URLs and use the host resolver; they do not implement their own fallback policy.

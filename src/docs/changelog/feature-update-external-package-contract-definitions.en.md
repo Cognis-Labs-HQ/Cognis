@@ -734,6 +734,14 @@ Internal links with new-tab targets, modified clicks, and downloads retain brows
 
 AI instructions prohibit hardcoded English user-facing strings in every path. Missing preferred-language values may use the same keys from English XML resources; absent or empty English fallback values must fail explicitly instead of rendering literal English, raw keys, or blank text. Missing-translation errors must not be suppressed.
 
+## Centralize locale fallback in Core
+
+Core’s shared `createI18n` and `extendI18n` resolve missing or empty preferred-locale values from English XML per key across core, module and component bundles. Unresolved keys throw `missing_translation:<key>`. Modules supply their bundle URLs and use the host resolver; they do not implement their own fallback policy.
+
+## Use stable image failure events
+
+Marketplace image retrieval logs use stable event identifiers with the existing structured failure fields.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

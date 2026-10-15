@@ -170,3 +170,5 @@ Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang ters
 ### Pertahankan tautan legal di footer
 
 Semua klien browser menggunakan registri footer milik `ctx`, termasuk skrip statis dan bundel yang dimuat terpisah. Deskriptor footer dapat meminta `target: "_blank"`; perender menambahkan `noopener noreferrer`. Penyedia autentikasi menyediakan label terjemahan dan konteks autentikasi, sedangkan tautan legal sesi masuk secara eksplisit memakai konteks aplikasi. Pemulihan riwayat dan cache browser memperbarui tautan dokumen legal yang diterbitkan tanpa mengganti tautan inti Lisensi atau Catatan Perubahan.
+
+Fungsi bersama Core `createI18n` dan `extendI18n` menyelesaikan nilai bahasa pilihan yang hilang atau kosong melalui XML bahasa Inggris per kunci untuk bundel inti, modul, dan komponen. Kunci yang tidak terselesaikan menimbulkan `missing_translation:<key>`. Modul memasok URL bundelnya dan menggunakan resolver host tanpa menerapkan kebijakan pengganti sendiri.
