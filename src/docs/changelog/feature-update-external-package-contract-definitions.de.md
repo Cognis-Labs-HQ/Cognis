@@ -726,6 +726,10 @@ Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kate
 
 Alle Browserclients verwenden die Footer-Registrierung von `ctx`, auch getrennt geladene statische Skripte und Bundles. Footer-Deskriptoren können `target: "_blank"` anfordern; die Darstellung ergänzt `noopener noreferrer`. Authentifizierungsanbieter liefern übersetzte Beschriftungen und Authentifizierungskontexte, während Rechtstextlinks angemeldeter Sitzungen ausdrücklich zum Anwendungskontext gehören. Verlauf und Browser-Cache-Wiederherstellung aktualisieren veröffentlichte Rechtstextlinks, ohne die Core-Links für Lizenz oder Änderungen zu ersetzen.
 
+## Native Navigation für Rechtslinks wiederherstellen
+
+Interne Links mit neuem Tab, modifizierte Klicks und Downloads behalten das Browserverhalten. Zurück zu einer serverseitig gerenderten Route wie der Anmeldung lädt das Dokument einschließlich Suchparametern und Fragment, statt die vorherige SPA-Ansicht stehen zu lassen.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

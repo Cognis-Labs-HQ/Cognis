@@ -728,6 +728,10 @@ Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang ters
 
 Semua klien browser menggunakan registri footer milik `ctx`, termasuk skrip statis dan bundel yang dimuat terpisah. Deskriptor footer dapat meminta `target: "_blank"`; perender menambahkan `noopener noreferrer`. Penyedia autentikasi menyediakan label terjemahan dan konteks autentikasi, sedangkan tautan legal sesi masuk secara eksplisit memakai konteks aplikasi. Pemulihan riwayat dan cache browser memperbarui tautan dokumen legal yang diterbitkan tanpa mengganti tautan inti Lisensi atau Catatan Perubahan.
 
+## Pulihkan navigasi bawaan tautan hukum
+
+Tautan internal dengan target tab baru, klik dengan tombol pengubah, dan unduhan mempertahankan perilaku peramban. Kembali ke rute yang dirender server seperti login memuat dokumen beserta parameter pencarian dan fragmennya, alih-alih membiarkan tampilan SPA sebelumnya tetap terlihat.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
