@@ -50,8 +50,15 @@ test("missing card audio is fetched once into Files without changing authored fi
         semanticRole: "lexicalUnit",
         fields: [{ id: "audio", type: "audio" }],
     } as LibraryLayerSchema;
-    const first = await readEntryAudio(entry, layer, "audio", cache, provider);
-    const second = await readEntryAudio(entry, layer, "audio", cache, provider);
+    const [first, second] = await Promise.all(
+        Array.from({ length: 10 }, () =>
+            readEntryAudio(entry, layer, "audio", cache, provider),
+        ),
+    );
+    assert.deepEqual(
+        await readEntryAudio(entry, layer, "audio", cache, provider),
+        first,
+    );
     assert.deepEqual(first, second);
     assert.equal(requests, 1);
     assert.deepEqual(entry.fields, {});

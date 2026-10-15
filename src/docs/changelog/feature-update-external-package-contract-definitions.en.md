@@ -770,6 +770,12 @@ Marketplace image retrieval logs use stable event identifiers with the existing 
 
 Core adds the installed module revision to module-owned UI asset URLs when registering contributions. Module scripts and locale files revalidate instead of inheriting the host release’s immutable cache lifetime. The service worker fetches module assets directly without cached fallback and rotates its asset caches. Updating a module changes its entry import identity, preventing stale scripts from requesting removed dependencies.
 
+## Dictionary audio and host caching
+
+When a requested pronunciation is not bundled, English Study retrieves the word from the English Dictionary API and downloads a matching MP3 from its pronunciation media endpoint. A preferred IPA reading must match; a different pronunciation is never substituted. Only HTTPS media on `api.dictionaryapi.dev` is accepted, redirects are rejected, lookup and download share one deadline, and both responses have streaming byte limits. Missing recordings remain explicit errors. No Google speech service is used.
+
+Cognis owns the recording cache, not the module. After authorization, its private Files cache reuses successful recordings across cards and restarts. Concurrent playback requests share retrieval and persistence. Keys include provider identity, revision, language, role, label and readings; a changed reading or provider revision resolves independently. Failed requests or writes remain retryable. The module contacts the dictionary only on a cache miss when playback is requested.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

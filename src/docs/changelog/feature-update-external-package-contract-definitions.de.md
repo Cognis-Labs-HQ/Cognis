@@ -770,6 +770,12 @@ Protokolle zum Abruf von Marktplatzbildern verwenden stabile Ereigniskennungen m
 
 Core ergänzt modulbezogene UI-Ressourcen-URLs bei der Registrierung um die installierte Modulrevision. Modulskripte und Sprachdateien werden neu validiert, statt die unveränderliche Cache-Laufzeit der Host-Version zu übernehmen. Der Service Worker lädt Modulressourcen direkt ohne zwischengespeicherte Ersatzantwort und erneuert seine Ressourcen-Caches. Ein Modulupdate ändert die Importadresse des Einstiegspunkts, damit veraltete Skripte keine entfernten Abhängigkeiten anfordern.
 
+## Wörterbuchaudio und Host-Cache
+
+Fehlt eine angeforderte Aussprache im Paket, ruft English Study das Wort über die English Dictionary API ab und lädt eine passende MP3 von deren Aussprache-Medienendpunkt. Eine bevorzugte IPA-Lesung muss übereinstimmen; eine andere Aussprache wird niemals ersatzweise verwendet. Nur HTTPS-Medien auf `api.dictionaryapi.dev` sind erlaubt. Weiterleitungen werden abgelehnt, Abfrage und Download teilen eine Frist, und beide Antworten haben Byte-Grenzen beim Streaming. Fehlende Aufnahmen bleiben ausdrückliche Fehler. Google-Sprachdienste werden nicht verwendet.
+
+Cognis verwaltet den Aufnahme-Cache, nicht das Modul. Nach der Autorisierung verwendet sein privater Files-Cache erfolgreiche Aufnahmen über Karten und Neustarts hinweg wieder. Gleichzeitige Wiedergabeanfragen teilen Abruf und Speicherung. Schlüssel enthalten Anbieteridentität, Revision, Sprache, Rolle, Bezeichnung und Lesungen; geänderte Lesungen oder Anbieterrevisionen werden getrennt aufgelöst. Fehlgeschlagene Anfragen oder Schreibvorgänge können erneut versucht werden. Das Modul kontaktiert das Wörterbuch nur bei einer Wiedergabeanforderung ohne Cache-Treffer.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

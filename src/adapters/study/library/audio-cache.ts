@@ -27,7 +27,14 @@ function decodeAudio(value: Uint8Array): { mediaType: string; data: Buffer } {
     };
 }
 
+type AudioRecording = { mediaType: string; data: Uint8Array };
+
 export class LibraryAudioCache {
+    private readonly pending = new Map<
+        string,
+        Promise<{ mediaType: string; data: Buffer }>
+    >();
+
     constructor(private readonly files: NamespaceFileClient) {}
 
     async store(
@@ -41,6 +48,30 @@ export class LibraryAudioCache {
             publicRead: false,
             contentType: mediaType,
         });
+    }
+
+    async readThrough(
+        key: string,
+        load: () => Promise<AudioRecording>,
+    ): Promise<{ mediaType: string; data: Buffer }> {
+        const existing = this.pending.get(key);
+        if (existing) return existing;
+        const operation = (async () => {
+            const cached = await this.findStored(key);
+            if (cached) return cached;
+            const recording = await load();
+            await this.store(key, recording.mediaType, recording.data);
+            return {
+                mediaType: recording.mediaType,
+                data: Buffer.from(recording.data),
+            };
+        })();
+        this.pending.set(key, operation);
+        try {
+            return await operation;
+        } finally {
+            if (this.pending.get(key) === operation) this.pending.delete(key);
+        }
     }
 
     async findStored(

@@ -38,14 +38,7 @@ export async function readEntryAudio(
                   : [],
     };
     const key = provider.cacheKey(input);
-    const cached = await cache.findStored(key);
-    if (cached) return cached;
-    const recording = await provider.fetchAudio(input);
-    await cache.store(key, recording.mediaType, recording.data);
-    return {
-        mediaType: recording.mediaType,
-        data: Buffer.from(recording.data),
-    };
+    return cache.readThrough(key, () => provider.fetchAudio(input));
 }
 
 export async function readAuthorizedEntryAudio(
