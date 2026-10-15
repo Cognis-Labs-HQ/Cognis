@@ -458,3 +458,5 @@ Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gatew
 ## Bentuk kata opsional dan pratinjau yang terjangkau
 
 Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. Kartu harus memiliki `matchTags` keluarga dan tag pilihan tersebut sebelum Cognis menampilkan atau menerima bentuknya. Penyusun menampilkan sakelar berlabel penyedia untuk keluarga yang cocok; referensi kalimat menyimpan UUID dasar dan `{setId, path}`. Menghapus pilihan mencegah referensi transformasi baru. Penyedia menetapkan keterhitungan, ejaan tidak beraturan, dan perubahan pelafalan; Cognis menangani pemilihan, penyimpanan, dan validasi. Cabang bersarang memakai posisi bebas benturan terdekat dengan jalur terbuka ke induknya. Pratinjau kalimat memotong judul dan membatasi definisi tanpa mengubah ukuran kisi.
+
+Tindakan Kembali ke menempati baris tersendiri selebar area di atas pasangan kontrol Sebelumnya dan Berikutnya.

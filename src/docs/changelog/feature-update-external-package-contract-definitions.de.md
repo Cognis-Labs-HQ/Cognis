@@ -4,6 +4,10 @@
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
+## Transformationsnavigation trennen
+
+Details transformierter Karten zeigen Zurück zu in einer eigenen Zeile. Zurück und Weiter bleiben darunter nebeneinander.
+
 ## Adapter-Navigationslabels darstellen
 
 Die Study-Navigation stellt Anfragen und weitere Adapterlinks anhand ihrer deklarierten lokalisierten Routenlabels dar, ohne Adapter-Sprachpakete auf der Study-Startseite vorauszusetzen. Strenge Fehler bei fehlenden gatewayeigenen XML-Übersetzungen bleiben erhalten und doppelte Adapterlinks werden vermieden.

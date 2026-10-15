@@ -4,6 +4,10 @@
 
 Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
 
+## Separate transformation navigation
+
+Transformed-card details place Return to on its own row, keeping Previous and Next together below it.
+
 ## Render adapter navigation labels
 
 Study navigation renders Requests and other adapter links from their declared localized route labels, without requiring adapter locale bundles on the Study hub. This preserves strict missing-key errors for gateway-owned XML translations and avoids duplicate adapter links.

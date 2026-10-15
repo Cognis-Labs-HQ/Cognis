@@ -471,3 +471,5 @@ Dictionary searches open at `/study/library/search` without URL parameters. The 
 ## Optional word forms and reachable previews
 
 A provider transformation set may declare `optInTag`, for example `plural`. A card must carry both the family’s `matchTags` and that opt-in tag before Cognis exposes or accepts its forms. The composer shows the provider-labelled switch for matching families; saved sentence references retain the base UUID and `{setId, path}`. Removing the opt-in prevents new transformed references. Providers define countability, irregular spellings and pronunciation changes; Cognis supplies selection, persistence and validation. Nested branches use the closest collision-free placement with an unobstructed path to their parent. Sentence previews truncate their title and clamp their definition without resizing the grid.
+
+The Return to action occupies a separate full-width row above the paired Previous and Next controls.

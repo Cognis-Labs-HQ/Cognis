@@ -458,3 +458,5 @@ Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gatewa
 ## Optionale Wortformen und erreichbare Vorschauen
 
 Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, deklarieren. Karten benötigen die passenden `matchTags` und dieses Opt-in-Tag, bevor Cognis Formen anbietet oder akzeptiert. Der Editor zeigt den vom Anbieter benannten Schalter für passende Gruppen. Satzreferenzen behalten die Basis-UUID und `{setId, path}`. Ohne Opt-in sind neue transformierte Referenzen unzulässig. Anbieter bestimmen Zählbarkeit, unregelmäßige Schreibweisen und Ausspracheänderungen; Cognis übernimmt Auswahl, Speicherung und Prüfung. Verschachtelte Zweige erhalten die nächste kollisionsfreie Position mit freiem Weg zum Elternteil. Satzvorschauen kürzen Titel und begrenzen Definitionen, ohne das Raster zu vergrößern.
+
+Die Aktion Zurück zu belegt eine eigene Zeile über die gesamte Breite oberhalb der nebeneinanderliegenden Steuerelemente Zurück und Weiter.

@@ -234,6 +234,9 @@ body[data-theme="dark"] .library-audio {
     gap: 1rem;
     align-items: start;
 }
+.library-entry-popup [data-popup-action="return-root"] {
+    flex: 0 0 100%;
+}
 .library-entry-popup [data-popup-action="previous"],
 .library-entry-popup [data-popup-action="next"] {
     flex: 1 1 calc(50% - 0.5rem);

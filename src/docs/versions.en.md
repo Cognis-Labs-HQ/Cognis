@@ -55,7 +55,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.2`  |
-| Library (Study)       | `src/adapters/study/library/`       | `2.27.2` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.27.5` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.0`  |
 | Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.3.2`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`  |
