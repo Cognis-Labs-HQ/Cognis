@@ -631,6 +631,8 @@ Any UI avatar that represents a user must support the same interaction model eve
 
 ## i18n requirements
 
+Hardcoded English user-facing strings are forbidden under all circumstances, including fallback text, errors, empty states, accessibility labels, tooltips, toasts, and consent dialogs. Resolve every user-facing string through XML language keys. If the user’s preferred language does not provide a non-empty value, resolve the same key from the English XML resources. If the English key is also absent or empty, fail explicitly with a missing-translation error. Never substitute literal English, display the raw key, return an empty string, or catch and suppress that missing-translation failure to keep rendering. Tests must cover both the preferred-language-to-English fallback and failure when the English fallback key is unavailable.
+
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
 - The entire app must respect the user's selected font preference from Settings. Do not hardcode or import external fonts in ways that bypass user font settings.
 - Route all user-facing date/time output through `src/ui/reuse/timestamp.js` (for example `formatDate` / `formatDateTime`), including Administration surfaces that render DB-backed values.

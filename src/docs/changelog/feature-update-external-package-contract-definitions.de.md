@@ -730,6 +730,10 @@ Alle Browserclients verwenden die Footer-Registrierung von `ctx`, auch getrennt 
 
 Interne Links mit neuem Tab, modifizierte Klicks und Downloads behalten das Browserverhalten. Zurück zu einer serverseitig gerenderten Route wie der Anmeldung lädt das Dokument einschließlich Suchparametern und Fragment, statt die vorherige SPA-Ansicht stehen zu lassen.
 
+## Sprachschlüssel ohne wörtliche Ersatztexte verlangen
+
+Die KI-Anweisungen verbieten fest kodierte englische Benutzertexte in allen Abläufen. Fehlende Werte der bevorzugten Sprache dürfen dieselben Schlüssel der englischen XML-Ressourcen verwenden. Fehlende oder leere englische Ersatzwerte müssen ausdrücklich einen Fehler auslösen, statt englische Literale, rohe Schlüssel oder leeren Text anzuzeigen. Fehler wegen fehlender Übersetzungen dürfen nicht unterdrückt werden.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

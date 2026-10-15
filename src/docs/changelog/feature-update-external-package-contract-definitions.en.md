@@ -730,6 +730,10 @@ All browser clients use the footer registry owned by `ctx`, including separately
 
 Internal links with new-tab targets, modified clicks, and downloads retain browser behavior. Returning with Back to a server-rendered route such as login loads that document, including its search and fragment, rather than leaving the previous SPA view visible.
 
+## Require language keys without literal fallbacks
+
+AI instructions prohibit hardcoded English user-facing strings in every path. Missing preferred-language values may use the same keys from English XML resources; absent or empty English fallback values must fail explicitly instead of rendering literal English, raw keys, or blank text. Missing-translation errors must not be suppressed.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
