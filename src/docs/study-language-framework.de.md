@@ -249,6 +249,6 @@ Study stellt öffentliche Ausspracheklassifizierung und Stile für Library-Vorsc
 
 ElevenLabs-Synthese in ein eigenes konfigurierbares Modul verlagern. Study nutzt optionale sprachbezogene Stimmen für gespeicherte globale Karten. Private und Klassenkarten erlauben begrenzte Uploads und Mikrofonaufnahmen. Die kontinuierliche Satzkomposition aus vorhandenen Aufnahmen bleibt als Rückfall erhalten. Administratoren können globale Audios im Editor neu erzeugen.
 
-`study:audio:provider.registerLanguage(language, configuration)` → `speech:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+`study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 Die tatsächlichen englischen und japanischen Inhaltspaketversionen beim Entfernen gebündelter Aufnahmen erhöhen. Unabhängige Module werden vor der Fehlermeldung vollständig abgeglichen, damit Einwilligungsrouten ihre registrierten Flows behalten.

@@ -249,6 +249,6 @@ Study は公開の発音分類とスタイルを提供し、Library のプレビ
 
 ElevenLabs合成を設定可能な独立モジュールへ移します。Studyは保存済みグローバルカードに言語ごとの任意の声を使用し、個人・クラスカードは上限付きアップロードとマイク録音を受け付けます。既存の構成カード音声を連続結合する代替機能を維持し、管理者は編集時にグローバル音声を再生成できます。
 
-`study:audio:provider.registerLanguage(language, configuration)` → `speech:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+`study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 同梱音声の削除時に英語と日本語の実際のコンテンツパックのバージョンを上げます。有効化の失敗を返す前に他のモジュールの再構築を完了し、同意ルートの登録済みフローを維持します。

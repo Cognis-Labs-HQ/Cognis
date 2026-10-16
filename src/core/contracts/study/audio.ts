@@ -1,3 +1,5 @@
+import type { SpeechSynthesisCapability } from "../speech.js";
+
 export interface StudyAudioInput {
     language: string;
     label: string;
@@ -24,7 +26,8 @@ export interface StudyAudioProvider {
 export interface StudyAudioCapability {
     registerLanguage(
         language: string,
-        configuration?: () => { voiceId?: string },
+        configuration: () => { voiceId?: string },
+        speech: () => SpeechSynthesisCapability | undefined,
     ): () => void;
     registerProvider(provider: StudyAudioProvider): () => void;
     supports(language: string, semanticRole: string): boolean;

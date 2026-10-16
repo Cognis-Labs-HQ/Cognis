@@ -41,16 +41,17 @@ export class StudyAudio implements StudyAudioCapability {
             message: string,
             metadata: Record<string, unknown>,
         ) => unknown,
-        private readonly speech?: () => SpeechSynthesisCapability | undefined,
     ) {}
 
     registerLanguage(
         language: string,
-        configuration: () => { voiceId?: string } = () => ({}),
+        configuration: () => { voiceId?: string },
+        speech: () => SpeechSynthesisCapability | undefined,
     ): () => void {
         if (!/^[a-z]{2,3}(?:-[a-zA-Z0-9]{2,8})*$/.test(language))
             throw new Error("invalid_audio_language");
-        const speech = this.speech;
+        if (typeof speech !== "function")
+            throw new Error("invalid_audio_provider");
         return this.registerProvider({
             id: `study:language:${language}`,
             languages: [language],

@@ -115,8 +115,12 @@ test("language registration discovers speech dynamically and omits an unset voic
     const requests: unknown[] = [];
     let speech: import("@cognis/core").SpeechSynthesisCapability | undefined;
     let voiceId: string | undefined;
-    const audio = new StudyAudio(ctx.flow, undefined, () => speech);
-    const remove = audio.registerLanguage("en", () => ({ voiceId }));
+    const audio = new StudyAudio(ctx.flow);
+    const remove = audio.registerLanguage(
+        "en",
+        () => ({ voiceId }),
+        () => speech,
+    );
     assert.equal(audio.supports("en", "lexicalUnit"), false);
     speech = {
         revision: "one",
@@ -132,6 +136,9 @@ test("language registration discovers speech dynamically and omits an unset voic
     await audio.fetchAudio(input);
     assert.deepEqual(requests[1], { text: "dog", language: "en", voiceId });
     assert.notEqual(audio.cacheKey(input), firstKey);
+    speech = undefined;
+    assert.equal(audio.supports("en", "lexicalUnit"), false);
+    await assert.rejects(audio.fetchAudio(input), /audio_lookup_unavailable/);
     remove();
     assert.equal(audio.supports("en", "lexicalUnit"), false);
 });

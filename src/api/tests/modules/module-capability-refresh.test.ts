@@ -347,3 +347,37 @@ test("failed activation reconciles unrelated routes and their flows before rejec
     await fixture.request();
     assert.deepEqual(fixture.failures, ["broken-study", "broken-study"]);
 });
+
+test("module-owned speech publication works without privilege across provider lifecycle", async (context) => {
+    const fixture = await createFixture(context);
+    await fixture.addModule(
+        "jitsi-meet",
+        `export function bootstrapModule(ctx) {
+        ctx.registerApiGet('/api/v1/modules/jitsi-meet/whiteboard/availability', (_req, res) => {
+            const speech = ctx.getCapability('elevenlabs-tts:synthesis');
+            res.end(JSON.stringify({ available: Boolean(speech), revision: speech?.revision }));
+        });
+    }`,
+    );
+    await fixture.addModule(
+        "elevenlabs-tts",
+        `export function bootstrapModule(ctx) {
+        ctx.contributePublicCapability('elevenlabs-tts:synthesis', { revision: 'one', synthesize: () => 'audio' });
+    }`,
+    );
+    await fixture.extensions.refresh({ throwOnFailure: true });
+    assert.deepEqual(await fixture.request(), {
+        available: true,
+        revision: "one",
+    });
+    fixture.enabled.delete("elevenlabs-tts");
+    await fixture.extensions.refresh({ throwOnFailure: true });
+    assert.deepEqual(await fixture.request(), { available: false });
+    fixture.enabled.add("elevenlabs-tts");
+    await fixture.extensions.refresh({ throwOnFailure: true });
+    assert.deepEqual(await fixture.request(), {
+        available: true,
+        revision: "one",
+    });
+    assert.deepEqual(fixture.failures, []);
+});

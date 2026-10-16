@@ -222,9 +222,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             id: "study:audio:fetch",
             stages: ["validate", "fetch"],
         });
-    const audio = new StudyAudio(ctx.flow, ctx.log, () =>
-        systemCtx.getCapability("speech:synthesis"),
-    );
+    const audio = new StudyAudio(ctx.flow, ctx.log);
     ctx.capabilities.contribute("study:audio", audio);
     systemCtx.contributePublicCapability("study:audio:provider", {
         registerProvider: audio.registerProvider.bind(audio),
