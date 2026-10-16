@@ -13,6 +13,7 @@ import { sampleHiddenStrokes } from "../ui/reuse/drawing-guidance.js";
 async function drawingSession({
     templateAvailable = true,
     initialProgress = new Map(),
+    completionDelay,
 } = {}) {
     let templateRequests = 0;
     const capabilities = new Map();
@@ -116,7 +117,9 @@ async function drawingSession({
             ),
         fetchDrawingProgress: async (cardId) =>
             progress.get(cardId) ?? { completed: false, hiddenStrokeCount: 0 },
-        recordDrawingCompletion: async (cardId, input) => {
+        recordDrawingCompletion: async (cardId, input, options) => {
+            assert.equal(options?.signal, undefined);
+            await completionDelay;
             const previous = progress.get(cardId) ?? { hiddenStrokeCount: 0 };
             const saved = {
                 completed: true,
@@ -202,6 +205,7 @@ async function drawingSession({
         environment,
     );
     return {
+        progress,
         templateRequests: () => templateRequests,
         navigate: () => events.get("cognis:route-will-change")?.(),
         open: capabilities.get("study:drawing:open"),
@@ -221,6 +225,16 @@ async function drawingSession({
         flushFrames: () => {
             while (frames.length) frames.shift()();
         },
+    };
+}
+
+function pointer(x, y) {
+    return {
+        clientX: 16 + x * 400,
+        clientY: 16 + y * 400,
+        pointerId: 1,
+        pressure: 0.5,
+        preventDefault() {},
     };
 }
 
@@ -315,16 +329,10 @@ test("the whole pattern is previewed before input and only the next stroke after
     assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
     session.canvas.setPointerCapture = () => {};
     for (const [index, x] of [0.1, 0.3, 0.5].entries()) {
-        const point = (y) => ({
-            clientX: 16 + x * 400,
-            clientY: 16 + y * 400,
-            pointerId: 1,
-            pressure: 0.5,
-        });
-        session.handlers.get("pointerdown")(point(0.2));
+        session.handlers.get("pointerdown")(pointer(x, 0.2));
         session.flushFrames();
         assert.deepEqual(session.annotations, [String(index + 1)]);
-        session.handlers.get("pointerup")(point(0.8));
+        session.handlers.get("pointerup")(pointer(x, 0.8));
         await new Promise((resolve) => setImmediate(resolve));
         session.flushFrames();
         assert.deepEqual(session.annotations, [String(index + 2)]);
@@ -338,14 +346,8 @@ test("the whole pattern is previewed before input and only the next stroke after
     assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
 
     for (const x of [0.1, 0.3, 0.5, 0.7]) {
-        const point = (y) => ({
-            clientX: 16 + x * 400,
-            clientY: 16 + y * 400,
-            pointerId: 1,
-            pressure: 0.5,
-        });
-        session.handlers.get("pointerdown")(point(0.2));
-        session.handlers.get("pointerup")(point(0.8));
+        session.handlers.get("pointerdown")(pointer(x, 0.2));
+        session.handlers.get("pointerup")(pointer(x, 0.8));
         await new Promise((resolve) => setImmediate(resolve));
         session.flushFrames();
     }
@@ -448,16 +450,9 @@ test("embedded drawing uses the same scoring, rejects a different character, and
     assert.equal(session.pad.parentElement.className, "study-drawing-embedded");
     assert.equal(session.floatingOptions(), undefined);
     assert.equal(await opened.load(card(2)), false);
-    const point = (x, y) => ({
-        clientX: 16 + x * 400,
-        clientY: 16 + y * 400,
-        pointerId: 1,
-        pressure: 0.5,
-        preventDefault() {},
-    });
     session.canvas.setPointerCapture = () => {};
-    session.handlers.get("pointerdown")(point(0.1, 0.2));
-    await session.handlers.get("pointerup")(point(0.8, 0.9));
+    session.handlers.get("pointerdown")(pointer(0.1, 0.2));
+    await session.handlers.get("pointerup")(pointer(0.8, 0.9));
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(results.at(-1).correct, true);
     controller.abort();
@@ -475,4 +470,46 @@ test("drawing templates are loaded once and unavailable templates fail before mo
         unavailable.open(card(1)),
         /drawing_template_unavailable/,
     );
+});
+
+test("the final stroke saves difficulty before retry and an immediate retry waits for it", async () => {
+    const { promise: completionDelay, resolve: finish } =
+        Promise.withResolvers();
+    const session = await drawingSession({ completionDelay });
+    await session.open(card(1));
+    session.flushFrames();
+    session.canvas.setPointerCapture = () => {};
+    session.handlers.get("pointerdown")(pointer(0.1, 0.2));
+    session.handlers.get("pointerup")(pointer(0.8, 0.9));
+    await new Promise((resolve) => setImmediate(resolve));
+    session.elements.get("[data-try-again]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(session.elements.get("[data-complete]").hidden, true);
+    finish();
+    await new Promise((resolve) => setImmediate(resolve));
+    session.flushFrames();
+    assert.equal(session.progress.get("card-1").hiddenStrokeCount, 1);
+    assert.deepEqual(session.annotations, ["?"]);
+    session.navigate();
+    await session.open(card(1));
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["?"]);
+});
+
+test("closing after the final stroke preserves the completed difficulty without retry", async () => {
+    const { promise: completionDelay, resolve: finish } =
+        Promise.withResolvers();
+    const session = await drawingSession({ completionDelay });
+    await session.open(card(1));
+    session.canvas.setPointerCapture = () => {};
+    session.handlers.get("pointerdown")(pointer(0.1, 0.2));
+    session.handlers.get("pointerup")(pointer(0.8, 0.9));
+    await new Promise((resolve) => setImmediate(resolve));
+    session.navigate();
+    finish();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(session.progress.get("card-1").hiddenStrokeCount, 1);
+    await session.open(card(1));
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["?"]);
 });

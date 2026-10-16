@@ -23,3 +23,5 @@ Sebelum masukan pertama, pola yang belum pernah diselesaikan menampilkan seluruh
 ## Simpan kemajuan menggambar
 
 Status penyelesaian dan jumlah goresan yang disembunyikan disimpan per akun dan kartu melalui penyimpanan preferensi. Setiap percobaan, pengaturan ulang, dan pengulangan memilih posisi acak berbeda berdasarkan jumlah tersebut. Penyelesaian dengan paling banyak satu kesalahan menambah jumlahnya satu, dibatasi jumlah goresan pola saat ini. Pola yang pernah diselesaikan tetap memandu goresan berikutnya, sedangkan pola yang belum selesai menampilkan seluruh pola sebelum masukan. Permintaan GET dan POST terautentikasi ke `/api/v1/study/drawing/:cardId` menjalankan alur `study:drawing:readProgress` dan `study:drawing:complete`; peramban tidak mengirim identitas akun.
+
+Goresan terakhir yang diterima langsung menyimpan penyelesaian dan tingkat kesulitan berikutnya. Menutup papan gambar atau meninggalkan Explore tidak membatalkan penyimpanan. Membuka kembali kartu yang sama dan mencoba lagi menunggu kemajuan tersimpan sebelum memilih goresan tersembunyi.

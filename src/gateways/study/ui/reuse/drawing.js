@@ -300,6 +300,7 @@ async function createDrawingPad({
     let difficulty = 0;
     let hiddenGuideIndices = new Set();
     let attemptNumber = 0;
+    let pendingCompletion;
     let loadSequence = 0;
     stage.style.visibility = "hidden";
     const resetHiddenGuides = () => {
@@ -558,14 +559,21 @@ async function createDrawingPad({
                             completed.length === currentPattern.strokes.length
                         ) {
                             const finishedAttempt = attemptNumber;
-                            const saved = await recordDrawingCompletion(
+                            const completionRequest = recordDrawingCompletion(
                                 currentCard.id,
                                 {
                                     strokeCount: currentPattern.strokes.length,
                                     mistakes,
                                 },
-                                { signal: controller.signal },
                             );
+                            pendingCompletion = completionRequest;
+                            let saved;
+                            try {
+                                saved = await completionRequest;
+                            } finally {
+                                if (pendingCompletion === completionRequest)
+                                    pendingCompletion = undefined;
+                            }
                             if (
                                 finishedAttempt !== attemptNumber ||
                                 controller.signal.aborted
@@ -620,7 +628,14 @@ async function createDrawingPad({
         () =>
             void runDrawingAction(
                 "reset",
-                () => {
+                async () => {
+                    const restartingAttempt = attemptNumber;
+                    await pendingCompletion;
+                    if (
+                        controller.signal.aborted ||
+                        restartingAttempt !== attemptNumber
+                    )
+                        return;
                     completed.length = 0;
                     attemptNumber += 1;
                     resetHiddenGuides();
@@ -717,7 +732,14 @@ async function createDrawingPad({
         () =>
             void runDrawingAction(
                 "retry",
-                () => {
+                async () => {
+                    const restartingAttempt = attemptNumber;
+                    await pendingCompletion;
+                    if (
+                        controller.signal.aborted ||
+                        restartingAttempt !== attemptNumber
+                    )
+                        return;
                     completed.length = 0;
                     attemptNumber += 1;
                     resetHiddenGuides();

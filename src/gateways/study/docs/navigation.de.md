@@ -23,3 +23,5 @@ Vor der ersten Eingabe zeigt ein noch nicht abgeschlossenes Muster alle Striche.
 ## Zeichenfortschritt speichern
 
 Abschluss und Anzahl der auszublendenden Striche werden über den Präferenzspeicher je Konto und Karte gespeichert. Jeder Versuch, jedes Zurücksetzen und jede Wiederholung wählt neue zufällige, unterschiedliche Positionen anhand dieser Anzahl. Ein erfolgreicher Abschluss mit höchstens einem Fehler erhöht die Anzahl um eins, begrenzt auf die aktuelle Strichzahl. Abgeschlossene Muster zeigen nur den nächsten Strich; nicht abgeschlossene Muster zeigen vor der Eingabe das gesamte Muster. Authentifizierte GET- und POST-Anfragen an `/api/v1/study/drawing/:cardId` durchlaufen `study:drawing:readProgress` und `study:drawing:complete`; der Browser übermittelt keine Kontoidentität.
+
+Der letzte akzeptierte Strich speichert sofort den Abschluss und die nächste Schwierigkeit. Das Schließen des Zeichenfelds oder Verlassen von Explore bricht das Speichern nicht ab. Beim erneuten Öffnen derselben Karte und bei Wiederholungen wird vor der Auswahl versteckter Striche auf den gespeicherten Fortschritt gewartet.
