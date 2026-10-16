@@ -21,3 +21,4 @@ Abschluss und Anzahl der auszublendenden Striche werden über den Präferenzspei
 ## Commits
 
 - [7c13999](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c139996e214333425b23342aae45de133d2bbab)
+- [a36941c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a36941c258afaa3b6c528fabfb80b8c3a1fc211d)
