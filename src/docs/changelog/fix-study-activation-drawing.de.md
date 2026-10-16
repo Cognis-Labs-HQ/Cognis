@@ -1,6 +1,6 @@
 # Zeichenübungen korrigiert
 
-**Feature-Branch:** feature-update-external-package-contract-definitions
+**Feature-Zweig:** feature-update-external-package-contract-definitions
 
 ## Unbekannte Lesungen zulassen
 

@@ -1,6 +1,6 @@
 # Zeichenschwierigkeit speichern
 
-**Feature-Branch:** feature-update-external-package-contract-definitions
+**Feature-Zweig:** feature-update-external-package-contract-definitions
 
 ## Beim letzten Strich speichern
 
