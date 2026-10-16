@@ -82,6 +82,7 @@ export function createModuleExtensionRoutes(
 ): ModuleExtensionRoutes {
     const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 10_000;
     let refreshQueue = Promise.resolve();
+    const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];
     if (!options?.routeContext) {
         throw new Error(
@@ -598,6 +599,7 @@ export function createModuleExtensionRoutes(
     }
 
     async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
+        await Promise.allSettled([...activeRequests]);
         for (const [moduleId, loaded] of loadedModules) {
             await disposeModuleResources(
                 [
@@ -799,46 +801,60 @@ export function createModuleExtensionRoutes(
         return true;
     }
 
+    async function handle(
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> {
+        const method = (req.method || "GET").toUpperCase();
+        const match = handlers.find(
+            (entry) =>
+                entry.method === method && entry.routePath === url.pathname,
+        );
+        if (!match) return false;
+        if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "module_disabled",
+                        message: "Module disabled",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (match.invalidAccessPolicy) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Route denied due to invalid access policy configuration",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (match.access) {
+            const claims = requireRoleAccess(req, res, match.access);
+            if (!claims) return true;
+        }
+        await match.handler(req, res);
+        return true;
+    }
+
     return {
         uninstall,
-        async handle(req, res, url) {
-            const method = (req.method || "GET").toUpperCase();
-            const match = handlers.find(
-                (entry) =>
-                    entry.method === method && entry.routePath === url.pathname,
-            );
-            if (!match) return false;
-            if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "module_disabled",
-                            message: "Module disabled",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (match.invalidAccessPolicy) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Route denied due to invalid access policy configuration",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (match.access) {
-                const claims = requireRoleAccess(req, res, match.access);
-                if (!claims) return true;
-            }
-            await match.handler(req, res);
-            return true;
+        handle(req, res, url) {
+            return refreshQueue.then(() => {
+                const pending = handle(req, res, url);
+                activeRequests.add(pending);
+                const remove = () => activeRequests.delete(pending);
+                void pending.then(remove, remove);
+                return pending;
+            });
         },
         refresh(refreshOptions) {
             const pendingRefresh = refreshQueue.then(() =>

@@ -127,6 +127,8 @@ Manifes eksternal dapat menyatakan `hardDependencies` dan `softDependencies` seb
 
 Modul yang dinonaktifkan tidak pernah mengimpor atau menjalankan bootstrap normalnya. Modul yang harus menyediakan konfigurasi saat nonaktif mendeklarasikan `entrypoints.disabledApi`; file terisolasi itu mengekspor `registerDisabledApiRoutes(ctx)` dan hanya boleh mendaftarkan rute yang ditandai `allowWhenDisabled` secara eksplisit. Entrypoint ini juga boleh mendaftarkan flow konfigurasi milik modul dan hook pada flow tersebut. Registrasi dihapus saat penyegaran atau penyiapan gagal; kapabilitas publik tetap tidak tersedia hingga modul diaktifkan.
 
+Tunggu permintaan modul aktif sebelum menghapus flow-nya, dan tunda permintaan baru hingga rekonsiliasi selesai, termasuk ketika aktivasi gagal. Pemeriksaan persetujuan mempertahankan siklus hidup rute dan flow yang utuh saat modul Study lain diaktifkan.
+
 ### Panduan setelah aktivasi
 
 Modul yang menyediakan permukaan konfigurasi di bagian lain Cognis dapat mendeklarasikan `ui.activationGuidance` alih-alih membuat formulir pengaturan modul yang kosong. Kontrak menyediakan `titleKey` yang dilokalkan, `descriptionKey` opsional, dan `steps` yang berurutan. Setiap langkah memiliki `id` stabil, `labelKey` yang dilokalkan, `descriptionKey` opsional, serta `targets` opsional. Target adaptor menggunakan `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Setelah aktivasi berhasil, Cognis menampilkan setiap langkah dan menawarkan untuk membuka Administrasi. Modul dapat mencantumkan beberapa target adaptor tanpa membuat core mengetahui nama penyedia.

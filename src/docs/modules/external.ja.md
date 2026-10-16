@@ -127,6 +127,8 @@ await reuse.loadStylesheets(["layout.css", "page-sections.css"]);
 
 無効なモジュールは通常の Bootstrap をインポートも実行もしません。無効時にも設定を公開する必要があるモジュールは `entrypoints.disabledApi` を宣言します。この分離ファイルは `registerDisabledApiRoutes(ctx)` をエクスポートし、`allowWhenDisabled` を明示したルートだけを登録できます。 モジュール所有の設定フローと、そのフローへのフックも登録できます。更新時や設定処理の失敗時には登録が削除されます。公開 capability は有効化まで利用できません。
 
+実行中のモジュールリクエストが完了してからフローを破棄し、新しいリクエストは有効化に失敗した場合も含めて再構成の完了まで待機します。他の Study モジュールを有効化している間も、同意確認のルートとフローのライフサイクルを維持します。
+
 ### 有効化後のガイダンス
 
 Cognis の別の場所に設定画面を提供するモジュールは、空のモジュール設定フォームを作成する代わりに `ui.activationGuidance` を宣言できます。この契約には、ローカライズされた `titleKey`、任意の `descriptionKey`、順序付きの `steps` を指定します。各ステップには、安定した `id`、ローカライズされた `labelKey`、任意の `descriptionKey` と `targets` があります。アダプター対象は `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }` を使用します。有効化に成功すると、Cognis はすべての手順を表示し、管理画面を開く選択肢を提示します。Core がプロバイダー名を認識しなくても、モジュールは複数のアダプター対象を列挙できます。

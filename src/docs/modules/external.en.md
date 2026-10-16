@@ -127,6 +127,8 @@ External manifests may declare `hardDependencies` and `softDependencies` as arra
 
 Disabled modules never import or execute their normal bootstrap. A module that must expose configuration while disabled declares `entrypoints.disabledApi`; that isolated file exports `registerDisabledApiRoutes(ctx)` and may register only routes explicitly marked `allowWhenDisabled`. It may also register module-owned configuration flows and hooks on those flows. These registrations are removed on refresh or failed setup; public capabilities remain unavailable until enablement.
 
+Wait for active module requests before disposing their flows, and defer new module requests until reconciliation finishes, including failed activation. Consent checks retain a complete route and flow lifecycle while unrelated Study modules are enabled.
+
 ### Activation guidance
 
 A module that contributes configuration surfaces elsewhere in Cognis can declare `ui.activationGuidance` instead of creating an empty module-settings form. The contract provides localized `titleKey`, optional `descriptionKey`, and ordered `steps`. Each step has a stable `id`, localized `labelKey`, optional `descriptionKey`, and optional `targets`. An adapter target uses `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. After successful enablement, Cognis presents every step and offers to open Administration. A module can list multiple adapter targets without core knowing the provider names.

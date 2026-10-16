@@ -127,6 +127,8 @@ Externe Manifeste können `hardDependencies` und `softDependencies` als Listen v
 
 Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren. Es darf außerdem moduleigene Konfigurations-Flows und Hooks für diese Flows registrieren. Diese Registrierungen werden bei Aktualisierung oder fehlgeschlagener Einrichtung entfernt; öffentliche Capabilities bleiben bis zur Aktivierung nicht verfügbar.
 
+Vor dem Entfernen ihrer Flows auf aktive Modulanfragen warten und neue Anfragen bis zum Abschluss des Abgleichs zurückstellen, auch bei fehlgeschlagener Aktivierung. Zustimmungsprüfungen behalten einen vollständigen Routen- und Flow-Lebenszyklus, während unabhängige Study-Module aktiviert werden.
+
 ### Hinweise nach der Aktivierung
 
 Ein Modul, das Konfigurationsoberflächen an anderer Stelle in Cognis beiträgt, kann `ui.activationGuidance` deklarieren, anstatt ein leeres Moduleinstellungsformular zu erstellen. Der Vertrag enthält einen lokalisierten `titleKey`, einen optionalen `descriptionKey` und geordnete `steps`. Jeder Schritt besitzt eine stabile `id`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey` und optionale `targets`. Ein Adapterziel verwendet `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Nach erfolgreicher Aktivierung zeigt Cognis alle Schritte an und bietet an, die Administration zu öffnen. Ein Modul kann mehrere Adapterziele aufführen, ohne dass der Core die Anbieternamen kennen muss.

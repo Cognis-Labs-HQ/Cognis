@@ -480,3 +480,89 @@ test("disabled entrypoints cannot hook existing flows and failed setup rolls bac
     );
     assert.deepEqual(fixture.failures, []);
 });
+
+const consentSource = `export function bootstrapModule(ctx) {
+    ctx.registerFlow({ id: 'terms-of-service:consentStatus', stages: ['read'] });
+    ctx.flow.extend('terms-of-service:consentStatus', 'read', { id: 'terms-of-service:read' }, ({ data }) => { data.result = { accepted: true }; });
+    ctx.registerApiGet('/api/v1/modules/terms-of-service/consent', async (_req, res) => {
+        await ctx.getCapability('host:requestGate')?.();
+        const result = await ctx.flow.run('terms-of-service:consentStatus', {});
+        res.end(JSON.stringify(result.data.result));
+    });
+}`;
+
+test("consent requests wait for failed module reconciliation to finish", async (context) => {
+    const fixture = await createFixture(context);
+    let releaseBootstrap!: () => void;
+    let markStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+        markStarted = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+        releaseBootstrap = resolve;
+    });
+    await fixture.addModule(
+        "broken-study",
+        `export async function bootstrapModule(ctx) {
+        const wait = ctx.getCapability('host:bootstrapGate');
+        if (!wait) return;
+        await wait();
+        throw new Error('content_pack_failed');
+    }`,
+    );
+    await fixture.addModule("terms-of-service", consentSource);
+    await fixture.extensions.refresh({ throwOnFailure: true });
+    fixture.routeCapabilities.set("host:bootstrapGate", () => {
+        markStarted();
+        return gate;
+    });
+    const refresh = fixture.extensions.refresh({ throwOnFailure: true });
+    const failed = assert.rejects(refresh, /content_pack_failed/);
+    await started;
+    const request = fixture.request("/api/v1/modules/terms-of-service/consent");
+    const result = request.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error }),
+    );
+    releaseBootstrap();
+    await failed;
+    assert.deepEqual(await result, { value: { accepted: true } });
+});
+
+test("module reconciliation waits for consent requests already using its flows", async (context) => {
+    const fixture = await createFixture(context);
+    await fixture.addModule("terms-of-service", consentSource);
+    await fixture.extensions.refresh({ throwOnFailure: true });
+    let releaseRequest!: () => void;
+    let markStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+        markStarted = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+        releaseRequest = resolve;
+    });
+    fixture.routeCapabilities.set("host:requestGate", () => {
+        markStarted();
+        return gate;
+    });
+    const request = fixture.request("/api/v1/modules/terms-of-service/consent");
+    const result = request.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error }),
+    );
+    await started;
+    const refresh = fixture.extensions.refresh({ throwOnFailure: true });
+    let refreshed = false;
+    void refresh.then(() => {
+        refreshed = true;
+    });
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    const flowRetained = fixture.systemCtx.flow.exists(
+        "terms-of-service:consentStatus",
+    );
+    releaseRequest();
+    assert.deepEqual(await result, { value: { accepted: true } });
+    assert.equal(flowRetained, true);
+    await refresh;
+    assert.equal(refreshed, true);
+});
