@@ -18,8 +18,13 @@ Terbitkan `elevenlabs-tts:synthesis` di namespace milik modul dan hapus penanda 
 
 Kapabilitas yang diterbitkan melaporkan kesiapan langsung melalui `configured`. Study mengaktifkan ucapan otomatis hanya setelah kunci API dan suara bawaan disimpan. Jika ElevenLabs tidak terpasang, dinonaktifkan, atau belum diatur, pendaftaran bahasa tetap berhasil dan audio unggahan serta komposisi cadangan tetap tersedia tanpa meminta sintesis.
 
+## Jalankan flow konfigurasi saat nonaktif
+
+Izinkan entrypoint konfigurasi terisolasi mendaftarkan dan menjalankan flow miliknya saat modul nonaktif. Ini memperbaiki konfigurasi ElevenLabs yang mengembalikan `speech_unavailable` sebelum aktivasi. Tolak registrasi flow dan hook milik pihak lain meskipun modul nonaktif memiliki hak istimewa, serta hapus flow parsial jika penyiapan gagal.
+
 ## Komit
 
 - [2bebe47](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bebe47baf20112a4c84cff2bb65ce270c6b52eb)
 - [7c495dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c495dcda4c67bdff3c385670465baee4763b046)
 - [a59ae79](https://github.com/Cognis-Labs-HQ/Cognis/commit/a59ae79222ed483ba3804bf4cdebba9beaa75203)
+- [393b357](https://github.com/Cognis-Labs-HQ/Cognis/commit/393b357411ab2f828c785afc53a831ccc9dda626)

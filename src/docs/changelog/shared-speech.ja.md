@@ -18,8 +18,13 @@ ElevenLabs合成を設定可能な独立モジュールへ移します。Study�
 
 公開機能は `configured` で現在の準備状態を通知します。StudyはAPIキーと既定の声が保存された後にのみ自動音声を有効にします。ElevenLabsが未導入・無効・未設定でも言語登録は成功し、アップロード音声と既存音声の結合を利用できます。合成は要求しません。
 
+## 無効時の設定フローを実行
+
+無効時の分離された設定エントリーポイントで、所有するフローの登録と実行を許可します。有効化前の ElevenLabs 設定が `speech_unavailable` を返す問題を修正します。権限付きモジュールでも無効時には他のフローの登録やフックを拒否し、設定処理が失敗した場合は途中のフロー登録を削除します。
+
 ## コミット
 
 - [2bebe47](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bebe47baf20112a4c84cff2bb65ce270c6b52eb)
 - [7c495dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c495dcda4c67bdff3c385670465baee4763b046)
 - [a59ae79](https://github.com/Cognis-Labs-HQ/Cognis/commit/a59ae79222ed483ba3804bf4cdebba9beaa75203)
+- [393b357](https://github.com/Cognis-Labs-HQ/Cognis/commit/393b357411ab2f828c785afc53a831ccc9dda626)
