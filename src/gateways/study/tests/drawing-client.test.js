@@ -40,21 +40,18 @@ function clientFixture() {
     };
 }
 
-test("completion survives pad closure and reopening waits for the saved difficulty", async () => {
+test("progress reads wait for in-flight completion on the same card", async () => {
     const { client, requests, finish, saved } = clientFixture();
-    const controller = new AbortController();
     const completion = client.recordDrawingCompletion("card-a", {
         strokeCount: 4,
         mistakes: 0,
     });
-    controller.abort();
     assert.equal(requests.length, 1);
     assert.equal(requests[0].options.keepalive, true);
     assert.equal(requests[0].options.signal, undefined);
     const reopened = client.fetchDrawingProgress("card-a");
     await Promise.resolve();
     assert.equal(requests.length, 1);
-    // Another card is independent of the pending completion.
     await client.fetchDrawingProgress("card-b");
     assert.equal(requests.length, 2);
     finish();
