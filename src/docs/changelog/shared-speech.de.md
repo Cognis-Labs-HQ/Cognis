@@ -22,9 +22,14 @@ Die veröffentlichte Fähigkeit meldet ihre aktuelle Bereitschaft über `configu
 
 Isolierte Konfigurationseinstiegspunkte dürfen ihre eigenen Flows registrieren und ausführen. Damit liefert die ElevenLabs-Konfiguration vor der Aktivierung nicht mehr `speech_unavailable`. Fremde Flows und Hooks bleiben auch für privilegierte deaktivierte Module gesperrt; fehlgeschlagene Einrichtung entfernt teilweise registrierte Flows.
 
+## Routen bei Modulaktualisierung erhalten
+
+Vor dem Entfernen ihrer Flows auf aktive Modulanfragen warten und neue Anfragen bis zum Abschluss des Abgleichs zurückstellen, auch bei fehlgeschlagener Aktivierung. Zustimmungsprüfungen behalten einen vollständigen Routen- und Flow-Lebenszyklus, während unabhängige Study-Module aktiviert werden.
+
 ## Commits
 
 - [2bebe47](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bebe47baf20112a4c84cff2bb65ce270c6b52eb)
 - [7c495dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c495dcda4c67bdff3c385670465baee4763b046)
 - [a59ae79](https://github.com/Cognis-Labs-HQ/Cognis/commit/a59ae79222ed483ba3804bf4cdebba9beaa75203)
 - [393b357](https://github.com/Cognis-Labs-HQ/Cognis/commit/393b357411ab2f828c785afc53a831ccc9dda626)
+- [8c1364c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c1364cb57d291083ef77d39453787892a951d80)

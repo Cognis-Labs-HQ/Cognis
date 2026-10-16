@@ -22,9 +22,14 @@ ElevenLabs合成を設定可能な独立モジュールへ移します。Study�
 
 無効時の分離された設定エントリーポイントで、所有するフローの登録と実行を許可します。有効化前の ElevenLabs 設定が `speech_unavailable` を返す問題を修正します。権限付きモジュールでも無効時には他のフローの登録やフックを拒否し、設定処理が失敗した場合は途中のフロー登録を削除します。
 
+## モジュール更新中のルートを保護
+
+実行中のモジュールリクエストが完了してからフローを破棄し、新しいリクエストは有効化に失敗した場合も含めて再構成の完了まで待機します。他の Study モジュールを有効化している間も、同意確認のルートとフローのライフサイクルを維持します。
+
 ## コミット
 
 - [2bebe47](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bebe47baf20112a4c84cff2bb65ce270c6b52eb)
 - [7c495dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c495dcda4c67bdff3c385670465baee4763b046)
 - [a59ae79](https://github.com/Cognis-Labs-HQ/Cognis/commit/a59ae79222ed483ba3804bf4cdebba9beaa75203)
 - [393b357](https://github.com/Cognis-Labs-HQ/Cognis/commit/393b357411ab2f828c785afc53a831ccc9dda626)
+- [8c1364c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c1364cb57d291083ef77d39453787892a951d80)

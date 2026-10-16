@@ -22,9 +22,14 @@ The published capability reports live `configured` readiness. Study enables auto
 
 Allow isolated disabled configuration entrypoints to register and execute their owned flows. This fixes ElevenLabs configuration returning `speech_unavailable` before enablement. Reject foreign flow registrations and hooks even for privileged disabled modules, and remove partial flows after failed setup.
 
+## Preserve routes during module refresh
+
+Wait for active module requests before disposing their flows, and defer new module requests until reconciliation finishes, including failed activation. Consent checks retain a complete route and flow lifecycle while unrelated Study modules are enabled.
+
 ## Commits
 
 - [2bebe47](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bebe47baf20112a4c84cff2bb65ce270c6b52eb)
 - [7c495dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c495dcda4c67bdff3c385670465baee4763b046)
 - [a59ae79](https://github.com/Cognis-Labs-HQ/Cognis/commit/a59ae79222ed483ba3804bf4cdebba9beaa75203)
 - [393b357](https://github.com/Cognis-Labs-HQ/Cognis/commit/393b357411ab2f828c785afc53a831ccc9dda626)
+- [8c1364c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c1364cb57d291083ef77d39453787892a951d80)
