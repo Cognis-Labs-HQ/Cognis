@@ -106,7 +106,9 @@ async function createFixture(context: test.TestContext) {
         manifests.push(manifest);
         enabled.add(id);
     }
-    async function request(): Promise<unknown> {
+    async function request(
+        route = "/api/v1/modules/jitsi-meet/whiteboard/availability",
+    ): Promise<unknown> {
         let body = "";
         const response = {
             writeHead() {},
@@ -118,9 +120,7 @@ async function createFixture(context: test.TestContext) {
             await extensions.handle(
                 { method: "GET" } as IncomingMessage,
                 response,
-                new URL(
-                    "http://localhost/api/v1/modules/jitsi-meet/whiteboard/availability",
-                ),
+                new URL(route, "http://localhost"),
             ),
             true,
         );
@@ -379,5 +379,104 @@ test("module-owned speech publication works without privilege across provider li
         available: true,
         revision: "one",
     });
+    assert.deepEqual(fixture.failures, []);
+});
+
+test("disabled configuration flows execute and survive enable-disable reconciliation", async (context) => {
+    const fixture = await createFixture(context);
+    await fixture.addModule(
+        "config-provider",
+        `
+        function registerConfiguration(ctx) {
+            ctx.registerFlow({ id: 'config-provider:readConfiguration', stages: ['read'] });
+            ctx.flow.extend('config-provider:readConfiguration', 'read', { id: 'config-provider:readConfiguration:read' }, ({ data }) => {
+                data.result = { configured: false };
+            });
+            ctx.registerApiGet('/api/v1/modules/config-provider/config', async (_req, res) => {
+                const result = await ctx.flow.run('config-provider:readConfiguration', {});
+                res.end(JSON.stringify(result.data.result));
+            }, { allowWhenDisabled: true });
+        }
+        export function registerDisabledApiRoutes(ctx) { registerConfiguration(ctx); }
+        export function bootstrapModule(ctx) {
+            registerConfiguration(ctx);
+            ctx.registerFlow({ id: 'config-provider:synthesize', stages: ['execute'] });
+            ctx.contributePublicCapability('config-provider:synthesis', {});
+        }
+    `,
+        false,
+        true,
+    );
+    fixture.enabled.delete("config-provider");
+    for (const enabled of [false, true, false, true, false]) {
+        if (enabled) fixture.enabled.add("config-provider");
+        else fixture.enabled.delete("config-provider");
+        await fixture.extensions.refresh({ throwOnFailure: true });
+        assert.deepEqual(
+            await fixture.request("/api/v1/modules/config-provider/config"),
+            { configured: false },
+        );
+        assert.equal(
+            fixture.systemCtx.flow.exists("config-provider:readConfiguration"),
+            true,
+        );
+        assert.equal(
+            fixture.systemCtx.flow.exists("config-provider:synthesize"),
+            enabled,
+        );
+        assert.equal(
+            fixture.systemCtx.hasCapability("config-provider:synthesis"),
+            enabled,
+        );
+    }
+    assert.deepEqual(fixture.failures, []);
+});
+
+test("disabled entrypoints cannot register foreign flows even with privilege", async (context) => {
+    const fixture = await createFixture(context);
+    await fixture.addModule(
+        "config-provider",
+        `export function bootstrapModule() {}
+        export function registerDisabledApiRoutes(ctx) {
+            ctx.registerFlow({ id: 'host:configuration', stages: ['read'] });
+        }`,
+        true,
+        true,
+    );
+    fixture.enabled.delete("config-provider");
+    await assert.rejects(
+        fixture.extensions.refresh({ throwOnFailure: true }),
+        /module_privileged_access_required/,
+    );
+    assert.equal(fixture.systemCtx.flow.exists("host:configuration"), false);
+    assert.deepEqual(fixture.failures, []);
+});
+
+test("disabled entrypoints cannot hook existing flows and failed setup rolls back owned flows", async (context) => {
+    const fixture = await createFixture(context);
+    fixture.systemCtx.registerFlow({
+        id: "host:configuration",
+        stages: ["read"],
+    });
+    await fixture.addModule(
+        "config-provider",
+        `export function bootstrapModule() {}
+        export function registerDisabledApiRoutes(ctx) {
+            ctx.registerFlow({ id: 'config-provider:readConfiguration', stages: ['read'] });
+            ctx.flow.extend('host:configuration', 'read', { id: 'unexpected' }, () => {});
+        }`,
+        true,
+        true,
+    );
+    fixture.enabled.delete("config-provider");
+    await assert.rejects(
+        fixture.extensions.refresh({ throwOnFailure: true }),
+        /module_disabled_flow_not_owned/,
+    );
+    assert.equal(fixture.systemCtx.flow.exists("host:configuration"), true);
+    assert.equal(
+        fixture.systemCtx.flow.exists("config-provider:readConfiguration"),
+        false,
+    );
     assert.deepEqual(fixture.failures, []);
 });

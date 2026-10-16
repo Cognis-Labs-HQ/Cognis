@@ -125,7 +125,7 @@ Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` un
 
 Externe Manifeste können `hardDependencies` und `softDependencies` als Listen von Modul-UUIDs oder IDs deklarieren. Harte Abhängigkeiten werden nicht empfohlen, da Administratoren sie vor der Installation installieren und aktivieren müssen. Weiche Abhängigkeiten können im Installationsdialog optional ausgewählt werden.
 
-Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren.
+Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren. Es darf außerdem moduleigene Konfigurations-Flows und Hooks für diese Flows registrieren. Diese Registrierungen werden bei Aktualisierung oder fehlgeschlagener Einrichtung entfernt; öffentliche Capabilities bleiben bis zur Aktivierung nicht verfügbar.
 
 ### Hinweise nach der Aktivierung
 

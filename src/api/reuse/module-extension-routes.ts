@@ -282,7 +282,9 @@ export function createModuleExtensionRoutes(
             run: baseFlow.run.bind(baseFlow),
             extend(flowId, stageId, hook, handler) {
                 requireActiveBootstrap();
-                if (!moduleEnabled) return false;
+                if (!moduleEnabled && !scope.flows.includes(flowId)) {
+                    throw new Error("module_disabled_flow_not_owned");
+                }
                 if (PRIVILEGED_FLOW_IDS.has(flowId) && !privilege.requested) {
                     throw new Error("module_privileged_access_required");
                 }
@@ -365,11 +367,12 @@ export function createModuleExtensionRoutes(
             },
             registerFlow(flowRegistration) {
                 requireActiveBootstrap();
-                if (!moduleEnabled) return;
                 assertModuleOwnedCtxRegistration(
                     flowRegistration.id,
                     moduleId,
-                    privilege,
+                    moduleEnabled
+                        ? privilege
+                        : { requested: false, trustedSource: false },
                 );
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
