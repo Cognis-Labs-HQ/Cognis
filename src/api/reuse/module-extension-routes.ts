@@ -47,6 +47,12 @@ interface RouteHandler {
     ) => Promise<void> | void;
 }
 
+interface ModuleContributions {
+    hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
+    capabilities: string[];
+    flows: string[];
+}
+
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     routeContext: RouteContext;
@@ -570,6 +576,24 @@ export function createModuleExtensionRoutes(
         }
     }
 
+    function removeOwnedContributions(
+        moduleId: string,
+        scope: ModuleContributions,
+    ) {
+        const systemCtx =
+            options!.routeContext.getCapability<Ctx>("system:ctx");
+        for (const hook of scope.hooks)
+            systemCtx?.removeFlowStageHook(
+                hook.flowId,
+                hook.stageId,
+                hook.hookId,
+            );
+        for (const capability of scope.capabilities)
+            systemCtx?.removeCapability(capability);
+        for (const flowId of scope.flows) systemCtx?.unregisterFlow(flowId);
+        options?.uiRegistry?.unregisterModuleContributions(moduleId);
+    }
+
     async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
             await disposeModuleResources(
@@ -583,25 +607,12 @@ export function createModuleExtensionRoutes(
                 moduleId,
                 log,
             );
-            const systemCtx =
-                options.routeContext.getCapability<Ctx>("system:ctx");
-            for (const hook of loaded.hooks) {
-                systemCtx?.removeFlowStageHook(
-                    hook.flowId,
-                    hook.stageId,
-                    hook.hookId,
-                );
-            }
-            for (const capability of loaded.capabilities) {
-                systemCtx?.removeCapability(capability);
-            }
-            for (const flowId of loaded.flows)
-                systemCtx?.unregisterFlow(flowId);
-            options?.uiRegistry?.unregisterModuleContributions(moduleId);
+            removeOwnedContributions(moduleId, loaded);
         }
         loadedModules.clear();
         assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
+        let refreshFailure: unknown;
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
@@ -692,6 +703,7 @@ export function createModuleExtensionRoutes(
                         manifest.id,
                         log,
                     );
+                    removeOwnedContributions(manifest.id, scope);
                     removeModuleRoutes(nextHandlers, manifest.id);
                     log?.("error", "Disabled module API registration failed.", {
                         component: "module-extension-routes",
@@ -701,7 +713,7 @@ export function createModuleExtensionRoutes(
                                 ? error.message
                                 : String(error),
                     });
-                    if (refreshOptions?.throwOnFailure) throw error;
+                    refreshFailure ??= error;
                 }
                 continue;
             }
@@ -735,22 +747,7 @@ export function createModuleExtensionRoutes(
             } catch (error) {
                 scope.active = false;
                 await disposeModuleResources(scope.disposers, manifest.id, log);
-                const systemCtx =
-                    options.routeContext.getCapability<Ctx>("system:ctx");
-                for (const hook of scope.hooks) {
-                    systemCtx?.removeFlowStageHook(
-                        hook.flowId,
-                        hook.stageId,
-                        hook.hookId,
-                    );
-                }
-                for (const capability of scope.capabilities) {
-                    systemCtx?.removeCapability(capability);
-                }
-                for (const flowId of scope.flows) {
-                    systemCtx?.unregisterFlow(flowId);
-                }
-                options?.uiRegistry?.unregisterModuleContributions(manifest.id);
+                removeOwnedContributions(manifest.id, scope);
                 removeModuleRoutes(nextHandlers, manifest.id);
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
@@ -760,11 +757,13 @@ export function createModuleExtensionRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 await options.onBootstrapFailed?.(manifest.id);
-                if (refreshOptions?.throwOnFailure) throw error;
+                refreshFailure ??= error;
             }
         }
 
         handlers = nextHandlers;
+        if (refreshOptions?.throwOnFailure && refreshFailure)
+            throw refreshFailure;
     }
 
     async function uninstall(

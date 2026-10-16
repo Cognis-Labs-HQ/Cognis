@@ -46,3 +46,21 @@ export async function traceEntry(
         usedBy,
     };
 }
+
+export async function markViewedEntries(
+    actor: LibraryActor,
+    entryIds: readonly string[],
+    read: (actor: LibraryActor, id: string) => Promise<LibraryEntry | null>,
+    store: {
+        markEntriesViewed(accountId: string, ids: string[]): Promise<void>;
+    },
+): Promise<void> {
+    const uniqueIds = [...new Set(entryIds)];
+    if (!uniqueIds.length || uniqueIds.length > 500)
+        throw new Error("invalid_entry_selection");
+    for (const entryId of uniqueIds) {
+        if (!(await read(actor, entryId))) throw new Error("not_found");
+    }
+
+    await store.markEntriesViewed(actor.accountId, uniqueIds);
+}

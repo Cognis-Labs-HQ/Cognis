@@ -222,10 +222,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             id: "study:audio:fetch",
             stages: ["validate", "fetch"],
         });
-    const audio = new StudyAudio(ctx.flow, ctx.log);
+    const audio = new StudyAudio(ctx.flow, ctx.log, () =>
+        systemCtx.getCapability("speech:synthesis"),
+    );
     ctx.capabilities.contribute("study:audio", audio);
     systemCtx.contributePublicCapability("study:audio:provider", {
         registerProvider: audio.registerProvider.bind(audio),
+        registerLanguage: audio.registerLanguage.bind(audio),
     });
     const preferences =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
@@ -275,6 +278,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         {
             id: "study:library:search",
             stages: ["authorize", "validate", "search", "audit"],
+        },
+        {
+            id: "study:library:uploadAudio",
+            stages: ["authorize", "validate", "persist"],
+        },
+        {
+            id: "study:library:regenerateAudio",
+            stages: ["authorize", "validate", "resolve", "persist"],
         },
         {
             id: "study:library:audio",

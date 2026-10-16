@@ -43,6 +43,13 @@ interface EntryWriterContext {
     ): Promise<LibraryEntry> | LibraryEntry;
     stringLocalization?: StringLocalizationCapability;
     notifyNewContent?: LibraryContentNotifier;
+    validateAudio?(
+        actor: LibraryActor,
+        schema: LibrarySchema,
+        layer: string,
+        fields: Record<string, unknown>,
+        previous?: Record<string, unknown>,
+    ): Promise<void>;
 }
 
 export class LibraryEntryWriter {
@@ -100,6 +107,12 @@ export class LibraryEntryWriter {
                     }
 
                     validateEntryFields(schema, input.layer, fields);
+                    await this.context.validateAudio?.(
+                        actor,
+                        schema,
+                        input.layer,
+                        fields,
+                    );
                     const targets = await validateDependencyVisibility(
                         input,
                         location,
@@ -206,6 +219,13 @@ export class LibraryEntryWriter {
 
                     references = input.references ?? [];
                     validateEntryFields(schema, input.layer, fields);
+                    await this.context.validateAudio?.(
+                        actor,
+                        schema,
+                        input.layer,
+                        fields,
+                        current.fields,
+                    );
                     const targets = await validateDependencyVisibility(
                         input,
                         { scope: current.scope, scopeId: current.scopeId },

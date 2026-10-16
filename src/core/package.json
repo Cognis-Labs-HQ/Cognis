@@ -1,6 +1,6 @@
 {
     "name": "@cognis/core",
-    "version": "0.3.129",
+    "version": "0.3.130",
     "private": true,
     "type": "module",
     "main": "index.ts",

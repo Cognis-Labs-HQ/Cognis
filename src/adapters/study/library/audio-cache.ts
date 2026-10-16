@@ -60,11 +60,13 @@ export class LibraryAudioCache {
     async readThrough(
         key: string,
         load: () => Promise<AudioRecording>,
+        refresh = false,
     ): Promise<{ mediaType: string; data: Buffer }> {
-        const existing = this.pending.get(key);
+        const pendingKey = `${refresh ? "refresh:" : "read:"}${key}`;
+        const existing = this.pending.get(pendingKey);
         if (existing) return existing;
         const operation = (async () => {
-            const cached = await this.findStored(key);
+            const cached = refresh ? null : await this.findStored(key);
             if (cached) return cached;
             const recording = await load();
             await this.store(key, recording.mediaType, recording.data);
@@ -80,11 +82,12 @@ export class LibraryAudioCache {
                 data: Buffer.from(recording.data),
             };
         })();
-        this.pending.set(key, operation);
+        this.pending.set(pendingKey, operation);
         try {
             return await operation;
         } finally {
-            if (this.pending.get(key) === operation) this.pending.delete(key);
+            if (this.pending.get(pendingKey) === operation)
+                this.pending.delete(pendingKey);
         }
     }
 

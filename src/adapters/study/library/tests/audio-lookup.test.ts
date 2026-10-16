@@ -40,6 +40,7 @@ test("missing card audio is fetched once into Files without changing authored fi
         },
     };
     const entry = {
+        scope: "global",
         id: "dog",
         label: "dog",
         language: "en",
@@ -87,6 +88,7 @@ test("audio access checks ownership and derives transformed speech from the sche
         },
     };
     const entry = {
+        scope: "global",
         id: "dog",
         schemaId: "test",
         language: "en",
@@ -177,6 +179,8 @@ test("audio access checks ownership and derives transformed speech from the sche
         /forbidden/,
     );
     assert.deepEqual(requests, []);
+    entry.scope = "global";
+    entry.scopeId = "global";
     await assert.rejects(
         library.readAudio(
             { accountId: "alice", role: "user" },
@@ -223,6 +227,7 @@ test("only the first pronunciation controls playback and cache identity", async 
         },
     };
     const entry = {
+        scope: "global",
         id: "kanji",
         language: "ja",
         label: "字",

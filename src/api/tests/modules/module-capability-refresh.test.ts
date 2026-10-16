@@ -318,3 +318,32 @@ test("failed disabled configuration bootstrap removes partial routes and resourc
     );
     assert.equal(handled, false);
 });
+
+test("failed activation reconciles unrelated routes and their flows before rejecting", async (context) => {
+    const fixture = await createFixture(context);
+    await fixture.addModule(
+        "broken-study",
+        `export function bootstrapModule() { throw new Error('content_pack_version_conflict'); }`,
+    );
+    await fixture.addModule(
+        "jitsi-meet",
+        `export function bootstrapModule(ctx) {
+        ctx.registerFlow({ id: 'jitsi-meet:consentStatus', stages: ['read'] });
+        ctx.registerApiGet('/api/v1/modules/jitsi-meet/whiteboard/availability', async (_req, res) => {
+            const result = await ctx.flow.run('jitsi-meet:consentStatus', {}, { implementations: { read: () => ({ accepted: true }) } });
+            res.end(JSON.stringify(result));
+        });
+    }`,
+    );
+    await assert.rejects(
+        fixture.extensions.refresh({ throwOnFailure: true }),
+        /content_pack_version_conflict/,
+    );
+    await fixture.request();
+    await assert.rejects(
+        fixture.extensions.refresh({ throwOnFailure: true }),
+        /content_pack_version_conflict/,
+    );
+    await fixture.request();
+    assert.deepEqual(fixture.failures, ["broken-study", "broken-study"]);
+});

@@ -334,9 +334,8 @@ function entryAudio(entry, layer) {
         audioField,
         valid:
             (typeof value === "string" && value.startsWith("file:")) ||
-            ((audioField?.audioLookupAvailable === true ||
-                (audioField &&
-                    layer?.semanticRole === "orderedLexicalSequence")) &&
+            (entry.scope === "global" &&
+                audioField?.audioLookupAvailable === true &&
                 !entry.tags?.includes("punctuation") &&
                 (!layer?.metadata?.audio?.requiresReading ||
                     entry.fields?.pronunciation?.length > 0)),
@@ -359,54 +358,10 @@ export function renderAudio(
     missingDependencyLabel = "",
 ) {
     const own = entryAudio(entry, layer);
-    let sources = own.valid ? [{ entry, field: own.audioField }] : [];
-    let complete = sources.length > 0;
-    if (!complete && allEntryReferences(entry).length) {
-        const resolveSources = (candidate, visited = new Set()) => {
-            if (!candidate || visited.has(candidate.id)) return null;
-            visited.add(candidate.id);
-            const candidateLayer = layerForEntry(schemas, candidate);
-            const audio = entryAudio(candidate, candidateLayer);
-            if (audio.valid)
-                return [{ entry: candidate, field: audio.audioField }];
-            const content = allEntryReferences(candidate)
-                .sort(
-                    (left, right) =>
-                        (left.position ?? 0) - (right.position ?? 0),
-                )
-                .map((reference) => {
-                    const target = entries.find(
-                        ({ id }) => id === reference.entryId,
-                    );
-                    return target
-                        ? {
-                              ...target,
-                              referenceTransformation: reference.transformation,
-                          }
-                        : undefined;
-                })
-                .filter(Boolean)
-                .filter((target) => !target.tags?.includes("punctuation"))
-                .filter(
-                    (target) =>
-                        !["definition", "meaning"].includes(
-                            layerForEntry(schemas, target)?.semanticRole,
-                        ),
-                );
-            if (!content.length) return null;
-            const nested = content.map((target) =>
-                resolveSources(target, new Set(visited)),
-            );
-            return nested.every(Boolean) ? nested.flat() : null;
-        };
-        const resolved = resolveSources(entry);
-        sources = resolved ?? [];
-        complete = Boolean(resolved?.length);
-    }
-    if (!complete && own.valid) {
-        sources = [{ entry, field: own.audioField }];
-        complete = true;
-    }
+    const composite = own.audioField && allEntryReferences(entry).length > 0;
+    const sources =
+        own.valid || composite ? [{ entry, field: own.audioField }] : [];
+    const complete = sources.length > 0;
     const label =
         (own.audioField &&
             localizedLabel(own.audioField.metadata, entry.language)) ||

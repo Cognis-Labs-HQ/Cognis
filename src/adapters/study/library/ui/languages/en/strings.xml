@@ -178,4 +178,9 @@
   <string name="gateway.study.library_import">Import Library Cards</string>
   <string name="gateway.study.library_import_success">Imported {{ count }} cards.</string>
   <string name="gateway.study.library_import_error">Import failed: {{ reason }}. No cards were added.</string>
+    <string name="gateway.study.library_audio_upload_limit">Upload audio up to 5 MB.</string>
+    <string name="gateway.study.library_audio_record">Record your voice</string>
+    <string name="gateway.study.library_audio_record_stop">Stop recording</string>
+    <string name="gateway.study.library_audio_refresh">Regenerate audio</string>
+    <string name="gateway.study.library_audio_refreshed">Audio regenerated.</string>
 </resources>

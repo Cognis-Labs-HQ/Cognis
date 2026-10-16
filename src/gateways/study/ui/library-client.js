@@ -69,17 +69,20 @@ export async function markLibraryEntriesViewed(entryIds) {
 export async function fetchLibraryAudioUrl(
     entryId,
     fieldId,
-    { signal, transformation } = {},
+    { signal, transformation, refresh = false } = {},
 ) {
     const response = await apiFetch(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/audio/${encodeURIComponent(fieldId)}`,
         {
             signal,
-            ...(transformation
+            ...(transformation || refresh
                 ? {
                       method: "POST",
                       headers: { "content-type": "application/json" },
-                      body: JSON.stringify({ transformation }),
+                      body: JSON.stringify({
+                          transformation,
+                          ...(refresh ? { refresh: true } : {}),
+                      }),
                   }
                 : {}),
         },
@@ -357,5 +360,16 @@ export async function dictionarySearchContext(input) {
             : {},
     );
     if (!response.ok) throw new Error("search_context_failed");
+    return (await response.json()).data;
+}
+
+export async function uploadLibraryAudio(file, signal) {
+    const response = await apiFetch("/api/v1/study/library/audio", {
+        method: "PUT",
+        headers: { "content-type": file.type },
+        body: file,
+        signal,
+    });
+    if (!response.ok) throw new Error("audio_upload_failed");
     return (await response.json()).data;
 }

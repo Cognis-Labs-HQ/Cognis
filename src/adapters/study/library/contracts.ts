@@ -123,11 +123,17 @@ export interface LibraryCapability {
         actor: LibraryActor,
         entryIds: readonly string[],
     ): Promise<void>;
+    uploadAudio(
+        actor: LibraryActor,
+        mediaType: string,
+        data: Uint8Array,
+    ): Promise<{ value: string }>;
     readAudio(
         actor: LibraryActor,
         entryId: string,
         fieldId: string,
         transformation?: LibraryReferenceInput["transformation"],
+        refresh?: boolean,
     ): Promise<{ mediaType: string; data: Buffer }>;
     create(
         actor: LibraryActor,

@@ -154,3 +154,39 @@ export async function lookupDictionarySuggestions(
         )
         .sort((left, right) => right.confidence - left.confidence);
 }
+
+export function registerLookupProvider(
+    providers: Map<string, LibraryLookupProvider>,
+    provider: LibraryLookupProvider,
+): () => void {
+    if (
+        !provider.id.trim() ||
+        !Object.keys(provider.metadata?.labels ?? {}).length ||
+        (provider.searchable !== undefined &&
+            typeof provider.searchable !== "boolean") ||
+        (provider.searchable === true &&
+            !provider.capabilities?.includes("dictionary")) ||
+        providers.has(provider.id)
+    )
+        throw new Error("lookup_provider_registered");
+    providers.set(provider.id, provider);
+    return () => providers.delete(provider.id);
+}
+
+export function listLookupProviders(
+    providers: Map<string, LibraryLookupProvider>,
+    schema: LibrarySchema,
+    layer: LibraryLayer,
+) {
+    return Array.from(providers.values())
+        .filter((provider) => provider.supports(schema, layer))
+        .map(({ id, metadata, fields, capabilities, searchable }) => ({
+            id,
+            metadata: structuredClone(metadata),
+            ...(searchable === true ? { searchable: true } : {}),
+            ...(fields?.length ? { fields: [...fields] } : {}),
+            ...(capabilities?.length
+                ? { capabilities: [...capabilities] }
+                : {}),
+        }));
+}

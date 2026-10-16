@@ -59,6 +59,7 @@ function fixture() {
         [
             "word",
             {
+                scope: "global",
                 id: "word",
                 label: "run",
                 language: "en",
@@ -80,6 +81,7 @@ function fixture() {
         [
             "sentence",
             {
+                scope: "global",
                 id: "sentence",
                 label: "run, run",
                 schemaId: "test",
@@ -100,7 +102,7 @@ function fixture() {
     });
     let calls = 0;
     const provider = {
-        supports: () => true,
+        supports: (_language, role) => role !== "orderedLexicalSequence",
         cacheKey: () => "word.audio",
         fetchAudio: async () => {
             calls++;
@@ -215,3 +217,20 @@ test("composite audio has a quiet lead-in, bounded peaks and explicit phrase pau
         /invalid_audio_recording/,
     );
 });
+
+for (const scope of ["user", "class"] as const) {
+    test(`${scope} sentences use existing recordings without calling speech`, async () => {
+        const context = fixture();
+        context.entries.get("sentence")!.scope = scope;
+        await assert.rejects(context.read(), /audio_not_found/);
+        assert.equal(context.calls(), 0);
+        await context.cache.store("word.audio", "audio/wav", tone().data);
+        const audio = await context.read();
+        assert.equal(audio.mediaType, "audio/wav");
+        assert.equal(context.calls(), 0);
+        context.entries.get("word")!.fields!.audio = "file:manual.audio";
+        await context.cache.store("manual.audio", "audio/wav", tone().data);
+        assert.equal((await context.read()).mediaType, "audio/wav");
+        assert.equal(context.calls(), 0);
+    });
+}

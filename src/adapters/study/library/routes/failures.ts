@@ -9,6 +9,10 @@ const DOMAIN_CODES = new Set([
     "import_dependency_cycle",
     "already_reviewed",
     "asset_not_file",
+    "audio_upload_too_large",
+    "audio_entry_changed",
+    "audio_refresh_unavailable",
+    "invalid_audio_upload",
     "audio_asset_not_found",
     "audio_field_required",
     "audio_not_found",
@@ -187,6 +191,8 @@ export function libraryFailure(error: unknown): {
 } {
     const message = error instanceof Error ? error.message : "";
     const [code, detail] = message.split(":");
+    if (code === "audio_upload_too_large") return { code, status: 413 };
+    if (code === "audio_entry_changed") return { code, status: 409 };
     if (!DOMAIN_CODES.has(code)) return { code: "request_failed", status: 500 };
     if (
         code === "content_conflict" &&

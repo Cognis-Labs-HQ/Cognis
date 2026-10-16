@@ -178,4 +178,9 @@
   <string name="gateway.study.library_import">Impor kartu pustaka</string>
   <string name="gateway.study.library_import_success">{{ count }} kartu diimpor.</string>
   <string name="gateway.study.library_import_error">Impor gagal: {{ reason }}. Tidak ada kartu yang ditambahkan.</string>
+    <string name="gateway.study.library_audio_upload_limit">Unggah audio hingga 5 MB.</string>
+    <string name="gateway.study.library_audio_record">Rekam suara Anda</string>
+    <string name="gateway.study.library_audio_record_stop">Hentikan rekaman</string>
+    <string name="gateway.study.library_audio_refresh">Buat ulang audio</string>
+    <string name="gateway.study.library_audio_refreshed">Audio dibuat ulang.</string>
 </resources>

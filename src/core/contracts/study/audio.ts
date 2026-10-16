@@ -14,6 +14,7 @@ export interface StudyAudioProvider {
     id: string;
     revision: string;
     languages: readonly string[];
+    available?(): boolean;
     fetchAudio(
         input: StudyAudioInput,
         signal: AbortSignal,
@@ -21,6 +22,10 @@ export interface StudyAudioProvider {
 }
 
 export interface StudyAudioCapability {
+    registerLanguage(
+        language: string,
+        configuration?: () => { voiceId?: string },
+    ): () => void;
     registerProvider(provider: StudyAudioProvider): () => void;
     supports(language: string, semanticRole: string): boolean;
     cacheKey(input: StudyAudioInput): string;

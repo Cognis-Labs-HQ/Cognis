@@ -244,3 +244,11 @@ Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten de
 Der schwebende Zeichenbereich liegt über der Seitenaktionsleiste. Abschnitte mit verknüpften Karten umbrechen bis zu fünf Zeilen und scrollen danach horizontal mit ausgeblendeten Bildlaufleisten. Größenänderungen berechnen die Grenze neu; beim Schließen wird der Beobachter freigegeben. IPA-Aussprachewerte behalten ihre ursprüngliche Notation und verwenden gut lesbare phonetische Typografie.
 
 Study stellt öffentliche Ausspracheklassifizierung und Stile für Library-Vorschauen, Detailüberschriften, Varianten, Lernkartenantworten und Leseoptionen sowie den Zeichenbereich bereit. IPA behält seine ursprüngliche Notation; normale Lesungen behalten die gewählte App-Typografie. Japanische und englische Satzschemata verlangen mindestens zwei Wortverweise.
+
+## Gemeinsame Sprachsynthese
+
+ElevenLabs-Synthese in ein eigenes konfigurierbares Modul verlagern. Study nutzt optionale sprachbezogene Stimmen für gespeicherte globale Karten. Private und Klassenkarten erlauben begrenzte Uploads und Mikrofonaufnahmen. Die kontinuierliche Satzkomposition aus vorhandenen Aufnahmen bleibt als Rückfall erhalten. Administratoren können globale Audios im Editor neu erzeugen.
+
+`study:audio:provider.registerLanguage(language, configuration)` → `speech:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Die tatsächlichen englischen und japanischen Inhaltspaketversionen beim Entfernen gebündelter Aufnahmen erhöhen. Unabhängige Module werden vor der Fehlermeldung vollständig abgeglichen, damit Einwilligungsrouten ihre registrierten Flows behalten.

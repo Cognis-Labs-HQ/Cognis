@@ -178,4 +178,9 @@
   <string name="gateway.study.library_import">Bibliothekskarten importieren</string>
   <string name="gateway.study.library_import_success">{{ count }} Karten importiert.</string>
   <string name="gateway.study.library_import_error">Import fehlgeschlagen: {{ reason }}. Es wurden keine Karten hinzugefügt.</string>
+    <string name="gateway.study.library_audio_upload_limit">Audiodateien bis 5 MB hochladen.</string>
+    <string name="gateway.study.library_audio_record">Stimme aufnehmen</string>
+    <string name="gateway.study.library_audio_record_stop">Aufnahme beenden</string>
+    <string name="gateway.study.library_audio_refresh">Audio neu erzeugen</string>
+    <string name="gateway.study.library_audio_refreshed">Audio neu erzeugt.</string>
 </resources>

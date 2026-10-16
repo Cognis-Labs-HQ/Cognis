@@ -466,6 +466,7 @@ export async function openCreateEntryPopup({
             return null;
         }
     };
+    const audioController = new AbortController();
     const action = await openPopup({
         title: i18n
             .t("gateway.study.library_create_typed")
@@ -535,6 +536,7 @@ export async function openCreateEntryPopup({
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n, {
                 maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+                signal: audioController.signal,
             });
             form.compositionOrder = [];
             form.referenceGroups = {};
@@ -750,7 +752,7 @@ export async function openCreateEntryPopup({
                 if (classChoice) classChoice.hidden = !publishClass.checked;
             });
         },
-    });
+    }).finally(() => audioController.abort());
     carouselController?.abort();
     if (action !== "create" || !createdEntry) {
         await rollbackNestedDefinitions();

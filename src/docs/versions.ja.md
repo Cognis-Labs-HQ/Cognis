@@ -49,15 +49,15 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.38`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | [pkg][p]   |
-| Messages (Social)          | `src/adapters/social/messages/`     | [pkg][m]   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `2.0.14`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.22`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.2`    |
-| Library (Study)            | `src/adapters/study/library/`       | `2.27.10`  |
+| Library (Study)            | `src/adapters/study/library/`       | `2.28.0`   |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.0`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.3.2`    |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.3.3`    |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.1.7`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.1.5`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -77,20 +77,20 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `1.11.9`   |
+| Study                 | `src/gateways/study/`         | `1.12.0`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | [pkg][c]   |
+| Core Package   | `src/core/` | `0.3.130`  |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | [pkg][a]   |
+| API Server     | `src/api/` | `0.6.8`    |
 
 ## ツール
 

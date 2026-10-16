@@ -1,3 +1,4 @@
+import { formatModuleTag } from "./filters.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import {
@@ -270,22 +271,7 @@ function renderDetailActions(module) {
     return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}`;
 }
 
-function formatTag(tag) {
-    for (const module of modules) {
-        for (const field of ["categories", "tags"]) {
-            const index = (module[field] ?? []).indexOf(tag);
-            const localized = module.localizedPresentation?.[field]?.[index];
-            if (localized && localized !== tag) return localized;
-        }
-    }
-    const localized = i18n.t(tag);
-    if (localized !== tag) return localized;
-    return String(tag)
-        .split(/[-_\s]+/)
-        .filter(Boolean)
-        .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
-        .join(" ");
-}
+const formatTag = (tag) => formatModuleTag(tag, modules, i18n);
 
 function renderSidebar(categories) {
     return renderModuleFilters(categories, filters, {

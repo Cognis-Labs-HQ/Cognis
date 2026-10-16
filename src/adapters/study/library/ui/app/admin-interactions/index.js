@@ -1,3 +1,5 @@
+import { bindAudioUploads } from "../audio-upload.js";
+import { bindAudioEditor } from "../audio-editor.js";
 import { bindTransformationOptIns } from "../transformation-opt-ins.js";
 import { bindDefinitionRemoval } from "../reuse/definition-actions.js";
 import { activateCompositionEntry } from "../composition-activation.js";
@@ -124,7 +126,7 @@ export function bindLibraryEditorControls(
     form,
     entry,
     i18n,
-    { maxTags = Number.POSITIVE_INFINITY } = {},
+    { maxTags = Number.POSITIVE_INFINITY, signal } = {},
 ) {
     form.querySelectorAll("[data-library-provider-field]").forEach(
         (control) => {
@@ -148,41 +150,8 @@ export function bindLibraryEditorControls(
             select.dispatchEvent(new Event("change", { bubbles: true }));
         });
     });
-    form.querySelectorAll("[data-library-audio-field]").forEach((field) => {
-        const client = uiCtx.capabilities.get("files:uiClient");
-        const stored = field.querySelector('input[type="hidden"]');
-        const picker = field.querySelector('input[type="file"]');
-        const filename = field.querySelector("[data-library-audio-filename]");
-        if (!client) return;
-        picker.addEventListener("change", async () => {
-            const file = picker.files?.[0];
-            if (!file) return;
-            const identity = entry.id || crypto.randomUUID();
-            const normalizedFilename = `${identity}-${field.dataset.fieldId}.audio`;
-            const key = `${field.dataset.prefix}${normalizedFilename}`;
-            field.dataset.uploading = "true";
-            picker.disabled = true;
-            try {
-                await client.uploadAudio(field.dataset.namespace, key, file);
-                stored.value = `file:${key}`;
-                filename.textContent = normalizedFilename;
-                filename.hidden = false;
-                showToast(
-                    i18n.t("gateway.study.library_audio_upload_success"),
-                    {
-                        variant: "success",
-                    },
-                );
-            } catch {
-                showToast(i18n.t("gateway.study.library_audio_upload_error"), {
-                    variant: "error",
-                });
-            } finally {
-                delete field.dataset.uploading;
-                picker.disabled = false;
-            }
-        });
-    });
+    bindAudioUploads(form, i18n, signal);
+    bindAudioEditor(form, entry, i18n, signal);
     renderStrokePatternPreviews(form);
     form.querySelectorAll("[data-library-entry-tags]").forEach((field) => {
         const input = field.querySelector("[data-library-tag-input]");
@@ -348,6 +317,7 @@ export async function openLibraryEntryEditor({
         },
     );
     let formController;
+    const audioController = new AbortController();
     return openPopup({
         title: i18n
             .t("gateway.study.library_admin_edit_title")
@@ -368,6 +338,7 @@ export async function openLibraryEntryEditor({
             formController = editor.builder.attach(form);
             bindLibraryEditorControls(form, entry, i18n, {
                 maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+                signal: audioController.signal,
             });
             const pronunciationRelationshipIds = new Set(
                 pronunciationRelationshipsFor(
@@ -576,7 +547,7 @@ export async function openLibraryEntryEditor({
             });
             return true;
         },
-    });
+    }).finally(() => audioController.abort());
 }
 
 export function bindAdminLibraryInteractions(
@@ -648,6 +619,7 @@ export function bindAdminLibraryInteractions(
             );
             let formController;
             editorOpen = true;
+            const audioController = new AbortController();
             await openPopup({
                 title: i18n
                     .t(
@@ -694,6 +666,7 @@ export function bindAdminLibraryInteractions(
                     if (!readOnly) formController = editor.builder.attach(form);
                     bindLibraryEditorControls(form, entry, i18n, {
                         maxTags: LIBRARY_COMPOSER_LIMITS.tags,
+                        signal: audioController.signal,
                     });
                     if (!readOnly) {
                         const pronunciationRelationshipIds = new Set(
@@ -873,6 +846,7 @@ export function bindAdminLibraryInteractions(
                     return true;
                 },
             }).finally(() => {
+                audioController.abort();
                 editorOpen = false;
             });
         },

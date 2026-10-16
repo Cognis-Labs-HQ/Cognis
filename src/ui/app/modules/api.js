@@ -240,3 +240,20 @@ export async function uninstallModule(
         ),
     );
 }
+
+export async function runModuleConfigAction(moduleId, action, values, signal) {
+    if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(action.id))
+        throw new Error("invalid_config_action");
+    const response = await apiFetch(
+        `/api/v1/modules/${encodeURIComponent(moduleId)}/config/${encodeURIComponent(action.id)}`,
+        {
+            method: "POST",
+            signal,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(values),
+        },
+    );
+    if (action.result !== "audio") return data(response);
+    if (!response.ok) throw new Error("module_config_action_failed");
+    return response.blob();
+}

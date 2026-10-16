@@ -31,7 +31,7 @@ test("audio providers execute ctx stages, deduplicate pending fetches, and relea
             return { mediaType: "audio/mpeg", data: new Uint8Array([1, 2]) };
         },
     });
-    assert.equal(audio.supports("en", "orderedLexicalSequence"), false);
+    assert.equal(audio.supports("en", "orderedLexicalSequence"), true);
     const key = audio.cacheKey(input);
     const [first, second] = await Promise.all([
         audio.fetchAudio(input),
@@ -104,4 +104,34 @@ test("removing an audio provider aborts in-flight retrieval", async () => {
     await ready;
     remove();
     await assert.rejects(pending, /audio_aborted/);
+});
+
+test("language registration discovers speech dynamically and omits an unset voice", async () => {
+    const ctx = createCtx();
+    ctx.registerFlow({
+        id: "study:audio:fetch",
+        stages: ["validate", "fetch"],
+    });
+    const requests: unknown[] = [];
+    let speech: import("@cognis/core").SpeechSynthesisCapability | undefined;
+    let voiceId: string | undefined;
+    const audio = new StudyAudio(ctx.flow, undefined, () => speech);
+    const remove = audio.registerLanguage("en", () => ({ voiceId }));
+    assert.equal(audio.supports("en", "lexicalUnit"), false);
+    speech = {
+        revision: "one",
+        synthesize: async (input) => {
+            requests.push(input);
+            return { mediaType: "audio/mpeg", data: new Uint8Array([1]) };
+        },
+    };
+    await audio.fetchAudio(input);
+    assert.deepEqual(requests[0], { text: "dog", language: "en" });
+    const firstKey = audio.cacheKey(input);
+    voiceId = "different";
+    await audio.fetchAudio(input);
+    assert.deepEqual(requests[1], { text: "dog", language: "en", voiceId });
+    assert.notEqual(audio.cacheKey(input), firstKey);
+    remove();
+    assert.equal(audio.supports("en", "lexicalUnit"), false);
 });

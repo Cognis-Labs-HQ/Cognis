@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type {
     FlowApi,
+    SpeechSynthesisCapability,
     StudyAudioCapability,
     StudyAudioInput,
     StudyAudioProvider,
@@ -12,6 +13,7 @@ const ROLES = new Set([
     "compoundWritingUnit",
     "lexicalUnit",
     "particle",
+    "orderedLexicalSequence",
 ]);
 const TYPES = new Set([
     "audio/mpeg",
@@ -39,7 +41,55 @@ export class StudyAudio implements StudyAudioCapability {
             message: string,
             metadata: Record<string, unknown>,
         ) => unknown,
+        private readonly speech?: () => SpeechSynthesisCapability | undefined,
     ) {}
+
+    registerLanguage(
+        language: string,
+        configuration: () => { voiceId?: string } = () => ({}),
+    ): () => void {
+        if (!/^[a-z]{2,3}(?:-[a-zA-Z0-9]{2,8})*$/.test(language))
+            throw new Error("invalid_audio_language");
+        const speech = this.speech;
+        return this.registerProvider({
+            id: `study:language:${language}`,
+            languages: [language],
+            available: () => Boolean(speech?.()),
+            get revision() {
+                return JSON.stringify([
+                    speech?.()?.revision ?? "unavailable",
+                    configuration().voiceId ?? null,
+                ]);
+            },
+            async fetchAudio(input, signal) {
+                const synthesizer = speech?.();
+                if (!synthesizer) throw new Error("audio_lookup_unavailable");
+                const reading = input.readings?.[0];
+                const phonemes = /^\/[^/]+\/$/u.test(reading ?? "")
+                    ? reading!.slice(1, -1)
+                    : undefined;
+                const voiceId = configuration().voiceId;
+                try {
+                    return await synthesizer.synthesize(
+                        {
+                            text: phonemes
+                                ? input.label
+                                : reading || input.label,
+                            language: input.language,
+                            ...(phonemes ? { phonemes } : {}),
+                            ...(voiceId ? { voiceId } : {}),
+                        },
+                        signal,
+                    );
+                } catch (error) {
+                    signal.throwIfAborted();
+                    throw new Error("audio_lookup_unavailable", {
+                        cause: error,
+                    });
+                }
+            },
+        });
+    }
 
     registerProvider(provider: StudyAudioProvider): () => void {
         if (
@@ -49,7 +99,9 @@ export class StudyAudio implements StudyAudioCapability {
             typeof provider.fetchAudio !== "function" ||
             this.providers.has(provider.id) ||
             provider.languages.some((language) =>
-                this.supports(language, "lexicalUnit"),
+                [...this.providers.values()].some((registration) =>
+                    registration.provider.languages.includes(language),
+                ),
             )
         )
             throw new Error("audio_provider_conflict");
@@ -76,8 +128,10 @@ export class StudyAudio implements StudyAudioCapability {
     supports(language: string, semanticRole: string): boolean {
         return (
             ROLES.has(semanticRole) &&
-            [...this.providers.values()].some(({ provider }) =>
-                provider.languages.includes(language),
+            [...this.providers.values()].some(
+                ({ provider }) =>
+                    provider.languages.includes(language) &&
+                    provider.available?.() !== false,
             )
         );
     }
@@ -88,7 +142,10 @@ export class StudyAudio implements StudyAudioCapability {
             !this.supports(input.language, input.semanticRole) ||
             typeof input.label !== "string" ||
             !input.label.trim() ||
-            [...input.label].length > 200 ||
+            [...input.label].length >
+                (input.semanticRole === "orderedLexicalSequence"
+                    ? 5000
+                    : 200) ||
             (input.readings !== undefined &&
                 (!Array.isArray(input.readings) ||
                     input.readings.length > 10 ||

@@ -178,4 +178,9 @@
   <string name="gateway.study.library_import">ライブラリーのカードをインポート</string>
   <string name="gateway.study.library_import_success">{{ count }} 枚のカードをインポートしました。</string>
   <string name="gateway.study.library_import_error">インポートに失敗しました: {{ reason }}。カードは追加されていません。</string>
+    <string name="gateway.study.library_audio_upload_limit">音声は5 MBまでアップロードできます。</string>
+    <string name="gateway.study.library_audio_record">自分の声を録音</string>
+    <string name="gateway.study.library_audio_record_stop">録音を停止</string>
+    <string name="gateway.study.library_audio_refresh">音声を再生成</string>
+    <string name="gateway.study.library_audio_refreshed">音声を再生成しました。</string>
 </resources>

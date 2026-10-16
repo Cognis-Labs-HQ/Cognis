@@ -1,3 +1,4 @@
+export * from "./contracts/speech.js";
 export * from "./contracts/study/audio.js";
 export * from "./contracts/auth-account.js";
 export * from "./contracts/access-policy.js";

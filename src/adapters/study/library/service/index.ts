@@ -1,5 +1,5 @@
+import { storeUploadedAudio, validateUploadedAudioFields } from "./uploads.js";
 import { readAuthorizedEntryAudio } from "./audio.js";
-import type { StudyAudioCapability } from "@cognis/core";
 import { deleteProviderContent } from "./content-cleanup.js";
 import { importLibraryBatch } from "./import.js";
 import { mergeLibraryDraft, validateMergeProposal } from "./merge.js";
@@ -10,6 +10,8 @@ import { findContentConflict } from "./content-conflicts.js";
 import { ingestProviderContent } from "./content-ingestion.js";
 import {
     LibraryDictionarySearch,
+    registerLookupProvider,
+    listLookupProviders,
     lookupDictionarySuggestions,
 } from "./dictionary.js";
 import { validateEntryInput, validateEntryFilters } from "./input.js";
@@ -32,8 +34,12 @@ import {
     validateDependencyVisibility,
     validateEntrySelection,
 } from "./dependencies.js";
-import { traceEntry } from "./trace.js";
-import type { FlowApi, ProbeCacheFactory } from "@cognis/core";
+import { markViewedEntries, traceEntry } from "./trace.js";
+import type {
+    FlowApi,
+    ProbeCacheFactory,
+    StudyAudioCapability,
+} from "@cognis/core";
 import { inspectContentPack } from "../content-pack.js";
 import {
     findLayer,
@@ -55,7 +61,6 @@ import type {
     LibraryLocation,
     LibraryLookupProvider,
     LibraryLookupSuggestion,
-    LibraryMetadata,
     LibraryFormContribution,
     LibraryPushRequest,
     LibraryResolutionProposal,
@@ -116,6 +121,15 @@ export class LibraryService implements LibraryCapability {
             entryWithPermissions: this.entryWithPermissions.bind(this),
             stringLocalization,
             notifyNewContent,
+            validateAudio: (actor, schema, layer, fields, previous) =>
+                validateUploadedAudioFields(
+                    actor,
+                    schema,
+                    layer,
+                    fields,
+                    previous,
+                    this.audioCache,
+                ),
         });
         this.dictionary = new LibraryDictionarySearch(store, cacheFactory, log);
         this.visibility = new LibraryVisibilityService(
@@ -192,44 +206,17 @@ export class LibraryService implements LibraryCapability {
     }
 
     registerLookupProvider(provider: LibraryLookupProvider): () => void {
-        if (
-            !provider.id.trim() ||
-            !Object.keys(provider.metadata?.labels ?? {}).length ||
-            (provider.searchable !== undefined &&
-                typeof provider.searchable !== "boolean") ||
-            (provider.searchable === true &&
-                !provider.capabilities?.includes("dictionary")) ||
-            this.lookupProviders.has(provider.id)
-        )
-            throw new Error("lookup_provider_registered");
-        this.lookupProviders.set(provider.id, provider);
-        return () => this.lookupProviders.delete(provider.id);
+        return registerLookupProvider(this.lookupProviders, provider);
     }
 
     listLookupProviders(input: {
         schemaId: string;
         schemaVersion?: number;
         layer: string;
-    }): Array<{
-        id: string;
-        metadata: LibraryMetadata;
-        fields?: readonly string[];
-        capabilities?: readonly ("dictionary" | "strokePattern")[];
-        searchable?: boolean;
-    }> {
+    }) {
         const schema = this.schema(input.schemaId, input.schemaVersion);
         const layer = findLayer(schema, input.layer);
-        return Array.from(this.lookupProviders.values())
-            .filter((provider) => provider.supports(schema, layer))
-            .map(({ id, metadata, fields, capabilities, searchable }) => ({
-                id,
-                metadata: structuredClone(metadata),
-                ...(searchable === true ? { searchable: true } : {}),
-                ...(fields?.length ? { fields: [...fields] } : {}),
-                ...(capabilities?.length
-                    ? { capabilities: [...capabilities] }
-                    : {}),
-            }));
+        return listLookupProviders(this.lookupProviders, schema, layer);
     }
 
     registerFormContribution(
@@ -303,7 +290,6 @@ export class LibraryService implements LibraryCapability {
         );
         for (const layer of result.layers) {
             if (
-                layer.semanticRole !== "orderedLexicalSequence" &&
                 !this.audioProvider?.supports(
                     result.language ?? "",
                     layer.semanticRole ?? "",
@@ -469,6 +455,8 @@ export class LibraryService implements LibraryCapability {
             entry,
             this.immutable(entry),
             this.classAccess,
+            this.audioProvider,
+            this.getSchema(entry.schemaId),
         );
     }
 
@@ -498,15 +486,25 @@ export class LibraryService implements LibraryCapability {
         actor: LibraryActor,
         entryIds: readonly string[],
     ): Promise<void> {
-        const uniqueIds = [...new Set(entryIds)];
-        if (!uniqueIds.length || uniqueIds.length > 500)
-            throw new Error("invalid_entry_selection");
-        for (const entryId of uniqueIds) {
-            if (!(await this.read(actor, entryId)))
-                throw new Error("not_found");
-        }
+        return markViewedEntries(
+            actor,
+            entryIds,
+            this.read.bind(this),
+            this.store,
+        );
+    }
 
-        await this.store.markEntriesViewed(actor.accountId, uniqueIds);
+    async uploadAudio(
+        actor: LibraryActor,
+        mediaType: string,
+        data: Uint8Array,
+    ): Promise<{ value: string }> {
+        return storeUploadedAudio(actor, mediaType, data, {
+            cache: this.audioCache,
+            flow: this.flow,
+            authorize: this.authorize.bind(this),
+            log: this.log,
+        });
     }
 
     async readAudio(
@@ -514,15 +512,18 @@ export class LibraryService implements LibraryCapability {
         entryId: string,
         fieldId: string,
         transformation?: LibraryReferenceInput["transformation"],
+        refresh = false,
     ): Promise<{ mediaType: string; data: Buffer }> {
         return readAuthorizedEntryAudio(
-            { actor, entryId, fieldId, transformation },
+            { actor, entryId, fieldId, transformation, refresh },
             {
                 read: this.read.bind(this),
                 schema: (id) => this.schema(id),
                 flow: this.flow,
                 cache: this.audioCache,
                 provider: this.audioProvider,
+                store: this.store,
+                log: this.log,
             },
         );
     }

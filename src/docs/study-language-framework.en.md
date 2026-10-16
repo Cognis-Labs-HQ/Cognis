@@ -244,3 +244,11 @@ Language selection opens Cognis-owned Explore pages even when content providers 
 The floating drawing host stacks above the page action dock. Related-card sections wrap normally through five rows, then scroll horizontally with hidden scrollbars; resizing recalculates the threshold and popup disposal releases the observer. IPA pronunciation values keep their authored notation and use readable phonetic typography.
 
 Study provides public pronunciation classification and styles reused by Library previews, detail headings, variants, flashcard answers and reading choices, and the drawing pad. IPA keeps its authored notation; ordinary readings keep the selected app typography. Both Japanese and English sentence schemas require at least two word references.
+
+## Shared Speech Integration
+
+Move ElevenLabs synthesis into its own configurable module. Study uses optional per-language voices for saved global cards, while private and classroom cards accept bounded uploads and microphone recordings. Preserve continuous sentence composition as a fallback using existing constituent recordings. Administrators can regenerate global audio while editing.
+
+`study:audio:provider.registerLanguage(language, configuration)` → `speech:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Advance the actual English and Japanese content-pack versions when removing bundled recordings. Complete unrelated module reconciliation before reporting a failed activation so consent routes retain their registered flows.

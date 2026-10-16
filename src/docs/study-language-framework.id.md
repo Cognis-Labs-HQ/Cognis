@@ -244,3 +244,11 @@ Pilihan bahasa membuka halaman Jelajahi milik Cognis meskipun penyedia konten ti
 Area gambar mengambang berada di atas dock tindakan halaman. Bagian kartu terkait membungkus hingga lima baris, lalu bergulir horizontal dengan scrollbar tersembunyi. Perubahan ukuran menghitung ulang batas, dan penutupan popup melepaskan pengamat. Nilai pelafalan IPA mempertahankan notasi aslinya dan menggunakan tipografi fonetik yang mudah dibaca.
 
 Study menyediakan klasifikasi dan gaya pelafalan publik yang digunakan kembali oleh pratinjau Library, judul detail, varian, jawaban kartu, pilihan membaca, dan area gambar. IPA mempertahankan notasi aslinya; bacaan biasa mempertahankan tipografi aplikasi pilihan pengguna. Skema kalimat Jepang dan Inggris memerlukan sedikitnya dua referensi kata.
+
+## Integrasi Ucapan Bersama
+
+Pindahkan sintesis ElevenLabs ke modul terpisah yang dapat dikonfigurasi. Study memakai suara opsional per bahasa untuk kartu global tersimpan, sedangkan kartu pribadi dan kelas menerima unggahan terbatas dan rekaman mikrofon. Pertahankan komposisi kalimat berkelanjutan sebagai cadangan dari rekaman penyusun yang tersedia. Administrator dapat membuat ulang audio global saat mengedit.
+
+`study:audio:provider.registerLanguage(language, configuration)` → `speech:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Naikkan versi paket konten Inggris dan Jepang saat menghapus rekaman bawaan. Selesaikan rekonsiliasi modul lain sebelum melaporkan aktivasi gagal agar rute persetujuan tetap memiliki alur terdaftar.

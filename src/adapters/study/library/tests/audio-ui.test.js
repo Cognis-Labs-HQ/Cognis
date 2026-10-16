@@ -24,11 +24,15 @@ const audio = {
 const layers = [
     { id: "words", semanticRole: "lexicalUnit", fields: [audio] },
     { id: "particles", semanticRole: "particle", fields: [audio] },
-    { id: "sentences", semanticRole: "orderedLexicalSequence", fields: [] },
+    {
+        id: "sentences",
+        semanticRole: "orderedLexicalSequence",
+        fields: [audio],
+    },
 ];
 const schemas = [{ id: "test", layers }];
 
-test("sentences keep ordered constituent playback and ignore silent punctuation", () => {
+test("sentences request their authorized composite endpoint", () => {
     const words = [
         { id: "one", label: "I", schemaId: "test", layer: "words" },
         { id: "two", label: "run", schemaId: "test", layer: "words" },
@@ -57,15 +61,13 @@ test("sentences keep ordered constituent playback and ignore silent punctuation"
         "Audio",
         "Missing audio",
     );
-    assert.match(
-        html,
-        /data-library-audio-entry="one"[\s\S]*data-library-audio-entry="two"/,
-    );
-    assert.equal([...html.matchAll(/<audio /g)].length, 2);
+    assert.match(html, /data-library-audio-entry="sentence"/);
+    assert.equal([...html.matchAll(/<audio /g)].length, 1);
 });
 
 test("provider audio is offered for words, and missing providers do not enable playback", () => {
     const entry = {
+        scope: "global",
         id: "word",
         layer: "words",
         schemaId: "test",

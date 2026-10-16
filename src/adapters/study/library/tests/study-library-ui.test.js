@@ -474,15 +474,13 @@ test("Study Library administration exposes contract-safe editing", () => {
         /data-library-pronunciation-commit/,
     );
     assert.doesNotMatch(adminInteractionsSource, /pronunciation-commit/);
-    assert.match(adminInteractionsSource, /field\.dataset\.fieldId}\.audio/);
-    assert.match(adminInteractionsSource, /normalizedFilename/);
     assert.match(adminInteractionsSource, /const pronunciationIndex/);
     assert.match(
         adminInteractionsSource,
         /name="field:pronunciation" type="hidden"/,
     );
     assert.match(adminInteractionsSource, /library-pronunciation-selector/);
-    assert.match(adminInteractionsSource, /data-library-audio-filename/);
+
     assert.match(stylesheet, /\.library-audio-filename/);
     assert.match(
         adminInteractionsSource,

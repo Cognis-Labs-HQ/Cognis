@@ -1,3 +1,5 @@
+import { readRawBody } from "../../../../api/reuse/read-json.js";
+import { MAX_AUDIO_UPLOAD_BYTES } from "../service/uploads.js";
 import type { LibraryReferenceInput } from "../types.js";
 import { sendJson } from "../../../../api/reuse/http-response.js";
 import { libraryFailure } from "./failures.js";
@@ -63,6 +65,21 @@ export function createLibraryRoutes(
             role: claims.role,
         };
         try {
+            if (
+                url.pathname === "/api/v1/study/library/audio" &&
+                req.method === "PUT"
+            ) {
+                const data = await readRawBody(req, {
+                    maxBytes: MAX_AUDIO_UPLOAD_BYTES,
+                });
+                const mediaType = String(req.headers["content-type"] ?? "")
+                    .split(";")[0]
+                    .trim();
+                sendJson(res, 201, {
+                    data: await library.uploadAudio(actor, mediaType, data),
+                });
+                return true;
+            }
             if (
                 url.pathname === "/api/v1/study/library/import" &&
                 req.method === "POST"
@@ -202,6 +219,7 @@ export function createLibraryRoutes(
                     req.method === "POST"
                         ? ((await readJson(req)) as {
                               transformation?: LibraryReferenceInput["transformation"];
+                              refresh?: boolean;
                           })
                         : {};
                 const audio = await library.readAudio(
@@ -209,6 +227,7 @@ export function createLibraryRoutes(
                     decodeURIComponent(audioMatch[1]),
                     decodeURIComponent(audioMatch[2]),
                     body.transformation,
+                    body.refresh === true,
                 );
                 res.writeHead(200, {
                     "content-type": audio.mediaType,

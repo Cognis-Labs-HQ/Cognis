@@ -1,3 +1,6 @@
+import { findLayer } from "../layers.js";
+import type { StudyAudioCapability } from "@cognis/core";
+import type { LibrarySchema } from "../types.js";
 import type { LibraryActor, LibraryClassAccess } from "../contracts.js";
 import type { LibraryEntry } from "../types.js";
 
@@ -6,6 +9,8 @@ export async function entryPermissions(
     entry: LibraryEntry,
     immutable: boolean,
     classAccess?: LibraryClassAccess,
+    audioProvider?: StudyAudioCapability,
+    schema?: LibrarySchema,
 ): Promise<LibraryEntry> {
     const administrator = actor.role === "admin" || actor.role === "owner";
     const owned =
@@ -35,6 +40,15 @@ export async function entryPermissions(
                 (entry.scope === "class" ? classWritable : owned)));
     return {
         ...entry,
+        ...(administrator &&
+        entry.scope === "global" &&
+        schema &&
+        audioProvider?.supports(
+            entry.language,
+            findLayer(schema, entry.layer).semanticRole ?? "",
+        )
+            ? { canRegenerateAudio: true }
+            : {}),
         canDelete,
         canEdit,
         editRequiresReview:
