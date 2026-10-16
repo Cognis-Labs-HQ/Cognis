@@ -1,4 +1,5 @@
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import { SerialOperations } from "./serial-operations.js";
 
 export type StudyFavouriteKind = "library" | "deck" | "flashcard";
 
@@ -26,7 +27,7 @@ export function validateFavourite(
 
 /** Account-scoped favourites. Owning adapters independently enforce resource access. */
 export class StudyFavourites {
-    private readonly pending = new Map<string, Promise<unknown>>();
+    private readonly operations = new SerialOperations();
 
     constructor(private readonly preferences: UserPreferenceStore) {}
 
@@ -36,28 +37,14 @@ export class StudyFavourites {
 
     async set(accountId: string, input: unknown): Promise<StudyFavourite[]> {
         validateFavourite(input);
-        const operation = (this.pending.get(accountId) ?? Promise.resolve())
-            .catch(() => {})
-            .then(async () => {
-                const items = (await this.list(accountId)).filter(
-                    (item) => item.kind !== input.kind || item.id !== input.id,
-                );
-                if (input.favourite)
-                    items.push({ kind: input.kind, id: input.id });
-                if (items.length > 5000) throw new Error("favourite_limit");
-                await this.preferences.set(
-                    accountId,
-                    KEY,
-                    JSON.stringify(items),
-                );
-                return items;
-            });
-        this.pending.set(accountId, operation);
-        try {
-            return await operation;
-        } finally {
-            if (this.pending.get(accountId) === operation)
-                this.pending.delete(accountId);
-        }
+        return this.operations.run(accountId, async () => {
+            const items = (await this.list(accountId)).filter(
+                (item) => item.kind !== input.kind || item.id !== input.id,
+            );
+            if (input.favourite) items.push({ kind: input.kind, id: input.id });
+            if (items.length > 5000) throw new Error("favourite_limit");
+            await this.preferences.set(accountId, KEY, JSON.stringify(items));
+            return items;
+        });
     }
 }

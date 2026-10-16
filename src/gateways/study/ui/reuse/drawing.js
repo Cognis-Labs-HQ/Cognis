@@ -7,6 +7,11 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { drawingViewport } from "./drawing-viewport.js";
 import { compactDrawingPattern } from "./drawing-layout.js";
+import { sampleHiddenStrokes } from "./drawing-guidance.js";
+import {
+    fetchDrawingProgress,
+    recordDrawingCompletion,
+} from "../drawing-client.js";
 
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/gateways/study/languages"],
@@ -26,9 +31,6 @@ const runDrawingAction = createActionRunner("study:drawing", [
     "close",
 ]);
 
-const difficultyByCardId = new Map();
-const hiddenGuideIndicesByCardId = new Map();
-const attemptedCardIds = new Set();
 let activeDrawingSession = null;
 let padTemplate;
 
@@ -120,20 +122,6 @@ function annotationPosition(start, angle, canvas, occupied, paths) {
                 left.preference - right.preference,
         )[0]?.candidate
     );
-}
-
-function addRandomHiddenGuide(cardId, strokeCount) {
-    const hidden = new Set(hiddenGuideIndicesByCardId.get(cardId) ?? []);
-    const available = Array.from(
-        { length: strokeCount },
-        (_, index) => index,
-    ).filter((index) => !hidden.has(index));
-    if (!available.length) return hidden;
-    const randomValue = new Uint32Array(1);
-    window.crypto.getRandomValues(randomValue);
-    hidden.add(available[randomValue[0] % available.length]);
-    hiddenGuideIndicesByCardId.set(cardId, hidden);
-    return hidden;
 }
 
 function resample(points, count = 48) {
@@ -308,15 +296,27 @@ async function createDrawingPad({
     let currentDefinition = definition;
     let currentPronunciations = pronunciations;
     let currentPattern = strokePattern;
-    let difficulty = difficultyByCardId.get(card.id) ?? 0;
-    let hiddenGuideIndices = new Set(
-        hiddenGuideIndicesByCardId.get(card.id) ?? [],
-    );
+    let progress = { completed: false, hiddenStrokeCount: 0 };
+    let difficulty = 0;
+    let hiddenGuideIndices = new Set();
+    let attemptNumber = 0;
+    let loadSequence = 0;
+    stage.style.visibility = "hidden";
+    const resetHiddenGuides = () => {
+        difficulty = Math.min(
+            progress.hiddenStrokeCount,
+            currentPattern.strokes.length,
+        );
+        hiddenGuideIndices = sampleHiddenStrokes(
+            currentPattern.strokes.length,
+            difficulty,
+        );
+    };
     let revealHiddenGuides = false;
+    let hasStarted = false;
     let active = null;
     let mistakes = 0;
     let successiveMistakes = 0;
-    let hasAttemptedPiece = attemptedCardIds.has(card.id);
     let drawingFrame;
     const colors = {};
     const animateResult = (className) => {
@@ -470,29 +470,17 @@ async function createDrawingPad({
         const hasHiddenGuide =
             !revealHiddenGuides && hiddenGuideIndices.has(completed.length);
         const occupiedAnnotations = hasHiddenGuide ? [{ x: 20, y: 22 }] : [];
-        const guides = (() => {
-            const groupLengths = currentPattern.groups?.length
-                ? currentPattern.groups
-                : [currentPattern.strokes.length];
-            let groupStart = 0;
-            for (const length of groupLengths) {
-                const groupEnd = groupStart + length;
-                if (completed.length < groupEnd) {
-                    if (completed.length === groupStart && !hasAttemptedPiece)
-                        return currentPattern.strokes
-                            .slice(groupStart, groupEnd)
-                            .map((stroke, index) => ({
-                                stroke,
-                                index: groupStart + index,
-                            }));
-                    break;
-                }
-                groupStart = groupEnd;
-            }
-            return currentPattern.strokes
-                .slice(completed.length, completed.length + 1)
-                .map((stroke) => ({ stroke, index: completed.length }));
-        })();
+        const guides = currentPattern.strokes
+            .slice(
+                completed.length,
+                !hasStarted && !progress.completed
+                    ? currentPattern.strokes.length
+                    : completed.length + 1,
+            )
+            .map((stroke, index) => ({
+                stroke,
+                index: completed.length + index,
+            }));
         const visibleGuides = guides.filter(
             ({ index }) => revealHiddenGuides || !hiddenGuideIndices.has(index),
         );
@@ -506,44 +494,10 @@ async function createDrawingPad({
             context.textBaseline = "middle";
             context.fillText("?", 20, 22);
         }
-        const groupStart = (
-            currentPattern.groups ?? [currentPattern.strokes.length]
-        )
-            .reduce(
-                (starts, length) => [...starts, starts.at(-1) + length],
-                [0],
-            )
-            .findLast((start) => start <= completed.length);
-        if (completed.length === groupStart && !hasAttemptedPiece) {
-            const groupIndex = (
-                currentPattern.groups ?? [currentPattern.strokes.length]
-            )
-                .slice(0, -1)
-                .reduce((index, length, candidate) => {
-                    return index + length <= completed.length
-                        ? candidate + 1
-                        : index;
-                }, 0);
-            const groupLength = (currentPattern.groups ?? [
-                currentPattern.strokes.length,
-            ])[groupIndex];
-            visibleGuides
-                .filter(
-                    ({ index }) =>
-                        index >= groupStart && index < groupStart + groupLength,
-                )
-                .forEach(({ stroke, index }) =>
-                    drawStrokeOrder(
-                        stroke,
-                        index,
-                        occupiedAnnotations,
-                        annotationPaths,
-                    ),
-                );
-        } else if (visibleGuides.length === 1) {
+        for (const { stroke, index } of visibleGuides) {
             drawStrokeOrder(
-                visibleGuides[0].stroke,
-                visibleGuides[0].index,
+                stroke,
+                index,
                 occupiedAnnotations,
                 annotationPaths,
             );
@@ -561,10 +515,10 @@ async function createDrawingPad({
     canvas.addEventListener(
         "pointerdown",
         (event) => {
+            if (completed.length >= currentPattern.strokes.length) return;
             active = [normalized(event)];
+            hasStarted = true;
             revealHiddenGuides = false;
-            hasAttemptedPiece = true;
-            attemptedCardIds.add(currentCard.id);
             pad.querySelector("[data-guidance]").hidden = false;
             canvas.setPointerCapture(event.pointerId);
             scheduleDraw();
@@ -586,7 +540,7 @@ async function createDrawingPad({
         (event) =>
             void runDrawingAction(
                 "stroke",
-                () => {
+                async () => {
                     if (!active) return;
                     active.push(normalized(event));
                     const expected =
@@ -598,26 +552,26 @@ async function createDrawingPad({
                             Math.min(difficulty, 3) * 5
                     ) {
                         completed.push(expected);
+                        active = null;
                         successiveMistakes = 0;
-                        const groupEnds = (
-                            currentPattern.groups ?? [
-                                currentPattern.strokes.length,
-                            ]
-                        ).reduce(
-                            (ends, length) => [
-                                ...ends,
-                                (ends.at(-1) ?? 0) + length,
-                            ],
-                            [],
-                        );
-                        if (
-                            groupEnds.includes(completed.length) &&
-                            completed.length < currentPattern.strokes.length
-                        )
-                            hasAttemptedPiece = false;
                         if (
                             completed.length === currentPattern.strokes.length
                         ) {
+                            const finishedAttempt = attemptNumber;
+                            const saved = await recordDrawingCompletion(
+                                currentCard.id,
+                                {
+                                    strokeCount: currentPattern.strokes.length,
+                                    mistakes,
+                                },
+                                { signal: controller.signal },
+                            );
+                            if (
+                                finishedAttempt !== attemptNumber ||
+                                controller.signal.aborted
+                            )
+                                return;
+                            progress = saved;
                             onResult?.({ correct: true, mistakes });
                             animateResult("is-success");
                             playSuccessSound();
@@ -634,17 +588,6 @@ async function createDrawingPad({
                                 .replace("{{ count }}", String(mistakes));
                             completion.hidden = false;
                             pad.classList.add("is-complete");
-                            if (mistakes <= 1) {
-                                hiddenGuideIndices = addRandomHiddenGuide(
-                                    currentCard.id,
-                                    currentPattern.strokes.length,
-                                );
-                                difficulty = hiddenGuideIndices.size;
-                                difficultyByCardId.set(
-                                    currentCard.id,
-                                    difficulty,
-                                );
-                            }
                         }
                     } else {
                         onResult?.({ correct: false, mistakes: mistakes + 1 });
@@ -679,10 +622,12 @@ async function createDrawingPad({
                 "reset",
                 () => {
                     completed.length = 0;
+                    attemptNumber += 1;
+                    resetHiddenGuides();
+                    hasStarted = false;
                     active = null;
                     mistakes = 0;
                     successiveMistakes = 0;
-                    hasAttemptedPiece = attemptedCardIds.has(currentCard.id);
                     revealHiddenGuides = false;
                     completion.hidden = true;
                     pad.classList.remove("is-complete");
@@ -698,10 +643,10 @@ async function createDrawingPad({
               boundaryElement: host,
               handle: pad.querySelector("header"),
               signal: controller.signal,
-              minWidth: 280,
-              minHeight: 240,
-              width: "min(40vw, 28rem)",
-              height: "auto",
+              minWidth: 360,
+              minHeight: 320,
+              width: "min(64vw, 48rem)",
+              height: "min(68vh, 36rem)",
               allowOrientationSwap: false,
           });
     const observer = new ResizeObserver(resize);
@@ -774,10 +719,12 @@ async function createDrawingPad({
                 "retry",
                 () => {
                     completed.length = 0;
+                    attemptNumber += 1;
+                    resetHiddenGuides();
+                    hasStarted = false;
                     active = null;
                     mistakes = 0;
                     successiveMistakes = 0;
-                    hasAttemptedPiece = true;
                     revealHiddenGuides = false;
                     completion.hidden = true;
                     completion.classList.remove("is-failure");
@@ -803,7 +750,6 @@ async function createDrawingPad({
             void runDrawingAction(
                 "guidance",
                 () => {
-                    hasAttemptedPiece = false;
                     revealHiddenGuides = true;
                     pad.querySelector("[data-guidance]").disabled = true;
                     draw();
@@ -814,7 +760,7 @@ async function createDrawingPad({
     );
     observer.observe(canvas);
     resize();
-    const load = ({
+    const load = async ({
         card: nextCard,
         definition: nextDefinition = "",
         pronunciations: nextPronunciations = [],
@@ -822,31 +768,38 @@ async function createDrawingPad({
     }) => {
         if (!nextCard?.id || !nextPattern?.strokes?.length) return false;
         if (container && nextCard.id !== card.id) return false;
+        const sequence = ++loadSequence;
+        const loaded = await fetchDrawingProgress(nextCard.id, {
+            signal: controller.signal,
+        });
+        if (sequence !== loadSequence || controller.signal.aborted)
+            return false;
+        attemptNumber += 1;
+        progress = loaded;
         currentCard = nextCard;
         currentDefinition = nextDefinition;
         currentPronunciations = nextPronunciations;
         currentPattern = compactDrawingPattern(nextPattern);
         const columns = currentPattern.columns ?? 1;
         const aspectRatio = currentPattern.aspectRatio ?? columns;
-        const maximumWidth = Math.min(
-            container ? container.clientWidth : window.innerWidth * 0.4,
-            Math.max(1, host.clientWidth - 32),
-        );
-        const fittedWidth =
-            Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
-        pad.style.width = `${fittedWidth}px`;
-        pad.style.height = "auto";
+        if (container) {
+            const maximumWidth = Math.min(
+                container.clientWidth,
+                Math.max(1, host.clientWidth - 32),
+            );
+            const fittedWidth =
+                Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
+            pad.style.width = `${fittedWidth}px`;
+            pad.style.height = "auto";
+        }
         pad.style.setProperty("--drawing-columns", String(aspectRatio));
-        difficulty = difficultyByCardId.get(nextCard.id) ?? 0;
-        hiddenGuideIndices = new Set(
-            hiddenGuideIndicesByCardId.get(nextCard.id) ?? [],
-        );
+        resetHiddenGuides();
         revealHiddenGuides = false;
         completed.length = 0;
+        hasStarted = false;
         active = null;
         mistakes = 0;
         successiveMistakes = 0;
-        hasAttemptedPiece = attemptedCardIds.has(nextCard.id);
         completion.hidden = true;
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");
@@ -864,6 +817,7 @@ async function createDrawingPad({
         pad.querySelector("[data-definition]").textContent = currentDefinition;
         pad.querySelector("[data-guidance]").disabled =
             hiddenGuideIndices.size === 0;
+        stage.style.visibility = "visible";
         resize();
         window.requestAnimationFrame(resize);
         return true;
@@ -874,7 +828,12 @@ async function createDrawingPad({
             runDrawingAction("load", () => load(payload), controller.signal),
     };
     if (!container) activeDrawingSession = session;
-    load({ card, definition, pronunciations, strokePattern });
+    try {
+        await load({ card, definition, pronunciations, strokePattern });
+    } catch (error) {
+        finishClose();
+        throw error;
+    }
     pad.style.top = `${host.scrollTop + 16}px`;
     pad.style.left = `${Math.max(16, host.clientWidth - pad.getBoundingClientRect().width - 16)}px`;
     return session;

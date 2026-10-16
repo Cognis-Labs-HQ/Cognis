@@ -28,7 +28,7 @@
     box-shadow: var(--shadow);
     color: var(--text);
     overflow: hidden;
-    max-width: 40vw;
+    max-width: 100%;
 }
 
 .study-drawing-pad.is-opening {
@@ -109,7 +109,6 @@ body[data-theme="dark"] .study-drawing-pad {
     height: 100%;
     min-height: 0;
     max-width: 100%;
-    aspect-ratio: var(--drawing-columns, 1);
     justify-self: center;
     border: 1px solid var(--border);
     border-radius: 0.5rem;
@@ -118,10 +117,9 @@ body[data-theme="dark"] .study-drawing-pad {
 }
 
 .study-drawing-stage {
-    align-self: start;
-    aspect-ratio: var(--drawing-columns, 1);
+    align-self: stretch;
     display: grid;
-    height: auto;
+    height: 100%;
     min-height: 0;
     max-height: 100%;
     position: relative;
@@ -331,6 +329,11 @@ body[data-theme="dark"] .study-drawing-close-dark {
 }
 .study-drawing-embedded .study-drawing-pad header {
     cursor: default;
+}
+
+.study-drawing-embedded .study-drawing-stage {
+    aspect-ratio: var(--drawing-columns, 1);
+    height: auto;
 }
 
 .study-drawing-embedded [hidden] {

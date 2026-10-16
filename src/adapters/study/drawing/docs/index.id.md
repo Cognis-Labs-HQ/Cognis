@@ -8,7 +8,7 @@ Mesin `openDrawingPad` yang sama menerima `container`, `signal` pembatalan dan `
 
 ## Spesifikasi Teknis
 
-Masukan pena, sentuhan dan tetikus dinilai menurut urutan, arah dan kedekatan. Goresan yang diterima diganti dengan pola baku. Panduan bernomor, panduan bertahap dan batas karakter tetap digunakan. Tombol panduan dinonaktifkan ketika semua panduan terlihat. Sepuluh kesalahan beruntun mengakhiri percobaan; hasil menunjukkan jumlah kesalahan dan kontrol ulang. Percobaan baik meningkatkan kesulitan karakter dalam memori.
+Masukan pena, sentuhan dan tetikus dinilai menurut urutan, arah dan kedekatan. Goresan yang diterima diganti dengan pola baku. Sebelum masukan pertama, pola yang belum diselesaikan akun saat ini menampilkan semua panduan bernomor. Setelah masukan dimulai dan pada pola yang pernah diselesaikan, hanya goresan berikutnya yang dipandu, termasuk saat berpindah karakter. Tombol panduan dinonaktifkan ketika semua panduan terlihat. Sepuluh kesalahan beruntun mengakhiri percobaan; hasil menunjukkan jumlah kesalahan dan kontrol ulang. Status penyelesaian dan jumlah goresan tersembunyi disimpan per akun dan kartu. Penyelesaian dengan paling banyak satu kesalahan menambah jumlahnya hingga batas goresan pola. Setiap percobaan, pengaturan ulang, dan pengulangan memilih posisi acak baru.
 
 Pola gabungan mempertahankan proporsi, urutan, waktu, tekanan dan keselarasan penunjuk tanpa mengubah data penyedia. Label menghindari lintasan goresan, dan kanvas diperbarui sekali per bingkai. Jendela mengambang memakai SVG tutup standar; papan tertanam tetap berada di kontainer. Gaya milik komponen tidak mengubah composer, kerangka halaman atau menu samping.
 

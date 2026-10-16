@@ -48,21 +48,10 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /fillText\(String\(index \+ 1\)/);
     assert.match(source, /successiveMistakes >= 10/);
     assert.match(source, /gateway\.study\.drawing\.loser/);
-    assert.match(source, /difficultyByCardId/);
-    assert.match(source, /hiddenGuideIndicesByCardId/);
-    assert.match(source, /function addRandomHiddenGuide/);
-    assert.match(source, /window\.crypto\.getRandomValues/);
     assert.match(source, /hiddenGuideIndices\.has\(index\)/);
     assert.match(source, /hiddenGuideIndices\.has\(completed\.length\)/);
     assert.match(source, /context\.fillText\("\?", 20, 22\)/);
-    assert.match(source, /attemptedCardIds/);
     assert.match(source, /data-guidance/);
-    assert.match(
-        source,
-        /hasAttemptedPiece = false;[\s\S]*revealHiddenGuides = true;[\s\S]*draw\(\);/,
-    );
-    assert.match(source, /currentPattern\.groups/);
-    assert.match(source, /mistakes <= 1/);
     assert.match(source, /currentPattern\.strokes[\s\S]*?\.slice/);
     assert.match(source, /requestAnimationFrame/);
     assert.match(source, /cancelAnimationFrame/);
@@ -79,10 +68,6 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
         /resize\(\);\s*window\.requestAnimationFrame\(resize\)/,
     );
     assert.match(source, /allowOrientationSwap:\s*false/);
-    assert.match(
-        source,
-        /drawStrokeOrder\([\s\S]*visibleGuides\[0\]\.stroke,[\s\S]*visibleGuides\[0\]\.index,[\s\S]*occupiedAnnotations,[\s\S]*annotationPaths/,
-    );
     assert.match(source, /playSuccessSound/);
     assert.match(source, /createOscillator/);
     assert.match(source, /659\.25/);
@@ -105,9 +90,9 @@ test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(stylesheet, /aspect-ratio:\s*var\(--drawing-columns/);
     assert.match(
         stylesheet,
-        /\.study-drawing-stage\s*\{[\s\S]*align-self:\s*start;[\s\S]*height:\s*auto;/,
+        /\.study-drawing-stage\s*\{[\s\S]*align-self:\s*stretch;[\s\S]*height:\s*100%;/,
     );
-    assert.match(stylesheet, /max-width:\s*40vw/);
+    assert.match(stylesheet, /max-width:\s*100%/);
     assert.match(stylesheet, /\.study-drawing-result/);
     assert.match(stylesheet, /\.study-drawing-complete\.is-failure/);
     assert.match(stylesheet, /@keyframes drawing-error-shake/);

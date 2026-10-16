@@ -16,6 +16,11 @@ import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import { StudyFavourites } from "./reuse/favourites.js";
 import { createFavouriteRoutes } from "./reuse/favourite-routes.js";
+import {
+    DRAWING_PROGRESS_FLOWS,
+    DrawingProgressStore,
+} from "./drawing/progress.js";
+import { createDrawingRoutes } from "./drawing/routes/index.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -225,6 +230,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const preferences =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     if (preferences) {
+        for (const contract of DRAWING_PROGRESS_FLOWS) {
+            if (!systemCtx.hasFlow(contract.id))
+                systemCtx.registerFlow(contract);
+        }
+        ctx.routeRegistry.register(
+            createDrawingRoutes(
+                new DrawingProgressStore(preferences),
+                routeHelpers,
+                ctx.flow,
+                ctx.log,
+            ),
+            "study",
+        );
         if (!systemCtx?.hasFlow("study:favourites:save"))
             systemCtx?.registerFlow({
                 id: "study:favourites:save",

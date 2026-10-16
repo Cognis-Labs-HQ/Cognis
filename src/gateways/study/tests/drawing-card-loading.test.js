@@ -8,19 +8,27 @@ import vm from "node:vm";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { compactDrawingPattern } from "../ui/reuse/drawing-layout.js";
 import { drawingViewport } from "../ui/reuse/drawing-viewport.js";
+import { sampleHiddenStrokes } from "../ui/reuse/drawing-guidance.js";
 
-async function drawingSession({ templateAvailable = true } = {}) {
+async function drawingSession({
+    templateAvailable = true,
+    initialProgress = new Map(),
+} = {}) {
     let templateRequests = 0;
     const capabilities = new Map();
     const elements = new Map();
     const moves = [];
+    const annotations = [];
     const frames = [];
     const events = new Map();
     let paints = 0;
+    const progress = new Map(initialProgress);
+    let randomValue = 0;
     const context = {
         clearRect() {
             paints += 1;
             moves.length = 0;
+            annotations.length = 0;
         },
         moveTo(x, y) {
             moves.push({ x, y });
@@ -33,10 +41,13 @@ async function drawingSession({ templateAvailable = true } = {}) {
         restore() {},
         arc() {},
         fill() {},
-        fillText() {},
+        fillText(text) {
+            annotations.push(text);
+        },
     };
     const handlers = new Map();
     const element = () => ({
+        handlers: new Map(),
         clientWidth: 1000,
         scrollTop: 0,
         append(child) {
@@ -45,7 +56,12 @@ async function drawingSession({ templateAvailable = true } = {}) {
         style: { setProperty() {} },
         classList: { add() {}, remove() {}, toggle() {} },
         addEventListener(event, handler) {
+            this.handlers.set(event, handler);
             handlers.set(event, handler);
+        },
+        querySelector(selector) {
+            if (!elements.has(selector)) elements.set(selector, element());
+            return elements.get(selector);
         },
         getBoundingClientRect: () => ({
             width: 400,
@@ -85,6 +101,8 @@ async function drawingSession({ templateAvailable = true } = {}) {
     let floatingOptions;
     capabilities.set("ui:makeFloatingWindow", (element, options) => {
         floatingOptions = options;
+        element.style.width = options.width;
+        element.style.height = options.height;
         return () => {};
     });
     const environment = {
@@ -92,6 +110,24 @@ async function drawingSession({ templateAvailable = true } = {}) {
         AbortController,
         compactDrawingPattern,
         drawingViewport,
+        sampleHiddenStrokes: (count, hidden) =>
+            sampleHiddenStrokes(count, hidden, (values) =>
+                values.fill(randomValue),
+            ),
+        fetchDrawingProgress: async (cardId) =>
+            progress.get(cardId) ?? { completed: false, hiddenStrokeCount: 0 },
+        recordDrawingCompletion: async (cardId, input) => {
+            const previous = progress.get(cardId) ?? { hiddenStrokeCount: 0 };
+            const saved = {
+                completed: true,
+                hiddenStrokeCount: Math.min(
+                    input.strokeCount,
+                    previous.hiddenStrokeCount + (input.mistakes <= 1 ? 1 : 0),
+                ),
+            };
+            progress.set(cardId, saved);
+            return saved;
+        },
         uiCtx: {
             ...uiCtx,
             capabilities: {
@@ -123,6 +159,7 @@ async function drawingSession({ templateAvailable = true } = {}) {
             body: { append() {} },
         },
         window: {
+            crypto: { getRandomValues: (values) => values.fill(0) },
             innerWidth: 1440,
             innerHeight: 900,
             addEventListener(name, handler) {
@@ -146,14 +183,14 @@ async function drawingSession({ templateAvailable = true } = {}) {
         new URL("../ui/reuse/drawing.js", import.meta.url),
         "utf8",
     )
-        .replace(/^import .*;\n/gm, "")
+        .replace(/^import[\s\S]*?;\n/gm, "")
         .replaceAll("export function", "function")
         .replaceAll("export async function", "async function");
     const actionSource = readFileSync(
         new URL("../ui/reuse/action-flows.js", import.meta.url),
         "utf8",
     )
-        .replace(/^import .*;\n/gm, "")
+        .replace(/^import[\s\S]*?;\n/gm, "")
         .replaceAll("export function", "function")
         .replaceAll("export async function", "async function");
     vm.runInNewContext(
@@ -171,6 +208,10 @@ async function drawingSession({ templateAvailable = true } = {}) {
         load: capabilities.get("study:drawing:load"),
         elements,
         moves,
+        annotations,
+        random: (value) => {
+            randomValue = value;
+        },
         handlers,
         canvas,
         host,
@@ -233,6 +274,93 @@ test("every card selection paints its guide when the open pad keeps the same siz
     }
 });
 
+test("floating pads request the same large frame for different drawing aspect ratios", async () => {
+    const session = await drawingSession();
+    const sizes = [];
+    for (const columns of [1, 3, 5]) {
+        const input = card(columns);
+        input.strokePattern.columns = columns;
+        input.strokePattern.aspectRatio = columns;
+        await session.open(input);
+        const { width, height, minWidth, minHeight } =
+            session.floatingOptions();
+        assert.equal(session.pad.style.width, width);
+        assert.equal(session.pad.style.height, height);
+        sizes.push({ width, height, minWidth, minHeight });
+        session.navigate();
+    }
+    assert.deepEqual(
+        sizes,
+        Array(3).fill({
+            width: "min(64vw, 48rem)",
+            height: "min(68vh, 36rem)",
+            minWidth: 360,
+            minHeight: 320,
+        }),
+    );
+});
+
+test("the whole pattern is previewed before input and only the next stroke after input across groups", async () => {
+    const session = await drawingSession();
+    const input = card(1);
+    input.strokePattern.groups = [2, 2];
+    input.strokePattern.strokes = [0.1, 0.3, 0.5, 0.7].map((x) => ({
+        points: [
+            { x, y: 0.2 },
+            { x, y: 0.8 },
+        ],
+    }));
+    await session.open(input);
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
+    session.canvas.setPointerCapture = () => {};
+    for (const [index, x] of [0.1, 0.3, 0.5].entries()) {
+        const point = (y) => ({
+            clientX: 16 + x * 400,
+            clientY: 16 + y * 400,
+            pointerId: 1,
+            pressure: 0.5,
+        });
+        session.handlers.get("pointerdown")(point(0.2));
+        session.flushFrames();
+        assert.deepEqual(session.annotations, [String(index + 1)]);
+        session.handlers.get("pointerup")(point(0.8));
+        await new Promise((resolve) => setImmediate(resolve));
+        session.flushFrames();
+        assert.deepEqual(session.annotations, [String(index + 2)]);
+    }
+    session.elements.get("[data-reset]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
+    session.navigate();
+    await session.open(input);
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
+
+    for (const x of [0.1, 0.3, 0.5, 0.7]) {
+        const point = (y) => ({
+            clientX: 16 + x * 400,
+            clientY: 16 + y * 400,
+            pointerId: 1,
+            pressure: 0.5,
+        });
+        session.handlers.get("pointerdown")(point(0.2));
+        session.handlers.get("pointerup")(point(0.8));
+        await new Promise((resolve) => setImmediate(resolve));
+        session.flushFrames();
+    }
+    session.elements.get("[data-try-again]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(session.annotations, ["?"]);
+    session.elements.get("[data-guidance]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(session.annotations, ["1"]);
+    session.navigate();
+    await session.open(input);
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["?"]);
+});
+
 test("drawing uses an independent floating boundary without resizing the main page", async () => {
     const session = await drawingSession();
     await session.open(card(1));
@@ -246,12 +374,39 @@ test("drawing uses an independent floating boundary without resizing the main pa
     assert.equal(session.pad.style.left, "584px");
 });
 
+test("stored hiding counts are resampled on each reset and retry", async () => {
+    const session = await drawingSession({
+        initialProgress: new Map([
+            ["card-1", { completed: true, hiddenStrokeCount: 1 }],
+        ]),
+    });
+    const input = card(1);
+    input.strokePattern.strokes = Array.from(
+        { length: 3 },
+        () => input.strokePattern.strokes[0],
+    );
+    input.strokePattern.groups = [3];
+    await session.open(input);
+    session.flushFrames();
+    assert.deepEqual(session.annotations, ["?"]);
+    session.random(1);
+    session.elements.get("[data-reset]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(session.annotations, ["1"]);
+    session.random(0);
+    session.elements.get("[data-try-again]").handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(session.annotations, ["?"]);
+});
+
 test("loading another character preserves the moved pad position", async () => {
     const session = await drawingSession();
     await session.open(card(1));
     session.flushFrames();
     session.pad.style.left = "120px";
     session.pad.style.top = "80px";
+    session.pad.style.width = "640px";
+    session.pad.style.height = "480px";
     session.host.scrollTop = 200;
     const next = card(2);
     next.strokePattern.columns = 2;
@@ -260,6 +415,8 @@ test("loading another character preserves the moved pad position", async () => {
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
     assert.equal(session.pad.style.top, "80px");
+    assert.equal(session.pad.style.width, "640px");
+    assert.equal(session.pad.style.height, "480px");
     assert.equal(
         session.elements.get("[data-card-label]").textContent,
         "Character 2",

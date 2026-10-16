@@ -73,7 +73,9 @@ async function dispatchRoute(
     return false;
 }
 
-async function bootstrapStudyGateway() {
+async function bootstrapStudyGateway(
+    configure?: (capabilities: CapabilityStore) => void,
+) {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const systemCtx = createCtx();
@@ -86,6 +88,7 @@ async function bootstrapStudyGateway() {
     };
     capabilities.contribute("db:executor", dbExecutor);
     capabilities.contribute("system:ctx", systemCtx);
+    configure?.(capabilities);
 
     const uiRegistry = new UIRegistry();
     await bootstrap({
@@ -104,6 +107,37 @@ async function bootstrapStudyGateway() {
         uiRegistry,
     };
 }
+
+test("Study registers executable drawing progress routes when account preferences are available", async () => {
+    const { systemCtx, routeRegistry } = await bootstrapStudyGateway(
+        (capabilities) => {
+            capabilities.contribute("preferences:store", {
+                get: async () => null,
+                set: async () => {},
+                clearUser: async () => {},
+            });
+        },
+    );
+    assert.equal(systemCtx.hasFlow("study:drawing:readProgress"), true);
+    assert.equal(systemCtx.hasFlow("study:drawing:complete"), true);
+    const response = new ResponseRecorder();
+    assert.equal(
+        await dispatchRoute(
+            routeRegistry,
+            new RequestRecorder({
+                method: "GET",
+                cookieToken: issueAccessToken("learner", "user", 60),
+            }),
+            response,
+            new URL("http://localhost/api/v1/study/drawing/card-a"),
+        ),
+        true,
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.payload), {
+        data: { completed: false, hiddenStrokeCount: 0 },
+    });
+});
 
 test("Study owns its SPA routes and Library detail-flow provider", async () => {
     const { uiRegistry, systemCtx } = await bootstrapStudyGateway();

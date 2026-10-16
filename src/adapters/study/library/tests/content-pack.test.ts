@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -59,12 +59,9 @@ test("external packages reject unvalidated field types and invalid metadata", as
         path.join(os.tmpdir(), "cognis-library-contract-"),
     );
     t.after(() => rm(root, { recursive: true, force: true }));
-    const { cp } = await import("node:fs/promises");
     await cp(source, root, { recursive: true });
     const schemaFile = path.join(root, "schema.json");
-    const schema = JSON.parse(
-        await (await import("node:fs/promises")).readFile(schemaFile, "utf8"),
-    );
+    const schema = JSON.parse(await readFile(schemaFile, "utf8"));
     delete schema.layers[0].fields[2].validation;
     await writeJson(schemaFile, schema);
     await assert.rejects(
@@ -82,6 +79,46 @@ test("external packages reject unvalidated field types and invalid metadata", as
 async function writeJson(file: string, value: unknown): Promise<void> {
     await writeFile(file, JSON.stringify(value), "utf8");
 }
+
+test("external packs preserve unknown writing-unit readings without bypassing required fields", async (t) => {
+    const source = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-unknown-reading-"),
+    );
+    t.after(() => rm(root, { recursive: true, force: true }));
+    await cp(source, root, { recursive: true });
+    const schemaFile = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaFile, "utf8"));
+    const symbols = schema.layers.find(
+        (layer: { id: string }) => layer.id === "symbols",
+    );
+    const pronunciation = symbols.fields.find(
+        (field: { id: string }) => field.id === "pronunciation",
+    );
+    pronunciation.required = false;
+    await writeJson(schemaFile, schema);
+    await writeJson(path.join(root, "content", "symbols", "unknown.json"), [
+        {
+            id: "synthetic:symbol:unknown",
+            label: "◈",
+            fields: {},
+        },
+    ]);
+    const plan = await inspectContentPack(root);
+    assert.deepEqual(
+        plan.records.find(({ id }) => id === "synthetic:symbol:unknown")
+            ?.fields,
+        {},
+    );
+    pronunciation.required = true;
+    await writeJson(schemaFile, schema);
+    await assert.rejects(
+        inspectContentPack(root),
+        /field_required:pronunciation/,
+    );
+});
 
 test("declarative language packs are inspected deterministically", async (t) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));

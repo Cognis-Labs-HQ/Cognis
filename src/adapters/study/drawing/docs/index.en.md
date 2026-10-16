@@ -8,9 +8,9 @@ The same `openDrawingPad` engine accepts an optional `container`, abort `signal`
 
 ## Technical Specification
 
-The pad accepts mouse, touch and pen input, checks stroke order, direction and proximity, and replaces accepted ink with canonical strokes. An attempt begins with full numbered guides. Progressive guidance retains accepted strokes, shows the next stroke and respects per-character boundaries in composite patterns. The guidance button is disabled when all guides are visible.
+The pad accepts mouse, touch and pen input, checks stroke order, direction and proximity, and replaces accepted ink with canonical strokes. Before the first input, a pattern not yet completed by the current account shows full numbered guides. After input begins, only the next stroke is guided across all character boundaries. Previously completed patterns start with next-stroke guidance. The guidance button is disabled when all guides are visible.
 
-Ten consecutive misses end an attempt. Completion displays the mistake count and retry control. A retry clears the attempt and respects learned guide difficulty. Successful attempts with at most one mistake increase in-memory character difficulty. Direction arrows and annotation labels share the rendered canvas coordinates; labels avoid stroke paths and other labels. Rendering runs once per animation frame.
+Ten consecutive misses end an attempt. Completion displays the mistake count and retry control. A retry clears the attempt and respects learned guide difficulty. Completion and the number of hidden strokes persist per account and card. Successful attempts with at most one mistake increase the count, capped to the current pattern; each attempt, reset and retry samples fresh hidden positions. Direction arrows and annotation labels share the rendered canvas coordinates; labels avoid stroke paths and other labels. Rendering runs once per animation frame.
 
 Ordered writing-unit references compose multi-character patterns without mutating provider content. Patterns trim unused space while preserving aspect ratio, timing, pressure, order and pointer alignment. Floating controls use the standard themed close SVG; embedded completion remains in its container without a separate close window. Component-owned styles preserve composer, shell, scroll container and side-menu behavior.
 

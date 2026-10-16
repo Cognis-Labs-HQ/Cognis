@@ -8,7 +8,7 @@ Dieselbe Engine `openDrawingPad` akzeptiert `container`, Abbruch-`signal` und `o
 
 ## Technische Spezifikation
 
-Maus, Stift und Berührung werden nach Reihenfolge, Richtung und Nähe bewertet. Akzeptierte Striche werden durch Vorlagen ersetzt. Nummerierte Hilfen, fortschreitende Strichanzeige und Zeichengrenzen bleiben erhalten. Die Hilfe ist deaktiviert, solange alle Striche sichtbar sind. Zehn aufeinanderfolgende Fehler beenden den Versuch; das Ergebnis zeigt Fehlerzahl und Wiederholung. Gute Versuche erhöhen die Schwierigkeit im Arbeitsspeicher.
+Maus, Stift und Berührung werden nach Reihenfolge, Richtung und Nähe bewertet. Akzeptierte Striche werden durch Vorlagen ersetzt. Vor der ersten Eingabe zeigt ein für das aktuelle Konto noch nicht abgeschlossenes Muster alle nummerierten Striche. Danach und bei bereits abgeschlossenen Mustern wird über Zeichengrenzen hinweg nur der nächste Strich geführt. Die Hilfe ist deaktiviert, solange alle Striche sichtbar sind. Zehn aufeinanderfolgende Fehler beenden den Versuch; das Ergebnis zeigt Fehlerzahl und Wiederholung. Abschluss und Anzahl ausgeblendeter Striche werden je Konto und Karte gespeichert. Ein Abschluss mit höchstens einem Fehler erhöht die Anzahl bis zur aktuellen Strichzahl. Jeder Versuch, jedes Zurücksetzen und jede Wiederholung wählt neue zufällige Positionen.
 
 Zusammengesetzte Muster behalten Proportionen, Reihenfolge, Zeit, Druck und Zeigerposition ohne Anbieterinhalte zu verändern. Beschriftungen vermeiden Strichpfade. Die Anzeige wird höchstens einmal je Bild aktualisiert. Schwebende Fenster verwenden das normale Schließen-SVG, eingebettete Felder bleiben im Container. Eigene Stile verändern weder Composer noch Seitengerüst oder Seitenmenü.
 

@@ -280,6 +280,62 @@ test("writing-unit layers require pronunciation and audio fields", () => {
     );
 });
 
+test("writing-unit schemas preserve optional source readings and enforce authored requirements", () => {
+    for (const semanticRole of [
+        "atomicWritingUnit",
+        "compoundWritingUnit",
+    ] as const) {
+        for (const required of [false, true]) {
+            const schema = validateLibrarySchema({
+                ...english,
+                layers: [
+                    {
+                        id: "characters",
+                        semanticRole,
+                        metadata: { labels: { en: "Characters" } },
+                        fields: [
+                            {
+                                id: "pronunciation",
+                                type: "stringList",
+                                required,
+                                metadata: { labels: { en: "Pronunciation" } },
+                            },
+                            {
+                                id: "audio",
+                                type: "audio",
+                                metadata: { labels: { en: "Audio" } },
+                            },
+                        ],
+                    },
+                ],
+            });
+            assert.equal(schema.layers[0].fields?.[0].required, required);
+            assert.doesNotThrow(() =>
+                validateFields(schema, "characters", {
+                    pronunciation: ["known"],
+                }),
+            );
+            if (required) {
+                assert.throws(
+                    () => validateFields(schema, "characters", {}),
+                    /field_required:pronunciation/,
+                );
+            } else {
+                assert.doesNotThrow(() =>
+                    validateFields(schema, "characters", {}),
+                );
+            }
+            assert.throws(
+                () =>
+                    validateFields(schema, "characters", {
+                        pronunciation: 42,
+                    }),
+                /invalid_field_type:pronunciation/,
+            );
+        }
+    }
+});
+
 test("stroke patterns require ordered normalized pen samples", () => {
     const schema = validateLibrarySchema({
         ...english,

@@ -464,7 +464,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             const pronunciation = (layer.fields ?? []).find(
                 ({ id }) => id === "pronunciation",
             );
-            if (pronunciation?.type !== "stringList" || !pronunciation.required)
+            if (pronunciation?.type !== "stringList")
                 throw new Error("pronunciation_field_required");
             const audio = (layer.fields ?? []).find(({ id }) => id === "audio");
             if (audio?.type !== "audio")
