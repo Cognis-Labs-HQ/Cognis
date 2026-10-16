@@ -127,7 +127,15 @@ function fixture() {
                 provider,
             },
         );
-    return { read, entries, objects, cache, schema, calls: () => calls };
+    return {
+        read,
+        entries,
+        objects,
+        cache,
+        schema,
+        provider,
+        calls: () => calls,
+    };
 }
 
 test("new sentence audio is automatically composed, cached and replaced by uploaded audio", async () => {
@@ -231,6 +239,20 @@ for (const scope of ["user", "class"] as const) {
         context.entries.get("word")!.fields!.audio = "file:manual.audio";
         await context.cache.store("manual.audio", "audio/wav", tone().data);
         assert.equal((await context.read()).mediaType, "audio/wav");
+        assert.equal(context.calls(), 0);
+    });
+}
+
+for (const scope of ["global", "user", "class"] as const) {
+    test(`${scope} sentence playback uses uploaded constituents without a speech provider`, async () => {
+        const context = fixture();
+        context.provider.supports = () => false;
+        context.entries.get("sentence")!.scope = scope;
+        context.entries.get("word")!.fields!.audio = "file:existing.audio";
+        await context.cache.store("existing.audio", "audio/wav", tone().data);
+        const result = await context.read();
+        assert.equal(result.mediaType, "audio/wav");
+        assert.ok(result.data.length > tone().data.length * 2);
         assert.equal(context.calls(), 0);
     });
 }
