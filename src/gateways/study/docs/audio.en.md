@@ -39,3 +39,7 @@ Japanese additionally ships 2,913 whole-reading neural clips in bounded banks un
 The Japanese ranking tool accepts `--dictionary <JMdict.gz> --kanji-dictionary <KANJIDIC2.xml.gz> --output <priorities.json>` and optional `--content-root data/library/content`. It prefers common standalone lexical readings, ranks other readings from frequency-weighted alignments of attested words, and preserves reviewed isolated-card choices from `data/audio/primary-readings.json`. Voicing and gemination map back to canonical source readings. Kun, on and name readings remain available; a selected first reading alone determines playback and lookup cache identity. Source frequency markers are an ordering aid, not a universal pronunciation-frequency measurement.
 
 Automatic composition requires recordings for its spoken constituents. Missing recordings remain explicit errors and can be supplied through the normal audio upload field. Reference spellings that cannot be linked to the packaged alphabet retain their source text and definitions without fabricated spelling links.
+
+## Preserve transformed sentence audio
+
+Sentence composition requests the selected transformed label and primary reading, including chained paths. If a variant recording is unavailable, playback fails explicitly instead of traversing base-form pronunciation references. The same rule applies to direct variant playback and nested constituents.

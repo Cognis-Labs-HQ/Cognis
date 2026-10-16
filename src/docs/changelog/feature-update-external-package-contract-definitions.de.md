@@ -788,6 +788,10 @@ Der japanische Referenzkatalog umfasst alle 13.108 Zeichen der mitgelieferten of
 
 Japanische Kanji-Lesungen werden nach häufigen JMdict-Belegen und verfügbaren Häufigkeitsmarkern einschließlich Okurigana-Formen geordnet. Gruppierte Verweise und Startaufnahmen folgen genau dieser Reihenfolge. Kanji-Audio verwendet immer die erste verfasste Aussprache. Vorhandene englische Wortkarten haben jeweils eine IPA-Lesung; Referenzeinträge bewahren die Quellreihenfolge innerhalb der bevorzugten britischen Varietät vor anderen Varietäten. Aussprachehäufigkeit hängt vom Kontext ab; die Quellen liefern keine allgemeingültige Rangfolge für jede Lesung.
 
+## Transformierte Satzaudios erhalten
+
+Die Satzzusammenstellung fordert die ausgewählte transformierte Schreibweise und erste Aussprache einschließlich mehrstufiger Pfade an. Fehlt die Variantenaufnahme, schlägt die Wiedergabe ausdrücklich fehl, statt Ausspracheverweisen der Grundform zu folgen. Dies gilt auch für direkte Variantenwiedergabe und verschachtelte Bestandteile.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

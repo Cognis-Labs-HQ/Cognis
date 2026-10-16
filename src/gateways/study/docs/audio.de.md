@@ -39,3 +39,7 @@ Japanisch enthält zusätzlich 2.913 neuronale Aufnahmen vollständiger Lesungen
 Das japanische Sortierwerkzeug akzeptiert `--dictionary <JMdict.gz> --kanji-dictionary <KANJIDIC2.xml.gz> --output <priorities.json>` und optional `--content-root data/library/content`. Es bevorzugt häufige eigenständige Wortlesungen, ordnet weitere Lesungen nach häufigkeitsgewichteten Zuordnungen belegter Wörter und erhält geprüfte Einzelkarten-Vorgaben aus `data/audio/primary-readings.json`. Stimmhaftigkeit und Gemination werden auf kanonische Quelllesungen zurückgeführt. Kun-, On- und Namenslesungen bleiben verfügbar; allein die erste ausgewählte Lesung bestimmt Wiedergabe und Cache-Identität. Häufigkeitsmarker dienen der Reihenfolge und sind keine allgemeingültige Aussprachemessung.
 
 Die automatische Zusammensetzung benötigt Aufnahmen für ihre gesprochenen Bestandteile. Fehlende Aufnahmen bleiben ausdrückliche Fehler und lassen sich über das normale Audio-Upload-Feld ergänzen. Nicht mit dem Paketalphabet verknüpfbare Schreibweisen behalten Quelltext und Bedeutungen ohne erfundene Schreibverweise.
+
+## Transformierte Satzaudios erhalten
+
+Die Satzzusammenstellung fordert die ausgewählte transformierte Schreibweise und erste Aussprache einschließlich mehrstufiger Pfade an. Fehlt die Variantenaufnahme, schlägt die Wiedergabe ausdrücklich fehl, statt Ausspracheverweisen der Grundform zu folgen. Dies gilt auch für direkte Variantenwiedergabe und verschachtelte Bestandteile.

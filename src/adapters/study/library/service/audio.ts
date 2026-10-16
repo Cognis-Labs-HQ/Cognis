@@ -137,6 +137,7 @@ export async function readAuthorizedEntryAudio(
                     );
                 } catch (error) {
                     if (
+                        input.transformation !== undefined ||
                         input.refresh ||
                         !(error instanceof Error) ||
                         ![

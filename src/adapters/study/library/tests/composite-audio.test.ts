@@ -256,3 +256,141 @@ for (const scope of ["global", "user", "class"] as const) {
         assert.equal(context.calls(), 0);
     });
 }
+
+function transformedFixture() {
+    const context = fixture();
+    context.schema.transformSets = [
+        {
+            id: "verb",
+            matchTags: ["verb"],
+            baseState: "base",
+            rules: [
+                {
+                    id: "polite",
+                    fromState: "base",
+                    toState: "polite",
+                    removeSuffix: "る",
+                    append: "ます",
+                    pronunciation: { removeSuffix: "る", append: "ます" },
+                },
+                {
+                    id: "past",
+                    fromState: "polite",
+                    toState: "polite-past",
+                    removeSuffix: "ます",
+                    append: "ました",
+                    pronunciation: { removeSuffix: "ます", append: "ました" },
+                },
+            ],
+        },
+    ];
+    const word = context.entries.get("word")!;
+    word.language = "ja";
+    word.label = "食べる";
+    word.tags = ["verb"];
+    word.fields = { pronunciation: ["たべる"], audio: "file:base.audio" };
+    word.references = [{ relation: "reading", entryId: "base-reading" }];
+    const words = context.schema.layers[0];
+    words.relationships = [
+        {
+            id: "reading",
+            targetLayer: "words",
+            presentationRole: "pronunciation",
+        },
+    ];
+    context.entries.set("base-reading", {
+        ...word,
+        id: "base-reading",
+        label: "たべる",
+        references: [],
+    });
+    const transformation = { setId: "verb", path: ["polite", "past"] };
+    context.entries.get("sentence")!.references = [
+        { relation: "words", entryId: "word", position: 0, transformation },
+    ];
+    context.provider.cacheKey = (input) =>
+        `${input.label}:${input.readings?.[0]}.audio`;
+    return { ...context, transformation };
+}
+
+test("sentence composition requests the chained variant recording and keeps base audio intact", async () => {
+    const context = transformedFixture();
+    const inputs: unknown[] = [];
+    context.provider.fetchAudio = async (input) => {
+        inputs.push(input);
+        return tone();
+    };
+    await context.cache.store("base.audio", "audio/wav", tone().data);
+    await context.read();
+    assert.deepEqual(inputs, [
+        {
+            language: "ja",
+            label: "食べました",
+            semanticRole: "lexicalUnit",
+            readings: ["たべました"],
+        },
+    ]);
+    assert.equal(context.entries.get("word")!.fields!.audio, "file:base.audio");
+    assert.deepEqual(context.entries.get("word")!.fields!.pronunciation, [
+        "たべる",
+    ]);
+});
+
+test("missing sentence variants cannot fall back to base reading recordings, even when nested", async () => {
+    for (const nested of [false, true]) {
+        const context = transformedFixture();
+        await context.cache.store("base.audio", "audio/wav", tone().data);
+        const requested: string[] = [];
+        context.provider.fetchAudio = async (input) => {
+            requested.push(input.label);
+            throw new Error("audio_lookup_unavailable");
+        };
+        if (nested) {
+            context.entries.set("wrapper", {
+                ...context.entries.get("word")!,
+                id: "wrapper",
+                tags: [],
+                label: "wrapper",
+                fields: {},
+                references: [
+                    {
+                        relation: "reading",
+                        entryId: "word",
+                        transformation: context.transformation,
+                    },
+                ],
+            });
+            context.entries.get("sentence")!.references = [
+                { relation: "words", entryId: "wrapper", position: 0 },
+            ];
+        }
+        await assert.rejects(context.read(), /audio_not_found/);
+        assert.ok(requested.includes("食べました"));
+        assert.ok(!requested.includes("たべる"));
+    }
+});
+
+test("direct variant playback cannot compose a base recording when its own recording is missing", async () => {
+    const context = transformedFixture();
+    await context.cache.store("base.audio", "audio/wav", tone().data);
+    context.provider.fetchAudio = async () => {
+        throw new Error("audio_lookup_unavailable");
+    };
+    await assert.rejects(
+        readAuthorizedEntryAudio(
+            {
+                actor: { accountId: "alice", role: "user" },
+                entryId: "word",
+                fieldId: "audio",
+                transformation: context.transformation,
+            },
+            {
+                read: async (_actor, id) => context.entries.get(id) ?? null,
+                schema: () => context.schema,
+                cache: context.cache,
+                provider: context.provider,
+            },
+        ),
+        /audio_lookup_unavailable/,
+    );
+});

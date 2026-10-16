@@ -64,6 +64,7 @@ export async function resolveCompositeAudio(
         currentLayer: LibraryLayerSchema,
         visited: Set<string>,
         gapAfterMs = wordGap,
+        transformed = false,
     ): Promise<void> {
         if (
             visited.has(current.id) ||
@@ -117,6 +118,8 @@ export async function resolveCompositeAudio(
                     throw error;
             }
         }
+        // A transformed word's references still describe its base pronunciation.
+        if (transformed) throw new Error("audio_not_found");
         const references = audioReferences(current, currentLayer);
         if (!references.length) throw new Error("audio_not_found");
         for (const reference of references) {
@@ -134,6 +137,7 @@ export async function resolveCompositeAudio(
                 currentLayer.semanticRole === "orderedLexicalSequence"
                     ? wordGap
                     : 0,
+                Boolean(reference.transformation),
             );
         }
         if (segments.length)
@@ -154,6 +158,8 @@ export async function resolveCompositeAudio(
             transformedAudioEntry(target, schema, reference.transformation),
             targetLayer,
             new Set([entry.id]),
+            wordGap,
+            Boolean(reference.transformation),
         );
     }
     if (!segments.length) throw new Error("audio_not_found");

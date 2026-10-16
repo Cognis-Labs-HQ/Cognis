@@ -39,3 +39,7 @@ Bahasa Jepang juga menyertakan 2.913 klip neural bacaan utuh dalam bank berkas t
 Alat pemeringkat Jepang menerima `--dictionary <JMdict.gz> --kanji-dictionary <KANJIDIC2.xml.gz> --output <priorities.json>` serta opsi `--content-root data/library/content`. Alat mengutamakan bacaan leksikal mandiri yang umum, mengurutkan bacaan lain dari penyelarasan kata terverifikasi berbobot frekuensi, dan mempertahankan pilihan kartu tunggal yang ditinjau dalam `data/audio/primary-readings.json`. Penyuarakan dan geminasi dipetakan kembali ke bacaan sumber kanonis. Bacaan kun, on, dan nama tetap tersedia; hanya bacaan pertama yang dipilih menentukan pemutaran dan identitas cache. Penanda frekuensi membantu pengurutan dan bukan ukuran frekuensi pelafalan universal.
 
 Komposisi otomatis memerlukan rekaman untuk unsur yang diucapkan. Rekaman yang tidak tersedia tetap menghasilkan kesalahan eksplisit dan dapat ditambahkan melalui bidang unggahan audio biasa. Ejaan referensi yang tidak dapat ditautkan ke alfabet paket mempertahankan teks sumber dan definisinya tanpa tautan ejaan yang dibuat-buat.
+
+## Pertahankan audio varian kalimat
+
+Komposisi kalimat meminta label dan pelafalan utama dari transformasi terpilih, termasuk jalur bertingkat. Jika rekaman varian tidak tersedia, pemutaran gagal secara jelas alih-alih menelusuri referensi pelafalan bentuk dasar. Aturan yang sama berlaku untuk pemutaran varian langsung dan penyusun bertingkat.
