@@ -250,3 +250,8 @@
         animation: none;
     }
 }
+
+.study-practice-concealed > span {
+    filter: blur(0.4rem);
+    user-select: none;
+}

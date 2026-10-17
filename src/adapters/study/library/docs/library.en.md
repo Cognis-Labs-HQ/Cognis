@@ -354,7 +354,7 @@ Detail relationship lists show immediate neighbors. Used By, Usage Examples, and
 
 A direct relationship remains visible even when an intermediate route reaches the same card. Authored references, grouped references, and canonical title components retain their direct links, supporting both あ → ある + あるく and あ → ある → あるく. Only relationships reached exclusively through another parent are excluded.
 
-Transformed cards omit a pronunciation identical to their displayed title after normalization. Distinct readings retain their character links. A localized Return to {{ verb }} action restores the base card and clears the selected transformation while preserving normal card navigation.
+New lexical cards automatically detect dictionary-backed classes and supported transformation tags when their input is committed and before saving. Manual tags are retained; ambiguous classes remain an explicit choice. Late lookup results cannot change a different draft. Selected verb, adjective/adverb and plural previews request the selected transformation’s audio. Source attribution in the heading links to the base card. Upload controls have a separate selector from playback audio, preventing the character-editor initialization crash.
 
 Dependency writes now enforce the visibility of every edge, including grouped references. Personal cards may use readable shared cards and their own private components; class cards require global or same-class components; global cards require global components. Update proposals validate their reference schema before submission, publication approvals recheck current dependencies, and edits cannot invalidate a pending publication. Moving shared content back to personal scope is blocked when shared dependants or pending requests still need its wider visibility. Permission hints are returned after creation and editing and respect class write access.
 
@@ -472,8 +472,6 @@ Dictionary searches open at `/study/library/search` without URL parameters. The 
 
 A provider transformation set may declare `optInTag`, for example `plural`. A card must carry both the family’s `matchTags` and that opt-in tag before Cognis exposes or accepts its forms. The composer shows the provider-labelled switch for matching families; saved sentence references retain the base UUID and `{setId, path}`. Removing the opt-in prevents new transformed references. Providers define countability, irregular spellings and pronunciation changes; Cognis supplies selection, persistence and validation. Nested branches use the closest collision-free placement with an unobstructed path to their parent. Sentence previews truncate their title and clamp their definition without resizing the grid.
 
-The Return to action occupies a separate full-width row above the paired Previous and Next controls.
-
 Explicit sentence title composition preserves whitespace between linked constituents, including multiword cards and selected transformations. Spacing remains plain text; canonical words and punctuation remain navigable. Missing constituents or undeclared punctuation still reject incomplete compositions.
 
 ## Pronunciation audio
@@ -517,3 +515,7 @@ The drawing heading initially shows a masked character and a standard click-to-r
 ## Reading Feedback and Links
 
 Explore card links include canonical card identity in `/study/explore/<language>/<layer>/<card-id>`. Ctrl-click, Command-click and Shift-click retain native browser navigation, and direct navigation opens the requested card preview. Looking up an unanswered card counts as an assisted attempt. Ordinary navigation preserves the deck queue for browser Back.
+
+## Saved Study Controls
+
+New lexical cards automatically detect dictionary-backed classes and supported transformation tags when their input is committed and before saving. Manual tags are retained; ambiguous classes remain an explicit choice. Late lookup results cannot change a different draft. Selected verb, adjective/adverb and plural previews request the selected transformation’s audio. Source attribution in the heading links to the base card. Upload controls have a separate selector from playback audio, preventing the character-editor initialization crash.

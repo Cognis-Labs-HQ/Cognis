@@ -75,17 +75,3 @@ export function detailTitleReferences(
               entries,
           );
 }
-
-export function transformedRootActions(entry, transformation, i18n) {
-    return transformation
-        ? [
-              {
-                  id: "return-root",
-                  label: i18n
-                      .t("gateway.study.library_return_to_root")
-                      .replace("{{ verb }}", entry.label),
-                  variant: "neutral",
-              },
-          ]
-        : [];
-}

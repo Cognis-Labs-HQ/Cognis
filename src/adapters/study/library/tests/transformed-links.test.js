@@ -231,7 +231,7 @@ test("a transformed kana title does not repeat the same pronunciation", () => {
     }
 });
 
-test("Return to the verb root closes the transformed card and restores the base card", async () => {
+test("transformed previews keep the selected heading and identify the base card through attribution", async () => {
     const transformation = {
         set: { id: "verb" },
         node: {
@@ -241,6 +241,7 @@ test("Return to the verb root closes the transformed card and restores the base 
         },
     };
     const popups = [];
+    const attributions = [];
     const context = {
         AbortController,
         URL,
@@ -262,7 +263,10 @@ test("Return to the verb root closes the transformed card and restores the base 
         popupTitleDetailItems: () => [],
         popupTitleItems: () => [],
         transformPresentation: loadPresentation(),
-        withParentAttribution: (items) => items,
+        withParentAttribution: (items, entry) => {
+            attributions.push(entry);
+            return items;
+        },
         withParentTitleAttribution: (items) => items,
         titleDefinitionForRole: () => "meaning",
         resolveDraw: () => null,
@@ -275,7 +279,7 @@ test("Return to the verb root closes the transformed card and restores the base 
                 : { entry: null },
         openPopup: async (options) => {
             popups.push(options);
-            return ["variant", "return-root", "close"][popups.length - 1];
+            return ["variant", "close"][popups.length - 1];
         },
     };
     const stripImports = (source) =>
@@ -316,16 +320,7 @@ test("Return to the verb root closes the transformed card and restores the base 
     );
     assert.deepEqual(
         popups.map(({ title }) => title),
-        ["行く", "行かなくて", "行く"],
+        ["行く", "行かなくて"],
     );
-    const rootAction = popups[1].actions.find(({ id }) => id === "return-root");
-    assert.equal(rootAction.label, "Return to 行く");
-    assert.equal(rootAction.variant, "neutral");
-    assert.deepEqual(
-        popups.map(
-            ({ actions }) =>
-                actions.filter(({ id }) => id === "return-root").length,
-        ),
-        [0, 1, 0],
-    );
+    assert.equal(attributions[0].id, verb.id);
 });

@@ -124,7 +124,6 @@
   <string name="gateway.study.library_transform_prompt">{{ verb }} には次の変換形があります:</string>
   <string name="gateway.study.library_use_base_transform">{{ verb }} をそのまま使う！</string>
   <string name="gateway.study.library_transforms_available">変換形があります</string>
-  <string name="gateway.study.library_return_to_root">{{ verb }} に戻る</string>
   <string name="gateway.study.library_delete_dependency_blocked">選択した項目は、削除権限のないカードや審査中のカードに依存しています。削除する前に依存関係を解決してください。</string>
   <string name="gateway.study.library_dependency_scope_title">依存項目の公開範囲</string>
   <string name="gateway.study.library_dependency_scope_help">一部の構成要素は個人用、または別のクラス用です。このカードを個人用として保存するか、先に構成要素を公開先の範囲で公開してください。</string>

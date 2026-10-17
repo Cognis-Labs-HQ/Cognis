@@ -1,3 +1,5 @@
+import { fetchLibrarySchemas } from "../library-client.js";
+import { bindDrawingHeading } from "./drawing-heading.js";
 import { setDrawingCard } from "./drawing-state.js";
 import { pronunciationClass } from "./pronunciation.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
@@ -236,6 +238,7 @@ async function createDrawingPad({
         });
         return activeDrawingSession;
     }
+    const schemas = await fetchLibrarySchemas();
     if (!padTemplate) {
         const response = await fetch(
             "/static/gateways/study/reuse/drawing.html",
@@ -295,7 +298,6 @@ async function createDrawingPad({
     const context = canvas.getContext("2d");
     const completed = [];
     let currentCard = card;
-    let characterRevealed = false;
     let currentDefinition = definition;
     let currentPronunciations = pronunciations;
     let currentPattern = strokePattern;
@@ -626,25 +628,19 @@ async function createDrawingPad({
             ).catch(reportFailure),
         { signal: controller.signal },
     );
-    pad.querySelector("[data-card-label]").addEventListener(
-        "click",
-        () =>
-            void runDrawingAction(
-                "reveal",
-                () => {
-                    if (characterRevealed) return;
-                    characterRevealed = true;
-                    pad.querySelector("[data-card-label]").textContent =
-                        currentCard.label;
-                    pad.querySelector("[data-card-label]").setAttribute(
-                        "aria-expanded",
-                        "true",
-                    );
-                    onResult?.({ correct: false, assisted: true, mistakes });
-                },
-                controller.signal,
-            ).catch(reportFailure),
-        { signal: controller.signal },
+    const resetHeading = bindDrawingHeading(
+        pad.querySelector("[data-card-label]"),
+        {
+            signal: controller.signal,
+            i18n,
+            schemas,
+            getCard: () => currentCard,
+            onReveal: () =>
+                onResult?.({ correct: false, assisted: true, mistakes }),
+            runAction: (work) =>
+                runDrawingAction("reveal", work, controller.signal),
+            reportFailure,
+        },
     );
     pad.querySelector("[data-reset]").addEventListener(
         "click",
@@ -851,12 +847,7 @@ async function createDrawingPad({
         completion.hidden = true;
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");
-        characterRevealed = false;
-        pad.querySelector("[data-card-label]").textContent = "•••";
-        pad.querySelector("[data-card-label]").setAttribute(
-            "aria-expanded",
-            "false",
-        );
+        resetHeading();
         if (!container)
             setDrawingCard({ id: currentCard.id, label: currentCard.label });
         pad.querySelector("[data-pronunciations]").classList.toggle(

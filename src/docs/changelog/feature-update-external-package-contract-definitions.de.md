@@ -814,6 +814,16 @@ Leseantworten zeigen eine Erfolgs- oder Warnmeldung und animieren die gewählte 
 
 Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore/<language>/<layer>/<card-id>`. Strg-, Befehls- und Umschalt-Klick behalten das normale Browserverhalten; direkte Aufrufe öffnen die gewünschte Kartenvorschau. Das Nachschlagen einer unbeantworteten Karte zählt als unterstützter Versuch. Bei normaler Navigation bleibt die Stapelreihenfolge für die Zurück-Funktion erhalten.
 
+## Gespeicherte Lernsteuerung
+
+Lesen/Schreiben ist eine gespeicherte Kontoeinstellung im schwebenden Composer-Menü; Standard ist Lesen. Ein Wechsel während der Übung zeigt vor dem Neustart den gemeinsamen Warndialog. Abbrechen behält Position und Antworten; bereits übermittelte Bewertungen bleiben gespeichert. Die Seitenleiste enthält Alle und markiert den aktuellen Stapel. Schreibüberschriften verwischen ein gleich großes maskiertes Zeichen. Der erste Klick deckt es auf und aktiviert den Explore-Direktlink; ein zweiter Klick bietet die Navigation mit Bestätigung an. Die Tastaturbedienung folgt demselben Ablauf.
+
+Neue Wortkarten erkennen beim Abschließen der Eingabe und vor dem Speichern automatisch wörterbuchgestützte Klassen und unterstützte Transformationstags. Eigene Tags bleiben erhalten; mehrdeutige Klassen erfordern eine Auswahl. Verspätete Ergebnisse ändern keinen anderen Entwurf. Vorschauen für gewählte Verb-, Adjektiv-/Adverb- und Pluralformen fordern deren eigene Aufnahme an. Die Herkunftsangabe in der Überschrift verlinkt die Basiskarte. Upload-Felder haben einen eigenen Selektor, damit Audioelemente die Initialisierung des Zeicheneditors nicht mehr abbrechen.
+
+Die Wörterbuchauswahl verwendet theme-select und wird bei einem einzigen Anbieter ausgeblendet. Einstellungen steht rechts neben der Wörterbuchsuche. KANJIDIC2 ergänzt Kanji-Daten und ist keine Suchoption neben Jisho; Referenzquellen zeigen ihren tatsächlichen Katalognamen.
+
+Japanische Aufnahmen mit kleinen Kana, einschließlich 学校, wurden mit Kanji-Schreibweise, soweit vorhanden, der festgelegten japanischen Stimme und stabilen Einstellungen neu erzeugt. Mitgelieferte Sätze werden aus genau diesen Clips neu zusammengesetzt. I- und Na-Adjektive unterstützen Adverbial-, Verneinungs- und Vergangenheitsformen mit eigenen Aufnahmen der mitgelieferten Formen. Englische Pluralaufnahmen bleiben eigenständige Dateien und werden bei gewählter Form abgespielt.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

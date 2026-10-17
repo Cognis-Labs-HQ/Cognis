@@ -77,4 +77,6 @@
   <string name="gateway.study.drawing.try_again">もう一度</string>
   <string name="gateway.study.drawing.error">書く練習を読み込めませんでした。</string>
   <string name="gateway.study.drawing.reveal">文字を表示</string>
+  <string name="gateway.study.drawing_open_card">Explore でカードを開きますか？</string>
+  <string name="gateway.study.drawing_open_card_body">表示したカードを Explore で開き、このページを離れますか？</string>
 </resources>

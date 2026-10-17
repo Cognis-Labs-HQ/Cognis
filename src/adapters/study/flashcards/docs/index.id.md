@@ -24,20 +24,8 @@ Flashcards memuat stylesheet bersama page-builder dan page-sections seperti Expl
 
 Pembuatan dan impor dek yang berhasil menutup editor terlindungi sebelum membuka halaman jelajah yang diperbarui, sehingga perubahan tersimpan tidak memicu dialog pembuangan. Hasil Library khusus favorit menampilkan kartu anak terpilih secara mandiri; urutan penyedia memulihkan penempatan bersarang asli.
 
-## Latihan Kartu
+## Kontrol Belajar Tersimpan
 
-Saat membuka dek akun maupun dek bersama, pelajar memilih Membaca atau Menulis sebelum latihan dimulai. Mode tetap terkunci selama sesi, termasuk setelah mengunjungi Jelajahi dan kembali melalui tombol Kembali browser. Kartu yang tidak mendukung mode dapat dilewati tanpa pergantian mode otomatis. Jawaban kartu baru mula-mula disembunyikan. Semua, Baru, Jatuh Tempo, dan Selesai mempertahankan filter ulasan; mengganti filter memulai antrean baru dalam mode yang sama.
+Mode Reading/Writing disimpan sebagai preferensi akun dalam menu mengambang composer; defaultnya Reading. Perubahan saat latihan meminta konfirmasi melalui popup peringatan bersama sebelum mengulang antrean. Pembatalan mempertahankan posisi dan jawaban; ulasan yang telah dikirim tetap tersimpan. Bilah samping mencakup Semua dan menandai dek aktif. Judul menulis memburamkan glif pengganti berukuran sama. Klik pertama menampilkan karakter dan mengaktifkan tautan Explore; klik kedua meminta konfirmasi navigasi. Aktivasi papan ketik mengikuti interaksi yang sama.
 
-Membaca memakai pelafalan utama dan tiga pengecoh berbeda dari kartu Library yang terlihat. Menulis menanamkan pad bersama dengan petunjuk arti dan bacaan, sedangkan karakter disembunyikan di balik judul yang dapat diklik. Kesalahan goresan tidak otomatis membuka karakter. Membuka karakter dianggap sebagai bantuan dan memberi hasil Ulangi, meskipun goresan berikutnya benar. Keberhasilan tanpa bantuan memberi hasil Baik. Jawaban kartu yang sudah diulas tetap dapat diperiksa.
-
-Galeri memakai `/study/<iso>/flashcards`; tautan dek memakai nama yang mudah dibaca diikuti `--<deck-id>`, misalnya `/study/ja/flashcards/first-japanese-words--<deck-id>`. Nama Inggris kanonis menjaga bagian terbaca tetap sama di semua bahasa antarmuka. Akhiran identitas membedakan nama duplikat dan menjaga tautan tetap konsisten bagi pemilik serta penerima dengan katalog dek berbeda. ID sumber daya API tetap sama.
-
-Entri riwayat browser menyimpan antrean dek, posisi, nilai, jawaban tertunda, filter, serta mode. Kembali dari Jelajahi memulihkan antrean asli dengan tombol Sebelumnya/Berikutnya yang berfungsi. Membuka jawaban atau meninggalkan kartu yang belum dijawab untuk diperiksa menyimpan hasil Ulangi. Tautan sumber membawa urutan ID kartu melalui status riwayat agar pratinjau Jelajahi juga dapat menavigasi dek, termasuk kartu turunan. Akses tetap mengikuti otorisasi Library; kartu yang tidak lagi dapat diakses dikeluarkan saat pemulihan.
-
-Semua tindakan menjalankan alur dek dan menggambar Study yang sudah dideklarasikan. Antarmuka memakai popup, tombol, dan gaya kartu yang sudah ada. Dek akun dan bersama memakai perender serta latihan yang sama; snapshot bersama tidak memperoleh akses Library. Perpindahan halaman menghentikan penangan dan sesi menggambar.
-
-## Umpan Balik dan Tautan
-
-Jawaban Reading menampilkan toast keberhasilan atau peringatan dan animasi pada opsi yang dipilih; preferensi pengurangan gerakan menonaktifkan animasi. Judul kartu dan bintang favorit memiliki latar transparan dengan indikator fokus papan ketik. Menu samping standar mencantumkan judul dek bahasa saat ini dan menandai dek aktif.
-
-Tautan kartu Explore menyertakan identitas kanonis kartu pada `/study/explore/<language>/<layer>/<card-id>`. Ctrl-klik, Command-klik, dan Shift-klik mempertahankan perilaku bawaan peramban; kunjungan langsung membuka pratinjau kartu yang diminta. Membuka kartu yang belum dijawab dihitung sebagai percobaan dengan bantuan. Navigasi biasa mempertahankan antrean dek untuk tombol Kembali peramban.
+Kartu kosakata baru otomatis mendeteksi kelas dan tag transformasi yang didukung melalui kamus saat input diselesaikan dan sebelum disimpan. Tag manual dipertahankan; kelas ambigu tetap memerlukan pilihan pengguna. Hasil yang terlambat tidak mengubah draf lain. Pratinjau bentuk verba, adjektiva/adverbia, dan jamak meminta audio transformasi yang dipilih. Atribusi sumber pada judul menautkan kartu dasar. Kontrol unggahan memakai selektor terpisah dari audio pemutar untuk mencegah kegagalan inisialisasi editor karakter.

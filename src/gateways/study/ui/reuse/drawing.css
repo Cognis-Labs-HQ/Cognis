@@ -339,3 +339,8 @@ body[data-theme="dark"] .study-drawing-close-dark {
 .study-drawing-embedded [hidden] {
     display: none;
 }
+
+.study-drawing-pad .study-drawing-concealed {
+    filter: blur(0.4rem);
+    user-select: none;
+}

@@ -77,4 +77,6 @@
   <string name="gateway.study.drawing.try_again">Erneut versuchen</string>
   <string name="gateway.study.drawing.error">Die Schreibübung konnte nicht geladen werden.</string>
   <string name="gateway.study.drawing.reveal">Zeichen anzeigen</string>
+  <string name="gateway.study.drawing_open_card">Karte in Explore öffnen?</string>
+  <string name="gateway.study.drawing_open_card_body">Die aufgedeckte Karte in Explore öffnen und diese Seite verlassen?</string>
 </resources>

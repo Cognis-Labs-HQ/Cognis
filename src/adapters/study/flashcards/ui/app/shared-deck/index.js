@@ -1,4 +1,4 @@
-import { choosePracticeMode } from "../../reuse/practice-mode.js";
+import { createPracticeModePreference } from "../../reuse/practice-mode.js";
 import { createPracticeSession } from "../flashcards/practice-session.js";
 import { noteDetails } from "../../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -15,12 +15,22 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         ...(shareContext.payload.cards ?? []),
         ...noteDetails(deck.notes),
     ];
-    const practiceSession = createPracticeSession(queue);
+    let practiceSession = createPracticeSession(queue);
     const templates = await runDeckAction(
         "load",
         () => loadDeckTemplates(signal),
         signal,
     );
+    const modePreference = await createPracticeModePreference({
+        i18n,
+        templates,
+        signal,
+        isActive: () => Boolean(practiceSession.current),
+        onChange: () => {
+            practiceSession = createPracticeSession(queue);
+            next();
+        },
+    });
     const composer = createPageComposer(root, {
         allowCustomization: false,
         i18n,
@@ -28,6 +38,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
             title: deck.name,
             subtitle: i18n.t("adapter.study.flashcards.page_subtitle"),
         },
+        floatingMenu: [modePreference],
         elements: [
             {
                 id: "shared-deck",
@@ -43,12 +54,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     let release;
-    const mode = await runDeckAction(
-        "practiceMode",
-        () => choosePracticeMode(i18n, deck.name, signal),
-        signal,
-    );
-    if (signal.aborted || !["reading", "writing"].includes(mode)) return;
+    modePreference.mount(composer.getFloatingSlot(modePreference.id));
     const next = () => {
         release?.();
         const target = root.querySelector("[data-shared-card]");
@@ -80,7 +86,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
             templates,
             schemas,
             entries: [],
-            mode,
+            mode: modePreference.value,
             onAnswer: (grade) => practiceSession.answer(grade),
             i18n,
             signal,

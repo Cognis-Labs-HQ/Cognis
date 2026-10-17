@@ -87,6 +87,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         },
         navigateTo: async (url) => navigations.push(url),
         createPageComposer: (_root, options) => ({
+            getFloatingSlot: () => ({}),
             init: async () => {
                 assert.equal(options.toolbar[0].render(), "deck menu");
                 assert.equal(options.toolbarScrollable, true);
@@ -96,9 +97,14 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         }),
         bindStudySubNavigation() {},
         renderDeckDetail: () => "<section data-study-session></section>",
-        choosePracticeMode: async () => {
+        createPracticeModePreference: async ({ mode }) => {
             choices++;
-            return "writing";
+            return {
+                value: mode ?? "writing",
+                id: "mode",
+                render: () => "",
+                mount() {},
+            };
         },
         fetchLibraryLocations: async () => ({ readable: [] }),
         noteDetails: () => [],
@@ -141,13 +147,16 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     await environment.mountDeck(root);
     assert.equal(menus.at(-1).activeId, deck.id);
     assert.equal(menus.at(-1).groups[0].collapsible, false);
-    assert.equal(menus.at(-1).groups[0].items[0].label, deck.name);
+    assert.equal(menus.at(-1).groups[0].items[0].id, "all");
+    await menus.at(-1).onSelect("all");
+    assert.equal(navigations.at(-1), "/study/ja/flashcards");
+    assert.equal(menus.at(-1).groups[0].items[1].label, deck.name);
     await menus.at(-1).onSelect(deck.id);
     assert.equal(
         navigations.at(-1),
         "/study/ja/flashcards/first-words-renamed--deck-id",
     );
-    assert.equal(choices, 1);
+    assert.equal(choices, 2);
     assert.equal(mounts.at(-1).mode, "writing");
     assert.equal(mounts.at(-1).detail.entry.id, "two");
     assert.equal(mounts.at(-1).answeredGrade, "again");

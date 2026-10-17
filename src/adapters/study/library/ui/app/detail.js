@@ -1,3 +1,4 @@
+import { transformedDetailEntry } from "./transformation-detail.js";
 import { deriveDetailPronunciation } from "./composer-contract.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -198,6 +199,10 @@ export async function composeDetail(
     const presentationDetail = options.transformation
         ? {
               ...detail,
+              entry: transformedDetailEntry(
+                  detail.entry,
+                  options.transformation,
+              ),
               usedBy: dependantsMatchingTransformation(
                   usedBy,
                   detail.entry.id,

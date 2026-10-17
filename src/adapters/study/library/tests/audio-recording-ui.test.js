@@ -78,7 +78,14 @@ function fixture() {
     vm.runInContext(source, context);
     const controller = new AbortController();
     context.bindAudioUploads(
-        { querySelectorAll: () => [field] },
+        {
+            querySelectorAll: (selector) => {
+                const playback = { querySelector: () => null };
+                return selector === "[data-library-audio-upload]"
+                    ? [field]
+                    : [field, playback];
+            },
+        },
         { t: (key) => key },
         controller.signal,
     );

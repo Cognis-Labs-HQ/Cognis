@@ -24,20 +24,8 @@ Flashcards declares the shared page-builder and page-sections stylesheets, match
 
 Successful deck creation and import dismiss the protected editor before navigating to the refreshed browse page, so saved changes do not trigger a discard prompt. Favourite-only Library results display selected child cards independently; restoring provider order restores their original nested placement.
 
-## Flashcard Practice
+## Saved Study Controls
 
-Opening an account or shared deck asks the learner to choose Reading or Writing before practice begins. The chosen mode stays fixed for that session, including after visiting Explore and using browser Back. Cards without support for that mode can be skipped; they never silently change the session mode. New cards start with their answers hidden. Total, New, Due and Done retain their existing review filters; changing the filter starts another queue in the same mode.
+Reading/Writing is a saved account preference in the composer’s floating menu, defaulting to Reading. Changing it during practice uses the shared warning popup before restarting the queue; cancel keeps the current position and answers. Reviews already submitted remain saved. The sidebar includes All and marks the current deck. Writing headings blur a same-size masked glyph; the first click reveals it and enables its Explore deep link. A second click offers navigation confirmation. Keyboard activation follows the same interaction.
 
-Reading uses the primary pronunciation and three distinct visible Library distractors. Writing embeds the shared pad and presents the meaning and reading while concealing the character behind a click-to-reveal heading. Stroke mistakes do not automatically expose the character. Revealing the character is treated as an assisted attempt and records Again, even if later strokes succeed. A successful unaided attempt records Good. The answer can still be inspected on previously reviewed cards.
-
-Deck galleries use `/study/<iso>/flashcards`; deck links use a readable name slug followed by `--<deck-id>`, such as `/study/ja/flashcards/first-japanese-words--<deck-id>`. Canonical English names keep the readable portion independent of the interface language. The identity suffix keeps duplicate names unambiguous and links consistent across owners and recipients with different deck catalogs. API resource IDs remain unchanged.
-
-The active deck queue, index, grades, pending answer, filter and selected mode are retained in the current browser history entry. Returning from Explore restores the original queue and working Previous/Next controls rather than creating a one-card session. Revealing an answer or leaving to inspect an unanswered card retains an Again result. Source links pass ordered deck card IDs in history state so Explore previews can also navigate that deck, including child cards. Locations and card access remain authorized by the existing Library contracts; inaccessible cards are omitted when a session is restored.
-
-All actions run the existing declared Study deck and drawing flows. The interface reuses the standard popup, buttons and existing flashcard layout styles. Account and shared decks use the same renderer and practice implementation; shared snapshots do not gain Library access. Page departure aborts mounted handlers and drawing sessions.
-
-## Reading Feedback and Links
-
-Reading submissions show a success or warning toast and animate the selected option; reduced-motion preferences disable the animation. The practice title and favourite star blend into the card while retaining keyboard focus indicators. A standard side menu lists the current language’s deck titles and highlights the active deck.
-
-Explore card links include canonical card identity in `/study/explore/<language>/<layer>/<card-id>`. Ctrl-click, Command-click and Shift-click retain native browser navigation, and direct navigation opens the requested card preview. Looking up an unanswered card counts as an assisted attempt. Ordinary navigation preserves the deck queue for browser Back.
+New lexical cards automatically detect dictionary-backed classes and supported transformation tags when their input is committed and before saving. Manual tags are retained; ambiguous classes remain an explicit choice. Late lookup results cannot change a different draft. Selected verb, adjective/adverb and plural previews request the selected transformation’s audio. Source attribution in the heading links to the base card. Upload controls have a separate selector from playback audio, preventing the character-editor initialization crash.

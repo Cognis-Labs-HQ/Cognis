@@ -77,4 +77,6 @@
   <string name="gateway.study.drawing.try_again">Coba Lagi</string>
   <string name="gateway.study.drawing.error">Latihan menulis tidak dapat dimuat.</string>
   <string name="gateway.study.drawing.reveal">Tampilkan karakter</string>
+  <string name="gateway.study.drawing_open_card">Buka Kartu di Explore?</string>
+  <string name="gateway.study.drawing_open_card_body">Buka kartu yang telah ditampilkan di Explore dan tinggalkan halaman ini?</string>
 </resources>

@@ -1,4 +1,4 @@
-import { choosePracticeMode } from "../../reuse/practice-mode.js";
+import { createPracticeModePreference } from "../../reuse/practice-mode.js";
 import {
     createPracticeSession,
     resumePracticeSession,
@@ -499,18 +499,6 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     .replace("{{ count }}", String(session.unavailable)),
                 { variant: "warning" },
             );
-        if (!practiceMode) {
-            practiceMode = await runDeckAction(
-                "practiceMode",
-                () => choosePracticeMode(i18n, selected.name, signal),
-                signal,
-            );
-            if (signal.aborted) return;
-            if (!["reading", "writing"].includes(practiceMode)) {
-                await navigateTo(languageFlashcardsUrl(languageCode));
-                return;
-            }
-        }
         queue = practiceQueue(session.cards, selected.progress, filter);
         const restored = resumePracticeSession(
             restoredSession ? session.cards : queue,
@@ -522,16 +510,34 @@ export async function mount(root, { signal: routerSignal } = {}) {
         nextCard();
     };
 
+    const modePreference = await createPracticeModePreference({
+        i18n,
+        templates,
+        signal,
+        mode: practiceMode,
+        isActive: () => Boolean(selected && practiceSession.current),
+        onChange: (mode) => {
+            practiceMode = mode;
+            if (!session) return;
+            queue = practiceQueue(session.cards, selected.progress, filter);
+            practiceSession = createPracticeSession(queue);
+            nextCard();
+        },
+    });
+    practiceMode = modePreference.value;
     const menu = createSideMenu({
         groups: [
             {
                 id: "decks",
                 label: i18n.t("adapter.study.flashcards.page_title"),
                 collapsible: false,
-                items: decks.map((deck) => ({ id: deck.id, label: deck.name })),
+                items: [
+                    { id: "all", label: i18n.t("ui.reuse.all") },
+                    ...decks.map((deck) => ({ id: deck.id, label: deck.name })),
+                ],
             },
         ],
-        activeId: selected?.id ?? "",
+        activeId: selected?.id ?? "all",
         storageKeyPrefix: "study-flashcards-decks",
         onSelect: (id) =>
             runDeckAction(
@@ -540,7 +546,11 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     navigateTo(
                         languageFlashcardsUrl(
                             languageCode,
-                            deckRouteKey(decks.find((deck) => deck.id === id)),
+                            id === "all"
+                                ? undefined
+                                : deckRouteKey(
+                                      decks.find((deck) => deck.id === id),
+                                  ),
                         ),
                     ),
                 signal,
@@ -573,6 +583,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             },
         ],
         toolbarScrollable: true,
+        floatingMenu: [modePreference],
         subNavigation: [
             {
                 id: "study-subnav",
@@ -589,6 +600,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     menu.mount(root, { signal });
+    modePreference.mount(composer.getFloatingSlot(modePreference.id));
     favourites.bind(root, {
         signal,
         i18n,

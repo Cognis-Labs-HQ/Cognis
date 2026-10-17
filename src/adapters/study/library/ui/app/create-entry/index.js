@@ -1,3 +1,4 @@
+import { bindAutomaticClassification } from "./classification.js";
 import { openLibraryImport } from "./import.js";
 import { referencedLinkedEntries } from "../linked-entries.js";
 import { DEFINITION_LANGUAGES } from "../definition-languages.js";
@@ -301,6 +302,7 @@ export async function openCreateEntryPopup({
     };
     let createdEntry = null;
     const submitEntry = async () => {
+        await form.detectLibraryClassification?.();
         let publishEveryone =
             canPublishEveryone ||
             form.elements.publishEveryone?.checked === true;
@@ -679,6 +681,14 @@ export async function openCreateEntryPopup({
                 definitionLocation: canPublishEveryone
                     ? { scope: "global", scopeId: "global" }
                     : { scope: "user" },
+            });
+            bindAutomaticClassification(form, draft, {
+                schema,
+                layer: editingLayer,
+                entries,
+                providers: generalLookupProviders,
+                i18n,
+                signal: audioController.signal,
             });
             if (initialLookup)
                 form.dispatchEvent(

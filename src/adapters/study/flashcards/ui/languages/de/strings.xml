@@ -37,4 +37,5 @@
   <string name="adapter.study.flashcards.practice_choose_mode">Lesen oder Schreiben wählen</string>
   <string name="adapter.study.flashcards.practice_correct">Richtige Lesung.</string>
   <string name="adapter.study.flashcards.practice_incorrect">Falsche Lesung. Sieh dir die Antwort an und versuche es bei der nächsten Wiederholung erneut.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Ein Moduswechsel startet diese Sitzung neu und verwirft die aktuelle Position und Antworten. Bereits übermittelte Bewertungen bleiben gespeichert.</string>
 </resources>

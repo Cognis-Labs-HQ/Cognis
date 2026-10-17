@@ -18,7 +18,6 @@ import { entryEditMode } from "./editability.js";
 import { transformedPopupPresentation as transformPresentation } from "./transformation-popup.js";
 import {
     detailTitleReferences,
-    transformedRootActions,
     resolveDetailTransformation,
     selectDetailTransformation,
     transformedDetailEntry,
@@ -172,11 +171,6 @@ export async function openEntryPopup(
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
             actions: [
-                ...transformedRootActions(
-                    detail.entry,
-                    selectedTransformation,
-                    i18n,
-                ),
                 {
                     id: "previous",
                     label: i18n.t("gateway.study.library_previous"),
@@ -264,9 +258,8 @@ export async function openEntryPopup(
             URL.revokeObjectURL(objectUrl);
         }
         signal?.removeEventListener("abort", abortPopup);
-        if (chosenTransformation !== undefined || result === "return-root") {
-            selectedTransformation =
-                result === "return-root" ? null : chosenTransformation;
+        if (chosenTransformation !== undefined) {
+            selectedTransformation = chosenTransformation;
             selectedEntry = detail.entry;
             sourceDefinition = "";
             continue;

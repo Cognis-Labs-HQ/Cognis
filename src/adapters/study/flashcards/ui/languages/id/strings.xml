@@ -37,4 +37,5 @@
   <string name="adapter.study.flashcards.practice_choose_mode">Pilih Membaca atau Menulis</string>
   <string name="adapter.study.flashcards.practice_correct">Bacaan benar.</string>
   <string name="adapter.study.flashcards.practice_incorrect">Bacaan salah. Pelajari jawabannya dan coba lagi pada tinjauan berikutnya.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Mengubah mode latihan akan memulai ulang sesi serta membuang posisi dan jawaban saat ini. Ulasan yang telah dikirim tetap tersimpan.</string>
 </resources>

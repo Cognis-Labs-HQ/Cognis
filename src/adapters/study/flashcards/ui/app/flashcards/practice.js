@@ -1,3 +1,4 @@
+import { entryExploreUrl } from "/static/gateways/study/reuse/explore.js";
 import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -10,24 +11,9 @@ import { flashcardValues, renderFlashcard } from "../../reuse/flashcard.js";
 import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
 
-export function exploreUrl(entry, schemas) {
-    const schema = schemas.find(({ id }) => id === entry.schemaId);
-    const sourceLayer = schema?.layers.find(({ id }) => id === entry.layer);
-    const browseable = (layer) =>
-        !["definition", "meaning", "particle"].includes(layer.semanticRole);
-    const layer =
-        sourceLayer &&
-        (browseable(sourceLayer)
-            ? sourceLayer
-            : schema.layers.find(browseable));
-    return schema && layer
-        ? `/study/explore/${encodeURIComponent(schema.language)}/${encodeURIComponent(layer.navigationSlug ?? layer.id)}/${encodeURIComponent(entry.id)}`
-        : "";
-}
-
 function entryLink(entry, text, schemas) {
     if (!text) return "";
-    const url = exploreUrl(entry, schemas);
+    const url = entryExploreUrl(entry, schemas);
     return url
         ? `<a class="study-entry-link btn-neutral" href="${escapeHtml(url)}" data-practice-link data-entry-id="${escapeHtml(entry.id)}">${escapeHtml(text)}</a>`
         : escapeHtml(text);
@@ -87,7 +73,7 @@ export function mountPractice(
                 ? renderFavourite("flashcard", detail.entry.id, i18n)
                 : "",
             entry_heading: writing
-                ? `<button type="button" class="btn-neutral" data-practice-reveal aria-label="${label("reveal")}" aria-expanded="false">•••</button>`
+                ? `<button type="button" class="btn-neutral study-practice-concealed" data-practice-reveal aria-label="${label("reveal")}" aria-expanded="false"><span aria-hidden="true">${"漢".repeat([...values.front].length)}</span></button>`
                 : entryLink(detail.entry, values.front, schemas),
             modes: label(activeMode),
             task,
@@ -223,9 +209,20 @@ export function mountPractice(
                         const reveal = target.querySelector(
                             "[data-practice-reveal]",
                         );
-                        if (mode === "writing")
-                            reveal.textContent = values.front;
-                        else reveal.hidden = true;
+                        if (mode === "writing") {
+                            const focused = document.activeElement === reveal;
+                            reveal.outerHTML = entryLink(
+                                detail.entry,
+                                values.front,
+                                schemas,
+                            );
+                            if (focused)
+                                target
+                                    .querySelector(
+                                        ".study-practice-heading [data-practice-link]",
+                                    )
+                                    ?.focus();
+                        } else reveal.hidden = true;
                         reveal.setAttribute("aria-expanded", "true");
                         revealAnswer();
                         target.querySelector("[data-practice-next]").disabled =

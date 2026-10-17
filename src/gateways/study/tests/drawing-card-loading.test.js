@@ -1,3 +1,4 @@
+import { entryExploreUrl } from "../ui/reuse/explore.js";
 import {
     setDrawingCard,
     observeDrawingCard,
@@ -58,6 +59,9 @@ async function drawingSession({
         append(child) {
             child.parentElement = this;
         },
+        removeAttribute(name) {
+            delete this[name];
+        },
         setAttribute(name, value) {
             this[name] = value;
         },
@@ -117,6 +121,11 @@ async function drawingSession({
         setDrawingCard,
         pronunciationClass,
         AbortController,
+        entryExploreUrl,
+        fetchLibrarySchemas: async () => [
+            { id: "ja", language: "ja", layers: [{ id: "characters" }] },
+        ],
+        openPopup: async () => "cancel",
         compactDrawingPattern,
         drawingViewport,
         sampleHiddenStrokes: (count, hidden) =>
@@ -190,6 +199,12 @@ async function drawingSession({
             disconnect() {}
         },
     };
+    const headingSource = readFileSync(
+        new URL("../ui/reuse/drawing-heading.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/^import.*;\n/gm, "")
+        .replaceAll("export function", "function");
     const source = readFileSync(
         new URL("../ui/reuse/drawing.js", import.meta.url),
         "utf8",
@@ -209,7 +224,7 @@ async function drawingSession({
         environment,
     );
     await vm.runInNewContext(
-        `(async () => { ${source}; uiCtx.capabilities.contribute("study:drawing:open", openDrawingPad); uiCtx.capabilities.contribute("study:drawing:load", loadDrawingPad); })()`,
+        `(async () => { ${headingSource}; ${source}; uiCtx.capabilities.contribute("study:drawing:open", openDrawingPad); uiCtx.capabilities.contribute("study:drawing:load", loadDrawingPad); })()`,
         environment,
     );
     return {
@@ -248,7 +263,12 @@ function pointer(x, y) {
 
 function card(index) {
     return {
-        card: { id: `card-${index}`, label: `Character ${index}` },
+        card: {
+            id: `card-${index}`,
+            label: `Character ${index}`,
+            schemaId: "ja",
+            layer: "characters",
+        },
         definition: `Definition ${index}`,
         pronunciations: [`Reading ${index}`],
         strokePattern: {
@@ -281,7 +301,7 @@ test("every card selection paints its guide when the open pad keeps the same siz
         assert.deepEqual(session.moves[0], { x: index * 40, y: 80 });
         assert.equal(
             session.elements.get("[data-card-label]").textContent,
-            "•••",
+            "漢".repeat("Character 1".length),
         );
         assert.equal(
             session.elements.get("[data-definition]").textContent,
@@ -427,7 +447,10 @@ test("loading another character preserves the moved pad position", async () => {
     assert.equal(session.pad.style.top, "80px");
     assert.equal(session.pad.style.width, "640px");
     assert.equal(session.pad.style.height, "480px");
-    assert.equal(session.elements.get("[data-card-label]").textContent, "•••");
+    assert.equal(
+        session.elements.get("[data-card-label]").textContent,
+        "漢".repeat("Character 1".length),
+    );
     await session.open(card(3));
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
@@ -529,16 +552,16 @@ test("drawing masks its heading, reports the active character, and clears it on 
         onResult: (result) => results.push(result),
     });
     const heading = session.elements.get("[data-card-label]");
-    assert.equal(heading.textContent, "•••");
+    assert.equal(heading.textContent, "漢".repeat("Character 1".length));
     assert.equal(changes.at(-1).id, "card-1");
-    await heading.handlers.get("click")();
+    await heading.handlers.get("click")({ preventDefault() {} });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(heading.textContent, "Character 1");
     assert.equal(heading["aria-expanded"], "true");
     assert.equal(results[0].assisted, true);
     assert.equal(results[0].correct, false);
     await session.load(card(2));
-    assert.equal(heading.textContent, "•••");
+    assert.equal(heading.textContent, "漢".repeat("Character 1".length));
     assert.equal(changes.at(-1).id, "card-2");
     await pad.close();
     assert.equal(changes.at(-1), null);

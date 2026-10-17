@@ -36,3 +36,14 @@ export function languageFlashcardsUrl(languageCode, deckId) {
     if (!languageCode) return "/study/flashcards";
     return `/study/${encodeURIComponent(languageCode)}/flashcards${deckId ? `/${encodeURIComponent(deckId)}` : ""}`;
 }
+
+export function entryExploreUrl(entry, schemas) {
+    const schema = schemas.find(({ id }) => id === entry.schemaId);
+    const candidates = exploreLayers(schema ? [schema] : []);
+    const selected =
+        candidates.find(({ layer }) => layer.id === entry.layer) ??
+        candidates[0];
+    return selected
+        ? `/study/explore/${encodeURIComponent(schema.language)}/${encodeURIComponent(selected.layer.navigationSlug ?? selected.layer.id)}/${encodeURIComponent(entry.id)}`
+        : "";
+}

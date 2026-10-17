@@ -341,7 +341,7 @@ Daftar hubungan dalam detail menampilkan tetangga langsung. Digunakan Oleh, Cont
 
 Hubungan langsung tetap terlihat meskipun jalur melalui entri perantara mencapai kartu yang sama. Referensi tersimpan, referensi berkelompok, dan komponen judul kanonis mempertahankan tautan langsung, mendukung あ → ある + あるく serta あ → ある → あるく. Hanya hubungan yang dicapai semata-mata melalui induk lain yang dikecualikan.
 
-Kartu yang ditransformasi tidak menampilkan pelafalan yang sama dengan judulnya setelah normalisasi. Pelafalan yang berbeda tetap memiliki tautan karakter. Tindakan terlokalisasi Kembali ke {{ verb }} memulihkan kartu dasar dan menghapus transformasi yang dipilih sambil mempertahankan navigasi kartu biasa.
+Kartu kosakata baru otomatis mendeteksi kelas dan tag transformasi yang didukung melalui kamus saat input diselesaikan dan sebelum disimpan. Tag manual dipertahankan; kelas ambigu tetap memerlukan pilihan pengguna. Hasil yang terlambat tidak mengubah draf lain. Pratinjau bentuk verba, adjektiva/adverbia, dan jamak meminta audio transformasi yang dipilih. Atribusi sumber pada judul menautkan kartu dasar. Kontrol unggahan memakai selektor terpisah dari audio pemutar untuk mencegah kegagalan inisialisasi editor karakter.
 
 Penulisan ketergantungan kini memeriksa visibilitas setiap hubungan, termasuk referensi berkelompok. Kartu pribadi dapat memakai kartu bersama yang dapat dibaca dan komponen pribadinya sendiri; kartu kelas memerlukan komponen global atau dari kelas yang sama; kartu global memerlukan komponen global. Usulan pembaruan memvalidasi skema referensi sebelum pengajuan, persetujuan penerbitan memeriksa kembali ketergantungan terkini, dan perubahan tidak boleh membatalkan keabsahan penerbitan yang tertunda. Konten bersama tidak dapat dikembalikan ke cakupan pribadi jika kartu bersama yang bergantung padanya atau permintaan tertunda masih memerlukan visibilitas yang lebih luas. Petunjuk izin dikembalikan setelah pembuatan dan perubahan serta mengikuti akses tulis kelas.
 
@@ -459,8 +459,6 @@ Pencarian kamus membuka `/study/library/search` tanpa parameter URL. Klien gatew
 
 Set transformasi penyedia dapat mendeklarasikan `optInTag`, misalnya `plural`. Kartu harus memiliki `matchTags` keluarga dan tag pilihan tersebut sebelum Cognis menampilkan atau menerima bentuknya. Penyusun menampilkan sakelar berlabel penyedia untuk keluarga yang cocok; referensi kalimat menyimpan UUID dasar dan `{setId, path}`. Menghapus pilihan mencegah referensi transformasi baru. Penyedia menetapkan keterhitungan, ejaan tidak beraturan, dan perubahan pelafalan; Cognis menangani pemilihan, penyimpanan, dan validasi. Cabang bersarang memakai posisi bebas benturan terdekat dengan jalur terbuka ke induknya. Pratinjau kalimat memotong judul dan membatasi definisi tanpa mengubah ukuran kisi.
 
-Tindakan Kembali ke menempati baris tersendiri selebar area di atas pasangan kontrol Sebelumnya dan Berikutnya.
-
 Komposisi judul kalimat eksplisit mempertahankan spasi di antara unsur tertaut, termasuk kartu multikata dan transformasi terpilih. Spasi tetap berupa teks biasa; kata kanonis dan tanda baca tetap dapat dinavigasi. Unsur yang hilang atau tanda baca yang tidak dideklarasikan tetap menyebabkan komposisi tidak lengkap ditolak.
 
 ## Audio pelafalan
@@ -504,3 +502,7 @@ Judul pad mula-mula menyamarkan karakter dengan tombol standar untuk membukanya.
 ## Umpan Balik dan Tautan
 
 Tautan kartu Explore menyertakan identitas kanonis kartu pada `/study/explore/<language>/<layer>/<card-id>`. Ctrl-klik, Command-klik, dan Shift-klik mempertahankan perilaku bawaan peramban; kunjungan langsung membuka pratinjau kartu yang diminta. Membuka kartu yang belum dijawab dihitung sebagai percobaan dengan bantuan. Navigasi biasa mempertahankan antrean dek untuk tombol Kembali peramban.
+
+## Kontrol Belajar Tersimpan
+
+Kartu kosakata baru otomatis mendeteksi kelas dan tag transformasi yang didukung melalui kamus saat input diselesaikan dan sebelum disimpan. Tag manual dipertahankan; kelas ambigu tetap memerlukan pilihan pengguna. Hasil yang terlambat tidak mengubah draf lain. Pratinjau bentuk verba, adjektiva/adverbia, dan jamak meminta audio transformasi yang dipilih. Atribusi sumber pada judul menautkan kartu dasar. Kontrol unggahan memakai selektor terpisah dari audio pemutar untuk mencegah kegagalan inisialisasi editor karakter.

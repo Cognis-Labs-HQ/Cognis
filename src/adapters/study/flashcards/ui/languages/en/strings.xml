@@ -37,4 +37,5 @@
   <string name="adapter.study.flashcards.practice_choose_mode">Choose Reading or Writing</string>
   <string name="adapter.study.flashcards.practice_correct">Correct reading.</string>
   <string name="adapter.study.flashcards.practice_incorrect">Incorrect reading. Review the answer and try again on your next review.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Changing the practice mode will restart this session and discard its current position and answers. Reviews already submitted remain saved.</string>
 </resources>

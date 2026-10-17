@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
+import { entryExploreUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { similarEntries } from "../../../../gateways/study/ui/reuse/similar-items.js";
 import { drawingPattern } from "../../../../gateways/study/ui/reuse/drawing-pattern.js";
@@ -184,6 +185,7 @@ function practiceHarness(filter, status = "due", options = {}) {
     let drawing;
     const context = vm.createContext({
         AbortController,
+        entryExploreUrl,
         document: { documentElement: { lang: "en" } },
         escapeHtml: String,
         formatTemplate: (source, values) =>
@@ -362,10 +364,7 @@ test("full answers group canonical reading and meaning links without duplicating
         assert.equal(html.split(`data-id="${id}"`).length - 1, 1);
     for (const layer of ["definitions", "particles"])
         assert.equal(
-            harness.context.exploreUrl(
-                { id: "entry", schemaId: "ja", layer },
-                schemas,
-            ),
+            entryExploreUrl({ id: "entry", schemaId: "ja", layer }, schemas),
             "/study/explore/ja/vocabulary/entry",
         );
 });
@@ -378,7 +377,10 @@ test("Writing masks the character until an explicit reveal, grades hints as Agai
     });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
-    assert.match(harness.target.innerHTML, /data-practice-reveal[^>]*>•••/);
+    assert.match(
+        harness.target.innerHTML,
+        /study-practice-concealed[^>]*>.*漢/,
+    );
     const drawing = harness.drawing();
     await harness.click("[data-practice-mode]", { practiceMode: "reading" });
     assert.equal(harness.drawing(), drawing);
@@ -386,7 +388,10 @@ test("Writing masks the character until an explicit reveal, grades hints as Agai
     assert.deepEqual(answers, []);
     await harness.click("[data-practice-reveal]", {});
     assert.deepEqual(answers, ["again"]);
-    assert.equal(harness.nodes.get("[data-practice-reveal]").textContent, "学");
+    assert.match(
+        harness.nodes.get("[data-practice-reveal]").outerHTML,
+        /data-practice-link[^>]*>学<\/a>/,
+    );
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
     await harness.click("[data-practice-next]", {});
     assert.deepEqual(harness.grades, ["again"]);

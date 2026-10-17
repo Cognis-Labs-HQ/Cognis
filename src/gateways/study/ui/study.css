@@ -442,3 +442,7 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     border-radius: 10px;
     background: var(--surface-soft);
 }
+
+.study-dictionary-search select[hidden] {
+    display: none;
+}

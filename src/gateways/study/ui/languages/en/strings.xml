@@ -77,4 +77,6 @@
   <string name="gateway.study.drawing.try_again">Try Again</string>
   <string name="gateway.study.drawing.error">Drawing practice could not be loaded.</string>
   <string name="gateway.study.drawing.reveal">Show character</string>
+  <string name="gateway.study.drawing_open_card">Open Card in Explore?</string>
+  <string name="gateway.study.drawing_open_card_body">Open the revealed card in Explore and leave this page?</string>
 </resources>

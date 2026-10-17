@@ -483,6 +483,26 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}
             </ul>
+            ${
+                model.dictionaryProviders?.length
+                    ? createFormBuilder(
+                          { i18n, escapeHtml },
+                          {
+                              formId: "study-dictionary-search",
+                              formClassName: "study-dictionary-search",
+                              formAttributes: {
+                                  "data-study-dictionary-search": true,
+                                  "data-language": model.selectedLanguageCode,
+                              },
+                              includeSubmitButton: false,
+                              fields: [],
+                              trustedContentHtml: `<select class="theme-select" name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option data-search-label="${escapeHtml(providerSearchLabel(provider))}" value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
+                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
+                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="search-bar-toggle-icon" aria-hidden="true"></span></button>`,
+                          },
+                      ).render()
+                    : ""
+            }
             <ul class="page-subnav-list study-subnav-settings">
                 <li>
                     <a
@@ -499,26 +519,6 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     </a>
                 </li>
             </ul>
-            ${
-                model.dictionaryProviders?.length
-                    ? createFormBuilder(
-                          { i18n, escapeHtml },
-                          {
-                              formId: "study-dictionary-search",
-                              formClassName: "study-dictionary-search",
-                              formAttributes: {
-                                  "data-study-dictionary-search": true,
-                                  "data-language": model.selectedLanguageCode,
-                              },
-                              includeSubmitButton: false,
-                              fields: [],
-                              trustedContentHtml: `<select name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option data-search-label="${escapeHtml(providerSearchLabel(provider))}" value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
-                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
-                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="search-bar-toggle-icon" aria-hidden="true"></span></button>`,
-                          },
-                      ).render()
-                    : ""
-            }
         </div>
     `;
 }

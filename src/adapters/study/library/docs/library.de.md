@@ -341,7 +341,7 @@ Beziehungslisten in der Detailansicht zeigen unmittelbare Nachbarn. „Verwendet
 
 Eine direkte Beziehung bleibt sichtbar, auch wenn ein Weg über einen Zwischeneintrag dieselbe Karte erreicht. Gespeicherte Referenzen, gruppierte Referenzen und kanonische Titelbestandteile behalten ihre direkten Links. Damit werden sowohl あ → ある + あるく als auch あ → ある → あるく unterstützt. Nur Beziehungen, die ausschließlich über einen weiteren übergeordneten Eintrag erreichbar sind, werden ausgeschlossen.
 
-Transformierte Karten lassen eine Aussprache weg, die nach Normalisierung mit dem angezeigten Titel übereinstimmt. Abweichende Lesungen behalten ihre Zeichenlinks. Eine lokalisierte Aktion „Zurück zu {{ verb }}“ stellt die Basiskarte wieder her und entfernt die ausgewählte Transformation, während die normale Kartennavigation erhalten bleibt.
+Neue Wortkarten erkennen beim Abschließen der Eingabe und vor dem Speichern automatisch wörterbuchgestützte Klassen und unterstützte Transformationstags. Eigene Tags bleiben erhalten; mehrdeutige Klassen erfordern eine Auswahl. Verspätete Ergebnisse ändern keinen anderen Entwurf. Vorschauen für gewählte Verb-, Adjektiv-/Adverb- und Pluralformen fordern deren eigene Aufnahme an. Die Herkunftsangabe in der Überschrift verlinkt die Basiskarte. Upload-Felder haben einen eigenen Selektor, damit Audioelemente die Initialisierung des Zeicheneditors nicht mehr abbrechen.
 
 Beim Schreiben von Abhängigkeiten wird nun die Sichtbarkeit jeder Verbindung geprüft, einschließlich gruppierter Referenzen. Persönliche Karten dürfen lesbare geteilte Karten und eigene private Bestandteile verwenden; Klassenkarten benötigen globale Bestandteile oder Bestandteile derselben Klasse; globale Karten benötigen globale Bestandteile. Änderungsvorschläge prüfen das Referenzschema vor der Einreichung. Veröffentlichungen prüfen die aktuellen Abhängigkeiten bei der Genehmigung erneut, und Änderungen dürfen eine ausstehende Veröffentlichung nicht ungültig machen. Geteilte Inhalte können nicht in den persönlichen Bereich zurückkehren, solange geteilte abhängige Karten oder ausstehende Anfragen ihre größere Sichtbarkeit benötigen. Berechtigungshinweise werden nach Erstellung und Bearbeitung zurückgegeben und berücksichtigen Schreibrechte der Klasse.
 
@@ -459,8 +459,6 @@ Wörterbuchsuchen öffnen `/study/library/search` ohne URL-Parameter. Der Gatewa
 
 Eine Anbieter-Transformationsgruppe kann `optInTag`, beispielsweise `plural`, deklarieren. Karten benötigen die passenden `matchTags` und dieses Opt-in-Tag, bevor Cognis Formen anbietet oder akzeptiert. Der Editor zeigt den vom Anbieter benannten Schalter für passende Gruppen. Satzreferenzen behalten die Basis-UUID und `{setId, path}`. Ohne Opt-in sind neue transformierte Referenzen unzulässig. Anbieter bestimmen Zählbarkeit, unregelmäßige Schreibweisen und Ausspracheänderungen; Cognis übernimmt Auswahl, Speicherung und Prüfung. Verschachtelte Zweige erhalten die nächste kollisionsfreie Position mit freiem Weg zum Elternteil. Satzvorschauen kürzen Titel und begrenzen Definitionen, ohne das Raster zu vergrößern.
 
-Die Aktion Zurück zu belegt eine eigene Zeile über die gesamte Breite oberhalb der nebeneinanderliegenden Steuerelemente Zurück und Weiter.
-
 Die ausdrückliche Titelkomposition von Sätzen erhält Leerraum zwischen verknüpften Bestandteilen, einschließlich Mehrwortkarten und ausgewählter Transformationen. Abstände bleiben einfacher Text; kanonische Wörter und Satzzeichen bleiben navigierbar. Fehlende Bestandteile oder nicht deklarierte Satzzeichen führen weiterhin zur Ablehnung unvollständiger Kompositionen.
 
 ## Ausspracheaufnahmen
@@ -504,3 +502,7 @@ Die Überschrift des Zeichenfelds verbirgt zunächst das Zeichen hinter einer no
 ## Leserückmeldung und Links
 
 Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore/<language>/<layer>/<card-id>`. Strg-, Befehls- und Umschalt-Klick behalten das normale Browserverhalten; direkte Aufrufe öffnen die gewünschte Kartenvorschau. Das Nachschlagen einer unbeantworteten Karte zählt als unterstützter Versuch. Bei normaler Navigation bleibt die Stapelreihenfolge für die Zurück-Funktion erhalten.
+
+## Gespeicherte Lernsteuerung
+
+Neue Wortkarten erkennen beim Abschließen der Eingabe und vor dem Speichern automatisch wörterbuchgestützte Klassen und unterstützte Transformationstags. Eigene Tags bleiben erhalten; mehrdeutige Klassen erfordern eine Auswahl. Verspätete Ergebnisse ändern keinen anderen Entwurf. Vorschauen für gewählte Verb-, Adjektiv-/Adverb- und Pluralformen fordern deren eigene Aufnahme an. Die Herkunftsangabe in der Überschrift verlinkt die Basiskarte. Upload-Felder haben einen eigenen Selektor, damit Audioelemente die Initialisierung des Zeicheneditors nicht mehr abbrechen.

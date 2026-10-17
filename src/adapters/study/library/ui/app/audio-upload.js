@@ -5,7 +5,7 @@ import { showToast } from "/static/reuse/toast.js";
 const LIMIT = 5 * 1024 * 1024;
 
 export function bindAudioUploads(form, i18n, signal) {
-    for (const field of form.querySelectorAll("[data-library-audio-field]")) {
+    for (const field of form.querySelectorAll("[data-library-audio-upload]")) {
         const picker = field.querySelector('input[type="file"]');
         const button = field.querySelector("[data-library-record-audio]");
         let recorder;
