@@ -1,5 +1,6 @@
 import { escapeHtml } from "./escape-html.js";
 import { openPopup } from "./popup.js";
+import { ensurePageStylesheet } from "./page-styles.js";
 import { createI18n } from "./i18n.js";
 import { uiCtx } from "./ui-ctx.js";
 import { registerScopedUiActions } from "./scoped-actions.js";
@@ -61,13 +62,18 @@ async function openImagePreview({ src, alt, signal }) {
     signal.addEventListener("abort", abort, { once: true });
     try {
         await openPopup({
-            title: alt || i18n.t("ui.reuse.image_preview"),
             body: `<img class="image-preview-full" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`,
             actions: [],
             maxWidth: "calc(100vw - 3rem)",
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("image-preview-popup");
+                overlay.querySelector(".popup-heading").remove();
+                overlay.removeAttribute("aria-labelledby");
+                overlay.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.reuse.image_preview"),
+                );
                 overlay
                     .querySelector('[data-popup-action="close"]')
                     .setAttribute("aria-label", i18n.t("ui.reuse.close"));
@@ -79,7 +85,9 @@ async function openImagePreview({ src, alt, signal }) {
     }
 }
 
-export function mountProvider(ctx) {
+export async function mountProvider(ctx) {
+    await ensurePageStylesheet("/static/styles/reuse/image-preview.css");
+    ctx.signal.throwIfAborted();
     const actions = registerScopedUiActions(ctx, "ui:imagePreview", {
         open: (input) =>
             openImagePreview({

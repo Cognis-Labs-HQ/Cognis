@@ -22,6 +22,9 @@ async function fixture(t) {
     let focused = 0;
     let executions = 0;
     const closeAttributes = {};
+    const overlayAttributes = {};
+    const stylesLoaded = [];
+    let headingRemoved = false;
     const controller = new AbortController();
     const image = {
         alt: 'Dog "photo"',
@@ -43,6 +46,9 @@ async function fixture(t) {
         uiCtx,
         registerScopedUiActions,
         AbortSignal,
+        ensurePageStylesheet: async (url) => {
+            stylesLoaded.push(url);
+        },
         createI18n: async () => ({
             t: (key) =>
                 ({
@@ -60,7 +66,16 @@ async function fixture(t) {
                             add: (name) =>
                                 assert.equal(name, "image-preview-popup"),
                         },
+                        removeAttribute: (name) => {
+                            delete overlayAttributes[name];
+                        },
+                        setAttribute: (name, value) => {
+                            overlayAttributes[name] = value;
+                        },
                         querySelector: () => ({
+                            remove: () => {
+                                headingRemoved = true;
+                            },
                             setAttribute: (name, value) => {
                                 closeAttributes[name] = value;
                             },
@@ -108,6 +123,9 @@ async function fixture(t) {
         focused: () => focused,
         dismissed: () => dismissed,
         closeAttributes,
+        overlayAttributes,
+        stylesLoaded,
+        headingRemoved: () => headingRemoved,
     };
 }
 
@@ -138,7 +156,11 @@ test("image activation opens only the full image and the standard close control,
     const pending = state.activate();
     await new Promise(setImmediate);
     assert.equal(uiCtx.flowExists("ui:imagePreview:open"), true);
-    assert.equal(state.opened().title, 'Dog "photo"');
+    assert.deepEqual(state.stylesLoaded, [
+        "/static/styles/reuse/image-preview.css",
+    ]);
+    assert.equal(state.headingRemoved(), true);
+    assert.equal(state.overlayAttributes["aria-label"], "Bildvorschau");
     assert.equal(state.opened().actions.length, 0);
     assert.match(
         state.opened().body,
@@ -157,7 +179,7 @@ test("closing the owner view dismisses the image popup without reclaiming caller
     state.image.alt = "";
     const pending = state.activate();
     await new Promise(setImmediate);
-    assert.equal(state.opened().title, "Bildvorschau");
+    assert.equal(state.overlayAttributes["aria-label"], "Bildvorschau");
     state.controller.abort();
     await pending;
     assert.equal(state.dismissed(), 1);
@@ -177,4 +199,35 @@ test("unmounting the global provider dismisses its popup and removes the registe
     await assert.rejects(preview.open({ src: "blob:stale", alt: "Dog" }), {
         name: "AbortError",
     });
+});
+
+test("the preview provider waits for its shared stylesheet before publishing controls", async (t) => {
+    let finishStylesheet;
+    const stylesheet = new Promise((resolve) => {
+        finishStylesheet = resolve;
+    });
+    const context = vm.createContext({
+        uiCtx,
+        registerScopedUiActions,
+        ensurePageStylesheet: (url) => {
+            assert.equal(url, "/static/styles/reuse/image-preview.css");
+            return stylesheet;
+        },
+    });
+    vm.runInContext(source, context);
+    const lifecycle = createProviderLifecycle({
+        uiCtx,
+        importProvider: async () => ({ mountProvider: context.mountProvider }),
+    });
+    t.after(() => lifecycle.reconcile([]));
+    const mounting = lifecycle.reconcile([{ scriptUrl: "/image-preview.js" }]);
+    await new Promise(setImmediate);
+    assert.equal(uiCtx.capabilities.get("ui:imagePreview"), undefined);
+    finishStylesheet();
+    await mounting;
+    assert.equal(
+        typeof uiCtx.capabilities.get("ui:imagePreview").render,
+        "function",
+    );
+    assert.equal(uiCtx.flowExists("ui:imagePreview:open"), true);
 });
