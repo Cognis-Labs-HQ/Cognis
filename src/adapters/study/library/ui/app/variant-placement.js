@@ -1,3 +1,4 @@
+import { VARIANT_DIRECTIONS } from "./variant-directions.js";
 /** Variant relationship identity and grid placement for Library cards. */
 
 export function isSameLibraryRecord(left, right) {
@@ -49,17 +50,6 @@ export function variantPlacement(entry, schema, entries = []) {
     }
     return null;
 }
-
-const VARIANT_DIRECTIONS = [
-    "up",
-    "down",
-    "left",
-    "right",
-    "up-left",
-    "up-right",
-    "down-right",
-    "down-left",
-];
 
 const VARIANT_DIRECTION_OFFSETS = {
     up: { column: 0, row: -1 },
@@ -238,8 +228,23 @@ export function assignVariantPlacements(entries, schema, layer) {
                         ? candidate
                         : best,
                 null,
-            );
-        if (!selected || !Number.isFinite(depth)) continue;
+            ) ??
+            (() => {
+                const direction = preferred[0];
+                const distance = (directionCounts.get(direction) ?? 0) + 1;
+                const directionOffset = VARIANT_DIRECTION_OFFSETS[direction];
+                return {
+                    direction,
+                    distance,
+                    capacity: 0,
+                    targetOffset: {
+                        column:
+                            origin.column + directionOffset.column * distance,
+                        row: origin.row + directionOffset.row * distance,
+                    },
+                };
+            })();
+        if (!Number.isFinite(depth)) continue;
         const { direction, distance, targetOffset } = selected;
         directionCounts.set(direction, distance);
         directionCountsByParent.set(request.parentId, directionCounts);

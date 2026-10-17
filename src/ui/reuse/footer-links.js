@@ -34,6 +34,9 @@ export function createFooterLinkRegistry({ onChange } = {}) {
         const side = descriptor?.side ?? "left";
         const label = String(descriptor?.label ?? "").trim();
         const labelKey = String(descriptor?.labelKey ?? "").trim();
+        const target = String(descriptor?.target ?? "").trim();
+        if (target && !["_blank", "_self"].includes(target))
+            throw new Error("invalid_footer_link_target");
         if (!id || !href || (!label && !labelKey)) {
             throw new Error(
                 "Footer links require id, href, and label or labelKey.",
@@ -64,6 +67,7 @@ export function createFooterLinkRegistry({ onChange } = {}) {
             label,
             labelKey,
             contexts: Object.freeze(contexts),
+            ...(target ? { target } : {}),
         });
         links.set(id, link);
         notify();
@@ -148,7 +152,8 @@ export function createFooterLinkRegistry({ onChange } = {}) {
     return { add, remove, list, subscribe, withContexts };
 }
 
-export const footerLinks = createFooterLinkRegistry();
+export const footerLinks =
+    uiCtx.capabilities.get("ui:footerLinks") ?? createFooterLinkRegistry();
 uiCtx.capabilities.contribute("ui:footerLinks", footerLinks);
 const mountedShells = new WeakMap();
 
@@ -190,6 +195,9 @@ export function mountFooterLinks(root, { i18n, context = "application" } = {}) {
                         const link = document.createElement("a");
                         link.className = "global-footer-link";
                         link.href = descriptor.href;
+                        if (descriptor.target) link.target = descriptor.target;
+                        if (descriptor.target === "_blank")
+                            link.rel = "noopener noreferrer";
                         link.dataset.footerLink = descriptor.id;
                         const isActive = isFooterLinkActive(descriptor.href);
                         link.classList.toggle("active", isActive);

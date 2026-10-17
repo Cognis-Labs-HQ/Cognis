@@ -29,6 +29,7 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     }
     const context = {
         console,
+        uiCtx: { capabilities: { get: () => () => {} } },
         Date,
         HTMLImageElement: TestImageElement,
         applyTheme() {},
@@ -76,6 +77,9 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         },
         document: {
             referrer: "",
+            createElement() {
+                return {};
+            },
             querySelector() {
                 return {};
             },
@@ -110,6 +114,22 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     errorHandler({ target: brokenModuleImage });
     await Promise.resolve();
     assert.equal(brokenModuleImage.src, "/fallback.svg");
+    assert.equal(openPopupCalls.length, 0);
+
+    const brokenBanner = new TestImageElement();
+    brokenBanner.dataset.resourceFallbackText = "Image Not Available";
+    brokenBanner.dataset.resourceFallbackClass =
+        "module-detail-banner module-image-unavailable";
+    let placeholder;
+    brokenBanner.replaceWith = (element) => {
+        placeholder = element;
+    };
+    errorHandler({ target: brokenBanner });
+    assert.equal(placeholder.textContent, "Image Not Available");
+    assert.equal(
+        placeholder.className,
+        brokenBanner.dataset.resourceFallbackClass,
+    );
     assert.equal(openPopupCalls.length, 0);
 
     errorHandler({ target: brokenModuleImage });

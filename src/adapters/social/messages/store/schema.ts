@@ -9,6 +9,8 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
             { name: "title", type: "text" },
             { name: "avatar_key", type: "text" },
             { name: "created_by", type: "text", notNull: true },
+            { name: "source_type", type: "text" },
+            { name: "source_id", type: "text" },
             {
                 name: "created_at",
                 type: "timestamp",

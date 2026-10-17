@@ -44,3 +44,7 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                    |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Maximum startup readiness window in milliseconds (1,000–600,000)    |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Delay between readiness attempts in milliseconds (100–30,000)       |
+
+## Schema reconciliation
+
+MariaDB reconciles existing primary keys with the current table declaration during schema initialization. Rows remain in place; an incompatible declaration fails rather than discarding data. Changes are logged. No version-specific migration or renamed-column compatibility path is used.

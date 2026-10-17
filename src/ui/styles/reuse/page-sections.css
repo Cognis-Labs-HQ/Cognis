@@ -878,6 +878,10 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     padding: 0;
 }
 
+.side-menu-group--fixed {
+    flex: 0 0 auto;
+}
+
 .side-menu .side-menu-link {
     display: block;
     text-align: left;

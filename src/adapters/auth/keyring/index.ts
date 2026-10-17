@@ -14,7 +14,7 @@ import type { FlowApi } from "@cognis/core";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
-const DEFAULT_MAX_VAULT_MIB = 2;
+const DEFAULT_MAX_VAULT_MIB = 2_000;
 const DEFAULT_DERIVATION_ITERATIONS = 310_000;
 const keyringConfig = {
     maxVaultMiB: DEFAULT_MAX_VAULT_MIB,

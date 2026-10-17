@@ -17,6 +17,14 @@
 
 import { apiFetch } from "./api-client.js";
 import { uiCtx } from "./ui-ctx.js";
+import { createProviderLifecycle } from "./provider-lifecycle.js";
+import "./navbar-contributions.js";
+
+const lifecycleCapability = "ui:providerLifecycle";
+const providerLifecycle =
+    uiCtx.capabilities.get(lifecycleCapability) ??
+    createProviderLifecycle({ uiCtx });
+uiCtx.capabilities.contribute(lifecycleCapability, providerLifecycle);
 
 let providersLoaded = false;
 let providersLoadPromise = null;
@@ -25,7 +33,10 @@ let navbarPluginsLoadPromise = null;
 
 async function importCatalog(endpoint) {
     const response = await apiFetch(endpoint);
-    if (response.status === 401) return false;
+    if (response.status === 401) {
+        await providerLifecycle.reconcile([], endpoint);
+        return false;
+    }
     if (!response.ok) {
         throw new Error(
             `UI provider discovery failed with HTTP ${response.status}`,
@@ -33,11 +44,7 @@ async function importCatalog(endpoint) {
     }
     const payload = await response.json();
     const providers = Array.isArray(payload.data) ? payload.data : [];
-    await Promise.all(
-        providers.map((provider) =>
-            provider?.scriptUrl ? import(provider.scriptUrl) : null,
-        ),
-    );
+    await providerLifecycle.reconcile(providers, endpoint);
     return true;
 }
 
@@ -74,6 +81,7 @@ export async function ensureNavbarPluginsLoaded() {
     if (typeof localStorage === "undefined") return;
     if (!localStorage.getItem("cognis_access_token")) return;
     navbarPluginsLoadPromise = (async () => {
+        await ensureUiProvidersLoaded();
         navbarPluginsLoaded = await importCatalog("/api/v1/ui/navbar-plugins");
     })().finally(() => {
         navbarPluginsLoadPromise = null;

@@ -153,3 +153,30 @@ test("external modules require disclaimer acknowledgement", async () => {
     });
     assert.equal(enabled.enabled, true);
 });
+
+test("module import trims archive path separators while preserving a configured prefix", async () => {
+    const previousFetch = globalThis.fetch;
+    const previousBase = process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL;
+    process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL =
+        "https://archive.example.test/prefix" + "/".repeat(8000);
+    let requestedUrl = "";
+    globalThis.fetch = (async (input) => {
+        requestedUrl = String(input);
+        return new Response(new Uint8Array([1]), { status: 200 });
+    }) as typeof fetch;
+    try {
+        await new ModuleService(runtime([])).importFromGithub({
+            repositoryUrl: "https://github.com/owner/module",
+            versionTag: "release",
+        });
+        assert.equal(
+            requestedUrl,
+            "https://archive.example.test/prefix/owner/module/tar.gz/refs/tags/release",
+        );
+    } finally {
+        globalThis.fetch = previousFetch;
+        if (previousBase === undefined)
+            delete process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL;
+        else process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL = previousBase;
+    }
+});

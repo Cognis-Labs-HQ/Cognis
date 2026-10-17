@@ -118,7 +118,7 @@ Komponen anak adalah fitur pembelajaran yang dapat disampaikan secara mandiri un
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,31 @@ Jika komponen anak itu sendiri memerlukan sub-bagian (misalnya urutan guratan da
 - Setiap modul bahasa harus mendaftarkan rute komponen anak **Kelas** sehingga guru dan siswa dapat mengakses tampilan kelas dalam cakupan bahasa.
 - Halaman kelas harus menyertakan pemilih kelas, visualisasi kapasitas kursi, dan perilaku berbasis peran (kontrol manajemen guru vs. sebagian besar siswa + alur cuti).
 - Modul bahasa memiliki implementasi Perpustakaan dan UI Kelas dan memaparkannya melalui rute komponen anak yang dinyatakan.
+
+Lapisan belajar berada pada menu samping Jelajahi di `/study/explore/<bahasa ISO>/<navigationSlug>`. Modul dapat menetapkan `navigationSlug` unik per lapisan; jika tidak diberikan, ID lapisan digunakan. Rute Pustaka dan Permintaan tetap sama. Hanya pratinjau kalimat yang memotong judul dan definisi panjang.
+
+[Impor Pustaka Terstruktur](/docs/adapters/study/library/import)
+
+## Penelusuran dan Favorit Study
+
+Flashcards membuka daftar dek milik sendiri, dek yang dibagikan kepada akun, dan dek awal lengkap dari penyedia bahasa aktif. Tautan berbagi tetap memerlukan izin yang berlaku dan bukan direktori publik. Menu + di kanan atas menawarkan Buat Dek dan Impor Dek. Jelajahi, Library, dan Flashcards menggunakan favorit Study tersimpan per akun dan kontrol urutan bersama. Pilih urutan penyedia, A–Z, Z–A, terbaru atau terlama. Bintang menjadi emas saat menyaring hasil favorit. Item Library, dek, dan kartu belajar memiliki favorit terpisah. Favorit tidak memberikan hak akses. Papan gambar mengakhiri sesi saat rute berubah dan tidak menimpa kelas composer atau shell.
+
+## Latihan Kartu
+
+Tindakan peramban menjalankan alur study:decks dengan tahap before, execute, dan after. Daftar dan detail server menjalankan authorize, read, dan audit; penyimpanan, ulasan, dan penghapusan mempertahankan validasi, izin, dan transaksi. Study memiliki papan gambar, penyusunan pola, kemiripan, dan alur tindakan bersama. Adaptor Gambar opsional hanya mengintegrasikan papan mengambang; Menulis tertanam tetap tersedia tanpanya. Halaman dan sesi dibatalkan saat ditinggalkan.
+
+## Halaman Bahasa Bersama
+
+Pilihan bahasa membuka halaman Jelajahi milik Cognis meskipun penyedia konten tidak mendeklarasikan halaman anak. Pergantian bahasa mempertahankan peran tulisan, kosakata atau kalimat yang setara; Flashcards, Library dan Permintaan mempertahankan konteks halaman bersama. Inggris mendeklarasikan alfabet, gabungan huruf, kosakata dan kalimat melalui slug sendiri. Pemuatan favorit yang dibatalkan melepaskan pemasangan tanpa pesan kegagalan yang menyesatkan.
+
+Area gambar mengambang berada di atas dock tindakan halaman. Bagian kartu terkait membungkus hingga lima baris, lalu bergulir horizontal dengan scrollbar tersembunyi. Perubahan ukuran menghitung ulang batas, dan penutupan popup melepaskan pengamat. Nilai pelafalan IPA mempertahankan notasi aslinya dan menggunakan tipografi fonetik yang mudah dibaca.
+
+Study menyediakan klasifikasi dan gaya pelafalan publik yang digunakan kembali oleh pratinjau Library, judul detail, varian, jawaban kartu, pilihan membaca, dan area gambar. IPA mempertahankan notasi aslinya; bacaan biasa mempertahankan tipografi aplikasi pilihan pengguna. Skema kalimat Jepang dan Inggris memerlukan sedikitnya dua referensi kata.
+
+## Integrasi Ucapan Bersama
+
+Pindahkan sintesis ElevenLabs ke modul terpisah yang dapat dikonfigurasi. Study memakai suara opsional per bahasa untuk kartu global tersimpan, sedangkan kartu pribadi dan kelas menerima unggahan terbatas dan rekaman mikrofon. Pertahankan komposisi kalimat berkelanjutan sebagai cadangan dari rekaman penyusun yang tersedia. Administrator dapat membuat ulang audio global saat mengedit.
+
+`study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Naikkan versi paket konten Inggris dan Jepang saat menghapus rekaman bawaan. Selesaikan rekonsiliasi modul lain sebelum melaporkan aktivasi gagal agar rute persetujuan tetap memiliki alur terdaftar.

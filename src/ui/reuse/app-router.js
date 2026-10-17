@@ -526,9 +526,22 @@ export function initRouter(root) {
     }
 
     document.addEventListener("click", async (event) => {
-        if (event.defaultPrevented) return;
+        if (
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+        )
+            return;
         const link = event.target.closest("a[href]");
-        if (!link) return;
+        if (
+            !link ||
+            link.hasAttribute("download") ||
+            (link.target && link.target !== "_self")
+        )
+            return;
         const href = link.getAttribute("href");
         if (
             !href ||
@@ -553,9 +566,12 @@ export function initRouter(root) {
             return;
         }
         const path = window.location.pathname;
-        const pathWithHash = `${window.location.pathname}${window.location.hash}`;
+        const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
-        if (!route) return;
+        if (!route) {
+            window.location.assign(pathWithHash);
+            return;
+        }
         // If navigating within the same page section (e.g. docs internal
         // pushState) and this wasn't a router-level push, let the page's
         // own popstate handler deal with it (handled by AbortSignal cleanup).

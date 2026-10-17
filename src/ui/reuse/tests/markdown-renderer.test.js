@@ -104,3 +104,12 @@ test("renderMarkdown does not treat leading asterisk bullets as unordered lists"
     const html = renderMarkdown("* item");
     assert.equal(html, "<p>* item</p>");
 });
+
+test("renderMarkdown handles long escaped non-links without ambiguous backtracking", () => {
+    const markdown = "[" + "\\".repeat(8000) + "unfinished";
+    assert.equal(renderMarkdown(markdown), `<p>${markdown}</p>`);
+    assert.match(
+        renderMarkdown("[escaped \\] label](https://example.test)"),
+        /<a href="https:\/\/example.test"/,
+    );
+});

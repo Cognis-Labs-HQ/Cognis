@@ -39,3 +39,9 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-client timeout in milliseconds (1,000–600,000)                       |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                          |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Optional statement timeout in milliseconds (1–3,600,000)                  |
+
+## Schema reconciliation
+
+PostgreSQL reconciles existing primary keys with the current table declaration during schema initialization. Rows remain in place; an incompatible declaration fails rather than discarding data. Changes are logged. No version-specific migration or renamed-column compatibility path is used.
+
+Unique constraints and plain unique indexes are reconciled with declared unique keys in the same transaction. The table declaration is authoritative; expression and partial indexes remain independently managed.

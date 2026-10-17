@@ -4,6 +4,8 @@ import test from "node:test";
 import {
     createFooterLinkRegistry,
     isFooterLinkActive,
+    footerLinks,
+    mountFooterLinks,
 } from "../footer-links.js";
 
 test("footer link registry contributes links to either shell side", () => {
@@ -93,4 +95,80 @@ test("footer contribution contexts scope plugin additions and removals", async (
             contexts: ["authentication"],
         },
     ]);
+});
+
+test("independently imported footer clients use the ctx-owned registry", async () => {
+    const anotherClient =
+        await import("../footer-links.js?client=static-module");
+    assert.equal(anotherClient.footerLinks, footerLinks);
+    const dispose = anotherClient.footerLinks.add({
+        id: "shared-legal",
+        href: "/terms",
+        label: "Terms",
+        target: "_blank",
+    });
+    assert.equal(
+        footerLinks.list().find(({ id }) => id === "shared-legal").target,
+        "_blank",
+    );
+    dispose();
+});
+
+test("footer rendering preserves safe new-tab behavior and ordinary same-tab links", () => {
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
+    globalThis.window = Object.assign(new EventTarget(), {
+        location: { origin: "https://cognis.test", pathname: "/home" },
+    });
+    globalThis.document = {
+        createElement: () => ({
+            dataset: {},
+            classList: { toggle() {} },
+            setAttribute(name, value) {
+                this[name] = value;
+            },
+        }),
+    };
+    const slots = Object.fromEntries(
+        ["left", "right"].map((side) => [
+            side,
+            {
+                children: [],
+                replaceChildren(...children) {
+                    this.children = children;
+                },
+            },
+        ]),
+    );
+    const root = {
+        querySelector: (selector) =>
+            slots[selector.includes("left") ? "left" : "right"],
+    };
+    const removeLegal = footerLinks.add({
+        id: "render-legal",
+        side: "right",
+        href: "/terms",
+        label: "Terms",
+        target: "_blank",
+    });
+    const removeLicense = footerLinks.add({
+        id: "render-license",
+        href: "/license",
+        label: "License",
+    });
+    let unmount;
+    try {
+        unmount = mountFooterLinks(root);
+        assert.equal(slots.right.children[0].target, "_blank");
+        assert.equal(slots.right.children[0].rel, "noopener noreferrer");
+        assert.equal(slots.left.children[0].target, undefined);
+        window.dispatchEvent(new Event("popstate"));
+        assert.equal(slots.right.children[0].target, "_blank");
+    } finally {
+        unmount?.();
+        removeLegal();
+        removeLicense();
+        globalThis.window = previousWindow;
+        globalThis.document = previousDocument;
+    }
 });

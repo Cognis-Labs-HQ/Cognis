@@ -4,6 +4,66 @@ These instructions guide AI-assisted contributions to the Cognis codebase. Human
 
 ---
 
+## Persistent Review Preferences
+
+Read this file before changing Cognis or its modules. Apply these preferences proactively while implementing and reviewing; do not wait for another review comment. They supplement the AI instructions and do not authorize unrelated changes.
+
+### Ownership and integration
+
+- Keep code, routes, tests, styles, CLI contributions and lifecycle cleanup in their owning component. An optional component must be removable without breaking its siblings or core.
+- Treat ctx as the backbone of every supported application action, on the server and in the browser. Declare and execute named staged flows for reads, navigation, practice, imports, exports and mutations; register capabilities through ctx and fail when required contracts are unavailable. Add behavioral contract tests that fail if actions bypass their declared flow or component boundary.
+- Use injected ctx capabilities and registered flows across component boundaries. Never instantiate another component's concrete services or import its private implementation, including in tests.
+- Only publish capabilities that are fully implemented, registered and tested. Check the actual host capability used by bootstrap, disable and uninstall; reject unavailable contracts rather than falling back to broader or older APIs.
+- Core owns host behavior and policy; modules provide language data and dictionary enrichment. Modules must not dictate app navigation, permissions or query-cache refresh schedules.
+- Do not change core, routing, page shell or composer-owned classes merely to make a feature work. Diagnose missing styles, initialization and lifecycle handling in the owning page first. Intentional shared features require their own evidence and regression coverage.
+- Keep browser providers scoped to module lifetime and canvas instances scoped to page lifetime. Share provider ownership through ctx across bundled and directly served loader instances. Enforce exclusive integration-source bindings in the resource provider, and provide administrator recovery without guessing which historical reference to retain.
+- Unhook contributed UI/backend functions and event handlers when disabled or unmounted. Roll back registrations on failed bootstrap.
+
+### Reuse, clarity and scope
+
+- Search existing reuse before implementing a helper. Move parameterizable duplicated logic of five or more lines into the narrowest appropriate component-owned `reuse/` abstraction, with direct consumers.
+- Remove duplicate variable definitions and duplicated fixture setup. Generic shared labels belong in reuse and retain all supported translations.
+- Avoid forwarding-only shims, speculative compatibility branches and unnecessary abstractions. Keep route handlers thin; preserve meaningful named operation stages and transaction boundaries.
+- Preserve blank lines between functions, methods and declaration groups. Never remove newlines, compress declarations, raise size thresholds or weaken tests to disguise a large file or PR. Split files by coherent responsibility.
+- Keep large markup in feature templates and styles in their owning stylesheet. Small reusable controls may render their own bounded markup.
+- Review the whole PR and adjacent functionality, not only the reported symptom. Keep changes proportional to the feature, and explain unavoidable generated data separately.
+
+### UI and Study feedback
+
+- Use page composer, existing buttons, themed selects, SVG icons, popup/discard confirmation, profile previews and notification conventions. Do not override composer/shell classes in feature CSS.
+- Keep URLs free of query data, credentials and incidental page state. Preserve sidebar geometry and moved drawing-pad position across overlays. Close the drawing pad when leaving Explore.
+- Carousels append repeated placements. Hover highlights every matching placement, previews only primary pronunciation/definition, and horizontal dragging has drop indicators.
+- Resolve every reference to a real canonical UUID. Preserve authored composition, sentence structure, transformations and pronunciation segments across edits and nested creation.
+- Dictionary matches of the same composition combine alternate readings/definitions. Distinct compositions are optional choices. Preserve authoritative readings and common-result order; only suppress proven redundant echoes. Enforce field limits before saving.
+- Characters and particles remain provider-owned. Recursive dictionary enrichment starts at the permitted writing-unit layer. Hidden pronunciation cards follow provider content rules and resolve their own kana dependencies.
+- Keep requests' original card context through relocations; clear it only on deletion. Distinguish genuine new content from scope oscillations. Admin-authorized operations run immediately unless the operation explicitly requires review/confirmation.
+- Batch delete has one confirmation. Downgrading shared visibility requires confirmation/review and complete cascade handling; notify affected users in the Study category. Success creates/requests show a toast.
+- Browse pages show all visible items, concise empty states, sort/favourite controls and clean selected-detail results. Keep preview favourites clear of child hints, toast successful favourite changes, and use Escape to exit multi-selection. Show one contextual favourite control during study. Deck exports are available only to their creator or an administrator. Flashcards own their adapter, use Cognis sharing, and permit provider starter decks.
+
+### Verification and documentation
+
+- Test observable behavior through real registered flow execution and public-contract fakes. Source-only assertions are supplemental; they cannot prove a capability works. Never use silent no-op runners, unrelated tests or altered assertions to hide failures.
+- Check cold/direct navigation, repeated SPA mounts, disabled/uninstalled providers, admin/user permissions, pending/approved requests, transactional failures and dictionary/card duplication.
+- Keep versions, manifests, lockfiles, dependency ceilings and all four localized documents/changelogs synchronized. Document capabilities, constraints and lifecycle behavior accurately. Regenerate and verify provider package hashes after the final edits.
+- Avoid raw provider payloads in UI, unsafe error metadata and silent catches. Use appropriate user-facing errors and structured safe logs.
+
+### Evidence and full review archive
+
+These preferences derive from the author's Cognis PR reviews and the Study feedback in this conversation, archived on 2026-10-11. The workspace archive is `/workspace/feedback-deploy/review-memory/`: `cognis-author-reviews.json` contains all 101 nonempty author review bodies and 516 inline comments across the 228 PRs available at retrieval; `cognis-author-discussions.json` preserves the author's repository discussion comments. GitHub remains the portable source of the original feedback; the archive is deliberately outside the PR to avoid duplicating hundreds of historical comments in source control.
+
+Representative source reviews:
+
+- [#226: duplication, test integrity, size and spacing](https://github.com/Cognis-Labs-HQ/Cognis/pull/226#pullrequestreview-5453771603)
+- [#196: no convenience changes to core/router](https://github.com/Cognis-Labs-HQ/Cognis/pull/196#pullrequestreview-5273631083)
+- [#172: immediate disable cleanup](https://github.com/Cognis-Labs-HQ/Cognis/pull/172#pullrequestreview-5000121369)
+- [#128: prevent spurious newline removal](https://github.com/Cognis-Labs-HQ/Cognis/pull/128#pullrequestreview-4814252284)
+- [#106: shared search conventions](https://github.com/Cognis-Labs-HQ/Cognis/pull/106#pullrequestreview-4770189279)
+- [#99: gateway and adapter CLI ownership](https://github.com/Cognis-Labs-HQ/Cognis/pull/99#pullrequestreview-4750770814)
+- [#80: explicit reuse dependencies](https://github.com/Cognis-Labs-HQ/Cognis/pull/80#pullrequestreview-4727685799)
+- [#62: split files without gaming limits](https://github.com/Cognis-Labs-HQ/Cognis/pull/62#pullrequestreview-4719732992)
+- [#54: ctx integration and proportional changes](https://github.com/Cognis-Labs-HQ/Cognis/pull/54#pullrequestreview-4444490335)
+- [#8: retain lessons for future work](https://github.com/Cognis-Labs-HQ/Cognis/pull/8#pullrequestreview-4351935184)
+
 ## Session startup requirements
 
 As soon as you begin work in a session, you MUST run:
@@ -93,6 +153,10 @@ For runtime modules specifically, treat `ctx` as the full system bus: module boo
 - Use `ctx` to detect whether another component is present; do not hardcode adapter-to-adapter imports for availability checks.
 - When a subsystem exposes multiple provider tracks or outputs, model that selection through capabilities and ctx-backed contracts rather than hardcoded branches.
 
+### Advertise only implemented capabilities
+
+Never advertise or register a capability, UI action, route, or flow that lacks a working implementation. Register every flow invoked by an exposed operation before making that operation available. Metadata, buttons, and capability declarations are promises of executable behavior, not placeholders. Verify each exposed operation through the real registered runtime, including authorization, persistence, and failure handling; tests with a no-op flow runner do not establish that the flow exists. If an optional implementation is unavailable, omit its advertised capability and action rather than exposing a control that fails when invoked.
+
 ### Flows and staged injection are mandatory for orchestration
 
 Treat all meaningful operations as named `ctx` flows with explicit stages. A flow can represent backend operations (create user, login, change password, send message, create meeting) and UI construction operations (construct login page, construct settings page).
@@ -126,9 +190,15 @@ surface instead of duplicating gateway knowledge in core code.
 
 Core API route factories and module extension routers must receive auth/request helpers through a route context assembled from `ctx` capabilities. Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.
 
-### Module CLI controls
+### External module skeleton
 
-For module-specific operational controls, add pluggable CLI subcommands at `modules/<id>/cli/index.js`. Use `cognisctl` as the primary operational control surface.
+Every new external module must start from https://github.com/Cognis-Labs-HQ/cognis-module-template using template creation or a fork. Assign its own product UUID and metadata, retain the template's AGENTS.md baseline, and preserve module-specific guidance in a final appendix. The template is the canonical contributor skeleton; do not create parallel module layouts.
+
+Use required root `manifest.json`, `package.json`, `routes.json` and `bootstrap.js`. Keep domain handlers under `api/routes/<domain>/index.js`, browser styles under `ui/styles/`, reusable markup under `ui/templates/`, locale XML under `ui/languages/<locale>/`, layer-owned tests beside their layer, and release notes under `docs/changelog/`. Implementation imports stay inside the module; host integration uses ctx. Existing entrypoint and route URLs remain stable during reorganizations. Jitsi Meet proves the standard through structure validation and executable public-contract tests.
+
+Npm scripts are checkout-local; document `npm --prefix <module-checkout> test` when the working directory could be ambiguous. Installed operational commands use `cognisctl modules:<module-id>:<action>` and register through the external module's `cli/index.js`. Do not add aliases or run another module's npm scripts from core.
+
+Browser providers export `mountProvider(scopedUiCtx)` without module-owned import-time registrations. Bind listeners to the scope's signal, return cleanup for other resources, and use `ui:navbarLinks` for host-owned navigation contributions. Server resources that return cleanup attach it with `ctx.registerDisposer`; tests must cover disable, failed bootstrap and re-enable. Keep core layout unchanged when the owning loader can handle lifecycle behavior.
 
 ### User namespace
 
@@ -148,7 +218,7 @@ Files inside a `reuse/` directory must also be generically named for the reusabl
 
 Any file that exists for one product surface (for example release-changelog popups or popup-only style bundles) is not true reuse and must live in a purpose-constrained directory outside `reuse/`.
 
-Do not create `reuse/` directories inside `src/adapters/*`. Adapters are already niche capabilities and should keep their implementation files local to the adapter root (for example `store.ts`, `db-store.ts`) instead of introducing adapter-internal reuse layers.
+Components, including adapters, may own a `reuse/` directory for parameterizable logic shared by multiple surfaces within that component. Keep single-surface logic beside its feature; reuse must reduce duplication rather than add forwarding wrappers.
 
 DB adapters and the DB gateway must not own feature stores for other gateways/adapters (for example auth/profile/notify-specific stores). Feature-specific persistence code belongs to the owning gateway or owning adapter and is consumed through capabilities.
 
@@ -380,6 +450,8 @@ Format all new or modified code for human readability. Do not compress logic, ma
 
 ### LOC discipline and consistency are mandatory
 
+Never delete blank lines between functions, compress declarations, or relax a size guard to pass an anti-monolith check. Split cohesive behavior into focused modules and restore natural spacing. Tests must exercise actual behavior; never substitute a no-op implementation, change expectations to accept a known defect, or bypass the production path merely to make a test pass.
+
 Large diffs are not a success metric. Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness. Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken whenever behavior remains unchanged.
 
 For every change:
@@ -442,7 +514,7 @@ When editing a file, make opportunistic improvements to the surrounding code tha
 
 Legacy compatibility is never required and never acceptable. Do not introduce fallback paths, conditional shims, or alternate code branches that exist solely to handle older schema layouts, API shapes, or data formats that are no longer the standard — even temporarily. This rule applies with particular force when the "legacy" concern originates in the same pull request that introduces the modern replacement: a feature cannot be deprecated and replaced in the same PR that creates it. If a feature is new, it ships clean; if an old feature is being removed, the removal is complete and unconditional.
 
-Upgrade existing installations with explicit, one-way migrations instead of runtime compatibility. Cross-component upgrade transformations must live under `src/legacy/migrations/`; component-owned database migrations remain in that component's `sql/migrate/` directory. Nothing under `src/legacy/` may be imported by request handlers, gateways, adapters, modules, or UI code. The startup migration runner is the only allowed caller, and migrated data must use the current model immediately afterward. Any compatibility code retained temporarily for an upgrade must be isolated under `src/legacy/`, carry a removal condition in its migration documentation, and must never share a file with the current implementation.
+Existing installations must converge on the current declared schema through the database gateway's schema initialization. Do not add version-specific migration functions or identity conversions to compensate for a superseded model introduced in this beta application. Keep persisted identities stable and let declarative schema reconciliation enforce the current keys.
 
 Current implementation directories have zero tolerance for legacy aliases, fallback entrypoints, deprecated payload keys, or dual-format parsing. Delete those paths rather than preserving them beside the current contract.
 
@@ -559,13 +631,15 @@ Any UI avatar that represents a user must support the same interaction model eve
 
 ## i18n requirements
 
+Hardcoded English user-facing strings are forbidden under all circumstances, including fallback text, errors, empty states, accessibility labels, tooltips, toasts, and consent dialogs. Resolve every user-facing string through XML language keys. If the user’s preferred language does not provide a non-empty value, resolve the same key from the English XML resources. If the English key is also absent or empty, fail explicitly with a missing-translation error. Never substitute literal English, display the raw key, return an empty string, or catch and suppress that missing-translation failure to keep rendering. Tests must cover both the preferred-language-to-English fallback and failure when the English fallback key is unavailable.
+
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
 - The entire app must respect the user's selected font preference from Settings. Do not hardcode or import external fonts in ways that bypass user font settings.
 - Route all user-facing date/time output through `src/ui/reuse/timestamp.js` (for example `formatDate` / `formatDateTime`), including Administration surfaces that render DB-backed values.
 - Use flat `ui.reuse.*` keys for all cross-component labels and generic phrases (for example `save`, `confirm`, `message`, `users`, `settings`, `modules`, `language`, `error`). Do not introduce `ui.reuse` sub-namespaces.
 - Basic phrases must never be monopolized inside feature, gateway, adapter, or module domains. Before adding a non-`ui.reuse.*` key, check whether the text is reusable; if yes, use or add a `ui.reuse.*` key and remove duplicates from specific domains.
 - Keep non-`ui.reuse.*` keys only for truly domain-specific strings that cannot reasonably be reused outside that domain.
-- Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
+- Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces. Preserve the manifest module ID as one segment, including hyphens: `module.terms-of-service.admin.title`. Only the suffix after the module ID uses period-delimited words.
 - For docs, prefer language-suffixed markdown files (`*.en.md`, `*.es.md`) and resolve by language key first, then fallback.
 - Documentation language parity is mandatory: when changing any `*.md` doc that has translated variants, update the corresponding language files in the same change so content stays in sync across supported languages.
 - Keep every docs markdown H1 title (`# ...`) at or below 30 characters so docs navigation labels stay compact without runtime truncation rules.

@@ -5,8 +5,8 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.107",
-        "@cognis/gateways": "<=0.1.11",
+        "@cognis/core": "<=0.4.0",
+        "@cognis/gateways": "<=0.1.18",
         "@cognis/adapter-notify-smtp": "<=0.2.36"
     }
 }

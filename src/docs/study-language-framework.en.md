@@ -118,7 +118,7 @@ A child component is an independently deliverable study feature for a specific l
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,31 @@ If a child component itself requires sub-sections (e.g. stroke order and vocabul
 - Every language module should register a **Classroom** child component route so both teachers and students can access language-scoped class views.
 - Classroom pages must include a class selector, seat-capacity visualization, and role-based behavior (teacher management controls vs. student read-mostly + leave flow).
 - Language modules own their Library and Classroom UI implementations and expose them through their declared child-component routes.
+
+Learner layers appear in the Explore side menu at `/study/explore/<ISO language>/<navigationSlug>`. Modules declare the optional unique `navigationSlug` on each layer; its layer ID is used when omitted. Library and Requests keep their existing routes. Only sentence previews truncate long titles and definitions; other layers retain their rendering.
+
+[Structured Library Import](/docs/adapters/study/library/import)
+
+## Study Browsing and Favourites
+
+Flashcards opens a browse page containing owned decks, decks shared with the current account, and complete starter decks from enabled language providers. Bearer-link shares retain their existing access rules and are not a public directory. The widget’s top-right + menu offers Create Deck and Import Deck. Explore, Library, and Flashcards reuse account-persisted Study favourites and sorting controls (provider order, A–Z, Z–A, newest first, oldest first). An outlined star filters the current results to favourites and turns gold when enabled. Library items, decks, and individual study flashcards have independent favourite toggles. Favourites never grant access to content. The drawing pad releases its session on route changes, and its floating boundary no longer overrides composer or shell classes.
+
+## Flashcard Practice
+
+Browser actions run declared study:decks flows with before, execute and after stages. Server list and details run authorize, read and audit stages; saves, reviews and deletion retain validation, authorization and transaction stages. Study owns public drawing, pattern composition, similarities and action-flow reuse; the optional Drawing adapter contributes only floating-pad integration. Its absence does not disable embedded Writing. All mounts and embedded sessions abort on departure.
+
+## Shared Language Pages
+
+Language selection opens Cognis-owned Explore pages even when content providers declare no child pages. Switching languages preserves the equivalent writing, vocabulary or sentence role; Flashcards, Library and Requests keep their shared page context. English declares alphabet, letter combinations, vocabulary and sentences using its opinionated slugs. Aborted favourites loads release their mount without misleading failure toasts.
+
+The floating drawing host stacks above the page action dock. Related-card sections wrap normally through five rows, then scroll horizontally with hidden scrollbars; resizing recalculates the threshold and popup disposal releases the observer. IPA pronunciation values keep their authored notation and use readable phonetic typography.
+
+Study provides public pronunciation classification and styles reused by Library previews, detail headings, variants, flashcard answers and reading choices, and the drawing pad. IPA keeps its authored notation; ordinary readings keep the selected app typography. Both Japanese and English sentence schemas require at least two word references.
+
+## Shared Speech Integration
+
+Move ElevenLabs synthesis into its own configurable module. Study uses optional per-language voices for saved global cards, while private and classroom cards accept bounded uploads and microphone recordings. Preserve continuous sentence composition as a fallback using existing constituent recordings. Administrators can regenerate global audio while editing.
+
+`study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Advance the actual English and Japanese content-pack versions when removing bundled recordings. Complete unrelated module reconciliation before reporting a failed activation so consent routes retain their registered flows.

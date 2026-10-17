@@ -20,6 +20,7 @@ function loadUiCtxForTests() {
         console,
         BROWSER_FLOW_CONTRACTS: {},
         createReuseResources: () => Object.freeze({}),
+        createSubPageRegistry: () => Object.freeze({}),
         __testExports: {},
     };
     vm.runInNewContext(

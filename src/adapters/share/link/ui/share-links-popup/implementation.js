@@ -47,11 +47,22 @@ export async function openShareLinksPopup({
     passwordRequired = false,
     defaultGrantedCapabilities = [],
     supportsReadOnly = false,
+    allowedPermissions = ["read", "write"],
     initialEditingShareId = "",
     initialEditingShare = null,
     editOnly = false,
     allowedMethodIds = null,
 }) {
+    const permissionChoices = ["read", "write"].filter(
+        (permission) =>
+            Array.isArray(allowedPermissions) &&
+            allowedPermissions.includes(permission),
+    );
+    if (!permissionChoices.length)
+        throw new TypeError("share_permissions_required");
+    supportsReadOnly =
+        permissionChoices.includes("read") &&
+        (supportsReadOnly || !permissionChoices.includes("write"));
     await ensureStylesheet();
 
     const state = {
@@ -71,11 +82,14 @@ export async function openShareLinksPopup({
         visibleLinks: [],
         permission: supportsReadOnly ? "read" : "write",
         supportsReadOnly,
+        allowedPermissions: permissionChoices,
         linkAccessOptions: Array.isArray(linkAccessOptions)
             ? linkAccessOptions.filter(
                   (option) =>
-                      supportsReadOnly ||
-                      option?.permissions?.includes("write"),
+                      (supportsReadOnly ||
+                          option?.permissions?.includes("write")) &&
+                      (permissionChoices.includes("write") ||
+                          !option?.permissions?.includes("write")),
               )
             : [],
         linkAccessId: String(
@@ -85,6 +99,7 @@ export async function openShareLinksPopup({
             )?.id ?? "",
         ),
     };
+    state.linkAccessId = String(state.linkAccessOptions[0]?.id ?? "");
     const initialShare =
         initialEditingShare && typeof initialEditingShare === "object"
             ? initialEditingShare
@@ -169,7 +184,8 @@ export async function openShareLinksPopup({
             : "";
         state.recipients = recipients;
         state.permission = state.supportsReadOnly
-            ? selectedShare.accessControls?.permissions?.includes("write")
+            ? state.allowedPermissions.includes("write") &&
+              selectedShare.accessControls?.permissions?.includes("write")
                 ? "write"
                 : "read"
             : "write";
@@ -610,7 +626,10 @@ export async function openShareLinksPopup({
                     target.id === "share-links-user-permission"
                 ) {
                     state.permission =
-                        target.value === "write" ? "write" : "read";
+                        target.value === "write" &&
+                        state.allowedPermissions.includes("write")
+                            ? "write"
+                            : "read";
                     state.recipients = state.recipients.map((recipient) => ({
                         ...recipient,
                         permissions:

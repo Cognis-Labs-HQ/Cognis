@@ -34,3 +34,9 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                         |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |
+
+## Schemaabgleich
+
+PostgreSQL gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.
+
+Eindeutige Constraints und einfache eindeutige Indizes werden in derselben Transaktion mit den deklarierten eindeutigen Schlüsseln abgeglichen. Die Tabellendeklaration ist maßgeblich; Ausdrucksindizes und partielle Indizes bleiben unabhängig verwaltet.

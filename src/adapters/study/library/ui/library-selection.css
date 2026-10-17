@@ -12,6 +12,7 @@
     background: var(--surface-2);
     color-scheme: light dark;
     accent-color: var(--accent);
+    cursor: pointer;
     transform: translateY(-50%);
 }
 
@@ -65,41 +66,33 @@ body[data-theme="dark"] .library-entry-selection:checked {
 }
 
 .library-selection-action + .library-selection-action,
-.library-selection-action + .library-publish-menu,
-.library-publish-menu + .library-selection-action {
+.library-selection-action + .library-relocate-actions,
+.library-relocate-actions + .library-selection-action {
     margin-inline-start: 0.5rem;
 }
 
-.library-publish-menu {
-    position: relative;
+.library-relocate-actions {
     display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.library-publish-menu[hidden] {
-    display: none;
-}
-
+.library-relocate-actions[hidden],
 .library-selection-action[hidden],
-.library-publish-options button[hidden] {
+.library-relocate-actions button[hidden] {
     display: none;
 }
 
-.library-publish-options {
-    position: absolute;
-    z-index: 20;
-    inset-block-end: calc(100% + 0.5rem);
-    inset-inline-start: 50%;
-    display: none;
-    width: max-content;
-    padding: 0.4rem;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--surface-2);
-    box-shadow: 0 0.6rem 1.4rem color-mix(in srgb, #000 24%, transparent);
-    gap: 0.4rem;
-    transform: translateX(-50%);
+.library-relocate-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
 }
 
-.library-publish-menu:is(:hover, :focus-within) .library-publish-options {
-    display: flex;
+.library-relocate-actions .library-scope {
+    margin: 0;
+    background: transparent;
+    width: 1rem;
+    height: 1rem;
 }

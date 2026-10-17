@@ -9,10 +9,10 @@ import { createLibraryRoutes } from "../routes/index.js";
 
 const schemas = [
     {
-        id: "japanese",
+        id: "mock-language",
         version: 1,
-        language: "JA",
-        label: "Japanese",
+        language: "X-Mock",
+        label: "Mock Language",
         layers: [],
     },
     { id: "german", version: 1, language: "de", label: "German", layers: [] },
@@ -45,11 +45,13 @@ async function request(path: string, token = "learner") {
 }
 
 test("schema route returns only the requested BCP-47 language", async () => {
-    const result = await request("/api/v1/study/library/schemas?language=JA");
+    const result = await request(
+        "/api/v1/study/library/schemas?language=X-Mock",
+    );
     assert.equal(result.status, 200);
     assert.deepEqual(
         result.body.data.map((schema: { id: string }) => schema.id),
-        ["japanese"],
+        ["mock-language"],
     );
 });
 
@@ -74,7 +76,7 @@ test("schema route supports private-use BCP-47 languages", async () => {
 
 test("schema route rejects unauthorized requests", async () => {
     const result = await request(
-        "/api/v1/study/library/schemas?language=ja",
+        "/api/v1/study/library/schemas?language=x-mock",
         "",
     );
     assert.equal(result.status, 401);
@@ -240,7 +242,7 @@ test("Library browser resolves labels from localized schema metadata", async () 
     );
 });
 
-test("remote audio cache remains behind authenticated entry access", async () => {
+test("packaged audio remains behind authenticated entry access", async () => {
     let requestedEntry = "";
     let requestedField = "";
     const route = createLibraryRoutes(
@@ -265,7 +267,7 @@ test("remote audio cache remains behind authenticated entry access", async () =>
     );
     assert.equal(response.statusCode, 200);
     assert.equal(response.headers["content-type"], "audio/mpeg");
-    assert.equal(response.headers["cache-control"], "private, max-age=86400");
+    assert.equal(response.headers["cache-control"], "private, no-cache");
     assert.equal(requestedEntry, "character-a");
     assert.equal(requestedField, "audio");
 });
@@ -273,11 +275,11 @@ test("remote audio cache remains behind authenticated entry access", async () =>
 test("entry update delegates validated identity to the Library capability", async () => {
     let updatedId = "";
     const entry = {
-        schemaId: "japanese",
+        schemaId: "mock-language",
         schemaVersion: 1,
         layer: "words",
         label: "updated",
-        fields: { reading: "ことば" },
+        fields: { reading: "spoken" },
         references: [],
     };
     const route = createLibraryRoutes(
@@ -304,4 +306,150 @@ test("entry update delegates validated identity to the Library capability", asyn
     assert.equal(response.statusCode, 200);
     assert.equal(updatedId, "entry-1");
     assert.equal(JSON.parse(response.payload).data.label, "updated");
+});
+
+test("malformed lookup is rejected before calling the provider", async () => {
+    let invoked = false;
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                invoked = true;
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: "{}",
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 400);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "invalid_lookup_request",
+    );
+    assert.equal(invoked, false);
+});
+
+test("unexpected persistence failures return a generic server error", async () => {
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                throw new Error(
+                    'duplicate key value violates unique constraint "private_index"',
+                );
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: JSON.stringify({
+                providerId: "dictionary",
+                entry: { schemaId: "test", layer: "words", label: "word" },
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 500);
+    assert.equal(JSON.parse(response.payload).error.code, "request_failed");
+    assert.equal(response.payload.includes("private_index"), false);
+});
+
+for (const role of ["admin", "user"] as const) {
+    test(`merge route returns the ${role === "admin" ? "immediate result" : "review request"} from its owning service`, async () => {
+        let merged: unknown;
+        const input = {
+            schemaId: "mock-language",
+            layer: "words",
+            label: "年",
+        };
+        const route = createLibraryRoutes(
+            {
+                merge: async (
+                    actor: unknown,
+                    id: string,
+                    proposal: unknown,
+                ) => {
+                    merged = { actor, id, proposal };
+                    return {
+                        entry: { id: "canonical" },
+                        ...(role === "user"
+                            ? { request: { id: "request", status: "pending" } }
+                            : {}),
+                    };
+                },
+            } as never,
+            createAuthContext(
+                new Map([["token", { sub: "account", role }]]),
+            ) as never,
+        );
+        const response = new ResponseRecorder();
+        await route(
+            new RequestRecorder({
+                method: "POST",
+                token: "token",
+                body: JSON.stringify(input),
+            }) as never,
+            response as never,
+            new URL(
+                "http://localhost/api/v1/study/library/entries/canonical/merge",
+            ),
+        );
+        assert.equal(response.statusCode, role === "admin" ? 200 : 201);
+        assert.deepEqual(merged, {
+            actor: { accountId: "account", role },
+            id: "canonical",
+            proposal: input,
+        });
+        assert.equal(JSON.parse(response.payload).data.entry.id, "canonical");
+    });
+}
+
+test("transformed audio requests keep descriptors in an authenticated POST body", async () => {
+    const descriptor = { setId: "noun", path: ["plural"] };
+    let received: unknown;
+    const route = createLibraryRoutes(
+        {
+            readAudio: async (actor, entryId, fieldId, transformation) => {
+                received = { actor, entryId, fieldId, transformation };
+                return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "learner",
+            body: JSON.stringify({ transformation: descriptor }),
+        }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/entries/dog/audio/audio",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(received, {
+        actor: { accountId: "alice", role: "user" },
+        entryId: "dog",
+        fieldId: "audio",
+        transformation: descriptor,
+    });
 });

@@ -80,11 +80,17 @@ export async function mount(root, { signal } = {}) {
         return;
     }
 
-    const learningLanguages =
+    const storedLearningLanguages =
         prefsResult.status === "fulfilled" &&
         Array.isArray(prefsResult.value?.data?.learningLanguages)
             ? [...new Set(prefsResult.value.data.learningLanguages)]
             : [];
+    const registeredLanguageCodes = new Set(
+        registeredLanguages.map(({ code }) => code),
+    );
+    const learningLanguages = storedLearningLanguages.filter((languageCode) =>
+        registeredLanguageCodes.has(languageCode),
+    );
 
     if (isWelcomePath) {
         if (learningLanguages.length > 0) {
@@ -266,16 +272,6 @@ async function mountHub(
     for (const language of registeredLanguages) {
         languageByCode.set(language.code, language);
     }
-    for (const languageCode of languageModulesMap.keys()) {
-        if (!languageByCode.has(languageCode)) {
-            languageByCode.set(languageCode, {
-                code: languageCode,
-                flag: "",
-                name: resolveLanguageLabel(languageCode),
-            });
-        }
-    }
-
     const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
         a.name.localeCompare(b.name),
     );
@@ -557,7 +553,7 @@ async function mountHub(
     });
 
     await composer.init();
-    bindStudySubNavigation(root, { signal });
+    bindStudySubNavigation(root, { signal, i18n });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {

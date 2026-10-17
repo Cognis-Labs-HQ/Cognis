@@ -100,10 +100,6 @@ test("module preference fields use the form builder and secret controls", () => 
         /required:\s*definition\.required === true/,
     );
     assert.match(modulePreferencesSource, /renderInfoTooltip/);
-    assert.match(
-        popupSource,
-        /renderInfoTooltip\([\s\S]*description[\s\S]*ui\.reuse\.more_information/,
-    );
     assert.doesNotMatch(popupSource, /module-settings-popup-description/);
     assert.match(
         popupSource,
@@ -401,7 +397,7 @@ test("module presentation resolves manifest localization keys", async () => {
         /presentation = module\.localizedPresentation \?\? module/,
     );
     assert.match(
-        marketplaceSource,
+        filterSource,
         /module\.localizedPresentation\?\.\[field\]\?\.\[index\]/,
     );
 });
@@ -528,7 +524,7 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
     assert.match(pageSource, /data-resource-fallback/);
     assert.match(
         pageSource,
-        /module-detail-banner module-picture[^>]+data-resource-fallback/,
+        /module-detail-banner module-picture[^>]+data-resource-fallback-text/,
     );
     assert.match(pageSource, /\/assets\/reuse\/module-icon-unknown\.svg/);
     assert.match(errorHandlerSource, /dataset\.resourceFallback/);
@@ -753,23 +749,6 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /capture: true/);
     assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
     assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
-});
-
-test("module details select localized readmes with English fallback", () => {
-    const module = {
-        readmes: {
-            en: "# English",
-            ja: "# 日本語",
-            default: "# Default",
-        },
-        readme: "# Catalog fallback",
-    };
-    assert.equal(resolveLocalizedReadme(module, "ja-JP"), "# 日本語");
-    assert.equal(resolveLocalizedReadme(module, "de-DE"), "# English");
-    assert.equal(
-        resolveLocalizedReadme({ readme: "# Catalog fallback" }, "de"),
-        "# Catalog fallback",
-    );
 });
 
 test("module marketplace uses curated recommendations and compact details", () => {

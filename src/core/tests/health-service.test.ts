@@ -35,3 +35,26 @@ test("health service includes component contributions", async () => {
         },
     ]);
 });
+
+test("health disposal releases only the registered contribution", async () => {
+    const service = new HealthService();
+    const release = service.contribute("module:example", () => ({
+        componentId: "example",
+        componentType: "module",
+        status: "ok",
+    }));
+    release();
+    assert.deepEqual((await service.status()).contributions, []);
+    const oldRelease = service.contribute("module:example", () => ({
+        componentId: "old",
+        componentType: "module",
+        status: "ok",
+    }));
+    service.contribute("module:example", () => ({
+        componentId: "new",
+        componentType: "module",
+        status: "warning",
+    }));
+    oldRelease();
+    assert.equal((await service.status()).contributions[0].componentId, "new");
+});

@@ -1,0 +1,104 @@
+<template data-deck-template="browser">
+    <header class="study-deck-browser-header">
+        <h2>{title}</h2>
+        <button
+            type="button"
+            class="btn-neutral"
+            data-deck-action="add"
+            aria-label="{create_label}"
+        >
+            +
+        </button>
+    </header>
+    <div class="library-filters study-browse-filters">{browse_controls}</div>
+    <div class="study-deck-browser">{previews}</div>
+</template>
+
+<template data-deck-template="preview">
+    <article class="study-deck-preview">
+        <button type="button" class="btn-neutral" data-deck-open="{id}">
+            <span class="study-deck-preview-source">{source}</span>
+            <strong>{name}</strong>
+            <span class="study-deck-preview-meta">
+                <span>{count} {cards_label}{language}</span>
+                <span>{due_label}</span>
+            </span>
+        </button>
+        {favourite}
+    </article>
+</template>
+
+<template data-deck-template="detail">
+    <header class="study-deck-browser-header">
+        <button type="button" class="btn-neutral" data-deck-action="browse">
+            {back_label}
+        </button>
+        <div class="study-deck-actions">
+            <span data-deck-favourite>{favourite}</span>{export_action}
+        </div>
+    </header>
+    <h2>{name}</h2>
+    <div class="study-deck-actions">{editable_actions}</div>
+    <div class="study-practice-summary">{summary}</div>
+    <div data-study-session></div>
+</template>
+
+<template data-deck-template="edit-actions">
+    <span data-deck-share></span>
+    <button type="button" class="btn-neutral" data-deck-action="edit">
+        {edit_label}
+    </button>
+    <button type="button" class="btn-cancel" data-deck-action="delete">
+        {delete_label}
+    </button>
+</template>
+
+<template data-deck-template="export">
+    <button type="button" class="btn-neutral" data-deck-action="export">
+        <picture
+            ><source
+                media="(prefers-color-scheme: dark)"
+                srcset="/static/assets/reuse/download-dark.svg" />
+            <img
+                src="/static/assets/reuse/download-light.svg"
+                alt="{export_label}"
+        /></picture>
+    </button>
+</template>
+
+<template data-deck-template="practice">
+    <section class="study-practice" data-practice>
+        <div class="study-practice-heading">{favourite}{entry_heading}</div>
+        <div class="study-practice-modes">{modes}</div>
+        <div data-practice-task>{task}</div>
+        <section class="study-flashcard-answer" data-practice-answer hidden>
+            <div data-practice-front>{front}</div>
+            <div data-practice-back hidden>{answer}</div>
+            <button
+                type="button"
+                class="btn-neutral"
+                data-practice-flip
+                aria-pressed="false"
+            >
+                {flip_label}
+            </button>
+        </section>
+        <div class="study-practice-navigation">
+            <button type="button" class="btn-neutral" data-practice-previous>
+                {previous_label}
+            </button>
+            <button type="button" class="btn-neutral" data-practice-next>
+                {next_label}
+            </button>
+        </div>
+    </section>
+</template>
+
+<template data-deck-template="mode">
+    <label
+        >{label}<select class="theme-select" data-practice-mode-preference>
+            <option value="reading">{reading}</option>
+            <option value="writing">{writing}</option>
+        </select></label
+    >
+</template>

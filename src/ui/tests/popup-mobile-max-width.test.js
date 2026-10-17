@@ -47,6 +47,18 @@ test("popup titles keep the compact reusable heading scale", () => {
     );
 });
 
+test("popup title details stack only after measured overflow", () => {
+    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+
+    assert.match(source, /stackTitleDetailOnOverflow = false/);
+    assert.match(
+        source,
+        /titleElement\.scrollWidth > titleElement\.clientWidth/,
+    );
+    assert.match(source, /element\.scrollHeight > lineHeight \* 1\.5/);
+    assert.match(source, /popup-heading--stacked-detail/);
+});
+
 test("popup close protection uses the silent dirty tracker before warning", () => {
     const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
 

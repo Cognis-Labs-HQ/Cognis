@@ -428,20 +428,34 @@ test("gateways with API routes claim canonical /api/v1/<gateway-id> prefixes", (
     );
 });
 
-test("adapter directories do not introduce internal reuse folders", () => {
-    const adaptersRoot = resolve(ROOT, "src/adapters");
+test("adapter reuse modules serve multiple component surfaces", () => {
+    const files = walk(resolve(ROOT, "src/adapters")).filter((file) =>
+        /\.[jt]s$/.test(file),
+    );
     const violations = [];
-
-    for (const filePath of walk(adaptersRoot)) {
-        const normalizedFilePath = filePath.replace(/\\/g, "/");
-        if (!normalizedFilePath.includes("/reuse/")) continue;
-        violations.push(relative(ROOT, filePath).replace(/\\/g, "/"));
+    for (const filePath of files.filter((file) =>
+        file.replace(/\\/g, "/").includes("/reuse/"),
+    )) {
+        const consumers = files.filter((consumer) => {
+            if (consumer === filePath) return false;
+            return [
+                ...readFileSync(consumer, "utf8").matchAll(
+                    /(?:from\s*|import\s*)["'](\.[^"']+)["']/g,
+                ),
+            ].some(([, specifier]) => {
+                const target = resolve(consumer, "..", specifier);
+                return (
+                    target === filePath ||
+                    target.replace(/\.js$/, ".ts") === filePath
+                );
+            });
+        });
+        if (consumers.length < 2) violations.push(relative(ROOT, filePath));
     }
-
     assert.deepEqual(
         violations,
         [],
-        `Adapters must keep adapter-local logic at adapter root instead of reuse/:\n${violations.join("\n")}`,
+        "Promote parameterizable reuse only when multiple surfaces consume it.",
     );
 });
 

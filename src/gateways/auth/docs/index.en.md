@@ -123,3 +123,11 @@ Deleting an externally authenticated account records a one-way fingerprint of it
 ### Provider-scoped account names
 
 New external accounts use the provider namespace in both the local account key and profile handle. A provider session for handle `firehawksystems` with `accountNamespace` set to `x` therefore becomes `x:firehawksystems`; a local `firehawksystems` account and identities such as `line:firehawksystems` remain distinct. Existing `(provider, external_user_id)` mappings remain authoritative on later logins even if a provider handle changes.
+
+## Browser media policy
+
+Authenticated pages permit media from same-origin routes and browser-generated `blob:` URLs. This allows trusted UI clients to play authenticated audio responses without permitting arbitrary remote media origins.
+
+### Module lifecycle integration
+
+`auth:registerKeyringDataOwner(ownerId, purge)` is a public server capability. It rejects duplicate owner IDs and returns an identity-checked disposer. A module uses its stable `module:<id>` owner and registers the disposer with `ctx.registerDisposer`; purge receives the normalized account ID. Purge only keyring-dependent state, preserving account identity and unrelated shared resources.

@@ -126,8 +126,11 @@ export class ModuleService {
         const githubArchiveBaseUrl =
             process.env.COGNIS_GITHUB_ARCHIVE_BASE_URL ??
             "https://codeload.github.com";
-        const archiveUrl = new URL(githubArchiveBaseUrl.replace(/\/+$/, ""));
-        archiveUrl.pathname = `${archiveUrl.pathname.replace(/\/+$/, "")}/${repository.owner}/${repository.repo}/tar.gz/refs/tags/${encodeURIComponent(versionTag)}`;
+        const archiveUrl = new URL(githubArchiveBaseUrl);
+        let pathEnd = archiveUrl.pathname.length;
+        while (pathEnd > 0 && archiveUrl.pathname[pathEnd - 1] === "/")
+            pathEnd--;
+        archiveUrl.pathname = `${archiveUrl.pathname.slice(0, pathEnd)}/${repository.owner}/${repository.repo}/tar.gz/refs/tags/${encodeURIComponent(versionTag)}`;
         const response = await fetch(archiveUrl, {
             headers: {
                 "user-agent": "cognis-module-importer",

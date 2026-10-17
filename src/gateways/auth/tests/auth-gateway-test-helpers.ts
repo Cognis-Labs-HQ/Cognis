@@ -1,5 +1,10 @@
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
-import type { CapabilityStore } from "@cognis/core";
+import {
+    CTX_CAPABILITY,
+    createCtx,
+    type Ctx,
+    type CapabilityStore,
+} from "@cognis/core";
 import { issueAccessToken } from "../access-tokens.js";
 
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
@@ -116,4 +121,15 @@ export function contributeTestKeyring(capabilities: CapabilityStore): void {
         "auth:keyringRouteFactory",
         () => async () => false,
     );
+}
+
+export function createAuthTestContext(
+    capabilities: CapabilityStore,
+    database: InMemoryDb,
+): { flow: Ctx["flow"] } {
+    const systemCtx = createCtx();
+    capabilities.contribute(CTX_CAPABILITY, systemCtx);
+    capabilities.contribute("db:executor", database);
+    contributeTestKeyring(capabilities);
+    return { flow: systemCtx.flow };
 }

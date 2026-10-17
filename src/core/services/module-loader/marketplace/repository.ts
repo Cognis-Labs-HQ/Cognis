@@ -45,104 +45,87 @@ export class MarketplaceRepository {
         assetPath: string,
         headers: Record<string, string>,
     ): Promise<string | undefined> {
-        const assetUrl = this.resolveRepositoryAssetUrl(
+        const endpoint = this.resolveRepositoryAssetUrl(
             source,
             projectPath,
             defaultBranch,
             assetPath,
         );
-        const response = await fetch(assetUrl, { headers }).catch(
-            () => undefined,
-        );
-        if (!response) return undefined;
-        if (!response.ok) return undefined;
-        const declaredLength = Number(response.headers.get("content-length"));
-        if (
-            Number.isFinite(declaredLength) &&
-            declaredLength > MAX_MARKETPLACE_ASSET_BYTES
-        ) {
-            await response.body?.cancel();
-            return undefined;
-        }
-        const githubPayload =
-            source.provider === "github"
-                ? ((await response.json()) as { content?: unknown })
-                : undefined;
-        const contentType = githubPayload
-            ? this.repositoryAssetContentType(assetPath)
-            : response.headers.get("content-type")?.split(";", 1)[0].trim();
-        if (
-            !contentType ||
-            ![
-                "image/svg+xml",
-                "image/png",
-                "image/jpeg",
-                "image/webp",
-                "image/gif",
-                "video/mp4",
-                "video/webm",
-                "video/ogg",
-                "application/xml",
-                "text/xml",
-            ].includes(contentType)
-        ) {
-            return undefined;
-        }
-        const body = githubPayload
-            ? Buffer.from(
-                  String(githubPayload.content ?? "").replace(/\s/g, ""),
-                  "base64",
-              )
-            : await this.readBoundedAsset(response);
-        if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES)
-            return undefined;
-        return this.writeCachedAsset(body, contentType);
-    }
-
-    protected async cacheRepositoryStringAsset(
-        source: ModuleSource,
-        projectPath: string,
-        defaultBranch: string,
-        assetPath: string,
-        headers: Record<string, string>,
-    ): Promise<string | undefined> {
-        if (
-            source.provider !== "github" ||
-            source.baseUrl !== "https://api.github.com" ||
-            source.scanPrivateRepos === true
-        ) {
-            return this.cacheRepositoryAsset(
-                source,
-                projectPath,
-                defaultBranch,
-                assetPath,
-                headers,
+        const publicGithub =
+            source.provider === "github" &&
+            source.baseUrl === "https://api.github.com" &&
+            source.scanPrivateRepos !== true;
+        const assetUrl = publicGithub
+            ? `https://raw.githubusercontent.com/${projectPath.split("/").map(encodeURIComponent).join("/")}/${encodeURIComponent(defaultBranch)}/${assetPath.replaceAll("\\", "/").split("/").map(encodeURIComponent).join("/")}`
+            : endpoint;
+        const requestHeaders = new Headers(publicGithub ? {} : headers);
+        if (source.provider === "github" && !publicGithub)
+            requestHeaders.set("accept", "application/vnd.github.raw+json");
+        let stage = "fetch";
+        let status: number | undefined;
+        try {
+            const response = await fetch(assetUrl, { headers: requestHeaders });
+            status = response.status;
+            if (!response.ok) throw new Error("asset_http_error");
+            stage = "validate";
+            const declaredLength = Number(
+                response.headers.get("content-length"),
             );
-        }
-        const normalizedPath = assetPath.replaceAll("\\", "/");
-        if (
-            normalizedPath.startsWith("/") ||
-            normalizedPath.split("/").includes("..")
-        ) {
-            throw new Error("invalid_module_asset_path");
-        }
-        const encodedProjectPath = projectPath
-            .split("/")
-            .map(encodeURIComponent)
-            .join("/");
-        const assetUrl = `https://raw.githubusercontent.com/${encodedProjectPath}/${encodeURIComponent(defaultBranch)}/${normalizedPath
-            .split("/")
-            .map(encodeURIComponent)
-            .join("/")}`;
-        const response = await fetch(assetUrl, { headers }).catch(
-            () => undefined,
-        );
-        if (!response?.ok) return undefined;
-        const body = await this.readBoundedAsset(response);
-        if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES) {
+            if (declaredLength > MAX_MARKETPLACE_ASSET_BYTES) {
+                await response.body?.cancel();
+                throw new Error("asset_too_large");
+            }
+            const contentType =
+                source.provider === "github"
+                    ? this.repositoryAssetContentType(assetPath)
+                    : response.headers
+                          .get("content-type")
+                          ?.split(";", 1)[0]
+                          .trim();
+            if (
+                !contentType ||
+                ![
+                    "image/svg+xml",
+                    "image/png",
+                    "image/jpeg",
+                    "image/webp",
+                    "image/gif",
+                    "video/mp4",
+                    "video/webm",
+                    "video/ogg",
+                    "application/xml",
+                    "text/xml",
+                ].includes(contentType)
+            )
+                throw new Error("asset_content_type_unsupported");
+            stage = "read";
+            const body = await this.readBoundedAsset(response);
+            if (!body) throw new Error("asset_too_large");
+            if (!body.length) throw new Error("asset_empty");
+            stage = "cache";
+            return await this.writeCachedAsset(body, contentType);
+        } catch (error) {
+            this.log("error", "Module asset retrieval failed.", {
+                component: "module-marketplace",
+                operation: "retrieveAsset",
+                sourceUuid: source.uuid,
+                projectPath,
+                reference: defaultBranch,
+                assetPath,
+                transport: publicGithub
+                    ? "githubRaw"
+                    : source.provider === "github"
+                      ? "githubAuthenticatedRaw"
+                      : "gitlabRaw",
+                stage,
+                status,
+                reason:
+                    error instanceof Error
+                        ? error.message
+                        : "asset_retrieval_failed",
+            });
             return undefined;
         }
-        return this.writeCachedAsset(body, "application/xml");
     }
 
     private async writeCachedAsset(

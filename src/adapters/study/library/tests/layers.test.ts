@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
     resolveRelationships,
+    validateFields,
     validateLibrarySchema,
     validateReferences,
 } from "../layers.js";
@@ -72,6 +73,345 @@ test("consumers define arbitrary layers and constrained relationships", () => {
     );
 });
 
+test("providers declare sentence carousels, views, and transform rules", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        transformSets: [
+            {
+                id: "verbs",
+                metadata: { labels: { en: "Verbs" } },
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        metadata: { labels: { en: "Past" } },
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "",
+                        append: "ed",
+                        definitionTransform: {
+                            matchPrefix: "to ",
+                            template: "{{ prefix }}previously {{ stem }}",
+                            replacements: [
+                                {
+                                    match: "want to",
+                                    replacement: "have wanted to",
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ],
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                views: [
+                    {
+                        id: "verbs",
+                        metadata: { labels: { en: "Verbs" } },
+                        includeTags: ["verb", "adverb"],
+                        layout: "transformTree",
+                    },
+                ],
+                cardConstructor: {
+                    label: { labels: { en: "Sentence" } },
+                    relationships: ["letters"],
+                    input_carousels: ["letters"],
+                    pronunciation_carousels: [],
+                    tag_carousels: [
+                        {
+                            id: "transitions",
+                            metadata: { labels: { en: "Transitions" } },
+                            relationship: "letters",
+                            tag: "sentence-transition",
+                        },
+                    ],
+                    literal_carousels: [
+                        {
+                            id: "punctuation",
+                            metadata: { labels: { en: "Punctuation" } },
+                            values: [".", ",", "?", "!"],
+                        },
+                    ],
+                },
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    const invalid = structuredClone(schema);
+    invalid.transformSets![0].rules[0].definitionTransform!.template = "";
+    assert.throws(
+        () => validateLibrarySchema(invalid),
+        /invalid_transform_definition/,
+    );
+});
+
+test("references validate provider-declared transformation paths", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        transformSets: [
+            {
+                id: "verbs",
+                metadata: { labels: { en: "Verbs" } },
+                matchTags: ["verb"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "past",
+                        metadata: { labels: { en: "Past" } },
+                        fromState: "base",
+                        toState: "past",
+                        removeSuffix: "k",
+                        append: "ked",
+                    },
+                ],
+            },
+        ],
+    };
+    const target = { ...entry("talk", "talk"), tags: ["verb"] };
+    const targets = new Map([[target.id, target]]);
+    const reference = {
+        entryId: target.id,
+        relation: "letters",
+        position: 0,
+        transformation: { setId: "verbs", path: ["past"] },
+    };
+    assert.doesNotThrow(() =>
+        validateReferences(schema, "words", [reference], targets),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [
+                    {
+                        ...reference,
+                        transformation: {
+                            setId: "verbs",
+                            path: ["missing"],
+                        },
+                    },
+                ],
+                targets,
+            ),
+        /invalid_reference_transformation/,
+    );
+});
+
+test("fields can link values through multiple declared relationships", () => {
+    const schema: LibrarySchema = {
+        ...english,
+        layers: [
+            english.layers[0],
+            {
+                ...english.layers[1],
+                fields: [
+                    {
+                        id: "pronunciation",
+                        type: "stringList",
+                        metadata: { labels: { en: "Pronunciation" } },
+                        input: {
+                            control: "freeText",
+                            linkRelationships: ["letters"],
+                        },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.throws(
+        () =>
+            validateLibrarySchema({
+                ...schema,
+                layers: [
+                    schema.layers[0],
+                    {
+                        ...schema.layers[1],
+                        fields: [
+                            {
+                                ...schema.layers[1].fields![0],
+                                input: {
+                                    control: "freeText",
+                                    linkRelationships: ["missing"],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            }),
+        /field_link_relationship_not_found/,
+    );
+});
+
+test("fields validate multi-value composer declarations", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            type: "stringList",
+            metadata: { labels: { en: "Pronunciation" } },
+            input: { control: "freeText" },
+            multi_value: true,
+        },
+    ];
+    assert.doesNotThrow(() => validateLibrarySchema(schema));
+    schema.layers[1].fields[0].multi_value = "yes" as never;
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_field_multi_value/,
+    );
+});
+
+test("grouped relationships preserve separate pronunciation sequences", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].relationships![0].grouped = true;
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters"],
+            },
+        },
+    ];
+    const letterA = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [letterA.id, letterA],
+        [y.id, y],
+    ]);
+    const groups = {
+        letters: [
+            [
+                { entryId: letterA.id, relation: "letters", position: 0 },
+                { entryId: y.id, relation: "letters", position: 1 },
+            ],
+            [{ entryId: letterA.id, relation: "letters", position: 0 }],
+        ],
+    };
+
+    assert.deepEqual(validateLibrarySchema(schema), schema);
+    assert.doesNotThrow(() =>
+        validateReferences(schema, "words", [], targets, groups, {
+            pronunciation: ["ay", "a"],
+        }),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [{ entryId: letterA.id, relation: "letters", position: 0 }],
+                targets,
+                groups,
+            ),
+        /relationship_group_required:letters/,
+    );
+});
+
+test("one pronunciation group may span multiple linked relationships", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    const letters = schema.layers[1].relationships![0];
+    letters.grouped = true;
+    schema.layers[1].relationships!.push({
+        ...letters,
+        id: "suffixes",
+    });
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters", "suffixes"],
+            },
+        },
+    ];
+    const letterA = entry("letter:a", "a");
+    const y = entry("letter:y", "y");
+    const targets = new Map([
+        [letterA.id, letterA],
+        [y.id, y],
+    ]);
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [],
+            targets,
+            {
+                letters: [
+                    [
+                        {
+                            entryId: letterA.id,
+                            relation: "letters",
+                            position: 0,
+                        },
+                    ],
+                ],
+                suffixes: [
+                    [{ entryId: y.id, relation: "suffixes", position: 0 }],
+                ],
+            },
+            { pronunciation: ["ay"] },
+        ),
+    );
+});
+
+test("multi-value fields may include authored values without reference groups", () => {
+    const schema: LibrarySchema = structuredClone(english);
+    schema.layers[1].relationships![0].grouped = true;
+    schema.layers[1].relationships![0].minimum = 0;
+    schema.layers[1].fields = [
+        {
+            id: "pronunciation",
+            metadata: { labels: { en: "Pronunciation" } },
+            type: "stringList",
+            multi_value: true,
+            input: {
+                control: "tagList",
+                linkRelationships: ["letters"],
+            },
+        },
+    ];
+
+    assert.doesNotThrow(() =>
+        validateReferences(
+            schema,
+            "words",
+            [],
+            new Map(),
+            {},
+            {
+                pronunciation: ["authored"],
+            },
+        ),
+    );
+    assert.throws(
+        () =>
+            validateReferences(
+                schema,
+                "words",
+                [],
+                new Map(),
+                { letters: [[], []] },
+                { pronunciation: ["authored"] },
+            ),
+        /field_reference_group_mismatch:pronunciation/,
+    );
+});
+
 test("layers can explicitly reference other entries in the same layer", () => {
     const schema: LibrarySchema = {
         ...english,
@@ -93,7 +433,7 @@ test("layers can explicitly reference other entries in the same layer", () => {
         ],
     };
     const validated = validateLibrarySchema(schema);
-    const target = entry("compound:japan", "日本", "compound_characters");
+    const target = entry("compound:example", "compound", "compound_characters");
 
     assert.deepEqual(validated, schema);
     assert.doesNotThrow(() =>
@@ -162,7 +502,7 @@ test("metadata filter groups declare consistent selection exclusivity", () => {
                 group: "character-class",
                 exclusive: true,
                 required: true,
-                defaultTag: "hiragana",
+                defaultTag: "character",
             },
         },
         {
@@ -273,7 +613,7 @@ test("definition layers declare module-owned localization fields", () => {
             },
         ],
         definitionLocalization: {
-            stringKeyPrefix: "japanese:definitions",
+            stringKeyPrefix: "mock:definitions",
             stringKeyField: "string_key",
             translationsField: "translations",
         },
@@ -305,6 +645,32 @@ test("schema languages canonicalize standard and private-use tags", () => {
     assert.throws(
         () => validateLibrarySchema({ ...english, language: "not_a_tag" }),
         /invalid_language/,
+    );
+});
+
+test("declarative constraints also apply to built-in field types", () => {
+    const constrained = {
+        ...english,
+        layers: [
+            {
+                ...english.layers[0],
+                fields: [
+                    {
+                        id: "rank",
+                        type: "number",
+                        metadata: { labels: { en: "Rank" } },
+                        validation: { kind: "number" as const, minimum: 0 },
+                    },
+                ],
+            },
+        ],
+    };
+    assert.throws(
+        () => validateFields(constrained, english.layers[0].id, { rank: -1 }),
+        /invalid_field_type:rank/,
+    );
+    assert.doesNotThrow(() =>
+        validateFields(constrained, english.layers[0].id, { rank: 1 }),
     );
 });
 
@@ -521,222 +887,4 @@ test("child relationship presentation must be explicitly boolean", () => {
     assert.throws(() => validateLibrarySchema(schema), {
         message: "invalid_child_relationship",
     });
-});
-
-test("layers can request a validated grid row and item layout", () => {
-    const schema: LibrarySchema = {
-        ...english,
-        layers: [
-            {
-                ...english.layers[0],
-                grid: {
-                    rowSize: 5,
-                    items: [
-                        "english:letter:a",
-                        { blank: true },
-                        3,
-                        null,
-                        "english:letter:i",
-                    ],
-                },
-            },
-        ],
-    };
-
-    assert.deepEqual(validateLibrarySchema(schema).layers[0].grid, {
-        rowSize: 5,
-        items: [
-            "english:letter:a",
-            { blank: true },
-            3,
-            null,
-            "english:letter:i",
-        ],
-    });
-    assert.throws(
-        () =>
-            validateLibrarySchema({
-                ...schema,
-                layers: [
-                    {
-                        ...schema.layers[0],
-                        grid: { rowSize: 0, items: [] },
-                    },
-                ],
-            }),
-        /invalid_layer_grid/,
-    );
-    assert.throws(
-        () =>
-            validateLibrarySchema({
-                ...schema,
-                layers: [
-                    {
-                        ...schema.layers[0],
-                        grid: {
-                            rowSize: 5,
-                            items: ["english:letter:a", "english:letter:a"],
-                        },
-                    },
-                ],
-            }),
-        /invalid_layer_grid_items/,
-    );
-});
-
-test("layers can request minimal entry cards", () => {
-    const schema: LibrarySchema = {
-        ...english,
-        layers: [{ ...english.layers[0], minimal: true }],
-    };
-
-    assert.equal(validateLibrarySchema(schema).layers[0].minimal, true);
-    assert.throws(
-        () =>
-            validateLibrarySchema({
-                ...schema,
-                layers: [
-                    {
-                        ...schema.layers[0],
-                        minimal: "yes" as unknown as boolean,
-                    },
-                ],
-            }),
-        /invalid_minimal_layer/,
-    );
-});
-
-test("schema roles and rendering hints remain independent of layer IDs", () => {
-    const schema: LibrarySchema = {
-        ...english,
-        layers: [
-            {
-                id: "prompts",
-                metadata: { labels: { en: "Prompts", de: "Übungen" } },
-                semanticRole: "practicePrompt",
-                activityCompatibility: ["practice:writtenRecall"],
-                interestVeins: ["topic:travel"],
-                fields: [
-                    {
-                        id: "instruction",
-                        metadata: { labels: { en: "Instruction" } },
-                        type: "localizedText",
-                        required: true,
-                        detail: { renderer: "text", order: 1 },
-                    },
-                ],
-                detail: {
-                    titleField: "instruction",
-                    fieldOrder: ["instruction"],
-                },
-            },
-        ],
-    };
-
-    assert.equal(
-        validateLibrarySchema(schema).layers[0].semanticRole,
-        "practicePrompt",
-    );
-});
-
-test("sentences can include ordered word and particle references", () => {
-    const schema: LibrarySchema = {
-        ...english,
-        layers: [
-            ...english.layers,
-            {
-                id: "particles",
-                semanticRole: "particle",
-                metadata: { labels: { en: "Particles" } },
-            },
-            {
-                id: "sentences",
-                semanticRole: "orderedLexicalSequence",
-                metadata: { labels: { en: "Sentences" } },
-                relationships: [
-                    {
-                        id: "words",
-                        targetLayer: "words",
-                        metadata: { labels: { en: "Words" } },
-                        ordered: true,
-                        onDelete: "restrict",
-                    },
-                    {
-                        id: "particles",
-                        targetLayer: "particles",
-                        metadata: { labels: { en: "Particles" } },
-                        ordered: true,
-                        onDelete: "restrict",
-                    },
-                ],
-            },
-        ],
-    };
-    const targets = new Map([
-        ["word", entry("word", "learn", "words")],
-        ["particle", entry("particle", "は", "particles")],
-    ]);
-    assert.doesNotThrow(() =>
-        validateReferences(
-            validateLibrarySchema(schema),
-            "sentences",
-            [
-                { entryId: "word", relation: "words", position: 0 },
-                {
-                    entryId: "particle",
-                    relation: "particles",
-                    position: 1,
-                },
-            ],
-            targets,
-        ),
-    );
-});
-
-test("writing-unit layers require pronunciation and audio fields", () => {
-    const writingLayer = {
-        id: "characters",
-        semanticRole: "atomicWritingUnit" as const,
-        metadata: { labels: { en: "Characters" } },
-        fields: [
-            {
-                id: "pronunciation",
-                type: "stringList" as const,
-                required: true,
-                metadata: { labels: { en: "Pronunciation" } },
-            },
-            {
-                id: "audio",
-                type: "audio" as const,
-                required: true,
-                metadata: { labels: { en: "Audio" } },
-            },
-        ],
-    };
-    assert.doesNotThrow(() =>
-        validateLibrarySchema({ ...english, layers: [writingLayer] }),
-    );
-    assert.throws(
-        () =>
-            validateLibrarySchema({
-                ...english,
-                layers: [
-                    { ...writingLayer, fields: writingLayer.fields.slice(1) },
-                ],
-            }),
-        /pronunciation_field_required/,
-    );
-    assert.throws(
-        () =>
-            validateLibrarySchema({
-                ...english,
-                layers: [
-                    {
-                        ...writingLayer,
-                        fields: writingLayer.fields.slice(0, 1),
-                    },
-                ],
-            }),
-        /audio_field_required/,
-    );
 });

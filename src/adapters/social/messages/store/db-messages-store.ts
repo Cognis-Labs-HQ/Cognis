@@ -1,3 +1,7 @@
+import {
+    changeChatroomSource,
+    type ChatroomSourceInput,
+} from "./source-binding.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     appendMessage,
@@ -71,6 +75,17 @@ export class DbMessagesStore {
 
     async ensureSchema(): Promise<void> {
         await ensureSchema(this.db);
+    }
+
+    async bindSource(input: ChatroomSourceInput): Promise<void> {
+        await changeChatroomSource(this.db, input);
+    }
+
+    async releaseSource(
+        input: ChatroomSourceInput,
+        administrator = false,
+    ): Promise<void> {
+        await changeChatroomSource(this.db, input, true, administrator);
     }
 
     async createRoom(

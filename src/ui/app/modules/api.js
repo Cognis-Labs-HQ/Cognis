@@ -1,3 +1,4 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
 
 const MODULE_INSTALL_TIMEOUT_MS = 2 * 60 * 1000;
@@ -12,6 +13,7 @@ async function data(response) {
         );
         error.code = detail?.code;
         error.status = response.status;
+        error.conflict = detail?.conflict;
         error.integrityFailures = detail?.integrityFailures;
         error.integrityToken = detail?.integrityToken;
         throw error;
@@ -138,18 +140,32 @@ export async function saveModuleReleaseChannel(moduleUuid, branch) {
 }
 
 export async function loadModuleAsset(assetUrl, { signal } = {}) {
-    let response;
+    const log = uiCtx.capabilities.get("ui:log");
     try {
-        response = await apiFetch(assetUrl, {
+        const response = await apiFetch(assetUrl, {
             signal,
             suppressAccessDeniedEvent: true,
         });
+        if (!response.ok) {
+            log?.("error", "module_image_request_rejected", {
+                component: "module-marketplace",
+                operation: "loadAsset",
+                assetUrl,
+                status: response.status,
+            });
+            return null;
+        }
+        return URL.createObjectURL(await response.blob());
     } catch (error) {
         if (error?.name === "AbortError") return null;
-        throw error;
+        log?.("error", "module_image_request_failed", {
+            component: "module-marketplace",
+            operation: "loadAsset",
+            assetUrl,
+            reason: error?.message,
+        });
+        return null;
     }
-    if (!response.ok) return null;
-    return URL.createObjectURL(await response.blob());
 }
 
 export async function installModule(module, token, branch, wasEnabled) {
@@ -223,4 +239,21 @@ export async function uninstallModule(
             },
         ),
     );
+}
+
+export async function runModuleConfigAction(moduleId, action, values, signal) {
+    if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(action.id))
+        throw new Error("invalid_config_action");
+    const response = await apiFetch(
+        `/api/v1/modules/${encodeURIComponent(moduleId)}/config/${encodeURIComponent(action.id)}`,
+        {
+            method: "POST",
+            signal,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(values),
+        },
+    );
+    if (action.result !== "audio") return data(response);
+    if (!response.ok) throw new Error("module_config_action_failed");
+    return response.blob();
 }

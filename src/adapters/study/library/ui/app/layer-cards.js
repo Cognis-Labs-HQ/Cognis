@@ -7,6 +7,8 @@ import {
 import { renderLayerFilters } from "./filters.js";
 import { isDirectlyVisible, renderEntryCard } from "./cards.js";
 import { assignVariantPlacements } from "./variant-placement.js";
+import { transformationPathways } from "./transformations.js";
+import { renderTransformationTree } from "./transformation-popup.js";
 
 function meaningReferenceIds(entry, schema) {
     const meaningLayers = new Set(
@@ -56,6 +58,7 @@ export function renderLayerCards(
     schema,
     i18n,
     allEntries = entries,
+    view = null,
 ) {
     const placements = assignVariantPlacements(entries, schema, layer);
     const baseEntries = deduplicateDisplayEntries(
@@ -67,6 +70,29 @@ export function renderLayerCards(
         schema,
     );
     if (!baseEntries.length) return "";
+    if (view?.layout === "transformTree") {
+        return baseEntries
+            .map((entry) => {
+                const pathways = transformationPathways(entry, schema).filter(
+                    ({ nodes }) => nodes.length > 1,
+                );
+                const trees = pathways
+                    .map((pathway) =>
+                        renderTransformationTree(
+                            entry,
+                            schema,
+                            pathway,
+                            undefined,
+                            {
+                                showSummary: false,
+                            },
+                        ),
+                    )
+                    .join("");
+                return `<article class="library-transform-card${pathways.length ? " library-transform-card--expandable" : ""}">${renderEntryCard(entry, layer, allEntries, schema, placements, i18n)}${pathways.length ? `<section class="library-transform-pathway" hidden><button class="library-transform-close btn-neutral" type="button" data-library-transform-close aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">&times;</button>${trees}</section>` : ""}</article>`;
+            })
+            .join("");
+    }
     if (!layer.grid) {
         return baseEntries
             .map((entry) =>
@@ -150,10 +176,28 @@ export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
                 .join("");
             const panels = visibleLayers
                 .map((layer, layerIndex) => {
+                    const view = layer.views?.find(
+                        ({ id }) => id === requestedLayer?.viewId,
+                    );
+                    const composerOnlyTags = new Set(
+                        schema.layers.flatMap((candidateLayer) =>
+                            (
+                                candidateLayer.cardConstructor?.tag_carousels ??
+                                []
+                            ).map(({ tag }) => tag),
+                        ),
+                    );
                     const layerEntries = entries.filter(
                         (entry) =>
                             entry.schemaId === schema.id &&
-                            entry.layer === layer.id,
+                            entry.layer === layer.id &&
+                            (view
+                                ? view.includeTags.some((tag) =>
+                                      (entry.tags ?? []).includes(tag),
+                                  )
+                                : !(entry.tags ?? []).some((tag) =>
+                                      composerOnlyTags.has(tag),
+                                  )),
                     );
                     const cards = renderLayerCards(
                         layer,
@@ -161,12 +205,13 @@ export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
                         schema,
                         i18n,
                         entries,
+                        view,
                     );
                     const contents = cards
                         ? cards
                         : `<p class="library-layer-empty">${escapeHtml(i18n.t("gateway.study.library_layer_empty"))}</p>`;
                     const rowSize = layer.grid?.rowSize;
-                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid${layer.minimal ? " library-entry-grid--minimal" : ""}"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
+                    return `<section class="library-layer-panel" role="tabpanel" id="library-panel-${schemaIndex}-${layerIndex}" aria-labelledby="library-tab-${schemaIndex}-${layerIndex}" data-library-panel="${escapeHtml(layer.id)}"${layerIndex === 0 ? "" : " hidden"}>${renderLayerFilters(layer, layerEntries, i18n, schema.language)}<div class="library-entry-grid${layer.minimal ? " library-entry-grid--minimal" : ""}${view?.layout === "transformTree" ? " library-entry-grid--transform-tree" : ""}"${rowSize ? ` style="--library-grid-row-size: ${rowSize}"` : ""}>${contents}</div><p class="library-filter-empty" hidden>${escapeHtml(i18n.t("gateway.study.library_filter_empty"))}</p></section>`;
                 })
                 .join("");
             if (!visibleLayers.length) return "";

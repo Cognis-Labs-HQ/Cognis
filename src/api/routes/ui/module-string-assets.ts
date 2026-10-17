@@ -12,7 +12,6 @@ import {
 const EXTERNAL_MODULES_ROOT =
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
     path.resolve(process.cwd(), "external-modules");
-const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 
 export async function resolveModuleRoot(
     manifest: Pick<ModuleManifest, "id" | "uuid">,
@@ -63,9 +62,7 @@ export async function serveDeclaredModuleStrings(
         resolveContentType(assetPath),
         undefined,
         undefined,
-        url.searchParams.get("v") === ASSET_VERSION
-            ? "public, max-age=31536000, immutable"
-            : "public, max-age=0, must-revalidate",
+        "public, max-age=0, must-revalidate",
     );
     return true;
 }
@@ -102,9 +99,7 @@ export async function serveEnabledModuleAsset(
         resolveContentType(assetPath),
         undefined,
         undefined,
-        url.searchParams.get("v") === ASSET_VERSION
-            ? "public, max-age=31536000, immutable"
-            : "public, max-age=0, must-revalidate",
+        "public, max-age=0, must-revalidate",
     );
     return true;
 }

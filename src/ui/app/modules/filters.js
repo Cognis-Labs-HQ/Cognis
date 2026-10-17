@@ -74,3 +74,20 @@ export function renderModuleFilters(
       ${categoryButtons}
     </aside>`;
 }
+
+export function formatModuleTag(tag, modules, i18n) {
+    for (const module of modules) {
+        for (const field of ["categories", "tags"]) {
+            const index = (module[field] ?? []).indexOf(tag);
+            const localized = module.localizedPresentation?.[field]?.[index];
+            if (localized && localized !== tag) return localized;
+        }
+    }
+    const localized = i18n.t(tag);
+    if (localized !== tag) return localized;
+    return String(tag)
+        .split(/[-_\s]+/)
+        .filter(Boolean)
+        .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
+}

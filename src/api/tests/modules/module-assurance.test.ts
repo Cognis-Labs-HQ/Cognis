@@ -65,6 +65,41 @@ test("privileged modules may request host namespace integrations", () => {
     );
 });
 
+test("study language modules own their canonical gateway namespace", () => {
+    assert.doesNotThrow(() =>
+        assertModuleOwnedRoute(
+            "/api/v1/study/languages/ja/library/words",
+            "study-language-ja",
+            unprivileged,
+        ),
+    );
+    assert.doesNotThrow(() =>
+        assertModuleOwnedCtxRegistration(
+            "study:language:ja:library",
+            "study-language-ja",
+            unprivileged,
+        ),
+    );
+    assert.throws(
+        () =>
+            assertModuleOwnedRoute(
+                "/api/v1/study/languages/en/library",
+                "study-language-ja",
+                unprivileged,
+            ),
+        /module_privileged_access_required/,
+    );
+    assert.throws(
+        () =>
+            assertModuleOwnedCtxRegistration(
+                "study:language:en",
+                "study-language-ja",
+                unprivileged,
+            ),
+        /module_privileged_access_required/,
+    );
+});
+
 test("module assurance does not verify an incomplete runtime inventory", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-assurance-"));
     try {

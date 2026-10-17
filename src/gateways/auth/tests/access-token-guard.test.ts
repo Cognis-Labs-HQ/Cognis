@@ -185,6 +185,7 @@ test("page security headers include registered script origins", () => {
         contentSecurityPolicy,
         /connect-src 'self' https:\/\/meetings\.example\.test wss:\/\/meetings\.example\.test/,
     );
+    assert.match(contentSecurityPolicy, /media-src 'self' blob:/);
 });
 
 test("page script origin registration rejects non-http origins", () => {

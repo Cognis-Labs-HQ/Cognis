@@ -448,19 +448,6 @@ class MariaDbExecutor implements RawDbExecutor {
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
-            const renamedFrom = readRenamedColumn(col);
-            if (renamedFrom && existingCols.has(renamedFrom)) {
-                const notNullClause = col.notNull ? " NOT NULL" : "";
-                const defaultClause =
-                    col.default !== undefined
-                        ? ` DEFAULT ${dbDefault(col.default)}`
-                        : "";
-                await this.execute(
-                    `ALTER TABLE ${def.name} CHANGE COLUMN \`${renamedFrom}\` ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
-                );
-                existingCols.add(col.name);
-                continue;
-            }
             const defaultClause =
                 col.default !== undefined
                     ? `DEFAULT ${dbDefault(col.default)}`
@@ -492,6 +479,34 @@ class MariaDbExecutor implements RawDbExecutor {
             await this.execute(
                 `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
             );
+        }
+        if (compositePk.length) {
+            const result = await this.execute(
+                "SELECT column_name FROM information_schema.key_column_usage WHERE table_name = ? AND table_schema = DATABASE() AND constraint_name = 'PRIMARY' ORDER BY ordinal_position",
+                [def.name],
+            );
+            const columns = (result.rows ?? []).map((row) =>
+                String(row.column_name),
+            );
+            if (
+                columns.length !== compositePk.length ||
+                columns.some((column, index) => column !== compositePk[index])
+            ) {
+                await this.execute(
+                    `ALTER TABLE ${def.name} ${columns.length ? "DROP PRIMARY KEY, " : ""}ADD PRIMARY KEY (${compositePk.join(", ")})`,
+                );
+                writeDbLog(
+                    this.log,
+                    "info",
+                    "Reconciled declared database primary key.",
+                    {
+                        component: "db",
+                        provider: "mariadb",
+                        table: def.name,
+                        columns: compositePk,
+                    },
+                );
+            }
         }
         for (const index of def.indexes ?? []) {
             const indexName =
@@ -553,15 +568,6 @@ class MariaDbExecutor implements RawDbExecutor {
         }
         return { ...command, where };
     }
-}
-
-function readRenamedColumn(
-    column: StructuredDbTableDef["columns"][number],
-): string | undefined {
-    if (!("renamedFrom" in column)) return undefined;
-    return typeof column.renamedFrom === "string"
-        ? column.renamedFrom
-        : undefined;
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {

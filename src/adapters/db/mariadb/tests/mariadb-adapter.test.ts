@@ -348,41 +348,6 @@ test("mariadb repairs text index columns before creating their indexes", async (
     assert.ok(createIndex > repairIndex);
 });
 
-test("mariadb renames legacy columns without losing their values", async () => {
-    const statements: string[] = [];
-    const executor = await createDbExecutor({
-        databaseUrl: "mariadb://unused",
-        pool: createPool({
-            query: async (sql: string) => {
-                statements.push(sql);
-                if (sql.includes("information_schema.COLUMNS")) {
-                    return [[{ column_name: "read", data_type: "int" }], {}];
-                }
-                return [[], {}];
-            },
-        }),
-    });
-
-    await executor.ensureTable({
-        name: "internal_notifications",
-        columns: [
-            {
-                name: "is_read",
-                type: "integer",
-                notNull: true,
-                default: 0,
-                renamedFrom: "read",
-            },
-        ],
-    } as Parameters<typeof executor.ensureTable>[0]);
-
-    assert.ok(
-        statements.includes(
-            "ALTER TABLE internal_notifications CHANGE COLUMN `read` is_read INT NOT NULL DEFAULT 0",
-        ),
-    );
-});
-
 test("mariadb formats ISO values for declared timestamp columns", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const executor = await createDbExecutor({
