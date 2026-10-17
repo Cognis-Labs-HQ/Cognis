@@ -928,3 +928,4 @@ Rekaman kata Jepang dengan kana kecil, termasuk 学校, dibuat ulang dengan ejaa
 - [44b938d](https://github.com/Cognis-Labs-HQ/Cognis/commit/44b938d30d2f521dc8f5adde88183a2e9a8c4996)
 - [7f68be4](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f68be420c3c82742dd16a2b8da5c6dfacc5459d)
 - [e6bcfe3](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6bcfe3bf167bf6b4d1e8a9feca648e7f2b41d9e)
+- [220457c](https://github.com/Cognis-Labs-HQ/Cognis/commit/220457c4c97295029577c3a1c481427bbb1b4657)
