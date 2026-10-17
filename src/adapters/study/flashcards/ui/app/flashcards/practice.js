@@ -21,7 +21,7 @@ export function exploreUrl(entry, schemas) {
             ? sourceLayer
             : schema.layers.find(browseable));
     return schema && layer
-        ? `/study/explore/${encodeURIComponent(schema.language)}/${encodeURIComponent(layer.navigationSlug ?? layer.id)}`
+        ? `/study/explore/${encodeURIComponent(schema.language)}/${encodeURIComponent(layer.navigationSlug ?? layer.id)}/${encodeURIComponent(entry.id)}`
         : "";
 }
 
@@ -64,6 +64,7 @@ export function mountPractice(
     ].filter(Boolean);
     const previewing = answeredGrade === "good";
     let grade = answeredGrade ?? (previewing ? "good" : null);
+    let assisted = false;
     let drawing;
     let revision = 0;
     const label = (key) =>
@@ -121,7 +122,9 @@ export function mountPractice(
                         "answer",
                         () => {
                             grade =
-                                correct && grade !== "again" ? "good" : "again";
+                                correct && !assisted && grade !== "again"
+                                    ? "good"
+                                    : "again";
                             onAnswer?.(grade);
 
                             target.querySelector(
@@ -154,6 +157,22 @@ export function mountPractice(
         async (event) => {
             const link = event.target.closest("[data-practice-link]");
             if (link) {
+                if (
+                    event.ctrlKey ||
+                    event.metaKey ||
+                    event.shiftKey ||
+                    event.altKey
+                ) {
+                    await runDeckAction(
+                        "depart",
+                        () => {
+                            assisted ||= !grade;
+                            onDeparture?.(grade ?? "again");
+                        },
+                        controller.signal,
+                    );
+                    return;
+                }
                 event.preventDefault();
                 if (!link.dataset.entryId || !link.getAttribute("href")) return;
                 await runDeckAction(
@@ -224,10 +243,22 @@ export function mountPractice(
                         const correct =
                             choices[Number(choice.dataset.readingChoice)]
                                 .correct;
-                        grade = correct ? "good" : "again";
+                        grade = correct && !assisted ? "good" : "again";
                         onAnswer?.(grade);
+                        choice.classList.remove("btn-neutral");
                         choice.classList.add(
                             correct ? "btn-confirm" : "btn-cancel",
+                        );
+                        choice.dataset.readingResult = correct
+                            ? "correct"
+                            : "incorrect";
+                        showToast(
+                            i18n.t(
+                                `adapter.study.flashcards.practice_${correct ? "correct" : "incorrect"}`,
+                            ),
+                            {
+                                variant: correct ? "success" : "warning",
+                            },
                         );
                         target
                             .querySelectorAll("[data-reading-choice]")

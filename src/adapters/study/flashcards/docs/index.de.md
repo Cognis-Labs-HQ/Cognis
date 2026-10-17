@@ -35,3 +35,9 @@ Galerien verwenden `/study/<iso>/flashcards`; Stapellinks erhalten lesbare Namen
 Die aktuelle Browser-Verlaufseintragung bewahrt Stapelreihenfolge, Position, Bewertungen, offene Antwort, Filter und Modus. Nach der Rückkehr aus Erkunden funktionieren Vorherige und Nächste im ursprünglichen Stapel. Das Aufdecken oder Nachschlagen einer unbeantworteten Karte behält das Ergebnis Erneut. Quelllinks übergeben geordnete Karten-IDs im Verlaufszustand, damit auch Erkunden-Vorschauen durch den Stapel einschließlich untergeordneter Karten navigieren. Bibliotheksberechtigungen gelten weiterhin; nicht mehr zugängliche Karten werden bei der Wiederherstellung ausgelassen.
 
 Alle Aktionen verwenden die bestehenden deklarierten Stapel- und Zeichenabläufe. Die Oberfläche nutzt Standarddialoge, Schaltflächen und vorhandene Lernkartenstile. Eigene und geteilte Stapel teilen Darstellung und Übung; geteilte Momentaufnahmen erhalten keinen Bibliothekszugriff. Beim Verlassen werden Ereignisbehandlung und Zeichenfeld beendet.
+
+## Leserückmeldung und Links
+
+Leseantworten zeigen eine Erfolgs- oder Warnmeldung und animieren die gewählte Option; bei reduzierter Bewegung entfällt die Animation. Kartentitel und Favoritenstern haben einen transparenten Hintergrund und behalten sichtbare Tastatur-Fokusmarkierungen. Das Standard-Seitenmenü listet die Stapeltitel der aktuellen Sprache und hebt den aktiven Stapel hervor.
+
+Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore/<language>/<layer>/<card-id>`. Strg-, Befehls- und Umschalt-Klick behalten das normale Browserverhalten; direkte Aufrufe öffnen die gewünschte Kartenvorschau. Das Nachschlagen einer unbeantworteten Karte zählt als unterstützter Versuch. Bei normaler Navigation bleibt die Stapelreihenfolge für die Zurück-Funktion erhalten.

@@ -179,6 +179,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         },
     ];
     const departures = [];
+    const toasts = [];
     let decision = "cancel";
     let drawing;
     const context = vm.createContext({
@@ -207,7 +208,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         openPopup: async () => decision,
         navigateTo: async (url, options) => departures.push({ url, options }),
         runDeckAction: vm.runInContext("runDeckAction", environment),
-        showToast: () => assert.fail("Unexpected practice failure"),
+        showToast: (message, options) => toasts.push({ message, ...options }),
     });
     loadModule("../ui/app/flashcards/practice.js", context);
     const controller = new AbortController();
@@ -231,23 +232,30 @@ function practiceHarness(filter, status = "due", options = {}) {
         nodes,
         grades,
         departures,
+        toasts,
         dispose,
         decision: (value) => {
             decision = value;
         },
         drawing: () => drawing,
-        click: async (selector, dataset) => {
+        click: async (selector, dataset, modifiers = {}) => {
+            let prevented = false;
             const control = {
                 dataset,
-                classList: { add() {} },
-                getAttribute: () => "/study/explore/ja/kanji",
+                classList: { add() {}, remove() {} },
+                getAttribute: () =>
+                    `/study/explore/ja/kanji/${dataset.entryId}`,
             };
             await target.click({
+                ...modifiers,
                 target: {
                     closest: (query) => (query === selector ? control : null),
                 },
-                preventDefault() {},
+                preventDefault() {
+                    prevented = true;
+                },
             });
+            return { control, prevented };
         },
     };
 }
@@ -278,7 +286,7 @@ test("New cards keep answers hidden; Explore departures require confirmation and
         assert.equal(harness.departures.length, 0);
         harness.decision("leave");
         await harness.click("[data-practice-link]", { entryId: "one" });
-        assert.equal(harness.departures[0].url, "/study/explore/ja/kanji");
+        assert.equal(harness.departures[0].url, "/study/explore/ja/kanji/one");
         assert.equal(harness.departures[0].options.state.studyEntryId, "one");
         harness.dispose();
     }
@@ -354,8 +362,11 @@ test("full answers group canonical reading and meaning links without duplicating
         assert.equal(html.split(`data-id="${id}"`).length - 1, 1);
     for (const layer of ["definitions", "particles"])
         assert.equal(
-            harness.context.exploreUrl({ schemaId: "ja", layer }, schemas),
-            "/study/explore/ja/vocabulary",
+            harness.context.exploreUrl(
+                { id: "entry", schemaId: "ja", layer },
+                schemas,
+            ),
+            "/study/explore/ja/vocabulary/entry",
         );
 });
 
@@ -402,6 +413,56 @@ test("cards without reading distractors can reveal their answer without switchin
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
     await harness.click("[data-practice-reveal]", {});
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    await harness.click("[data-practice-next]", {});
+    assert.deepEqual(harness.grades, ["again"]);
+    harness.dispose();
+});
+
+test("Reading submissions show one result toast and animate the submitted option", async () => {
+    for (const correct of [true, false]) {
+        const harness = practiceHarness("due");
+        const { control } = await harness.click("[data-reading-choice]", {
+            readingChoice: correct ? "0" : "1",
+        });
+        assert.equal(
+            control.dataset.readingResult,
+            correct ? "correct" : "incorrect",
+        );
+        assert.equal(harness.toasts.length, 1);
+        assert.equal(
+            harness.toasts[0].message,
+            `adapter.study.flashcards.practice_${correct ? "correct" : "incorrect"}`,
+        );
+        assert.equal(
+            harness.toasts[0].variant,
+            correct ? "success" : "warning",
+        );
+        await harness.click("[data-reading-choice]", { readingChoice: "0" });
+        assert.equal(harness.toasts.length, 1);
+        harness.dispose();
+    }
+});
+
+test("option links carry shareable card identity and preserve native modified clicks", async () => {
+    const departures = [];
+    const harness = practiceHarness("due", "due", {
+        onDeparture: (grade) => departures.push(grade),
+    });
+    assert.match(
+        harness.target.innerHTML,
+        /href="\/study\/explore\/ja\/kanji\/choice-0"/,
+    );
+    for (const modifier of ["ctrlKey", "metaKey", "shiftKey"]) {
+        const { prevented } = await harness.click(
+            "[data-practice-link]",
+            { entryId: "choice-0" },
+            { [modifier]: true },
+        );
+        assert.equal(prevented, false);
+    }
+    assert.deepEqual(departures, ["again", "again", "again"]);
+    assert.equal(harness.departures.length, 0);
+    await harness.click("[data-reading-choice]", { readingChoice: "0" });
     await harness.click("[data-practice-next]", {});
     assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();

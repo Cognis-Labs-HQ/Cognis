@@ -27,6 +27,7 @@ import {
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
+import { createSideMenu } from "/static/reuse/side-menu.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -521,6 +522,30 @@ export async function mount(root, { signal: routerSignal } = {}) {
         nextCard();
     };
 
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "decks",
+                label: i18n.t("adapter.study.flashcards.page_title"),
+                collapsible: false,
+                items: decks.map((deck) => ({ id: deck.id, label: deck.name })),
+            },
+        ],
+        activeId: selected?.id ?? "",
+        storageKeyPrefix: "study-flashcards-decks",
+        onSelect: (id) =>
+            runDeckAction(
+                "browse",
+                () =>
+                    navigateTo(
+                        languageFlashcardsUrl(
+                            languageCode,
+                            deckRouteKey(decks.find((deck) => deck.id === id)),
+                        ),
+                    ),
+                signal,
+            ),
+    });
     const composer = createPageComposer(root, {
         allowCustomization: false,
         contentScrolling: false,
@@ -540,6 +565,14 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 render: () => "<section data-study-deck></section>",
             },
         ],
+        toolbar: [
+            {
+                id: "study-flashcard-decks",
+                label: i18n.t("adapter.study.flashcards.page_title"),
+                render: () => menu.render(),
+            },
+        ],
+        toolbarScrollable: true,
         subNavigation: [
             {
                 id: "study-subnav",
@@ -555,6 +588,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
+    menu.mount(root, { signal });
     favourites.bind(root, {
         signal,
         i18n,

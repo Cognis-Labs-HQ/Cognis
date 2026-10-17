@@ -808,6 +808,12 @@ Die aktuelle Browser-Verlaufseintragung bewahrt Stapelreihenfolge, Position, Bew
 
 Alle Aktionen verwenden die bestehenden deklarierten Stapel- und Zeichenabläufe. Die Oberfläche nutzt Standarddialoge, Schaltflächen und vorhandene Lernkartenstile. Eigene und geteilte Stapel teilen Darstellung und Übung; geteilte Momentaufnahmen erhalten keinen Bibliothekszugriff. Beim Verlassen werden Ereignisbehandlung und Zeichenfeld beendet.
 
+## Leserückmeldung und Links
+
+Leseantworten zeigen eine Erfolgs- oder Warnmeldung und animieren die gewählte Option; bei reduzierter Bewegung entfällt die Animation. Kartentitel und Favoritenstern haben einen transparenten Hintergrund und behalten sichtbare Tastatur-Fokusmarkierungen. Das Standard-Seitenmenü listet die Stapeltitel der aktuellen Sprache und hebt den aktiven Stapel hervor.
+
+Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore/<language>/<layer>/<card-id>`. Strg-, Befehls- und Umschalt-Klick behalten das normale Browserverhalten; direkte Aufrufe öffnen die gewünschte Kartenvorschau. Das Nachschlagen einer unbeantworteten Karte zählt als unterstützter Versuch. Bei normaler Navigation bleibt die Stapelreihenfolge für die Zurück-Funktion erhalten.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

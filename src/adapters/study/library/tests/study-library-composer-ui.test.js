@@ -162,9 +162,16 @@ test("Study Library selects newly created dependencies through the carousel", ()
 });
 
 test("Study Library registers Explore layer navigation as SPA routes", () => {
-    assert.ok(
-        adapterSource.includes('pattern: "^/study/explore(?:/[^/]+/[^/]+)?$"'),
-    );
+    const pattern = adapterSource.match(
+        /pattern: "(\^\/study\/explore[^"\n]+)"/,
+    )[1];
+    const route = new RegExp(pattern);
+    for (const path of [
+        "/study/explore",
+        "/study/explore/ja/kanji",
+        "/study/explore/ja/kanji/card-id",
+    ])
+        assert.equal(route.test(path), true);
 });
 
 test("Study Library derives pronunciation using the provider field type", () => {

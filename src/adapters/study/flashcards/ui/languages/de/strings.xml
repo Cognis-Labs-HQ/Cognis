@@ -35,4 +35,6 @@
   <string name="adapter.study.flashcards.practice_previous">Vorherige Karte</string>
   <string name="adapter.study.flashcards.practice_reveal">Zeichen anzeigen</string>
   <string name="adapter.study.flashcards.practice_choose_mode">Lesen oder Schreiben wählen</string>
+  <string name="adapter.study.flashcards.practice_correct">Richtige Lesung.</string>
+  <string name="adapter.study.flashcards.practice_incorrect">Falsche Lesung. Sieh dir die Antwort an und versuche es bei der nächsten Wiederholung erneut.</string>
 </resources>

@@ -35,4 +35,6 @@
   <string name="adapter.study.flashcards.practice_previous">前のカード</string>
   <string name="adapter.study.flashcards.practice_reveal">文字を表示</string>
   <string name="adapter.study.flashcards.practice_choose_mode">読み取りか書き取りを選択</string>
+  <string name="adapter.study.flashcards.practice_correct">正しい読み方です。</string>
+  <string name="adapter.study.flashcards.practice_incorrect">読み方が違います。答えを確認し、次の復習で再挑戦しましょう。</string>
 </resources>

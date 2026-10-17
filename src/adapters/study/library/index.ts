@@ -268,7 +268,7 @@ export async function bootstrapStudyAdapter(
     });
     ctx.registerSpaRoute?.({
         id: "study-library-layer-page",
-        pattern: "^/study/explore(?:/[^/]+/[^/]+)?$",
+        pattern: "^/study/explore(?:/[^/]+/[^/]+(?:/[^/]+)?)?$",
         base: "/study/explore",
         scriptUrl: "/static/adapters/study/library/app/layer/index.js",
         stylesheets: [

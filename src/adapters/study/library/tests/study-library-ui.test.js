@@ -309,7 +309,7 @@ test("Study Library separates admin data browsing from learner layer pages", () 
     assert.match(adapterSource, /pattern: "\^\/study\/library\$"/);
     assert.match(
         adapterSource,
-        /pattern: "\^\/study\/explore\(\?:\/\[\^\/\]\+\/\[\^\/\]\+\)\?\$"/,
+        /pattern: "\^\/study\/explore\(\?:\/\[\^\/\]\+\/\[\^\/\]\+\(\?:\/\[\^\/\]\+\)\?\)\?\$"/,
     );
 });
 test("Study Library creation is driven by language card constructors", () => {

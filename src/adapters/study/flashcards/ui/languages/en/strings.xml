@@ -35,4 +35,6 @@
   <string name="adapter.study.flashcards.practice_previous">Previous card</string>
   <string name="adapter.study.flashcards.practice_reveal">Show character</string>
   <string name="adapter.study.flashcards.practice_choose_mode">Choose Reading or Writing</string>
+  <string name="adapter.study.flashcards.practice_correct">Correct reading.</string>
+  <string name="adapter.study.flashcards.practice_incorrect">Incorrect reading. Review the answer and try again on your next review.</string>
 </resources>

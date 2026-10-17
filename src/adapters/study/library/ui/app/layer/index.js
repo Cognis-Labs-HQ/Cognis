@@ -29,10 +29,11 @@ import { canCreateLayerEntries } from "../editability.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
-    if (parts.length !== 4 || parts[1] !== "explore") return null;
+    if (![4, 5].includes(parts.length) || parts[1] !== "explore") return null;
     return {
         language: decodeURIComponent(parts[2]),
         slug: decodeURIComponent(parts[3]),
+        entryId: parts[4] ? decodeURIComponent(parts[4]) : null,
     };
 }
 
@@ -207,7 +208,7 @@ export async function mount(root, { signal } = {}) {
         schemas,
         signal,
     });
-    const requestedEntryId = history.state?.studyEntryId;
+    const requestedEntryId = requested?.entryId ?? history.state?.studyEntryId;
     if (requestedEntryId) {
         const entry =
             entries.find(({ id }) => id === requestedEntryId) ??

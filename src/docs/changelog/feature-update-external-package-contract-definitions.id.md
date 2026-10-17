@@ -810,6 +810,12 @@ Entri riwayat browser menyimpan antrean dek, posisi, nilai, jawaban tertunda, fi
 
 Semua tindakan menjalankan alur dek dan menggambar Study yang sudah dideklarasikan. Antarmuka memakai popup, tombol, dan gaya kartu yang sudah ada. Dek akun dan bersama memakai perender serta latihan yang sama; snapshot bersama tidak memperoleh akses Library. Perpindahan halaman menghentikan penangan dan sesi menggambar.
 
+## Umpan Balik dan Tautan
+
+Jawaban Reading menampilkan toast keberhasilan atau peringatan dan animasi pada opsi yang dipilih; preferensi pengurangan gerakan menonaktifkan animasi. Judul kartu dan bintang favorit memiliki latar transparan dengan indikator fokus papan ketik. Menu samping standar mencantumkan judul dek bahasa saat ini dan menandai dek aktif.
+
+Tautan kartu Explore menyertakan identitas kanonis kartu pada `/study/explore/<language>/<layer>/<card-id>`. Ctrl-klik, Command-klik, dan Shift-klik mempertahankan perilaku bawaan peramban; kunjungan langsung membuka pratinjau kartu yang diminta. Membuka kartu yang belum dijawab dihitung sebagai percobaan dengan bantuan. Navigasi biasa mempertahankan antrean dek untuk tombol Kembali peramban.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

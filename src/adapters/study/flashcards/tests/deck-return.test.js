@@ -55,6 +55,8 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     const mounts = [];
     let choices = 0;
     const reviews = [];
+    const menus = [];
+    const navigations = [];
     const environment = vm.createContext({
         AbortController,
         uiCtx,
@@ -79,8 +81,15 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         loadDeckTemplates: async () => ({}),
         fetchStudyDeck: async () => ({ deck, cards }),
         loadFavourites: async () => ({ bind() {} }),
-        createPageComposer: () => ({
+        createSideMenu: (options) => {
+            menus.push(options);
+            return { render: () => "deck menu", mount() {} };
+        },
+        navigateTo: async (url) => navigations.push(url),
+        createPageComposer: (_root, options) => ({
             init: async () => {
+                assert.equal(options.toolbar[0].render(), "deck menu");
+                assert.equal(options.toolbarScrollable, true);
                 root.querySelector("[data-study-deck]").innerHTML =
                     "<section data-study-session></section>";
             },
@@ -130,6 +139,14 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     history.state = savedHistory;
     location.pathname = "/study/ja/flashcards/first-words--deck-id";
     await environment.mountDeck(root);
+    assert.equal(menus.at(-1).activeId, deck.id);
+    assert.equal(menus.at(-1).groups[0].collapsible, false);
+    assert.equal(menus.at(-1).groups[0].items[0].label, deck.name);
+    await menus.at(-1).onSelect(deck.id);
+    assert.equal(
+        navigations.at(-1),
+        "/study/ja/flashcards/first-words-renamed--deck-id",
+    );
     assert.equal(choices, 1);
     assert.equal(mounts.at(-1).mode, "writing");
     assert.equal(mounts.at(-1).detail.entry.id, "two");

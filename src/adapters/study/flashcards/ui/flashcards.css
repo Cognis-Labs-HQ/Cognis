@@ -218,3 +218,35 @@
 .study-practice [hidden] {
     display: none;
 }
+
+.study-practice-heading [data-practice-link],
+.study-practice-heading [data-practice-reveal],
+.study-practice-heading [data-study-favourite],
+.study-practice-heading
+    :is(
+        [data-practice-link],
+        [data-practice-reveal],
+        [data-study-favourite]
+    ):is(:hover, :focus-visible) {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+.study-practice-heading
+    :is(
+        [data-practice-link],
+        [data-practice-reveal],
+        [data-study-favourite]
+    ):focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 2px;
+}
+.study-reading-choices [data-reading-result] {
+    opacity: 1;
+    animation: study-answer-reveal 0.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .study-reading-choices [data-reading-result] {
+        animation: none;
+    }
+}
