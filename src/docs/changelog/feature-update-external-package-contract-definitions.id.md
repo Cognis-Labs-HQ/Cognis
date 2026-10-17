@@ -910,3 +910,4 @@ Semua tindakan menjalankan alur dek dan menggambar Study yang sudah dideklarasik
 - [77013ffd](https://github.com/Cognis-Labs-HQ/Cognis/commit/77013ffdf80946228f3d5fe23d7149e274a195a2)
 - [5ff1a103](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ff1a103f7ee78883212810a1e30c37eaa097248)
 - [44b938d](https://github.com/Cognis-Labs-HQ/Cognis/commit/44b938d30d2f521dc8f5adde88183a2e9a8c4996)
+- [7f68be4](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f68be420c3c82742dd16a2b8da5c6dfacc5459d)
