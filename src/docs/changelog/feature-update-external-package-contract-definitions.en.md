@@ -944,3 +944,4 @@ Notify enabled administrators about incoming requests and other administratorsâ€
 - [dd1f7a2](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd1f7a270483a29c5bd0e74933611988baf4ea0c)
 - [8c29d55](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c29d5554f99500b7fcbcbc954ea965461fb2ce4)
 - [0833f95](https://github.com/Cognis-Labs-HQ/Cognis/commit/0833f953889f056079b252135debb298f3e56051)
+- [e64f233](https://github.com/Cognis-Labs-HQ/Cognis/commit/e64f23384deed84e371fbabe3649cfdad30abf59)
