@@ -394,3 +394,20 @@ test("direct variant playback cannot compose a base recording when its own recor
         /audio_lookup_unavailable/,
     );
 });
+
+test("a packaged sentence recording takes priority over synthesis and constituent composition", async () => {
+    const context = fixture();
+    const direct = tone();
+    await context.cache.store(
+        "packs/sentence.audio",
+        direct.mediaType,
+        direct.data,
+    );
+    context.entries.get("sentence")!.fields!.audio =
+        "file:packs/sentence.audio";
+    assert.deepEqual(
+        (await context.read("word")).data,
+        Buffer.from(direct.data),
+    );
+    assert.equal(context.calls(), 0);
+});

@@ -63,7 +63,12 @@ test("uploaded and recorded drafts replace saved playback, survive late reads an
                 resolveFetch = resolve;
             }),
     });
-    vm.runInContext(source("presentation") + source("audio-editor"), context);
+    vm.runInContext(
+        source("audio-media-session") +
+            source("presentation") +
+            source("audio-editor"),
+        context,
+    );
     const controller = new AbortController();
     context.bindAudioEditor(
         form,
@@ -93,7 +98,12 @@ test("new cards without saved audio have a disabled speaker ready for staged pla
         document: { documentElement: { lang: "en" } },
         parseLanguageCode: String,
     });
-    vm.runInContext(source("presentation") + source("audio-editor"), context);
+    vm.runInContext(
+        source("audio-media-session") +
+            source("presentation") +
+            source("audio-editor"),
+        context,
+    );
     const field = {
         id: "audio",
         type: "audio",

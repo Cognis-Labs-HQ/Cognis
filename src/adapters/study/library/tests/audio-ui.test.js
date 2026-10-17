@@ -14,7 +14,15 @@ const context = vm.createContext({
     parseLanguageCode: (value) => value,
     document: { documentElement: { lang: "en" } },
 });
-vm.runInContext(source, context);
+vm.runInContext(
+    readFileSync(
+        new URL("../ui/app/audio-media-session.js", import.meta.url),
+        "utf8",
+    )
+        .replace(/^import[\s\S]*?;\n/gm, "")
+        .replace(/\bexport /g, "") + source,
+    context,
+);
 const audio = {
     id: "audio",
     type: "audio",

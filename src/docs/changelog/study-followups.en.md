@@ -1,10 +1,14 @@
-# Image Viewer Sizing
+# Study Media Improvements
 
 **Feature Branch:** study-followups
 
 ## Image Viewer Sizing
 
 The shared image-preview provider loads its stylesheet before publishing controls. The image-only popup removes heading markup and fits landscape, portrait and panoramic originals inside the viewport without horizontal or vertical scrolling. Library detail previews retain their 20rem × 18rem limits; editor thumbnails remain 8rem × 6rem.
+
+## Study Media
+
+Card detail reference images form a horizontal strip with a hidden scrollbar. Audio playback publishes the current card title, layer, Cognis artist and app artwork to the system media center, with play/pause/stop and lifecycle cleanup. Packaged sentence files take priority over generated composition. Companion modules ship 34 Japanese and 45 English direct sentence recordings; 124 Japanese kana clips were regenerated with native text and the explicit designated voice.
 
 ## Commits
 

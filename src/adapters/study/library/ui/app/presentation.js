@@ -1,3 +1,4 @@
+import { activateLibraryMediaSession } from "./audio-media-session.js";
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -386,7 +387,7 @@ export function renderAudio(
     return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
         .map(
             ({ entry: source, field }) =>
-                `<audio preload="none" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"${source.referenceTransformation ? ` data-library-audio-transformation="${escapeHtml(JSON.stringify(source.referenceTransformation))}"` : ""}></audio>`,
+                `<audio preload="none" data-library-audio-title="${escapeHtml(source.label)}" data-library-audio-album="${escapeHtml(localizedLabel(layer.metadata))}" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"${source.referenceTransformation ? ` data-library-audio-transformation="${escapeHtml(JSON.stringify(source.referenceTransformation))}"` : ""}></audio>`,
         )
         .join(
             "",
@@ -465,6 +466,8 @@ export async function loadLibraryAudio(
     }
 
     async function play(audio) {
+        if (signal?.aborted || !audio.isConnected) return;
+        await activateLibraryMediaSession(audio, signal);
         if (signal?.aborted || !audio.isConnected) return;
         await new Promise((resolve, reject) => {
             const finish = (error) => {

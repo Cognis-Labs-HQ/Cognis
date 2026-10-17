@@ -349,8 +349,16 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 
 .library-reference-images {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.75rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.library-reference-images::-webkit-scrollbar {
+    display: none;
+}
+.library-reference-images > .image-preview {
+    flex: 0 0 auto;
 }
 [data-library-image-files] {
     display: flex;
