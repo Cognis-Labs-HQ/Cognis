@@ -196,4 +196,7 @@
   <string name="adapter.study.library.notification_withdrawn_subject">Study Request Withdrawn</string>
   <string name="adapter.study.library.notification_withdrawn_body">{{ account }} withdrew Study request {{ request }}.</string>
   <string name="adapter.study.library.request_submitted_by">Submitted by {{ account }}</string>
+    <string name="gateway.study.library_audio_permission_wait">Waiting for microphone permission</string>
+    <string name="gateway.study.library_audio_permission_denied">Microphone access was denied. Allow microphone access in your browser, then try again.</string>
+    <string name="gateway.study.library_audio_record_unavailable">Voice recording is unavailable. Use HTTPS or localhost and a browser that supports audio recording.</string>
 </resources>

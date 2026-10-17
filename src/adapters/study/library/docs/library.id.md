@@ -514,3 +514,11 @@ Kartu dapat mendeklarasikan kolom opsional `imageList` dengan `input.control: "i
 Permintaan menampilkan pratinjau kartu biasa. Buka kartu usulan yang masih menunggu untuk mengubah drafnya; `PATCH /api/v1/study/library/push-requests/:id` hanya tersedia bagi administrator. Menyimpan draf tidak mengubah kartu yang sudah diterbitkan. Persetujuan menerapkan draf dan memberikan kepemilikan kepada pengirim serta administrator yang mengubahnya; penyimpanan tanpa perubahan tidak menambah pemilik. Pratinjau profil pengirim dan pemberi persetujuan memiliki label yang jelas. Persetujuan, penolakan, dan penarikan masing-masing memerlukan konfirmasi. Administrator aktif menerima notifikasi Study untuk permintaan masuk dan keputusan pengguna lain. Tautan navigasi Permintaan tetap statis.
 
 Kontrol penelusuran menyediakan filter teks langsung untuk kartu yang sudah dimuat pada halaman, digabungkan dengan filter dan favorit yang dipilih.
+
+## Media dan Pengiriman
+
+Gambar referensi kini ditampilkan sebagai gambar mini pada editor Library dan tampilan detail hanya-baca, termasuk gambar bawaan modul. Kontrol hapus merah muncul saat gambar diarahkan atau mendapat fokus papan ketik, dan selalu terlihat pada layar sentuh. Penghapusan tidak memerlukan konfirmasi, mengosongkan draf serta pemilih berkas, dan membuang unggahan sementara yang belum digunakan. Menutup editor yang belum disimpan juga melepaskan pratinjau serta berkas sementara; kartu tersimpan dan riwayat permintaan mempertahankan gambar yang dirujuk.
+
+Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi.
+
+Notifikasi Study mengambil kapabilitas saat pengiriman sehingga urutan mulai dan pengaktifan ulang komponen tidak menonaktifkan pengiriman secara permanen. Tanda terima diperiksa: pengiriman tanpa pengirim yang berhasil dilaporkan sebagai kegagalan, kegagalan sebagian dicatat, serta penerima dan pengirim yang berhasil dapat diaudit.

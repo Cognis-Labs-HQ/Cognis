@@ -1,3 +1,4 @@
+import { createNotificationDelivery } from "./notification-delivery.js";
 import { createRequestNotifier } from "./request-notifications.js";
 import { LibraryImageStore } from "./image-store.js";
 import type { StudyAudioCapability } from "@cognis/core";
@@ -111,27 +112,8 @@ export async function bootstrapStudyAdapter(
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("study", "Study");
-    const dispatchNotification =
-        ctx.capabilities.get<
-            (envelope: {
-                category: string;
-                recipientUsername: string;
-                subject: string;
-                body: string;
-                actionUrl?: string;
-                metadata?: Record<string, unknown>;
-            }) => Promise<unknown>
-        >("notify:dispatch");
-    const accountStore = ctx.capabilities.get<{
-        list(): Promise<
-            Array<{
-                username: string;
-                enabled: boolean;
-                role?: string;
-                isFounder?: boolean;
-            }>
-        >;
-    }>("auth:accountStore");
+    const { dispatch: dispatchNotification, accounts: accountStore } =
+        createNotificationDelivery(ctx);
     const service = new LibraryService(
         store,
         ctx.capabilities.get<StudyClassAccessCapability>(
@@ -143,94 +125,86 @@ export async function bootstrapStudyAdapter(
             STRING_LOCALIZATION_CAPABILITY,
         ),
         audioCache,
-        dispatchNotification && accountStore
-            ? async ({ entryCount, language }) => {
-                  try {
-                      const accounts = await accountStore.list();
-                      await Promise.allSettled(
-                          accounts
-                              .filter(({ enabled }) => enabled)
-                              .map(({ username }) =>
-                                  dispatchNotification({
-                                      category: "study",
-                                      recipientUsername: username,
-                                      subject: "New Study Library content",
-                                      body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
-                                      actionUrl: "/study/library",
-                                  }),
-                              ),
-                      );
-                  } catch (error) {
-                      await ctx.log?.(
-                          "error",
-                          "Could not notify accounts about new Study Library content.",
-                          {
-                              component: "study-library",
-                              operation: "notify-new-content",
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : String(error),
-                          },
-                      );
-                  }
-              }
-            : undefined,
+        async ({ entryCount, language }) => {
+            try {
+                const accounts = await accountStore.list();
+                await Promise.allSettled(
+                    accounts
+                        .filter(({ enabled }) => enabled)
+                        .map(({ username }) =>
+                            dispatchNotification({
+                                category: "study",
+                                recipientUsername: username,
+                                subject: "New Study Library content",
+                                body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
+                                actionUrl: "/study/library",
+                            }),
+                        ),
+                );
+            } catch (error) {
+                await ctx.log?.(
+                    "error",
+                    "Could not notify accounts about new Study Library content.",
+                    {
+                        component: "study-library",
+                        operation: "notify-new-content",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+            }
+        },
         ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
-        dispatchNotification
-            ? async (entries, actor) => {
-                  const recipients = new Map<string, string[]>();
-                  for (const entry of entries) {
-                      const recipient =
-                          entry.scope === "user"
-                              ? entry.scopeId
-                              : entry.createdBy;
-                      if (
-                          recipient === actor.accountId ||
-                          recipient.startsWith("content-pack:")
-                      )
-                          continue;
-                      const labels = recipients.get(recipient) ?? [];
-                      labels.push(entry.label);
-                      recipients.set(recipient, labels);
-                  }
-                  const results = await Promise.allSettled(
-                      Array.from(recipients, ([recipientUsername, labels]) =>
-                          dispatchNotification({
-                              category: "study",
-                              recipientUsername,
-                              subject: "Study cards removed",
-                              body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
-                              actionUrl: "/study/library",
-                          }),
-                      ),
-                  );
-                  for (const result of results)
-                      if (result.status === "rejected")
-                          await ctx.log?.(
-                              "error",
-                              "Could not notify affected Study card owner.",
-                              {
-                                  component: "study-library",
-                                  operation: "notify-deletion",
-                                  errorName:
-                                      result.reason instanceof Error
-                                          ? result.reason.name
-                                          : "Error",
-                              },
-                          );
-              }
-            : undefined,
+        async (entries, actor) => {
+            const recipients = new Map<string, string[]>();
+            for (const entry of entries) {
+                const recipient =
+                    entry.scope === "user" ? entry.scopeId : entry.createdBy;
+                if (
+                    recipient === actor.accountId ||
+                    recipient.startsWith("content-pack:")
+                )
+                    continue;
+                const labels = recipients.get(recipient) ?? [];
+                labels.push(entry.label);
+                recipients.set(recipient, labels);
+            }
+            const results = await Promise.allSettled(
+                Array.from(recipients, ([recipientUsername, labels]) =>
+                    dispatchNotification({
+                        category: "study",
+                        recipientUsername,
+                        subject: "Study cards removed",
+                        body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
+                        actionUrl: "/study/library",
+                    }),
+                ),
+            );
+            for (const result of results)
+                if (result.status === "rejected")
+                    await ctx.log?.(
+                        "error",
+                        "Could not notify affected Study card owner.",
+                        {
+                            component: "study-library",
+                            operation: "notify-deletion",
+                            errorName:
+                                result.reason instanceof Error
+                                    ? result.reason.name
+                                    : "Error",
+                        },
+                    );
+        },
         ctx.capabilities.get<StudyAudioCapability>("study:audio"),
         imageStore,
-        dispatchNotification && accountStore
-            ? createRequestNotifier({
-                  flow: ctx.flow,
-                  accounts: accountStore,
-                  dispatch: dispatchNotification,
-                  log: ctx.log,
-              })
-            : undefined,
+        createRequestNotifier({
+            flow: ctx.flow,
+            accounts: accountStore,
+            dispatch: dispatchNotification,
+            log: ctx.log,
+        }),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

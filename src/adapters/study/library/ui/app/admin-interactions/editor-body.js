@@ -330,13 +330,12 @@ export function editorBody(
                 layer?.semanticRole === "orderedLexicalSequence"
             )
                 return `<input name="field:pronunciation" type="hidden" value="${escapeHtml(entry.fields?.pronunciation ?? "")}">`;
-            return (
-                inputForField(
-                    field,
-                    entry.fields?.[field.id],
-                    schema.language,
-                    i18n,
-                ) + renderAudioEditor(entry, layer, field, i18n)
+            return inputForField(
+                field,
+                entry.fields?.[field.id],
+                schema.language,
+                i18n,
+                renderAudioEditor(entry, layer, field, i18n),
             );
         })
         .join("");

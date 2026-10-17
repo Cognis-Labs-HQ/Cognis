@@ -12,8 +12,11 @@ export function requestPreviewContext(request, entries, staged = true) {
                   ...request.source,
                   ...request.proposedEntry,
                   id: request.sourceEntryId,
+                  previewRequestId: request.id,
               }
-            : request.source;
+            : staged && request.source
+              ? { ...request.source, previewRequestId: request.id }
+              : request.source;
     const context = [
         ...new Map(
             [

@@ -826,7 +826,7 @@ Japanische Aufnahmen mit kleinen Kana, einschließlich 学校, wurden mit Kanji-
 
 ## Referenzbilder
 
-Optionale Bildlistenfelder, private Bild-Uploads und Detailgalerien ergänzen. Beide Sprachmodule enthalten ein lizenziertes Referenzfoto und bieten das Feld auf jeder Ebene an.
+Optionale Bildlistenfelder, private Bild-Uploads und Detailgalerien ergänzen. Beide Sprachmodule enthalten ein lizenziertes Referenzfoto und bieten das Feld auf jeder Ebene an. Vorschaubilder im Editor zeigen gebündelte und hochgeladene Bilder. Bei Mauszeiger oder Fokus erscheint eine rote Schaltfläche zum Entfernen, die unbenutzte vorläufige Dateien ohne Bestätigung verwirft. Gespeicherte Karten und der Anfrageverlauf behalten ihre referenzierten Dateien.
 
 ## Bearbeitbare Anfragevorschauen
 
@@ -834,7 +834,11 @@ Reguläre Kartenvorschauen und den vorhandenen Editor für Änderungen an Karten
 
 ## Study-Mitteilungen und Filter
 
-Aktivierte Administratoren im Kanal Study über neue Anfragen und Entscheidungen anderer Administratoren informieren. Pulsierende Navigation entfernen, sofortige Textfilter für geladene Karten ergänzen und das Lernkarten-Seitenmenü im Dokumentfluss halten, um Verschiebungen durch Scrollleisten zu vermeiden.
+Aktivierte Administratoren im Kanal Study über neue Anfragen und Entscheidungen anderer Administratoren informieren. Pulsierende Navigation entfernen, sofortige Textfilter für geladene Karten ergänzen und das Lernkarten-Seitenmenü im Dokumentfluss halten, um Verschiebungen durch Scrollleisten zu vermeiden. Benachrichtigungsfähigkeiten werden bei der Zustellung aufgelöst. Zustellquittungen werden einschließlich leerer Empfängerlisten und Teilfehler geprüft.
+
+## Steuerung des Karteneditors
+
+Mikrofonaufnahmen warten auf die Berechtigungsantwort des Browsers. Währenddessen werden doppelte Anfragen und Speichern verhindert. Ein erst nach dem Schließen gewährter Stream wird freigegeben. Verweigerte Berechtigungen und nicht verfügbare Aufnahmen haben eigene Meldungen. Mikrofon, Wiedergabe und Neu laden stehen gleich groß in einer Zeile. Der Kollektivplural verwendet ein einziges Kontrollkästchen für passende Substantivfamilien; unpassende Optionen bleiben verborgen.
 
 ## Commits
 

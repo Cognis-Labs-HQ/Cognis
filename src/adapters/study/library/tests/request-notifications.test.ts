@@ -4,7 +4,7 @@ import { createLibraryFlow } from "./reuse/flows.js";
 import { createRequestNotifier } from "../request-notifications.js";
 import type { LibraryPushRequest } from "../types.js";
 
-test("requests notify enabled administrators except the actor in Study, with localized decisions and isolated delivery failures", async () => {
+test("new requests notify all enabled administrators; decisions exclude the actor and isolate delivery failures", async () => {
     const deliveries: Array<Record<string, unknown>> = [];
     const failures: unknown[] = [];
     const flowRuns: string[] = [];
@@ -38,7 +38,7 @@ test("requests notify enabled administrators except the actor in Study, with loc
         });
     }
     assert.deepEqual(flowRuns, Array(4).fill("study:library:notifyRequest"));
-    assert.equal(deliveries.length, 8);
+    assert.equal(deliveries.length, 9);
     assert.equal(failures.length, 4);
     for (const input of deliveries) {
         assert.equal(input.category, "study");

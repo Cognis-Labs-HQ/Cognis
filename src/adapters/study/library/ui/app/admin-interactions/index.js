@@ -207,7 +207,7 @@ export function bindLibraryEditorControls(
             input.value = "";
         });
     });
-    bindTransformationOptIns(form, maxTags);
+    bindTransformationOptIns(form, maxTags, signal);
 }
 
 function syncGeneratedCardLabel(form, inputCarouselIds, entries) {

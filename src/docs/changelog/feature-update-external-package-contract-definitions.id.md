@@ -828,7 +828,7 @@ Rekaman kata Jepang dengan kana kecil, termasuk 学校, dibuat ulang dengan ejaa
 
 ## Gambar Referensi
 
-Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan.
+Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan. Gambar mini editor menampilkan gambar bawaan dan unggahan, menyediakan tombol hapus merah saat diarahkan atau difokuskan, serta membuang berkas sementara yang belum digunakan tanpa konfirmasi. Kartu tersimpan dan riwayat permintaan mempertahankan berkas yang dirujuk.
 
 ## Pratinjau Permintaan yang Dapat Diedit
 
@@ -836,7 +836,11 @@ Menggunakan pratinjau kartu biasa dan editor yang ada untuk perubahan draf oleh 
 
 ## Notifikasi dan Filter Study
 
-Memberi tahu administrator aktif tentang permintaan masuk serta keputusan administrator lain melalui Study. Menghapus animasi navigasi, menambahkan filter teks langsung untuk halaman saat ini, dan menjaga menu samping Kartu Belajar dalam alur dokumen agar bilah gulir tidak menggeser konten.
+Memberi tahu administrator aktif tentang permintaan masuk serta keputusan administrator lain melalui Study. Menghapus animasi navigasi, menambahkan filter teks langsung untuk halaman saat ini, dan menjaga menu samping Kartu Belajar dalam alur dokumen agar bilah gulir tidak menggeser konten. Kapabilitas notifikasi diambil saat pengiriman dan tanda terima diperiksa, termasuk daftar pengiriman kosong serta kegagalan sebagian.
+
+## Kontrol Editor Kartu
+
+Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi.
 
 ## Komit
 

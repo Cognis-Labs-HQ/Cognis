@@ -81,6 +81,16 @@ export function createLibraryRoutes(
                 });
                 return true;
             }
+            if (
+                url.pathname === "/api/v1/study/library/images" &&
+                req.method === "DELETE"
+            ) {
+                const body = (await readJson(req)) as { value: string };
+                sendJson(res, 200, {
+                    data: await library.images.discard(actor, body.value),
+                });
+                return true;
+            }
             const imageMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/(entries|push-requests)\/([^/]+)\/images\/([^/]+)\/(\d+)$/,
             );

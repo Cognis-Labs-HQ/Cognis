@@ -196,4 +196,7 @@
   <string name="adapter.study.library.notification_withdrawn_subject">Permintaan Study Ditarik</string>
   <string name="adapter.study.library.notification_withdrawn_body">{{ account }} menarik permintaan Study {{ request }}.</string>
   <string name="adapter.study.library.request_submitted_by">Dikirim oleh {{ account }}</string>
+    <string name="gateway.study.library_audio_permission_wait">Menunggu izin mikrofon</string>
+    <string name="gateway.study.library_audio_permission_denied">Akses mikrofon ditolak. Izinkan akses mikrofon melalui peramban, lalu coba lagi.</string>
+    <string name="gateway.study.library_audio_record_unavailable">Perekaman suara tidak tersedia. Gunakan HTTPS atau localhost serta peramban yang mendukung perekaman audio.</string>
 </resources>

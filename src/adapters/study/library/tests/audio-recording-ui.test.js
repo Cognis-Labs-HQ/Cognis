@@ -10,7 +10,7 @@ const source = readFileSync(
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/\bexport /g, "");
 
-function fixture() {
+function fixture({ getUserMedia, recorderAvailable = true } = {}) {
     let activeRecorder;
     let stops = 0;
     const uploads = [];
@@ -38,9 +38,11 @@ function fixture() {
         Blob,
         navigator: {
             mediaDevices: {
-                getUserMedia: async () => ({
-                    getTracks: () => [{ stop: () => stops++ }],
-                }),
+                getUserMedia:
+                    getUserMedia ??
+                    (async () => ({
+                        getTracks: () => [{ stop: () => stops++ }],
+                    })),
             },
         },
         MediaRecorder: class extends EventTarget {
@@ -74,6 +76,7 @@ function fixture() {
         },
         showToast: (...args) => toasts.push(args),
     };
+    if (!recorderAvailable) delete context.MediaRecorder;
     vm.createContext(context);
     vm.runInContext(source, context);
     const controller = new AbortController();
@@ -102,6 +105,7 @@ function fixture() {
         field,
         picker,
         toasts,
+        button,
         stops: () => stops,
         recorder: () => activeRecorder,
     };
@@ -134,4 +138,74 @@ test("closing the popup discards recording and oversized files never upload", as
     await new Promise(setImmediate);
     assert.equal(other.uploads.length, 0);
     assert.match(other.toasts[0][0], /upload_limit/);
+});
+
+test("microphone waits for the permission dialog and ignores repeated clicks while the browser is deciding", async () => {
+    let grant;
+    let requested = 0;
+    const permission = new Promise((resolve) => {
+        grant = resolve;
+    });
+    const context = fixture({
+        getUserMedia: () => {
+            requested++;
+            return permission;
+        },
+    });
+    await context.click();
+    await context.click();
+    assert.equal(requested, 1);
+    assert.equal(context.toasts.length, 0);
+    assert.equal(context.recorder(), undefined);
+    assert.equal(context.button.disabled, true);
+    assert.equal(context.field.dataset.uploading, "true");
+    assert.equal(context.attributes.get("aria-busy"), "true");
+    grant({ getTracks: () => [{ stop() {} }] });
+    await new Promise(setImmediate);
+    assert.equal(context.recorder().state, "recording");
+    assert.equal(context.attributes.get("aria-busy"), "false");
+    await context.click();
+    assert.equal(context.uploads.length, 1);
+});
+
+test("closing during microphone permission discards a late stream; denying permission reports an error only after the response", async () => {
+    let grant;
+    let stops = 0;
+    const context = fixture({
+        getUserMedia: () =>
+            new Promise((resolve) => {
+                grant = resolve;
+            }),
+    });
+    await context.click();
+    context.controller.abort();
+    grant({
+        getTracks: () => [
+            {
+                stop() {
+                    stops++;
+                },
+            },
+        ],
+    });
+    await new Promise(setImmediate);
+    assert.equal(stops, 1);
+    assert.equal(context.uploads.length, 0);
+    assert.equal(context.toasts.length, 0);
+    let deny;
+    const denied = fixture({
+        getUserMedia: () =>
+            new Promise((_resolve, reject) => {
+                deny = reject;
+            }),
+        recorderAvailable: false,
+    });
+    await denied.click();
+    assert.equal(denied.toasts.length, 0);
+    const error = new Error("denied");
+    error.name = "NotAllowedError";
+    deny(error);
+    await new Promise(setImmediate);
+    assert.match(denied.toasts[0][0], /permission_denied/);
+    assert.equal(denied.button.disabled, false);
 });

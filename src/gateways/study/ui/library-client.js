@@ -415,3 +415,18 @@ export async function stageLibraryPromotion(requestId, proposedEntry) {
         throw new Error(payload.error?.code ?? "request_update_failed");
     return payload.data;
 }
+
+export async function discardLibraryImage(
+    value,
+    { signal, keepalive = false } = {},
+) {
+    const response = await apiFetch("/api/v1/study/library/images", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ value }),
+        signal,
+        keepalive,
+    });
+    if (!response.ok) throw new Error("image_discard_failed");
+    return (await response.json()).data;
+}

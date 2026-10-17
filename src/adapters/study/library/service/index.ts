@@ -173,6 +173,7 @@ export class LibraryService implements LibraryCapability {
         this.stagePush = this.visibility.stagePush.bind(this.visibility);
         this.images = new LibraryImages({
             files: imageStore,
+            isReferenced: (value) => store.hasImageReference(value),
             flow,
             schema: this.schema.bind(this),
             read: this.read.bind(this),

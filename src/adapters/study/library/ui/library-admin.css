@@ -705,6 +705,40 @@ body[data-theme="light"]
     margin: 0;
 }
 
-[data-library-transform-opt-in][hidden] {
+.library-transform-opt-ins > label[data-library-transform-opt-in][hidden] {
     display: none;
+}
+
+.library-transform-opt-ins > label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.library-audio-field {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.library-audio-field > label {
+    display: grid;
+    gap: 0.35rem;
+}
+.library-audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.library-audio-controls > [data-library-editor-audio],
+.library-audio-controls [data-library-audio-sequence] {
+    display: contents;
+}
+.library-audio-controls button {
+    display: grid;
+    place-items: center;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    height: 2.5rem;
+    padding: 0.45rem;
 }

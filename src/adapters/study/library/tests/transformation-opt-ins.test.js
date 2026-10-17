@@ -12,7 +12,10 @@ const source = readFileSync(
 
 test("composer opt-ins follow family tags and preserve other classifications", () => {
     const control = {
-        dataset: { matchTags: '["noun","countable"]', transformTag: "plural" },
+        dataset: {
+            matchGroups: '[["noun","countable"],["noun","collective-dog"]]',
+            transformTag: "plural",
+        },
         addEventListener: (_type, handler) => {
             control.change = handler;
         },
@@ -46,4 +49,27 @@ test("composer opt-ins follow family tags and preserve other classifications", (
     form.setLibraryTags(["noun"]);
     assert.equal(label.hidden, true);
     assert.equal(control.disabled, true);
+    form.setLibraryTags(["noun", "collective-dog"]);
+    assert.equal(label.hidden, false);
+});
+
+test("one opt-in control represents every matching noun family for a shared transformation tag", () => {
+    const context = {
+        Map,
+        escapeHtml: String,
+        localizedLabel: (metadata) => metadata.labels.en,
+    };
+    vm.runInNewContext(source, context);
+    const html = context.renderTransformationOptIns({
+        language: "ja",
+        transformSets: ["dog", "cat", "teacher"].map((family) => ({
+            optInTag: "plural",
+            matchTags: ["noun", family],
+            metadata: { labels: { en: "Collective Plural" } },
+        })),
+    });
+    assert.equal((html.match(/type="checkbox"/g) ?? []).length, 1);
+    assert.match(html, /Collective Plural/);
+    for (const family of ["dog", "cat", "teacher"])
+        assert.match(html, new RegExp(family));
 });

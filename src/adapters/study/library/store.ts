@@ -1,3 +1,4 @@
+import { hasImageReference } from "./image-store.js";
 import type { CacheSnapshot } from "@cognis/core";
 import {
     entryReferenceRows,
@@ -644,6 +645,10 @@ export class LibraryStore {
             .map(encodeURIComponent)
             .join("/");
         return `/api/v1/study/library/assets/${encodeURIComponent(publisher)}/${encodeURIComponent(packId)}/${encodeURIComponent(version)}/${encodedPath}`;
+    }
+
+    async hasImageReference(value: string): Promise<boolean> {
+        return hasImageReference(this.db, value);
     }
 
     async getContentPackAsset(

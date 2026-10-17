@@ -527,3 +527,11 @@ Cards may declare an optional `imageList` field with `input.control: "imageFiles
 Requests show standard card previews. Open a pending proposed card to edit its staged fields; `PATCH /api/v1/study/library/push-requests/:id` is restricted to administrators. Saving a draft leaves the live card unchanged. Approval applies the draft and gives ownership to the submitting user and administrators who changed it; unchanged saves do not add owners. Submitter and approver profile previews have explicit labels. Approve, decline and withdraw each require confirmation. Enabled administrators receive Study notifications for incoming requests and decisions made by other users. The Requests navigation link remains static.
 
 Browse controls include an immediate text filter over the cards already loaded on the page, combined with the selected filters and favourites.
+
+## Media and Delivery Fixes
+
+Reference images now load as thumbnails in the Library editor and its read-only detail view, including bundled module images. Uploaded thumbnails have a red remove control on hover or keyboard focus (always visible on touch screens). Removal needs no confirmation, clears the draft and file picker, and discards unused staged uploads. Closing an unsaved editor also releases previews and staged files; saved cards and request history retain their referenced images.
+
+Microphone recording waits for the browser’s permission response, blocks duplicate requests and saving while permission is pending, and releases a stream granted after the editor closes. Permission denial and unavailable recording have separate messages. Microphone, Play and Reload share one equally sized row. Collective Plural uses a single checkbox for its matching noun families; unrelated opt-ins remain hidden.
+
+Study notifications resolve current capabilities at delivery time, so startup order and component reactivation do not permanently disable delivery. The sender receipt is checked: an empty delivered-sender list is treated as a failure, partial failures are logged, and successful recipients and senders are auditable.

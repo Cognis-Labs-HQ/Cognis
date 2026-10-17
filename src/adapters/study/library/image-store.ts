@@ -1,3 +1,4 @@
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { randomUUID } from "node:crypto";
 import type { NamespaceFileClient } from "@cognis/core";
 import type { LibraryActor } from "./contracts.js";
@@ -46,6 +47,17 @@ export class LibraryImageStore {
         return { value: `file:${key}` };
     }
 
+    async discard(actor: LibraryActor, value: string): Promise<boolean> {
+        if (
+            !value.startsWith(
+                `file:uploads/${encodeURIComponent(actor.accountId)}/`,
+            ) ||
+            !/^file:uploads\/[^/]+\/[a-f0-9-]+\.image$/.test(value)
+        )
+            throw new Error("forbidden");
+        return this.files.delete(ACTOR, value.slice(5));
+    }
+
     async read(value: string): Promise<{ mediaType: string; data: Buffer }> {
         if (!/^file:uploads\/[^/]+\/[a-f0-9-]+\.image$/.test(value))
             throw new Error("invalid_image_upload");
@@ -58,4 +70,41 @@ export class LibraryImageStore {
         validateReferenceImage(mediaType, data);
         return { mediaType, data };
     }
+}
+
+export async function hasImageReference(
+    db: DbExecutor,
+    value: string,
+): Promise<boolean> {
+    const contains = (input: unknown): boolean =>
+        input === value ||
+        (Array.isArray(input)
+            ? input.some(contains)
+            : !!input &&
+              typeof input === "object" &&
+              Object.values(input).some(contains));
+    for (const [table, columns] of [
+        ["study_library_entries", ["fields_json"]],
+        [
+            "study_library_push_requests",
+            ["proposed_entry_json", "source_entry_json", "source_context_json"],
+        ],
+    ] as const) {
+        const result = await db.executeCommand({
+            option: "SELECT",
+            table,
+            columns: [...columns],
+        });
+        if (
+            (result.rows ?? []).some((row) =>
+                columns.some(
+                    (column) =>
+                        row[column] &&
+                        contains(JSON.parse(String(row[column]))),
+                ),
+            )
+        )
+            return true;
+    }
+    return false;
 }

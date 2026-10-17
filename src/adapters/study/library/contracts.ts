@@ -69,6 +69,10 @@ export interface LibraryCapability {
         entry: LibraryEntryInput,
     ): Promise<LibraryPushRequest>;
     readonly images: {
+        discard(
+            actor: LibraryActor,
+            value: string,
+        ): Promise<{ discarded: boolean }>;
         upload(
             actor: LibraryActor,
             mediaType: string,

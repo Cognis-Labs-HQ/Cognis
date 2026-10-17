@@ -1,8 +1,10 @@
+import { reportClientError } from "/static/reuse/error-reporting.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLibraryImageUrl,
     uploadLibraryImage,
+    discardLibraryImage,
 } from "/static/gateways/study/ui/library-client.js";
 
 export function renderReferenceImages(entry, layer) {
@@ -46,67 +48,138 @@ export async function loadReferenceImages(
 
 export function bindReferenceImageUploads(form, entry, i18n, signal) {
     for (const field of form.querySelectorAll("[data-library-image-upload]")) {
-        const stored = form.elements[`field:${field.dataset.imageField}`];
-        stored.libraryFieldValue = [
-            ...(entry.fields?.[field.dataset.imageField] ?? []),
-        ];
+        const fieldId = field.dataset.imageField;
+        const stored = form.elements[`field:${fieldId}`];
+        const original = entry.fields?.[fieldId] ?? [];
+        stored.libraryFieldValue = [...original];
         const picker = field.querySelector('input[type="file"]');
         const files = field.querySelector("[data-library-image-files]");
+        const urls = new Map();
+        const uploaded = new Set();
+        const errorToast = () =>
+            showToast(i18n.t("adapter.study.library.images_upload_error"), {
+                variant: "error",
+            });
+        const discard = async (value) => {
+            try {
+                await discardLibraryImage(value, { keepalive: true });
+                uploaded.delete(value);
+            } catch (error) {
+                reportClientError({
+                    component: "study-library",
+                    operation: "discardImage",
+                    code: error?.message,
+                });
+                if (!signal?.aborted) errorToast();
+            }
+        };
         const render = () => {
             files.innerHTML = stored.libraryFieldValue
                 .map(
-                    (_value, index) =>
-                        `<button class="btn-cancel" type="button" data-remove-image="${index}" ${picker.disabled ? "disabled" : ""} aria-label="${escapeHtml(i18n.t("ui.reuse.delete"))}">${index + 1} ×</button>`,
+                    (value, index) =>
+                        `<span class="library-image-preview"><img alt="${escapeHtml(entry.label ?? "")}"${urls.has(value) ? ` src="${escapeHtml(urls.get(value))}"` : ""} data-image-preview="${index}"><button class="btn-cancel library-image-remove" type="button" data-remove-image="${index}" ${picker.disabled ? "disabled" : ""} aria-label="${escapeHtml(i18n.t("ui.reuse.delete"))}">×</button></span>`,
                 )
                 .join("");
         };
         render();
+        for (const [index, value] of original.entries()) {
+            void fetchLibraryImageUrl(entry.id, fieldId, index, {
+                signal,
+                requestId: entry.previewRequestId,
+            })
+                .then((url) => {
+                    if (
+                        signal?.aborted ||
+                        !stored.libraryFieldValue.includes(value)
+                    ) {
+                        URL.revokeObjectURL(url);
+                        return;
+                    }
+                    urls.set(value, url);
+                    render();
+                })
+                .catch((error) => {
+                    if (signal?.aborted) return;
+                    reportClientError({
+                        component: "study-library",
+                        operation: "previewImage",
+                        code: error?.message,
+                    });
+                    showToast(
+                        i18n.t("adapter.study.library.images_load_error"),
+                        { variant: "error" },
+                    );
+                });
+        }
         files.addEventListener(
             "click",
-            (event) => {
+            async (event) => {
                 const button = event.target.closest("[data-remove-image]");
                 if (!button || picker.disabled) return;
-                stored.libraryFieldValue.splice(
+                event.preventDefault();
+                const [value] = stored.libraryFieldValue.splice(
                     Number(button.dataset.removeImage),
                     1,
                 );
+                if (urls.has(value)) URL.revokeObjectURL(urls.get(value));
+                urls.delete(value);
+                picker.value = "";
                 render();
                 form.dispatchEvent(new Event("change", { bubbles: true }));
+                if (uploaded.has(value)) await discard(value);
             },
             { signal },
         );
         picker.addEventListener(
             "change",
             async () => {
+                if (picker.disabled) return;
                 picker.disabled = true;
                 field.dataset.uploading = "true";
+                render();
                 try {
                     for (const file of picker.files) {
                         if (file.size > 5 * 1024 * 1024)
                             throw new Error("image_upload_too_large");
                         const result = await uploadLibraryImage(file, signal);
-                        if (signal?.aborted) return;
+                        uploaded.add(result.value);
+                        if (signal?.aborted) {
+                            await discard(result.value);
+                            return;
+                        }
+                        urls.set(result.value, URL.createObjectURL(file));
                         stored.libraryFieldValue.push(result.value);
                     }
-                    form.dispatchEvent(new Event("change", { bubbles: true }));
                     showToast(i18n.t("adapter.study.library.images_uploaded"), {
                         variant: "success",
                     });
-                } catch {
-                    if (!signal?.aborted)
-                        showToast(
-                            i18n.t("adapter.study.library.images_upload_error"),
-                            { variant: "error" },
-                        );
+                } catch (error) {
+                    if (!signal?.aborted) {
+                        reportClientError({
+                            component: "study-library",
+                            operation: "uploadImage",
+                            code: error?.message,
+                        });
+                        errorToast();
+                    }
                 } finally {
                     delete field.dataset.uploading;
                     picker.disabled = false;
+                    picker.value = "";
                     render();
                     form.dispatchEvent(new Event("change", { bubbles: true }));
-                    picker.value = "";
                 }
             },
             { signal },
+        );
+        signal?.addEventListener(
+            "abort",
+            () => {
+                for (const url of urls.values()) URL.revokeObjectURL(url);
+                urls.clear();
+                for (const value of uploaded) void discard(value);
+            },
+            { once: true },
         );
     }
 }

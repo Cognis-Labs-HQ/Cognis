@@ -196,4 +196,7 @@
   <string name="adapter.study.library.notification_withdrawn_subject">Study-Anfrage zurückgezogen</string>
   <string name="adapter.study.library.notification_withdrawn_body">{{ account }} hat die Study-Anfrage {{ request }} zurückgezogen.</string>
   <string name="adapter.study.library.request_submitted_by">Eingereicht von {{ account }}</string>
+    <string name="gateway.study.library_audio_permission_wait">Warten auf Mikrofonberechtigung</string>
+    <string name="gateway.study.library_audio_permission_denied">Der Mikrofonzugriff wurde verweigert. Erlaube den Zugriff im Browser und versuche es erneut.</string>
+    <string name="gateway.study.library_audio_record_unavailable">Sprachaufnahmen sind nicht verfügbar. Verwende HTTPS oder localhost und einen Browser mit Audioaufnahme-Unterstützung.</string>
 </resources>

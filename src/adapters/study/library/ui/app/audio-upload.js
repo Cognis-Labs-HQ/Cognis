@@ -11,13 +11,16 @@ export function bindAudioUploads(form, i18n, signal) {
         let recorder;
         let stream;
         let discarded = false;
+        let pendingPermission = false;
+        button.disabled = picker.disabled;
         const release = () =>
             stream?.getTracks().forEach((track) => track.stop());
-        const errorToast = (key = "library_audio_upload_error") => {
+        const errorToast = (key = "library_audio_upload_error", error) => {
             reportClientError({
                 component: "study-library",
                 operation: "recordOrUploadAudio",
                 code: key,
+                errorName: error?.name,
             });
             return showToast(i18n.t(`gateway.study.${key}`), {
                 variant: "error",
@@ -63,16 +66,23 @@ export function bindAudioUploads(form, i18n, signal) {
             "click",
             async (event) => {
                 event.preventDefault();
+                if (pendingPermission || button.disabled || signal?.aborted)
+                    return;
                 if (recorder?.state === "recording") {
                     recorder.stop();
                     return;
                 }
+                pendingPermission = true;
+                field.dataset.uploading = "true";
+                picker.disabled = true;
                 button.disabled = true;
+                button.setAttribute("aria-busy", "true");
+                button.setAttribute(
+                    "aria-label",
+                    i18n.t("gateway.study.library_audio_permission_wait"),
+                );
                 try {
-                    if (
-                        !navigator.mediaDevices?.getUserMedia ||
-                        !globalThis.MediaRecorder
-                    )
+                    if (!navigator.mediaDevices?.getUserMedia)
                         throw new Error("recording_unavailable");
                     stream = await navigator.mediaDevices.getUserMedia({
                         audio: true,
@@ -81,11 +91,13 @@ export function bindAudioUploads(form, i18n, signal) {
                         release();
                         return;
                     }
+                    if (!globalThis.MediaRecorder)
+                        throw new Error("recording_unavailable");
                     const mimeType = [
                         "audio/webm",
                         "audio/ogg",
                         "audio/mp4",
-                    ].find((type) => MediaRecorder.isTypeSupported(type));
+                    ].find((type) => MediaRecorder.isTypeSupported?.(type));
                     recorder = new MediaRecorder(
                         stream,
                         mimeType ? { mimeType } : {},
@@ -131,10 +143,28 @@ export function bindAudioUploads(form, i18n, signal) {
                         "aria-label",
                         i18n.t("gateway.study.library_audio_record_stop"),
                     );
-                } catch {
+                } catch (error) {
                     release();
-                    if (!signal?.aborted) errorToast();
+                    if (!signal?.aborted)
+                        errorToast(
+                            error?.name === "NotAllowedError"
+                                ? "library_audio_permission_denied"
+                                : error?.message === "recording_unavailable"
+                                  ? "library_audio_record_unavailable"
+                                  : "library_audio_upload_error",
+                            error,
+                        );
                 } finally {
+                    pendingPermission = false;
+                    button.setAttribute("aria-busy", "false");
+                    if (recorder?.state !== "recording") {
+                        delete field.dataset.uploading;
+                        picker.disabled = false;
+                        button.setAttribute(
+                            "aria-label",
+                            i18n.t("gateway.study.library_audio_record"),
+                        );
+                    }
                     button.disabled = false;
                 }
             },

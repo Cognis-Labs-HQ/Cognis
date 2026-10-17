@@ -196,4 +196,7 @@
   <string name="adapter.study.library.notification_withdrawn_subject">Study の申請を取り下げ</string>
   <string name="adapter.study.library.notification_withdrawn_body">{{ account }} が Study の申請 {{ request }} を取り下げました。</string>
   <string name="adapter.study.library.request_submitted_by">申請者: {{ account }}</string>
+    <string name="gateway.study.library_audio_permission_wait">マイクの使用許可を待っています</string>
+    <string name="gateway.study.library_audio_permission_denied">マイクへのアクセスが拒否されました。ブラウザーでマイクを許可してから、もう一度お試しください。</string>
+    <string name="gateway.study.library_audio_record_unavailable">音声を録音できません。HTTPS または localhost に接続し、録音に対応したブラウザーをご利用ください。</string>
 </resources>

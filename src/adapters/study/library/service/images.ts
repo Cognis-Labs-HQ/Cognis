@@ -6,6 +6,7 @@ import { runOperation } from "../reuse/operation.js";
 
 interface ImageContext {
     files?: LibraryImageStore;
+    isReferenced(value: string): Promise<boolean>;
     flow?: FlowApi;
     schema(id: string): LibrarySchema;
     read(actor: LibraryActor, id: string): Promise<LibraryEntry | null>;
@@ -59,6 +60,47 @@ export class LibraryImages {
             },
         );
         return result;
+    }
+
+    async discard(
+        actor: LibraryActor,
+        value: string,
+    ): Promise<{ discarded: boolean }> {
+        let discarded = false;
+        const { log } = this.context;
+        await runOperation(
+            this.context.flow,
+            "study:library:discardImage",
+            { actor },
+            {
+                authorize: () => {
+                    if (
+                        typeof value !== "string" ||
+                        !value.startsWith(
+                            `file:uploads/${encodeURIComponent(actor.accountId)}/`,
+                        )
+                    )
+                        throw new Error("forbidden");
+                },
+                discard: async () => {
+                    if (await this.context.isReferenced(value)) return;
+                    if (!this.context.files)
+                        throw new Error("file_gateway_unavailable");
+                    discarded = await this.context.files.discard(actor, value);
+                    await log?.(
+                        "info",
+                        "Discarded staged Study reference image.",
+                        {
+                            component: "study-library",
+                            operation: "discardImage",
+                            accountId: actor.accountId,
+                            discarded,
+                        },
+                    );
+                },
+            },
+        );
+        return { discarded };
     }
 
     async resolve(value: string): Promise<{ mediaType: string; data: Buffer }> {

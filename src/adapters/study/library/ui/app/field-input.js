@@ -2,7 +2,7 @@ import { DEFINITION_LANGUAGES } from "./definition-languages.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { localizedLabel } from "./presentation.js";
 
-export function inputForField(field, value, language, i18n) {
+export function inputForField(field, value, language, i18n, audioEditor = "") {
     if (field.hidden === true) return "";
     const label = localizedLabel(field.metadata, language);
     const name = `field:${field.id}`;
@@ -15,11 +15,7 @@ export function inputForField(field, value, language, i18n) {
     if (control === "audioFile") {
         const namespace = field.input?.file?.namespace ?? "";
         const prefix = field.input?.file?.prefix ?? `${language}/`;
-        const filename =
-            typeof value === "string" && value.startsWith("file:")
-                ? value.slice("file:".length).split("/").at(-1)
-                : "";
-        return `<label class="library-audio-field" data-library-audio-upload data-field-id="${escapeHtml(field.id)}" data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><span class="library-audio-filename" data-library-audio-filename${filename ? "" : " hidden"}>${escapeHtml(filename)}</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"><button type="button" class="btn-neutral" data-library-record-audio aria-pressed="false" aria-label="${escapeHtml(i18n.t("gateway.study.library_audio_record"))}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></button></label>`;
+        return `<section class="library-audio-field" data-library-audio-upload data-field-id="${escapeHtml(field.id)}" data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><label><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><span class="library-audio-filename" data-library-audio-filename hidden></span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label><div class="library-audio-controls"><button type="button" class="btn-neutral" data-library-record-audio aria-pressed="false" aria-label="${escapeHtml(i18n.t("gateway.study.library_audio_record"))}"><img class="library-speaker-icon library-speaker-icon-light" src="/static/adapters/study/library/assets/microphone-light.svg" alt=""><img class="library-speaker-icon library-speaker-icon-dark" src="/static/adapters/study/library/assets/microphone-dark.svg" alt=""></button>${audioEditor}</div></section>`;
     }
     if (control === "singleSelect" || control === "multiSelect")
         return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;

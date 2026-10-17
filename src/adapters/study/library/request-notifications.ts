@@ -102,7 +102,8 @@ export function createRequestNotifier({
                         const recipients = (await accounts.list()).filter(
                             (account) =>
                                 account.enabled &&
-                                account.username !== actor.accountId &&
+                                (request.status === "pending" ||
+                                    account.username !== actor.accountId) &&
                                 (account.isFounder ||
                                     ["admin", "owner"].includes(
                                         account.role ?? "",
