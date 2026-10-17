@@ -1,3 +1,4 @@
+import { choosePracticeMode } from "../../reuse/practice-mode.js";
 import { createPracticeSession } from "../flashcards/practice-session.js";
 import { noteDetails } from "../../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -42,8 +43,12 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     await composer.init();
     signal?.throwIfAborted();
     let release;
-    let mode = "reading";
-    let practiceImmediately = false;
+    const mode = await runDeckAction(
+        "practiceMode",
+        () => choosePracticeMode(i18n, deck.name, signal),
+        signal,
+    );
+    if (signal.aborted || !["reading", "writing"].includes(mode)) return;
     const next = () => {
         release?.();
         const target = root.querySelector("[data-shared-card]");
@@ -75,14 +80,8 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
             templates,
             schemas,
             entries: [],
-            progress: {},
-            filter: "new",
             mode,
-            practiceImmediately,
-            onModeChange: (selected) => {
-                mode = selected;
-                practiceImmediately = true;
-            },
+            onAnswer: (grade) => practiceSession.answer(grade),
             i18n,
             signal,
             authenticated: false,

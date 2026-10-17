@@ -1,3 +1,7 @@
+import {
+    setDrawingCard,
+    observeDrawingCard,
+} from "../ui/reuse/drawing-state.js";
 import { pronunciationClass } from "../ui/reuse/pronunciation.js";
 import { formatTemplate } from "../../../ui/reuse/format-template.js";
 import { escapeHtml } from "../../../ui/reuse/escape-html.js";
@@ -54,6 +58,9 @@ async function drawingSession({
         append(child) {
             child.parentElement = this;
         },
+        setAttribute(name, value) {
+            this[name] = value;
+        },
         style: { setProperty() {} },
         classList: { add() {}, remove() {}, toggle() {} },
         addEventListener(event, handler) {
@@ -107,6 +114,7 @@ async function drawingSession({
         return () => {};
     });
     const environment = {
+        setDrawingCard,
         pronunciationClass,
         AbortController,
         compactDrawingPattern,
@@ -273,7 +281,7 @@ test("every card selection paints its guide when the open pad keeps the same siz
         assert.deepEqual(session.moves[0], { x: index * 40, y: 80 });
         assert.equal(
             session.elements.get("[data-card-label]").textContent,
-            `Character ${index}`,
+            "•••",
         );
         assert.equal(
             session.elements.get("[data-definition]").textContent,
@@ -419,10 +427,7 @@ test("loading another character preserves the moved pad position", async () => {
     assert.equal(session.pad.style.top, "80px");
     assert.equal(session.pad.style.width, "640px");
     assert.equal(session.pad.style.height, "480px");
-    assert.equal(
-        session.elements.get("[data-card-label]").textContent,
-        "Character 2",
-    );
+    assert.equal(session.elements.get("[data-card-label]").textContent, "•••");
     await session.open(card(3));
     session.flushFrames();
     assert.equal(session.pad.style.left, "120px");
@@ -512,4 +517,30 @@ test("closing after the final stroke preserves the completed difficulty without 
     await session.open(card(1));
     session.flushFrames();
     assert.deepEqual(session.annotations, ["?"]);
+});
+
+test("drawing masks its heading, reports the active character, and clears it on close", async () => {
+    const changes = [];
+    const unsubscribe = observeDrawingCard((value) => changes.push(value));
+    const session = await drawingSession();
+    const results = [];
+    const pad = await session.open({
+        ...card(1),
+        onResult: (result) => results.push(result),
+    });
+    const heading = session.elements.get("[data-card-label]");
+    assert.equal(heading.textContent, "•••");
+    assert.equal(changes.at(-1).id, "card-1");
+    await heading.handlers.get("click")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(heading.textContent, "Character 1");
+    assert.equal(heading["aria-expanded"], "true");
+    assert.equal(results[0].assisted, true);
+    assert.equal(results[0].correct, false);
+    await session.load(card(2));
+    assert.equal(heading.textContent, "•••");
+    assert.equal(changes.at(-1).id, "card-2");
+    await pad.close();
+    assert.equal(changes.at(-1), null);
+    unsubscribe();
 });

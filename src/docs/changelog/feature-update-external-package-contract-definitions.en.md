@@ -792,6 +792,22 @@ Japanese Kanji readings are ranked from common JMdict attestations and available
 
 Sentence composition requests the selected transformed label and primary reading, including chained paths. If a variant recording is unavailable, playback fails explicitly instead of traversing base-form pronunciation references. The same rule applies to direct variant playback and nested constituents.
 
+## Conceal writing answers
+
+The drawing heading initially shows a masked character and a standard click-to-reveal button. Loading a different character masks it again. Floating sessions expose their current card through the removable `study:drawing:observe` capability. The matching Library preview stays open, blurred and non-interactive until the pad changes character or closes; pronunciation and meaning remain available in the pad. Embedded Writing uses the same concealment and reports reveals as assisted attempts.
+
+## Flashcard Practice
+
+Opening an account or shared deck asks the learner to choose Reading or Writing before practice begins. The chosen mode stays fixed for that session, including after visiting Explore and using browser Back. Cards without support for that mode can be skipped; they never silently change the session mode. New cards start with their answers hidden. Total, New, Due and Done retain their existing review filters; changing the filter starts another queue in the same mode.
+
+Reading uses the primary pronunciation and three distinct visible Library distractors. Writing embeds the shared pad and presents the meaning and reading while concealing the character behind a click-to-reveal heading. Stroke mistakes do not automatically expose the character. Revealing the character is treated as an assisted attempt and records Again, even if later strokes succeed. A successful unaided attempt records Good. The answer can still be inspected on previously reviewed cards.
+
+Deck galleries use `/study/<iso>/flashcards`; deck links use a readable name slug followed by `--<deck-id>`, such as `/study/ja/flashcards/first-japanese-words--<deck-id>`. Canonical English names keep the readable portion independent of the interface language. The identity suffix keeps duplicate names unambiguous and links consistent across owners and recipients with different deck catalogs. API resource IDs remain unchanged.
+
+The active deck queue, index, grades, pending answer, filter and selected mode are retained in the current browser history entry. Returning from Explore restores the original queue and working Previous/Next controls rather than creating a one-card session. Revealing an answer or leaving to inspect an unanswered card retains an Again result. Source links pass ordered deck card IDs in history state so Explore previews can also navigate that deck, including child cards. Locations and card access remain authorized by the existing Library contracts; inaccessible cards are omitted when a session is restored.
+
+All actions run the existing declared Study deck and drawing flows. The interface reuses the standard popup, buttons and existing flashcard layout styles. Account and shared decks use the same renderer and practice implementation; shared snapshots do not gain Library access. Page departure aborts mounted handlers and drawing sessions.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

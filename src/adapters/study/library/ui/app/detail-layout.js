@@ -1,3 +1,5 @@
+import { bindDrawingPreview, placeAudioSpeaker } from "./drawing.js";
+import { loadLibraryAudio } from "./presentation.js";
 import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
 
 export function bindDetailLayout(root, signal) {
@@ -35,4 +37,15 @@ export function bindDetailLayout(root, signal) {
         const className = pronunciationClass(reading.textContent);
         if (className) reading.classList.add(className);
     }
+}
+
+export function bindEntryDetail(
+    root,
+    entry,
+    { signal, audioObjectUrls, audioError },
+) {
+    bindDetailLayout(root, signal);
+    bindDrawingPreview(root, entry, signal);
+    placeAudioSpeaker(root, signal);
+    void loadLibraryAudio(root, audioObjectUrls, signal, audioError);
 }

@@ -15,3 +15,7 @@ Zusammengesetzte Muster behalten Proportionen, Reihenfolge, Zeit, Druck und Zeig
 Öffnen, Laden, Strich, Zurücksetzen, Hilfe, Wiederholung und Schließen führen deklarierte `study:drawing`-Abläufe mit before, execute und after aus. Navigation oder Abbruch beendet Ereignisse, Beobachter und Darstellung. Bibliothek und Lernkarten verwenden ausschließlich die öffentliche Study-Wiederverwendung.
 
 Das gemeinsame Schreibfeld lädt seine eigene HTML-Vorlage einmal je Browsermodul. Fehlgeschlagene Anfragen lehnen die Öffnungsaktion ab; Navigation während des Ladens bricht die Einbindung ab. Zeichengruppen des Anbieters bleiben in Mehrzeichenmustern erhalten.
+
+## Schreibantworten verbergen
+
+Die Überschrift des Zeichenfelds verbirgt zunächst das Zeichen hinter einer normalen Schaltfläche zum Aufdecken. Ein anderes Zeichen wird erneut verborgen. Schwebende Sitzungen melden ihre aktuelle Karte über die entfernbare Fähigkeit `study:drawing:observe`. Die passende Bibliotheksvorschau bleibt geöffnet, unscharf und nicht bedienbar, bis das Feld ein anderes Zeichen lädt oder geschlossen wird; Lesung und Bedeutung bleiben im Zeichenfeld verfügbar. Eingebettetes Schreiben nutzt dieselbe Verdeckung und meldet Aufdecken als unterstützten Versuch.

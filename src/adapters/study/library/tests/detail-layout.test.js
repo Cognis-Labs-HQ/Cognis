@@ -9,7 +9,7 @@ vm.createContext(context);
 vm.runInContext(
     readFileSync(new URL("../ui/app/detail-layout.js", import.meta.url), "utf8")
         .replace(/^import.*;$/gm, "")
-        .replace("export function", "function"),
+        .replaceAll("export function", "function"),
     context,
 );
 const { bindDetailLayout } = context;
@@ -59,4 +59,38 @@ test("related cards scroll only beyond five rows and release their resize observ
     assert.ok(!classes.has("library-related-entries--scrolling"));
     controller.abort();
     assert.ok(disconnected);
+});
+
+test("entry previews initialize drawing concealment and audio with the same abortable context", () => {
+    const calls = [];
+    let disconnected = false;
+    const root = { querySelector: () => null, querySelectorAll: () => [] };
+    const entry = { id: "character", label: "学" };
+    const controller = new AbortController();
+    const objectUrls = new Set();
+    context.ResizeObserver = class {
+        observe() {}
+
+        disconnect() {
+            disconnected = true;
+        }
+    };
+    context.bindDrawingPreview = (...args) => calls.push(["drawing", ...args]);
+    context.placeAudioSpeaker = (...args) => calls.push(["speaker", ...args]);
+    context.loadLibraryAudio = (...args) => {
+        calls.push(["audio", ...args]);
+        return Promise.resolve();
+    };
+    context.bindEntryDetail(root, entry, {
+        signal: controller.signal,
+        audioObjectUrls: objectUrls,
+        audioError: "localized-error",
+    });
+    assert.deepEqual(calls, [
+        ["drawing", root, entry, controller.signal],
+        ["speaker", root, controller.signal],
+        ["audio", root, objectUrls, controller.signal, "localized-error"],
+    ]);
+    controller.abort();
+    assert.equal(disconnected, true);
 });

@@ -76,3 +76,20 @@ export function placeAudioSpeaker(overlay, signal) {
     speaker.addEventListener("focusout", tooltip.hide);
     signal?.addEventListener("abort", () => tooltip.destroy(), { once: true });
 }
+
+export function bindDrawingPreview(overlay, entry, signal) {
+    return uiCtx.capabilities.get("study:drawing:observe")?.(
+        (card) => {
+            const masked = card?.id === entry.id && card?.label === entry.label;
+            overlay.classList.toggle("is-writing-preview", masked);
+            for (const element of overlay.querySelectorAll(
+                ".popup-heading, .popup-body",
+            )) {
+                element.inert = masked;
+                if (masked) element.setAttribute("aria-hidden", "true");
+                else element.removeAttribute("aria-hidden");
+            }
+        },
+        { signal },
+    );
+}

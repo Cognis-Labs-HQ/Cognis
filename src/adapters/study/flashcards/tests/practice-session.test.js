@@ -1,8 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createPracticeSession } from "../ui/app/flashcards/practice-session.js";
+import {
+    createPracticeSession,
+    resumePracticeSession,
+} from "../ui/app/flashcards/practice-session.js";
 import {
     flashcardsRoute,
+    deckRouteKey,
     deckMatchesLanguage,
 } from "../ui/app/flashcards/language.js";
 
@@ -37,4 +41,69 @@ test("language routes and deck metadata separate galleries without depending on 
         ),
         false,
     );
+});
+
+test("saved deck queues restore position, all cards, and grades after Explore and browser Back", () => {
+    const cards = ["one", "two", "three"].map((id) => ({ entry: { id } }));
+    const session = createPracticeSession(cards);
+    session.next("good");
+    session.next("again");
+    const snapshot = JSON.parse(JSON.stringify(session.snapshot()));
+    const restored = resumePracticeSession([...cards].reverse(), snapshot);
+    assert.deepEqual(
+        restored.queue.map(({ entry }) => entry.id),
+        ["one", "two", "three"],
+    );
+    assert.equal(restored.session.current.entry.id, "three");
+    assert.equal(restored.session.canPrevious, true);
+    restored.session.previous();
+    assert.equal(restored.session.current.entry.id, "two");
+    assert.equal(restored.session.answeredGrade, "again");
+    restored.session.next();
+    assert.equal(restored.session.current.entry.id, "three");
+});
+
+test("restoring a queue with an inaccessible card keeps grades attached to the correct surviving cards", () => {
+    const cards = ["one", "two", "three"].map((id) => ({ entry: { id } }));
+    const session = createPracticeSession(cards);
+    session.next("good");
+    session.next("again");
+    const restored = resumePracticeSession(cards.slice(1), session.snapshot());
+    assert.equal(restored.session.current.entry.id, "three");
+    restored.session.previous();
+    assert.equal(restored.session.current.entry.id, "two");
+    assert.equal(restored.session.answeredGrade, "again");
+});
+
+test("deck URLs use readable language-independent names with stable identity across different accessible catalogs", () => {
+    const first = {
+        id: "first",
+        name: "最初の単語",
+        names: { en: "First Japanese Words" },
+    };
+    const second = { id: "second", name: "First Japanese Words" };
+    assert.equal(deckRouteKey(first), "first-japanese-words--first");
+    assert.equal(
+        deckRouteKey(first, [first, second]),
+        "first-japanese-words--first",
+    );
+    assert.equal(
+        deckRouteKey(second, [first, second]),
+        "first-japanese-words--second",
+    );
+});
+
+test("assisted answers remain Again across Previous, Next and history restoration until reviewed", () => {
+    const cards = ["one", "two"].map((id) => ({ entry: { id } }));
+    const session = createPracticeSession(cards);
+    session.next("good");
+    session.answer("again");
+    session.previous();
+    session.next("good");
+    session.answer("good");
+    assert.equal(session.answeredGrade, "again");
+    assert.equal(session.answered, false);
+    const restored = resumePracticeSession(cards, session.snapshot());
+    assert.equal(restored.session.answeredGrade, "again");
+    assert.equal(restored.session.answered, false);
 });

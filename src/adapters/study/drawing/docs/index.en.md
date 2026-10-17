@@ -17,3 +17,7 @@ Ordered writing-unit references compose multi-character patterns without mutatin
 Open, load, stroke, reset, guidance, retry and close execute declared `study:drawing` action flows with before, execute and after stages. Route departure or parent abort releases pointer handlers, resize observers, pending rendering and the pad. Library and Flashcards call the public Study reuse contract rather than importing optional-adapter internals.
 
 The shared drawing pad loads its owned HTML template once per browser module. Failed template requests reject the open action; leaving before loading completes aborts the mount. Provider-authored character groups remain intact in multi-character patterns.
+
+## Conceal writing answers
+
+The drawing heading initially shows a masked character and a standard click-to-reveal button. Loading a different character masks it again. Floating sessions expose their current card through the removable `study:drawing:observe` capability. The matching Library preview stays open, blurred and non-interactive until the pad changes character or closes; pronunciation and meaning remain available in the pad. Embedded Writing uses the same concealment and reports reveals as assisted attempts.

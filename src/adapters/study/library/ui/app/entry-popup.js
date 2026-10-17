@@ -1,12 +1,8 @@
-import { bindDetailLayout } from "./detail-layout.js";
+import { bindEntryDetail } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { composeDetail } from "./detail.js";
-import {
-    isMeaningLayer,
-    layerForEntry,
-    loadLibraryAudio,
-} from "./presentation.js";
+import { isMeaningLayer, layerForEntry } from "./presentation.js";
 import {
     popupTitleDetailItems,
     popupTitleItems,
@@ -29,7 +25,7 @@ import {
     transformedParentAttribution,
 } from "./transformation-detail.js";
 import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
-import { drawingHeaderActions, placeAudioSpeaker } from "./drawing.js";
+import { drawingHeaderActions } from "./drawing.js";
 
 export async function openEntryPopup(
     root,
@@ -80,6 +76,7 @@ export async function openEntryPopup(
             selectedEntry,
             schema,
             layer,
+            options.navigationEntryIds,
         );
         const composed = await composeDetail(
             detail,
@@ -208,14 +205,13 @@ export async function openEntryPopup(
             onOpen: (overlay, dismiss) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
-                bindDetailLayout(overlay, audioController.signal);
-                placeAudioSpeaker(overlay, audioController.signal);
-                void loadLibraryAudio(
-                    overlay,
+                bindEntryDetail(overlay, displayedEntry, {
+                    signal: audioController.signal,
                     audioObjectUrls,
-                    audioController.signal,
-                    i18n.t("gateway.study.library_audio_load_error"),
-                );
+                    audioError: i18n.t(
+                        "gateway.study.library_audio_load_error",
+                    ),
+                });
                 overlay.addEventListener("click", (event) => {
                     if (
                         selectDetailTransformation(event, {
@@ -242,12 +238,12 @@ export async function openEntryPopup(
             },
             onAction: async (actionId, overlay, popupApi) => {
                 if (actionId === "draw" && canDraw(strokePattern)) {
-                    openDrawing(
+                    await openDrawing(
                         displayedEntry,
                         strokePattern,
                         displayedDefinition,
                     );
-                    return true;
+                    return false;
                 }
                 const contributedAction = composed.actions.find(
                     (action) => action.id === actionId,

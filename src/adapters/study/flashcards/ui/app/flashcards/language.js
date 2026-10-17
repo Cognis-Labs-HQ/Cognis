@@ -22,3 +22,17 @@ export function deckLanguages(deck) {
 export function deckMatchesLanguage(deck, language) {
     return deckLanguages(deck).includes(language);
 }
+
+function deckNameSlug(deck) {
+    return (
+        (deck.names?.en ?? deck.name)
+            .normalize("NFKC")
+            .toLocaleLowerCase("en")
+            .replace(/[^\p{L}\p{N}]+/gu, "-")
+            .replace(/^-|-$/g, "") || "deck"
+    );
+}
+
+export function deckRouteKey(deck) {
+    return `${deckNameSlug(deck)}--${deck.id}`;
+}

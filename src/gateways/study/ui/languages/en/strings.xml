@@ -76,4 +76,5 @@
   <string name="gateway.study.drawing.close">Close</string>
   <string name="gateway.study.drawing.try_again">Try Again</string>
   <string name="gateway.study.drawing.error">Drawing practice could not be loaded.</string>
+  <string name="gateway.study.drawing.reveal">Show character</string>
 </resources>

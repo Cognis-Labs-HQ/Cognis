@@ -193,6 +193,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         pronunciationClass: environment.pronunciationClass,
         cardStatus: () => status,
         readingChoices: () =>
+            options.choices ??
             [true, false, false, false].map((correct, index) => ({
                 correct,
                 entry: { ...entry, id: `choice-${index}` },
@@ -269,10 +270,10 @@ test("reading success keeps complete answers hidden while a mistake reveals them
     }
 });
 
-test("New and new cards in Total reveal immediately; Explore departures require confirmation and preserve card identity", async () => {
+test("New cards keep answers hidden; Explore departures require confirmation and preserve card identity", async () => {
     for (const filter of ["new", "total"]) {
         const harness = practiceHarness(filter, "new");
-        assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+        assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
         await harness.click("[data-practice-link]", { entryId: "one" });
         assert.equal(harness.departures.length, 0);
         harness.decision("leave");
@@ -284,8 +285,8 @@ test("New and new cards in Total reveal immediately; Explore departures require 
 });
 
 test("Writing passes the complete card into the shared embedded pad and preserves mistakes in the recorded result", async () => {
-    const harness = practiceHarness("due");
-    await harness.click("[data-practice-mode]", { practiceMode: "writing" });
+    const harness = practiceHarness("due", "due", { mode: "writing" });
+    await new Promise((resolve) => setImmediate(resolve));
     assert.equal(
         harness.drawing().container,
         harness.nodes.get("[data-practice-drawing]"),
@@ -293,7 +294,7 @@ test("Writing passes the complete card into the shared embedded pad and preserve
     assert.equal(harness.drawing().card.id, "one");
     harness.drawing().onResult({ correct: false });
     await new Promise((resolve) => setImmediate(resolve));
-    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
     harness.drawing().onResult({ correct: true });
     await new Promise((resolve) => setImmediate(resolve));
     await harness.click("[data-practice-next]", {});
@@ -358,18 +359,26 @@ test("full answers group canonical reading and meaning links without duplicating
         );
 });
 
-test("New cards hide their answer on the back while permitting immediate Reading or Writing practice", async () => {
-    const harness = practiceHarness("new", "new");
-    assert.equal(
-        harness.target.querySelector("[data-practice-back]").hidden,
-        true,
-    );
-    // The real template supplies hidden on the initial back; inspect that markup too.
-    assert.match(harness.target.innerHTML, /data-practice-back hidden/);
-    await harness.click("[data-practice-flip]", {});
-    await harness.click("[data-practice-mode]", { practiceMode: "writing" });
+test("Writing masks the character until an explicit reveal, grades hints as Again and cannot change mode", async () => {
+    const answers = [];
+    const harness = practiceHarness("new", "new", {
+        mode: "writing",
+        onAnswer: (grade) => answers.push(grade),
+    });
+    await new Promise((resolve) => setImmediate(resolve));
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
-    assert.equal(harness.drawing().card.id, "one");
+    assert.match(harness.target.innerHTML, /data-practice-reveal[^>]*>•••/);
+    const drawing = harness.drawing();
+    await harness.click("[data-practice-mode]", { practiceMode: "reading" });
+    assert.equal(harness.drawing(), drawing);
+    await harness.click("[data-reading-choice]", { readingChoice: "0" });
+    assert.deepEqual(answers, []);
+    await harness.click("[data-practice-reveal]", {});
+    assert.deepEqual(answers, ["again"]);
+    assert.equal(harness.nodes.get("[data-practice-reveal]").textContent, "学");
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    await harness.click("[data-practice-next]", {});
+    assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
 });
 
@@ -384,5 +393,16 @@ test("a correctly answered previous card uses its front preview and can flip wit
     await harness.click("[data-practice-previous]", {});
     assert.equal(previous, 1);
     await harness.click("[data-practice-flip]", {});
+    harness.dispose();
+});
+
+test("cards without reading distractors can reveal their answer without switching modes or earning an unaided grade", async () => {
+    const harness = practiceHarness("new", "new", { choices: [] });
+    assert.match(harness.target.innerHTML, /data-practice-reveal/);
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
+    await harness.click("[data-practice-reveal]", {});
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    await harness.click("[data-practice-next]", {});
+    assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
 });

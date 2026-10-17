@@ -794,6 +794,22 @@ Bacaan Kanji diurutkan berdasarkan bukti umum JMdict dan penanda frekuensi yang 
 
 Komposisi kalimat meminta label dan pelafalan utama dari transformasi terpilih, termasuk jalur bertingkat. Jika rekaman varian tidak tersedia, pemutaran gagal secara jelas alih-alih menelusuri referensi pelafalan bentuk dasar. Aturan yang sama berlaku untuk pemutaran varian langsung dan penyusun bertingkat.
 
+## Sembunyikan jawaban menulis
+
+Judul pad mula-mula menyamarkan karakter dengan tombol standar untuk membukanya. Memuat karakter lain menyamarkannya kembali. Sesi mengambang menyediakan kartu aktif melalui kapabilitas yang dapat dilepas `study:drawing:observe`. Pratinjau Library yang cocok tetap terbuka, diburamkan, dan tidak interaktif sampai pad berganti karakter atau ditutup; bacaan dan arti tetap tersedia di pad. Mode Menulis tertanam memakai penyamaran yang sama serta melaporkan pembukaan karakter sebagai percobaan berbantuan.
+
+## Latihan Kartu
+
+Saat membuka dek akun maupun dek bersama, pelajar memilih Membaca atau Menulis sebelum latihan dimulai. Mode tetap terkunci selama sesi, termasuk setelah mengunjungi Jelajahi dan kembali melalui tombol Kembali browser. Kartu yang tidak mendukung mode dapat dilewati tanpa pergantian mode otomatis. Jawaban kartu baru mula-mula disembunyikan. Semua, Baru, Jatuh Tempo, dan Selesai mempertahankan filter ulasan; mengganti filter memulai antrean baru dalam mode yang sama.
+
+Membaca memakai pelafalan utama dan tiga pengecoh berbeda dari kartu Library yang terlihat. Menulis menanamkan pad bersama dengan petunjuk arti dan bacaan, sedangkan karakter disembunyikan di balik judul yang dapat diklik. Kesalahan goresan tidak otomatis membuka karakter. Membuka karakter dianggap sebagai bantuan dan memberi hasil Ulangi, meskipun goresan berikutnya benar. Keberhasilan tanpa bantuan memberi hasil Baik. Jawaban kartu yang sudah diulas tetap dapat diperiksa.
+
+Galeri memakai `/study/<iso>/flashcards`; tautan dek memakai nama yang mudah dibaca diikuti `--<deck-id>`, misalnya `/study/ja/flashcards/first-japanese-words--<deck-id>`. Nama Inggris kanonis menjaga bagian terbaca tetap sama di semua bahasa antarmuka. Akhiran identitas membedakan nama duplikat dan menjaga tautan tetap konsisten bagi pemilik serta penerima dengan katalog dek berbeda. ID sumber daya API tetap sama.
+
+Entri riwayat browser menyimpan antrean dek, posisi, nilai, jawaban tertunda, filter, serta mode. Kembali dari Jelajahi memulihkan antrean asli dengan tombol Sebelumnya/Berikutnya yang berfungsi. Membuka jawaban atau meninggalkan kartu yang belum dijawab untuk diperiksa menyimpan hasil Ulangi. Tautan sumber membawa urutan ID kartu melalui status riwayat agar pratinjau Jelajahi juga dapat menavigasi dek, termasuk kartu turunan. Akses tetap mengikuti otorisasi Library; kartu yang tidak lagi dapat diakses dikeluarkan saat pemulihan.
+
+Semua tindakan menjalankan alur dek dan menggambar Study yang sudah dideklarasikan. Antarmuka memakai popup, tombol, dan gaya kartu yang sudah ada. Dek akun dan bersama memakai perender serta latihan yang sama; snapshot bersama tidak memperoleh akses Library. Perpindahan halaman menghentikan penangan dan sesi menggambar.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

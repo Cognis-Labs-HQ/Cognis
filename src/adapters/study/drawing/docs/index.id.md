@@ -15,3 +15,7 @@ Pola gabungan mempertahankan proporsi, urutan, waktu, tekanan dan keselarasan pe
 Buka, muat, goresan, reset, panduan, ulang dan tutup menjalankan alur `study:drawing` dengan tahap before, execute dan after. Navigasi atau pembatalan melepaskan penangan penunjuk, pengamat ukuran dan render. Library dan Flashcards menggunakan kontrak reuse publik Study.
 
 Papan gambar bersama memuat templat HTML miliknya sekali per modul browser. Permintaan gagal menolak tindakan buka; navigasi saat pemuatan membatalkan pemasangan. Kelompok karakter penyedia tetap utuh dalam pola banyak karakter.
+
+## Sembunyikan jawaban menulis
+
+Judul pad mula-mula menyamarkan karakter dengan tombol standar untuk membukanya. Memuat karakter lain menyamarkannya kembali. Sesi mengambang menyediakan kartu aktif melalui kapabilitas yang dapat dilepas `study:drawing:observe`. Pratinjau Library yang cocok tetap terbuka, diburamkan, dan tidak interaktif sampai pad berganti karakter atau ditutup; bacaan dan arti tetap tersedia di pad. Mode Menulis tertanam memakai penyamaran yang sama serta melaporkan pembukaan karakter sebagai percobaan berbantuan.

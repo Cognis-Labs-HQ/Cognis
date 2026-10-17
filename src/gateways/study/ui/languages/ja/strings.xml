@@ -76,4 +76,5 @@
   <string name="gateway.study.drawing.close">閉じる</string>
   <string name="gateway.study.drawing.try_again">もう一度</string>
   <string name="gateway.study.drawing.error">書く練習を読み込めませんでした。</string>
+  <string name="gateway.study.drawing.reveal">文字を表示</string>
 </resources>

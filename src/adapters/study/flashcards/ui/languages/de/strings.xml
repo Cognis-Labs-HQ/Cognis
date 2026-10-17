@@ -33,4 +33,6 @@
   <string name="adapter.study.flashcards.practice_leave_body">Diese Karte in Erkunden öffnen und die aktuelle Übung verlassen?</string>
   <string name="adapter.study.flashcards.practice_flip">Karte umdrehen</string>
   <string name="adapter.study.flashcards.practice_previous">Vorherige Karte</string>
+  <string name="adapter.study.flashcards.practice_reveal">Zeichen anzeigen</string>
+  <string name="adapter.study.flashcards.practice_choose_mode">Lesen oder Schreiben wählen</string>
 </resources>

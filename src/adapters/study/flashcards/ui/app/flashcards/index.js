@@ -1,6 +1,14 @@
-import { createPracticeSession } from "./practice-session.js";
+import { choosePracticeMode } from "../../reuse/practice-mode.js";
+import {
+    createPracticeSession,
+    resumePracticeSession,
+} from "./practice-session.js";
 import { languageFlashcardsUrl } from "/static/gateways/study/reuse/explore.js";
-import { flashcardsRoute, deckMatchesLanguage } from "./language.js";
+import {
+    flashcardsRoute,
+    deckMatchesLanguage,
+    deckRouteKey,
+} from "./language.js";
 import { practiceSummary, practiceQueue } from "./practice-model.js";
 import { mountPractice } from "./practice.js";
 import { runDeckAction } from "./actions.js";
@@ -274,33 +282,30 @@ export async function mount(root, { signal: routerSignal } = {}) {
     schemas = schemas.filter((schema) => schema.language === languageCode);
     decks = decks.filter((deck) => deckMatchesLanguage(deck, languageCode));
     const requestedId = route.deckId;
-    if (requestedId && !decks.some((deck) => deck.id === requestedId)) {
-        try {
-            const deck = (await fetchStudyDeck(requestedId)).deck;
-            if (!deckMatchesLanguage(deck, languageCode))
-                throw new Error("deck_language_mismatch");
-            decks.push(deck);
-        } catch {
-            showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
-                variant: "error",
-            });
-        }
-    }
     decks = decks.map((deck) => ({
         ...deck,
         name: deck.names?.[document.documentElement.lang] ?? deck.name,
     }));
-    let selected = decks.find((deck) => deck.id === requestedId);
+    let selected = decks.find((deck) => requestedId?.endsWith(`--${deck.id}`));
     const favourites = await loadFavourites();
     let sortOrder = "default";
     let favouritesOnly = false;
     let deckQuery = "";
     let queue = [];
     let practiceSession = createPracticeSession([]);
-    let practiceMode = "reading";
-    let practiceImmediately = false;
+    const savedSession = history.state?.studyDeckSession;
+    const restoredSession =
+        savedSession?.deckId === selected?.id &&
+        ["reading", "writing"].includes(savedSession?.mode)
+            ? savedSession
+            : null;
+    let practiceMode = restoredSession?.mode;
     let session = null;
-    let filter = "total";
+    let filter = ["total", "new", "due", "done"].includes(
+        restoredSession?.filter,
+    )
+        ? restoredSession.filter
+        : "total";
     let releasePractice;
     let generation = 0;
     const visibleDecks = () => {
@@ -353,7 +358,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                                 resourceId: selected.id,
                                 contentUrl: languageFlashcardsUrl(
                                     languageCode,
-                                    selected.id,
+                                    deckRouteKey(selected),
                                 ),
                                 grantedCapabilities: ["study:flashcards:read"],
                                 supportsReadOnly: true,
@@ -371,7 +376,24 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     },
                 });
     };
+    const persistSession = () => {
+        if (!selected || !practiceMode) return;
+        history.replaceState(
+            {
+                ...history.state,
+                studyDeckSession: {
+                    deckId: selected.id,
+                    mode: practiceMode,
+                    filter,
+                    ...practiceSession.snapshot(),
+                },
+            },
+            "",
+            location.pathname,
+        );
+    };
     const nextCard = () => {
+        persistSession();
         const favourite = root.querySelector("[data-deck-favourite]");
         if (favourite) favourite.hidden = queue.length > 0;
         const target = root.querySelector("[data-study-session]");
@@ -387,15 +409,17 @@ export async function mount(root, { signal: routerSignal } = {}) {
             templates,
             entries,
             schemas,
-            progress: selected.progress,
-            filter,
             mode: practiceMode,
-            practiceImmediately,
-            answeredGrade: practiceSession.answeredGrade,
-            onModeChange: (mode) => {
-                practiceMode = mode;
-                practiceImmediately = true;
+            navigationEntryIds: queue.map(({ entry }) => entry.id),
+            onDeparture: (grade) => {
+                practiceSession.answer(grade);
+                persistSession();
             },
+            onAnswer: (grade) => {
+                practiceSession.answer(grade);
+                persistSession();
+            },
+            answeredGrade: practiceSession.answeredGrade,
             onPrevious: practiceSession.canPrevious
                 ? () => {
                       practiceSession.previous();
@@ -474,8 +498,25 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     .replace("{{ count }}", String(session.unavailable)),
                 { variant: "warning" },
             );
+        if (!practiceMode) {
+            practiceMode = await runDeckAction(
+                "practiceMode",
+                () => choosePracticeMode(i18n, selected.name, signal),
+                signal,
+            );
+            if (signal.aborted) return;
+            if (!["reading", "writing"].includes(practiceMode)) {
+                await navigateTo(languageFlashcardsUrl(languageCode));
+                return;
+            }
+        }
         queue = practiceQueue(session.cards, selected.progress, filter);
-        practiceSession = createPracticeSession(queue);
+        const restored = resumePracticeSession(
+            restoredSession ? session.cards : queue,
+            restoredSession,
+        );
+        queue = restored.queue;
+        practiceSession = restored.session;
         renderDeck();
         nextCard();
     };
@@ -593,7 +634,13 @@ export async function mount(root, { signal: routerSignal } = {}) {
                         navigateTo(
                             languageFlashcardsUrl(
                                 languageCode,
-                                preview.dataset.deckOpen,
+                                deckRouteKey(
+                                    decks.find(
+                                        (deck) =>
+                                            deck.id ===
+                                            preview.dataset.deckOpen,
+                                    ),
+                                ),
                             ),
                         ),
                     signal,

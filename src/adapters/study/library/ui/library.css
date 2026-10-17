@@ -869,3 +869,10 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     overflow: hidden;
     overflow-wrap: anywhere;
 }
+
+.library-entry-popup.is-writing-preview .popup-heading,
+.library-entry-popup.is-writing-preview .popup-body {
+    filter: blur(0.55rem);
+    user-select: none;
+    pointer-events: none;
+}

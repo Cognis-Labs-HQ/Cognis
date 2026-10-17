@@ -1,3 +1,4 @@
+import { setDrawingCard } from "./drawing-state.js";
 import { pronunciationClass } from "./pronunciation.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -27,6 +28,7 @@ const runDrawingAction = createActionRunner("study:drawing", [
     "stroke",
     "reset",
     "guidance",
+    "reveal",
     "retry",
     "close",
 ]);
@@ -275,7 +277,7 @@ async function createDrawingPad({
     pad.innerHTML = formatTemplate(
         padTemplate,
         Object.fromEntries(
-            ["guidance", "close", "try_again", "reset"].map((key) => [
+            ["guidance", "close", "try_again", "reset", "reveal"].map((key) => [
                 key,
                 escapeHtml(i18n.t(`gateway.study.drawing.${key}`)),
             ]),
@@ -293,6 +295,7 @@ async function createDrawingPad({
     const context = canvas.getContext("2d");
     const completed = [];
     let currentCard = card;
+    let characterRevealed = false;
     let currentDefinition = definition;
     let currentPronunciations = pronunciations;
     let currentPattern = strokePattern;
@@ -623,6 +626,26 @@ async function createDrawingPad({
             ).catch(reportFailure),
         { signal: controller.signal },
     );
+    pad.querySelector("[data-card-label]").addEventListener(
+        "click",
+        () =>
+            void runDrawingAction(
+                "reveal",
+                () => {
+                    if (characterRevealed) return;
+                    characterRevealed = true;
+                    pad.querySelector("[data-card-label]").textContent =
+                        currentCard.label;
+                    pad.querySelector("[data-card-label]").setAttribute(
+                        "aria-expanded",
+                        "true",
+                    );
+                    onResult?.({ correct: false, assisted: true, mistakes });
+                },
+                controller.signal,
+            ).catch(reportFailure),
+        { signal: controller.signal },
+    );
     pad.querySelector("[data-reset]").addEventListener(
         "click",
         () =>
@@ -687,7 +710,10 @@ async function createDrawingPad({
         release?.();
         pad.remove();
         host.remove();
-        if (!container) activeDrawingSession = null;
+        if (!container) {
+            activeDrawingSession = null;
+            setDrawingCard(null);
+        }
     };
     signal?.addEventListener("abort", finishClose, { once: true });
     window.addEventListener("cognis:route-will-change", finishClose, {
@@ -825,7 +851,14 @@ async function createDrawingPad({
         completion.hidden = true;
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");
-        pad.querySelector("[data-card-label]").textContent = currentCard.label;
+        characterRevealed = false;
+        pad.querySelector("[data-card-label]").textContent = "•••";
+        pad.querySelector("[data-card-label]").setAttribute(
+            "aria-expanded",
+            "false",
+        );
+        if (!container)
+            setDrawingCard({ id: currentCard.id, label: currentCard.label });
         pad.querySelector("[data-pronunciations]").classList.toggle(
             "study-ipa",
             Boolean(pronunciationClass(currentPronunciations)),

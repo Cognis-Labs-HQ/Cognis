@@ -76,4 +76,5 @@
   <string name="gateway.study.drawing.close">Schließen</string>
   <string name="gateway.study.drawing.try_again">Erneut versuchen</string>
   <string name="gateway.study.drawing.error">Die Schreibübung konnte nicht geladen werden.</string>
+  <string name="gateway.study.drawing.reveal">Zeichen anzeigen</string>
 </resources>

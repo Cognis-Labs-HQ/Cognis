@@ -220,6 +220,7 @@ export async function mount(root, { signal } = {}) {
             i18n,
             languageCode,
             signal,
+            { navigationEntryIds: history.state?.studyEntryIds },
         );
     }
 }

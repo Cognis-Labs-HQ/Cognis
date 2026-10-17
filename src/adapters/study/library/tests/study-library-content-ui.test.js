@@ -67,10 +67,7 @@ test("Study Library renders writing-unit pronunciation and audio", () => {
     assert.match(source, /library-audio-unavailable-tooltip/);
     assert.match(source, /createAnchoredPopup/);
     assert.match(source, /tooltip\.show\(speaker, source\.innerHTML\)/);
-    assert.match(
-        source,
-        /placeAudioSpeaker\(overlay, audioController\.signal\)/,
-    );
+    assert.match(source, /placeAudioSpeaker\(root, signal\)/);
     assert.match(
         stylesheet,
         /\.library-audio-unavailable-tooltip\.is-portal[\s\S]*position:\s*fixed/,

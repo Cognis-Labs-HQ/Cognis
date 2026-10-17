@@ -7,7 +7,18 @@ export function popupEntryNavigationState(
     selectedEntry,
     schema,
     layer,
+    navigationEntryIds,
 ) {
+    if (navigationEntryIds?.includes(selectedEntry.id)) {
+        const byId = new Map(entries.map((entry) => [entry.id, entry]));
+        const active = navigationEntryIds
+            .map((id) => byId.get(id))
+            .filter(Boolean);
+        return {
+            active,
+            index: active.findIndex(({ id }) => id === selectedEntry.id),
+        };
+    }
     const layerEntries = entries.filter(
         (entry) =>
             entry.schemaId === selectedEntry.schemaId &&

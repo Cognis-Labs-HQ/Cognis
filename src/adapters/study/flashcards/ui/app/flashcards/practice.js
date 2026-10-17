@@ -7,11 +7,7 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { openDrawingPad } from "/static/gateways/study/reuse/drawing.js";
 import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
 import { flashcardValues, renderFlashcard } from "../../reuse/flashcard.js";
-import {
-    cardStatus,
-    readingChoices,
-    writingPattern,
-} from "./practice-model.js";
+import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
 
 export function exploreUrl(entry, schemas) {
@@ -44,16 +40,15 @@ export function mountPractice(
         templates,
         entries,
         schemas,
-        progress,
-        filter,
         mode,
         i18n,
         signal,
         onNext,
         onPrevious,
         answeredGrade,
-        practiceImmediately = false,
-        onModeChange,
+        onDeparture,
+        onAnswer,
+        navigationEntryIds = [],
         authenticated = true,
     },
 ) {
@@ -67,11 +62,7 @@ export function mountPractice(
         pattern ? "writing" : null,
         choices.length ? "reading" : null,
     ].filter(Boolean);
-    const isNew =
-        filter === "new" ||
-        (filter === "total" && cardStatus(progress, detail.entry.id) === "new");
-    let previewing =
-        answeredGrade === "good" || (isNew && !practiceImmediately);
+    const previewing = answeredGrade === "good";
     let grade = answeredGrade ?? (previewing ? "good" : null);
     let drawing;
     let revision = 0;
@@ -80,26 +71,24 @@ export function mountPractice(
     const render = async () => {
         const currentRevision = ++revision;
         drawing?.close();
-        const activeMode = available.includes(mode) ? mode : available[0];
+        const activeMode = mode;
         const task = previewing
             ? ""
-            : activeMode === "writing"
+            : activeMode === "writing" && pattern
               ? "<div data-practice-drawing></div>"
-              : activeMode === "reading"
+              : activeMode === "reading" && choices.length
                 ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral ${pronunciationClass(choice.text)}" data-reading-choice="${index}">${escapeHtml(choice.text)}</button>${entryLink(choice.entry, "↗", schemas)}</div>`).join("")}</div>`
-                : `<p>${label("unavailable")}</p>`;
+                : `<p>${label("unavailable")}</p>${activeMode === "reading" ? `<button type="button" class="btn-neutral" data-practice-reveal>${label("flip")}</button>` : ""}`;
         const answer = renderFlashcard(detail, schemas, language, entryLink);
+        const writing = activeMode === "writing";
         target.innerHTML = formatTemplate(templates.practice, {
             favourite: authenticated
                 ? renderFavourite("flashcard", detail.entry.id, i18n)
                 : "",
-            entry_heading: entryLink(detail.entry, values.front, schemas),
-            modes: available
-                .map(
-                    (value) =>
-                        `<button type="button" class="btn-neutral" data-practice-mode="${value}" aria-pressed="${value === activeMode}">${label(value)}</button>`,
-                )
-                .join(""),
+            entry_heading: writing
+                ? `<button type="button" class="btn-neutral" data-practice-reveal aria-label="${label("reveal")}" aria-expanded="false">•••</button>`
+                : entryLink(detail.entry, values.front, schemas),
+            modes: label(activeMode),
             task,
             front: renderFlashcard(
                 detail,
@@ -114,14 +103,16 @@ export function mountPractice(
             next_label: label("next"),
         });
         target.querySelector("[data-practice-answer]").hidden =
-            !previewing && grade !== "again";
+            writing || (!previewing && grade !== "again");
         target.querySelector("[data-practice-next]").disabled =
-            !grade && available.length > 0;
+            !grade && available.includes(activeMode);
         target.querySelector("[data-practice-previous]").disabled = !onPrevious;
-        if (grade === "again") revealAnswer();
-        if (!previewing && activeMode === "writing") {
+        if (grade === "again" && !writing) revealAnswer();
+        if (!previewing && writing && pattern) {
             const session = await openDrawingPad({
                 card: detail.entry,
+                definition: values.back,
+                pronunciations: [values.pronunciation],
                 strokePattern: pattern,
                 container: target.querySelector("[data-practice-drawing]"),
                 signal: controller.signal,
@@ -131,7 +122,8 @@ export function mountPractice(
                         () => {
                             grade =
                                 correct && grade !== "again" ? "good" : "again";
-                            if (!correct) revealAnswer();
+                            onAnswer?.(grade);
+
                             target.querySelector(
                                 "[data-practice-next]",
                             ).disabled = false;
@@ -187,29 +179,44 @@ export function mountPractice(
                                 },
                             ],
                         });
-                        if (choice === "leave")
+                        if (choice === "leave") {
+                            onDeparture?.(grade ?? "again");
                             await navigateTo(link.getAttribute("href"), {
-                                state: { studyEntryId: link.dataset.entryId },
+                                state: {
+                                    studyEntryId: link.dataset.entryId,
+                                    studyEntryIds: navigationEntryIds,
+                                },
                             });
+                        }
                     },
                     controller.signal,
                 );
             }
-            const modeButton = event.target.closest("[data-practice-mode]");
-            if (modeButton)
+            if (
+                event.target.closest("[data-practice-reveal]") &&
+                (mode === "writing" || !available.includes(mode))
+            ) {
                 await runDeckAction(
-                    "practiceMode",
+                    "answer",
                     () => {
-                        mode = modeButton.dataset.practiceMode;
-                        onModeChange?.(mode);
-                        previewing = false;
-                        grade = null;
-                        return render();
+                        grade = "again";
+                        onAnswer?.(grade);
+                        const reveal = target.querySelector(
+                            "[data-practice-reveal]",
+                        );
+                        if (mode === "writing")
+                            reveal.textContent = values.front;
+                        else reveal.hidden = true;
+                        reveal.setAttribute("aria-expanded", "true");
+                        revealAnswer();
+                        target.querySelector("[data-practice-next]").disabled =
+                            false;
                     },
                     controller.signal,
                 );
+            }
             const choice = event.target.closest("[data-reading-choice]");
-            if (choice)
+            if (choice && mode === "reading")
                 await runDeckAction(
                     "answer",
                     () => {
@@ -218,6 +225,7 @@ export function mountPractice(
                             choices[Number(choice.dataset.readingChoice)]
                                 .correct;
                         grade = correct ? "good" : "again";
+                        onAnswer?.(grade);
                         choice.classList.add(
                             correct ? "btn-confirm" : "btn-cancel",
                         );
@@ -256,6 +264,7 @@ export function mountPractice(
                 await runDeckAction("previous", onPrevious, controller.signal);
             if (event.target.closest("[data-practice-next]")) {
                 const button = target.querySelector("[data-practice-next]");
+                if (button.disabled) return;
                 button.disabled = true;
                 try {
                     await onNext(grade);

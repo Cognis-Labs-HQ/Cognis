@@ -792,6 +792,22 @@ Japanische Kanji-Lesungen werden nach häufigen JMdict-Belegen und verfügbaren 
 
 Die Satzzusammenstellung fordert die ausgewählte transformierte Schreibweise und erste Aussprache einschließlich mehrstufiger Pfade an. Fehlt die Variantenaufnahme, schlägt die Wiedergabe ausdrücklich fehl, statt Ausspracheverweisen der Grundform zu folgen. Dies gilt auch für direkte Variantenwiedergabe und verschachtelte Bestandteile.
 
+## Schreibantworten verbergen
+
+Die Überschrift des Zeichenfelds verbirgt zunächst das Zeichen hinter einer normalen Schaltfläche zum Aufdecken. Ein anderes Zeichen wird erneut verborgen. Schwebende Sitzungen melden ihre aktuelle Karte über die entfernbare Fähigkeit `study:drawing:observe`. Die passende Bibliotheksvorschau bleibt geöffnet, unscharf und nicht bedienbar, bis das Feld ein anderes Zeichen lädt oder geschlossen wird; Lesung und Bedeutung bleiben im Zeichenfeld verfügbar. Eingebettetes Schreiben nutzt dieselbe Verdeckung und meldet Aufdecken als unterstützten Versuch.
+
+## Lernkarten üben
+
+Beim Öffnen eigener oder geteilter Stapel wählen Lernende vor Beginn Lesen oder Schreiben. Dieser Modus bleibt während der Sitzung fest, auch nach einem Besuch in Erkunden und der Rückkehr über die Browser-Zurück-Funktion. Nicht unterstützte Karten können ohne stillen Moduswechsel übersprungen werden. Neue Karten beginnen mit verborgener Antwort. Alle, Neu, Fällig und Erledigt behalten ihre Prüfungsfilter; ein Filterwechsel beginnt eine neue Warteschlange im selben Modus.
+
+Lesen verwendet die erste Aussprache und drei unterschiedliche sichtbare Bibliotheksalternativen. Schreiben bettet das gemeinsame Zeichenfeld ein und zeigt Bedeutung und Lesung, während das Zeichen hinter einer anklickbaren Überschrift verborgen bleibt. Fehlstriche zeigen das Zeichen nicht automatisch. Aufdecken gilt als unterstützter Versuch mit dem Ergebnis Erneut, auch wenn spätere Striche gelingen. Ein erfolgreicher Versuch ohne Hilfe ergibt Gut. Bereits geprüfte Karten können weiterhin betrachtet werden.
+
+Galerien verwenden `/study/<iso>/flashcards`; Stapellinks erhalten lesbare Namen mit dem Suffix `--<deck-id>`, etwa `/study/ja/flashcards/first-japanese-words--<deck-id>`. Kanonische englische Namen halten den lesbaren Teil unabhängig von der Oberflächensprache. Das Identitätssuffix unterscheidet gleiche Namen und hält Links zwischen Eigentümern und Empfängern mit unterschiedlichen Stapelkatalogen konsistent. API-Ressourcen-IDs bleiben unverändert.
+
+Die aktuelle Browser-Verlaufseintragung bewahrt Stapelreihenfolge, Position, Bewertungen, offene Antwort, Filter und Modus. Nach der Rückkehr aus Erkunden funktionieren Vorherige und Nächste im ursprünglichen Stapel. Das Aufdecken oder Nachschlagen einer unbeantworteten Karte behält das Ergebnis Erneut. Quelllinks übergeben geordnete Karten-IDs im Verlaufszustand, damit auch Erkunden-Vorschauen durch den Stapel einschließlich untergeordneter Karten navigieren. Bibliotheksberechtigungen gelten weiterhin; nicht mehr zugängliche Karten werden bei der Wiederherstellung ausgelassen.
+
+Alle Aktionen verwenden die bestehenden deklarierten Stapel- und Zeichenabläufe. Die Oberfläche nutzt Standarddialoge, Schaltflächen und vorhandene Lernkartenstile. Eigene und geteilte Stapel teilen Darstellung und Übung; geteilte Momentaufnahmen erhalten keinen Bibliothekszugriff. Beim Verlassen werden Ereignisbehandlung und Zeichenfeld beendet.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)
