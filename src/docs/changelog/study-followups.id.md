@@ -9,3 +9,4 @@ Penyedia pratinjau gambar bersama memuat lembar gayanya sebelum menerbitkan kont
 ## Komit
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)
+- [68f4cad](https://github.com/Cognis-Labs-HQ/Cognis/commit/68f4cad583d4ff3b9f0b14c9d083d04324f3cdf1)
