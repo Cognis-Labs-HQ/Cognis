@@ -737,8 +737,16 @@ body[data-theme="light"]
     padding: 0.45rem;
 }
 
-.library-audio-controls [data-library-record-audio][aria-pressed="true"] {
-    background: var(--color-danger);
-    border-color: var(--color-danger-outline-text);
-    color: var(--color-danger-outline-text);
+.library-microphone-icon {
+    display: block;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: currentColor;
+    mask: url("/static/adapters/study/library/assets/microphone-light.svg")
+        center / contain no-repeat;
+}
+.library-audio-controls
+    [data-library-record-audio][aria-pressed="true"]
+    .library-microphone-icon {
+    background: var(--color-danger-outline-text);
 }

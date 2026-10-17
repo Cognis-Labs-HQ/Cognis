@@ -3,6 +3,13 @@ import test from "node:test";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
 
+const previewSource = readFileSync(
+    new URL("../../../../ui/reuse/image-preview.js", import.meta.url),
+    "utf8",
+)
+    .replace(/^import[\s\S]*?;\n/gm, "")
+    .replace(/export (async )?function/g, "$1function");
+
 const source = readFileSync(
     new URL("../ui/app/reference-images.js", import.meta.url),
     "utf8",
@@ -36,6 +43,7 @@ function fixture(entry = { label: "dog", fields: {} }) {
         elements: { "field:images": stored },
         querySelectorAll: () => [field],
         dispatchEvent() {},
+        addEventListener() {},
     };
     const deleted = [];
     const revoked = [];
@@ -65,7 +73,7 @@ function fixture(entry = { label: "dog", fields: {} }) {
             return "blob:bundled";
         },
     };
-    vm.runInNewContext(source, context);
+    vm.runInNewContext(previewSource + source, context);
     const controller = new AbortController();
     context.bindReferenceImageUploads(
         form,
@@ -91,7 +99,7 @@ test("uploaded images show thumbnails and removing one immediately clears the dr
     state.picker.files = [{ size: 100, name: "dog.png" }];
     await state.listeners.upload();
     assert.match(state.files.innerHTML, /<img[^>]*src="blob:local-/);
-    assert.match(state.files.innerHTML, /library-image-remove/);
+    assert.match(state.files.innerHTML, /image-preview-remove/);
     assert.equal(state.stored.libraryFieldValue.length, 1);
     const value = state.stored.libraryFieldValue[0];
     let prevented = false;
@@ -100,7 +108,7 @@ test("uploaded images show thumbnails and removing one immediately clears the dr
         preventDefault: () => {
             prevented = true;
         },
-        target: { closest: () => ({ dataset: { removeImage: "0" } }) },
+        target: { closest: () => ({ dataset: { imagePreviewRemove: "0" } }) },
     });
     assert.equal(prevented, true);
     assert.equal(state.picker.value, "");

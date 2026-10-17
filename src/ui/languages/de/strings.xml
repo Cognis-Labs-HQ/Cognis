@@ -309,6 +309,7 @@
   <string name="ui.reuse.elements">Elemente</string>
   <string name="ui.reuse.all_elements_visible">Alle Elemente sind sichtbar.</string>
   <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
+  <string name="ui.reuse.image_preview">Bildvorschau</string>
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
   <string name="ui.reuse.delete">Löschen</string>

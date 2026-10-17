@@ -40,3 +40,7 @@ Gateways injizieren Admin-Panels und seitenspezifische UI-Beiträge zur Laufzeit
 | `ui.reuse.generic.*` | Kontextfreie eigenständige Aktionswörter (speichern, verwerfen, zurücksetzen) |
 | `ui.app.<page>.*`    | Seitenspezifischer Text                                                       |
 | `ui.layout.*`        | Layout-Shell-Text und ARIA-Labels                                             |
+
+## Wiederverwendbare Bildvorschau
+
+Die globale Fähigkeit `ui:imagePreview` bietet Vorschaubilder, Ereignisbindung und die Aktion `open` über den registrierten Ablauf `ui:imagePreview:open`. Sie ist außerdem über `ui:reuse` als `image-preview.js` verfügbar; das Stylesheet gehört zu den gemeinsamen Stilen. Bildschaltflächen öffnen das Original in natürlicher Größe, begrenzt auf den sichtbaren Bereich, wobei nur das übliche X sichtbar ist. Tastaturbedienung, Escape, Fokusrückkehr und das Schließen beim Entfernen der Ansicht oder des Anbieters nutzen den gemeinsamen Popup-Lebenszyklus. Aufrufer verwalten Bild-URLs und optionale Löschaktionen. Library verwendet dieses Steuerelement für hochgeladene und mitgelieferte Bilder im Editor und in Detailgalerien.

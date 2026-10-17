@@ -262,6 +262,10 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:pagination"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/image-preview.js",
+    providesCapabilities: ["ui:imagePreview"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/side-menu.js",
     providesCapabilities: ["ui:sideMenu"],
 });

@@ -91,3 +91,7 @@ Modules contribute CSS, HTML templates, and JavaScript via the `frontend` field 
 | `ui.layout.*`        | Layout shell text and ARIA labels                                |
 | `ui.page.title.*`    | Document `<title>` values                                        |
 | `module.<id>.*`      | Module-owned strings loaded on demand                            |
+
+## Reusable Image Previews
+
+Global `ui:imagePreview` provides thumbnail rendering, binding and an `open` action through the registered `ui:imagePreview:open` flow. It is also available from `ui:reuse` as `image-preview.js`; its stylesheet is part of common reuse styles. Image buttons open the original image at its natural size, constrained to the viewport, with only the standard X control visible. Keyboard activation, Escape, focus return and owner/provider teardown use the shared popup lifecycle. Callers retain ownership of image URLs and optional removal actions. Library uses this shared control for uploaded and bundled images in editors and detail galleries.

@@ -352,46 +352,11 @@ body[data-theme="dark"] .library-speaker-icon-dark {
     flex-wrap: wrap;
     gap: 0.75rem;
 }
-.library-reference-images img {
-    max-width: min(100%, 20rem);
-    max-height: 18rem;
-    object-fit: contain;
-    border-radius: 0.75rem;
-}
-
 [data-library-image-files] {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
 }
-.library-image-preview {
-    position: relative;
-    display: inline-flex;
-}
-.library-image-preview img {
-    width: 8rem;
-    height: 6rem;
-    object-fit: contain;
-    border-radius: 0.4rem;
-    background: var(--surface-2);
-}
-.library-image-preview > .library-image-remove {
-    position: absolute;
-    inset-block-start: 0.2rem;
-    inset-inline-end: 0.2rem;
-    padding: 0.1rem 0.35rem;
-    background: rgb(from var(--surface) r g b / 1);
-    opacity: 0;
-}
-.library-image-preview:is(:hover, :focus-within) > .library-image-remove {
-    opacity: 1;
-}
-@media (hover: none) {
-    .library-image-preview > .library-image-remove {
-        opacity: 1;
-    }
-}
-
-.library-admin-editor--read-only .library-image-remove {
+.library-admin-editor--read-only .image-preview-remove {
     display: none;
 }

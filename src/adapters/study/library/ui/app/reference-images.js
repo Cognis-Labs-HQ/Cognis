@@ -1,5 +1,8 @@
+import {
+    renderImagePreview,
+    bindImagePreviews,
+} from "/static/reuse/image-preview.js";
 import { reportClientError } from "/static/reuse/error-reporting.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLibraryImageUrl,
@@ -12,7 +15,7 @@ export function renderReferenceImages(entry, layer) {
         .filter(({ type }) => type === "imageList")
         .map(
             (field) =>
-                `<div class="library-reference-images">${(entry.fields?.[field.id] ?? []).map((_value, index) => `<img loading="lazy" alt="${escapeHtml(entry.label)}" data-library-image-entry="${escapeHtml(entry.id)}" data-library-image-field="${escapeHtml(field.id)}" data-library-image-index="${index}">`).join("")}</div>`,
+                `<div class="library-reference-images">${(entry.fields?.[field.id] ?? []).map((_value, index) => renderImagePreview({ alt: entry.label, large: true, imageAttributes: { "data-library-image-entry": entry.id, "data-library-image-field": field.id, "data-library-image-index": index } })).join("")}</div>`,
         )
         .join("");
 }
@@ -21,6 +24,7 @@ export async function loadReferenceImages(
     root,
     { signal, objectUrls, errorMessage, requestId },
 ) {
+    bindImagePreviews(root, { signal });
     await Promise.all(
         [...root.querySelectorAll("[data-library-image-entry]")].map(
             async (image) => {
@@ -47,6 +51,7 @@ export async function loadReferenceImages(
 }
 
 export function bindReferenceImageUploads(form, entry, i18n, signal) {
+    bindImagePreviews(form, { signal });
     for (const field of form.querySelectorAll("[data-library-image-upload]")) {
         const fieldId = field.dataset.imageField;
         const stored = form.elements[`field:${fieldId}`];
@@ -75,9 +80,15 @@ export function bindReferenceImageUploads(form, entry, i18n, signal) {
         };
         const render = () => {
             files.innerHTML = stored.libraryFieldValue
-                .map(
-                    (value, index) =>
-                        `<span class="library-image-preview"><img alt="${escapeHtml(entry.label ?? "")}"${urls.has(value) ? ` src="${escapeHtml(urls.get(value))}"` : ""} data-image-preview="${index}"><button class="btn-cancel library-image-remove" type="button" data-remove-image="${index}" ${picker.disabled ? "disabled" : ""} aria-label="${escapeHtml(i18n.t("ui.reuse.delete"))}">×</button></span>`,
+                .map((value, index) =>
+                    renderImagePreview({
+                        src: urls.get(value),
+                        alt: entry.label || i18n.t("ui.reuse.image_preview"),
+                        removeId: index,
+                        disabled: picker.disabled,
+                        removeLabel: i18n.t("ui.reuse.delete"),
+                        imageAttributes: { "data-image-preview": index },
+                    }),
                 )
                 .join("");
         };
@@ -114,11 +125,13 @@ export function bindReferenceImageUploads(form, entry, i18n, signal) {
         files.addEventListener(
             "click",
             async (event) => {
-                const button = event.target.closest("[data-remove-image]");
+                const button = event.target.closest(
+                    "[data-image-preview-remove]",
+                );
                 if (!button || picker.disabled) return;
                 event.preventDefault();
                 const [value] = stored.libraryFieldValue.splice(
-                    Number(button.dataset.removeImage),
+                    Number(button.dataset.imagePreviewRemove),
                     1,
                 );
                 if (urls.has(value)) URL.revokeObjectURL(urls.get(value));

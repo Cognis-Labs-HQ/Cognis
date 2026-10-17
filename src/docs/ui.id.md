@@ -36,3 +36,7 @@ Semua teks yang terlihat pengguna melewati sistem i18n di `src/ui/reuse/i18n.js`
 | `ui.reuse.generic.*` | Kata aksi mandiri bebas konteks (simpan, buang, atur ulang) |
 | `ui.app.<page>.*`    | Teks spesifik halaman                                       |
 | `ui.layout.*`        | Teks shell layout dan label ARIA                            |
+
+## Pratinjau Gambar Bersama
+
+Kapabilitas global `ui:imagePreview` menyediakan tampilan gambar mini, pengikatan interaksi, dan tindakan `open` melalui alur terdaftar `ui:imagePreview:open`. Fitur ini juga tersedia melalui `ui:reuse` sebagai `image-preview.js`; lembar gayanya termasuk gaya bersama. Tombol gambar membuka gambar asli dalam ukuran alaminya, dibatasi area layar, dengan hanya tombol X standar yang terlihat. Aktivasi papan ketik, Escape, pemulihan fokus, dan penutupan saat tampilan atau penyedia dilepas memakai siklus hidup popup bersama. Pemanggil mengelola URL gambar dan tindakan penghapusan opsional. Library memakai kontrol ini untuk gambar unggahan dan bawaan dalam editor serta galeri detail.

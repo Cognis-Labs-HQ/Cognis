@@ -45,7 +45,7 @@
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
- *              When omitted, a single green 'Done' (confirm) button is rendered.
+ *              When omitted, a single green 'Done' (confirm) button is rendered. An empty array renders no footer actions.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   mandatory — When true, hides the header close button and disables
  *              backdrop and Escape-key dismissal. Explicit actions still work.
@@ -598,7 +598,7 @@ export async function openPopup({
 
         const effectiveActions = popupPages
             ? (currentPage?.actions ?? actions ?? [])
-            : Array.isArray(actions) && actions.length > 0
+            : Array.isArray(actions)
               ? actions
               : [{ id: "close", label: "Done", variant: "confirm" }];
 
