@@ -104,3 +104,28 @@ export async function planDeletion(
         entries: resolved.map(({ id, label }) => ({ id, label })),
     };
 }
+
+export async function notifyDeletedEntries(
+    entries: readonly LibraryEntry[],
+    actor: LibraryActor,
+    notify?: (
+        entries: readonly LibraryEntry[],
+        actor: LibraryActor,
+    ) => Promise<void>,
+    log?: (
+        level: string,
+        message: string,
+        metadata: Record<string, unknown>,
+    ) => unknown,
+): Promise<void> {
+    try {
+        await notify?.(entries, actor);
+    } catch (error) {
+        await log?.("error", "Study cascade notification failed.", {
+            component: "study-library",
+            operation: "notify-deletion",
+            accountId: actor.accountId,
+            errorName: error instanceof Error ? error.name : "Error",
+        });
+    }
+}

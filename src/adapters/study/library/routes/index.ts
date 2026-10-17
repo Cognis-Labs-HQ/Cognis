@@ -1,3 +1,4 @@
+import { MAX_IMAGE_UPLOAD_BYTES } from "../image-store.js";
 import { readRawBody } from "../../../../api/reuse/read-json.js";
 import { MAX_AUDIO_UPLOAD_BYTES } from "../service/uploads.js";
 import type { LibraryReferenceInput } from "../types.js";
@@ -65,6 +66,42 @@ export function createLibraryRoutes(
             role: claims.role,
         };
         try {
+            if (
+                url.pathname === "/api/v1/study/library/images" &&
+                req.method === "PUT"
+            ) {
+                const data = await readRawBody(req, {
+                    maxBytes: MAX_IMAGE_UPLOAD_BYTES,
+                });
+                const mediaType = String(req.headers["content-type"] ?? "")
+                    .split(";")[0]
+                    .trim();
+                sendJson(res, 201, {
+                    data: await library.images.upload(actor, mediaType, data),
+                });
+                return true;
+            }
+            const imageMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/(entries|push-requests)\/([^/]+)\/images\/([^/]+)\/(\d+)$/,
+            );
+            if (imageMatch && req.method === "GET") {
+                const image = await library.images.read(
+                    actor,
+                    decodeURIComponent(imageMatch[2]),
+                    decodeURIComponent(imageMatch[3]),
+                    Number(imageMatch[4]),
+                    imageMatch[1] === "push-requests",
+                );
+                res.writeHead(200, {
+                    "content-type": image.mediaType,
+                    "content-length": String(image.data.length),
+                    "cache-control": "private, no-store",
+                    "x-content-type-options": "nosniff",
+                    "content-security-policy": "sandbox; default-src 'none'",
+                });
+                res.end(image.data);
+                return true;
+            }
             if (
                 url.pathname === "/api/v1/study/library/audio" &&
                 req.method === "PUT"
@@ -588,11 +625,33 @@ export function createLibraryRoutes(
             const reviewMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/push-requests\/([^/]+)$/,
             );
+            if (reviewMatch && req.method === "PATCH") {
+                const proposed = (await readJson(req)) as LibraryEntryInput;
+                const request = await library.stagePush(
+                    actor,
+                    decodeURIComponent(reviewMatch[1]),
+                    proposed,
+                );
+                await log?.("info", "Staged Library request changes.", {
+                    component: "study-library",
+                    operation: "stageRequest",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                });
+                sendJson(res, 200, { data: request });
+                return true;
+            }
             if (reviewMatch && req.method === "DELETE") {
                 const request = await library.withdrawPush(
                     actor,
                     decodeURIComponent(reviewMatch[1]),
                 );
+                await log?.("info", "Withdrew Library request.", {
+                    component: "study-library",
+                    operation: "withdrawRequest",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                });
                 sendJson(res, 200, { data: request });
                 return true;
             }

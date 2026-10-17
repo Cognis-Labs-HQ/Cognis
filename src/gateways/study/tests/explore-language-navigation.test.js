@@ -190,7 +190,6 @@ test("Study renders Requests from route translations without an adapter locale b
             [...html.matchAll(/href="\/study\/leaderboard"/g)].length,
             1,
         );
-        assert.match(html, /study-subnav-attention/);
         assert.ok(lookups.length > 0);
     }
 });

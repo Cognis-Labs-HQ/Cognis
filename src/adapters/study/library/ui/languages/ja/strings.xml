@@ -182,4 +182,18 @@
     <string name="gateway.study.library_audio_record_stop">録音を停止</string>
     <string name="gateway.study.library_audio_refresh">音声を再生成</string>
     <string name="gateway.study.library_audio_refreshed">音声を再生成しました。</string>
+  <string name="adapter.study.library.images_uploaded">参考画像をアップロードしました。</string>
+  <string name="adapter.study.library.images_upload_error">参考画像をアップロードできませんでした。1ファイル5 MiB以下のPNG、JPEG、WebP、GIFを使用してください。</string>
+  <string name="adapter.study.library.images_load_error">参考画像を読み込めませんでした。</string>
+  <string name="adapter.study.library.request_approved_by">承認者: {{ account }}</string>
+  <string name="adapter.study.library.request_confirm_action">この申請を「{{ action }}」しますか？</string>
+  <string name="adapter.study.library.notification_pending_subject">Study の申請を受信</string>
+  <string name="adapter.study.library.notification_pending_body">{{ account }} が Study の申請を送信しました（{{ request }}）。</string>
+  <string name="adapter.study.library.notification_approved_subject">Study の申請を承認</string>
+  <string name="adapter.study.library.notification_approved_body">{{ account }} が Study の申請 {{ request }} を承認しました。</string>
+  <string name="adapter.study.library.notification_rejected_subject">Study の申請を却下</string>
+  <string name="adapter.study.library.notification_rejected_body">{{ account }} が Study の申請 {{ request }} を却下しました。</string>
+  <string name="adapter.study.library.notification_withdrawn_subject">Study の申請を取り下げ</string>
+  <string name="adapter.study.library.notification_withdrawn_body">{{ account }} が Study の申請 {{ request }} を取り下げました。</string>
+  <string name="adapter.study.library.request_submitted_by">申請者: {{ account }}</string>
 </resources>

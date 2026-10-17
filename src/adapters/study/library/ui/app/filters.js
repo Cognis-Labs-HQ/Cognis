@@ -1,3 +1,4 @@
+import { createSearchMatchResolver } from "/static/reuse/search-util/matching.js";
 import { renderBrowseControls } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
@@ -136,6 +137,8 @@ export function refreshLibraryFilterResults(panel) {
         selectedFilters,
         (item) => item.dataset.libraryFilter,
     );
+    const query = panel.querySelector("[data-study-query]")?.value ?? "";
+    const match = createSearchMatchResolver(query);
     let visibleCount = 0;
     const filterableCards = panel.querySelectorAll(
         ".library-entry-card[data-library-filter-values]",
@@ -144,6 +147,7 @@ export function refreshLibraryFilterResults(panel) {
         const values = JSON.parse(card.dataset.libraryFilterValues);
         const visible =
             card.dataset.studyFavouriteHidden !== "true" &&
+            (!query || match(card.textContent)) &&
             Array.from(selections.entries()).every(([fieldId, controls]) =>
                 controls.some((control) =>
                     (Array.isArray(values[fieldId])

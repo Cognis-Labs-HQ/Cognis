@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
@@ -47,6 +48,12 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
             { name: "requested_by", type: "text", notNull: true },
             { name: "status", type: "text", notNull: true, default: "pending" },
             { name: "reviewed_by", type: "text" },
+            {
+                name: "modified_by_json",
+                type: "text",
+                notNull: true,
+                default: "[]",
+            },
             {
                 name: "request_kind",
                 type: "text",
@@ -149,6 +156,7 @@ function mapPushRequest(row: Record<string, unknown>): LibraryPushRequest {
         )
             ? (String(row.request_kind) as "update" | "merge")
             : "promotion",
+        modifiedBy: JSON.parse(String(row.modified_by_json ?? "[]")),
         proposedEntry: row.proposed_entry_json
             ? (JSON.parse(
                   String(row.proposed_entry_json),
@@ -202,5 +210,90 @@ export async function reviewPushRequest(
         option: "DELETE",
         table: "study_library_pending_requests",
         where: [{ column: "request_id", value: id }],
+    });
+}
+
+export async function stagePushRequest(
+    db: DbExecutor,
+    id: string,
+    entry: NonNullable<LibraryPushRequest["proposedEntry"]>,
+    actorId: string,
+): Promise<LibraryPushRequest> {
+    const current = await getPushRequest(db, id);
+    if (!current) throw new Error("not_found");
+    if (current.status !== "pending") throw new Error("already_reviewed");
+    const original = current.proposedEntry ?? current.sourceSnapshot;
+    const comparable = (input: typeof entry | LibraryEntry | undefined) =>
+        input && {
+            schemaId: input.schemaId,
+            layer: input.layer,
+            label: input.label,
+            class: input.class,
+            hidden: Boolean(input.hidden),
+            alwaysShowDefinition: Boolean(input.alwaysShowDefinition),
+            editable: input.editable ?? original?.editable,
+            fields: Object.fromEntries(
+                Object.entries(input.fields ?? {}).filter(
+                    ([, value]) =>
+                        value !== undefined &&
+                        value !== "" &&
+                        !(Array.isArray(value) && !value.length),
+                ),
+            ),
+            references: input.references ?? [],
+            referenceGroups: input.referenceGroups ?? {},
+            tags: input.tags ?? [],
+            linkedEntries:
+                "linkedEntries" in input ? (input.linkedEntries ?? []) : [],
+        };
+    if (
+        isDeepStrictEqual(
+            comparable(current.proposedEntry ?? current.sourceSnapshot),
+            comparable(entry),
+        )
+    )
+        return current;
+    const modifiedBy = [...new Set([...(current.modifiedBy ?? []), actorId])];
+    const result = await db.executeCommand({
+        option: "UPDATE",
+        table: "study_library_push_requests",
+        set: {
+            proposed_entry_json: JSON.stringify(entry),
+            modified_by_json: JSON.stringify(modifiedBy),
+            updated_at: new Date().toISOString(),
+        },
+        where: [
+            { column: "id", value: id },
+            { column: "status", value: "pending" },
+        ],
+    });
+    if (result.rowCount !== 1) throw new Error("already_reviewed");
+    return { ...current, proposedEntry: entry, modifiedBy };
+}
+
+export async function addEntryOwners(
+    db: DbExecutor,
+    id: string,
+    owners: readonly string[],
+): Promise<void> {
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "study_library_entries",
+        where: [{ column: "id", value: id }],
+    });
+    const entry = result.rows?.[0];
+    if (!entry) throw new Error("not_found");
+    const all = [
+        ...new Set([
+            String(entry.created_by),
+            ...JSON.parse(String(entry.owners_json ?? "[]")),
+            ...owners,
+        ]),
+    ];
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "study_library_entries",
+        set: { owners_json: JSON.stringify(all) },
+        where: [{ column: "id", value: id }],
     });
 }

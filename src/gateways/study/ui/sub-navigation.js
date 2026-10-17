@@ -14,7 +14,6 @@ import {
 } from "/static/gateways/study/ui/language.js";
 import {
     dictionarySearchContext,
-    fetchLibraryPushRequests,
     fetchLibrarySchemas,
     fetchSearchableDictionaryProviders,
 } from "/static/gateways/study/ui/library-client.js";
@@ -254,9 +253,6 @@ export async function loadStudySubNavigationModel({
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
     const schemas = await fetchLibrarySchemas().catch(() => []);
-    const pendingLibraryRequests = await fetchLibraryPushRequests({
-        status: "pending",
-    }).catch(() => []);
     const activeLocale = document.documentElement.lang;
     const spaRoutes = await loadSpaRoutes();
     if (spaRoutes.some((route) => route.base === "/study/explore"))
@@ -302,9 +298,6 @@ export async function loadStudySubNavigationModel({
                 navigationLabels.en,
             pageUrl: "/study/library/requests",
             order: 290,
-            attention: pendingLibraryRequests.some(
-                (request) => request.canReview === true,
-            ),
         });
     }
     modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
@@ -423,12 +416,9 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 currentPath.startsWith(`${rawPageUrl}/`)
                     ? " active"
                     : "";
-            const attentionClass = component.attention
-                ? " study-subnav-attention"
-                : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}${attentionClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(label)}
                     </a>
                 </li>

@@ -373,3 +373,45 @@ export async function uploadLibraryAudio(file, signal) {
     if (!response.ok) throw new Error("audio_upload_failed");
     return (await response.json()).data;
 }
+
+export async function uploadLibraryImage(file, signal) {
+    const response = await apiFetch("/api/v1/study/library/images", {
+        method: "PUT",
+        headers: { "content-type": file.type },
+        body: file,
+        signal,
+    });
+    const payload = await response.json();
+    if (!response.ok)
+        throw new Error(payload.error?.code ?? "image_upload_failed");
+    return payload.data;
+}
+
+export async function fetchLibraryImageUrl(
+    entryId,
+    fieldId,
+    index,
+    { signal, requestId } = {},
+) {
+    const response = await apiFetch(
+        `/api/v1/study/library/${requestId ? "push-requests" : "entries"}/${encodeURIComponent(requestId ?? entryId)}/images/${encodeURIComponent(fieldId)}/${index}`,
+        { signal },
+    );
+    if (!response.ok) throw new Error("image_load_failed");
+    return URL.createObjectURL(await response.blob());
+}
+
+export async function stageLibraryPromotion(requestId, proposedEntry) {
+    const response = await apiFetch(
+        `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
+        {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(proposedEntry),
+        },
+    );
+    const payload = await response.json();
+    if (!response.ok)
+        throw new Error(payload.error?.code ?? "request_update_failed");
+    return payload.data;
+}

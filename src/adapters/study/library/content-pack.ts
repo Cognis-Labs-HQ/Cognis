@@ -1,3 +1,4 @@
+import { validateReferenceImage } from "./image-store.js";
 import {
     CONTENT_CLASS_PATTERN,
     CONTENT_RECORD_ID_PATTERN,
@@ -294,9 +295,13 @@ async function validateContentRecords(
         for (const field of layer.fields ?? []) {
             const value = record.fields?.[field.id];
             if (
-                !["asset", "assetList", "audio", "audioList"].includes(
-                    field.type,
-                ) ||
+                ![
+                    "asset",
+                    "assetList",
+                    "audio",
+                    "audioList",
+                    "imageList",
+                ].includes(field.type) ||
                 value === undefined
             )
                 continue;
@@ -321,12 +326,24 @@ async function validateContentRecords(
                                   ".m4a": "audio/mp4",
                               } as const
                           )[extension]
-                        : value.endsWith(".svg")
-                          ? "image/svg+xml"
-                          : value.endsWith(".json")
-                            ? "application/json"
-                            : undefined;
+                        : field.type === "imageList"
+                          ? (
+                                {
+                                    ".png": "image/png",
+                                    ".jpg": "image/jpeg",
+                                    ".jpeg": "image/jpeg",
+                                    ".webp": "image/webp",
+                                    ".gif": "image/gif",
+                                } as const
+                            )[extension]
+                          : value.endsWith(".svg")
+                            ? "image/svg+xml"
+                            : value.endsWith(".json")
+                              ? "application/json"
+                              : undefined;
                 if (!mediaType) throw new Error("unsupported_asset_type");
+                if (field.type === "imageList")
+                    validateReferenceImage(mediaType, data);
                 if (!assets.some(({ path }) => path === value)) {
                     assets.push({
                         path: value,

@@ -143,6 +143,7 @@ test("My Requests shows every submitted status read-only while Pending exposes a
         escapeHtml: String,
         formatDateTime: String,
         renderScope: () => "",
+        renderRequestPreview: () => "<div data-request-preview></div>",
     });
     vm.runInContext(source("../ui/app/requests.js"), context);
     const requests = ["pending", "approved", "rejected"].map((status) => ({
@@ -212,6 +213,7 @@ test("request headers show linked identities and decision time on the status pil
         escapeHtml: String,
         formatDateTime: () => "Decision time",
         renderScope: () => "",
+        renderRequestPreview: () => "<div data-request-preview></div>",
     });
     vm.runInContext(source("../ui/app/requests.js"), context);
     const html = context.renderLibraryRequests(

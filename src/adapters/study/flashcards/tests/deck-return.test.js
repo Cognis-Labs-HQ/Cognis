@@ -90,7 +90,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             getFloatingSlot: () => ({}),
             init: async () => {
                 assert.equal(options.toolbar[0].render(), "deck menu");
-                assert.equal(options.toolbarScrollable, true);
+                assert.equal(options.toolbarScrollable, false);
                 root.querySelector("[data-study-deck]").innerHTML =
                     "<section data-study-session></section>";
             },

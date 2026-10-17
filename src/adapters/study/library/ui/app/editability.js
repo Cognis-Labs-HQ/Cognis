@@ -11,3 +11,9 @@ export function canCreateLayerEntries(layer) {
         )
     );
 }
+
+export function popupEntryEditMode(entry, initialEntry, options) {
+    if (options.readOnly || (options.editDraft && entry.id !== initialEntry.id))
+        return null;
+    return options.editDraft ? "direct" : entryEditMode(entry);
+}

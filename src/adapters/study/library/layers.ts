@@ -26,6 +26,7 @@ const BUILT_IN_FIELD_TYPES = new Set([
     "stringList",
     "asset",
     "assetList",
+    "imageList",
     "audio",
     "audioList",
     "strokePattern",
@@ -664,7 +665,7 @@ export function validateFields(
             (field.type === "stringList" &&
                 Array.isArray(value) &&
                 value.every((item) => typeof item === "string")) ||
-            ((field.type === "assetList" || field.type === "audioList") &&
+            (["assetList", "audioList", "imageList"].includes(field.type) &&
                 Array.isArray(value) &&
                 value.every(
                     (item) => typeof item === "string" && item.length > 0,

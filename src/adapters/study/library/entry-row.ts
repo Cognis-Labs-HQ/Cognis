@@ -32,6 +32,7 @@ export function mapEntry(row: Record<string, unknown>): LibraryEntry {
         scope: String(row.scope) as LibraryEntry["scope"],
         scopeId: String(row.scope_id),
         createdBy: String(row.created_by),
+        owners: JSON.parse(String(row.owners_json ?? "[]")),
         createdAt: String(row.created_at),
         updatedAt: String(row.updated_at),
         relocatedAt: row.relocated_at ? String(row.relocated_at) : undefined,

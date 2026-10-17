@@ -182,4 +182,18 @@
     <string name="gateway.study.library_audio_record_stop">Aufnahme beenden</string>
     <string name="gateway.study.library_audio_refresh">Audio neu erzeugen</string>
     <string name="gateway.study.library_audio_refreshed">Audio neu erzeugt.</string>
+  <string name="adapter.study.library.images_uploaded">Referenzbilder hochgeladen.</string>
+  <string name="adapter.study.library.images_upload_error">Referenzbilder konnten nicht hochgeladen werden. Verwende PNG, JPEG, WebP oder GIF mit höchstens 5 MiB pro Datei.</string>
+  <string name="adapter.study.library.images_load_error">Referenzbilder konnten nicht geladen werden.</string>
+  <string name="adapter.study.library.request_approved_by">Genehmigt von {{ account }}</string>
+  <string name="adapter.study.library.request_confirm_action">Diese Anfrage {{ action }}?</string>
+  <string name="adapter.study.library.notification_pending_subject">Study-Anfrage eingegangen</string>
+  <string name="adapter.study.library.notification_pending_body">{{ account }} hat eine Study-Anfrage eingereicht ({{ request }}).</string>
+  <string name="adapter.study.library.notification_approved_subject">Study-Anfrage genehmigt</string>
+  <string name="adapter.study.library.notification_approved_body">{{ account }} hat die Study-Anfrage {{ request }} genehmigt.</string>
+  <string name="adapter.study.library.notification_rejected_subject">Study-Anfrage abgelehnt</string>
+  <string name="adapter.study.library.notification_rejected_body">{{ account }} hat die Study-Anfrage {{ request }} abgelehnt.</string>
+  <string name="adapter.study.library.notification_withdrawn_subject">Study-Anfrage zurückgezogen</string>
+  <string name="adapter.study.library.notification_withdrawn_body">{{ account }} hat die Study-Anfrage {{ request }} zurückgezogen.</string>
+  <string name="adapter.study.library.request_submitted_by">Eingereicht von {{ account }}</string>
 </resources>

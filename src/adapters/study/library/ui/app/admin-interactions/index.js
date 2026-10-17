@@ -1,3 +1,4 @@
+import { bindReferenceImageUploads } from "../reference-images.js";
 import { bindAudioUploads } from "../audio-upload.js";
 import { bindAudioEditor } from "../audio-editor.js";
 import { bindTransformationOptIns } from "../transformation-opt-ins.js";
@@ -151,6 +152,7 @@ export function bindLibraryEditorControls(
         });
     });
     bindAudioUploads(form, i18n, signal);
+    bindReferenceImageUploads(form, entry, i18n, signal);
     bindAudioEditor(form, entry, i18n, signal);
     renderStrokePatternPreviews(form);
     form.querySelectorAll("[data-library-entry-tags]").forEach((field) => {
@@ -283,6 +285,7 @@ export async function openLibraryEntryEditor({
     schemas,
     i18n,
     requestUpdate = false,
+    persistDraft,
     onSaved = () => {},
 }) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
@@ -313,7 +316,8 @@ export async function openLibraryEntryEditor({
             tagCarousels: composer.constructor.tag_carousels,
             editingLayer: composer.layer,
             persistentExtra: true,
-            allowDefinitionCreate: layer?.semanticRole !== "definition",
+            allowDefinitionCreate:
+                !persistDraft && layer?.semanticRole !== "definition",
         },
     );
     let formController;
@@ -406,7 +410,7 @@ export async function openLibraryEntryEditor({
                         const relationship = composer.layer.relationships.find(
                             (candidate) => candidate.id === id,
                         );
-                        if (!relationship) return;
+                        if (!relationship || persistDraft) return;
                         void createRelationshipDependency({
                             schemas,
                             entries,
@@ -420,11 +424,17 @@ export async function openLibraryEntryEditor({
                 },
             );
             syncGeneratedCardLabel(form, composer.inputCarouselIds, entries);
+            if (persistDraft)
+                form.querySelectorAll(
+                    "[data-library-edit-related], [data-library-create-dependency], [data-library-add-definition]",
+                ).forEach((button) => {
+                    button.disabled = true;
+                });
             form.addEventListener("click", (event) => {
                 const addDefinition = event.target.closest(
                     "[data-library-add-definition]",
                 );
-                if (addDefinition) {
+                if (addDefinition && !persistDraft) {
                     const relationship = composer.layer.relationships.find(
                         ({ targetLayer }) =>
                             schema.layers.find(({ id }) => id === targetLayer)
@@ -466,7 +476,7 @@ export async function openLibraryEntryEditor({
                     ({ id }) => id === button.dataset.libraryEditRelated,
                 );
                 const mode = related ? entryEditMode(related) : null;
-                if (!related || !mode) return;
+                if (!related || !mode || persistDraft) return;
                 void openLibraryEntryEditor({
                     entry: related,
                     entries,
@@ -528,9 +538,14 @@ export async function openLibraryEntryEditor({
             };
             let updated;
             try {
-                updated = requestUpdate
-                    ? await requestLibraryUpdate(entry.id, proposedEntry)
-                    : await updateLibraryEntry(entry.id, proposedEntry);
+                updated = persistDraft
+                    ? await persistDraft({
+                          ...proposedEntry,
+                          linkedEntries: entry.linkedEntries,
+                      })
+                    : requestUpdate
+                      ? await requestLibraryUpdate(entry.id, proposedEntry)
+                      : await updateLibraryEntry(entry.id, proposedEntry);
             } catch (error) {
                 showLibraryMutationError(error, i18n);
                 return false;

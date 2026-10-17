@@ -108,7 +108,7 @@ Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Pembaruan pen
 
 Pengguna dapat membuat kartu di namespace pribadi, guru juga di kelas miliknya, dan administrator juga secara global. Penyedia bahasa membentuk bidang formulir khusus lapisan melalui `study:library:registerConstructor`; visibilitas, pemilihan kelas, dan kontrol pratinjau definisi tetap dimiliki adapter. Sebelum pembuatan pribadi atau kelas, Pustaka menunjukkan entri global terlihat yang identik dan meminta konfirmasi eksplisit. Pembuatan memakai cakupan pribadi secara bawaan; administrator yang berhak dapat memilih publikasi global, sedangkan pengajar hanya dapat memilih kelas yang dapat ditulis dan bahasanya cocok dengan skema aktif.
 
-Kartu pribadi dapat diterbitkan ke kelas yang diikuti untuk ditinjau gurunya atau ke koleksi global untuk ditinjau administrator. Permintaan tertunda dapat ditarik kembali oleh pengirim; setelah disetujui, kepemilikan berpindah dari pengguna dan kartu asli dipindahkan, bukan disalin. Sesudahnya hanya guru yang bertanggung jawab atau administrator yang dapat mengedit, menghapus, atau mengembalikannya ke namespace pribadi pengirim awal. Manifest penyedia dapat menetapkan `protected: true`; entri terlindungi tidak dapat dipindahkan atau dihapus. Rekaman impor dan buatan pengguna menyimpan teks pencarian ternormalisasi, dan pencarian menu samping memeriksa semua lapisan serta menyembunyikan hasil kosong.
+Kartu pribadi dapat diterbitkan ke kelas yang diikuti untuk ditinjau gurunya atau ke koleksi global untuk ditinjau administrator. Permintaan tertunda dapat ditarik oleh pengirim atau administrator yang berwenang. Persetujuan memindahkan kartu asli, bukan menyalinnya. Pengirim tetap tercatat sebagai pembuat dan dapat mengajukan perubahan konten global; administrator yang mengubah draf menjadi pemilik bersama. Perubahan cakupan dan penghapusan tetap mengikuti izin tujuan. Manifest penyedia dapat menetapkan `protected: true`; entri terlindungi tidak dapat dipindahkan atau dihapus. Rekaman impor dan buatan pengguna menyimpan teks pencarian ternormalisasi, dan pencarian menu samping memeriksa semua lapisan serta menyembunyikan hasil kosong.
 
 ## Konstruktor kartu milik bahasa
 
@@ -128,7 +128,7 @@ Rekaman konten dapat mendeklarasikan nilai `class` bernamespace seperti `lexical
 
 ## Permintaan penerbitan
 
-Permintaan penerbitan Pustaka berada pada halaman subnavigasi Study **Permintaan**, bukan pada bilah alat halaman. Saat administrator atau pengajar memiliki permintaan tertunda yang dapat ditinjau, tautan Permintaan menampilkan garis tepi merah yang bernapas dan aksesibel; menyelesaikan tinjauan terakhir menghapus status perhatian. Animasi berubah menjadi garis tepi statis bila pengguna meminta pengurangan gerakan.
+Permintaan penerbitan berada pada halaman Study **Permintaan**. Administrator aktif menerima notifikasi Study mengenai permintaan masuk dan keputusan administrator lain.
 
 ## Administrasi dan pembuatan
 
@@ -506,3 +506,11 @@ Tautan kartu Explore menyertakan identitas kanonis kartu pada `/study/explore/<l
 ## Kontrol Belajar Tersimpan
 
 Kartu kosakata baru otomatis mendeteksi kelas dan tag transformasi yang didukung melalui kamus saat input diselesaikan dan sebelum disimpan. Tag manual dipertahankan; kelas ambigu tetap memerlukan pilihan pengguna. Hasil yang terlambat tidak mengubah draf lain. Pratinjau bentuk verba, adjektiva/adverbia, dan jamak meminta audio transformasi yang dipilih. Atribusi sumber pada judul menautkan kartu dasar. Kontrol unggahan memakai selektor terpisah dari audio pemutar untuk mencegah kegagalan inisialisasi editor karakter.
+
+## Gambar Referensi dan Tinjauan
+
+Kartu dapat mendeklarasikan kolom opsional `imageList` dengan `input.control: "imageFiles"`. Unggah berkas PNG, JPEG, WebP, atau GIF hingga 5 MiB per berkas melalui editor kartu; tampilan detail menampilkan gambarnya. Gambar paket menggunakan jalur relatif dalam direktori aset paket konten dan menyertakan atribusi lisensi. Berkas unggahan tetap privat dan hanya dapat diambil melalui kartu atau permintaan yang diizinkan. `PUT /api/v1/study/library/images` menerima data gambar; `GET /api/v1/study/library/entries/:id/images/:field/:index` mengambil gambar kartu. Pratinjau permintaan yang diizinkan menggunakan jalur `push-requests` yang sesuai.
+
+Permintaan menampilkan pratinjau kartu biasa. Buka kartu usulan yang masih menunggu untuk mengubah drafnya; `PATCH /api/v1/study/library/push-requests/:id` hanya tersedia bagi administrator. Menyimpan draf tidak mengubah kartu yang sudah diterbitkan. Persetujuan menerapkan draf dan memberikan kepemilikan kepada pengirim serta administrator yang mengubahnya; penyimpanan tanpa perubahan tidak menambah pemilik. Pratinjau profil pengirim dan pemberi persetujuan memiliki label yang jelas. Persetujuan, penolakan, dan penarikan masing-masing memerlukan konfirmasi. Administrator aktif menerima notifikasi Study untuk permintaan masuk dan keputusan pengguna lain. Tautan navigasi Permintaan tetap statis.
+
+Kontrol penelusuran menyediakan filter teks langsung untuk kartu yang sudah dimuat pada halaman, digabungkan dengan filter dan favorit yang dipilih.

@@ -8,11 +8,6 @@ const clientSource = read("library-client.js");
 const studySubNavigationSource = read("sub-navigation.js");
 const studyStylesheet = read("study.css");
 test("Study client and navigation retain their Library contract", () => {
-    assert.match(studySubNavigationSource, /study-subnav-attention/);
-    assert.match(
-        studyStylesheet,
-        /@keyframes study-subnav-attention-breathe[\s\S]*border-block-end-color: var\(--accent-2\)/,
-    );
     assert.doesNotMatch(studySubNavigationSource, /layer\.views/);
     assert.match(clientSource, /apiFetch\([\s\S]*\/audio\//);
     assert.match(

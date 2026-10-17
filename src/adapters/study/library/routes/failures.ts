@@ -13,6 +13,8 @@ const DOMAIN_CODES = new Set([
     "audio_entry_changed",
     "audio_refresh_unavailable",
     "invalid_audio_upload",
+    "invalid_image_upload",
+    "unsupported_image_type",
     "audio_asset_not_found",
     "audio_field_required",
     "audio_not_found",
@@ -191,6 +193,8 @@ export function libraryFailure(error: unknown): {
 } {
     const message = error instanceof Error ? error.message : "";
     const [code, detail] = message.split(":");
+    if (code === "image_not_found") return { code, status: 404 };
+    if (code === "image_upload_too_large") return { code, status: 413 };
     if (code === "audio_upload_too_large") return { code, status: 413 };
     if (code === "audio_entry_changed") return { code, status: 409 };
     if (!DOMAIN_CODES.has(code)) return { code: "request_failed", status: 500 };

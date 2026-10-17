@@ -46,3 +46,42 @@ test("word-type filters reflect visible selected-layer content rather than every
     assert.doesNotMatch(empty, /data-library-filter-value=/);
     assert.match(empty, /data-study-sort/);
 });
+
+test("current-page quick search immediately combines text with the existing card filters", () => {
+    const context = {
+        groupByToMap,
+        createSearchMatchResolver: (query) => (value) =>
+            value.toLowerCase().includes(query.toLowerCase()),
+    };
+    vm.runInNewContext(source, context);
+    const cards = ["Dog", "Cat"].map((textContent) => ({
+        textContent,
+        dataset: { libraryFilterValues: "{}" },
+        closest() {
+            return this;
+        },
+        hidden: false,
+    }));
+    const input = { value: "do" };
+    const empty = { hidden: true };
+    const panel = {
+        querySelectorAll: (selector) =>
+            selector.includes(".active") ? [] : cards,
+        querySelector: (selector) =>
+            selector === "[data-study-query]" ? input : empty,
+    };
+    context.refreshLibraryFilterResults(panel);
+    assert.deepEqual(
+        cards.map(({ hidden }) => hidden),
+        [false, true],
+    );
+    input.value = "missing";
+    context.refreshLibraryFilterResults(panel);
+    assert.equal(empty.hidden, false);
+    input.value = "";
+    context.refreshLibraryFilterResults(panel);
+    assert.deepEqual(
+        cards.map(({ hidden }) => hidden),
+        [false, false],
+    );
+});

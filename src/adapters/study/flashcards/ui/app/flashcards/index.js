@@ -582,7 +582,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 render: () => menu.render(),
             },
         ],
-        toolbarScrollable: true,
+        toolbarScrollable: false,
         floatingMenu: [modePreference],
         subNavigation: [
             {
@@ -613,7 +613,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
     root.addEventListener(
         "input",
         (event) => {
-            if (!event.target.matches("[data-deck-query]")) return;
+            if (!event.target.matches("[data-study-query]")) return;
             deckQuery = event.target.value;
             root.querySelector(".study-deck-browser").innerHTML =
                 renderDeckPreviews(templates, visibleDecks(), i18n);

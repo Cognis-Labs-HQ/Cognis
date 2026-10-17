@@ -1,3 +1,4 @@
+import { loadReferenceImages } from "./reference-images.js";
 import { bindDrawingPreview, placeAudioSpeaker } from "./drawing.js";
 import { loadLibraryAudio } from "./presentation.js";
 import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.js";
@@ -42,10 +43,23 @@ export function bindDetailLayout(root, signal) {
 export function bindEntryDetail(
     root,
     entry,
-    { signal, audioObjectUrls, audioError },
+    { signal, audioObjectUrls, audioError, imageError, requestId },
 ) {
     bindDetailLayout(root, signal);
     bindDrawingPreview(root, entry, signal);
     placeAudioSpeaker(root, signal);
     void loadLibraryAudio(root, audioObjectUrls, signal, audioError);
+    void loadReferenceImages(root, {
+        signal,
+        objectUrls: audioObjectUrls,
+        errorMessage: imageError,
+        requestId,
+    });
+}
+
+export function releaseEntryMedia(controller, objectUrls, signal, abortPopup) {
+    controller.abort();
+    for (const objectUrl of objectUrls) URL.revokeObjectURL(objectUrl);
+    objectUrls.clear();
+    signal?.removeEventListener("abort", abortPopup);
 }

@@ -26,6 +26,8 @@ import { ensureLibraryStoreSchema } from "./db-schema.js";
 import {
     captureRequestContext,
     createPushRequest,
+    stagePushRequest,
+    addEntryOwners,
     getPushRequest,
     listPushRequests,
     reviewPushRequest,
@@ -342,7 +344,7 @@ export class LibraryStore {
                         );
                     }
                     if (
-                        field.type === "assetList" &&
+                        ["assetList", "imageList"].includes(field.type) &&
                         Array.isArray(assetPath)
                     ) {
                         fields[field.id] = assetPath.map((item) =>
@@ -895,6 +897,18 @@ export class LibraryStore {
         status?: LibraryPushRequest["status"],
     ): Promise<LibraryPushRequest[]> {
         return listPushRequests(this.db, status);
+    }
+
+    async stagePush(
+        id: string,
+        entry: LibraryEntryInput,
+        actorId: string,
+    ): Promise<LibraryPushRequest> {
+        return stagePushRequest(this.db, id, entry, actorId);
+    }
+
+    async addOwners(id: string, owners: readonly string[]): Promise<void> {
+        await addEntryOwners(this.db, id, owners);
     }
 
     async reviewPush(

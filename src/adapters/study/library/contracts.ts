@@ -63,6 +63,25 @@ export interface LibraryProviderCapability {
 }
 
 export interface LibraryCapability {
+    stagePush(
+        actor: LibraryActor,
+        requestId: string,
+        entry: LibraryEntryInput,
+    ): Promise<LibraryPushRequest>;
+    readonly images: {
+        upload(
+            actor: LibraryActor,
+            mediaType: string,
+            data: Uint8Array,
+        ): Promise<{ value: string }>;
+        read(
+            actor: LibraryActor,
+            entryId: string,
+            fieldId: string,
+            index: number,
+            staged?: boolean,
+        ): Promise<{ mediaType: string; data: Buffer }>;
+    };
     registerSchema(schema: LibrarySchema): Promise<void>;
     registerLookupProvider(provider: LibraryLookupProvider): () => void;
     listLookupProviders(input: {

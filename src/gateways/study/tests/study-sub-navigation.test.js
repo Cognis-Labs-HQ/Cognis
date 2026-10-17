@@ -20,10 +20,7 @@ test("Study submenu links use the user-dropdown button class", () => {
         "utf8",
     );
 
-    assert.match(
-        source,
-        /class="dropdown-item\$\{activeClass\}\$\{attentionClass\}"/,
-    );
+    assert.match(source, /class="dropdown-item\$\{activeClass\}"/);
     assert.match(source, /class="dropdown-item\$\{settingsActiveClass\}"/);
     assert.doesNotMatch(
         source,

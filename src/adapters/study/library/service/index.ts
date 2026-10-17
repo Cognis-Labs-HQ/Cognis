@@ -1,3 +1,6 @@
+import { LibraryImages } from "./images.js";
+import type { LibraryImageStore } from "../image-store.js";
+import { createVisibilityService } from "./visibility.js";
 import { storeUploadedAudio, validateUploadedAudioFields } from "./uploads.js";
 import { readAuthorizedEntryAudio } from "./audio.js";
 import { deleteProviderContent } from "./content-cleanup.js";
@@ -22,6 +25,7 @@ import {
 import { localizeDefinition } from "./definitions.js";
 import type { LibraryDefinitionLocalizationRequest } from "../types.js";
 import {
+    notifyDeletedEntries,
     authorizeDeletion,
     pendingDeletionEntries,
     planDeletion,
@@ -90,6 +94,8 @@ export class LibraryService implements LibraryCapability {
         LibraryFormContribution
     >();
     private readonly visibility: LibraryVisibilityService;
+    readonly images: LibraryImages;
+    readonly stagePush: LibraryVisibilityService["stagePush"];
     private readonly writer: LibraryEntryWriter;
 
     constructor(
@@ -110,6 +116,10 @@ export class LibraryService implements LibraryCapability {
             actor: LibraryActor,
         ) => Promise<void>,
         private readonly audioProvider?: StudyAudioCapability,
+        imageStore?: LibraryImageStore,
+        notifyRequest?: ConstructorParameters<
+            typeof LibraryVisibilityService
+        >[8],
     ) {
         this.writer = new LibraryEntryWriter({
             store,
@@ -121,66 +131,55 @@ export class LibraryService implements LibraryCapability {
             entryWithPermissions: this.entryWithPermissions.bind(this),
             stringLocalization,
             notifyNewContent,
-            validateAudio: (actor, schema, layer, fields, previous) =>
-                validateUploadedAudioFields(
-                    actor,
-                    schema,
-                    layer,
-                    fields,
-                    previous,
-                    this.audioCache,
-                ),
+            validateAudio: async (actor, schema, layer, fields, previous) => {
+                await Promise.all([
+                    validateUploadedAudioFields(
+                        actor,
+                        schema,
+                        layer,
+                        fields,
+                        previous,
+                        this.audioCache,
+                    ),
+                    this.images.validate(
+                        actor,
+                        schema,
+                        layer,
+                        fields,
+                        previous,
+                    ),
+                ]);
+            },
         });
         this.dictionary = new LibraryDictionarySearch(store, cacheFactory, log);
-        this.visibility = new LibraryVisibilityService(
+        this.visibility = createVisibilityService({
             store,
-            this.read.bind(this),
-            this.authorize.bind(this),
-            async (actor, input, destination, sourceId) => {
-                if (input.linkedEntries?.length && sourceId) {
-                    const current = await this.read(actor, sourceId);
-                    if (!current) throw new Error("entry_not_found");
-                    await validateMergeProposal(
-                        actor,
-                        current,
-                        input,
-                        this.schema(input.schemaId),
-                        this.read.bind(this),
-                    );
-                    return;
-                }
-                await validateDependencyVisibility(
-                    input,
-                    destination,
-                    (id) => this.read(actor, id),
-                    sourceId,
-                    this.schema(input.schemaId),
-                );
-            },
+            read: this.read.bind(this),
+            authorize: this.authorize.bind(this),
+            schema: this.schema.bind(this),
+            update: this.update.bind(this),
             flow,
-            this.update.bind(this),
-            async (actor, source, destination) => {
-                const dependents = (
-                    await store.referencesFor(source.id)
-                ).filter(
-                    (dependent) =>
-                        !canComposeAtLocation(
-                            { ...source, ...destination },
-                            dependent,
-                        ),
-                );
-                if (!dependents.length) return [];
-                const cascadeIds = await store.resolveDeletionCascade(
-                    dependents.map(({ id }) => id),
-                    undefined,
-                    true,
-                );
-                if (cascadeIds.includes(source.id))
-                    throw new Error("entry_required_by_shared_content");
-                return this.removeEntries(actor, cascadeIds, false, true);
-            },
-            (entries, actor) => this.notifyDeletedEntries(entries, actor),
-        );
+            removeEntries: this.removeEntries.bind(this),
+            notifyDeletion: (entries, actor) =>
+                notifyDeletedEntries(
+                    entries,
+                    actor,
+                    this.notifyDeletion,
+                    this.log,
+                ),
+            validateImages: (...args) => this.images.validate(...args),
+            notifyRequest,
+        });
+        this.stagePush = this.visibility.stagePush.bind(this.visibility);
+        this.images = new LibraryImages({
+            files: imageStore,
+            flow,
+            schema: this.schema.bind(this),
+            read: this.read.bind(this),
+            asset: this.readContentPackAsset.bind(this),
+            log,
+            readRequest: this.visibility.readRequestEntry.bind(this.visibility),
+        });
     }
 
     async registerSchema(input: LibrarySchema): Promise<void> {
@@ -364,7 +363,12 @@ export class LibraryService implements LibraryCapability {
             accountId: "content-pack-cleanup",
             role: "admin" as const,
         };
-        await this.notifyDeletedEntries(entries, actor);
+        await notifyDeletedEntries(
+            entries,
+            actor,
+            this.notifyDeletion,
+            this.log,
+        );
         await this.log?.("info", "Deleted Study Library content pack.", {
             component: "study-library",
             operation: "deleteContentPack",
@@ -760,24 +764,13 @@ export class LibraryService implements LibraryCapability {
             entryIds,
             blacklistContentHashes,
         );
-        await this.notifyDeletedEntries(entries, actor);
+        await notifyDeletedEntries(
+            entries,
+            actor,
+            this.notifyDeletion,
+            this.log,
+        );
         return entries.map(({ id }) => id);
-    }
-
-    private async notifyDeletedEntries(
-        entries: readonly LibraryEntry[],
-        actor: LibraryActor,
-    ): Promise<void> {
-        try {
-            await this.notifyDeletion?.(entries, actor);
-        } catch (error) {
-            await this.log?.("error", "Study cascade notification failed.", {
-                component: "study-library",
-                operation: "notify-deletion",
-                accountId: actor.accountId,
-                errorName: error instanceof Error ? error.name : "Error",
-            });
-        }
     }
 
     private async removeEntries(
@@ -873,7 +866,13 @@ export class LibraryService implements LibraryCapability {
         const current = await this.read(actor, entryId);
         if (!current) throw new Error("entry_not_found");
         if (this.immutable(current)) throw new Error("immutable_layer");
-        if (current.scope !== "global" || current.createdBy !== actor.accountId)
+        if (
+            current.scope !== "global" ||
+            !(
+                current.createdBy === actor.accountId ||
+                current.owners?.includes(actor.accountId)
+            )
+        )
             throw new Error("forbidden");
         const targets = await validateDependencyVisibility(
             proposedEntry,

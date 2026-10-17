@@ -1,3 +1,5 @@
+import { loadFavourites } from "/static/gateways/study/reuse/favourites.js";
+import { bindRequestPreviews } from "../request-preview.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -32,7 +34,10 @@ export async function mount(root, { signal } = {}) {
         loadLibraryRequests(i18n),
     ]);
     applyDocumentTitle(i18n, "gateway.study.library_requests");
-    const preview = await loadLibrary(model.selectedLanguageCode, i18n);
+    const [preview, favourites] = await Promise.all([
+        loadLibrary(undefined, i18n),
+        loadFavourites({ signal }),
+    ]);
     preview.profiles = await loadRequestProfiles(requests);
     let activeFilter = requests.some(({ canReview }) => canReview)
         ? "pending"
@@ -46,15 +51,8 @@ export async function mount(root, { signal } = {}) {
                 activeFilter,
                 preview,
             );
+        favourites.refresh(root);
         uiCtx.capabilities.get("ui:profileAvatarRenderer")?.hydrate(root);
-        root.querySelector(
-            'a[href="/study/library/requests"]',
-        )?.classList.toggle(
-            "study-subnav-attention",
-            requests.some(
-                ({ canReview, status }) => canReview && status === "pending",
-            ),
-        );
     };
     const reload = async () => {
         const fresh = await fetchLibraryPushRequests();
@@ -132,19 +130,9 @@ export async function mount(root, { signal } = {}) {
     filterMenu.mount(root, { signal });
     bindStudySubNavigation(root, { signal, i18n });
     bindLibraryRequestReviews(root, requests, { i18n, signal, render, reload });
+    bindRequestPreviews(root, requests, { ...preview, i18n, signal, reload });
+    favourites.bind(root, { signal, i18n });
     uiCtx.capabilities.get("ui:profileAvatarRenderer")?.hydrate(root);
-    root.addEventListener(
-        "keydown",
-        (event) => {
-            const toggle = event.target.closest("[data-details-toggle]");
-            if (toggle && (event.key === "Enter" || event.key === " ")) {
-                event.preventDefault();
-                const details = toggle.closest("details");
-                details.open = !details.open;
-            }
-        },
-        { signal },
-    );
 }
 
 await mountWhenDirect(mount);

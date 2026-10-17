@@ -112,7 +112,7 @@ test("Study Library keeps definition controls in the Definitions tab", () => {
     );
     assert.match(
         adminInteractionsSource,
-        /allowDefinitionCreate: layer\?\.semanticRole !== "definition"/,
+        /allowDefinitionCreate:\s*!persistDraft && layer\?\.semanticRole !== "definition"/,
     );
     assert.match(adminInteractionsSource, /data-library-add-definition/);
     assert.match(createEntrySource, /error\.message !== "content_conflict"/);

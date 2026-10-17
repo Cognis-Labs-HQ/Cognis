@@ -824,6 +824,18 @@ The dictionary provider selector uses theme-select and is hidden for a single pr
 
 Japanese small-kana word recordings, including 学校, are regenerated using kanji spelling where available, with the designated Japanese voice and stable settings. Packaged sentences are rebuilt from those exact clips. I- and na-adjective transformations include adverbial, negative and past forms, with dedicated recordings for curated forms. English plural recordings remain dedicated assets and are reached by selected-form playback.
 
+## Reference Images
+
+Add optional image-list fields, private image uploads and detail galleries. Both language modules bundle a licensed reference photograph and expose the same field on every layer.
+
+## Editable Request Previews
+
+Use standard card previews and the existing editor for administrator changes to staged cards. Approval preserves submitter attribution and adds modifying administrators as joint owners. Clearly label submitter and approver profiles, and confirm approval, decline and withdrawal.
+
+## Study Notifications and Filters
+
+Notify enabled administrators about incoming requests and other administrators’ decisions in Study. Remove navigation pulsing, add live current-page text filtering and keep the Flashcards side menu in document flow to prevent scrollbar-driven shifts.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

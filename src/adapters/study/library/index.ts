@@ -1,3 +1,5 @@
+import { createRequestNotifier } from "./request-notifications.js";
+import { LibraryImageStore } from "./image-store.js";
 import type { StudyAudioCapability } from "@cognis/core";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { DictionarySearchState } from "./service/search-context.js";
@@ -79,6 +81,17 @@ export async function bootstrapStudyAdapter(
         }),
         ctx.log,
     );
+    registerFileNamespace({
+        id: "study-library-images",
+        ownerComponent: "study-library",
+        acl: { visibility: "component-managed" },
+    });
+    const imageStore = new LibraryImageStore(
+        createNamespaceClient({
+            namespaceId: "study-library-images",
+            callerComponent: "study-library",
+        }),
+    );
     const store = new LibraryStore(databaseExecutor);
     try {
         await store.ensureSchema();
@@ -106,10 +119,18 @@ export async function bootstrapStudyAdapter(
                 subject: string;
                 body: string;
                 actionUrl?: string;
+                metadata?: Record<string, unknown>;
             }) => Promise<unknown>
         >("notify:dispatch");
     const accountStore = ctx.capabilities.get<{
-        list(): Promise<Array<{ username: string; enabled: boolean }>>;
+        list(): Promise<
+            Array<{
+                username: string;
+                enabled: boolean;
+                role?: string;
+                isFounder?: boolean;
+            }>
+        >;
     }>("auth:accountStore");
     const service = new LibraryService(
         store,
@@ -201,6 +222,15 @@ export async function bootstrapStudyAdapter(
               }
             : undefined,
         ctx.capabilities.get<StudyAudioCapability>("study:audio"),
+        imageStore,
+        dispatchNotification && accountStore
+            ? createRequestNotifier({
+                  flow: ctx.flow,
+                  accounts: accountStore,
+                  dispatch: dispatchNotification,
+                  log: ctx.log,
+              })
+            : undefined,
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

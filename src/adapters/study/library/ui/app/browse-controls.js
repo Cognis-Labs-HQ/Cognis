@@ -107,6 +107,16 @@ export async function bindBrowseControls(root, entries, schemas, i18n, signal) {
         };
         favourites.bind(root, { signal, i18n, onChange: refresh });
         root.addEventListener(
+            "input",
+            (event) => {
+                if (event.target.matches("[data-study-query]"))
+                    refreshLibraryFilterResults(
+                        event.target.closest("[data-library-panel]"),
+                    );
+            },
+            { signal },
+        );
+        root.addEventListener(
             "change",
             (event) => {
                 if (event.target.matches("[data-study-sort]")) refresh();

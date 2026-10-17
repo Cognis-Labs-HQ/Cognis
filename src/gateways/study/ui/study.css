@@ -336,32 +336,6 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
         grid-template-columns: 1fr;
     }
 }
-@keyframes study-subnav-attention-breathe {
-    from {
-        border-block-end-color: color-mix(
-            in srgb,
-            var(--accent-2) 35%,
-            transparent
-        );
-    }
-    to {
-        border-block-end-color: var(--accent-2);
-    }
-}
-
-.study-page-subnav .study-subnav-attention {
-    border-radius: 0;
-    border-block-end: 3px solid var(--accent-2);
-    animation: study-subnav-attention-breathe 1.5s ease-in-out infinite
-        alternate;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .study-page-subnav .study-subnav-attention {
-        animation: none;
-    }
-}
-
 .study-page-subnav .study-dictionary-search {
     display: flex;
     flex-direction: row;
@@ -445,4 +419,9 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 
 .study-dictionary-search select[hidden] {
     display: none;
+}
+
+.study-browse-search {
+    width: min(18rem, 35vw);
+    min-width: 6rem;
 }

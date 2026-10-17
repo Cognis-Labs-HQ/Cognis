@@ -85,7 +85,8 @@ export interface LibraryFieldSchema {
             | "checkbox"
             | "number"
             | "localizedText"
-            | "audioFile";
+            | "audioFile"
+            | "imageFiles";
         options?: readonly {
             value: string;
             metadata: LibraryMetadata;
@@ -317,6 +318,8 @@ export interface LibraryEntry extends LibraryEntryInput {
     scope: LibraryScope;
     scopeId: string;
     createdBy: string;
+    /** Server-managed ownership retained after staged administrator edits. */
+    owners?: string[];
     createdAt: string;
     updatedAt: string;
     /** Relocated cards retain their identity and are excluded from new-content indicators. */
@@ -438,10 +441,13 @@ export interface LibraryPushRequest {
     sourceContext?: LibraryEntry[];
     /** Request-scoped action hints; never persisted. */
     canReview?: boolean;
+    canStage?: boolean;
     canWithdraw?: boolean;
     requestedAt?: string;
     reviewedAt?: string;
     reviewedBy?: string;
+    /** Administrators who changed the staged proposal. */
+    modifiedBy?: string[];
 }
 
 export interface LibraryContentPackManifest {
@@ -495,6 +501,10 @@ export interface LibraryContentPackPlan {
         path: string;
         mediaType:
             | "image/svg+xml"
+            | "image/png"
+            | "image/jpeg"
+            | "image/webp"
+            | "image/gif"
             | "application/json"
             | "audio/mpeg"
             | "audio/ogg"
@@ -508,6 +518,10 @@ export interface LibraryContentPackPlan {
 export interface LibraryAsset {
     mediaType:
         | "image/svg+xml"
+        | "image/png"
+        | "image/jpeg"
+        | "image/webp"
+        | "image/gif"
         | "application/json"
         | "audio/mpeg"
         | "audio/ogg"

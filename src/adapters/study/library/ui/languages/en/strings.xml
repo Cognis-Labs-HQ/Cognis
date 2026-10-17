@@ -182,4 +182,18 @@
     <string name="gateway.study.library_audio_record_stop">Stop recording</string>
     <string name="gateway.study.library_audio_refresh">Regenerate audio</string>
     <string name="gateway.study.library_audio_refreshed">Audio regenerated.</string>
+  <string name="adapter.study.library.images_uploaded">Reference images uploaded.</string>
+  <string name="adapter.study.library.images_upload_error">Could not upload reference images. Use PNG, JPEG, WebP or GIF files up to 5 MiB each.</string>
+  <string name="adapter.study.library.images_load_error">Could not load reference images.</string>
+  <string name="adapter.study.library.request_approved_by">Approved by {{ account }}</string>
+  <string name="adapter.study.library.request_confirm_action">{{ action }} this request?</string>
+  <string name="adapter.study.library.notification_pending_subject">Study Request Received</string>
+  <string name="adapter.study.library.notification_pending_body">{{ account }} submitted a Study request ({{ request }}).</string>
+  <string name="adapter.study.library.notification_approved_subject">Study Request Approved</string>
+  <string name="adapter.study.library.notification_approved_body">{{ account }} approved Study request {{ request }}.</string>
+  <string name="adapter.study.library.notification_rejected_subject">Study Request Declined</string>
+  <string name="adapter.study.library.notification_rejected_body">{{ account }} declined Study request {{ request }}.</string>
+  <string name="adapter.study.library.notification_withdrawn_subject">Study Request Withdrawn</string>
+  <string name="adapter.study.library.notification_withdrawn_body">{{ account }} withdrew Study request {{ request }}.</string>
+  <string name="adapter.study.library.request_submitted_by">Submitted by {{ account }}</string>
 </resources>

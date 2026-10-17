@@ -346,3 +346,15 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 .library-related-entries--scrolling > .library-related-entry {
     white-space: nowrap;
 }
+
+.library-reference-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.library-reference-images img {
+    max-width: min(100%, 20rem);
+    max-height: 18rem;
+    object-fit: contain;
+    border-radius: 0.75rem;
+}

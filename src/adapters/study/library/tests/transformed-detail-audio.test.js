@@ -31,6 +31,7 @@ test("selected verb, adverb and plural details request their transformed audio t
         escapeHtml,
         document: { documentElement: { lang: "en" } },
         parseLanguageCode: (code) => code,
+        renderReferenceImages: () => "",
         deriveDetailPronunciation() {},
         resolveCompositionDependants: () => [],
         filterImmediateDependants: () => [],

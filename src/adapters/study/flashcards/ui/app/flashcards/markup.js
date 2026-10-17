@@ -72,7 +72,7 @@ export function renderDeckBrowser(templates, decks, i18n, query = "") {
         create_label: labelText("adapter.study.flashcards.deck_create"),
         search_label: labelText("adapter.study.flashcards.deck_search"),
         query: escapeHtml(query),
-        browse_controls: renderBrowseControls(i18n),
+        browse_controls: renderBrowseControls(i18n, { query }),
         previews: renderDeckPreviews(templates, decks, i18n),
     });
 }

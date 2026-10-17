@@ -460,3 +460,42 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
         /ordered_sequence_content_unresolved/,
     );
 });
+
+test("reference images are validated, bundled and preserved in content-pack plans", async (context) => {
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-library-images-"),
+    );
+    context.after(() => rm(root, { recursive: true, force: true }));
+    await cp(
+        fileURLToPath(new URL("fixtures/external-pack", import.meta.url)),
+        root,
+        { recursive: true },
+    );
+    const schemaPath = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaPath, "utf8"));
+    const layer = schema.layers.find(({ id }) => id === "words");
+    layer.fields.push({
+        id: "images",
+        type: "imageList",
+        metadata: { labels: { en: "Images" } },
+        input: { control: "imageFiles" },
+    });
+    await writeFile(schemaPath, JSON.stringify(schema));
+    const contentPath = path.join(root, "content", "words", "words.json");
+    const content = JSON.parse(await readFile(contentPath, "utf8"));
+    content[0].fields.images = ["dog.png"];
+    await writeFile(contentPath, JSON.stringify(content));
+    const bytes = Buffer.from("89504e470d0a1a0a00000000", "hex");
+    await writeFile(path.join(root, "assets", "dog.png"), bytes);
+    const plan = await inspectContentPack(root);
+    assert.equal(
+        plan.assets.find(({ path }) => path === "dog.png")?.mediaType,
+        "image/png",
+    );
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "words")?.fields.images,
+        ["dog.png"],
+    );
+    await writeFile(path.join(root, "assets", "dog.png"), "<svg/>");
+    await assert.rejects(inspectContentPack(root), /unsupported_image_type/);
+});

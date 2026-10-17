@@ -1,4 +1,4 @@
-import { bindEntryDetail } from "./detail-layout.js";
+import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
 import { composeDetail } from "./detail.js";
@@ -14,7 +14,7 @@ import {
 } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
 import { openLibraryEntryEditor } from "./admin-interactions/index.js";
-import { entryEditMode } from "./editability.js";
+import { popupEntryEditMode } from "./editability.js";
 import { transformedPopupPresentation as transformPresentation } from "./transformation-popup.js";
 import {
     detailTitleReferences,
@@ -41,7 +41,10 @@ export async function openEntryPopup(
     let sourceDefinition = "";
     let selectedTransformation = null;
     while (selectedEntry && !signal?.aborted) {
-        const detail = await fetchLibraryEntry(selectedEntry.id);
+        const detail =
+            options.detail?.entry.id === selectedEntry.id
+                ? options.detail
+                : await fetchLibraryEntry(selectedEntry.id);
         const layer = layerForEntry(schemas, detail.entry);
         const titleReferences = detailTitleReferences(
             detail,
@@ -49,7 +52,11 @@ export async function openEntryPopup(
             entries,
             selectedTransformation,
         );
-        const editMode = options.readOnly ? null : entryEditMode(selectedEntry);
+        const editMode = popupEntryEditMode(
+            selectedEntry,
+            initialEntry,
+            options,
+        );
         const handleSaved = (updated) => {
             if (editMode !== "direct") return;
             Object.assign(selectedEntry, updated);
@@ -64,6 +71,7 @@ export async function openEntryPopup(
                 i18n,
                 requestUpdate: editMode === "request",
                 onSaved: handleSaved,
+                persistDraft: options.persistDraft,
             });
             continue;
         }
@@ -201,7 +209,14 @@ export async function openEntryPopup(
                 overlay.classList.add("library-entry-popup");
                 bindEntryDetail(overlay, displayedEntry, {
                     signal: audioController.signal,
+                    requestId:
+                        selectedEntry.id === initialEntry.id
+                            ? options.requestId
+                            : undefined,
                     audioObjectUrls,
+                    imageError: i18n.t(
+                        "adapter.study.library.images_load_error",
+                    ),
                     audioError: i18n.t(
                         "gateway.study.library_audio_load_error",
                     ),
@@ -253,11 +268,7 @@ export async function openEntryPopup(
                 });
             },
         });
-        audioController.abort();
-        for (const objectUrl of audioObjectUrls) {
-            URL.revokeObjectURL(objectUrl);
-        }
-        signal?.removeEventListener("abort", abortPopup);
+        releaseEntryMedia(audioController, audioObjectUrls, signal, abortPopup);
         if (chosenTransformation !== undefined) {
             selectedTransformation = chosenTransformation;
             selectedEntry = detail.entry;
@@ -272,6 +283,7 @@ export async function openEntryPopup(
                 i18n,
                 requestUpdate: editMode === "request",
                 onSaved: handleSaved,
+                persistDraft: options.persistDraft,
             });
             selectedEntry = detail.entry;
             continue;

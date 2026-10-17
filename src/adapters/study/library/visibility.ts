@@ -36,6 +36,7 @@ export class LibraryVisibilityService {
             input: LibraryEntryInput,
             destination: LibraryLocation,
             sourceId?: string,
+            validateProposal?: boolean,
         ) => Promise<void>,
         private readonly flow?: FlowApi,
         private readonly applyUpdate?: (
@@ -50,6 +51,10 @@ export class LibraryVisibilityService {
         ) => Promise<LibraryEntry[]>,
         private readonly notifyDeletion?: (
             entries: readonly LibraryEntry[],
+            actor: VisibilityActor,
+        ) => Promise<void>,
+        private readonly notifyRequest?: (
+            request: LibraryPushRequest,
             actor: VisibilityActor,
         ) => Promise<void>,
     ) {}
@@ -88,7 +93,13 @@ export class LibraryVisibilityService {
         )
             throw new Error("request_pending");
         await this.validateDependencies(actor, source, normalized, source.id);
-        return this.store.createPush(entryId, normalized, actor.accountId);
+        const request = await this.store.createPush(
+            entryId,
+            normalized,
+            actor.accountId,
+        );
+        await this.notifyRequest?.(request, actor);
+        return request;
     }
 
     async requestMerge(
@@ -106,13 +117,15 @@ export class LibraryVisibilityService {
             )
         )
             throw new Error("request_pending");
-        return this.store.createPush(
+        const request = await this.store.createPush(
             entryId,
             { scope: source.scope, scopeId: source.scopeId },
             actor.accountId,
             "merge",
             proposedEntry,
         );
+        await this.notifyRequest?.(request, actor);
+        return request;
     }
 
     async requestUpdate(
@@ -123,7 +136,13 @@ export class LibraryVisibilityService {
         const source = await this.read(actor, entryId);
         if (!source) throw new Error("not_found");
         if (source.protected) throw new Error("protected_content");
-        if (source.scope !== "global" || source.createdBy !== actor.accountId)
+        if (
+            source.scope !== "global" ||
+            !(
+                source.createdBy === actor.accountId ||
+                source.owners?.includes(actor.accountId)
+            )
+        )
             throw new Error("forbidden");
         if (
             (await this.store.listPushRequests("pending")).some(
@@ -145,13 +164,15 @@ export class LibraryVisibilityService {
             },
             source.id,
         );
-        return this.store.createPush(
+        const request = await this.store.createPush(
             entryId,
             { scope: "global", scopeId: "global" },
             actor.accountId,
             "update",
             proposedEntry,
         );
+        await this.notifyRequest?.(request, actor);
+        return request;
     }
 
     async listPushRequests(
@@ -194,10 +215,89 @@ export class LibraryVisibilityService {
                 sourceContext: source ? request.sourceContext : undefined,
                 canReview:
                     canReview && !!source && request.status === "pending",
-                canWithdraw: owned && !!source && request.status === "pending",
+                canStage:
+                    canReview &&
+                    ["admin", "owner"].includes(actor.role) &&
+                    !!source &&
+                    request.status === "pending",
+                canWithdraw:
+                    (owned || ["admin", "owner"].includes(actor.role)) &&
+                    !!source &&
+                    request.status === "pending",
             });
         }
         return visible;
+    }
+
+    async readRequestEntry(
+        actor: VisibilityActor,
+        id: string,
+    ): Promise<LibraryEntry | null> {
+        const request = (await this.listPushRequests(actor)).find(
+            (item) => item.id === id,
+        );
+        return request?.source
+            ? {
+                  ...request.source,
+                  ...request.proposedEntry,
+                  id: request.sourceEntryId,
+              }
+            : null;
+    }
+
+    async stagePush(
+        actor: VisibilityActor,
+        requestId: string,
+        entry: LibraryEntryInput,
+    ): Promise<LibraryPushRequest> {
+        let staged!: LibraryPushRequest;
+        await runOperation(
+            this.flow,
+            "study:library:stageRequest",
+            { actor, requestId },
+            {
+                authorize: () => {
+                    if (!["admin", "owner"].includes(actor.role))
+                        throw new Error("forbidden");
+                },
+                persist: async () => {
+                    staged = await this.store.transaction(async () => {
+                        const request = await this.pendingRequest(requestId);
+                        await this.authorize(
+                            actor,
+                            request.destination.scope === "user"
+                                ? { scope: "global", scopeId: "global" }
+                                : request.destination,
+                            true,
+                        );
+                        const source = await this.store.get(
+                            request.sourceEntryId,
+                        );
+                        if (!source) throw new Error("not_found");
+                        if (source.protected)
+                            throw new Error("protected_content");
+                        if (
+                            entry.schemaId !== source.schemaId ||
+                            entry.layer !== source.layer
+                        )
+                            throw new Error("entry_identity_immutable");
+                        await this.validateDependencies(
+                            actor,
+                            entry,
+                            request.destination,
+                            source.id,
+                            true,
+                        );
+                        return this.store.stagePush(
+                            requestId,
+                            entry,
+                            actor.accountId,
+                        );
+                    });
+                },
+            },
+        );
+        return staged;
     }
 
     async reviewPush(
@@ -243,6 +343,15 @@ export class LibraryVisibilityService {
                         request.proposedEntry,
                     );
                 } else if (request.destination.scope === "user") {
+                    if (request.proposedEntry) {
+                        if (!this.applyUpdate)
+                            throw new Error("update_unavailable");
+                        await this.applyUpdate(
+                            actor,
+                            source.id,
+                            request.proposedEntry,
+                        );
+                    }
                     if (
                         source.scope === "user" ||
                         request.destination.scopeId !== source.createdBy
@@ -252,7 +361,7 @@ export class LibraryVisibilityService {
                         throw new Error("move_unavailable");
                     await this.validateDependencies(
                         { accountId: source.createdBy, role: "user" },
-                        source,
+                        request.proposedEntry ?? source,
                         request.destination,
                         source.id,
                     );
@@ -300,8 +409,9 @@ export class LibraryVisibilityService {
                 else {
                     await this.validateDependencies(
                         actor,
-                        source,
+                        request.proposedEntry ?? source,
                         request.destination,
+                        source.id,
                     );
                     await runOperation(
                         this.flow,
@@ -318,6 +428,24 @@ export class LibraryVisibilityService {
                     );
                 }
             }
+            if (
+                decision === "approved" &&
+                request.destination.scope !== "user" &&
+                request.proposedEntry &&
+                !["update", "merge"].includes(request.kind ?? "")
+            ) {
+                if (!this.applyUpdate) throw new Error("update_unavailable");
+                await this.applyUpdate(
+                    actor,
+                    request.sourceEntryId,
+                    request.proposedEntry,
+                );
+            }
+            if (decision === "approved" && request.modifiedBy?.length)
+                await this.store.addOwners(request.sourceEntryId, [
+                    request.requestedBy,
+                    ...request.modifiedBy,
+                ]);
             return {
                 ...request,
                 status: decision,
@@ -329,6 +457,7 @@ export class LibraryVisibilityService {
         });
         if (deletedEntries.length)
             await this.notifyDeletion?.(deletedEntries, actor);
+        await this.notifyRequest?.(reviewed, actor);
         return reviewed;
     }
 
@@ -336,20 +465,31 @@ export class LibraryVisibilityService {
         actor: VisibilityActor,
         requestId: string,
     ): Promise<LibraryPushRequest> {
-        return this.store.transaction(async () => {
+        const withdrawn = await this.store.transaction(async () => {
             const request = await this.pendingRequest(requestId);
-            if (request.requestedBy !== actor.accountId)
-                throw new Error("forbidden");
+            if (request.requestedBy !== actor.accountId) {
+                if (!["admin", "owner"].includes(actor.role))
+                    throw new Error("forbidden");
+                await this.authorize(
+                    actor,
+                    request.destination.scope === "user"
+                        ? { scope: "global", scopeId: "global" }
+                        : request.destination,
+                    true,
+                );
+            }
             const source = await this.store.get(request.sourceEntryId);
             const validUpdateSource =
                 (request.kind === "update" &&
                     source?.scope === "global" &&
-                    source.createdBy === actor.accountId) ||
+                    (source.createdBy === request.requestedBy ||
+                        source.owners?.includes(request.requestedBy))) ||
                 (request.kind === "merge" &&
                     !!source &&
                     source.scope !== "user");
             const validPromotionSource =
-                source?.scope === "user" && source.scopeId === actor.accountId;
+                source?.scope === "user" &&
+                source.scopeId === request.requestedBy;
             const validRelocationSource =
                 request.destination.scope === "user" &&
                 source &&
@@ -375,6 +515,8 @@ export class LibraryVisibilityService {
                 canWithdraw: false,
             };
         });
+        await this.notifyRequest?.(withdrawn, actor);
+        return withdrawn;
     }
 
     async relocate(

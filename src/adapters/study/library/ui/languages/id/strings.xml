@@ -182,4 +182,18 @@
     <string name="gateway.study.library_audio_record_stop">Hentikan rekaman</string>
     <string name="gateway.study.library_audio_refresh">Buat ulang audio</string>
     <string name="gateway.study.library_audio_refreshed">Audio dibuat ulang.</string>
+  <string name="adapter.study.library.images_uploaded">Gambar referensi diunggah.</string>
+  <string name="adapter.study.library.images_upload_error">Gambar referensi tidak dapat diunggah. Gunakan PNG, JPEG, WebP, atau GIF hingga 5 MiB per berkas.</string>
+  <string name="adapter.study.library.images_load_error">Gambar referensi tidak dapat dimuat.</string>
+  <string name="adapter.study.library.request_approved_by">Disetujui oleh {{ account }}</string>
+  <string name="adapter.study.library.request_confirm_action">{{ action }} permintaan ini?</string>
+  <string name="adapter.study.library.notification_pending_subject">Permintaan Study Diterima</string>
+  <string name="adapter.study.library.notification_pending_body">{{ account }} mengirim permintaan Study ({{ request }}).</string>
+  <string name="adapter.study.library.notification_approved_subject">Permintaan Study Disetujui</string>
+  <string name="adapter.study.library.notification_approved_body">{{ account }} menyetujui permintaan Study {{ request }}.</string>
+  <string name="adapter.study.library.notification_rejected_subject">Permintaan Study Ditolak</string>
+  <string name="adapter.study.library.notification_rejected_body">{{ account }} menolak permintaan Study {{ request }}.</string>
+  <string name="adapter.study.library.notification_withdrawn_subject">Permintaan Study Ditarik</string>
+  <string name="adapter.study.library.notification_withdrawn_body">{{ account }} menarik permintaan Study {{ request }}.</string>
+  <string name="adapter.study.library.request_submitted_by">Dikirim oleh {{ account }}</string>
 </resources>

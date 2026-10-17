@@ -826,6 +826,18 @@ Pilihan kamus menggunakan theme-select dan disembunyikan jika hanya ada satu pen
 
 Rekaman kata Jepang dengan kana kecil, termasuk 学校, dibuat ulang dengan ejaan kanji jika tersedia menggunakan suara Jepang yang ditetapkan dan pengaturan stabil. Kalimat bawaan disusun ulang dari klip yang sama persis. Transformasi adjektiva I dan Na mencakup bentuk adverbial, negatif, serta lampau, dengan rekaman khusus untuk bentuk bawaan. Rekaman jamak bahasa Inggris tetap berupa aset khusus dan diputar saat bentuk tersebut dipilih.
 
+## Gambar Referensi
+
+Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan.
+
+## Pratinjau Permintaan yang Dapat Diedit
+
+Menggunakan pratinjau kartu biasa dan editor yang ada untuk perubahan draf oleh administrator. Persetujuan mempertahankan atribusi pengirim dan menambahkan administrator penyunting sebagai pemilik bersama. Profil pengirim dan pemberi persetujuan diberi label jelas; persetujuan, penolakan, dan penarikan memerlukan konfirmasi.
+
+## Notifikasi dan Filter Study
+
+Memberi tahu administrator aktif tentang permintaan masuk serta keputusan administrator lain melalui Study. Menghapus animasi navigasi, menambahkan filter teks langsung untuk halaman saat ini, dan menjaga menu samping Kartu Belajar dalam alur dokumen agar bilah gulir tidak menggeser konten.
+
 ## Komit
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

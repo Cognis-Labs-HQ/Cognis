@@ -81,11 +81,20 @@ test("entry previews initialize drawing concealment and audio with the same abor
         calls.push(["audio", ...args]);
         return Promise.resolve();
     };
+    context.loadReferenceImages = (...args) => {
+        calls.push(["images", ...args]);
+        return Promise.resolve();
+    };
     context.bindEntryDetail(root, entry, {
         signal: controller.signal,
         audioObjectUrls: objectUrls,
         audioError: "localized-error",
     });
+    const images = calls.pop();
+    assert.equal(images[0], "images");
+    assert.equal(images[1], root);
+    assert.equal(images[2].signal, controller.signal);
+    assert.equal(images[2].objectUrls, objectUrls);
     assert.deepEqual(calls, [
         ["drawing", root, entry, controller.signal],
         ["speaker", root, controller.signal],

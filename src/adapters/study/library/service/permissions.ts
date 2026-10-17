@@ -15,6 +15,7 @@ export async function entryPermissions(
     const administrator = actor.role === "admin" || actor.role === "owner";
     const owned =
         entry.createdBy === actor.accountId ||
+        entry.owners?.includes(actor.accountId) ||
         (entry.scope === "user" && entry.scopeId === actor.accountId);
     const classWritable =
         entry.scope === "class" &&

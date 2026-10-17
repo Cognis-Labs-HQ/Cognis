@@ -824,6 +824,18 @@ Die Wörterbuchauswahl verwendet theme-select und wird bei einem einzigen Anbiet
 
 Japanische Aufnahmen mit kleinen Kana, einschließlich 学校, wurden mit Kanji-Schreibweise, soweit vorhanden, der festgelegten japanischen Stimme und stabilen Einstellungen neu erzeugt. Mitgelieferte Sätze werden aus genau diesen Clips neu zusammengesetzt. I- und Na-Adjektive unterstützen Adverbial-, Verneinungs- und Vergangenheitsformen mit eigenen Aufnahmen der mitgelieferten Formen. Englische Pluralaufnahmen bleiben eigenständige Dateien und werden bei gewählter Form abgespielt.
 
+## Referenzbilder
+
+Optionale Bildlistenfelder, private Bild-Uploads und Detailgalerien ergänzen. Beide Sprachmodule enthalten ein lizenziertes Referenzfoto und bieten das Feld auf jeder Ebene an.
+
+## Bearbeitbare Anfragevorschauen
+
+Reguläre Kartenvorschauen und den vorhandenen Editor für Änderungen an Kartenentwürfen durch Administratoren verwenden. Die Genehmigung erhält die Zuordnung zum Einreicher und fügt bearbeitende Administratoren als Miteigentümer hinzu. Profile von Einreicher und Genehmiger klar beschriften; Genehmigung, Ablehnung und Rücknahme bestätigen.
+
+## Study-Mitteilungen und Filter
+
+Aktivierte Administratoren im Kanal Study über neue Anfragen und Entscheidungen anderer Administratoren informieren. Pulsierende Navigation entfernen, sofortige Textfilter für geladene Karten ergänzen und das Lernkarten-Seitenmenü im Dokumentfluss halten, um Verschiebungen durch Scrollleisten zu vermeiden.
+
 ## Commits
 
 - [8423f71c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8423f71cb9279bdbc927e39cdd94fcdeb651a91a)

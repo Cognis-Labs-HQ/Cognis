@@ -104,7 +104,7 @@ Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Anbieteraktu
 
 Benutzer können Karten im persönlichen Namensraum erstellen, Lehrkräfte zusätzlich in eigenen Klassen und Administratoren außerdem global. Sprachmodule gestalten ebenenspezifische Formularfelder über `study:library:registerConstructor`; Sichtbarkeit, Klassenauswahl und die Definitionsvorschau bleiben Eigentum des Adapters. Vor einer persönlichen oder klassenbezogenen Erstellung weist die Bibliothek auf einen identischen sichtbaren globalen Eintrag hin und verlangt eine ausdrückliche Bestätigung. Die Erstellung verwendet standardmäßig den persönlichen Bereich; berechtigte Administratoren können die globale Veröffentlichung auswählen, während Lehrkräfte nur beschreibbare Klassen auswählen können, deren Sprache dem aktiven Schema entspricht.
 
-Persönliche Karten können in einer belegten Klasse zur Prüfung durch deren Lehrkraft oder global zur Prüfung durch Administratoren veröffentlicht werden. Ein ausstehender Antrag kann vom Einreicher zurückgezogen werden; nach der Genehmigung verlässt das Eigentum den Benutzer und die Originalkarte wird verschoben statt kopiert. Danach können nur die zuständige Lehrkraft oder Administratoren sie bearbeiten, löschen oder in den persönlichen Namensraum des ursprünglichen Einreichers zurücksenden. Anbieter-Manifeste können `protected: true` setzen; geschützte Einträge lassen sich weder verschieben noch löschen. Importierte und benutzererstellte Datensätze speichern normalisierten Suchtext; die Seitensuche durchsucht alle Ebenen und blendet leere Ergebnisse aus.
+Persönliche Karten können in einer belegten Klasse zur Prüfung durch deren Lehrkraft oder global zur Prüfung durch Administratoren veröffentlicht werden. Offene Anträge können vom Einreicher oder berechtigten Administratoren zurückgezogen werden. Die Genehmigung verschiebt die Originalkarte statt sie zu kopieren. Der Einreicher bleibt als Urheber erhalten und kann Änderungen globaler Inhalte beantragen; bearbeitende Administratoren werden Miteigentümer. Bereichswechsel und Löschungen unterliegen weiterhin den Zielberechtigungen. Anbieter-Manifeste können `protected: true` setzen; geschützte Einträge lassen sich weder verschieben noch löschen. Importierte und benutzererstellte Datensätze speichern normalisierten Suchtext; die Seitensuche durchsucht alle Ebenen und blendet leere Ergebnisse aus.
 
 ## Spracheigene Kartenkonstruktoren
 
@@ -128,7 +128,7 @@ Inhaltsdatensätze können einen Namensraumwert `class` wie `lexical:noun` oder 
 
 ## Veröffentlichungsanfragen
 
-Veröffentlichungsanfragen der Bibliothek befinden sich auf der eigenen Study-Unterseite **Anfragen** statt in Seitenwerkzeugleisten. Wenn eine ausstehende Anfrage von einer Administration oder Lehrkraft geprüft werden kann, zeigt der Link eine barrierearme, rot atmende Kontur; nach Abschluss der letzten Prüfung verschwindet der Hinweis. Bei reduzierter Bewegung wird eine statische Kontur verwendet.
+Veröffentlichungsanfragen befinden sich auf der Study-Unterseite **Anfragen**. Aktivierte Administratoren erhalten Study-Benachrichtigungen über neue Anfragen und Entscheidungen anderer Administratoren.
 
 ## Administration und Erstellung
 
@@ -506,3 +506,11 @@ Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore
 ## Gespeicherte Lernsteuerung
 
 Neue Wortkarten erkennen beim Abschließen der Eingabe und vor dem Speichern automatisch wörterbuchgestützte Klassen und unterstützte Transformationstags. Eigene Tags bleiben erhalten; mehrdeutige Klassen erfordern eine Auswahl. Verspätete Ergebnisse ändern keinen anderen Entwurf. Vorschauen für gewählte Verb-, Adjektiv-/Adverb- und Pluralformen fordern deren eigene Aufnahme an. Die Herkunftsangabe in der Überschrift verlinkt die Basiskarte. Upload-Felder haben einen eigenen Selektor, damit Audioelemente die Initialisierung des Zeicheneditors nicht mehr abbrechen.
+
+## Referenzbilder und Prüfung
+
+Karten können ein optionales Feld `imageList` mit `input.control: "imageFiles"` deklarieren. Im Karteneditor lassen sich PNG-, JPEG-, WebP- oder GIF-Dateien mit jeweils bis zu 5 MiB hochladen; die Detailansicht zeigt die Bilder. Gebündelte Bilder verwenden relative Pfade im Asset-Verzeichnis des Inhaltspakets und behalten ihre Lizenzangaben. Hochgeladene Dateien bleiben privat und sind nur über eine berechtigte Karte oder Anfrage abrufbar. `PUT /api/v1/study/library/images` nimmt Bilddaten entgegen; `GET /api/v1/study/library/entries/:id/images/:field/:index` liefert ein Kartenbild. Berechtigte Anfragevorschauen verwenden den entsprechenden Pfad unter `push-requests`.
+
+Anfragen zeigen reguläre Kartenvorschauen. Eine vorgeschlagene Karte einer offenen Anfrage lässt sich zur Bearbeitung des Entwurfs öffnen; `PATCH /api/v1/study/library/push-requests/:id` ist Administratoren vorbehalten. Das Speichern verändert die veröffentlichte Karte noch nicht. Die Genehmigung übernimmt den Entwurf und gibt dem Einreicher sowie den bearbeitenden Administratoren gemeinsame Eigentümerschaft; unverändertes Speichern fügt niemanden hinzu. Profilvorschauen kennzeichnen Einreicher und Genehmiger ausdrücklich. Genehmigen, Ablehnen und Zurückziehen verlangen jeweils eine Bestätigung. Aktivierte Administratoren erhalten im Kanal Study Benachrichtigungen über neue Anfragen und Entscheidungen anderer Benutzer. Der Navigationslink für Anfragen bleibt statisch.
+
+Die Suchsteuerung enthält einen sofortigen Textfilter für die bereits geladenen Karten. Er wird mit ausgewählten Filtern und Favoriten kombiniert.

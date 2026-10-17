@@ -104,6 +104,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
                 default: false,
             },
             { name: "display_id", type: "integer" },
+            { name: "owners_json", type: "text", notNull: true, default: "[]" },
             {
                 name: "hidden",
                 type: "boolean",

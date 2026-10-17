@@ -1,3 +1,4 @@
+import { renderReferenceImages } from "./reference-images.js";
 import { transformedDetailEntry } from "./transformation-detail.js";
 import { deriveDetailPronunciation } from "./composer-contract.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -85,6 +86,9 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
     const fields = entry.fields ?? {};
     const metadataIds = new Set(metadataFields(layer).map(({ id }) => id));
     const reserved = new Set([
+        ...(layer?.fields ?? [])
+            .filter(({ type }) => type === "imageList")
+            .map(({ id }) => id),
         "pronunciation",
         "audio",
         ...metadataIds,
@@ -145,6 +149,7 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
     return [
         `<header class="library-detail-summary">${renderAudio(entry, layer, entries, schemas, i18n.t("gateway.study.library_play_audio"), i18n.t("gateway.study.library_dependencies_missing_audio"))}<div class="library-entry-indicators">${classPill}${tagPills}${renderMetadataPills(entry, layer)}</div>${variants}</header>`,
         options.showReferenceTree ? relationTree(references, usedBy, i18n) : "",
+        renderReferenceImages(entry, layer),
         renderDetailFields(genericFields),
         !options.showReferenceTree && relatedDependants.length
             ? relationSection(

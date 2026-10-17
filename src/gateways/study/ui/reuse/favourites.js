@@ -21,8 +21,8 @@ export function renderFavourite(kind, id, i18n) {
 }
 /** @param {object} i18n Labels. @returns {string} Sort and favourite-filter controls. */
 
-export function renderBrowseControls(i18n) {
-    return `<span class="study-browse-controls"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select class="theme-select" data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
+export function renderBrowseControls(i18n, { query = "" } = {}) {
+    return `<span class="study-browse-controls"><input type="search" class="study-browse-search" data-study-query value="${escapeHtml(query)}" aria-label="${escapeHtml(i18n.t("ui.reuse.search"))}" placeholder="${escapeHtml(i18n.t("ui.reuse.search"))}"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select class="theme-select" data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
 }
 /** @param {object[]} items Items. @param {string} order Sort selection. @returns {object[]} Sorted copy. */
 

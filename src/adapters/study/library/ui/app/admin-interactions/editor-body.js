@@ -538,7 +538,10 @@ export function readFields(form, layer, entry) {
                         return [field.id, translations];
                     }
                     const value = form.elements[name]?.value ?? "";
-                    if (field.type === "strokePattern")
+                    if (
+                        field.type === "strokePattern" ||
+                        field.type === "imageList"
+                    )
                         return [
                             field.id,
                             form.elements[name]?.libraryFieldValue ??

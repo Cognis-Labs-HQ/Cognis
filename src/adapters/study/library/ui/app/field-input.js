@@ -10,6 +10,8 @@ export function inputForField(field, value, language, i18n) {
     const options = field.input?.options ?? [];
     if (field.type === "strokePattern")
         return `<section class="library-stroke-pattern" data-library-stroke-pattern="${escapeHtml(field.id)}"><h3>${escapeHtml(label)}</h3><canvas class="library-stroke-pattern-preview" width="64" height="64" aria-label="${escapeHtml(label)}" hidden></canvas><div data-library-stroke-lookup></div><input name="${escapeHtml(name)}" type="hidden" data-library-provider-field></section>`;
+    if (control === "imageFiles")
+        return `<label class="library-image-field" data-library-image-upload data-image-field="${escapeHtml(field.id)}"><span>${escapeHtml(label)}</span><input type="hidden" name="${escapeHtml(name)}" data-library-provider-field><input type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif"><span data-library-image-files></span></label>`;
     if (control === "audioFile") {
         const namespace = field.input?.file?.namespace ?? "";
         const prefix = field.input?.file?.prefix ?? `${language}/`;

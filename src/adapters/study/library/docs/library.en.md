@@ -124,7 +124,7 @@ The Library stores viewed entry UUIDs per account. Provider updates preserve thi
 
 Users can create cards in their personal namespace, teachers can also create in classes they own, and administrators can additionally create global cards. Language providers shape layer-specific form fields through `study:library:registerConstructor`; visibility, class selection, and definition-preview controls remain adapter-owned. Before personal or classroom creation, the Library reports an identical visible global entry and requires explicit confirmation. The creator defaults to personal scope; eligible administrators can opt into global publication, while teachers can opt into only those writable classes whose language matches the active schema.
 
-Personal cards can be published to an enrolled class for its teacher to review or to the global collection for an administrator to review. A pending request can be withdrawn by its submitter; after approval, ownership leaves the user and the original card is moved rather than copied. Only the responsible teacher or an administrator can then edit, delete, or send it back to the original submitter's personal namespace. Provider manifests may set `protected: true`; protected entries cannot be moved or deleted. Imported and user-created records persist normalized search text, and the Library side menu searches every layer while hiding empty results.
+Personal cards can be published to an enrolled class for its teacher to review or to the global collection for an administrator to review. A pending request can be withdrawn by its submitter or an authorized administrator. Approval moves the original card rather than copying it. The submitting user retains attribution and may request edits to global content; administrators who modify the staged card become joint owners. Scope changes and deletions remain subject to the destination permissions. Provider manifests may set `protected: true`; protected entries cannot be moved or deleted. Imported and user-created records persist normalized search text, and the Library side menu searches every layer while hiding empty results.
 
 ## Language-owned card constructors
 
@@ -144,7 +144,7 @@ Content records may declare a namespaced `class` value such as `lexical:noun` or
 
 ## Publishing requests
 
-Library publishing requests live on the dedicated **Requests** Study sub-navigation page rather than in page toolbars. When an administrator or teacher has a pending request they can review, the Requests link uses an accessible red breathing outline; resolving the final review removes the attention state. The animation becomes a static outline when reduced motion is requested.
+Library publishing requests live on the dedicated **Requests** Study sub-navigation page. Enabled administrators receive Study notifications about incoming requests and other administrators’ decisions.
 
 ## Administration and creation
 
@@ -519,3 +519,11 @@ Explore card links include canonical card identity in `/study/explore/<language>
 ## Saved Study Controls
 
 New lexical cards automatically detect dictionary-backed classes and supported transformation tags when their input is committed and before saving. Manual tags are retained; ambiguous classes remain an explicit choice. Late lookup results cannot change a different draft. Selected verb, adjective/adverb and plural previews request the selected transformation’s audio. Source attribution in the heading links to the base card. Upload controls have a separate selector from playback audio, preventing the character-editor initialization crash.
+
+## Reference Images and Review
+
+Cards may declare an optional `imageList` field with `input.control: "imageFiles"`. Upload PNG, JPEG, WebP or GIF files (up to 5 MiB each) in the card editor; detail views display the images. Bundled images use relative paths under the content pack’s assets directory and retain their license attribution. Uploaded files remain private and are retrieved only through an authorized card or request. `PUT /api/v1/study/library/images` accepts image bytes; `GET /api/v1/study/library/entries/:id/images/:field/:index` resolves a card image. Authorized request previews use the corresponding `push-requests` path.
+
+Requests show standard card previews. Open a pending proposed card to edit its staged fields; `PATCH /api/v1/study/library/push-requests/:id` is restricted to administrators. Saving a draft leaves the live card unchanged. Approval applies the draft and gives ownership to the submitting user and administrators who changed it; unchanged saves do not add owners. Submitter and approver profile previews have explicit labels. Approve, decline and withdraw each require confirmation. Enabled administrators receive Study notifications for incoming requests and decisions made by other users. The Requests navigation link remains static.
+
+Browse controls include an immediate text filter over the cards already loaded on the page, combined with the selected filters and favourites.
