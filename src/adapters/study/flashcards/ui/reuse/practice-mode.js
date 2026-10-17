@@ -16,7 +16,7 @@ export async function createPracticeModePreference({
     isActive,
     onChange,
 }) {
-    const preferences = await loadUiPreferences();
+    const preferences = await runDeckAction("load", loadUiPreferences, signal);
     let selected =
         mode ??
         (preferences?.studyPracticeMode === "writing" ? "writing" : "reading");
