@@ -36,6 +36,7 @@ function fixture({ getUserMedia, recorderAvailable = true } = {}) {
         reportClientError() {},
         File,
         Blob,
+        Event,
         navigator: {
             mediaDevices: {
                 getUserMedia:
@@ -82,6 +83,7 @@ function fixture({ getUserMedia, recorderAvailable = true } = {}) {
     const controller = new AbortController();
     context.bindAudioUploads(
         {
+            dispatchEvent() {},
             querySelectorAll: (selector) => {
                 const playback = { querySelector: () => null };
                 return selector === "[data-library-audio-upload]"
@@ -120,6 +122,7 @@ test("microphone recording uploads the captured file and releases all tracks", a
     assert.equal(context.uploads.length, 1);
     assert.equal(context.uploads[0].type, "audio/webm");
     assert.equal(context.stored.value, "file:uploads/alice/recording.audio");
+    assert.equal(context.stored.libraryStagedAudio, context.uploads[0]);
     assert.equal(context.stops(), 1);
     assert.equal(context.attributes.get("aria-pressed"), "false");
 });

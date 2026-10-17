@@ -826,9 +826,11 @@ Pilihan kamus menggunakan theme-select dan disembunyikan jika hanya ada satu pen
 
 Rekaman kata Jepang dengan kana kecil, termasuk 学校, dibuat ulang dengan ejaan kanji jika tersedia menggunakan suara Jepang yang ditetapkan dan pengaturan stabil. Kalimat bawaan disusun ulang dari klip yang sama persis. Transformasi adjektiva I dan Na mencakup bentuk adverbial, negatif, serta lampau, dengan rekaman khusus untuk bentuk bawaan. Rekaman jamak bahasa Inggris tetap berupa aset khusus dan diputar saat bentuk tersebut dipilih.
 
-## Gambar Referensi
+## Media dan Kontrol Kartu
 
-Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan. Gambar mini editor menampilkan gambar bawaan dan unggahan, menyediakan tombol hapus merah saat diarahkan atau difokuskan, serta membuang berkas sementara yang belum digunakan tanpa konfirmasi. Kartu tersimpan dan riwayat permintaan mempertahankan berkas yang dirujuk.
+Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan. Gambar mini editor menampilkan gambar bawaan dan unggahan, menyediakan tombol hapus merah saat diarahkan atau difokuskan, serta membuang berkas sementara yang belum digunakan tanpa konfirmasi. Kartu tersimpan dan riwayat permintaan mempertahankan berkas yang dirujuk. Tombol hapus memiliki latar buram agar tetap terbaca di atas foto. Berkas gambar khusus dan referensi tersimpan bertahan setelah server dimulai ulang dan penyedia dimuat ulang, termasuk pembaruan penyedia pada kartu yang disunting.
+
+Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi. Nama berkas audio disembunyikan. Putar memutar unggahan sementara atau rekaman mikrofon terbaru; respons audio tersimpan yang terlambat tidak menggantikannya. Tombol mikrofon berwarna merah selama perekaman.
 
 ## Pratinjau Permintaan yang Dapat Diedit
 
@@ -837,10 +839,6 @@ Menggunakan pratinjau kartu biasa dan editor yang ada untuk perubahan draf oleh 
 ## Notifikasi dan Filter Study
 
 Memberi tahu administrator aktif tentang permintaan masuk serta keputusan administrator lain melalui Study. Menghapus animasi navigasi, menambahkan filter teks langsung untuk halaman saat ini, dan menjaga menu samping Kartu Belajar dalam alur dokumen agar bilah gulir tidak menggeser konten. Kapabilitas notifikasi diambil saat pengiriman dan tanda terima diperiksa, termasuk daftar pengiriman kosong serta kegagalan sebagian.
-
-## Kontrol Editor Kartu
-
-Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi.
 
 ## Komit
 

@@ -380,6 +380,7 @@ body[data-theme="dark"] .library-speaker-icon-dark {
     inset-block-start: 0.2rem;
     inset-inline-end: 0.2rem;
     padding: 0.1rem 0.35rem;
+    background: rgb(from var(--surface) r g b / 1);
     opacity: 0;
 }
 .library-image-preview:is(:hover, :focus-within) > .library-image-remove {

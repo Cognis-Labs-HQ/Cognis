@@ -356,11 +356,14 @@ export function renderAudio(
     schemas = [],
     fallbackLabel = "",
     missingDependencyLabel = "",
+    allowUpload = false,
 ) {
     const own = entryAudio(entry, layer);
     const composite = own.audioField && allEntryReferences(entry).length > 0;
     const sources =
-        own.valid || composite ? [{ entry, field: own.audioField }] : [];
+        own.valid || composite || (allowUpload && own.audioField)
+            ? [{ entry, field: own.audioField }]
+            : [];
     const complete = sources.length > 0;
     const label =
         (own.audioField &&
@@ -387,7 +390,7 @@ export function renderAudio(
         )
         .join(
             "",
-        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle${!own.valid && !composite ? " disabled" : ""} aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
 }
 
 function speakerPicture() {
@@ -452,7 +455,7 @@ export async function loadLibraryAudio(
                     : undefined,
             },
         );
-        if (!audio.isConnected || signal?.aborted) {
+        if (!audio.isConnected || signal?.aborted || audio.src) {
             URL.revokeObjectURL(objectUrl);
             return;
         }

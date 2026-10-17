@@ -481,7 +481,6 @@ test("Study Library administration exposes contract-safe editing", () => {
     );
     assert.match(adminInteractionsSource, /library-pronunciation-selector/);
 
-    assert.match(stylesheet, /\.library-audio-filename/);
     assert.match(
         adminInteractionsSource,
         /name="hidden" type="hidden" value="true"/,

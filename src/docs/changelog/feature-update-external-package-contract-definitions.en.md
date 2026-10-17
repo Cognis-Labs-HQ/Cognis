@@ -824,9 +824,11 @@ The dictionary provider selector uses theme-select and is hidden for a single pr
 
 Japanese small-kana word recordings, including 学校, are regenerated using kanji spelling where available, with the designated Japanese voice and stable settings. Packaged sentences are rebuilt from those exact clips. I- and na-adjective transformations include adverbial, negative and past forms, with dedicated recordings for curated forms. English plural recordings remain dedicated assets and are reached by selected-form playback.
 
-## Reference Images
+## Card Media and Controls
 
-Add optional image-list fields, private image uploads and detail galleries. Both language modules bundle a licensed reference photograph and expose the same field on every layer. Editor thumbnails load bundled and uploaded images, show a red remove control on hover or focus, and discard unused staged files without confirmation. Saved cards and request history keep their referenced files.
+Add optional image-list fields, private image uploads and detail galleries. Both language modules bundle a licensed reference photograph and expose the same field on every layer. Editor thumbnails load bundled and uploaded images, show a red remove control on hover or focus, and discard unused staged files without confirmation. Saved cards and request history keep their referenced files. The remove button has an opaque background so it remains readable over photographs. Custom image files and saved references persist across server restarts and provider reloads, including provider updates to edited cards.
+
+Microphone recording waits for the browser’s permission response, blocks duplicate requests and saving while permission is pending, and releases a stream granted after the editor closes. Permission denial and unavailable recording have separate messages. Microphone, Play and Reload share one equally sized row. Collective Plural uses a single checkbox for its matching noun families; unrelated opt-ins remain hidden. Audio filenames are hidden. Play previews the latest staged upload or microphone recording; a delayed saved-audio response cannot replace it. Recording turns the microphone button red.
 
 ## Editable Request Previews
 
@@ -835,10 +837,6 @@ Use standard card previews and the existing editor for administrator changes to 
 ## Study Notifications and Filters
 
 Notify enabled administrators about incoming requests and other administrators’ decisions in Study. Remove navigation pulsing, add live current-page text filtering and keep the Flashcards side menu in document flow to prevent scrollbar-driven shifts. Notification capabilities resolve at delivery time and sender receipts are checked, including empty delivery lists and partial failures.
-
-## Card Editor Controls
-
-Microphone recording waits for the browser’s permission response, blocks duplicate requests and saving while permission is pending, and releases a stream granted after the editor closes. Permission denial and unavailable recording have separate messages. Microphone, Play and Reload share one equally sized row. Collective Plural uses a single checkbox for its matching noun families; unrelated opt-ins remain hidden.
 
 ## Commits
 

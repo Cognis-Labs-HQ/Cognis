@@ -36,13 +36,10 @@ export function bindAudioUploads(form, i18n, signal) {
             try {
                 const result = await uploadLibraryAudio(file, signal);
                 if (signal?.aborted) return;
-                field.querySelector('input[type="hidden"]').value =
-                    result.value;
-                const filename = field.querySelector(
-                    "[data-library-audio-filename]",
-                );
-                filename.textContent = file.name;
-                filename.hidden = false;
+                const stored = field.querySelector('input[type="hidden"]');
+                stored.value = result.value;
+                stored.libraryStagedAudio = file;
+                form.dispatchEvent(new Event("change", { bubbles: true }));
                 showToast(
                     i18n.t("gateway.study.library_audio_upload_success"),
                     { variant: "success" },
