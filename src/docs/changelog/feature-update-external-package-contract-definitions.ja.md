@@ -927,3 +927,4 @@ Explore のカードリンクは `/study/explore/<language>/<layer>/<card-id>` �
 - [7f68be4](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f68be420c3c82742dd16a2b8da5c6dfacc5459d)
 - [e6bcfe3](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6bcfe3bf167bf6b4d1e8a9feca648e7f2b41d9e)
 - [220457c](https://github.com/Cognis-Labs-HQ/Cognis/commit/220457c4c97295029577c3a1c481427bbb1b4657)
+- [dd1f7a2](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd1f7a270483a29c5bd0e74933611988baf4ea0c)
