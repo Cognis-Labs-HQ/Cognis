@@ -450,8 +450,13 @@ export async function navigateTo(
     path,
     { bypassGuard = false, state = {} } = {},
 ) {
+    const destination = new URL(path, window.location.origin);
+    if (
+        destination.origin !== window.location.origin ||
+        !["http:", "https:"].includes(destination.protocol)
+    )
+        return false;
     const route = await resolveRoute(path);
-    if (!route) return false;
     if (
         !bypassGuard &&
         !requestRouteNavigation(path, () =>
@@ -459,6 +464,10 @@ export async function navigateTo(
         )
     )
         return false;
+    if (!route) {
+        window.location.assign(path);
+        return true;
+    }
     const previousRouterPage = getCurrentRoutePath();
     _historyIndex += 1;
     _committedPath = path;

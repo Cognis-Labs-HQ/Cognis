@@ -10,7 +10,7 @@ const source = readFileSync(
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/\bexport /g, "");
 
-function createRouter() {
+function createRouter({ allowNavigation = true } = {}) {
     const listeners = new Map();
     const assigned = [];
     const mounted = [];
@@ -21,7 +21,7 @@ function createRouter() {
             assign: (path) => assigned.push(path),
         }),
         addEventListener: (type, callback) => listeners.set(type, callback),
-        dispatchEvent: () => true,
+        dispatchEvent: () => allowNavigation,
     };
     const history = {
         state: null,
@@ -133,4 +133,31 @@ test("new tabs and modified clicks retain browser navigation; ordinary clicks mo
     await onClick(event);
     assert.equal(event.defaultPrevented, true);
     assert.equal(router.root.textContent, "Terms");
+});
+
+for (const path of ["/register", "/login?reason=sso_callback_failed"]) {
+    test(`programmatic navigation loads the server document ${path}`, async () => {
+        const router = createRouter();
+        assert.equal(await router.navigateTo(path), true);
+        assert.deepEqual(router.assigned, [path]);
+    });
+}
+
+test("declined document navigation honors the host guard", async () => {
+    const router = createRouter({ allowNavigation: false });
+    assert.equal(await router.navigateTo("/register"), false);
+    assert.deepEqual(router.assigned, []);
+});
+
+test("programmatic navigation rejects external and executable destinations", async () => {
+    const router = createRouter();
+    for (const path of [
+        "https://other.test/",
+        "//other.test/",
+        "javascript:alert(1)",
+        "blob:https://cognis.test/example",
+    ]) {
+        assert.equal(await router.navigateTo(path), false);
+    }
+    assert.deepEqual(router.assigned, []);
 });
