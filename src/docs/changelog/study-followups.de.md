@@ -38,3 +38,4 @@ Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Kar
 - [d53cbaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/d53cbaf39759a0cc6bbf64a3f17fdcbd549398e7)
 - [76d4cce](https://github.com/Cognis-Labs-HQ/Cognis/commit/76d4cce408ec01e05998d3a006900678f7068d8e)
 - [ebf8d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/ebf8d696cba04da9959435855f51aa12cb43f7c0)
+- [7808a8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7808a8ab8206210563535fd5bfd7580e2ba484fc)
