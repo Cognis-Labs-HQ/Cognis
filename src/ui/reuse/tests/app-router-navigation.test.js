@@ -10,9 +10,10 @@ const source = readFileSync(
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/\bexport /g, "");
 
-function createRouter() {
+function createRouter({ allowNavigation = true } = {}) {
     const listeners = new Map();
     const assigned = [];
+    const navigationEvents = [];
     const mounted = [];
     const root = { textContent: "Login" };
     const location = new URL("https://cognis.test/login?reason=expired");
@@ -21,7 +22,10 @@ function createRouter() {
             assign: (path) => assigned.push(path),
         }),
         addEventListener: (type, callback) => listeners.set(type, callback),
-        dispatchEvent: () => true,
+        dispatchEvent: (event) => {
+            navigationEvents.push(event);
+            return allowNavigation;
+        },
     };
     const history = {
         state: null,
@@ -86,7 +90,15 @@ function createRouter() {
         sandbox,
     );
     sandbox.router.initRouter(root);
-    return { ...sandbox.router, listeners, assigned, root, location, mounted };
+    return {
+        ...sandbox.router,
+        listeners,
+        assigned,
+        root,
+        location,
+        mounted,
+        navigationEvents,
+    };
 }
 
 function click(target = "", modifiers = {}) {
@@ -133,4 +145,15 @@ test("new tabs and modified clicks retain browser navigation; ordinary clicks mo
     await onClick(event);
     assert.equal(event.defaultPrevented, true);
     assert.equal(router.root.textContent, "Terms");
+});
+
+test("missing share renderers decline navigation without leaving the current page", async () => {
+    const router = createRouter();
+    assert.equal(
+        await router.navigateTo("/disabled-provider/shared-content"),
+        false,
+    );
+    assert.deepEqual(router.assigned, []);
+    assert.equal(router.root.textContent, "Login");
+    assert.equal(router.location.pathname, "/login");
 });

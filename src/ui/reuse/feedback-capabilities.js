@@ -30,16 +30,24 @@ export function registerFeedbackCapabilities() {
     uiCtx.capabilities.contribute(
         "ui:log",
         async (level, message, meta = {}) => {
-            const response = await apiFetch("/api/v1/logging/entries", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ level, message, meta }),
-            });
-            if (!response.ok) {
-                throw new Error(
-                    `Server logging failed with HTTP ${response.status}`,
-                );
+            try {
+                if (!localStorage.getItem("cognis_access_token")) return false;
+                const response = await apiFetch("/api/v1/logging/entries", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ level, message, meta }),
+                    suppressAccessDeniedEvent: true,
+                    suppressConnectionRecoveryToast: true,
+                });
+                if (response.ok) return true;
+                console.warn("Browser log delivery failed.", {
+                    status: response.status,
+                });
+            } catch {
+                // Delivery is best effort; the caller owns user feedback.
+                console.warn("Browser log delivery failed.");
             }
+            return false;
         },
     );
 }

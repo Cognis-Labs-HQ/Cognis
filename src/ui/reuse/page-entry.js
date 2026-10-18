@@ -59,6 +59,38 @@ const FALLBACK_LOADING_MESSAGES = [
 ];
 const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
 
+/**
+ * Leave a standalone page for a same-origin server document. Dashboard page
+ * transitions continue to use navigateTo; this helper never resolves SPA routes.
+ */
+export function navigateToDocument(path, { signal } = {}) {
+    if (
+        signal?.aborted ||
+        typeof path !== "string" ||
+        !URL.canParse(path, window.location.origin)
+    )
+        return false;
+    const destination = new URL(path, window.location.origin);
+    if (
+        destination.origin !== window.location.origin ||
+        !["http:", "https:"].includes(destination.protocol) ||
+        destination.username ||
+        destination.password
+    )
+        return false;
+    const commit = () => {
+        if (signal?.aborted) return false;
+        window.location.assign(destination.href);
+        return true;
+    };
+    const event = new CustomEvent("cognis:route-before-navigate", {
+        cancelable: true,
+        detail: { path, resume: commit },
+    });
+    if (!window.dispatchEvent(event)) return false;
+    return commit();
+}
+
 export async function ensureHostUiProviders() {
     await ensureUiProvidersLoaded();
 }

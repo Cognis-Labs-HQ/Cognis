@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@audio/decode": "<=3.11.1",
-        "@cognis/core": "<=0.4.0",
+        "@cognis/core": "<=0.4.3",
         "@cognis/gateways": "<=0.1.18"
     }
 }
