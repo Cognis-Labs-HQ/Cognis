@@ -10,6 +10,14 @@ Der gemeinsame Bildvorschau-Anbieter lädt sein Stylesheet, bevor er Steuereleme
 
 Referenzbilder in Kartendetails bilden einen horizontalen Streifen mit ausgeblendeter Bildlaufleiste. Die Audiowiedergabe übermittelt Kartentitel, Ebene, Cognis als Interpret und das App-Symbol an die System-Mediensteuerung, einschließlich Wiedergabe, Pause, Stopp und Lebenszyklusbereinigung. Mitgelieferte Satzdateien haben Vorrang vor der erzeugten Zusammenstellung. Die Begleitmodule enthalten 34 japanische und 45 englische direkte Satzaufnahmen; 124 japanische Kana-Clips wurden mit japanischem Text und der ausdrücklich festgelegten Stimme neu erzeugt.
 
+## Audio neu erzeugen
+
+Beim erneuten Erzeugen der Aufnahme einer globalen Karte werden nur das Audiofeld und der Suchindex aktualisiert. Erforderliche Identität, Schema, Klassifikation, Eigentümer, eigene Medien und gruppierte Verknüpfungen bleiben erhalten. Eine optimistische Zeitstempelprüfung weist gleichzeitige Änderungen zurück, statt sie zu überschreiben. Bei späterer Wiedergabe wird die neu erzeugte Aufnahme aus dem Cache verwendet.
+
+## Aussprache entfernen
+
+Gespeicherte Aussprachefelder ordnen ihre Entfernen-Schaltfläche mit eigenem Abstand neben den Lesekomponenten an, auch bei Schreibrichtung von rechts nach links. Das X verdeckt weder kurze noch lange Lesungen.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

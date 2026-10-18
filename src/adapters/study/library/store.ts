@@ -1,3 +1,4 @@
+import { replaceEntryContent } from "./store/entry-update.js";
 import { hasImageReference } from "./image-store.js";
 import type { CacheSnapshot } from "@cognis/core";
 import {
@@ -803,50 +804,47 @@ export class LibraryStore {
         input: LibraryEntryInput,
         providerModified = false,
     ): Promise<LibraryEntry> {
-        await this.db.transaction(async (transactionDb) => {
-            await transactionDb.executeCommand({
+        await this.db.transaction((transactionDb) =>
+            replaceEntryContent(transactionDb, id, input, providerModified),
+        );
+        return (await this.get(id))!;
+    }
+
+    async updateField(
+        id: string,
+        fieldId: string,
+        value: unknown,
+        expectedUpdatedAt: string,
+    ): Promise<boolean> {
+        return this.transaction(async () => {
+            const selected = await this.db.executeCommand({
+                option: "SELECT",
+                table: "study_library_entries",
+                where: [{ column: "id", value: id }],
+            });
+            const row = selected.rows?.[0];
+            if (!row) return false;
+            const entry = mapEntry(row);
+            if (entry.updatedAt !== expectedUpdatedAt) return false;
+            const fields = { ...entry.fields, [fieldId]: value };
+            const result = await this.db.executeCommand({
                 option: "UPDATE",
                 table: "study_library_entries",
                 set: {
-                    schema_version: input.schemaVersion,
-                    label: input.label,
-                    class: input.class ?? null,
-                    tags_json: JSON.stringify(input.tags ?? []),
-                    hidden: input.hidden === true,
-                    always_show_definition: input.alwaysShowDefinition === true,
-                    fields_json: JSON.stringify(input.fields ?? {}),
+                    fields_json: JSON.stringify(fields),
                     search_text:
-                        `${input.label} ${(input.tags ?? []).join(" ")} ${JSON.stringify(input.fields ?? {})}`
+                        `${entry.label} ${(entry.tags ?? []).join(" ")} ${JSON.stringify(fields)}`
                             .normalize()
                             .toLocaleLowerCase(),
-                    provider_modified: providerModified,
                     updated_at: new Date().toISOString(),
                 },
-                where: [{ column: "id", value: id }],
+                where: [
+                    { column: "id", value: id },
+                    { column: "updated_at", value: expectedUpdatedAt },
+                ],
             });
-            await transactionDb.executeCommand({
-                option: "DELETE",
-                table: "study_library_references",
-                where: [{ column: "source_entry_id", value: id }],
-            });
-            for (const row of entryReferenceRows(input)) {
-                await transactionDb.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_references",
-                    values: {
-                        source_entry_id: id,
-                        target_entry_id: row.reference.entryId,
-                        relation: row.reference.relation,
-                        group_index: row.groupIndex,
-                        position: row.position,
-                        transformation_json: referenceTransformationValue(
-                            row.reference,
-                        ),
-                    },
-                });
-            }
+            return result.rowCount === 1;
         });
-        return (await this.get(id))!;
     }
 
     async move(

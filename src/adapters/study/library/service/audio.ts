@@ -75,7 +75,6 @@ export async function readAuthorizedEntryAudio(
         flow?: FlowApi;
         cache?: LibraryAudioCache;
         provider?: StudyAudioCapability;
-        replaceManual?: (entry: LibraryEntry) => Promise<void>;
         store?: import("../store.js").LibraryStore;
         log?: (
             level: string,
@@ -166,8 +165,6 @@ export async function readAuthorizedEntryAudio(
             ...(input.refresh
                 ? {
                       persist: async () => {
-                          if (dependencies.replaceManual)
-                              return dependencies.replaceManual(entry);
                           if (!dependencies.store)
                               throw new Error("audio_refresh_unavailable");
                           const current = await dependencies.read(
@@ -180,12 +177,13 @@ export async function readAuthorizedEntryAudio(
                               current.updatedAt !== entry.updatedAt
                           )
                               throw new Error("audio_entry_changed");
-                          await dependencies.store.update(input.entryId, {
-                              fields: {
-                                  ...current.fields,
-                                  [input.fieldId]: "",
-                              },
-                          });
+                          const saved = await dependencies.store.updateField(
+                              input.entryId,
+                              input.fieldId,
+                              "",
+                              current.updatedAt,
+                          );
+                          if (!saved) throw new Error("audio_entry_changed");
                           dependencies.log?.(
                               "info",
                               "Study audio regenerated.",
