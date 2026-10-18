@@ -4,7 +4,7 @@
 
 ## Preserve Authorization
 
-Document navigation is opt-in: callers that own a server-rendered destination pass `documentNavigation: true` to `navigateTo`. Unknown SPA destinations and malformed URLs resolve to false, preserving caller recovery such as missing share-renderer feedback. Navigation guards and same-origin HTTP checks still apply, including when a guarded transition resumes. `ui:log` resolves to a delivery boolean, skips anonymous requests, and contains HTTP or network delivery failures without dispatching access-denied or connection-recovery events. User-facing feedback remains the caller’s responsibility; the logging endpoint still requires authentication.
+Standalone authentication callbacks use `navigateToDocument(path, { signal })` from `page-entry.js` for server document transitions. The helper validates same-origin HTTP(S) URLs without embedded credentials, honors the existing navigation guard, and prevents cancelled work from navigating. Dashboard navigation and missing-renderer behavior remain owned by the unchanged SPA router. `ui:log` skips anonymous requests and contains delivery failures; the logging endpoint still requires authentication.
 
 ## Commits
 

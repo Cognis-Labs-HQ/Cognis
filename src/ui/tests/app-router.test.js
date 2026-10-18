@@ -184,10 +184,7 @@ test("router carries caller-owned state across guarded navigation", () => {
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    assert.match(
-        source,
-        /navigateTo\(path, \{ bypassGuard: true, state, documentNavigation \}\)/,
-    );
+    assert.match(source, /navigateTo\(path, \{ bypassGuard: true, state \}\)/);
     assert.match(
         source,
         /history\.pushState\([\s\S]*\.\.\.state,[\s\S]*routerPage: path/,

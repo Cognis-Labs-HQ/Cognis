@@ -4,7 +4,7 @@
 
 ## Autorisierung erhalten
 
-Dokumentnavigation muss ausdrücklich gewählt werden: Aufrufer mit einem serverseitig gerenderten Ziel übergeben `documentNavigation: true` an `navigateTo`. Unbekannte SPA-Ziele und ungültige URLs liefern false zurück, damit der Aufrufer beispielsweise einen fehlenden Freigabe-Renderer melden kann. Navigationsschutz und HTTP-Prüfungen auf denselben Ursprung gelten weiterhin, auch beim Fortsetzen eines geschützten Übergangs. `ui:log` liefert einen booleschen Zustellstatus, überspringt anonyme Anfragen und fängt HTTP- oder Netzwerkfehler ab, ohne Zugriffsverweigerungs- oder Verbindungswiederherstellungsereignisse auszulösen. Rückmeldungen an Benutzer bleiben Aufgabe des Aufrufers; der Protokollierungsendpunkt erfordert weiterhin Authentifizierung.
+Eigenständige Authentifizierungsrückrufe verwenden `navigateToDocument(path, { signal })` aus `page-entry.js` für Wechsel zu Serverdokumenten. Die Funktion prüft HTTP(S)-URLs desselben Ursprungs ohne eingebettete Zugangsdaten, beachtet den bestehenden Navigationsschutz und verhindert Navigation nach Abbruch. Dashboard-Navigation und das Verhalten bei fehlenden Renderern bleiben beim unveränderten SPA-Router. `ui:log` überspringt anonyme Anfragen und fängt Zustellfehler ab; der Protokollierungsendpunkt erfordert weiterhin Authentifizierung.
 
 ## Commits
 

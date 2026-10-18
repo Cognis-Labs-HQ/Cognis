@@ -448,28 +448,17 @@ async function loadRoute(path) {
 
 export async function navigateTo(
     path,
-    { bypassGuard = false, state = {}, documentNavigation = false } = {},
+    { bypassGuard = false, state = {} } = {},
 ) {
-    if (!URL.canParse(path, window.location.origin)) return false;
-    const destination = new URL(path, window.location.origin);
-    if (
-        destination.origin !== window.location.origin ||
-        !["http:", "https:"].includes(destination.protocol)
-    )
-        return false;
     const route = await resolveRoute(path);
-    if (!route && !documentNavigation) return false;
+    if (!route) return false;
     if (
         !bypassGuard &&
         !requestRouteNavigation(path, () =>
-            navigateTo(path, { bypassGuard: true, state, documentNavigation }),
+            navigateTo(path, { bypassGuard: true, state }),
         )
     )
         return false;
-    if (!route) {
-        window.location.assign(path);
-        return true;
-    }
     const previousRouterPage = getCurrentRoutePath();
     _historyIndex += 1;
     _committedPath = path;
