@@ -32,4 +32,5 @@ Die dauerhafte Auswahl für Lesen und Schreiben blendet ihren schwebenden Bereic
 - [68f4cad](https://github.com/Cognis-Labs-HQ/Cognis/commit/68f4cad583d4ff3b9f0b14c9d083d04324f3cdf1)
 - [316acf3](https://github.com/Cognis-Labs-HQ/Cognis/commit/316acf324b61e0346a93e15f4c69f5421052a238)
 - [d53cbaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/d53cbaf39759a0cc6bbf64a3f17fdcbd549398e7)
-- [11be206](https://github.com/Cognis-Labs-HQ/Cognis/commit/11be206fe48299ff9395a3071a9dad8315886b97)
+- [76d4cce](https://github.com/Cognis-Labs-HQ/Cognis/commit/76d4cce408ec01e05998d3a006900678f7068d8e)
+- [ebf8d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/ebf8d696cba04da9959435855f51aa12cb43f7c0)
