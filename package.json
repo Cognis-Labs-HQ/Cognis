@@ -14,6 +14,7 @@
         "build": "npm run build:ui && npm run build:server",
         "build:ui": "node src/tooling/scripts/build-ui.mjs",
         "build:server": "node src/tooling/scripts/build-server.mjs",
+        "check:ui-host": "node src/tooling/scripts/check-ui-host-contracts.mjs",
         "check:ui-build": "node src/tooling/scripts/check-ui-build.mjs",
         "check:server-build": "node src/tooling/scripts/check-server-build.mjs",
         "typecheck": "node src/tooling/scripts/gen-tsconfig.mjs && tsc -p tsconfig.json --noEmit",
