@@ -35,3 +35,7 @@ The drawing heading initially shows a masked character and a standard click-to-r
 The dictionary provider selector uses theme-select and is hidden for a single provider. Settings follows the dictionary search input. KANJIDIC2 supplies kanji enrichment rather than a search option alongside Jisho; named reference sources identify their actual catalog.
 
 Reading/Writing is a saved account preference in the composer’s floating menu, defaulting to Reading. Changing it during practice uses the shared warning popup before restarting the queue; cancel keeps the current position and answers. Reviews already submitted remain saved. The sidebar includes All and marks the current deck. Writing headings blur a same-size masked glyph; the first click reveals it and enables its Explore deep link. A second click offers navigation confirmation. Keyboard activation follows the same interaction.
+
+## Drawing Pad Navigation
+
+Opening the drawing pad from card details closes the detail popup after the pad opens successfully. The concealed pad heading still reveals on the first click. Clicking the revealed heading on Explore opens the card directly; other Study pages retain the confirmation before navigating to Explore.

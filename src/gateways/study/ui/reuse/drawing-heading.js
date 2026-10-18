@@ -39,6 +39,14 @@ export function bindDrawingHeading(
                     return;
                 }
                 if (modified) return;
+                if (
+                    /^\/study\/explore(?:\/|$)/.test(window.location.pathname)
+                ) {
+                    await uiCtx.capabilities.get("ui:navigate")(heading.href, {
+                        state: { studyEntryId: card.id },
+                    });
+                    return;
+                }
                 let dismissPopup;
                 const abort = () => {
                     void dismissPopup?.();

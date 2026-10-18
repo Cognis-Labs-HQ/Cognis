@@ -18,6 +18,10 @@ Beim erneuten Erzeugen der Aufnahme einer globalen Karte werden nur das Audiofel
 
 Gespeicherte Aussprachefelder ordnen ihre Entfernen-Schaltfläche mit eigenem Abstand neben den Lesekomponenten an, auch bei Schreibrichtung von rechts nach links. Das X verdeckt weder kurze noch lange Lesungen.
 
+## Navigation im Schreibfenster
+
+Das Öffnen des Schreibfensters aus den Kartendetails schließt die Detailansicht nach erfolgreichem Öffnen. Der verdeckte Titel wird weiterhin beim ersten Klick sichtbar. Auf Explore öffnet ein weiterer Klick die Karte direkt; auf anderen Study-Seiten bleibt die Bestätigung vor dem Wechsel zu Explore erhalten.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

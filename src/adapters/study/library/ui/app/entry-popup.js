@@ -252,7 +252,7 @@ export async function openEntryPopup(
                         strokePattern,
                         displayedDefinition,
                     );
-                    return false;
+                    return true;
                 }
                 const contributedAction = composed.actions.find(
                     (action) => action.id === actionId,
