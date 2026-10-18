@@ -28,3 +28,4 @@ Membuka panel menulis dari detail kartu menutup popup detail setelah panel berha
 - [68f4cad](https://github.com/Cognis-Labs-HQ/Cognis/commit/68f4cad583d4ff3b9f0b14c9d083d04324f3cdf1)
 - [316acf3](https://github.com/Cognis-Labs-HQ/Cognis/commit/316acf324b61e0346a93e15f4c69f5421052a238)
 - [d53cbaf](https://github.com/Cognis-Labs-HQ/Cognis/commit/d53cbaf39759a0cc6bbf64a3f17fdcbd549398e7)
+- [11be206](https://github.com/Cognis-Labs-HQ/Cognis/commit/11be206fe48299ff9395a3071a9dad8315886b97)
