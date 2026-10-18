@@ -30,6 +30,10 @@ Pemilih Baca/Tulis persisten kini menampilkan slot mengambangnya di halaman Flas
 
 Study Library memeriksa kapabilitas bahasa aktif sebelum menyediakan skema, kartu, audio, gambar, aset paket, atau permintaan tinjauan tersimpan. Bahasa nonaktif hilang dari hasil penelusuran dan pembacaan langsung ditolak. Pengaktifan kembali memulihkan akses tanpa menghapus konten. Status penyedia runtime tetap terpisah dari penyimpanan konten.
 
+## Pencarian Registri Bahasa Aktif
+
+Ketersediaan pustaka membaca kontribusi bahasa dari registri sistem aktif, bukan penyimpanan kapabilitas lokal adaptor. Menonaktifkan satu bahasa tetap mengizinkan skema, kartu, dan dependensi dek awal bahasa lain; mengaktifkannya kembali memulihkan konten tersimpan. Registri publik diutamakan daripada salinan lokal yang sudah usang.
+
 ## Komit
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

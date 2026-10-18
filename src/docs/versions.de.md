@@ -55,7 +55,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.2`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.12` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.13` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.1`   |
 | Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.3.8`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |

@@ -30,6 +30,10 @@ The persistent Read/Write selector now reveals its floating slot on Flashcards. 
 
 Study Library checks the live language capability before exposing retained schemas, cards, audio, images, packaged assets or review requests. Disabled languages disappear from browse results and direct reads fail; re-enabling restores access without deleting stored content. Runtime provider state remains separate from content persistence.
 
+## Live Language Registry Lookup
+
+Library availability resolves language contributions from the live system registry rather than the adapter-local capability store. Disabling one language keeps the other language’s schemas, cards and starter-deck dependencies accessible; re-enabling restores retained content. A public registry takes precedence over any stale local snapshot.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

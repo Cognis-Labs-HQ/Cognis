@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryService } from "../service/index.js";
 import { mockLanguageSchema, mockCharacter } from "./fixtures/mock-language.js";
-import { ContentAvailability } from "../service/availability.js";
+import {
+    ContentAvailability,
+    languageAvailability,
+} from "../service/availability.js";
 
 // The live predicate models a scoped language capability disappearing on disable.
 test("disabled language content is hidden and direct card/schema access resumes on re-enable", async () => {
@@ -127,4 +130,93 @@ test("disabled schemas hide staged review content and reject direct review actio
     );
     enabled = true;
     assert.equal((await visibility.listPushRequests(actor)).length, 1);
+});
+
+test("public language contributions remain accessible when a sibling module is disabled", async () => {
+    const english = {
+        ...mockLanguageSchema,
+        id: "english",
+        namespace: "en",
+        language: "en",
+    };
+    const japanese = {
+        ...mockLanguageSchema,
+        id: "japanese",
+        namespace: "ja",
+        language: "ja",
+    };
+    const entries = [
+        {
+            ...mockCharacter("english-card", "a"),
+            schemaId: english.id,
+            language: "en",
+        },
+        {
+            ...mockCharacter("japanese-card", "あ"),
+            schemaId: japanese.id,
+            language: "ja",
+        },
+    ];
+    let contributions = new Map<string, unknown>([
+        ["study:language:en", { languageCode: "en" }],
+        ["study:language:ja", { languageCode: "ja" }],
+    ]);
+    const system = { getCapability: (id: string) => contributions.get(id) };
+    const local = {
+        get: (id: string) =>
+            id === "system:ctx"
+                ? system
+                : id === "study:language:en"
+                  ? { languageCode: "en" }
+                  : undefined,
+    };
+    const store = {
+        async saveSchema() {},
+        async get(id: string) {
+            return entries.find((entry) => entry.id === id) ?? null;
+        },
+        async list() {
+            return entries;
+        },
+    };
+    const library = new LibraryService(
+        store as never,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        languageAvailability((id) => local.get(id)),
+    );
+    await library.registerSchema(english);
+    await library.registerSchema(japanese);
+    const actor = { accountId: "admin", role: "admin" as const };
+    assert.equal(library.listSchemas().length, 2);
+    assert.equal((await library.list(actor, { scope: "global" })).length, 2);
+    contributions.delete("study:language:en");
+    assert.deepEqual(
+        library.listSchemas().map((schema) => schema.language),
+        ["ja"],
+    );
+    assert.deepEqual(
+        (await library.list(actor, { scope: "global" })).map(
+            (entry) => entry.id,
+        ),
+        ["japanese-card"],
+    );
+    assert.equal(await library.read(actor, "english-card"), null);
+    assert.ok(await library.read(actor, "japanese-card"));
+    assert.equal(library.getSchema("japanese")?.id, "japanese");
+    contributions = new Map([
+        ["study:language:en", { languageCode: "en" }],
+        ["study:language:ja", { languageCode: "ja" }],
+    ]);
+    assert.equal(library.listSchemas().length, 2);
+    assert.ok(await library.read(actor, "english-card"));
 });

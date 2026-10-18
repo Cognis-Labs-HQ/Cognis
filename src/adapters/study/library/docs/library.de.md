@@ -542,3 +542,7 @@ Gespeicherte Aussprachefelder ordnen ihre Entfernen-Schaltfläche mit eigenem Ab
 ## Isolation deaktivierter Lernsprachen
 
 Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Karten, Audio, Bilder, Paketdateien oder Prüfanfragen zugänglich sind. Deaktivierte Sprachen verschwinden aus Listen und direkte Abrufe schlagen fehl. Erneutes Aktivieren stellt den Zugriff ohne Löschen der Inhalte wieder her. Laufzeitregistrierungen und Inhaltsspeicherung bleiben getrennt.
+
+## Aktive Sprachregistrierung verwenden
+
+Die Bibliotheksverfügbarkeit liest Sprachbeiträge aus der aktuellen Systemregistrierung statt aus dem lokalen Funktionsspeicher des Adapters. Das Deaktivieren einer Sprache lässt Schemata, Karten und Startdeck-Abhängigkeiten der anderen Sprache zugänglich; erneutes Aktivieren stellt gespeicherte Inhalte wieder bereit. Die öffentliche Registrierung hat Vorrang vor veralteten lokalen Kopien.

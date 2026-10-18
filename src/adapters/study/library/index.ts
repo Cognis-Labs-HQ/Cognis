@@ -1,3 +1,4 @@
+import { languageAvailability } from "./service/availability.js";
 import { createNotificationDelivery } from "./notification-delivery.js";
 import { createRequestNotifier } from "./request-notifications.js";
 import { LibraryImageStore } from "./image-store.js";
@@ -205,9 +206,7 @@ export async function bootstrapStudyAdapter(
             dispatch: dispatchNotification,
             log: ctx.log,
         }),
-        (schema) =>
-            !schema.language ||
-            Boolean(ctx.capabilities.get(`study:language:${schema.language}`)),
+        languageAvailability((id) => ctx.capabilities.get(id)),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

@@ -542,3 +542,7 @@ Chip pelafalan tersimpan menempatkan tombol hapus di samping komponen bacaan den
 ## Isolasi Bahasa Study Nonaktif
 
 Study Library memeriksa kapabilitas bahasa aktif sebelum menyediakan skema, kartu, audio, gambar, aset paket, atau permintaan tinjauan tersimpan. Bahasa nonaktif hilang dari hasil penelusuran dan pembacaan langsung ditolak. Pengaktifan kembali memulihkan akses tanpa menghapus konten. Status penyedia runtime tetap terpisah dari penyimpanan konten.
+
+## Pencarian Registri Bahasa Aktif
+
+Ketersediaan pustaka membaca kontribusi bahasa dari registri sistem aktif, bukan penyimpanan kapabilitas lokal adaptor. Menonaktifkan satu bahasa tetap mengizinkan skema, kartu, dan dependensi dek awal bahasa lain; mengaktifkannya kembali memulihkan konten tersimpan. Registri publik diutamakan daripada salinan lokal yang sudah usang.

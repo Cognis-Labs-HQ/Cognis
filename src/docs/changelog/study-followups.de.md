@@ -30,6 +30,10 @@ Die dauerhafte Auswahl für Lesen und Schreiben blendet ihren schwebenden Bereic
 
 Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Karten, Audio, Bilder, Paketdateien oder Prüfanfragen zugänglich sind. Deaktivierte Sprachen verschwinden aus Listen und direkte Abrufe schlagen fehl. Erneutes Aktivieren stellt den Zugriff ohne Löschen der Inhalte wieder her. Laufzeitregistrierungen und Inhaltsspeicherung bleiben getrennt.
 
+## Aktive Sprachregistrierung verwenden
+
+Die Bibliotheksverfügbarkeit liest Sprachbeiträge aus der aktuellen Systemregistrierung statt aus dem lokalen Funktionsspeicher des Adapters. Das Deaktivieren einer Sprache lässt Schemata, Karten und Startdeck-Abhängigkeiten der anderen Sprache zugänglich; erneutes Aktivieren stellt gespeicherte Inhalte wieder bereit. Die öffentliche Registrierung hat Vorrang vor veralteten lokalen Kopien.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)
