@@ -9,3 +9,5 @@ Callback SSO eksternal memerlukan `mountWhenDirect` dan `navigateToDocument` dar
 Terapkan Core host yang sesuai sebelum memperbarui modul callback, termasuk aset UI dan manifes aset; mulai ulang proses jika masih memakai rilis sebelumnya. Muat ulang halaman callback hanya setelah pemeriksaan ekspor host publik lulus. Versi modul tidak membuktikan versi aset host yang disajikan. Identitas eksternal yang belum dikenal tetap memerlukan otorisasi pendaftaran ketika pendaftaran publik dinonaktifkan; identitas yang sudah dipetakan tidak mengulangi otorisasi pembuatan akun. HTTP 403 saja tidak mengidentifikasi alasan penolakan: periksa kode kesalahan dan bidang kelanjutan pendaftaran tanpa membagikan kredensial atau kuki.
 
 ## Commit
+
+- [dd1b1fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd1b1fac635d28ef8ee9f223e86eb41fd3e08120)
