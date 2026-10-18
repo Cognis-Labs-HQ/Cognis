@@ -159,9 +159,13 @@
     flex: 1;
     min-height: 5rem;
 }
-.study-deck-actions [data-deck-action="export"] img {
+.study-export-icon {
+    display: inline-block;
     width: 1.25rem;
     height: 1.25rem;
+    background-color: currentColor;
+    mask: url("/static/assets/reuse/download-light.svg") center / contain
+        no-repeat;
 }
 .study-flashcard-answer {
     border: 1px solid var(--border);

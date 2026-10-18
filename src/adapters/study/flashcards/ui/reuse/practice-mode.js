@@ -39,6 +39,7 @@ export async function createPracticeModePreference({
                 ),
             }),
         mount(slot) {
+            slot.hidden = false;
             const select = slot.querySelector(
                 "[data-practice-mode-preference]",
             );

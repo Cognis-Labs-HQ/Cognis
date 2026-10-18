@@ -54,15 +54,14 @@
 </template>
 
 <template data-deck-template="export">
-    <button type="button" class="btn-neutral" data-deck-action="export">
-        <picture
-            ><source
-                media="(prefers-color-scheme: dark)"
-                srcset="/static/assets/reuse/download-dark.svg" />
-            <img
-                src="/static/assets/reuse/download-light.svg"
-                alt="{export_label}"
-        /></picture>
+    <button
+        type="button"
+        class="btn-neutral"
+        data-deck-action="export"
+        aria-label="{export_label}"
+        title="{export_label}"
+    >
+        <span class="study-export-icon" aria-hidden="true"></span>
     </button>
 </template>
 

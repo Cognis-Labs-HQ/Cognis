@@ -18,7 +18,7 @@ import {
     fetchSearchableDictionaryProviders,
 } from "/static/gateways/study/ui/library-client.js";
 
-const SETTINGS_GEAR_ICON = `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/assets/reuse/settings-cog-dark.svg"><img src="/static/assets/reuse/settings-cog-light.svg" alt=""></picture>`;
+const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 
 async function loadLearningLanguages() {
     try {

@@ -242,7 +242,10 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     justify-content: center;
 }
 
-.study-subnav-settings img {
+.study-settings-icon {
+    background-color: currentColor;
+    mask: url("/static/assets/reuse/settings-cog-light.svg") center / contain
+        no-repeat;
     display: block;
     width: 1.125rem;
     height: 1.125rem;

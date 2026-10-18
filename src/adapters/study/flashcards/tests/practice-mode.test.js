@@ -48,7 +48,9 @@ test("the floating practice preference restores the saved mode, confirms session
         isActive: () => true,
         onChange: (mode) => resets.push(mode),
     });
-    preference.mount({ querySelector: () => select });
+    const slot = { hidden: true, querySelector: () => select };
+    preference.mount(slot);
+    assert.equal(slot.hidden, false);
     assert.equal(select.value, "writing");
     select.value = "reading";
     await handler();

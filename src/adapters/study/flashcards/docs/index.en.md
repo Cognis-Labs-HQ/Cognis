@@ -31,3 +31,7 @@ Reading/Writing is a saved account preference in the composer’s floating menu,
 New lexical cards automatically detect dictionary-backed classes and supported transformation tags when their input is committed and before saving. Manual tags are retained; ambiguous classes remain an explicit choice. Late lookup results cannot change a different draft. Selected verb, adjective/adverb and plural previews request the selected transformation’s audio. Source attribution in the heading links to the base card. Upload controls have a separate selector from playback audio, preventing the character-editor initialization crash.
 
 The deck side menu scrolls with the document. Revealing the primary navigation does not resize an independent sidebar scroll area or shift the cards.
+
+## Visible Practice Mode and Themed Controls
+
+The persistent Read/Write selector now reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
