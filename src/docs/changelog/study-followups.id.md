@@ -18,6 +18,10 @@ Pembuatan ulang rekaman kartu global hanya memperbarui bidang audio dan indeks p
 
 Chip pelafalan tersimpan menempatkan tombol hapus di samping komponen bacaan dengan jarak tersendiri, termasuk pada tata letak kanan ke kiri. Tombol X tidak menutupi bacaan pendek maupun panjang.
 
+## Navigasi Panel Menulis
+
+Membuka panel menulis dari detail kartu menutup popup detail setelah panel berhasil terbuka. Judul tersembunyi tetap ditampilkan pada klik pertama. Di Explore, klik berikutnya membuka kartu langsung; halaman Study lainnya tetap meminta konfirmasi sebelum berpindah ke Explore.
+
 ## Komit
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

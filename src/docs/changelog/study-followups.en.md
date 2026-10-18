@@ -18,6 +18,10 @@ Regenerating a global card updates only its audio field and search index. Requir
 
 Committed pronunciation chips place their remove button beside the reading components with a separate gap, including right-to-left layouts. Short and long readings keep the X clear of their content.
 
+## Drawing Pad Navigation
+
+Opening the drawing pad from card details closes the detail popup after the pad opens successfully. The concealed pad heading still reveals on the first click. Clicking the revealed heading on Explore opens the card directly; other Study pages retain the confirmation before navigating to Explore.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)
