@@ -2,6 +2,7 @@ import {
     availableLocations,
     authorizeLocation,
     entryPermissions,
+    cacheClassWriteAccess,
 } from "./permissions.js";
 import { ContentAvailability } from "./availability.js";
 import { LibraryImages } from "./images.js";
@@ -318,7 +319,9 @@ export class LibraryService implements LibraryCapability {
 
     getSchema(id: string, version?: number): LibrarySchema | null {
         const schema = this.registeredSchema(id, version);
-        return schema && this.availability.allows(schema) ? schema : null;
+        return schema && this.availability.allows(schema)
+            ? structuredClone(schema)
+            : null;
     }
 
     private registeredSchema(
@@ -328,7 +331,7 @@ export class LibraryService implements LibraryCapability {
         const versions = this.schemas.get(id);
         if (!versions) return null;
         const selected = versions.get(version ?? Math.max(...versions.keys()));
-        return selected ? structuredClone(selected) : null;
+        return selected ?? null;
     }
 
     locations(actor: LibraryActor, language?: string) {
@@ -427,6 +430,7 @@ export class LibraryService implements LibraryCapability {
         }
 
         const entries = await this.store.list(location, filters);
+        const classAccess = cacheClassWriteAccess(this.classAccess);
         return Promise.all(
             entries
                 .filter((entry) =>
@@ -434,26 +438,29 @@ export class LibraryService implements LibraryCapability {
                         this.registeredSchema(entry.schemaId),
                     ),
                 )
-                .map((entry) => this.entryWithPermissions(actor, entry)),
+                .map((entry) =>
+                    this.entryWithPermissions(actor, entry, classAccess),
+                ),
         );
     }
 
     private entryWithPermissions(
         actor: LibraryActor,
         entry: LibraryEntry,
+        classAccess = this.classAccess,
     ): Promise<LibraryEntry> {
         return entryPermissions(
             actor,
             entry,
             this.immutable(entry),
-            this.classAccess,
+            classAccess,
             this.audioProvider,
-            this.getSchema(entry.schemaId),
+            this.registeredSchema(entry.schemaId),
         );
     }
 
     private immutable(entry: LibraryEntry): boolean {
-        return immutableEntry(this.getSchema(entry.schemaId), entry);
+        return immutableEntry(this.registeredSchema(entry.schemaId), entry);
     }
 
     async read(
@@ -815,13 +822,7 @@ export class LibraryService implements LibraryCapability {
     async trace(actor: LibraryActor, entryId: string) {
         const entry = await this.read(actor, entryId);
         if (!entry) throw new Error("not_found");
-        return traceEntry(
-            actor,
-            entry,
-            this.store,
-            this.read.bind(this),
-            this.authorize.bind(this),
-        );
+        return traceEntry(actor, entry, this.store, this.read.bind(this));
     }
 
     async requestPush(

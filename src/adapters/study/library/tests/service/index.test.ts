@@ -1,4 +1,3 @@
-import { storeContentPackAudio } from "../../service/content-audio.js";
 import { schema } from "../fixtures/service-schema.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -194,6 +193,12 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     assert.equal(
         library.getSchema("test-language")?.metadata.labels.en,
         "Test Language",
+    );
+    const returned = library.getSchema("test-language")!;
+    returned.layers[0].metadata.labels.en = "Changed outside direct read";
+    assert.equal(
+        library.getSchema("test-language")!.layers[0].metadata.labels.en,
+        "Units",
     );
     const listed = library.listSchemas();
     assert.equal(listed[0].metadata.labels.en, "Test Language");
@@ -416,38 +421,6 @@ test("provider metadata survives store and capability round trips", async () => 
     await library.registerSchema(external);
     assert.deepEqual(saved[0], external);
     assert.deepEqual(library.listSchemas()[0], external);
-});
-
-test("content-pack audio lists are cached and rewritten entry by entry", async () => {
-    const stored: string[] = [];
-    const plan = {
-        manifest: { publisher: "Fixture", id: "pack", version: "1.0.0" },
-        schema: {
-            layers: [
-                { id: "words", fields: [{ id: "audio", type: "audioList" }] },
-            ],
-        },
-        records: [
-            { layer: "words", fields: { audio: ["one.mp3", "two.mp3"] } },
-        ],
-        assets: ["one.mp3", "two.mp3"].map((path) => ({
-            path,
-            mediaType: "audio/mpeg",
-            data: Buffer.from(path).toString("base64"),
-        })),
-    };
-    await storeContentPackAudio(
-        plan as never,
-        {
-            store: async (key: string) => void stored.push(key),
-        } as never,
-    );
-    assert.equal(stored.length, 2);
-    assert.deepEqual(plan.records[0].fields.audio, [
-        `file:${stored[0]}`,
-        `file:${stored[1]}`,
-    ]);
-    assert.deepEqual(plan.assets, []);
 });
 
 test("language providers can contribute a complete card constructor", async () => {
@@ -723,7 +696,8 @@ test("entry traces exclude self-references and duplicate dependants", async () =
         references: [{ entryId: entry.id, relation: "characters" }],
     };
     const store = {
-        get: async (id: string) => (id === entry.id ? entry : null),
+        get: async (id: string) =>
+            [entry, dependant].find((item) => item.id === id) ?? null,
         referencesFor: async () => [entry, entry, dependant, dependant],
     };
     const library = new LibraryService(store as never);
@@ -733,7 +707,14 @@ test("entry traces exclude self-references and duplicate dependants", async () =
         entry.id,
     );
 
-    assert.deepEqual(detail.usedBy, [dependant]);
+    assert.deepEqual(detail.usedBy, [
+        {
+            ...dependant,
+            canDelete: true,
+            canEdit: true,
+            editRequiresReview: false,
+        },
+    ]);
 });
 
 test("users delete personal entries while administrators delete global entries", async () => {

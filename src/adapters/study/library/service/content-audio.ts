@@ -7,7 +7,8 @@ export async function storeContentPackAudio(
     audioCache?: LibraryAudioCache,
 ): Promise<void> {
     if (!audioCache) throw new Error("file_gateway_unavailable");
-    const audioPaths = new Set<string>();
+    const assets = new Map(plan.assets.map((asset) => [asset.path, asset]));
+    const audioPaths = new Map<string, string>();
     for (const record of plan.records) {
         const layer = plan.schema.layers.find(({ id }) => id === record.layer)!;
         const fields = { ...(record.fields ?? {}) };
@@ -21,9 +22,12 @@ export async function storeContentPackAudio(
                     stored.push(audioPath);
                     continue;
                 }
-                const asset = plan.assets.find(
-                    ({ path }) => path === audioPath,
-                );
+                const cached = audioPaths.get(audioPath);
+                if (cached) {
+                    stored.push(cached);
+                    continue;
+                }
+                const asset = assets.get(audioPath);
                 if (!asset || !asset.mediaType.startsWith("audio/"))
                     throw new Error("audio_asset_not_found");
                 const key = `packs/${createHash("sha256")
@@ -37,7 +41,7 @@ export async function storeContentPackAudio(
                     Buffer.from(asset.data, "base64"),
                 );
                 stored.push(`file:${key}`);
-                audioPaths.add(audioPath);
+                audioPaths.set(audioPath, `file:${key}`);
             }
             fields[field.id] = Array.isArray(value) ? stored : stored[0];
         }

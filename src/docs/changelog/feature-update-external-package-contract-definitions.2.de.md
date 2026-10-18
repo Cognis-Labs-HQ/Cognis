@@ -1,0 +1,53 @@
+# Lernsteuerung und Zugriff
+
+**Feature-Zweig:** feature-update-external-package-contract-definitions
+
+## Lernkarten üben
+
+Lesen oder Schreiben wird für eigene und geteilte Stapel über eine dauerhaft gespeicherte Einstellung im schwebenden Menü gewählt. Der Modus bleibt während der Sitzung fest, auch nach einem Besuch in Erkunden und der Rückkehr über die Browser-Zurück-Funktion; ein Wechsel erfordert die Bestätigung, den Fortschritt zurückzusetzen. Nicht unterstützte Karten können ohne automatischen Moduswechsel übersprungen werden. Neue Karten beginnen mit verborgener Antwort. Alle, Neu, Fällig und Erledigt behalten ihre Prüfungsfilter; ein Filterwechsel beginnt eine neue Warteschlange im selben Modus.
+
+Lesen verwendet die erste Aussprache und drei unterschiedliche sichtbare Bibliotheksalternativen. Schreiben bettet das gemeinsame Zeichenfeld ein und zeigt Bedeutung und Lesung, während das Zeichen hinter einer anklickbaren Überschrift verborgen bleibt. Fehlstriche zeigen das Zeichen nicht automatisch. Aufdecken gilt als unterstützter Versuch mit dem Ergebnis Erneut, auch wenn spätere Striche gelingen. Ein erfolgreicher Versuch ohne Hilfe ergibt Gut. Bereits geprüfte Karten können weiterhin betrachtet werden.
+
+Galerien verwenden `/study/<iso>/flashcards`; Stapellinks erhalten lesbare Namen mit dem Suffix `--<deck-id>`, etwa `/study/ja/flashcards/first-japanese-words--<deck-id>`. Kanonische englische Namen halten den lesbaren Teil unabhängig von der Oberflächensprache. Das Identitätssuffix unterscheidet gleiche Namen und hält Links zwischen Eigentümern und Empfängern mit unterschiedlichen Stapelkatalogen konsistent. API-Ressourcen-IDs bleiben unverändert.
+
+Die aktuelle Browser-Verlaufseintragung bewahrt Stapelreihenfolge, Position, Bewertungen, offene Antwort, Filter und Modus. Nach der Rückkehr aus Erkunden funktionieren Vorherige und Nächste im ursprünglichen Stapel. Das Aufdecken oder Nachschlagen einer unbeantworteten Karte behält das Ergebnis Erneut. Quelllinks übergeben geordnete Karten-IDs im Verlaufszustand, damit auch Erkunden-Vorschauen durch den Stapel einschließlich untergeordneter Karten navigieren. Bibliotheksberechtigungen gelten weiterhin; nicht mehr zugängliche Karten werden bei der Wiederherstellung ausgelassen.
+
+Alle Aktionen verwenden die bestehenden deklarierten Stapel- und Zeichenabläufe. Die Oberfläche nutzt Standarddialoge, Schaltflächen und vorhandene Lernkartenstile. Eigene und geteilte Stapel teilen Darstellung und Übung; geteilte Momentaufnahmen erhalten keinen Bibliothekszugriff. Beim Verlassen werden Ereignisbehandlung und Zeichenfeld beendet.
+
+## Leserückmeldung und Links
+
+Leseantworten zeigen eine Erfolgs- oder Warnmeldung und animieren die gewählte Option; bei reduzierter Bewegung entfällt die Animation. Kartentitel und Favoritenstern haben einen transparenten Hintergrund und behalten sichtbare Tastatur-Fokusmarkierungen. Das Standard-Seitenmenü listet die Stapeltitel der aktuellen Sprache und hebt den aktiven Stapel hervor.
+
+Explore-Kartenlinks enthalten die kanonische Kartenkennung unter `/study/explore/<language>/<layer>/<card-id>`. Strg-, Befehls- und Umschalt-Klick behalten das normale Browserverhalten; direkte Aufrufe öffnen die gewünschte Kartenvorschau. Das Nachschlagen einer unbeantworteten Karte zählt als unterstützter Versuch. Bei normaler Navigation bleibt die Stapelreihenfolge für die Zurück-Funktion erhalten.
+
+## Gespeicherte Lernsteuerung
+
+Lesen/Schreiben ist eine gespeicherte Kontoeinstellung im schwebenden Composer-Menü; Standard ist Lesen. Ein Wechsel während der Übung zeigt vor dem Neustart den gemeinsamen Warndialog. Abbrechen behält Position und Antworten; bereits übermittelte Bewertungen bleiben gespeichert. Die Seitenleiste enthält Alle und markiert den aktuellen Stapel. Schreibüberschriften verwischen ein gleich großes maskiertes Zeichen. Der erste Klick deckt es auf und aktiviert den Explore-Direktlink; ein zweiter Klick bietet die Navigation mit Bestätigung an. Die Tastaturbedienung folgt demselben Ablauf.
+
+Neue Wortkarten erkennen beim Abschließen der Eingabe und vor dem Speichern automatisch wörterbuchgestützte Klassen und unterstützte Transformationstags. Eigene Tags bleiben erhalten; mehrdeutige Klassen erfordern eine Auswahl. Verspätete Ergebnisse ändern keinen anderen Entwurf. Vorschauen für gewählte Verb-, Adjektiv-/Adverb- und Pluralformen fordern deren eigene Aufnahme an. Die Herkunftsangabe in der Überschrift verlinkt die Basiskarte. Upload-Felder haben einen eigenen Selektor, damit Audioelemente die Initialisierung des Zeicheneditors nicht mehr abbrechen.
+
+Die Wörterbuchauswahl verwendet theme-select und wird bei einem einzigen Anbieter ausgeblendet. Einstellungen steht rechts neben der Wörterbuchsuche. KANJIDIC2 ergänzt Kanji-Daten und ist keine Suchoption neben Jisho; Referenzquellen zeigen ihren tatsächlichen Katalognamen.
+
+Japanische Aufnahmen mit kleinen Kana, einschließlich 学校, wurden mit Kanji-Schreibweise, soweit vorhanden, der festgelegten japanischen Stimme und stabilen Einstellungen neu erzeugt. Mitgelieferte Sätze werden aus genau diesen Clips neu zusammengesetzt. I- und Na-Adjektive unterstützen Adverbial-, Verneinungs- und Vergangenheitsformen mit eigenen Aufnahmen der mitgelieferten Formen. Englische Pluralaufnahmen bleiben eigenständige Dateien und werden bei gewählter Form abgespielt.
+
+## Kartenmedien und Steuerung
+
+Optionale Bildlistenfelder, private Bild-Uploads und Detailgalerien ergänzen. Beide Sprachmodule enthalten ein lizenziertes Referenzfoto und bieten das Feld auf jeder Ebene an. Vorschaubilder im Editor zeigen gebündelte und hochgeladene Bilder. Bei Mauszeiger oder Fokus erscheint eine rote Schaltfläche zum Entfernen, die unbenutzte vorläufige Dateien ohne Bestätigung verwirft. Gespeicherte Karten und der Anfrageverlauf behalten ihre referenzierten Dateien. Die Entfernen-Schaltfläche hat einen deckenden Hintergrund und bleibt über Fotos lesbar. Eigene Bilddateien und gespeicherte Verweise bleiben bei Serverneustarts und erneutem Laden der Anbieter erhalten, auch bei Anbieteraktualisierungen bearbeiteter Karten. Die globale Fähigkeit `ui:imagePreview` bietet Vorschaubilder, Ereignisbindung und die Aktion `open` über den registrierten Ablauf `ui:imagePreview:open`. Sie ist außerdem über `ui:reuse` als `image-preview.js` verfügbar; das Stylesheet gehört zu den gemeinsamen Stilen. Bildschaltflächen öffnen das Original in natürlicher Größe, begrenzt auf den sichtbaren Bereich, wobei nur das übliche X sichtbar ist. Tastaturbedienung, Escape, Fokusrückkehr und das Schließen beim Entfernen der Ansicht oder des Anbieters nutzen den gemeinsamen Popup-Lebenszyklus. Aufrufer verwalten Bild-URLs und optionale Löschaktionen. Library verwendet dieses Steuerelement für hochgeladene und mitgelieferte Bilder im Editor und in Detailgalerien.
+
+Mikrofonaufnahmen warten auf die Berechtigungsantwort des Browsers. Währenddessen werden doppelte Anfragen und Speichern verhindert. Ein erst nach dem Schließen gewährter Stream wird freigegeben. Verweigerte Berechtigungen und nicht verfügbare Aufnahmen haben eigene Meldungen. Mikrofon, Wiedergabe und Neu laden stehen gleich groß in einer Zeile. Der Kollektivplural verwendet ein einziges Kontrollkästchen für passende Substantivfamilien; unpassende Optionen bleiben verborgen. Audiodateinamen bleiben verborgen. Wiedergabe spielt den neuesten vorläufigen Upload oder die Mikrofonaufnahme; eine verspätete Antwort für gespeichertes Audio ersetzt sie nicht. Während der Aufnahme wird nur das Mikrofonsymbol rot, auch beim Darüberfahren; die Schaltfläche behält ihren normalen Themenstil.
+
+## Bearbeitbare Anfragevorschauen
+
+Reguläre Kartenvorschauen und den vorhandenen Editor für Änderungen an Kartenentwürfen durch Administratoren verwenden. Die Genehmigung erhält die Zuordnung zum Einreicher und fügt bearbeitende Administratoren als Miteigentümer hinzu. Profile von Einreicher und Genehmiger klar beschriften; Genehmigung, Ablehnung und Rücknahme bestätigen.
+
+## Study-Mitteilungen und Filter
+
+Aktivierte Administratoren im Kanal Study über neue Anfragen und Entscheidungen anderer Administratoren informieren. Pulsierende Navigation entfernen, sofortige Textfilter für geladene Karten ergänzen und das Lernkarten-Seitenmenü im Dokumentfluss halten, um Verschiebungen durch Scrollleisten zu vermeiden. Benachrichtigungsfähigkeiten werden bei der Zustellung aufgelöst. Zustellquittungen werden einschließlich leerer Empfängerlisten und Teilfehler geprüft.
+
+## Zugriff und Abfragekosten
+
+Rückwärtsverweise auf Karten wenden dieselben Prüfungen für Sprachverfügbarkeit und Zugriff wie direkte Lesezugriffe an und enthalten aktuelle Bearbeitungsrechte. Beim Durchsuchen werden Schreibrechte einer Klasse nur innerhalb einer Antwort gemeinsam geprüft; das vollständige Schema wird nicht mehr für jede Karte kopiert. Öffentliche Schemaergebnisse bleiben unabhängige Kopien. Der Import von Inhaltspaketen indiziert Dateien einmal und schreibt jede gemeinsam verwendete Aufnahme einmal, wobei alle Audiozuordnungen erhalten bleiben.
+
+## Commits
+
+- [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

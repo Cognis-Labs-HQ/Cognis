@@ -1,0 +1,53 @@
+# Kontrol dan Akses Belajar
+
+**Cabang Fitur:** feature-update-external-package-contract-definitions
+
+## Latihan Kartu
+
+Mode Membaca atau Menulis dipilih melalui preferensi tersimpan dalam menu mengambang untuk dek akun maupun dek bersama. Mode tetap terkunci selama sesi, termasuk setelah mengunjungi Jelajahi dan kembali melalui tombol Kembali browser; pergantian mode memerlukan konfirmasi sebelum mereset kemajuan. Kartu yang tidak mendukung mode dapat dilewati tanpa pergantian mode otomatis. Jawaban kartu baru mula-mula disembunyikan. Semua, Baru, Jatuh Tempo, dan Selesai mempertahankan filter ulasan; mengganti filter memulai antrean baru dalam mode yang sama.
+
+Membaca memakai pelafalan utama dan tiga pengecoh berbeda dari kartu Library yang terlihat. Menulis menanamkan pad bersama dengan petunjuk arti dan bacaan, sedangkan karakter disembunyikan di balik judul yang dapat diklik. Kesalahan goresan tidak otomatis membuka karakter. Membuka karakter dianggap sebagai bantuan dan memberi hasil Ulangi, meskipun goresan berikutnya benar. Keberhasilan tanpa bantuan memberi hasil Baik. Jawaban kartu yang sudah diulas tetap dapat diperiksa.
+
+Galeri memakai `/study/<iso>/flashcards`; tautan dek memakai nama yang mudah dibaca diikuti `--<deck-id>`, misalnya `/study/ja/flashcards/first-japanese-words--<deck-id>`. Nama Inggris kanonis menjaga bagian terbaca tetap sama di semua bahasa antarmuka. Akhiran identitas membedakan nama duplikat dan menjaga tautan tetap konsisten bagi pemilik serta penerima dengan katalog dek berbeda. ID sumber daya API tetap sama.
+
+Entri riwayat browser menyimpan antrean dek, posisi, nilai, jawaban tertunda, filter, serta mode. Kembali dari Jelajahi memulihkan antrean asli dengan tombol Sebelumnya/Berikutnya yang berfungsi. Membuka jawaban atau meninggalkan kartu yang belum dijawab untuk diperiksa menyimpan hasil Ulangi. Tautan sumber membawa urutan ID kartu melalui status riwayat agar pratinjau Jelajahi juga dapat menavigasi dek, termasuk kartu turunan. Akses tetap mengikuti otorisasi Library; kartu yang tidak lagi dapat diakses dikeluarkan saat pemulihan.
+
+Semua tindakan menjalankan alur dek dan menggambar Study yang sudah dideklarasikan. Antarmuka memakai popup, tombol, dan gaya kartu yang sudah ada. Dek akun dan bersama memakai perender serta latihan yang sama; snapshot bersama tidak memperoleh akses Library. Perpindahan halaman menghentikan penangan dan sesi menggambar.
+
+## Umpan Balik dan Tautan
+
+Jawaban Reading menampilkan toast keberhasilan atau peringatan dan animasi pada opsi yang dipilih; preferensi pengurangan gerakan menonaktifkan animasi. Judul kartu dan bintang favorit memiliki latar transparan dengan indikator fokus papan ketik. Menu samping standar mencantumkan judul dek bahasa saat ini dan menandai dek aktif.
+
+Tautan kartu Explore menyertakan identitas kanonis kartu pada `/study/explore/<language>/<layer>/<card-id>`. Ctrl-klik, Command-klik, dan Shift-klik mempertahankan perilaku bawaan peramban; kunjungan langsung membuka pratinjau kartu yang diminta. Membuka kartu yang belum dijawab dihitung sebagai percobaan dengan bantuan. Navigasi biasa mempertahankan antrean dek untuk tombol Kembali peramban.
+
+## Kontrol Belajar Tersimpan
+
+Mode Reading/Writing disimpan sebagai preferensi akun dalam menu mengambang composer; defaultnya Reading. Perubahan saat latihan meminta konfirmasi melalui popup peringatan bersama sebelum mengulang antrean. Pembatalan mempertahankan posisi dan jawaban; ulasan yang telah dikirim tetap tersimpan. Bilah samping mencakup Semua dan menandai dek aktif. Judul menulis memburamkan glif pengganti berukuran sama. Klik pertama menampilkan karakter dan mengaktifkan tautan Explore; klik kedua meminta konfirmasi navigasi. Aktivasi papan ketik mengikuti interaksi yang sama.
+
+Kartu kosakata baru otomatis mendeteksi kelas dan tag transformasi yang didukung melalui kamus saat input diselesaikan dan sebelum disimpan. Tag manual dipertahankan; kelas ambigu tetap memerlukan pilihan pengguna. Hasil yang terlambat tidak mengubah draf lain. Pratinjau bentuk verba, adjektiva/adverbia, dan jamak meminta audio transformasi yang dipilih. Atribusi sumber pada judul menautkan kartu dasar. Kontrol unggahan memakai selektor terpisah dari audio pemutar untuk mencegah kegagalan inisialisasi editor karakter.
+
+Pilihan kamus menggunakan theme-select dan disembunyikan jika hanya ada satu penyedia. Pengaturan berada di kanan input pencarian kamus. KANJIDIC2 memperkaya data kanji dan bukan pilihan pencarian sejajar dengan Jisho; sumber referensi menggunakan nama katalog sebenarnya.
+
+Rekaman kata Jepang dengan kana kecil, termasuk 学校, dibuat ulang dengan ejaan kanji jika tersedia menggunakan suara Jepang yang ditetapkan dan pengaturan stabil. Kalimat bawaan disusun ulang dari klip yang sama persis. Transformasi adjektiva I dan Na mencakup bentuk adverbial, negatif, serta lampau, dengan rekaman khusus untuk bentuk bawaan. Rekaman jamak bahasa Inggris tetap berupa aset khusus dan diputar saat bentuk tersebut dipilih.
+
+## Media dan Kontrol Kartu
+
+Menambahkan kolom daftar gambar opsional, unggahan privat, dan galeri detail. Kedua modul bahasa menyertakan foto referensi berlisensi dan menyediakan kolom yang sama pada setiap lapisan. Gambar mini editor menampilkan gambar bawaan dan unggahan, menyediakan tombol hapus merah saat diarahkan atau difokuskan, serta membuang berkas sementara yang belum digunakan tanpa konfirmasi. Kartu tersimpan dan riwayat permintaan mempertahankan berkas yang dirujuk. Tombol hapus memiliki latar buram agar tetap terbaca di atas foto. Berkas gambar khusus dan referensi tersimpan bertahan setelah server dimulai ulang dan penyedia dimuat ulang, termasuk pembaruan penyedia pada kartu yang disunting. Kapabilitas global `ui:imagePreview` menyediakan tampilan gambar mini, pengikatan interaksi, dan tindakan `open` melalui alur terdaftar `ui:imagePreview:open`. Fitur ini juga tersedia melalui `ui:reuse` sebagai `image-preview.js`; lembar gayanya termasuk gaya bersama. Tombol gambar membuka gambar asli dalam ukuran alaminya, dibatasi area layar, dengan hanya tombol X standar yang terlihat. Aktivasi papan ketik, Escape, pemulihan fokus, dan penutupan saat tampilan atau penyedia dilepas memakai siklus hidup popup bersama. Pemanggil mengelola URL gambar dan tindakan penghapusan opsional. Library memakai kontrol ini untuk gambar unggahan dan bawaan dalam editor serta galeri detail.
+
+Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi. Nama berkas audio disembunyikan. Putar memutar unggahan sementara atau rekaman mikrofon terbaru; respons audio tersimpan yang terlambat tidak menggantikannya. Saat merekam, hanya ikon mikrofon yang berwarna merah, termasuk saat diarahkan; tombol mempertahankan gaya tema biasanya.
+
+## Pratinjau Permintaan yang Dapat Diedit
+
+Menggunakan pratinjau kartu biasa dan editor yang ada untuk perubahan draf oleh administrator. Persetujuan mempertahankan atribusi pengirim dan menambahkan administrator penyunting sebagai pemilik bersama. Profil pengirim dan pemberi persetujuan diberi label jelas; persetujuan, penolakan, dan penarikan memerlukan konfirmasi.
+
+## Notifikasi dan Filter Study
+
+Memberi tahu administrator aktif tentang permintaan masuk serta keputusan administrator lain melalui Study. Menghapus animasi navigasi, menambahkan filter teks langsung untuk halaman saat ini, dan menjaga menu samping Kartu Belajar dalam alur dokumen agar bilah gulir tidak menggeser konten. Kapabilitas notifikasi diambil saat pengiriman dan tanda terima diperiksa, termasuk daftar pengiriman kosong serta kegagalan sebagian.
+
+## Akses dan Biaya Penelusuran
+
+Referensi balik kartu menerapkan pemeriksaan ketersediaan bahasa dan akses yang sama dengan pembacaan langsung, serta menyertakan izin penyuntingan terkini. Penelusuran berbagi pemeriksaan izin tulis kelas hanya dalam satu respons dan tidak lagi menyalin seluruh skema untuk setiap kartu; hasil skema publik tetap berupa salinan mandiri. Impor paket konten mengindeks aset sekali dan menulis setiap rekaman bersama sekali sambil mempertahankan seluruh penempatan audio.
+
+## Komit
+
+- [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -120,3 +120,24 @@ export async function authorizeLocation(
     if (!allowed) throw new Error("forbidden");
     return location;
 }
+
+// A browse response may contain many cards in the same class. Share only the
+// in-flight checks for this response; a later request must recheck permissions.
+export function cacheClassWriteAccess(
+    access?: LibraryClassAccess,
+): LibraryClassAccess | undefined {
+    if (!access) return undefined;
+    const pending = new Map<string, Promise<boolean>>();
+    return {
+        canRead: access.canRead.bind(access),
+        canWrite(classId, accountId, role) {
+            const key = JSON.stringify([classId, accountId, role]);
+            let result = pending.get(key);
+            if (!result) {
+                result = access.canWrite(classId, accountId, role);
+                pending.set(key, result);
+            }
+            return result;
+        },
+    };
+}

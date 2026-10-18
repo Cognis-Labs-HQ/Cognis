@@ -1,5 +1,5 @@
 import type { LibraryActor } from "../contracts.js";
-import type { LibraryEntry, LibraryLocation } from "../types.js";
+import type { LibraryEntry } from "../types.js";
 import type { LibraryStore } from "../store.js";
 import { allInputReferences } from "./dependencies.js";
 
@@ -8,11 +8,6 @@ export async function traceEntry(
     entry: LibraryEntry,
     store: LibraryStore,
     read: (actor: LibraryActor, id: string) => Promise<LibraryEntry | null>,
-    authorize: (
-        actor: LibraryActor,
-        location: LibraryLocation,
-        write: boolean,
-    ) => Promise<LibraryLocation>,
 ): Promise<{
     entry: LibraryEntry;
     references: LibraryEntry[];
@@ -28,12 +23,9 @@ export async function traceEntry(
     for (const candidate of await store.referencesFor(entry.id)) {
         if (candidate.id === entry.id || usedByIds.has(candidate.id)) continue;
         try {
-            await authorize(
-                actor,
-                { scope: candidate.scope, scopeId: candidate.scopeId },
-                false,
-            );
-            usedBy.push(candidate);
+            const target = await read(actor, candidate.id);
+            if (!target) continue;
+            usedBy.push(target);
             usedByIds.add(candidate.id);
         } catch (error) {
             if (!(error instanceof Error) || error.message !== "forbidden")
