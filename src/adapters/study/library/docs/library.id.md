@@ -538,3 +538,7 @@ Pembuatan ulang rekaman kartu global hanya memperbarui bidang audio dan indeks p
 ## Kontrol Hapus Pelafalan
 
 Chip pelafalan tersimpan menempatkan tombol hapus di samping komponen bacaan dengan jarak tersendiri, termasuk pada tata letak kanan ke kiri. Tombol X tidak menutupi bacaan pendek maupun panjang.
+
+## Isolasi Bahasa Study Nonaktif
+
+Study Library memeriksa kapabilitas bahasa aktif sebelum menyediakan skema, kartu, audio, gambar, aset paket, atau permintaan tinjauan tersimpan. Bahasa nonaktif hilang dari hasil penelusuran dan pembacaan langsung ditolak. Pengaktifan kembali memulihkan akses tanpa menghapus konten. Status penyedia runtime tetap terpisah dari penyimpanan konten.

@@ -551,3 +551,7 @@ Regenerating a global card updates only its audio field and search index. Requir
 ## Pronunciation Remove Control
 
 Committed pronunciation chips place their remove button beside the reading components with a separate gap, including right-to-left layouts. Short and long readings keep the X clear of their content.
+
+## Disabled Study Language Isolation
+
+Study Library checks the live language capability before exposing retained schemas, cards, audio, images, packaged assets or review requests. Disabled languages disappear from browse results and direct reads fail; re-enabling restores access without deleting stored content. Runtime provider state remains separate from content persistence.

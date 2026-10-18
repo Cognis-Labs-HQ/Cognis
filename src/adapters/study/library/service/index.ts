@@ -1,3 +1,9 @@
+import {
+    availableLocations,
+    authorizeLocation,
+    entryPermissions,
+} from "./permissions.js";
+import { ContentAvailability } from "./availability.js";
 import { LibraryImages } from "./images.js";
 import type { LibraryImageStore } from "../image-store.js";
 import { createVisibilityService } from "./visibility.js";
@@ -30,11 +36,9 @@ import {
     pendingDeletionEntries,
     planDeletion,
 } from "./deletion.js";
-import { entryPermissions } from "./permissions.js";
 import { validateUpdateProposal } from "./proposals.js";
 import {
     canComposeAtLocation,
-    normalizeLocation,
     validateDependencyVisibility,
     validateEntrySelection,
 } from "./dependencies.js";
@@ -94,6 +98,7 @@ export class LibraryService implements LibraryCapability {
         LibraryFormContribution
     >();
     private readonly visibility: LibraryVisibilityService;
+    private readonly availability: ContentAvailability;
     readonly images: LibraryImages;
     readonly stagePush: LibraryVisibilityService["stagePush"];
     private readonly writer: LibraryEntryWriter;
@@ -120,7 +125,9 @@ export class LibraryService implements LibraryCapability {
         notifyRequest?: ConstructorParameters<
             typeof LibraryVisibilityService
         >[8],
+        schemaAvailable?: (schema: LibrarySchema) => boolean,
     ) {
+        this.availability = new ContentAvailability(schemaAvailable);
         this.writer = new LibraryEntryWriter({
             store,
             flow,
@@ -169,6 +176,8 @@ export class LibraryService implements LibraryCapability {
                 ),
             validateImages: (...args) => this.images.validate(...args),
             notifyRequest,
+            isAvailable: (entry) =>
+                this.availability.allows(this.registeredSchema(entry.schemaId)),
         });
         this.stagePush = this.visibility.stagePush.bind(this.visibility);
         this.images = new LibraryImages({
@@ -280,7 +289,9 @@ export class LibraryService implements LibraryCapability {
     listSchemas(): LibrarySchema[] {
         return Array.from(this.schemas.values(), (versions) =>
             versions.get(Math.max(...versions.keys()))!,
-        ).map((schema) => this.schemaWithFormConstructors(schema));
+        )
+            .filter((schema) => this.availability.allows(schema))
+            .map((schema) => this.schemaWithFormConstructors(schema));
     }
 
     private schemaWithFormConstructors(schema: LibrarySchema): LibrarySchema {
@@ -306,34 +317,22 @@ export class LibraryService implements LibraryCapability {
     }
 
     getSchema(id: string, version?: number): LibrarySchema | null {
+        const schema = this.registeredSchema(id, version);
+        return schema && this.availability.allows(schema) ? schema : null;
+    }
+
+    private registeredSchema(
+        id: string,
+        version?: number,
+    ): LibrarySchema | null {
         const versions = this.schemas.get(id);
         if (!versions) return null;
         const selected = versions.get(version ?? Math.max(...versions.keys()));
         return selected ? structuredClone(selected) : null;
     }
 
-    async locations(actor: LibraryActor, language?: string) {
-        const personal = { scope: "user", scopeId: actor.accountId } as const;
-        const readable: LibraryLocation[] = [
-            { scope: "global", scopeId: "global" },
-            personal,
-        ];
-        const writable: LibraryLocation[] = [personal];
-        if (actor.role === "admin" || actor.role === "owner")
-            writable.push({ scope: "global", scopeId: "global" });
-        for (const classId of (await this.classAccess?.listReadable?.(
-            actor.accountId,
-            actor.role,
-            language,
-        )) ?? [])
-            readable.push({ scope: "class", scopeId: classId });
-        for (const classId of (await this.classAccess?.listWritable?.(
-            actor.accountId,
-            actor.role,
-            language,
-        )) ?? [])
-            writable.push({ scope: "class", scopeId: classId });
-        return { readable, writable };
+    locations(actor: LibraryActor, language?: string) {
+        return availableLocations(actor, language, this.classAccess);
     }
 
     async inspectContentPack(root: string): Promise<LibraryContentPackPlan> {
@@ -341,17 +340,19 @@ export class LibraryService implements LibraryCapability {
     }
 
     async ingestContentPack(root: string): Promise<LibraryContentPackReceipt> {
-        return ingestProviderContent(root, {
+        const receipt = await ingestProviderContent(root, {
             store: this.store,
             flow: this.flow,
             log: this.log,
             audioCache: this.audioCache,
             notifyNewContent: this.notifyNewContent,
-            getSchema: this.getSchema.bind(this),
+            getSchema: this.registeredSchema.bind(this),
             assertSchemaVersionAvailable:
                 this.assertSchemaVersionAvailable.bind(this),
             rememberSchema: this.rememberSchema.bind(this),
         });
+        this.availability.rememberPack(receipt);
+        return receipt;
     }
 
     async deleteContentPack(root: string): Promise<void> {
@@ -383,6 +384,12 @@ export class LibraryService implements LibraryCapability {
         version: string,
         assetPath: string,
     ): Promise<LibraryAsset | null> {
+        if (
+            !this.availability.allowsPack(publisher, packId, (id) =>
+                this.registeredSchema(id),
+            )
+        )
+            return null;
         return this.store.getContentPackAsset(
             publisher,
             packId,
@@ -397,38 +404,12 @@ export class LibraryService implements LibraryCapability {
         return schema;
     }
 
-    private async authorize(
+    private authorize(
         actor: LibraryActor,
         raw: LibraryLocation,
         write: boolean,
-    ): Promise<LibraryLocation> {
-        const location = normalizeLocation(raw, actor);
-        if (location.scope === "global") {
-            if (write && actor.role !== "admin" && actor.role !== "owner")
-                throw new Error("forbidden");
-            return location;
-        }
-
-        if (location.scope === "user") {
-            if (location.scopeId !== actor.accountId)
-                throw new Error("forbidden");
-            return location;
-        }
-
-        if (!this.classAccess) throw new Error("class_access_unavailable");
-        const allowed = write
-            ? await this.classAccess.canWrite(
-                  location.scopeId!,
-                  actor.accountId,
-                  actor.role,
-              )
-            : await this.classAccess.canRead(
-                  location.scopeId!,
-                  actor.accountId,
-                  actor.role,
-              );
-        if (!allowed) throw new Error("forbidden");
-        return location;
+    ) {
+        return authorizeLocation(actor, raw, write, this.classAccess);
     }
 
     async list(
@@ -447,7 +428,13 @@ export class LibraryService implements LibraryCapability {
 
         const entries = await this.store.list(location, filters);
         return Promise.all(
-            entries.map((entry) => this.entryWithPermissions(actor, entry)),
+            entries
+                .filter((entry) =>
+                    this.availability.allows(
+                        this.registeredSchema(entry.schemaId),
+                    ),
+                )
+                .map((entry) => this.entryWithPermissions(actor, entry)),
         );
     }
 
@@ -474,7 +461,11 @@ export class LibraryService implements LibraryCapability {
         entryId: string,
     ): Promise<LibraryEntry | null> {
         const entry = await this.store.get(entryId);
-        if (!entry) return null;
+        if (
+            !entry ||
+            !this.availability.allows(this.registeredSchema(entry.schemaId))
+        )
+            return null;
         await this.authorize(
             actor,
             { scope: entry.scope, scopeId: entry.scopeId },

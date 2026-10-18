@@ -26,6 +26,10 @@ Membuka panel menulis dari detail kartu menutup popup detail setelah panel berha
 
 Pemilih Baca/Tulis persisten kini menampilkan slot mengambangnya di halaman Flashcards. Perubahan mode tetap menyimpan preferensi dan meminta konfirmasi untuk memulai ulang sesi. Ikon ekspor dan pengaturan Study mengikuti warna kontrol aktif, tema terang/gelap aplikasi, dan keadaan hover tanpa bergantung pada tema sistem operasi.
 
+## Isolasi Bahasa Study Nonaktif
+
+Study Library memeriksa kapabilitas bahasa aktif sebelum menyediakan skema, kartu, audio, gambar, aset paket, atau permintaan tinjauan tersimpan. Bahasa nonaktif hilang dari hasil penelusuran dan pembacaan langsung ditolak. Pengaktifan kembali memulihkan akses tanpa menghapus konten. Status penyedia runtime tetap terpisah dari penyimpanan konten.
+
 ## Komit
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

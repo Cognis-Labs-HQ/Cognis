@@ -205,6 +205,9 @@ export async function bootstrapStudyAdapter(
             dispatch: dispatchNotification,
             log: ctx.log,
         }),
+        (schema) =>
+            !schema.language ||
+            Boolean(ctx.capabilities.get(`study:language:${schema.language}`)),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);

@@ -26,6 +26,10 @@ Opening the drawing pad from card details closes the detail popup after the pad 
 
 The persistent Read/Write selector now reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
 
+## Disabled Study Language Isolation
+
+Study Library checks the live language capability before exposing retained schemas, cards, audio, images, packaged assets or review requests. Disabled languages disappear from browse results and direct reads fail; re-enabling restores access without deleting stored content. Runtime provider state remains separate from content persistence.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

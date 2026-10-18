@@ -57,6 +57,7 @@ export class LibraryVisibilityService {
             request: LibraryPushRequest,
             actor: VisibilityActor,
         ) => Promise<void>,
+        private readonly isAvailable?: (entry: LibraryEntry) => boolean,
     ) {}
 
     async requestPush(
@@ -208,6 +209,7 @@ export class LibraryVisibilityService {
             const owned = request.requestedBy === actor.accountId;
             if (!owned && !canReview) continue;
             const source = await this.store.get(request.sourceEntryId);
+            if (source && this.isAvailable?.(source) === false) continue;
             visible.push({
                 ...request,
                 source: source ? (request.sourceSnapshot ?? source) : undefined,
@@ -571,6 +573,11 @@ export class LibraryVisibilityService {
         const request = await this.store.getPush(requestId);
         if (!request) throw new Error("not_found");
         if (request.status !== "pending") throw new Error("already_reviewed");
+        if (this.isAvailable) {
+            const source = await this.store.get(request.sourceEntryId);
+            if (source && !this.isAvailable(source))
+                throw new Error("not_found");
+        }
         return request;
     }
 }

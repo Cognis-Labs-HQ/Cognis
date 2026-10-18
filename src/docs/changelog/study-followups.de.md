@@ -26,6 +26,10 @@ Das Öffnen des Schreibfensters aus den Kartendetails schließt die Detailansich
 
 Die dauerhafte Auswahl für Lesen und Schreiben blendet ihren schwebenden Bereich auf der Lernkartenseite ein. Änderungen behalten die gespeicherte Einstellung und die Bestätigung zum Sitzungsneustart bei. Export- und Study-Einstellungssymbole folgen der aktuellen Bedienfarbe sowie dem hellen oder dunklen App-Design und Hover-Zustand, unabhängig vom Betriebssystem.
 
+## Isolation deaktivierter Lernsprachen
+
+Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Karten, Audio, Bilder, Paketdateien oder Prüfanfragen zugänglich sind. Deaktivierte Sprachen verschwinden aus Listen und direkte Abrufe schlagen fehl. Erneutes Aktivieren stellt den Zugriff ohne Löschen der Inhalte wieder her. Laufzeitregistrierungen und Inhaltsspeicherung bleiben getrennt.
+
 ## Commits
 
 - [d5377cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5377cd20e1e0714e86966f1e9e1d4a584d7951f)

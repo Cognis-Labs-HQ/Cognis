@@ -538,3 +538,7 @@ Beim erneuten Erzeugen der Aufnahme einer globalen Karte werden nur das Audiofel
 ## Aussprache entfernen
 
 Gespeicherte Aussprachefelder ordnen ihre Entfernen-Schaltfläche mit eigenem Abstand neben den Lesekomponenten an, auch bei Schreibrichtung von rechts nach links. Das X verdeckt weder kurze noch lange Lesungen.
+
+## Isolation deaktivierter Lernsprachen
+
+Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Karten, Audio, Bilder, Paketdateien oder Prüfanfragen zugänglich sind. Deaktivierte Sprachen verschwinden aus Listen und direkte Abrufe schlagen fehl. Erneutes Aktivieren stellt den Zugriff ohne Löschen der Inhalte wieder her. Laufzeitregistrierungen und Inhaltsspeicherung bleiben getrennt.

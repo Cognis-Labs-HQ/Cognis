@@ -1,3 +1,5 @@
+import { normalizeLocation } from "./dependencies.js";
+import type { LibraryLocation } from "../types.js";
 import { findLayer } from "../layers.js";
 import type { StudyAudioCapability } from "@cognis/core";
 import type { LibrarySchema } from "../types.js";
@@ -55,4 +57,66 @@ export async function entryPermissions(
         editRequiresReview:
             canEdit && entry.scope === "global" && !administrator,
     };
+}
+
+export async function availableLocations(
+    actor: LibraryActor,
+    language?: string,
+    classAccess?: LibraryClassAccess,
+) {
+    const personal = { scope: "user", scopeId: actor.accountId } as const;
+    const readable: LibraryLocation[] = [
+        { scope: "global", scopeId: "global" },
+        personal,
+    ];
+    const writable: LibraryLocation[] = [personal];
+    if (actor.role === "admin" || actor.role === "owner")
+        writable.push({ scope: "global", scopeId: "global" });
+    for (const classId of (await classAccess?.listReadable?.(
+        actor.accountId,
+        actor.role,
+        language,
+    )) ?? [])
+        readable.push({ scope: "class", scopeId: classId });
+    for (const classId of (await classAccess?.listWritable?.(
+        actor.accountId,
+        actor.role,
+        language,
+    )) ?? [])
+        writable.push({ scope: "class", scopeId: classId });
+    return { readable, writable };
+}
+
+export async function authorizeLocation(
+    actor: LibraryActor,
+    raw: LibraryLocation,
+    write: boolean,
+    classAccess?: LibraryClassAccess,
+): Promise<LibraryLocation> {
+    const location = normalizeLocation(raw, actor);
+    if (location.scope === "global") {
+        if (write && actor.role !== "admin" && actor.role !== "owner")
+            throw new Error("forbidden");
+        return location;
+    }
+
+    if (location.scope === "user") {
+        if (location.scopeId !== actor.accountId) throw new Error("forbidden");
+        return location;
+    }
+
+    if (!classAccess) throw new Error("class_access_unavailable");
+    const allowed = write
+        ? await classAccess.canWrite(
+              location.scopeId!,
+              actor.accountId,
+              actor.role,
+          )
+        : await classAccess.canRead(
+              location.scopeId!,
+              actor.accountId,
+              actor.role,
+          );
+    if (!allowed) throw new Error("forbidden");
+    return location;
 }

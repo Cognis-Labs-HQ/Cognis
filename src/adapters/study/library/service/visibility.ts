@@ -23,8 +23,10 @@ export function createVisibilityService({
     notifyDeletion,
     validateImages,
     notifyRequest,
+    isAvailable,
 }: {
     validateImages: LibraryImages["validate"];
+    isAvailable?: (entry: LibraryEntry) => boolean;
     notifyRequest?: ConstructorParameters<typeof LibraryVisibilityService>[8];
     store: LibraryStore;
     read: LibraryCapability["read"];
@@ -123,5 +125,6 @@ export function createVisibilityService({
         },
         notifyDeletion,
         notifyRequest,
+        isAvailable,
     );
 }
