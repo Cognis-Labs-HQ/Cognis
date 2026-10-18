@@ -4,7 +4,7 @@
 
 ## Pertahankan Otorisasi
 
-`navigateTo` menggunakan navigasi dokumen asal yang sama dengan perlindungan ketika tujuan tidak memiliki rute SPA, sesuai perilaku tautan host dan riwayat browser. Tujuan lintas asal ditolak. `ui:log` menghasilkan status pengiriman boolean, melewati permintaan anonim, dan menangani kegagalan HTTP atau jaringan tanpa memicu peristiwa penolakan akses atau pemulihan koneksi. Umpan balik pengguna tetap menjadi tanggung jawab pemanggil; endpoint pencatatan tetap memerlukan autentikasi.
+Navigasi dokumen harus dipilih secara eksplisit: pemanggil yang memiliki tujuan hasil render server meneruskan `documentNavigation: true` ke `navigateTo`. Tujuan SPA yang tidak dikenal dan URL tidak valid menghasilkan false, sehingga pemanggil dapat menampilkan pemulihan seperti pemberitahuan perender berbagi yang hilang. Perlindungan navigasi dan pemeriksaan HTTP asal yang sama tetap berlaku, termasuk saat melanjutkan transisi yang dilindungi. `ui:log` menghasilkan status pengiriman boolean, melewati permintaan anonim, dan menangani kegagalan HTTP atau jaringan tanpa memicu peristiwa penolakan akses atau pemulihan koneksi. Umpan balik pengguna tetap menjadi tanggung jawab pemanggil; endpoint pencatatan tetap memerlukan autentikasi.
 
 ## Komit
 

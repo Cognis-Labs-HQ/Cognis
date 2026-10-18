@@ -448,8 +448,9 @@ async function loadRoute(path) {
 
 export async function navigateTo(
     path,
-    { bypassGuard = false, state = {} } = {},
+    { bypassGuard = false, state = {}, documentNavigation = false } = {},
 ) {
+    if (!URL.canParse(path, window.location.origin)) return false;
     const destination = new URL(path, window.location.origin);
     if (
         destination.origin !== window.location.origin ||
@@ -457,10 +458,11 @@ export async function navigateTo(
     )
         return false;
     const route = await resolveRoute(path);
+    if (!route && !documentNavigation) return false;
     if (
         !bypassGuard &&
         !requestRouteNavigation(path, () =>
-            navigateTo(path, { bypassGuard: true, state }),
+            navigateTo(path, { bypassGuard: true, state, documentNavigation }),
         )
     )
         return false;

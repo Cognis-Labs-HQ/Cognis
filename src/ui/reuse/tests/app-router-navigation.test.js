@@ -13,6 +13,7 @@ const source = readFileSync(
 function createRouter({ allowNavigation = true } = {}) {
     const listeners = new Map();
     const assigned = [];
+    const navigationEvents = [];
     const mounted = [];
     const root = { textContent: "Login" };
     const location = new URL("https://cognis.test/login?reason=expired");
@@ -21,7 +22,10 @@ function createRouter({ allowNavigation = true } = {}) {
             assign: (path) => assigned.push(path),
         }),
         addEventListener: (type, callback) => listeners.set(type, callback),
-        dispatchEvent: () => allowNavigation,
+        dispatchEvent: (event) => {
+            navigationEvents.push(event);
+            return allowNavigation;
+        },
     };
     const history = {
         state: null,
@@ -86,7 +90,15 @@ function createRouter({ allowNavigation = true } = {}) {
         sandbox,
     );
     sandbox.router.initRouter(root);
-    return { ...sandbox.router, listeners, assigned, root, location, mounted };
+    return {
+        ...sandbox.router,
+        listeners,
+        assigned,
+        root,
+        location,
+        mounted,
+        navigationEvents,
+    };
 }
 
 function click(target = "", modifiers = {}) {
@@ -135,17 +147,23 @@ test("new tabs and modified clicks retain browser navigation; ordinary clicks mo
     assert.equal(router.root.textContent, "Terms");
 });
 
-for (const path of ["/register", "/login?reason=sso_callback_failed"]) {
+for (const path of ["/", "/register", "/login?reason=sso_callback_failed"]) {
     test(`programmatic navigation loads the server document ${path}`, async () => {
         const router = createRouter();
-        assert.equal(await router.navigateTo(path), true);
+        assert.equal(
+            await router.navigateTo(path, { documentNavigation: true }),
+            true,
+        );
         assert.deepEqual(router.assigned, [path]);
     });
 }
 
 test("declined document navigation honors the host guard", async () => {
     const router = createRouter({ allowNavigation: false });
-    assert.equal(await router.navigateTo("/register"), false);
+    assert.equal(
+        await router.navigateTo("/register", { documentNavigation: true }),
+        false,
+    );
     assert.deepEqual(router.assigned, []);
 });
 
@@ -160,4 +178,51 @@ test("programmatic navigation rejects external and executable destinations", asy
         assert.equal(await router.navigateTo(path), false);
     }
     assert.deepEqual(router.assigned, []);
+});
+
+test("missing share renderers decline navigation without leaving the current page", async () => {
+    const router = createRouter();
+    assert.equal(
+        await router.navigateTo("/disabled-provider/shared-content"),
+        false,
+    );
+    assert.deepEqual(router.assigned, []);
+    assert.equal(router.root.textContent, "Login");
+    assert.equal(router.location.pathname, "/login");
+});
+
+test("document navigation requires an explicit caller decision", async () => {
+    const router = createRouter();
+    assert.equal(await router.navigateTo("/register"), false);
+    assert.deepEqual(router.assigned, []);
+});
+
+test("malformed destinations resolve false without mutating navigation state", async () => {
+    const router = createRouter();
+    for (const path of [
+        "https://[invalid",
+        "http://[::1",
+        "https://cognis.test:invalid/",
+    ]) {
+        assert.equal(await router.navigateTo(path), false);
+        assert.equal(
+            await router.navigateTo(path, { documentNavigation: true }),
+            false,
+        );
+    }
+    assert.deepEqual(router.assigned, []);
+    assert.equal(router.location.pathname, "/login");
+});
+
+test("resuming guarded document navigation retains the explicit decision", async () => {
+    const router = createRouter({ allowNavigation: false });
+    assert.equal(
+        await router.navigateTo("/register", { documentNavigation: true }),
+        false,
+    );
+    const event = router.navigationEvents.find(
+        (item) => item.type === "cognis:route-before-navigate",
+    );
+    assert.equal(await event.detail.resume(), true);
+    assert.deepEqual(router.assigned, ["/register"]);
 });
