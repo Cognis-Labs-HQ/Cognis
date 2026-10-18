@@ -9,3 +9,4 @@ Navigasi dokumen harus dipilih secara eksplisit: pemanggil yang memiliki tujuan 
 ## Komit
 
 - [72dfbc8](https://github.com/Cognis-Labs-HQ/Cognis/commit/72dfbc8c8f0b8b456ec5b59e5e2ad5e6652a2cad)
+- [9a9387b](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a9387b199dfa3208b83a51aa66d3820a915297a)
