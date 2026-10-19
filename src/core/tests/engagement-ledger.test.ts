@@ -237,3 +237,40 @@ test("durably redeemed boosters survive restart and are consumed by one settled 
         /engagement_booster_conflict/,
     );
 });
+
+test("ledger reads, booster redemption and invalidation execute their registered validation stages", async () => {
+    const state = fixture();
+    const observed: string[] = [];
+    for (const action of ["summary", "redeemBooster", "invalidate"])
+        for (const stage of ["validate", "execute"])
+            state.ctx.flow.extend(
+                `engagement:ledger:${action}`,
+                stage,
+                { id: `test:${action}:${stage}` },
+                () => {
+                    observed.push(`${action}:${stage}`);
+                },
+            );
+    await state.ledger.summary("learner");
+    await state.ledger.redeemBooster("learner", {
+        id: "staged",
+        multiplier: 2,
+        startsAt: "2026-10-19T00:00:00Z",
+        endsAt: "2026-10-20T00:00:00Z",
+        source: "booster",
+        consumable: true,
+    });
+    await state.ledger.invalidate("learner", "study", "missing");
+    assert.deepEqual(observed, [
+        "summary:validate",
+        "summary:execute",
+        "redeemBooster:validate",
+        "redeemBooster:execute",
+        "invalidate:validate",
+        "invalidate:execute",
+    ]);
+    await assert.rejects(
+        state.ledger.summary("bad\u0000actor"),
+        /invalid_participant_id/,
+    );
+});

@@ -256,7 +256,7 @@ export function registerEngagementLedger(
             );
         },
     );
-    const ledger: EngagementLedgerCapability = {
+    const operations: EngagementLedgerCapability = {
         async redeemBooster(participantId, modifier) {
             await serialize(participantId, async () => {
                 const store = resolveStore();
@@ -317,6 +317,56 @@ export function registerEngagementLedger(
                 hydrate(participantId, snapshot);
             });
         },
+    };
+    const actionIds = ["summary", "redeemBooster", "invalidate"] as const;
+    for (const action of actionIds)
+        ctx.registerFlow({
+            id: `engagement:ledger:${action}`,
+            stages: ["validate", "execute"],
+        });
+    const runAction = async <Result>(
+        action: (typeof actionIds)[number],
+        input: { participantId: string } & Record<string, unknown>,
+        execute: () => Promise<Result>,
+    ): Promise<Result> => {
+        let result!: Result;
+        await ctx.flow.run(`engagement:ledger:${action}`, input, {
+            handlers: {
+                validate: () => {
+                    if (
+                        typeof input.participantId !== "string" ||
+                        !input.participantId.trim() ||
+                        /[\u0000-\u001f]/.test(input.participantId)
+                    )
+                        throw new Error("invalid_participant_id");
+                },
+                execute: async () => {
+                    result = await execute();
+                },
+            },
+        });
+        return result;
+    };
+    const ledger: EngagementLedgerCapability = {
+        summary: (participantId) =>
+            runAction("summary", { participantId }, () =>
+                operations.summary(participantId),
+            ),
+        redeemBooster: (participantId, modifier) =>
+            runAction("redeemBooster", { participantId, modifier }, () =>
+                operations.redeemBooster(participantId, modifier),
+            ),
+        invalidate: (participantId, providerId, activityId) =>
+            runAction(
+                "invalidate",
+                { participantId, providerId, activityId },
+                () =>
+                    operations.invalidate(
+                        participantId,
+                        providerId,
+                        activityId,
+                    ),
+            ),
     };
     return {
         record: (input) =>

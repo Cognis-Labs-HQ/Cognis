@@ -76,6 +76,8 @@ Study memuat dependensi UUID adapter dan kapabilitas inti wajib dari manifest. D
 
 Jadwal kartu belajar dan bukti percobaan disimpan sebelum pengiriman imbalan lintas adapter. Alur terpisah `study:decks:recordResult` mengirim ulang hasil yang sama setelah kegagalan tanpa memajukan jadwal lagi. Ini menghindari transaksi basis data bersarang ketika Progress menyimpan peristiwa.
 
+Ringkasan ledger, penukaran booster, dan pembatalan aktivitas menjalankan alur ctx khusus dengan tahap validasi dan eksekusi. Identitas peserta yang tidak valid ditolak sebelum membaca atau mengubah penyimpanan.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

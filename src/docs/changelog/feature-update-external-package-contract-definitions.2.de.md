@@ -76,6 +76,8 @@ Study lädt UUID-Abhängigkeiten und erforderliche Kern-Capabilities aus den Ada
 
 Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden Belohnungszustellung festgeschrieben. Der getrennte Ablauf `study:decks:recordResult` stellt nach Fehlern dasselbe Ergebnis erneut zu, ohne den Zeitplan nochmals fortzuschreiben. Dadurch entstehen bei der Fortschrittsspeicherung keine verschachtelten Datenbanktransaktionen.
 
+Ledger-Zusammenfassungen, Booster-Einlösung und Aktivitätsentwertung durchlaufen eigene ctx-Abläufe mit Validierungs- und Ausführungsstufen. Ungültige Teilnehmerkennungen werden vor dem Lesen oder Ändern gespeicherter Daten abgelehnt.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)
