@@ -550,3 +550,5 @@ Ketersediaan pustaka membaca kontribusi bahasa dari registri sistem aktif, bukan
 Pembaruan paket otoritatif mempertahankan entri penyedia yang dihilangkan jika masih dapat dijangkau dari kartu pengguna atau kartu penyedia yang disunting. Perlindungan mengikuti ketergantungan rekursif dan siklus; isi penyedia yang usang tanpa rujukan tersebut tetap dapat dipangkas.
 
 Pratinjau kartu yang sesuai di kisi Explore diburamkan dan tidak dapat digunakan selama karakternya terbuka di papan gambar. Penempatan berulang dan yang baru dirender mengikuti keadaan yang sama; mengganti karakter, menutup papan, atau meninggalkan halaman memulihkannya tanpa mengubah ukuran kartu.
+
+Data aset paket menggunakan penyimpanan teks besar secara eksplisit. Hanya ID paket dan versi semantik yang sudah divalidasi disimpan sebagai ASCII dalam kunci primer aset; nama penerbit dan jalur aset tetap mendukung Unicode. Kolom entri mempertahankan kapasitas Unicode. Indeks terpisah `(scope_id, schema_id, layer)` dan `(scope_id, source_record_id)` mendukung penjelajahan dan pencarian penyedia dalam batas kunci MariaDB.

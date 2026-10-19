@@ -27,7 +27,12 @@ export class DbLeaderboardStore implements LeaderboardStore {
             name: "study_leaderboard_state",
             columns: [
                 { name: "state_id", type: "text", primaryKey: true },
-                { name: "state_json", type: "text", notNull: true },
+                {
+                    name: "state_json",
+                    type: "text",
+                    textSize: "large",
+                    notNull: true,
+                },
             ],
         });
     }

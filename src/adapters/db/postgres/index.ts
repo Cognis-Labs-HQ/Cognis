@@ -182,6 +182,7 @@ class PostgresExecutor implements RawDbExecutor {
     constructor(
         private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
+        private readonly inTransaction = false,
     ) {}
 
     async execute(sql: string, params: unknown[] = []) {
@@ -225,6 +226,7 @@ class PostgresExecutor implements RawDbExecutor {
                 end: async () => undefined,
             },
             this.log,
+            true,
         );
         try {
             await client.query("BEGIN");
@@ -359,15 +361,32 @@ class PostgresExecutor implements RawDbExecutor {
         const catalog = await this.execute(KEY_CATALOG_QUERY, [def.name]);
         const keyChanges = planKeyReconciliation(def, catalog.rows ?? []);
         if (keyChanges.length) {
-            await this.transaction(async (transaction) => {
-                for (const statement of keyChanges)
+            const reconcile = async (transaction: RawDbExecutor) => {
+                await transaction.execute(
+                    `LOCK TABLE ${def.name} IN ACCESS EXCLUSIVE MODE`,
+                );
+                const current = await transaction.execute(KEY_CATALOG_QUERY, [
+                    def.name,
+                ]);
+                const changes = planKeyReconciliation(def, current.rows ?? []);
+                for (const statement of changes)
                     await transaction.execute(statement);
-            });
-            writeDbLog(this.log, "info", "Reconciled declared database keys.", {
-                component: "db",
-                provider: "postgresql",
-                table: def.name,
-            });
+                return changes.length;
+            };
+            const changed = this.inTransaction
+                ? await reconcile(this)
+                : await this.transaction(reconcile);
+            if (changed)
+                writeDbLog(
+                    this.log,
+                    "info",
+                    "Reconciled declared database keys.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        table: def.name,
+                    },
+                );
         }
         for (const index of def.indexes ?? []) {
             const indexName =

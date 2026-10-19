@@ -8,6 +8,12 @@ function database(): DbExecutor {
     const executor: DbExecutor = {
         ensureTable: async (definition) => {
             assert.equal(definition.name, "engagement_participants");
+            assert.equal(
+                definition.columns.find(
+                    (column) => column.name === "state_json",
+                )?.textSize,
+                "large",
+            );
         },
         transaction: async (operation) => operation(executor),
         executeCommand: async (command) => {
@@ -80,4 +86,20 @@ test("the host ledger persists through recreation and enforces atomic participan
         revision: 0,
         state: empty,
     });
+});
+
+test("reward snapshots round-trip beyond a normal SQL TEXT field", async () => {
+    const executor = database();
+    const store = createEngagementStore(() => executor);
+    const state = {
+        receipts: [],
+        boosters: [],
+        invalid: Array.from(
+            { length: 5000 },
+            (_, index) => `activity-identifier-${index}`,
+        ),
+    };
+    assert.ok(Buffer.byteLength(JSON.stringify(state)) > 65535);
+    await store.commit("learner", 0, state);
+    assert.deepEqual((await store.read("learner")).state, state);
 });

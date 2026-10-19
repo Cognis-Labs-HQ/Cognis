@@ -91,3 +91,5 @@ Administration marks only the adapter selected by `DB_TYPE` as active. Every dat
 ## Durable Practice Rewards
 
 The Database gateway provides `engagement:store` for participant reward receipts, booster redemptions and invalidations. Structured commands enforce atomic revision checks so concurrent writers cannot silently overwrite another worker’s rewards. The core engine receives this storage through ctx rather than importing database implementations.
+
+Structured text columns accept optional storage hints `textSize: "large"` and `textEncoding: "ascii"`. MariaDB maps them to LONGTEXT and ASCII storage; PostgreSQL and SQLite retain their native text representation. Callers must already validate identifiers as ASCII before requesting that encoding. Reward snapshots opt in to large text to preserve JSON beyond 64 KB; compare-and-swap revisions and transaction boundaries remain unchanged.

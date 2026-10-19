@@ -66,3 +66,5 @@ export interface DbDialectHelper {
 ## 練習報酬の永続化
 
 Databaseゲートウェイは、参加者の報酬記録、ブースター引き換え、無効化を保存する`engagement:store`を提供します。構造化コマンドでリビジョンを原子的に検証し、並行する処理が他の報酬を黙って上書きすることを防ぎます。コアのエンジンは、データベース実装を直接インポートせずctx経由で保存機能を取得します。
+
+構造化テキスト列は、省略可能な保存指定 `textSize: "large"` と `textEncoding: "ascii"` を受け付けます。MariaDB は LONGTEXT と ASCII に対応付け、PostgreSQL と SQLite は既存のテキスト表現を維持します。呼び出し元は ASCII を指定する前に識別子を ASCII として検証する必要があります。報酬の状態は大容量テキストを指定して 64 KB を超える JSON を保持し、リビジョンの原子的な確認とトランザクション境界を維持します。

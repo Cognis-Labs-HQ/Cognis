@@ -37,6 +37,4 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## Penyelarasan skema
 
-PostgreSQL menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.
-
-Kendala unik dan indeks unik biasa diselaraskan dengan kunci unik yang dideklarasikan dalam transaksi yang sama. Deklarasi tabel bersifat otoritatif; indeks ekspresi dan parsial tetap dikelola secara terpisah.
+Inisialisasi skema hanya mengubah kunci primer yang dinyatakan secara eksplisit dan menambahkan keunikan yang diperlukan. Kunci primer, batasan unik, dan indeks unik yang dikelola terpisah dipertahankan; kunci unik setara dengan urutan kolom berbeda memenuhi deklarasi. Katalog hanya membaca indeks valid yang siap digunakan dan batasan primer/unik milik tabel itu sendiri. Perbaikan memeriksa ulang katalog di bawah kunci tabel dan menggunakan transaksi pemanggil yang sudah terbuka, sehingga kegagalan membatalkan pekerjaan pemanggil dengan benar. Skema yang cocok tidak menjalankan DDL kunci atau transaksi perbaikan.

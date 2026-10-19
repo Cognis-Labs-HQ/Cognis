@@ -86,6 +86,16 @@ Latihan menulis hanya menggunakan judul tersamarkan pada papan gambar. Panah SVG
 
 Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi judul bersama. Flashcards menggunakannya untuk mencatat percobaan saat ini melalui alur keluar dan mempertahankan konteks navigasi dek sebelum membuka Explore.
 
+Inisialisasi skema hanya mengubah kunci primer yang dinyatakan secara eksplisit dan menambahkan keunikan yang diperlukan. Kunci primer, batasan unik, dan indeks unik yang dikelola terpisah dipertahankan; kunci unik setara dengan urutan kolom berbeda memenuhi deklarasi. Katalog hanya membaca indeks valid yang siap digunakan dan batasan primer/unik milik tabel itu sendiri. Perbaikan memeriksa ulang katalog di bawah kunci tabel dan menggunakan transaksi pemanggil yang sudah terbuka, sehingga kegagalan membatalkan pekerjaan pemanggil dengan benar. Skema yang cocok tidak menjalankan DDL kunci atau transaksi perbaikan.
+
+Kolom teks dapat meminta LONGTEXT melalui `textSize: "large"` atau penyimpanan ASCII melalui `textEncoding: "ascii"` untuk pengenal yang sudah dibatasi ASCII oleh kontrak pemiliknya. Bawaan tetap TEXT atau VARCHAR(255). Inisialisasi hanya memperbesar kolom yang ditandai dan menyesuaikan penyandian yang diminta secara eksplisit; teks besar berindeks ditolak. Status hadiah/papan peringkat dan aset paket menggunakan penyimpanan besar. ID paket dan versi semantik menggunakan ASCII agar kunci primer aset empat bagian memenuhi batas InnoDB; nama penerbit dan jalur aset tetap mendukung Unicode. Indeks Library terpisah mendukung penjelajahan lingkup dan pencarian rekaman sumber tanpa mengubah penyandian entri.
+
+Kolom teks terstruktur menerima petunjuk penyimpanan opsional `textSize: "large"` dan `textEncoding: "ascii"`. MariaDB memetakannya ke LONGTEXT dan ASCII; PostgreSQL dan SQLite mempertahankan representasi teks bawaannya. Pemanggil harus sudah memvalidasi pengenal sebagai ASCII sebelum meminta penyandian tersebut. Status hadiah meminta teks besar agar JSON melebihi 64 KB tetap utuh; pemeriksaan revisi atomik dan batas transaksi dipertahankan.
+
+Data aset paket menggunakan penyimpanan teks besar secara eksplisit. Hanya ID paket dan versi semantik yang sudah divalidasi disimpan sebagai ASCII dalam kunci primer aset; nama penerbit dan jalur aset tetap mendukung Unicode. Kolom entri mempertahankan kapasitas Unicode. Indeks terpisah `(scope_id, schema_id, layer)` dan `(scope_id, source_record_id)` mendukung penjelajahan dan pencarian penyedia dalam batas kunci MariaDB.
+
+Status papan peringkat yang disimpan secara eksplisit meminta penyimpanan teks besar agar MariaDB dapat menyimpan pengamatan dan arsip yang berkembang melebihi 64 KB tanpa memotong JSON. PostgreSQL dan SQLite mempertahankan penyimpanan teks bawaannya.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

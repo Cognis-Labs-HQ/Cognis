@@ -30,3 +30,5 @@ Der Start erfordert das DB-Gateway. Fehlgeschlagene Speicherungen werden protoko
 ## Dauerhafte Übungsbelohnungen
 
 Gespeicherte Übungs-XP erreichen die Rangliste über `study:leaderboard:recordPractice`; dabei wird das festgeschriebene Ergebnis verwendet, ohne Modifikatoren erneut zu verbrauchen. Kanonische Klassenübungen erzeugen eine Klassenrangliste mit der bestehenden Mindestgruppengröße zum Datenschutz. Ausdrückliche XP-Kriterien zugänglicher Veranstaltungen mit Teilnahmezustimmung können ebenfalls Ergebnisse erhalten. Die Beobachtungsidentität umfasst Rangliste und Kriterium. Korrekturen entwerten passende Beobachtungen; vor der Darstellung wird die aktuelle Klassenmitgliedschaft geprüft.
+
+Der gespeicherte Ranglistenzustand fordert ausdrücklich große Textfelder an, damit MariaDB wachsende Beobachtungen und Archive über 64 KB ohne abgeschnittenes JSON speichert. PostgreSQL und SQLite behalten ihre native Textspeicherung.

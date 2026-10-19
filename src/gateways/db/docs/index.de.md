@@ -68,3 +68,5 @@ Die Administration markiert nur den durch `DB_TYPE` ausgewählten Adapter als ak
 ## Dauerhafte Übungsbelohnungen
 
 Das Datenbank-Gateway stellt `engagement:store` für Belohnungsbelege, Booster-Einlösungen und Entwertungen bereit. Strukturierte Befehle prüfen Revisionen atomar, damit konkurrierende Prozesse keine fremden Belohnungen unbemerkt überschreiben. Die Kern-Engine erhält die Speicherung über ctx statt durch direkte Importe der Datenbankimplementierung.
+
+Strukturierte Textspalten unterstützen die optionalen Speicherhinweise `textSize: "large"` und `textEncoding: "ascii"`. MariaDB verwendet dafür LONGTEXT und ASCII; PostgreSQL und SQLite behalten ihre native Textdarstellung. Aufrufer müssen Kennungen bereits als ASCII validieren, bevor sie diese Kodierung anfordern. Belohnungszustände verwenden große Textfelder für JSON über 64 KB; atomare Revisionsprüfungen und Transaktionsgrenzen bleiben erhalten.

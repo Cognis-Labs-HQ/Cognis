@@ -12,7 +12,7 @@ const definition = {
     uniqueKeys: [["item", "position"]],
 };
 
-test("schema reconciliation plans the declared primary and unique keys", () => {
+test("schema reconciliation changes the declared primary and adds required uniqueness while preserving independent keys", () => {
     const changes = planKeyReconciliation(definition, [
         {
             index_name: "records_pkey",
@@ -29,7 +29,6 @@ test("schema reconciliation plans the declared primary and unique keys", () => {
     ]);
     assert.deepEqual(changes, [
         'ALTER TABLE "records" DROP CONSTRAINT "records_pkey"',
-        'DROP INDEX "public"."records_unique"',
         'ALTER TABLE "records" ADD PRIMARY KEY ("owner", "item", "group", "position")',
         'ALTER TABLE "records" ADD UNIQUE ("item", "position")',
     ]);
@@ -60,4 +59,62 @@ test("overlapping column and table uniqueness declarations converge on one key",
     assert.deepEqual(planKeyReconciliation(current, []), [
         'ALTER TABLE "accounts" ADD UNIQUE ("email")',
     ]);
+});
+
+test("independent primary keys and equivalent unique indexes continue enforcing uniqueness", () => {
+    const declared = {
+        name: "records",
+        columns: [
+            { name: "owner", type: "text" as const },
+            { name: "item", type: "text" as const },
+        ],
+        uniqueKeys: [["owner", "item"]],
+    };
+    assert.deepEqual(
+        planKeyReconciliation(declared, [
+            {
+                is_primary: true,
+                constraint_name: "records_pkey",
+                columns: ["id"],
+            },
+            {
+                is_primary: false,
+                constraint_name: "external_unique",
+                columns: ["item", "owner"],
+            },
+            {
+                is_primary: false,
+                index_name: "independent",
+                schema_name: "public",
+                columns: ["external_id"],
+            },
+        ]),
+        [],
+    );
+});
+
+test("a declared primary key supplies the same uniqueness without a duplicate index", () => {
+    assert.deepEqual(
+        planKeyReconciliation(
+            {
+                name: "accounts",
+                columns: [
+                    {
+                        name: "id",
+                        type: "text",
+                        primaryKey: true,
+                        unique: true,
+                    },
+                ],
+            },
+            [
+                {
+                    is_primary: true,
+                    constraint_name: "accounts_pkey",
+                    columns: ["id"],
+                },
+            ],
+        ),
+        [],
+    );
 });

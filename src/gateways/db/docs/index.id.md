@@ -66,3 +66,5 @@ Administrasi hanya menandai adapter yang dipilih oleh `DB_TYPE` sebagai aktif. S
 ## Imbalan Latihan Tersimpan
 
 Gateway basis data menyediakan `engagement:store` untuk bukti imbalan peserta, penukaran booster, dan pembatalan. Perintah terstruktur memeriksa revisi secara atomik agar proses bersamaan tidak menimpa imbalan proses lain secara diam-diam. Mesin inti menerima penyimpanan ini melalui ctx tanpa mengimpor implementasi basis data.
+
+Kolom teks terstruktur menerima petunjuk penyimpanan opsional `textSize: "large"` dan `textEncoding: "ascii"`. MariaDB memetakannya ke LONGTEXT dan ASCII; PostgreSQL dan SQLite mempertahankan representasi teks bawaannya. Pemanggil harus sudah memvalidasi pengenal sebagai ASCII sebelum meminta penyandian tersebut. Status hadiah meminta teks besar agar JSON melebihi 64 KB tetap utuh; pemeriksaan revisi atomik dan batas transaksi dipertahankan.

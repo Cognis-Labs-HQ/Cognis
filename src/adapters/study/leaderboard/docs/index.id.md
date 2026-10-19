@@ -30,3 +30,5 @@ Bootstrap memerlukan gateway DB. Kegagalan penyimpanan dicatat dan tidak menghal
 ## Imbalan Latihan Tersimpan
 
 XP latihan yang telah disimpan mencapai papan peringkat melalui `study:leaderboard:recordPractice`, memakai skor tersimpan tanpa menghabiskan pengubah lagi. Latihan kelas kanonis membuat papan XP kelas dengan aturan privasi ukuran kelompok minimum yang sudah ada. Kriteria XP eksplisit pada acara yang dapat diakses dan telah disetujui pesertanya juga dapat menerima hasil. Identitas pengamatan mencakup papan dan kriterianya. Koreksi membatalkan pengamatan terkait, dan keanggotaan kelas terkini diperiksa sebelum menampilkan peringkat.
+
+Status papan peringkat yang disimpan secara eksplisit meminta penyimpanan teks besar agar MariaDB dapat menyimpan pengamatan dan arsip yang berkembang melebihi 64 KB tanpa memotong JSON. PostgreSQL dan SQLite mempertahankan penyimpanan teks bawaannya.

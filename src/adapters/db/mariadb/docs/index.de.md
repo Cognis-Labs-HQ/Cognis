@@ -39,3 +39,5 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 ## Schemaabgleich
 
 MariaDB gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.
+
+Textspalten können mit `textSize: "large"` LONGTEXT und mit `textEncoding: "ascii"` ASCII-Speicherung für vertraglich bereits auf ASCII beschränkte Kennungen anfordern. Standard bleibt TEXT beziehungsweise VARCHAR(255). Die Initialisierung erweitert nur ausdrücklich markierte große Felder und gleicht ausdrücklich angeforderte Kodierungen ab; indizierter großer Text wird abgelehnt. Belohnungs-/Ranglistenzustände und Paketdaten verwenden große Felder. Paketkennungen und semantische Versionen verwenden ASCII, damit der vierteilige Asset-Primärschlüssel die InnoDB-Grenze einhält; Herausgebernamen und Asset-Pfade behalten Unicode. Getrennte Library-Indizes unterstützen Bereichsübersicht und Quelldatensatzsuche ohne Änderung der Eintragskodierung.

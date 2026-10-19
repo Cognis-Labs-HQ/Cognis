@@ -42,6 +42,4 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Schema reconciliation
 
-PostgreSQL reconciles existing primary keys with the current table declaration during schema initialization. Rows remain in place; an incompatible declaration fails rather than discarding data. Changes are logged. No version-specific migration or renamed-column compatibility path is used.
-
-Unique constraints and plain unique indexes are reconciled with declared unique keys in the same transaction. The table declaration is authoritative; expression and partial indexes remain independently managed.
+Schema initialization changes a primary key only when one is explicitly declared and adds missing declared uniqueness. Existing independent primary keys, unique constraints and unique indexes remain intact; equivalent unique keys in another column order satisfy the declaration. The catalog reads only valid, ready indexes and joins only the table’s own primary/unique constraints. Repair rechecks the catalog under a table lock and shares a caller-owned transaction, so a failure rolls back the caller’s work correctly. A matching schema performs no key DDL or repair transaction.

@@ -355,8 +355,18 @@ class MariaDbExecutor implements RawDbExecutor {
             col: StructuredDbTableDef["columns"][number],
         ): string => {
             switch (col.type) {
-                case "text":
-                    return isKeyColumn(col) ? "VARCHAR(255)" : "TEXT";
+                case "text": {
+                    const encoding =
+                        col.textEncoding === "ascii"
+                            ? " CHARACTER SET ascii"
+                            : "";
+                    if (col.textSize === "large") {
+                        if (isKeyColumn(col))
+                            throw new Error("large_text_cannot_be_indexed");
+                        return `LONGTEXT${encoding}`;
+                    }
+                    return `${isKeyColumn(col) ? "VARCHAR(255)" : "TEXT"}${encoding}`;
+                }
                 case "integer":
                     return "INT";
                 case "bigint":
@@ -429,7 +439,7 @@ class MariaDbExecutor implements RawDbExecutor {
             `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
         );
         const existingColsResult = await this.execute(
-            `SELECT column_name, data_type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+            `SELECT column_name, data_type, character_set_name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
             [def.name],
         );
         const existingCols = new Set(
@@ -445,6 +455,12 @@ class MariaDbExecutor implements RawDbExecutor {
                     String(column.data_type ?? "").toLowerCase(),
                 ];
             }),
+        );
+        const existingEncodings = new Map(
+            (existingColsResult.rows ?? []).map((row) => [
+                String(row.column_name),
+                row.character_set_name,
+            ]),
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
@@ -463,13 +479,22 @@ class MariaDbExecutor implements RawDbExecutor {
             );
         }
         for (const col of def.columns) {
+            const existingType = existingColumnTypes.get(col.name);
+            const needsIndexType = isKeyColumn(col) && existingType === "text";
+            const needsLargeText =
+                col.textSize === "large" &&
+                existingType !== undefined &&
+                existingType !== "longtext";
+            const needsEncoding =
+                col.textEncoding === "ascii" &&
+                existingEncodings.has(col.name) &&
+                existingEncodings.get(col.name) !== undefined &&
+                existingEncodings.get(col.name) !== "ascii";
             if (
                 col.type !== "text" ||
-                !isKeyColumn(col) ||
-                existingColumnTypes.get(col.name) !== "text"
-            ) {
+                (!needsIndexType && !needsLargeText && !needsEncoding)
+            )
                 continue;
-            }
             const notNullClause =
                 col.notNull || col.primaryKey ? " NOT NULL" : "";
             const defaultClause =
@@ -479,6 +504,18 @@ class MariaDbExecutor implements RawDbExecutor {
             await this.execute(
                 `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
             );
+            if (needsLargeText)
+                writeDbLog(
+                    this.log,
+                    "info",
+                    "Widened declared database text storage.",
+                    {
+                        component: "db",
+                        provider: "mariadb",
+                        table: def.name,
+                        column: col.name,
+                    },
+                );
         }
         if (compositePk.length) {
             const result = await this.execute(

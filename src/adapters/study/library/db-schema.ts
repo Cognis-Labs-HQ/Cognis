@@ -59,11 +59,26 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         name: "study_library_content_pack_assets",
         columns: [
             { name: "publisher", type: "text", notNull: true },
-            { name: "pack_id", type: "text", notNull: true },
-            { name: "version", type: "text", notNull: true },
+            {
+                name: "pack_id",
+                type: "text",
+                textEncoding: "ascii",
+                notNull: true,
+            },
+            {
+                name: "version",
+                type: "text",
+                textEncoding: "ascii",
+                notNull: true,
+            },
             { name: "asset_path", type: "text", notNull: true },
             { name: "media_type", type: "text", notNull: true },
-            { name: "data_base64", type: "text", notNull: true },
+            {
+                name: "data_base64",
+                type: "text",
+                textSize: "large",
+                notNull: true,
+            },
         ],
         primaryKey: ["publisher", "pack_id", "version", "asset_path"],
     });
@@ -71,13 +86,10 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         name: "study_library_entries",
         indexes: [
             {
-                columns: [
-                    "scope",
-                    "scope_id",
-                    "schema_id",
-                    "layer",
-                    "source_record_id",
-                ],
+                columns: ["scope_id", "schema_id", "layer"],
+            },
+            {
+                columns: ["scope_id", "source_record_id"],
             },
         ],
         columns: [

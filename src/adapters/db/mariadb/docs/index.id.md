@@ -39,3 +39,5 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 ## Penyelarasan skema
 
 MariaDB menyelaraskan kunci utama yang ada dengan deklarasi tabel terkini saat inisialisasi skema. Baris tetap tersimpan; deklarasi yang tidak sesuai akan gagal tanpa membuang data. Perubahan dicatat. Tidak ada migrasi khusus versi atau jalur kompatibilitas untuk kolom yang diganti namanya.
+
+Kolom teks dapat meminta LONGTEXT melalui `textSize: "large"` atau penyimpanan ASCII melalui `textEncoding: "ascii"` untuk pengenal yang sudah dibatasi ASCII oleh kontrak pemiliknya. Bawaan tetap TEXT atau VARCHAR(255). Inisialisasi hanya memperbesar kolom yang ditandai dan menyesuaikan penyandian yang diminta secara eksplisit; teks besar berindeks ditolak. Status hadiah/papan peringkat dan aset paket menggunakan penyimpanan besar. ID paket dan versi semantik menggunakan ASCII agar kunci primer aset empat bagian memenuhi batas InnoDB; nama penerbit dan jalur aset tetap mendukung Unicode. Indeks Library terpisah mendukung penjelajahan lingkup dan pencarian rekaman sumber tanpa mengubah penyandian entri.

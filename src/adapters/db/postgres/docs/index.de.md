@@ -37,6 +37,4 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## Schemaabgleich
 
-PostgreSQL gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.
-
-Eindeutige Constraints und einfache eindeutige Indizes werden in derselben Transaktion mit den deklarierten eindeutigen Schlüsseln abgeglichen. Die Tabellendeklaration ist maßgeblich; Ausdrucksindizes und partielle Indizes bleiben unabhängig verwaltet.
+Die Schemainitialisierung ändert Primärschlüssel nur bei ausdrücklicher Deklaration und ergänzt fehlende deklarierte Eindeutigkeit. Unabhängige Primärschlüssel, eindeutige Constraints und Indizes bleiben erhalten; gleichwertige eindeutige Schlüssel mit anderer Spaltenreihenfolge erfüllen die Deklaration. Der Katalog berücksichtigt nur gültige, fertige Indizes und eigene Primär-/Unique-Constraints der Tabelle. Reparaturen prüfen unter Tabellensperre erneut und verwenden eine bereits offene Transaktion, sodass Fehler auch die Arbeit des Aufrufers zurückrollen. Passende Schemas benötigen weder Schlüssel-DDL noch Reparaturtransaktion.

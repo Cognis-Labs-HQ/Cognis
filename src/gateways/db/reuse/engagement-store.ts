@@ -17,7 +17,12 @@ export function createEngagementStore(
             columns: [
                 { name: "participant_id", type: "text", primaryKey: true },
                 { name: "revision", type: "integer", notNull: true },
-                { name: "state_json", type: "text", notNull: true },
+                {
+                    name: "state_json",
+                    type: "text",
+                    textSize: "large",
+                    notNull: true,
+                },
             ],
         });
         try {

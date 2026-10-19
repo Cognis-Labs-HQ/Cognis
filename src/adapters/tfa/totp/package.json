@@ -7,6 +7,6 @@
     "dependencies": {
         "@cognis/core": "<=0.5.1",
         "qrcode": "^1.5.4",
-        "@cognis/gateways": "<=0.1.22"
+        "@cognis/gateways": "<=0.1.23"
     }
 }
