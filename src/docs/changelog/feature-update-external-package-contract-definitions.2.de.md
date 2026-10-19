@@ -85,3 +85,4 @@ Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden
 - [b513366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b513366e7816352a0c357fddfd7b49a881341164)
 - [ee448821](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee44882131400a8581dff790e5b7b84a48634641)
 - [7f48ca82](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f48ca82ba3dee88919631ef5386697a60450937)
+- [95ff5b75](https://github.com/Cognis-Labs-HQ/Cognis/commit/95ff5b7542de1a4d06df974462a917dc2388fae2)
