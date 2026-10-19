@@ -124,7 +124,7 @@
     white-space: nowrap;
 }
 
-.popup-title-action {
+.popup-heading .popup-title-action {
     padding: 0 0.08em;
     border: 1px solid transparent;
     border-radius: 0.12em;
@@ -134,7 +134,7 @@
     text-decoration: none;
 }
 
-.popup-title-action:is(:hover, :focus-visible) {
+.popup-heading .popup-title-action:is(:hover, :focus-visible):not(:disabled) {
     border-color: var(--accent-2);
     background: color-mix(in srgb, var(--accent-2) 18%, transparent);
     box-shadow: 0 0 0 0.08em

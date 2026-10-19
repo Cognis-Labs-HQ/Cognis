@@ -48,6 +48,10 @@ Notify enabled administrators about incoming requests and other administratorsâ€
 
 Reverse card traces apply the same live language availability and access checks as direct reads, and include current edit permissions. Browsing shares class write checks only within one response and avoids copying the full schema for each card; public schema results remain independent copies. Content-pack ingestion indexes assets once and writes each shared recording once while preserving every audio placement.
 
+## Heading Style and Full Guides
+
+Popup title links retain their compact text appearance and inherited typography even when shared button styles load afterward. The drawing padâ€™s guidance button always reveals the complete numbered stroke pattern, including completed strokes and all groups, after practice has started or on a previously completed character. Normal practice continues to show the next stroke; starting a new stroke resets the reveal.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

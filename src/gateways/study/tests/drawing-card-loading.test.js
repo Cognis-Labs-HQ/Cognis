@@ -384,7 +384,7 @@ test("the whole pattern is previewed before input and only the next stroke after
     assert.deepEqual(session.annotations, ["?"]);
     session.elements.get("[data-guidance]").handlers.get("click")();
     await new Promise((resolve) => setImmediate(resolve));
-    assert.deepEqual(session.annotations, ["1"]);
+    assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
     session.navigate();
     await session.open(input);
     session.flushFrames();
@@ -566,4 +566,33 @@ test("drawing masks its heading, reports the active character, and clears it on 
     await pad.close();
     assert.equal(changes.at(-1), null);
     unsubscribe();
+});
+
+test("guidance reveals every stroke after drawing starts, including completed strokes", async () => {
+    for (const completed of [false, true]) {
+        const session = await drawingSession({
+            initialProgress: new Map([
+                ["card-1", { completed, hiddenStrokeCount: 0 }],
+            ]),
+        });
+        const input = card(1);
+        input.strokePattern.groups = [3];
+        input.strokePattern.strokes = Array(3).fill(
+            input.strokePattern.strokes[0],
+        );
+        await session.open(input);
+        session.canvas.setPointerCapture = () => {};
+        session.handlers.get("pointerdown")(pointer(0.1, 0.2));
+        session.handlers.get("pointerup")(pointer(0.8, 0.9));
+        await new Promise((resolve) => setImmediate(resolve));
+        session.flushFrames();
+        assert.deepEqual(session.annotations, ["2"]);
+        const guidance = session.elements.get("[data-guidance]");
+        assert.equal(guidance.disabled, false);
+        guidance.handlers.get("click")();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.deepEqual(session.annotations, ["1", "2", "3"]);
+        assert.equal(guidance.disabled, true);
+        session.navigate();
+    }
 });

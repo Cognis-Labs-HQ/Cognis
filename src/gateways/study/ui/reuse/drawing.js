@@ -460,8 +460,7 @@ async function createDrawingPad({
         context.restore();
     };
     const draw = () => {
-        pad.querySelector("[data-guidance]").disabled =
-            revealHiddenGuides || hiddenGuideIndices.size === 0;
+        pad.querySelector("[data-guidance]").disabled = revealHiddenGuides;
         context.clearRect(0, 0, canvas.width, canvas.height);
         const viewport = drawingViewport(
             canvas,
@@ -476,16 +475,17 @@ async function createDrawingPad({
         const hasHiddenGuide =
             !revealHiddenGuides && hiddenGuideIndices.has(completed.length);
         const occupiedAnnotations = hasHiddenGuide ? [{ x: 20, y: 22 }] : [];
+        const guideStart = revealHiddenGuides ? 0 : completed.length;
         const guides = currentPattern.strokes
             .slice(
-                completed.length,
-                !hasStarted && !progress.completed
+                guideStart,
+                revealHiddenGuides || (!hasStarted && !progress.completed)
                     ? currentPattern.strokes.length
                     : completed.length + 1,
             )
             .map((stroke, index) => ({
                 stroke,
-                index: completed.length + index,
+                index: guideStart + index,
             }));
         const visibleGuides = guides.filter(
             ({ index }) => revealHiddenGuides || !hiddenGuideIndices.has(index),
@@ -861,8 +861,7 @@ async function createDrawingPad({
             .filter(Boolean)
             .join(" · ");
         pad.querySelector("[data-definition]").textContent = currentDefinition;
-        pad.querySelector("[data-guidance]").disabled =
-            hiddenGuideIndices.size === 0;
+        pad.querySelector("[data-guidance]").disabled = false;
         stage.style.visibility = "visible";
         resize();
         window.requestAnimationFrame(resize);

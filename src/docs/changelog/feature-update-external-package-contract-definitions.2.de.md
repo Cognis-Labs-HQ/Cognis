@@ -48,6 +48,10 @@ Aktivierte Administratoren im Kanal Study über neue Anfragen und Entscheidungen
 
 Rückwärtsverweise auf Karten wenden dieselben Prüfungen für Sprachverfügbarkeit und Zugriff wie direkte Lesezugriffe an und enthalten aktuelle Bearbeitungsrechte. Beim Durchsuchen werden Schreibrechte einer Klasse nur innerhalb einer Antwort gemeinsam geprüft; das vollständige Schema wird nicht mehr für jede Karte kopiert. Öffentliche Schemaergebnisse bleiben unabhängige Kopien. Der Import von Inhaltspaketen indiziert Dateien einmal und schreibt jede gemeinsam verwendete Aufnahme einmal, wobei alle Audiozuordnungen erhalten bleiben.
 
+## Überschriften und Zeichenhilfe
+
+Verlinkte Popup-Titel behalten ihre kompakte Textdarstellung und geerbte Typografie auch dann, wenn gemeinsame Schaltflächenstile später geladen werden. Die Hilfeschaltfläche des Zeichenfelds zeigt stets das vollständige nummerierte Strichmuster, einschließlich abgeschlossener Striche und aller Gruppen, auch nach Beginn der Übung oder bei bereits abgeschlossenen Zeichen. Im normalen Übungsablauf bleibt der nächste Strich sichtbar; ein neuer Strich setzt die Aufdeckung zurück.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -48,6 +48,10 @@ Memberi tahu administrator aktif tentang permintaan masuk serta keputusan admini
 
 Referensi balik kartu menerapkan pemeriksaan ketersediaan bahasa dan akses yang sama dengan pembacaan langsung, serta menyertakan izin penyuntingan terkini. Penelusuran berbagi pemeriksaan izin tulis kelas hanya dalam satu respons dan tidak lagi menyalin seluruh skema untuk setiap kartu; hasil skema publik tetap berupa salinan mandiri. Impor paket konten mengindeks aset sekali dan menulis setiap rekaman bersama sekali sambil mempertahankan seluruh penempatan audio.
 
+## Judul dan Panduan Lengkap
+
+Tautan judul popup mempertahankan tampilan teks ringkas dan tipografi yang diwarisi meskipun gaya tombol bersama dimuat belakangan. Tombol bantuan pad gambar selalu menampilkan seluruh pola goresan bernomor, termasuk goresan yang selesai dan semua kelompok, setelah latihan dimulai atau pada karakter yang pernah diselesaikan. Latihan biasa tetap menampilkan goresan berikutnya; memulai goresan baru mengatur ulang tampilan bantuan.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)
