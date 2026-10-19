@@ -7,12 +7,12 @@ import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import {
     createPracticeSession,
     resumePracticeSession,
-} from "../ui/app/flashcards/practice-session.js";
+} from "../ui/app/practice-session.js";
 import {
     flashcardsRoute,
     deckMatchesLanguage,
     deckRouteKey,
-} from "../ui/app/flashcards/language.js";
+} from "../ui/app/language.js";
 import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 
 function source(relative) {
@@ -126,9 +126,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         source("../../../../gateways/study/ui/reuse/action-flows.js"),
         environment,
     );
-    vm.runInContext(source("../ui/app/flashcards/actions.js"), environment);
+    vm.runInContext(source("../ui/app/actions.js"), environment);
     await vm.runInContext(
-        `(async () => { ${source("../ui/app/flashcards/index.js")}; globalThis.mountDeck = mount; })()`,
+        `(async () => { ${source("../ui/app/index.js")}; globalThis.mountDeck = mount; })()`,
         environment,
     );
     await environment.mountDeck(root);

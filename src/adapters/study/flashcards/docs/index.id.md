@@ -47,3 +47,5 @@ Pilihan jawaban kartu belajar berupa tombol jawaban tersendiri. Judul kartu dan 
 Latihan menulis hanya menggunakan judul tersamarkan pada papan gambar. Panah SVG sebelumnya/berikutnya berada di atas papan bersama kontrol favorit; berikutnya tetap memerlukan jawaban. Flashcards meneruskan `suppressRetry: true` ke papan bersama untuk menyembunyikan dan menonaktifkan percobaan ulang; latihan mandiri tetap mengizinkannya secara bawaan.
 
 Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi judul bersama. Flashcards menggunakannya untuk mencatat percobaan saat ini melalui alur keluar dan mempertahankan konteks navigasi dek sebelum membuka Explore.
+
+Titik masuk peramban utama adalah `ui/app/index.js`; modul tindakan, tampilan, bahasa, dan latihan berada di sebelahnya. Dek bersama memakai `ui/app/shared-deck.js`. Perilaku dek di server memakai `service/index.ts` bersama modul rute, alur, penyimpanan, dan hasil dalam direktori layanan yang sama.

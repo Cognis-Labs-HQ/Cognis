@@ -47,3 +47,5 @@ Flashcard answer choices are standalone answer buttons. Card headings and reveal
 Writing practice uses only the drawing pad’s masked heading. Previous/next SVG arrows sit above the pad alongside the favourite control; next remains gated by an answer. Flashcards passes `suppressRetry: true` to the shared drawing pad, hiding and disabling its retry action; standalone practice keeps retry enabled by default.
 
 Embedded consumers may supply `onNavigate(card)` after the shared heading confirmation. Flashcards uses it to settle the current attempt through its departure flow and preserve the deck navigation context before opening Explore.
+
+The main browser entry is `ui/app/index.js`; its actions, markup, language and practice modules live beside it. Shared decks mount `ui/app/shared-deck.js`. Server-side deck behavior uses `service/index.ts` with its route, flow, store and result modules in the same service directory.

@@ -1,11 +1,11 @@
-import { createPracticeModePreference } from "../../reuse/practice-mode.js";
-import { createPracticeSession } from "../flashcards/practice-session.js";
-import { noteDetails } from "../../reuse/flashcard.js";
+import { createPracticeModePreference } from "../reuse/practice-mode.js";
+import { createPracticeSession } from "./practice-session.js";
+import { noteDetails } from "../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { mountPractice } from "../flashcards/practice.js";
-import { loadDeckTemplates } from "../flashcards/markup.js";
-import { runDeckAction } from "../flashcards/actions.js";
+import { mountPractice } from "./practice.js";
+import { loadDeckTemplates } from "./markup.js";
+import { runDeckAction } from "./actions.js";
 
 /** Authorized shared Library cards are new cards in a temporary session without granting Library access. */
 export async function mount(root, { shareContext, i18n, signal } = {}) {

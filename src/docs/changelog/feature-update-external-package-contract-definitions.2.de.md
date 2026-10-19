@@ -88,6 +88,8 @@ Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(c
 
 Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Spalten und Indizes. Bestehende Primärschlüssel oder eindeutige Schlüssel werden nicht ersetzt. Der strukturierte Speichervertrag beschreibt keine großen Textfelder: MariaDB-TEXT ist auf 65.535 Byte begrenzt, und mehrbytekodierte zusammengesetzte Schlüssel unterliegen der InnoDB-Schlüsselgrenze. Study-Nutzdaten und Schemaänderungen müssen gegen diese Anbietergrenzen geprüft werden.
 
+Der Browser-Haupteinstieg ist `ui/app/index.js`; Aktionen, Darstellung, Sprache und Übungsmodule liegen daneben. Geteilte Stapel verwenden `ui/app/shared-deck.js`. Serverseitiges Stapelverhalten verwendet `service/index.ts` mit Routen-, Ablauf-, Speicher- und Ergebnismodulen im selben Dienstverzeichnis.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

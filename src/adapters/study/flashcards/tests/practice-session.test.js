@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import {
     createPracticeSession,
     resumePracticeSession,
-} from "../ui/app/flashcards/practice-session.js";
+} from "../ui/app/practice-session.js";
 import {
     flashcardsRoute,
     deckRouteKey,
     deckMatchesLanguage,
-} from "../ui/app/flashcards/language.js";
+} from "../ui/app/language.js";
 
 test("Previous revisits answered cards, including after the last card, without losing grades", () => {
     const session = createPracticeSession([{ id: "first" }, { id: "second" }]);

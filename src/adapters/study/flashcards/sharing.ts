@@ -1,6 +1,6 @@
 import type { StudyAdapterBootstrapCtx } from "../../../gateways/study/gateway.js";
 import type { DeckActor, StudyDeck } from "./service/types.js";
-import type { DeckService } from "./service/service.js";
+import type { DeckService } from "./service/index.js";
 
 export const DECK_RESOURCE = "studyDeck";
 export const DECK_READ = "study:flashcards:read";
@@ -200,7 +200,7 @@ export function registerDeckSharing(
         DECK_RESOURCE
             ? {
                   mountScriptUrl:
-                      "/static/adapters/study/flashcards/app/shared-deck/index.js",
+                      "/static/adapters/study/flashcards/app/shared-deck.js",
                   stringsBaseUrl: [
                       "/static/adapters/study/flashcards/languages",
                   ],

@@ -7,7 +7,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { openDrawingPad } from "/static/gateways/study/reuse/drawing.js";
 import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
-import { flashcardValues, renderFlashcard } from "../../reuse/flashcard.js";
+import { flashcardValues, renderFlashcard } from "../reuse/flashcard.js";
 import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
 

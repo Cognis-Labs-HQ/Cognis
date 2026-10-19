@@ -46,7 +46,7 @@ test("deck save closes the protected editor before navigating to the refreshed b
         },
     });
     const source = readFileSync(
-        new URL("../ui/app/flashcards/index.js", import.meta.url),
+        new URL("../ui/app/index.js", import.meta.url),
         "utf8",
     );
     const editor = source.slice(

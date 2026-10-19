@@ -28,8 +28,8 @@ const environment = vm.createContext({
 loadModule("../../../../gateways/study/ui/reuse/pronunciation.js", environment);
 loadModule("../ui/reuse/flashcard.js", environment);
 loadModule("../../../../gateways/study/ui/reuse/action-flows.js", environment);
-loadModule("../ui/app/flashcards/actions.js", environment);
-loadModule("../ui/app/flashcards/practice-model.js", environment);
+loadModule("../ui/app/actions.js", environment);
+loadModule("../ui/app/practice-model.js", environment);
 
 const cards = ["new", "overdue", "scheduled", "invalid"].map((id) => ({
     entry: { id },
@@ -229,7 +229,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         runDeckAction: vm.runInContext("runDeckAction", environment),
         showToast: (message, options) => toasts.push({ message, ...options }),
     });
-    loadModule("../ui/app/flashcards/practice.js", context);
+    loadModule("../ui/app/practice.js", context);
     const controller = new AbortController();
     const grades = [];
     const dispose = context.mountPractice(target, {

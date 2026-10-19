@@ -1,5 +1,5 @@
 import { sortItems, filterItems } from "/static/reuse/collection-view.js";
-import { createPracticeModePreference } from "../../reuse/practice-mode.js";
+import { createPracticeModePreference } from "../reuse/practice-mode.js";
 import {
     createPracticeSession,
     resumePracticeSession,
@@ -48,9 +48,9 @@ import {
     saveStudyDeck,
     deleteStudyDeck,
     reviewStudyCard,
-} from "../../decks-client.js";
-import { flashcardValues, noteDetails } from "../../reuse/flashcard.js";
-import { parseAnkiNotes, exportAnkiNotes } from "../../anki.js";
+} from "../decks-client.js";
+import { flashcardValues, noteDetails } from "../reuse/flashcard.js";
+import { parseAnkiNotes, exportAnkiNotes } from "../anki.js";
 
 function download(name, text) {
     const url = URL.createObjectURL(

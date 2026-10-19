@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createCtx } from "@cognis/core";
-import { DeckService, nextReview } from "../service/service.js";
+import { DeckService, nextReview } from "../service/index.js";
 import { registerDeckFlows } from "../service/flows.js";
 import { DeckStore } from "../service/store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";

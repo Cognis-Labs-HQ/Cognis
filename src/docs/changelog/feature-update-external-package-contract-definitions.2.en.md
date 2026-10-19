@@ -88,6 +88,8 @@ Embedded consumers may supply `onNavigate(card)` after the shared heading confir
 
 Schema initialization creates declared tables and adds missing columns and indexes. It does not replace existing primary or unique keys. The structured storage contract does not express large text fields: MariaDB TEXT is limited to 65,535 bytes, and multibyte composite keys are subject to InnoDB’s key-size limit. Study payload sizes and schema changes must be assessed against those provider limits.
 
+The main browser entry is `ui/app/index.js`; its actions, markup, language and practice modules live beside it. Shared decks mount `ui/app/shared-deck.js`. Server-side deck behavior uses `service/index.ts` with its route, flow, store and result modules in the same service directory.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

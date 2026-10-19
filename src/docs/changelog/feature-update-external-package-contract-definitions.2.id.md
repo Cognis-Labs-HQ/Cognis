@@ -88,6 +88,8 @@ Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi 
 
 Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan indeks yang belum ada. Kunci utama atau unik yang sudah ada tidak diganti. Kontrak penyimpanan terstruktur tidak menyediakan kolom teks besar: TEXT MariaDB dibatasi 65.535 byte, dan kunci gabungan multibita tunduk pada batas ukuran kunci InnoDB. Ukuran data dan perubahan skema Study harus diperiksa terhadap batas penyedia tersebut.
 
+Titik masuk peramban utama adalah `ui/app/index.js`; modul tindakan, tampilan, bahasa, dan latihan berada di sebelahnya. Dek bersama memakai `ui/app/shared-deck.js`. Perilaku dek di server memakai `service/index.ts` bersama modul rute, alur, penyimpanan, dan hasil dalam direktori layanan yang sama.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -3,7 +3,7 @@ import type { BootstrapLog } from "../../../../gateways/shared.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
-import { DeckService } from "./service.js";
+import { DeckService } from "./index.js";
 
 export function createDeckRoutes(
     service: DeckService,

@@ -6,7 +6,7 @@ import {
     saveUiPreferences,
 } from "/static/reuse/ui-preferences.js";
 import { showToast } from "/static/reuse/toast.js";
-import { runDeckAction } from "../app/flashcards/actions.js";
+import { runDeckAction } from "../app/actions.js";
 
 export async function createPracticeModePreference({
     i18n,

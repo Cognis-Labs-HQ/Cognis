@@ -38,7 +38,7 @@ test("the floating practice preference restores the saved mode, confirms session
         showToast: () => assert.fail("Unexpected preference failure"),
     });
     load("../../../../gateways/study/ui/reuse/action-flows.js", context);
-    load("../ui/app/flashcards/actions.js", context);
+    load("../ui/app/actions.js", context);
     load("../ui/reuse/practice-mode.js", context);
     const controller = new AbortController();
     const preference = await context.createPracticeModePreference({

@@ -1,7 +1,7 @@
 import { similarEntries } from "/static/gateways/study/reuse/similar-items.js";
 import { drawingPattern } from "/static/gateways/study/reuse/drawing-pattern.js";
-import { flashcardValues } from "../../reuse/flashcard.js";
-import { isCardDue } from "../../reuse/review.js";
+import { flashcardValues } from "../reuse/flashcard.js";
+import { isCardDue } from "../reuse/review.js";
 
 export function cardStatus(progress, id, now = Date.now()) {
     if (!progress?.[id]) return "new";

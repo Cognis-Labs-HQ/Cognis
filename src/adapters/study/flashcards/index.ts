@@ -11,7 +11,7 @@ import type { RouteContext } from "../../../api/reuse/route-context.js";
 import type { DeckLibrary } from "./service/types.js";
 import { registerDeckFlows } from "./service/flows.js";
 import { DeckStore } from "./service/store.js";
-import { DeckService } from "./service/service.js";
+import { DeckService } from "./service/index.js";
 import { createDeckRoutes } from "./service/routes.js";
 import {
     canReadSharedDeck,
@@ -98,7 +98,7 @@ export async function bootstrapStudyAdapter(
         id: "adapter.study.flashcards",
         pattern: "^/study(?:/flashcards|/[^/]+/flashcards(?:/[^/]+)?)$",
         base: "/study/flashcards",
-        scriptUrl: "/static/adapters/study/flashcards/app/flashcards/index.js",
+        scriptUrl: "/static/adapters/study/flashcards/app/index.js",
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",

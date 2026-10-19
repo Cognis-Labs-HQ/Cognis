@@ -1,4 +1,4 @@
-import { isCardDue } from "../../reuse/review.js";
+import { isCardDue } from "../reuse/review.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
