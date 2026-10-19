@@ -101,3 +101,4 @@ Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan
 - [e0d5ee9d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0d5ee9d097422d673f3e34185f71c9e27137e53)
 - [337c806e](https://github.com/Cognis-Labs-HQ/Cognis/commit/337c806eaa01da43b3a098a641f618ee9745af43)
 - [6d3f8f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d3f8f273e8b97a0f97692a52ff3c674eb6f7892)
+- [1ae7bd08](https://github.com/Cognis-Labs-HQ/Cognis/commit/1ae7bd08b99d05e23a4c7338b0bc6c680a93f28a)
