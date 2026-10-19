@@ -1,5 +1,6 @@
+import type { StudyResult } from "../../../../gateways/study/progress.js";
 import type { BootstrapLog } from "../../../../gateways/shared.js";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { FlowApi, FlowStageHook } from "@cognis/core";
 import type {
     DeckActor,
@@ -53,6 +54,10 @@ export class DeckService {
             actor: DeckActor,
             id?: string,
         ) => Promise<StudyDeck[]> = async () => [],
+        private readonly recordResult?: (
+            result: StudyResult,
+            actor: DeckActor,
+        ) => Promise<void>,
     ) {}
 
     private async listVisible(actor: DeckActor): Promise<StudyDeck[]> {
@@ -113,7 +118,17 @@ export class DeckService {
     }
 
     async owned(accountId: string, id: string): Promise<StudyDeck | undefined> {
-        return this.store.read(accountId, id);
+        const deck = await this.store.read(accountId, id);
+        if (!deck) return undefined;
+        const cards = await Promise.all(
+            deck.entryIds.map((entryId) =>
+                this.card({ accountId, role: "user" }, entryId),
+            ),
+        );
+        return {
+            ...deck,
+            cards: cards.filter((card): card is DeckDetail => !!card),
+        };
     }
 
     private async readable(
@@ -177,14 +192,19 @@ export class DeckService {
                         deck = await this.readable(this.store, actor, id);
                     },
                     read: async () => {
-                        cards =
-                            deck.ownerAccountId !== actor.accountId
-                                ? deck.cards
-                                : await Promise.all(
-                                      deck.entryIds.map((entryId) =>
-                                          this.card(actor, entryId),
-                                      ),
-                                  );
+                        const reader =
+                            deck.provider ||
+                            deck.ownerAccountId === actor.accountId
+                                ? actor
+                                : {
+                                      accountId: deck.ownerAccountId,
+                                      role: "user",
+                                  };
+                        cards = await Promise.all(
+                            deck.entryIds.map((entryId) =>
+                                this.card(reader, entryId),
+                            ),
+                        );
                     },
                     audit: () =>
                         this.log?.("info", "Study deck opened.", {
@@ -398,9 +418,17 @@ export class DeckService {
                             )
                                 throw new Error("invalid_deck_card");
                             if (
-                                deck.ownerAccountId === actor.accountId &&
                                 deck.entryIds.includes(cardId) &&
-                                !(await this.card(actor, cardId))
+                                !(await this.card(
+                                    deck.provider ||
+                                        deck.ownerAccountId === actor.accountId
+                                        ? actor
+                                        : {
+                                              accountId: deck.ownerAccountId,
+                                              role: "user",
+                                          },
+                                    cardId,
+                                ))
                             )
                                 throw new Error("deck_card_unavailable");
                             deck.progress[cardId] = nextReview(
@@ -408,12 +436,43 @@ export class DeckService {
                                 grade,
                             );
                         },
-                        persist: () =>
-                            store.saveProgress(
+                        persist: async () => {
+                            const note = deck.notes.find(
+                                (note) => note.id === cardId,
+                            );
+                            await store.saveProgress(
                                 actor.accountId,
                                 id,
                                 deck.progress,
-                            ),
+                            );
+                            await this.recordResult?.(
+                                {
+                                    accountId: actor.accountId,
+                                    entryId: cardId,
+                                    activity: "flashcards",
+                                    correct: grade !== "again",
+                                    deckId: id,
+                                    readerAccountId: deck.provider
+                                        ? actor.accountId
+                                        : deck.ownerAccountId,
+                                    ...(note
+                                        ? {
+                                              importedNote: {
+                                                  id: note.id,
+                                                  language:
+                                                      deck.language ?? "und",
+                                                  revision: createHash("sha256")
+                                                      .update(
+                                                          JSON.stringify(note),
+                                                      )
+                                                      .digest("hex"),
+                                              },
+                                          }
+                                        : {}),
+                                },
+                                actor,
+                            );
+                        },
                         audit: () => {
                             this.log?.("info", "Study flashcard reviewed.", {
                                 component: "study-flashcards",

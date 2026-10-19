@@ -139,6 +139,7 @@ export function bindLookupProviders(
                 }
                 applyLookupFields(form, fields, draft);
                 button.hidden = true;
+                button.dataset.libraryLookupApplied = label.normalize("NFKC");
                 showToast(i18n.t("gateway.study.library_lookup_applied"), {
                     variant: "success",
                 });
@@ -320,6 +321,8 @@ export function bindLookupProviders(
                 ? label
                 : (suggestion.label ?? label);
             draft.label = form.elements.label.value;
+            button.hidden = true;
+            button.dataset.libraryLookupApplied = form.libraryLookupLabel;
             showToast(i18n.t("gateway.study.library_lookup_applied"), {
                 variant: "success",
             });
@@ -331,6 +334,16 @@ export function bindLookupProviders(
             button.disabled = false;
         }
     };
+    form.addEventListener("input", () => {
+        const label = form.elements.label?.value.trim().normalize("NFKC");
+        for (const button of form.querySelectorAll(
+            "[data-library-lookup-applied]",
+        )) {
+            if (button.dataset.libraryLookupApplied === label) continue;
+            button.hidden = false;
+            delete button.dataset.libraryLookupApplied;
+        }
+    });
     let busy = false;
     const runLookup = (event) => {
         if (

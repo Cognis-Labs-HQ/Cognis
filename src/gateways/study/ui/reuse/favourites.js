@@ -2,7 +2,6 @@
  * Shared Study favourites and browse sorting for Library cards and flashcard decks.
  * Exports: loadFavourites() creates an account-scoped favourite controller;
  * renderFavourite(kind, id, i18n) renders a toggle; renderBrowseControls(i18n) renders sort/filter controls;
- * sortItems(items, order) sorts copies without changing provider order.
  * Example: const favourites = await loadFavourites(); favourites.bind(root, {signal, onChange: render});
  * @param {object[]} items Visible items with id, label/name and optional createdAt.
  * @returns {object[]} Sorted visible items.
@@ -23,26 +22,6 @@ export function renderFavourite(kind, id, i18n) {
 
 export function renderBrowseControls(i18n, { query = "" } = {}) {
     return `<span class="study-browse-controls"><input type="search" class="study-browse-search" data-study-query value="${escapeHtml(query)}" aria-label="${escapeHtml(i18n.t("ui.reuse.search"))}" placeholder="${escapeHtml(i18n.t("ui.reuse.search"))}"><label class="study-sort-control" title="${escapeHtml(i18n.t("ui.reuse.sort"))}"><span aria-hidden="true">⇅</span><select class="theme-select" data-study-sort aria-label="${escapeHtml(i18n.t("ui.reuse.sort"))}">${["default", "az", "za", "newest", "oldest"].map((order) => `<option value="${order}">${escapeHtml(i18n.t("ui.reuse.sort_" + order))}</option>`).join("")}</select></label><button class="btn-neutral study-favourite" type="button" data-study-favourites-only aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.favourites_only"))}">☆</button></span>`;
-}
-/** @param {object[]} items Items. @param {string} order Sort selection. @returns {object[]} Sorted copy. */
-
-export function sortItems(items, order) {
-    const result = [...items];
-    if (order === "az" || order === "za")
-        result.sort(
-            (a, b) =>
-                String(a.label ?? a.name).localeCompare(
-                    String(b.label ?? b.name),
-                ) * (order === "za" ? -1 : 1),
-        );
-    if (order === "newest" || order === "oldest")
-        result.sort(
-            (a, b) =>
-                ((Date.parse(a.createdAt ?? "") || 0) -
-                    (Date.parse(b.createdAt ?? "") || 0)) *
-                (order === "newest" ? -1 : 1),
-        );
-    return result;
 }
 /** @returns {Promise<object>} Controller with has, bind and refresh methods. */
 

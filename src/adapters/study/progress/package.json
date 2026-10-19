@@ -1,0 +1,12 @@
+{
+    "name": "@cognis/adapter-study-progress",
+    "version": "1.2.0",
+    "description": "Privacy-scoped immutable learning progress events and projections.",
+    "type": "module",
+    "main": "index.ts",
+    "private": true,
+    "dependencies": {
+        "@cognis/gateways": "<=0.1.19",
+        "@cognis/core": "<=0.4.4"
+    }
+}

@@ -1,4 +1,4 @@
-import { createSearchMatchResolver } from "/static/reuse/search-util/matching.js";
+import { filterItems } from "/static/reuse/collection-view.js";
 import { renderBrowseControls } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
@@ -138,24 +138,33 @@ export function refreshLibraryFilterResults(panel) {
         (item) => item.dataset.libraryFilter,
     );
     const query = panel.querySelector("[data-study-query]")?.value ?? "";
-    const match = createSearchMatchResolver(query);
     let visibleCount = 0;
     const filterableCards = panel.querySelectorAll(
         ".library-entry-card[data-library-filter-values]",
     );
+    const visibleCards = new Set(
+        filterItems(filterableCards, {
+            query,
+            text: (card) => card.textContent,
+            predicates: [
+                (card) => card.dataset.studyFavouriteHidden !== "true",
+                (card) => {
+                    const values = JSON.parse(card.dataset.libraryFilterValues);
+                    return Array.from(selections.entries()).every(
+                        ([fieldId, controls]) =>
+                            controls.some((control) =>
+                                (Array.isArray(values[fieldId])
+                                    ? values[fieldId]
+                                    : []
+                                ).includes(control.dataset.libraryFilterValue),
+                            ),
+                    );
+                },
+            ],
+        }),
+    );
     filterableCards.forEach((card) => {
-        const values = JSON.parse(card.dataset.libraryFilterValues);
-        const visible =
-            card.dataset.studyFavouriteHidden !== "true" &&
-            (!query || match(card.textContent)) &&
-            Array.from(selections.entries()).every(([fieldId, controls]) =>
-                controls.some((control) =>
-                    (Array.isArray(values[fieldId])
-                        ? values[fieldId]
-                        : []
-                    ).includes(control.dataset.libraryFilterValue),
-                ),
-            );
+        const visible = visibleCards.has(card);
         card.hidden = !visible;
         card.closest(".library-entry-card-shell").hidden = !visible;
         if (visible) visibleCount += 1;

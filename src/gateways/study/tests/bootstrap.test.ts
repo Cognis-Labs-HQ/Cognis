@@ -38,14 +38,22 @@ class ResponseRecorder extends EventEmitter {
 class RequestRecorder extends EventEmitter {
     method: string;
     headers: Record<string, string>;
+    body?: unknown;
+
+    async *[Symbol.asyncIterator]() {
+        if (this.body !== undefined)
+            yield Buffer.from(JSON.stringify(this.body));
+    }
 
     constructor(options: {
         method: string;
         bearerToken?: string;
         cookieToken?: string;
+        body?: unknown;
     }) {
         super();
         this.method = options.method;
+        this.body = options.body;
         this.headers = {};
         if (options.bearerToken) {
             this.headers.authorization = `Bearer ${options.bearerToken}`;
@@ -437,4 +445,62 @@ test("Study registers an executable dictionary search flow", async () => {
     }
     await systemCtx.flow.run("study:library:search", { query: "word" });
     assert.deepEqual(stages, ["authorize", "validate", "search", "audit"]);
+});
+
+test("the registered drawing endpoint records canonical results through the restored Progress capability", async () => {
+    const { capabilities, routeRegistry } = await bootstrapStudyGateway(
+        (capabilities) => {
+            capabilities.contribute("preferences:store", {
+                get: async () => null,
+                set: async () => {},
+                clearUser: async () => {},
+            });
+        },
+    );
+    const events: Array<{
+        actor: { accountId: string };
+        input: {
+            content: { contentId: string };
+            correct: boolean;
+            independentCorrect: boolean;
+        };
+    }> = [];
+    capabilities.contribute("study:library", {
+        read: async (_actor: unknown, id: string) => ({
+            id,
+            schemaId: "japanese",
+            layer: "kanji",
+            language: "ja",
+        }),
+    });
+    capabilities.contribute("study:progress", {
+        recordEvent: async (
+            actor: { accountId: string },
+            input: (typeof events)[number]["input"],
+        ) => {
+            events.push({ actor, input });
+        },
+    });
+    const response = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            cookieToken: issueAccessToken("learner", "user", 60),
+            body: {
+                strokeCount: 4,
+                mistakes: 0,
+                result: "correct",
+                assisted: true,
+            },
+        }),
+        response,
+        new URL("http://localhost/api/v1/study/drawing/card-a"),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(events.length, 1);
+    assert.equal(events[0].actor.accountId, "learner");
+    assert.equal(events[0].input.content.contentId, "card-a");
+    assert.equal(events[0].input.correct, true);
+    assert.equal(events[0].input.independentCorrect, false);
 });

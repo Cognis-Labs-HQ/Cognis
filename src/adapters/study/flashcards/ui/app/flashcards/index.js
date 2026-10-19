@@ -1,3 +1,4 @@
+import { sortItems, filterItems } from "/static/reuse/collection-view.js";
 import { createPracticeModePreference } from "../../reuse/practice-mode.js";
 import {
     createPracticeSession,
@@ -12,7 +13,6 @@ import {
 import { practiceSummary, practiceQueue } from "./practice-model.js";
 import { mountPractice } from "./practice.js";
 import { runDeckAction } from "./actions.js";
-import { createSearchMatchResolver } from "/static/reuse/search-util/matching.js";
 import {
     loadDeckTemplates,
     renderDeckBrowser,
@@ -20,10 +20,7 @@ import {
     renderDeckPreviews,
 } from "./markup.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
-import {
-    loadFavourites,
-    sortItems,
-} from "/static/gateways/study/reuse/favourites.js";
+import { loadFavourites } from "/static/gateways/study/reuse/favourites.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
@@ -310,13 +307,15 @@ export async function mount(root, { signal: routerSignal } = {}) {
     let releasePractice;
     let generation = 0;
     const visibleDecks = () => {
-        const match = createSearchMatchResolver(deckQuery);
         return sortItems(
-            decks.filter(
-                (deck) =>
-                    (!favouritesOnly || favourites.has("deck", deck.id)) &&
-                    (!deckQuery || match(deck.name)),
-            ),
+            filterItems(decks, {
+                query: deckQuery,
+                text: (deck) => deck.name,
+                predicates: [
+                    (deck) =>
+                        !favouritesOnly || favourites.has("deck", deck.id),
+                ],
+            }),
             sortOrder,
         );
     };
@@ -405,6 +404,41 @@ export async function mount(root, { signal: routerSignal } = {}) {
             return;
         }
         const detail = practiceSession.current;
+        let pendingReview;
+        const reviewedSession = practiceSession;
+        const recordAnswer = async (grade) => {
+            practiceSession.answer(grade);
+            persistSession();
+            if (!grade || practiceSession.answered) return true;
+            if (!pendingReview)
+                pendingReview = runDeckAction("review", async () => {
+                    const updated = await reviewStudyCard(
+                        session.deck.id,
+                        detail.entry.id,
+                        grade,
+                    );
+                    selected = updated;
+                    session.deck = updated;
+                    reviewedSession.record(grade, detail.entry.id);
+                    if (!signal.aborted && current === generation)
+                        persistSession();
+                    return true;
+                })
+                    .catch(() => {
+                        if (!signal.aborted)
+                            showToast(
+                                i18n.t(
+                                    "adapter.study.flashcards.deck_review_error",
+                                ),
+                                { variant: "error" },
+                            );
+                        return false;
+                    })
+                    .finally(() => {
+                        pendingReview = undefined;
+                    });
+            return pendingReview;
+        };
         releasePractice = mountPractice(target, {
             detail,
             templates,
@@ -412,14 +446,8 @@ export async function mount(root, { signal: routerSignal } = {}) {
             schemas,
             mode: practiceMode,
             navigationEntryIds: queue.map(({ entry }) => entry.id),
-            onDeparture: (grade) => {
-                practiceSession.answer(grade);
-                persistSession();
-            },
-            onAnswer: (grade) => {
-                practiceSession.answer(grade);
-                persistSession();
-            },
+            onDeparture: recordAnswer,
+            onAnswer: recordAnswer,
             answeredGrade: practiceSession.answeredGrade,
             onPrevious: practiceSession.canPrevious
                 ? () => {
@@ -431,21 +459,8 @@ export async function mount(root, { signal: routerSignal } = {}) {
             signal,
             onNext: async (grade) => {
                 try {
-                    if (grade && !practiceSession.answered) {
-                        const updated = await runDeckAction(
-                            "review",
-                            () =>
-                                reviewStudyCard(
-                                    session.deck.id,
-                                    detail.entry.id,
-                                    grade,
-                                ),
-                            signal,
-                        );
-                        if (signal.aborted || current !== generation) return;
-                        selected = updated;
-                        session.deck = updated;
-                    }
+                    if (!(await recordAnswer(grade))) return;
+                    if (signal.aborted || current !== generation) return;
                     practiceSession.next(grade);
                     const summary = practiceSummary(
                         session.cards,

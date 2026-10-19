@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { FlowApi } from "@cognis/core";
+import type { FlowApi, AccessRole } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import type { BootstrapLog } from "../../../shared.js";
@@ -8,6 +8,7 @@ import {
     validateDrawingCompletion,
     type DrawingProgressStore,
     type DrawingProgress,
+    type DrawingCompletion,
 } from "../progress.js";
 
 export function createDrawingRoutes(
@@ -15,6 +16,11 @@ export function createDrawingRoutes(
     auth: RouteContext,
     flow: FlowApi,
     log?: BootstrapLog,
+    recordResult?: (
+        actor: { accountId: string; role: AccessRole },
+        cardId: string,
+        input: DrawingCompletion,
+    ) => Promise<void>,
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (req, res, url) => {
         const match = /^\/api\/v1\/study\/drawing\/([^/]+)$/.exec(url.pathname);
@@ -55,6 +61,14 @@ export function createDrawingRoutes(
                                     );
                                     return;
                                 }
+                                await recordResult?.(
+                                    {
+                                        accountId: claims.sub,
+                                        role: claims.role,
+                                    },
+                                    cardId,
+                                    input as DrawingCompletion,
+                                );
                                 result = await service.complete(
                                     claims.sub,
                                     cardId,

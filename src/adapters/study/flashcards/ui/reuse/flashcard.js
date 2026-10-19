@@ -47,7 +47,11 @@ export function flashcardValues(detail, schemas = [], language = "en") {
     return {
         front: entry.label,
         back:
-            definitions.join("\n") || localizedMeaning(entry, layer, language),
+            definitions.join("\n") ||
+            localizedMeaning(entry, layer, language) ||
+            (layer?.semanticRole === "atomicWritingUnit"
+                ? pronunciation.split(" · ")[0]
+                : ""),
         pronunciation,
     };
 }

@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.study.progress.name">Lernfortschritt</string>
+  <string name="adapter.study.progress.description">Unveränderlicher Lernverlauf und wiederherstellbarer Fortschritt</string>
+</resources>

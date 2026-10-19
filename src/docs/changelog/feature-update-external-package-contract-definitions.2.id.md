@@ -62,3 +62,7 @@ Impor kamus menguraikan isi kartu yang belum tertaut menjadi referensi lengkap d
 - [581b6928](https://github.com/Cognis-Labs-HQ/Cognis/commit/581b69283476ee95d6f7d65f4a3566332a2ec81a)
 - [20d0c172](https://github.com/Cognis-Labs-HQ/Cognis/commit/20d0c172e97697a4aed295b2e25f6346d2b9edfc)
 - [5a5d026f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a5d026f1e4be9b474c3e1f458d3fbe6cd5ac967)
+
+## Pemulihan Kapabilitas Belajar
+
+Kemajuan, papan peringkat, penilaian dan administrasi kuota tersedia melalui komponen pemiliknya. Hasil menggambar dan kartu latihan menggunakan Kemajuan; jawaban dengan bantuan tidak dihitung sebagai benar secara mandiri. Dek bersama memuat entri Pustaka terkini berdasarkan ID, sedangkan catatan impor mempertahankan identitas kanonis tersendiri. Pilihan membaca menggunakan definisi terlokalisasi dan bacaan karakter. Elemen pelafalan menggunakan tautan karakter kanonis; pencarian kamus yang selesai disembunyikan, kartu Pustaka dapat disunting dan urutan Pustaka membedakan waktu pembuatan yang sama.

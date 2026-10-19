@@ -41,6 +41,12 @@ export function createPracticeSession(cards, snapshot) {
                     attempts.get(index) === "again" ? "again" : grade,
                 );
         },
+        record(grade, entryId = cards[index]?.entry.id) {
+            const position = cards.findIndex(
+                ({ entry }) => entry.id === entryId,
+            );
+            if (position >= 0) grades.set(position, grade);
+        },
         next(grade) {
             if (grade) grades.set(index, grade);
             index = Math.min(cards.length, index + 1);

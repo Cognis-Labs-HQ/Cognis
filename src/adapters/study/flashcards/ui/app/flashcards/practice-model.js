@@ -24,23 +24,56 @@ export function practiceQueue(cards, progress, filter, now = Date.now()) {
 }
 
 export function readingChoices(detail, entries, schemas, language) {
-    const correct = flashcardValues(
-        detail,
-        schemas,
-        language,
-    ).pronunciation.split(" · ")[0];
+    const records = new Map(
+        [...entries, ...(detail.references ?? [])].map((entry) => [
+            entry.id,
+            entry,
+        ]),
+    );
+    const answerFor = (entry) => {
+        const references =
+            entry.id === detail.entry.id
+                ? (detail.references ?? [])
+                : (entry.references ?? [])
+                      .map(({ entryId }) => records.get(entryId))
+                      .filter(Boolean);
+        return flashcardValues({ entry, references }, schemas, language)
+            .back.split("\n")[0]
+            .trim();
+    };
+    const correct = answerFor(detail.entry);
     if (!correct) return [];
-    const choices = [{ entry: detail.entry, text: correct, correct: true }];
-    const seen = new Set([correct]);
-    for (const entry of similarEntries(detail.entry, entries, entries.length)) {
-        const text = flashcardValues(
-            { entry },
-            schemas,
-            language,
-        ).pronunciation.split(" · ")[0];
-        if (!text || seen.has(text)) continue;
-        seen.add(text);
-        choices.push({ entry, text, correct: false });
+    const choices = [
+        {
+            entry: detail.entry,
+            entryId: detail.entry.id,
+            text: correct,
+            correct: true,
+        },
+    ];
+    const normalized = (value) =>
+        value.normalize("NFKC").toLocaleLowerCase().trim();
+    const seen = new Set([normalized(correct)]);
+    const candidates = [
+        ...new Map(
+            [
+                ...similarEntries(detail.entry, entries, entries.length),
+                ...entries.filter(
+                    (entry) =>
+                        entry.id !== detail.entry.id &&
+                        entry.schemaId === detail.entry.schemaId &&
+                        entry.layer === detail.entry.layer &&
+                        entry.language === detail.entry.language &&
+                        entry.hidden !== true,
+                ),
+            ].map((entry) => [entry.id, entry]),
+        ).values(),
+    ];
+    for (const entry of candidates) {
+        const text = answerFor(entry);
+        if (!text || seen.has(normalized(text))) continue;
+        seen.add(normalized(text));
+        choices.push({ entry, entryId: entry.id, text, correct: false });
         if (choices.length === 4) break;
     }
     if (choices.length !== 4) return [];

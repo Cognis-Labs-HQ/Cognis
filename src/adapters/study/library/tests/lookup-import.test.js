@@ -88,6 +88,7 @@ test("dictionary results directly import definitions, source fields, readings, g
             selector.startsWith("[data-library-lookup-provider=")
                 ? button
                 : input,
+        querySelectorAll: () => [button],
         dispatchEvent() {},
     };
     const context = {
@@ -175,6 +176,7 @@ test("dictionary results directly import definitions, source fields, readings, g
     assert.equal(option.selected, true);
     assert.deepEqual(form.referenceGroups, suggestions[0].referenceGroups);
     assert.equal(button.disabled, false);
+    assert.equal(button.hidden, true);
     assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
 
     // Search results without spelling links commit their character composition
@@ -212,7 +214,13 @@ test("dictionary results directly import definitions, source fields, readings, g
     assert.equal(input.value, "");
     assert.equal(pronunciation.value, "てすと");
     assert.equal(form.elements.label.value, "テスト");
+    assert.equal(button.hidden, true);
+    assert.equal(button.dataset.libraryLookupApplied, "テスト");
     assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
+    form.elements.label.value = "変更";
+    listeners.get("input")();
+    assert.equal(button.hidden, false);
+    assert.equal(button.dataset.libraryLookupApplied, undefined);
 });
 
 test("stroke-pattern lookup applies the pattern directly without dictionary preview or definition creation", async () => {

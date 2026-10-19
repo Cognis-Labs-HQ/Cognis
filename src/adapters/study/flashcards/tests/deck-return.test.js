@@ -136,8 +136,8 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     assert.equal(mounts.at(-1).mode, "writing");
     await mounts.at(-1).onNext("good");
     assert.equal(mounts.at(-1).detail.entry.id, "two");
-    mounts.at(-1).onAnswer("again");
-    mounts.at(-1).onDeparture("again");
+    await mounts.at(-1).onAnswer("again");
+    await mounts.at(-1).onDeparture("again");
     const savedHistory = JSON.parse(JSON.stringify(history.state));
     assert.equal(savedHistory.routerIndex, 7);
     history.state = { studyEntryId: "two" };

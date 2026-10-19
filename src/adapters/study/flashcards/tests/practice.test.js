@@ -101,37 +101,54 @@ test("every supported browser deck action executes registered ctx stages and res
     );
 });
 
-test("reading choices come from ranked visible Library similarities and contain exactly one correct unique pronunciation", () => {
-    const entry = {
-        id: "one",
-        label: "学",
-        schemaId: "ja",
-        layer: "kanji",
-        language: "ja",
-        fields: { pronunciation: ["がく"] },
-    };
-    const entries = [
-        entry,
-        ...["かく", "さく", "たく", "がく", ""].map((reading, index) => ({
-            ...entry,
-            id: `other-${index}`,
-            label: `学${index}`,
-            fields: { pronunciation: [reading] },
-        })),
+test("reading choices resolve localized definitions by Library ID and reflect edited meanings", () => {
+    const schemas = [
         {
-            ...entry,
-            id: "hidden",
-            hidden: true,
-            fields: { pronunciation: ["ひみつ"] },
+            id: "ja",
+            layers: [
+                { id: "words", semanticRole: "lexicalUnit" },
+                {
+                    id: "meanings",
+                    semanticRole: "definition",
+                    fields: [{ id: "text", type: "localizedText" }],
+                },
+            ],
         },
     ];
-    const choices = environment.readingChoices({ entry }, entries, [], "en");
+    const meanings = ["word", "water", "school", "cat", "word"].map(
+        (text, index) => ({
+            id: `meaning-${index}`,
+            schemaId: "ja",
+            layer: "meanings",
+            fields: { text: { en: text, de: `de-${text}` } },
+        }),
+    );
+    const words = meanings.map((meaning, index) => ({
+        id: `word-${index}`,
+        label: `言葉${index}`,
+        schemaId: "ja",
+        layer: "words",
+        language: "ja",
+        fields: { pronunciation: ["ことば"] },
+        references: [{ entryId: meaning.id }],
+    }));
+    const detail = { entry: words[0], references: [meanings[0]] };
+    const entries = [...words, ...meanings];
+    const choices = environment.readingChoices(detail, entries, schemas, "en");
     assert.equal(choices.length, 4);
     assert.equal(new Set(choices.map(({ text }) => text)).size, 4);
     assert.equal(choices.filter(({ correct }) => correct).length, 1);
-    assert.equal(choices.find(({ correct }) => correct).text, "がく");
+    assert.equal(choices.find(({ correct }) => correct).text, "word");
+    assert.equal(choices.find(({ correct }) => correct).entryId, words[0].id);
+    meanings[0].fields.text.de = "Wort";
     assert.equal(
-        environment.readingChoices({ entry }, entries.slice(0, 2), [], "en")
+        environment
+            .readingChoices(detail, entries, schemas, "de")
+            .find(({ correct }) => correct).text,
+        "Wort",
+    );
+    assert.equal(
+        environment.readingChoices(detail, words.slice(0, 2), schemas, "en")
             .length,
         0,
     );
@@ -423,7 +440,7 @@ test("cards without reading distractors can reveal their answer without switchin
     harness.dispose();
 });
 
-test("Reading submissions show one result toast and animate the submitted option", async () => {
+test("Reading submissions acknowledge the result in the view and animate the submitted option", async () => {
     for (const correct of [true, false]) {
         const harness = practiceHarness("due");
         const { control } = await harness.click("[data-reading-choice]", {
@@ -433,17 +450,19 @@ test("Reading submissions show one result toast and animate the submitted option
             control.dataset.readingResult,
             correct ? "correct" : "incorrect",
         );
-        assert.equal(harness.toasts.length, 1);
+        const feedback = harness.nodes.get("[data-practice-feedback]");
+        assert.equal(feedback.hidden, false);
         assert.equal(
-            harness.toasts[0].message,
+            feedback.dataset.result,
+            correct ? "correct" : "incorrect",
+        );
+        assert.equal(
+            feedback.textContent,
             `adapter.study.flashcards.practice_${correct ? "correct" : "incorrect"}`,
         );
-        assert.equal(
-            harness.toasts[0].variant,
-            correct ? "success" : "warning",
-        );
+        assert.equal(harness.toasts.length, 0);
         await harness.click("[data-reading-choice]", { readingChoice: "0" });
-        assert.equal(harness.toasts.length, 1);
+        assert.equal(harness.toasts.length, 0);
         harness.dispose();
     }
 });

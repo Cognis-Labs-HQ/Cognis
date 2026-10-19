@@ -306,6 +306,25 @@ async function createDrawingPad({
     let hiddenGuideIndices = new Set();
     let attemptNumber = 0;
     let pendingCompletion;
+    const persistAttempt = async (result) => {
+        const attempt = attemptNumber;
+        const sequence = loadSequence;
+        const request = recordDrawingCompletion(currentCard.id, {
+            strokeCount: currentPattern.strokes.length,
+            mistakes,
+            result,
+            assisted: assistedAttempt,
+        });
+        pendingCompletion = request;
+        try {
+            const saved = await request;
+            if (attempt === attemptNumber && sequence === loadSequence)
+                progress = saved;
+            return saved;
+        } finally {
+            if (pendingCompletion === request) pendingCompletion = undefined;
+        }
+    };
     let loadSequence = 0;
     stage.style.visibility = "hidden";
     const resetHiddenGuides = () => {
@@ -318,6 +337,7 @@ async function createDrawingPad({
             difficulty,
         );
     };
+    let assistedAttempt = false;
     let revealHiddenGuides = false;
     let hasStarted = false;
     let active = null;
@@ -564,28 +584,18 @@ async function createDrawingPad({
                             completed.length === currentPattern.strokes.length
                         ) {
                             const finishedAttempt = attemptNumber;
-                            const completionRequest = recordDrawingCompletion(
-                                currentCard.id,
-                                {
-                                    strokeCount: currentPattern.strokes.length,
-                                    mistakes,
-                                },
-                            );
-                            pendingCompletion = completionRequest;
-                            let saved;
-                            try {
-                                saved = await completionRequest;
-                            } finally {
-                                if (pendingCompletion === completionRequest)
-                                    pendingCompletion = undefined;
-                            }
+                            const saved = await persistAttempt("correct");
                             if (
                                 finishedAttempt !== attemptNumber ||
                                 controller.signal.aborted
                             )
                                 return;
                             progress = saved;
-                            onResult?.({ correct: true, mistakes });
+                            onResult?.({
+                                correct: true,
+                                assisted: assistedAttempt,
+                                mistakes,
+                            });
                             animateResult("is-success");
                             playSuccessSound();
                             completion.classList.remove("is-failure");
@@ -608,6 +618,14 @@ async function createDrawingPad({
                         successiveMistakes += 1;
                         animateResult("is-error");
                         if (successiveMistakes >= 10) {
+                            const finishedAttempt = attemptNumber;
+                            const saved = await persistAttempt("incorrect");
+                            if (
+                                finishedAttempt !== attemptNumber ||
+                                controller.signal.aborted
+                            )
+                                return;
+                            progress = saved;
                             completion.classList.add("is-failure");
                             completion.querySelector(
                                 "[data-result-message]",
@@ -635,8 +653,10 @@ async function createDrawingPad({
             i18n,
             schemas,
             getCard: () => currentCard,
-            onReveal: () =>
-                onResult?.({ correct: false, assisted: true, mistakes }),
+            onReveal: () => {
+                assistedAttempt = true;
+                onResult?.({ correct: false, assisted: true, mistakes });
+            },
             runAction: (work) =>
                 runDrawingAction("reveal", work, controller.signal),
             reportFailure,
@@ -662,6 +682,7 @@ async function createDrawingPad({
                     active = null;
                     mistakes = 0;
                     successiveMistakes = 0;
+                    assistedAttempt = false;
                     revealHiddenGuides = false;
                     completion.hidden = true;
                     pad.classList.remove("is-complete");
@@ -769,6 +790,7 @@ async function createDrawingPad({
                     active = null;
                     mistakes = 0;
                     successiveMistakes = 0;
+                    assistedAttempt = false;
                     revealHiddenGuides = false;
                     completion.hidden = true;
                     completion.classList.remove("is-failure");
@@ -795,6 +817,8 @@ async function createDrawingPad({
                 "guidance",
                 () => {
                     revealHiddenGuides = true;
+                    assistedAttempt = true;
+                    onResult?.({ correct: false, assisted: true, mistakes });
                     pad.querySelector("[data-guidance]").disabled = true;
                     draw();
                 },
@@ -844,6 +868,7 @@ async function createDrawingPad({
         active = null;
         mistakes = 0;
         successiveMistakes = 0;
+        assistedAttempt = false;
         completion.hidden = true;
         completion.classList.remove("is-failure");
         pad.classList.remove("is-complete");

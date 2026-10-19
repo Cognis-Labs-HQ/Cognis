@@ -1,3 +1,5 @@
+import type { AccessRole } from "@cognis/core";
+import { recordStudyResult } from "../../../gateways/study/progress.js";
 import { providerDecks } from "./providers.js";
 import type { Ctx } from "@cognis/core";
 import type {
@@ -77,6 +79,12 @@ export async function bootstrapStudyAdapter(
                 ctx.capabilities.get<DeckLibrary>("study:library"),
                 actor,
                 id,
+            ),
+        (result, actor) =>
+            recordStudyResult(
+                ctx.capabilities,
+                { accountId: actor.accountId, role: actor.role as AccessRole },
+                result,
             ),
     );
     ctx.capabilities.contribute("study:decks", service);

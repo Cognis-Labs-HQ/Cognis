@@ -1,3 +1,4 @@
+import { recordStudyResult } from "./progress.js";
 import { StudyAudio } from "./audio.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
@@ -241,6 +242,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 routeHelpers,
                 ctx.flow,
                 ctx.log,
+                (actor, entryId, result) =>
+                    recordStudyResult(ctx.capabilities, actor, {
+                        accountId: actor.accountId,
+                        entryId,
+                        activity: "drawing",
+                        correct: result.result !== "incorrect",
+                        assisted: result.assisted,
+                        mistakes: result.mistakes,
+                    }),
             ),
             "study",
         );

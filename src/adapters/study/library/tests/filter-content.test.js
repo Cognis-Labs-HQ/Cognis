@@ -4,6 +4,8 @@ import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { groupByToMap } from "../../../../ui/reuse/group-by.js";
 
+import { filterItems } from "../../../../ui/reuse/collection-view.js";
+
 const source = readFileSync(
     new URL("../ui/app/filters.js", import.meta.url),
     "utf8",
@@ -14,6 +16,7 @@ test("word-type filters reflect visible selected-layer content rather than every
     const context = {
         escapeHtml: String,
         groupByToMap,
+        filterItems,
         renderBrowseControls: () => "<select data-study-sort></select>",
         filterFields: () => [],
         localizedLabel: () => "",
@@ -50,6 +53,7 @@ test("word-type filters reflect visible selected-layer content rather than every
 test("current-page quick search immediately combines text with the existing card filters", () => {
     const context = {
         groupByToMap,
+        filterItems,
         createSearchMatchResolver: (query) => (value) =>
             value.toLowerCase().includes(query.toLowerCase()),
     };

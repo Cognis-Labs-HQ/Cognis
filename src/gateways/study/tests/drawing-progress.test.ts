@@ -26,12 +26,14 @@ function fixture() {
     for (const flow of DRAWING_PROGRESS_FLOWS) ctx.registerFlow(flow);
     const service = new DrawingProgressStore(preferences);
     const logs: unknown[][] = [];
+    const recorded: unknown[] = [];
     const route = createDrawingRoutes(
         service,
         {
             requireAuth: (req: IncomingMessage, res: ServerResponse) => {
                 const account = req.headers["test-account"];
-                if (typeof account === "string") return { sub: account };
+                if (typeof account === "string")
+                    return { sub: account, role: "user" };
                 res.writeHead(401);
                 res.end();
                 return null;
@@ -39,6 +41,9 @@ function fixture() {
         } as RouteContext,
         ctx.flow,
         (...args) => logs.push(args),
+        async (actor, cardId, input) => {
+            recorded.push({ actor, cardId, input });
+        },
     );
     return {
         ctx,
@@ -46,6 +51,7 @@ function fixture() {
         preferences,
         values,
         logs,
+        recorded,
         rejectWrites: (reject: boolean) => {
             rejectWrite = reject;
         },
@@ -214,4 +220,31 @@ test("drawing routes authenticate, reject share identities and invalid writes, a
     assert.deepEqual(order, ["authorize", "validate"]);
     assert.equal(state.values.size, 0);
     assert.ok(state.logs.some((log) => log[0] === "error"));
+});
+
+test("drawing results reach the progress integration only after validation and preserve assistance and failure", async () => {
+    const state = fixture();
+    for (const result of ["correct", "incorrect"] as const) {
+        const input = {
+            strokeCount: 4,
+            mistakes: result === "incorrect" ? 10 : 1,
+            result,
+            assisted: true,
+        };
+        assert.equal(
+            (await state.request("learner", "POST", input)).status,
+            200,
+        );
+        assert.deepEqual(state.recorded.at(-1), {
+            actor: { accountId: "learner", role: "user" },
+            cardId: "card-a",
+            input,
+        });
+    }
+    assert.equal(
+        (await state.request("learner")).payload.data.hiddenStrokeCount,
+        0,
+    );
+    await state.request("learner", "POST", { strokeCount: 0, mistakes: 0 });
+    assert.equal(state.recorded.length, 2);
 });

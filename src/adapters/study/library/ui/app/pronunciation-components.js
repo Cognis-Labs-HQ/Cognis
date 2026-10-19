@@ -32,16 +32,20 @@ export function pronunciationComponents(form, value, index, entries, schema) {
         return [];
     };
     for (const groups of Object.values(form.referenceGroups ?? {})) {
-        const components = (groups[index] ?? []).flatMap((reference) =>
-            expand(reference),
-        );
-        if (
-            components
-                .map(({ label }) => label)
-                .join("")
-                .normalize("NFKC") === value.normalize("NFKC")
-        )
-            return components;
+        const candidates = [
+            groups[index],
+            ...groups.filter((_group, position) => position !== index),
+        ].filter(Boolean);
+        for (const group of candidates) {
+            const components = group.flatMap((reference) => expand(reference));
+            if (
+                components
+                    .map(({ label }) => label)
+                    .join("")
+                    .normalize("NFKC") === value.normalize("NFKC")
+            )
+                return components;
+        }
     }
     return [];
 }

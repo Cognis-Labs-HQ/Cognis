@@ -18,6 +18,8 @@ export interface DrawingProgress {
 }
 
 export interface DrawingCompletion {
+    result?: "correct" | "incorrect";
+    assisted?: boolean;
     strokeCount: number;
     mistakes: number;
 }
@@ -33,6 +35,9 @@ export function validateDrawingCompletion(
     const value = input as DrawingCompletion | null;
     if (
         !value ||
+        (value.result !== undefined &&
+            !["correct", "incorrect"].includes(value.result)) ||
+        (value.assisted !== undefined && typeof value.assisted !== "boolean") ||
         !Number.isSafeInteger(value.strokeCount) ||
         value.strokeCount < 1 ||
         value.strokeCount > 10000 ||
@@ -82,11 +87,16 @@ export class DrawingProgressStore {
             async () => {
                 const previous = await this.get(accountId, cardId);
                 const progress = {
-                    completed: true,
+                    completed:
+                        previous.completed || input.result !== "incorrect",
                     hiddenStrokeCount: Math.min(
                         input.strokeCount,
                         previous.hiddenStrokeCount +
-                            (input.mistakes <= 1 ? 1 : 0),
+                            (input.result !== "incorrect" &&
+                            !input.assisted &&
+                            input.mistakes <= 1
+                                ? 1
+                                : 0),
                     ),
                 };
                 await this.preferences.set(

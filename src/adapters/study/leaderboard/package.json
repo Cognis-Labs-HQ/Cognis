@@ -1,0 +1,13 @@
+{
+    "name": "@cognis/adapter-study-leaderboard",
+    "version": "1.1.6",
+    "description": "Evidence-backed, privacy-safe study leaderboards.",
+    "type": "module",
+    "main": "index.ts",
+    "private": true,
+    "dependencies": {
+        "@cognis/gateways": "<=0.1.19",
+        "@cognis/core": "<=0.4.4",
+        "@cognis/adapter-study-progress": "<=1.2.0"
+    }
+}

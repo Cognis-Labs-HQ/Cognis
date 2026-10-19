@@ -103,12 +103,15 @@ export function mountPractice(
                 strokePattern: pattern,
                 container: target.querySelector("[data-practice-drawing]"),
                 signal: controller.signal,
-                onResult: ({ correct }) =>
+                onResult: ({ correct, assisted: drawingAssisted }) =>
                     void runDeckAction(
                         "answer",
                         () => {
                             grade =
-                                correct && !assisted && grade !== "again"
+                                correct &&
+                                !assisted &&
+                                !drawingAssisted &&
+                                grade !== "again"
                                     ? "good"
                                     : "again";
                             onAnswer?.(grade);
@@ -151,9 +154,9 @@ export function mountPractice(
                 ) {
                     await runDeckAction(
                         "depart",
-                        () => {
+                        async () => {
                             assisted ||= !grade;
-                            onDeparture?.(grade ?? "again");
+                            await onDeparture?.(grade ?? "again");
                         },
                         controller.signal,
                     );
@@ -185,7 +188,7 @@ export function mountPractice(
                             ],
                         });
                         if (choice === "leave") {
-                            onDeparture?.(grade ?? "again");
+                            await onDeparture?.(grade ?? "again");
                             await navigateTo(link.getAttribute("href"), {
                                 state: {
                                     studyEntryId: link.dataset.entryId,
@@ -249,14 +252,16 @@ export function mountPractice(
                         choice.dataset.readingResult = correct
                             ? "correct"
                             : "incorrect";
-                        showToast(
-                            i18n.t(
-                                `adapter.study.flashcards.practice_${correct ? "correct" : "incorrect"}`,
-                            ),
-                            {
-                                variant: correct ? "success" : "warning",
-                            },
+                        const feedback = target.querySelector(
+                            "[data-practice-feedback]",
                         );
+                        feedback.dataset.result = correct
+                            ? "correct"
+                            : "incorrect";
+                        feedback.textContent = i18n.t(
+                            `adapter.study.flashcards.practice_${correct ? "correct" : "incorrect"}`,
+                        );
+                        feedback.hidden = false;
                         target
                             .querySelectorAll("[data-reading-choice]")
                             .forEach((button) => {

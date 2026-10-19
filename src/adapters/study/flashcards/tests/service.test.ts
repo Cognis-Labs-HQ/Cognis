@@ -75,13 +75,14 @@ function session(
     const ctx = createCtx();
     registerDeckFlows(ctx);
     let readable = true;
+    let label = "Card";
     const library = {
         listSchemas: () => (language ? [{ id: "schema", language }] : []),
         read: async () => null,
         trace: async (actor: { accountId: string }, id: string) => {
             if (!readable || id !== "public") throw new Error("forbidden");
             return {
-                entry: { id, label: "Card", schemaId: "schema" },
+                entry: { id, label, schemaId: "schema" },
                 references: [],
             };
         },
@@ -96,6 +97,9 @@ function session(
             access,
             received,
         ),
+        setLabel: (value: string) => {
+            label = value;
+        },
         setReadable: (value: boolean) => {
             readable = value;
         },
@@ -333,4 +337,25 @@ test("deck language is inferred and persisted while mismatched imports are rejec
         records.filter((row) => row.table === "study_decks").length,
         1,
     );
+});
+
+test("shared Library cards resolve current content after edits and omit unavailable entries", async () => {
+    const { service, setLabel, setReadable } = session(async () => true);
+    const deck = await service.save(owner, {
+        name: "Current",
+        entryIds: ["public"],
+    });
+    setLabel("Updated meaning");
+    const learner = { accountId: "learner", role: "user" };
+    assert.equal(
+        (await service.details(learner, deck.id)).cards[0].entry.label,
+        "Updated meaning",
+    );
+    assert.equal(
+        (await service.owned(owner.accountId, deck.id))?.cards[0].entry.label,
+        "Updated meaning",
+    );
+    setReadable(false);
+    assert.equal((await service.details(learner, deck.id)).cards.length, 0);
+    assert.equal((await service.details(learner, deck.id)).unavailable, 1);
 });

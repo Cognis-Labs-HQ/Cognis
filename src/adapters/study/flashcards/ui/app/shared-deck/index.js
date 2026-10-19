@@ -7,7 +7,7 @@ import { mountPractice } from "../flashcards/practice.js";
 import { loadDeckTemplates } from "../flashcards/markup.js";
 import { runDeckAction } from "../flashcards/actions.js";
 
-/** Shared snapshots are new cards in a temporary session without granting Library access. */
+/** Authorized shared Library cards are new cards in a temporary session without granting Library access. */
 export async function mount(root, { shareContext, i18n, signal } = {}) {
     const deck = shareContext.payload.deck;
     const schemas = deck.schemas;
@@ -85,7 +85,10 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
                 : null,
             templates,
             schemas,
-            entries: [],
+            entries: queue.flatMap((detail) => [
+                detail.entry,
+                ...detail.references,
+            ]),
             mode: modePreference.value,
             onAnswer: (grade) => practiceSession.answer(grade),
             i18n,

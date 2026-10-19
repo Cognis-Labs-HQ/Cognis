@@ -55,11 +55,11 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.2`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.15` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.16` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.1`   |
-| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.3.8`   |
-| Progress (Study)      | `src/adapters/study/progress/`      | `1.1.7`   |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.5`   |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.4.0`   |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.2.0`   |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.6`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`   |
 
@@ -73,24 +73,24 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`  |
 | Social                | `src/gateways/social/`        | `1.3.6`   |
-| File Storage (files)  | `src/gateways/files/`         | `2.2.0`   |
+| File Storage (files)  | `src/gateways/files/`         | `2.2.1`   |
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.0.6`   |
+| Study                 | `src/gateways/study/`         | `2.1.0`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kernverträge
 
 | Komponente   | Pfad        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.4.3` |
+| Core Package | `src/core/` | `0.4.4` |
 
 ## API
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.6.12` |
+| API Server | `src/api/` | `0.6.13` |
 
 ## Werkzeuge
 

@@ -72,3 +72,21 @@ test("unknown or cyclic hidden readings cannot create guessed pronunciation link
         [],
     );
 });
+
+test("manual and auto-derived pronunciations find identical canonical components across relationship-group indices", () => {
+    const form = {
+        referenceGroups: {
+            automatic: [[{ entryId: "reading" }]],
+            manual: [[{ entryId: "reading" }]],
+        },
+    };
+    const entries = [...kana, { ...reading, id: "reading" }];
+    assert.deepEqual(
+        pronunciationComponents(form, "ねん", 1, entries, schema),
+        pronunciationComponents(form, "ねん", 0, entries, schema),
+    );
+    assert.equal(
+        pronunciationComponents(form, "ねん", 1, entries, schema).length,
+        2,
+    );
+});

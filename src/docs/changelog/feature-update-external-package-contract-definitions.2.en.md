@@ -56,6 +56,10 @@ Popup title links retain their compact text appearance and inherited typography 
 
 Dictionary imports resolve unlinked card contents into complete, ordered references to existing character cards from the active schema and configured input carousels. Repeated kana and mixed writing units retain their positions; supplied composition links and dictionary readings remain authoritative. Incomplete matches stay available for manual resolution. When a complete sequence suggestion is offered for manually entered text, the redundant single-character suggestion is hidden.
 
+## Restored Study Capabilities
+
+Progress, Leaderboard, scoring and quota administration are available through their owning components. Drawing and flashcard results use Progress; assisted answers do not count as independently correct. Shared decks resolve current Library entries by ID, while imported notes retain a separate canonical identity. Reading choices use localized definitions and writing-unit readings. Pronunciation chips share canonical character links; dictionary imports hide the completed lookup, Library rows open editable cards, and chronological sorting breaks timestamp ties by Library sequence.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

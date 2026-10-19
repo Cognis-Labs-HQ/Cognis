@@ -1,10 +1,8 @@
+import { sortItems } from "/static/reuse/collection-view.js";
 import { renderEntryCard } from "./cards.js";
 import { layerForEntry } from "./presentation.js";
 import { showToast } from "/static/reuse/toast.js";
-import {
-    loadFavourites,
-    sortItems,
-} from "/static/gateways/study/reuse/favourites.js";
+import { loadFavourites } from "/static/gateways/study/reuse/favourites.js";
 import { refreshLibraryFilterResults } from "./filters.js";
 
 /** Binds Study's shared controls without changing provider grid ordering by default. */

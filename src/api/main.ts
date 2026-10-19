@@ -7,6 +7,7 @@ import type {
 } from "@cognis/core";
 import {
     createCtx,
+    registerEngagementCapabilities,
     createProbeCache,
     CORE_CACHE_CAPABILITY,
     GatewayService,
@@ -290,6 +291,15 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+const { scoring: scoringEngine, achievements: achievementRegistry } =
+    registerEngagementCapabilities(systemCtx);
+capabilities.contribute("engagement:scoring", scoringEngine);
+capabilities.contribute("engagement:achievements", achievementRegistry);
+capabilities.contribute(
+    "engagement:recordActivity",
+    systemCtx.requireCapability("engagement:recordActivity"),
+);
+
 capabilities.contribute(CORE_CACHE_CAPABILITY, createProbeCache);
 capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
 systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);

@@ -201,6 +201,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.registerPrefix("/api/v1/files", "files");
     const uiDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
     ctx.uiRegistry?.registerStaticDir("files", uiDir);
+    ctx.uiRegistry?.registerAdminSection({
+        id: "file-namespace-quotas",
+        label: "File namespace quotas",
+        scriptUrl: "/static/gateways/files/admin-section.js",
+        stringsBaseUrl: "/static/gateways/files/languages",
+    });
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/files/provider.js",
         providesCapabilities: ["files:uiClient"],

@@ -69,6 +69,13 @@
     <section class="study-practice" data-practice>
         <div class="study-practice-heading">{favourite}{entry_heading}</div>
         <div class="study-practice-modes">{modes}</div>
+        <div
+            class="study-practice-feedback"
+            data-practice-feedback
+            role="status"
+            aria-live="polite"
+            hidden
+        ></div>
         <div data-practice-task>{task}</div>
         <section class="study-flashcard-answer" data-practice-answer hidden>
             <div data-practice-front>{front}</div>
@@ -94,7 +101,7 @@
 </template>
 
 <template data-deck-template="mode">
-    <label
+    <label class="study-practice-mode-preference"
         >{label}<select class="theme-select" data-practice-mode-preference>
             <option value="reading">{reading}</option>
             <option value="writing">{writing}</option>

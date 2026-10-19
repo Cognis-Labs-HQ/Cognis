@@ -56,6 +56,10 @@ Verlinkte Popup-Titel behalten ihre kompakte Textdarstellung und geerbte Typogra
 
 Wörterbuchimporte lösen noch nicht verknüpfte Karteninhalte vollständig in geordnete Verweise auf vorhandene Zeichenkarten des aktiven Schemas und der konfigurierten Eingabekarussells auf. Wiederholte Kana und gemischte Schreibeinheiten behalten ihre Positionen; gelieferte Kompositionsverweise und Wörterbuchlesungen bleiben maßgeblich. Unvollständige Treffer bleiben zur manuellen Auflösung verfügbar. Bei einem vollständigen Sequenzvorschlag für manuell eingegebenen Text wird der redundante Einzelzeichenvorschlag ausgeblendet.
 
+## Wiederhergestellte Lernfunktionen
+
+Fortschritt, Ranglisten, Punkteberechnung und Kontingentverwaltung sind über ihre zuständigen Komponenten verfügbar. Zeichen- und Karteikartenergebnisse verwenden den Fortschrittsadapter; unterstützte Antworten gelten nicht als selbstständig richtig. Geteilte Stapel laden aktuelle Bibliothekseinträge anhand ihrer ID; importierte Notizen behalten eine eigene kanonische Identität. Leseantworten verwenden lokalisierte Definitionen und Zeichenlesungen. Ausspracheelemente verwenden kanonische Zeichenverweise; abgeschlossene Wörterbuchabfragen werden ausgeblendet, Bibliothekskarten sind bearbeitbar und Zeitstempelgleichstände werden anhand der Bibliotheksreihenfolge aufgelöst.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

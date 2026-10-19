@@ -591,7 +591,6 @@ export function bindAdminLibraryInteractions(
                 editorOpen
             )
                 return;
-            const readOnly = !button;
             const entry = entries.find(
                 ({ id }) =>
                     id ===
@@ -599,6 +598,7 @@ export function bindAdminLibraryInteractions(
                         row?.dataset.libraryEntry),
             );
             if (!entry) return;
+            const readOnly = entryEditMode(entry) === null;
             const schema = schemas.find(({ id }) => id === entry.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry.layer);
             const composer = resolveComposerContract(
