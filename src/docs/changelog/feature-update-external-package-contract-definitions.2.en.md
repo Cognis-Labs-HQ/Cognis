@@ -66,3 +66,4 @@ Progress, Leaderboard, scoring and quota administration are available through th
 - [581b6928](https://github.com/Cognis-Labs-HQ/Cognis/commit/581b69283476ee95d6f7d65f4a3566332a2ec81a)
 - [20d0c172](https://github.com/Cognis-Labs-HQ/Cognis/commit/20d0c172e97697a4aed295b2e25f6346d2b9edfc)
 - [5a5d026f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a5d026f1e4be9b474c3e1f458d3fbe6cd5ac967)
+- [b513366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b513366e7816352a0c357fddfd7b49a881341164)
