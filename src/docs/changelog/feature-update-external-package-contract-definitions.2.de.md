@@ -78,3 +78,4 @@ Popup-Überschriften behalten ihre bisherige Typografie und ihr responsives Layo
 - [5a5d026f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a5d026f1e4be9b474c3e1f458d3fbe6cd5ac967)
 - [b513366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b513366e7816352a0c357fddfd7b49a881341164)
 - [ee448821](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee44882131400a8581dff790e5b7b84a48634641)
+- [7f48ca82](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f48ca82ba3dee88919631ef5386697a60450937)
