@@ -9,23 +9,10 @@ import {
 
 test("the open preview is blurred only while the pad holds its exact character and unsubscribes on close", () => {
     let masked;
-    const body = {
-        inert: false,
-        setAttribute(name, value) {
-            this[name] = value;
+    const popupApi = {
+        setContentConcealed(value) {
+            masked = value;
         },
-        removeAttribute(name) {
-            delete this[name];
-        },
-    };
-    const overlay = {
-        classList: {
-            toggle(name, value) {
-                assert.equal(name, "is-writing-preview");
-                masked = value;
-            },
-        },
-        querySelectorAll: () => [body],
     };
     const environment = vm.createContext({
         uiCtx: { capabilities: { get: () => observeDrawingCard } },
@@ -40,17 +27,14 @@ test("the open preview is blurred only while the pad holds its exact character a
     vm.runInContext(source, environment);
     const controller = new AbortController();
     environment.bindDrawingPreview(
-        overlay,
+        popupApi,
         { id: "kanji", label: "学" },
         controller.signal,
     );
     setDrawingCard({ id: "kanji", label: "学" });
     assert.equal(masked, true);
-    assert.equal(body.inert, true);
-    assert.equal(body["aria-hidden"], "true");
     setDrawingCard({ id: "kanji", label: "学んだ" });
     assert.equal(masked, false);
-    assert.equal(body.inert, false);
     setDrawingCard({ id: "kanji", label: "学" });
     setDrawingCard(null);
     assert.equal(masked, false);

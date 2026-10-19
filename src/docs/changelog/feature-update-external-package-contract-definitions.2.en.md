@@ -64,6 +64,12 @@ Progress, Leaderboard, scoring and quota administration are available through th
 
 Class-scoped access and mentions use the current class-store contract and recheck membership. Content-pack pruning retains omitted records recursively referenced by user-authored cards or provider edits. Flashcard answer retries keep their attempt identity across navigation and update scheduling and Progress once. Drawing retries retain their event identity and avoid duplicate difficulty increments. Progress events use a canonical JSON shape; retrying an event repairs interrupted projections without duplicating history. Leaderboard saves recover after storage failures, require persistent storage, and resolve classroom access at call time. Shared decks resolve current schemas and Library records. Study production contracts align with their runtime interfaces, including schema defaults and audio decoding.
 
+## Shared UI Ownership
+
+Study uses the host-owned `ui:pageOverlay.create({ signal, bottomInset })` flow for floating drawing boundaries. The boundary follows page, header, footer and viewport changes without changing the page layout; closing the view or unloading the provider releases its observers, listeners and element. Embedded pads keep their supplied container.
+
+Popup headings retain their existing typography and responsive layout through `headingLayout: "annotated"`, with neutral `aside` and `below` detail placements. The popup API exposes `appendHeadingAccessory(element)` and `setContentConcealed(boolean)`; concealment blurs the heading and body, blocks interaction and restores their prior accessibility state when released. Study styles only its own controls. Navigation uses `ui:navbarLinks`, including disabled links with localized explanations, and removes its link and search registration when unloaded.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -16,19 +16,21 @@ const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"), {
         ),
     )
     .join("\n");
-const stylesheet = [
-    "library.css",
-    "library-admin.css",
-    "library-selection.css",
-    "library-detail.css",
-]
-    .map((file) =>
-        readFileSync(
-            resolve(ROOT, `src/adapters/study/library/ui/${file}`),
-            "utf8",
-        ),
-    )
-    .join("\n");
+const stylesheet =
+    readFileSync(resolve(ROOT, "src/ui/styles/popup.css"), "utf8") +
+    [
+        "library.css",
+        "library-admin.css",
+        "library-selection.css",
+        "library-detail.css",
+    ]
+        .map((file) =>
+            readFileSync(
+                resolve(ROOT, `src/adapters/study/library/ui/${file}`),
+                "utf8",
+            ),
+        )
+        .join("\n");
 const popupTitleSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/popup-title.js"),
     "utf8",
@@ -56,14 +58,14 @@ test("Study Library renders metadata and scope indicators", () => {
         stylesheet,
         /\.library-entry-card \.library-entry-indicators[\s\S]*position:\s*static/,
     );
-    assert.match(stylesheet, /\.popup-heading > \.library-scope/);
+    assert.match(stylesheet, /\.library-entry-popup \.library-scope/);
 });
 
 test("Study Library bounds status and gives readings and definitions room", () => {
     assert.match(source, /stackTitleDetailOnOverflow: true/);
     assert.match(
         stylesheet,
-        /popup-heading--stacked-detail[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-row:\s*2/,
+        /popup-heading--stacked-detail[\s\S]*data-popup-title-placement="aside"[\s\S]*grid-row:\s*2/,
     );
     assert.match(
         stylesheet,
@@ -94,15 +96,15 @@ test("Study Library bounds status and gives readings and definitions room", () =
 test("Study Library centers popup readings and definitions without a dash", () => {
     assert.match(
         stylesheet,
-        /\[data-popup-title-placement="reading"\][\s\S]*grid-row:\s*1;/,
+        /\[data-popup-title-placement="aside"\][\s\S]*grid-row:\s*1;/,
     );
     assert.match(
         stylesheet,
-        /\[data-popup-title-placement="definition"\][\s\S]*grid-column:\s*2\s*\/\s*4;[\s\S]*grid-row:\s*2;[\s\S]*justify-self:\s*start;/,
+        /\[data-popup-title-placement="below"\][\s\S]*grid-column:\s*2\s*\/\s*4;[\s\S]*grid-row:\s*2;[\s\S]*justify-self:\s*start;/,
     );
     assert.match(
         stylesheet,
-        /\[data-popup-title-placement="reading"\],[\s\S]*\[data-popup-title-placement="definition"\][\s\S]*align-self:\s*center;/,
+        /\[data-popup-title-placement="aside"\],[\s\S]*\[data-popup-title-placement="below"\][\s\S]*align-self:\s*center;/,
     );
     assert.doesNotMatch(source, /label:\s*" — "/);
 });
@@ -153,7 +155,7 @@ test("Study Library serializes popup opening and identifies child parents", () =
     );
     assert.match(
         popupTitleSource,
-        /function withParentAttribution[\s\S]*const parentItems = \[[\s\S]*placement: "reading"[\s\S]*const definitionIndex[\s\S]*items\.slice/,
+        /function withParentAttribution[\s\S]*const parentItems = \[[\s\S]*placement: "aside"[\s\S]*const definitionIndex[\s\S]*items\.slice/,
     );
     assert.match(source, /titleDetailItems,/);
 });

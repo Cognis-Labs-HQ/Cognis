@@ -55,7 +55,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.3`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.17` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.18` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.1`   |
 | Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.0`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.2.1`   |
@@ -77,7 +77,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.1.1`   |
+| Study                 | `src/gateways/study/`         | `2.1.2`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Core contracts
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.6.14` |
+| API Server | `src/api/` | `0.6.15` |
 
 ## Tooling
 

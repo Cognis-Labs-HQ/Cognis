@@ -64,6 +64,12 @@ Kemajuan, papan peringkat, penilaian dan administrasi kuota tersedia melalui kom
 
 Akses kelas dan penyebutan menggunakan kontrak penyimpanan kelas saat ini serta memeriksa ulang keanggotaan. Pemangkasan paket mempertahankan entri yang masih dirujuk secara rekursif oleh kartu pengguna atau kartu penyedia yang disunting. Pengiriman ulang jawaban mempertahankan identitas percobaan selama navigasi dan memperbarui jadwal serta Kemajuan hanya sekali. Percobaan menggambar menghindari peristiwa dan kenaikan kesulitan ganda. Peristiwa JSON kanonis memungkinkan pemulihan proyeksi yang terhenti. Penyimpanan papan peringkat pulih setelah kegagalan, memerlukan penyimpanan persisten, dan memeriksa akses kelas saat dipanggil. Dek bersama menggunakan skema dan entri Pustaka terkini. Kontrak produksi Study sesuai dengan antarmuka saat berjalan, termasuk nilai bawaan skema dan dekode audio.
 
+## Kepemilikan UI Bersama
+
+Study menggunakan alur milik host `ui:pageOverlay.create({ signal, bottomInset })` untuk batas panel menggambar mengambang. Batas mengikuti perubahan halaman, kepala halaman, kaki halaman, dan area pandang tanpa mengubah tata letak halaman. Menutup tampilan atau melepas penyedia membersihkan pengamat, pendengar, dan elemen. Panel tertanam tetap menggunakan wadah yang diberikan.
+
+Judul popup mempertahankan tipografi dan tata letak responsif sebelumnya melalui `headingLayout: "annotated"`, dengan posisi detail netral `aside` dan `below`. API popup menyediakan `appendHeadingAccessory(element)` dan `setContentConcealed(boolean)`. Penyembunyian memburamkan judul dan isi, memblokir interaksi, lalu memulihkan status aksesibilitas sebelumnya. Study hanya menata kontrol miliknya sendiri. Navigasi menggunakan `ui:navbarLinks`, termasuk tautan nonaktif dengan penjelasan terlokalisasi, serta menghapus tautan dan pendaftaran pencariannya saat dilepas.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

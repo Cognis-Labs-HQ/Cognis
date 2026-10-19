@@ -68,6 +68,7 @@ test("entry previews initialize drawing concealment and audio with the same abor
     const entry = { id: "character", label: "学" };
     const controller = new AbortController();
     const objectUrls = new Set();
+    const popupApi = { setContentConcealed() {}, appendHeadingAccessory() {} };
     context.ResizeObserver = class {
         observe() {}
 
@@ -88,6 +89,7 @@ test("entry previews initialize drawing concealment and audio with the same abor
     context.bindEntryDetail(root, entry, {
         signal: controller.signal,
         audioObjectUrls: objectUrls,
+        popupApi,
         audioError: "localized-error",
     });
     const images = calls.pop();
@@ -96,8 +98,8 @@ test("entry previews initialize drawing concealment and audio with the same abor
     assert.equal(images[2].signal, controller.signal);
     assert.equal(images[2].objectUrls, objectUrls);
     assert.deepEqual(calls, [
-        ["drawing", root, entry, controller.signal],
-        ["speaker", root, controller.signal],
+        ["drawing", popupApi, entry, controller.signal],
+        ["speaker", root, controller.signal, popupApi],
         ["audio", root, objectUrls, controller.signal, "localized-error"],
     ]);
     controller.abort();

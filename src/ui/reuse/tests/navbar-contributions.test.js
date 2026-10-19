@@ -40,6 +40,14 @@ test("host navbar contributions survive shell redraws and release only their own
         createElement() {
             return {
                 dataset: {},
+                attributes: {},
+                setAttribute(name, value) {
+                    this.attributes[name] = value;
+                },
+                removeAttribute(name) {
+                    delete this.attributes[name];
+                    delete this[name];
+                },
                 remove() {
                     this.parent.children.splice(
                         this.parent.children.indexOf(this),
@@ -69,4 +77,14 @@ test("host navbar contributions survive shell redraws and release only their own
     release();
     assert.equal(current.children[0].href, "/next");
     nextRelease();
+    const releaseDisabled = navbar.contribute("test:disabled", {
+        href: "/disabled",
+        label: "Disabled",
+        disabled: true,
+        title: "Unavailable",
+    });
+    assert.equal(current.children[0].href, undefined);
+    assert.equal(current.children[0].attributes["aria-disabled"], "true");
+    assert.equal(current.children[0].attributes.title, "Unavailable");
+    releaseDisabled();
 });

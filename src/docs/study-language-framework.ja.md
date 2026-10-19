@@ -252,3 +252,9 @@ ElevenLabs合成を設定可能な独立モジュールへ移します。Study�
 `study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 同梱音声の削除時に英語と日本語の実際のコンテンツパックのバージョンを上げます。有効化の失敗を返す前に他のモジュールの再構築を完了し、同意ルートの登録済みフローを維持します。
+
+## 共有UIの管理範囲
+
+Studyは、フローティング描画パッドの境界にホスト管理のフロー`ui:pageOverlay.create({ signal, bottomInset })`を使用します。境界はページ、ヘッダー、フッター、ビューポートの変化に追従し、ページのレイアウトを変更しません。画面を閉じるかプロバイダーを解除すると、監視、リスナー、要素が解放されます。埋め込みパッドは指定されたコンテナーを使用し続けます。
+
+ポップアップの見出しは、`headingLayout: "annotated"`と汎用の詳細配置`aside`、`below`により、従来の文字サイズとレスポンシブな配置を維持します。ポップアップAPIは`appendHeadingAccessory(element)`と`setContentConcealed(boolean)`を提供します。非表示処理では見出しと本文をぼかし、操作を無効化し、解除時に元のアクセシビリティ状態を復元します。Studyは自身の操作部品のみを装飾します。ナビゲーションは`ui:navbarLinks`を使用し、無効なリンクには翻訳された説明を付けます。解除時にはリンクと検索の登録を削除します。

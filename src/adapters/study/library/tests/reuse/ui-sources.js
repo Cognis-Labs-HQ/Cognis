@@ -46,6 +46,10 @@ const source = readdirSync(resolve(ROOT, "src/adapters/study/library/ui/app"), {
         ),
     )
     .join("\n");
+const popupStylesheet = readFileSync(
+    resolve(ROOT, "src/ui/styles/popup.css"),
+    "utf8",
+);
 const stylesheet = [
     "library.css",
     "library-admin.css",
@@ -111,6 +115,7 @@ export {
     cardsSource,
     source,
     stylesheet,
+    popupStylesheet,
     adapterSource,
     createEntrySource,
     carouselStylesheet,

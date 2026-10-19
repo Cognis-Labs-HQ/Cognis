@@ -40,7 +40,7 @@ const SUB_NAV_CACHE = {
 
 export function readSelectedStudyLanguageCode() {
     const selectedButton = document.querySelector(
-        ".study-subnav-language-options .dropdown-item.active[data-language-code]",
+        ".study-subnav-language-options [data-language-code].active",
     );
     return parseLanguageCode(
         history.state?.studyLanguageCode ??
@@ -488,7 +488,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                               fields: [],
                               trustedContentHtml: `<select class="theme-select" name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option data-search-label="${escapeHtml(providerSearchLabel(provider))}" value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
                 <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
-                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="search-bar-toggle-icon" aria-hidden="true"></span></button>`,
+                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="study-dictionary-search-icon" aria-hidden="true"></span></button>`,
                           },
                       ).render()
                     : ""

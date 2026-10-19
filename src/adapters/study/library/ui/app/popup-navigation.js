@@ -63,3 +63,31 @@ export function resolvePopupNavigation({
     }
     return { entry: null, sourceDefinition: "" };
 }
+
+export function popupNavigationActions(index, count, i18n) {
+    return [
+        {
+            id: "previous",
+            label: i18n.t("gateway.study.library_previous"),
+            icon: {
+                light: "/static/assets/reuse/arrow-back-light.svg",
+                dark: "/static/assets/reuse/arrow-back-dark.svg",
+                position: "before",
+            },
+            variant: "neutral",
+            disabled: index <= 0,
+        },
+        {
+            id: "next",
+            label: i18n.t("gateway.study.library_next"),
+            icon: {
+                light: "/static/assets/reuse/arrow-back-light.svg",
+                dark: "/static/assets/reuse/arrow-back-dark.svg",
+                position: "after",
+                flip: true,
+            },
+            variant: "neutral",
+            disabled: index < 0 || index >= count - 1,
+        },
+    ];
+}

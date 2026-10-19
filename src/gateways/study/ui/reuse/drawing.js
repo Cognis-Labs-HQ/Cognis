@@ -252,29 +252,32 @@ async function createDrawingPad({
     if (!container && !makeFloatingWindow)
         throw new Error("floating_window_unavailable");
     const controller = new AbortController();
-    const pageMain = container ?? document.querySelector(".app-page__main");
-    if (!pageMain) throw new Error("drawing_host_unavailable");
-    const host = document.createElement("div");
-    host.className = container
-        ? "study-drawing-embedded"
-        : "study-drawing-host";
-    pageMain.append(host);
-    const footer = document.querySelector(".global-footer");
-    const fitHost = () => {
-        if (container) return;
-        const bottom =
-            footer?.getBoundingClientRect().top ?? window.innerHeight;
-        const top = Math.max(0, pageMain.getBoundingClientRect().top);
-        const bounds = pageMain.getBoundingClientRect();
-        host.style.left = `${bounds.left}px`;
-        host.style.top = `${top}px`;
-        host.style.width = `${bounds.width}px`;
-        host.style.setProperty(
-            "--drawing-host-height",
-            `${Math.max(0, bottom - top - 16)}px`,
-        );
-    };
-    if (!container) fitHost();
+    let pageOverlay;
+    try {
+        if (!container) {
+            pageOverlay = await uiCtx.capabilities
+                .get("ui:pageOverlay")
+                ?.create({
+                    signal: controller.signal,
+                    bottomInset: 16,
+                });
+        }
+    } catch (error) {
+        controller.abort();
+        throw error;
+    }
+    if (!container && !pageOverlay) throw new Error("drawing_host_unavailable");
+    if (signal?.aborted) {
+        controller.abort();
+        signal.throwIfAborted();
+    }
+    const host = container
+        ? document.createElement("div")
+        : pageOverlay.element;
+    if (container) {
+        host.className = "study-drawing-embedded";
+        container.append(host);
+    } else host.classList.add("study-drawing-host");
     const pad = document.createElement("section");
     pad.className = "study-drawing-pad is-opening";
     pad.innerHTML = formatTemplate(
@@ -714,16 +717,6 @@ async function createDrawingPad({
               allowOrientationSwap: false,
           });
     const observer = new ResizeObserver(resize);
-    const hostObserver = new ResizeObserver(fitHost);
-    if (!container) hostObserver.observe(pageMain);
-    if (!container && footer) hostObserver.observe(footer);
-    const pageHeader = document.querySelector(".site-header");
-    if (!container && pageHeader) hostObserver.observe(pageHeader);
-    window.addEventListener("resize", fitHost, { signal: controller.signal });
-    window.addEventListener("scroll", fitHost, {
-        signal: controller.signal,
-        passive: true,
-    });
     let closing = false;
     let closed = false;
     const finishClose = () => {
@@ -732,7 +725,7 @@ async function createDrawingPad({
         controller.abort();
         if (drawingFrame) window.cancelAnimationFrame(drawingFrame);
         observer.disconnect();
-        hostObserver.disconnect();
+        pageOverlay?.destroy();
         release?.();
         pad.remove();
         host.remove();

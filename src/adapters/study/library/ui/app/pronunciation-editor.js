@@ -212,7 +212,7 @@ export function mountEditableRelationshipCarousels(
                                     `<span class="library-pronunciation-component" data-library-pronunciation-entry="${escapeHtml(id)}">${escapeHtml(label)}</span>`,
                             )
                             .join("") || escapeHtml(value)
-                    }</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", "Pronunciation"))}">×</button></span>`,
+                    }</button><button class="btn-cancel library-composer-remove-value" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", "Pronunciation"))}">×</button></span>`,
             )
             .join("");
     };

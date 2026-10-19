@@ -30,24 +30,24 @@ function normalizedTitleText(value) {
 }
 
 export const hasReadingDetails = (items) =>
-    items.some(({ placement }) => placement === "reading");
+    items.some(({ placement }) => placement === "aside");
 
 export function withParentAttribution(items, parentEntry, parentLabel) {
     const [prefix, suffix = ""] = parentLabel.split("{{ parent }}");
     const parentItems = [
         ...(hasReadingDetails(items)
-            ? [{ label: " · ", placement: "reading" }]
+            ? [{ label: " · ", placement: "aside" }]
             : []),
-        { label: prefix, placement: "reading" },
+        { label: prefix, placement: "aside" },
         {
             label: parentEntry.label,
             actionId: titleReferenceAction(parentEntry),
-            placement: "reading",
+            placement: "aside",
         },
-        { label: suffix, placement: "reading" },
+        { label: suffix, placement: "aside" },
     ];
     const definitionIndex = items.findIndex(
-        ({ placement }) => placement === "definition",
+        ({ placement }) => placement === "below",
     );
     const insertionIndex = definitionIndex < 0 ? items.length : definitionIndex;
     return [
@@ -221,7 +221,7 @@ export function popupTitleDetailItems(
             ...(linked.length ? linkedItems(linked) : [{ label }]),
         ],
     );
-    const placement = "reading";
+    const placement = "aside";
     const items = [...spellingItems, ...pronunciationItems].map((item) => ({
         ...item,
         placement,
@@ -235,7 +235,7 @@ export function popupTitleDetailItems(
     if (visibleDefinition) {
         items.push({
             label: visibleDefinition,
-            placement: "definition",
+            placement: "below",
         });
     }
     return items;

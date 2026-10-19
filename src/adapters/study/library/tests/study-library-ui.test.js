@@ -11,6 +11,7 @@ import {
     cardsSource,
     source,
     stylesheet,
+    popupStylesheet,
     adapterSource,
     createEntrySource,
     carouselStylesheet,
@@ -235,6 +236,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(stylesheet, /\.library-definition-text/);
     assert.doesNotMatch(stylesheet, /\.library-composition-label/);
     assert.doesNotMatch(stylesheet, /^\.popup-title\s*\{/m);
+    assert.match(source, /headingLayout: hasReadingDetails/);
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
     assert.doesNotMatch(source, /data-library-preview/);
     assert.match(source, /function relationshipPresentationRole/);
@@ -278,11 +280,11 @@ test("Study Library integrates definitions and particles into item details", () 
     );
     assert.match(source, /let titleDetailItems = popupTitleDetailItems/);
     assert.match(source, /semanticRole === "orderedLexicalSequence"/);
-    assert.match(source, /placement:[\s\S]*"definition"/);
-    assert.match(stylesheet, /library-entry-popup--composite/);
+    assert.match(source, /placement:[\s\S]*"below"/);
+    assert.match(popupStylesheet, /popup-heading--annotated/);
     assert.match(
-        stylesheet,
-        /library-entry-popup--composite \.popup-heading[\s\S]*minmax\(0, 40%\)/,
+        popupStylesheet,
+        /popup-heading--annotated[\s\S]*minmax\(0, 40%\)/,
     );
     assert.match(source, /function linkedItems\(entries\)/);
     assert.match(source, /titleItems: popupTitleItems\(/);
@@ -329,11 +331,11 @@ test("Study Library creation is driven by language card constructors", () => {
     assert.match(source, /includeHidden: false/);
     assert.doesNotMatch(indexSource, /data-library-create/);
     assert.match(layerPageSource, /page:actions/);
-    assert.match(layerPageSource, /textContent = "\+"/);
     assert.match(
-        stylesheet,
-        /page-action-button\[data-page-action-id="study-library:create"\][\s\S]*font-size:\s*2rem/,
+        layerPageSource,
+        /class="library-create-action" aria-hidden="true">\+<\/span>/,
     );
+    assert.match(stylesheet, /library-create-action[\s\S]*font-size:\s*2rem/);
     assert.match(layerPageSource, /fetchLibraryForms/);
     assert.match(layerPageSource, /canCreateLayerEntries/);
     assert.match(source, /contributedConstructor \?\?/);

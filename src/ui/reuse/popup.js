@@ -37,6 +37,7 @@
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
  *   titleDetailItems — optional ordered `{ label, actionId?, placement? }` secondary heading fragments.
+ *   headingLayout — "inline" (default) or "annotated" with aside/below detail placements.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   titleItems — optional ordered `{ label, actionId? }` title fragments.
@@ -80,7 +81,8 @@
  * @param {{
  *   title: string,
  *   titleDetail?: string,
- *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: "reading" | "definition" }>,
+ *   headingLayout?: "inline" | "annotated",
+ *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: string }>,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
@@ -90,8 +92,8 @@
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
- *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: { updateBody: (body: string) => HTMLElement | null }) => void,
- *   onAction?: (actionId: string | null, overlay: HTMLElement, api: { updateBody: (body: string) => HTMLElement | null }) => Promise<boolean | void> | boolean | void,
+ *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
@@ -101,8 +103,11 @@
  * @returns {Promise<string|null>}
  */
 
+import { createPopupContentApi } from "./popup/content.js";
 import { createI18n } from "./i18n.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
+
+/** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
 
 let stylesheetReady = null;
 let stylesheetRefresh = null;
@@ -418,6 +423,7 @@ export async function openPopup({
     titleAction,
     titleItems,
     stackTitleDetailOnOverflow = false,
+    headingLayout = "inline",
     headerActions = [],
     body,
     variant = "info",
@@ -501,7 +507,7 @@ export async function openPopup({
                 Array.isArray(detailItemValues) && detailItemValues.length
                     ? renderHeadingItems(detailItemValues)
                     : escapeHtml(detail);
-            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
+            return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
         }
 
         function renderActionContent(action) {
@@ -623,7 +629,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <div class="popup-heading">${renderPopupHeading(
+          <div class="popup-heading${headingLayout === "annotated" ? " popup-heading--annotated" : ""}">${renderPopupHeading(
               currentPage?.title ?? title,
               currentPage?.titleDetail ?? titleDetail,
               currentPage?.titleAction ?? titleAction,
@@ -658,6 +664,8 @@ export async function openPopup({
         overlay.addEventListener("click", async (event) => {
             if (!mandatory && event.target === overlay) await dismiss(null);
         });
+
+        const contentApi = createPopupContentApi(overlay, fitPopupTitleRow);
 
         function renderPopupPage(pageId) {
             if (!popupPages) return false;
@@ -707,6 +715,7 @@ export async function openPopup({
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
                 updateBody,
+                ...contentApi,
                 markDirty: () => {
                     manuallyDirty = true;
                 },
@@ -738,6 +747,7 @@ export async function openPopup({
                                     pageId: currentPage?.id,
                                     requestClose: () => dismiss(null),
                                     updateBody,
+                                    ...contentApi,
                                     markDirty: () => {
                                         manuallyDirty = true;
                                     },
@@ -844,6 +854,7 @@ export async function openPopup({
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {
                 updateBody,
+                ...contentApi,
                 setPage: renderPopupPage,
                 pageId: currentPage?.id,
                 markDirty: () => {

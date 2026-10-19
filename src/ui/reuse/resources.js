@@ -34,6 +34,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "image-preview.css",
     "info-tooltip.css",
     "layout.css",
+    "page-overlay.css",
     "page-sections.css",
     "presence.css",
     "search-bar.css",

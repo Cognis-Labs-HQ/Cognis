@@ -249,6 +249,12 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     display: block;
     width: 1.125rem;
     height: 1.125rem;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/search-light.svg");
+}
+
+body[data-theme="dark"] .study-dictionary-search-icon {
+    background-image: url("/static/assets/reuse/search-dark.svg");
 }
 
 .study-subnav-language-options {
@@ -362,9 +368,16 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     padding: 0.5rem;
 }
 
-.study-dictionary-search .search-bar-toggle-icon {
+.study-dictionary-search-icon {
+    display: block;
     width: 1.125rem;
     height: 1.125rem;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/search-light.svg");
+}
+
+body[data-theme="dark"] .study-dictionary-search-icon {
+    background-image: url("/static/assets/reuse/search-dark.svg");
 }
 
 .study-browse-controls {

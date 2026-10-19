@@ -14,7 +14,15 @@ function renderLinks() {
             element.dataset.navbarContribution = id;
             navbar.append(element);
         }
-        element.href = link.href;
+        if (link.disabled === true) {
+            element.removeAttribute("href");
+            element.setAttribute("aria-disabled", "true");
+        } else {
+            element.href = link.href;
+            element.removeAttribute("aria-disabled");
+        }
+        if (link.title) element.setAttribute("title", link.title);
+        else element.removeAttribute("title");
         element.textContent = link.label;
         element.hidden = link.visible === false;
     }

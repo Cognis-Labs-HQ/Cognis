@@ -252,3 +252,9 @@ ElevenLabs-Synthese in ein eigenes konfigurierbares Modul verlagern. Study nutzt
 `study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 Die tatsächlichen englischen und japanischen Inhaltspaketversionen beim Entfernen gebündelter Aufnahmen erhöhen. Unabhängige Module werden vor der Fehlermeldung vollständig abgeglichen, damit Einwilligungsrouten ihre registrierten Flows behalten.
+
+## Gemeinsame UI-Verantwortung
+
+Study verwendet den vom Host verwalteten Ablauf `ui:pageOverlay.create({ signal, bottomInset })` für die Grenzen des schwebenden Zeichenfelds. Diese folgen Änderungen an Seite, Kopfzeile, Fußzeile und Ansichtsfenster, ohne das Seitenlayout zu verändern. Beim Schließen der Ansicht oder Entladen des Providers werden Beobachter, Listener und Element entfernt. Eingebettete Zeichenfelder behalten ihren übergebenen Container.
+
+Popup-Überschriften behalten ihre bisherige Typografie und ihr responsives Layout über `headingLayout: "annotated"` mit den neutralen Detailpositionen `aside` und `below`. Die Popup-API bietet `appendHeadingAccessory(element)` und `setContentConcealed(boolean)`. Die Verdeckung zeichnet Überschrift und Inhalt unscharf, blockiert Interaktionen und stellt anschließend den vorherigen Barrierefreiheitszustand wieder her. Study gestaltet nur eigene Bedienelemente. Die Navigation nutzt `ui:navbarLinks`, einschließlich deaktivierter Links mit lokalisierten Erklärungen, und entfernt beim Entladen ihren Link und die Suchregistrierung.

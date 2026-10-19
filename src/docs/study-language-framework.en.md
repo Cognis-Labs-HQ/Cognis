@@ -252,3 +252,9 @@ Move ElevenLabs synthesis into its own configurable module. Study uses optional 
 `study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 Advance the actual English and Japanese content-pack versions when removing bundled recordings. Complete unrelated module reconciliation before reporting a failed activation so consent routes retain their registered flows.
+
+## Shared UI Ownership
+
+Study uses the host-owned `ui:pageOverlay.create({ signal, bottomInset })` flow for floating drawing boundaries. The boundary follows page, header, footer and viewport changes without changing the page layout; closing the view or unloading the provider releases its observers, listeners and element. Embedded pads keep their supplied container.
+
+Popup headings retain their existing typography and responsive layout through `headingLayout: "annotated"`, with neutral `aside` and `below` detail placements. The popup API exposes `appendHeadingAccessory(element)` and `setContentConcealed(boolean)`; concealment blurs the heading and body, blocks interaction and restores their prior accessibility state when released. Study styles only its own controls. Navigation uses `ui:navbarLinks`, including disabled links with localized explanations, and removes its link and search registration when unloaded.

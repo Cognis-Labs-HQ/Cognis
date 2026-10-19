@@ -172,6 +172,7 @@
     "page-action-button",
     "page-action-dock",
     "page-context",
+    "page-overlay-boundary",
     "page-pointer",
     "page-pointer-layer",
     "page-pointer__crosshair",

@@ -1,10 +1,7 @@
 @import url("./pronunciation.css");
 
 .study-drawing-host {
-    position: fixed;
     z-index: 1203;
-    height: var(--drawing-host-height);
-    pointer-events: none;
 }
 
 .study-drawing-host > .study-drawing-pad {

@@ -48,7 +48,7 @@ test("popup exposes core-owned title actions and body updates", () => {
 
 test("popup supports leading title content, standard close controls, and action icons", () => {
     assert.match(source, /titleLeading/);
-    assert.match(source, /class="popup-heading"/);
+    assert.match(source, /class="popup-heading/);
     assert.match(source, /popup-close-btn btn-close btn-neutral/);
     assert.match(source, /function renderActionContent/);
     assert.match(source, /class="popup-action-icon/);

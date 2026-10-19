@@ -252,3 +252,9 @@ Pindahkan sintesis ElevenLabs ke modul terpisah yang dapat dikonfigurasi. Study 
 `study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
 
 Naikkan versi paket konten Inggris dan Jepang saat menghapus rekaman bawaan. Selesaikan rekonsiliasi modul lain sebelum melaporkan aktivasi gagal agar rute persetujuan tetap memiliki alur terdaftar.
+
+## Kepemilikan UI Bersama
+
+Study menggunakan alur milik host `ui:pageOverlay.create({ signal, bottomInset })` untuk batas panel menggambar mengambang. Batas mengikuti perubahan halaman, kepala halaman, kaki halaman, dan area pandang tanpa mengubah tata letak halaman. Menutup tampilan atau melepas penyedia membersihkan pengamat, pendengar, dan elemen. Panel tertanam tetap menggunakan wadah yang diberikan.
+
+Judul popup mempertahankan tipografi dan tata letak responsif sebelumnya melalui `headingLayout: "annotated"`, dengan posisi detail netral `aside` dan `below`. API popup menyediakan `appendHeadingAccessory(element)` dan `setContentConcealed(boolean)`. Penyembunyian memburamkan judul dan isi, memblokir interaksi, lalu memulihkan status aksesibilitas sebelumnya. Study hanya menata kontrol miliknya sendiri. Navigasi menggunakan `ui:navbarLinks`, termasuk tautan nonaktif dengan penjelasan terlokalisasi, serta menghapus tautan dan pendaftaran pencariannya saat dilepas.

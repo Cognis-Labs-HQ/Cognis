@@ -156,7 +156,8 @@ export async function mount(root, { signal } = {}) {
         const createButton = document.createElement("button");
         createButton.type = "button";
         createButton.className = "btn-confirm";
-        createButton.textContent = "+";
+        createButton.innerHTML =
+            '<span class="library-create-action" aria-hidden="true">+</span>';
         createButton.setAttribute(
             "aria-label",
             i18n.t("gateway.study.library_create"),

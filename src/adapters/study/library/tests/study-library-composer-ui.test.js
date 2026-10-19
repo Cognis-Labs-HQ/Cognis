@@ -30,9 +30,11 @@ const carouselStylesheet = read("src/ui/styles/reuse/horizontal-carousel.css");
 const carouselSource = read("src/ui/reuse/horizontal-carousel.js");
 const compositionStylesheet = read("src/ui/styles/reuse/composition-input.css");
 const adminStylesheet = read("src/adapters/study/library/ui/library-admin.css");
-const libraryStylesheet = ["library.css", "library-detail.css"]
-    .map((file) => read(`src/adapters/study/library/ui/${file}`))
-    .join("\n");
+const libraryStylesheet =
+    read("src/ui/styles/popup.css") +
+    ["library.css", "library-detail.css"]
+        .map((file) => read(`src/adapters/study/library/ui/${file}`))
+        .join("\n");
 const drawingSource = read("src/adapters/study/library/ui/app/drawing.js");
 const composerContractSource = read(
     "src/adapters/study/library/ui/app/composer-contract.js",
@@ -315,16 +317,16 @@ test("Study Library keeps staged-card deletion precise and validation recoverabl
 });
 
 test("Study Library arranges dense title details and limits composer collections", () => {
-    assert.match(popupTitleSource, /const placement = "reading"/);
+    assert.match(popupTitleSource, /const placement = "aside"/);
     assert.doesNotMatch(popupTitleSource, /label: " — "/);
-    assert.match(popupTitleSource, /placement: "definition"/);
+    assert.match(popupTitleSource, /placement: "below"/);
     assert.match(
         libraryStylesheet,
-        /grid-template-columns:[\s\S]*minmax\(0, 40%\)[\s\S]*data-popup-title-placement="reading"[\s\S]*grid-column: 3[\s\S]*data-popup-title-placement="definition"[\s\S]*grid-column: 2 \/ 4/,
+        /grid-template-columns:[\s\S]*minmax\(0, 40%\)[\s\S]*data-popup-title-placement="aside"[\s\S]*grid-column: 3[\s\S]*data-popup-title-placement="below"[\s\S]*grid-column: 2 \/ 4/,
     );
     assert.match(
         libraryStylesheet,
-        /library-audio-sequence,[\s\S]*library-audio-speaker,[\s\S]*library-audio-unavailable[\s\S]*grid-column: 1;[\s\S]*grid-row: 2/,
+        /popup-heading-accessory[\s\S]*grid-column: 1;[\s\S]*grid-row: 2/,
     );
     assert.match(
         composerLimitsSource,

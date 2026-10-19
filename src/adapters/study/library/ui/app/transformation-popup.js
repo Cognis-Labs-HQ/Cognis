@@ -86,8 +86,7 @@ export function transformedPopupPresentation(
     if (!transformation)
         return { title: entry.label, titleDetailItems, body, definitions };
     const details = titleDetailItems.filter(
-        ({ placement }) =>
-            placement !== "reading" && placement !== "definition",
+        ({ placement }) => placement !== "aside" && placement !== "below",
     );
     const pronunciation = distinctPronunciationLabels({
         label: transformation.node.value,
@@ -105,9 +104,9 @@ export function transformedPopupPresentation(
                 ? readingReferences.map((reference) => ({
                       label: reference.label,
                       actionId: titleReferenceAction(reference),
-                      placement: "reading",
+                      placement: "aside",
                   }))
-                : [{ label: pronunciation, placement: "reading" }]),
+                : [{ label: pronunciation, placement: "aside" }]),
         );
     }
     const changedDefinitions = transformedDefinitions(
@@ -116,7 +115,7 @@ export function transformedPopupPresentation(
         schema.language,
     );
     if (changedDefinitions[0])
-        details.push({ label: changedDefinitions[0], placement: "definition" });
+        details.push({ label: changedDefinitions[0], placement: "below" });
     return {
         title: transformation.node.value,
         titleDetailItems: details,

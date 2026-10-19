@@ -58,12 +58,12 @@ export async function loadDrawing(
     );
 }
 
-export function placeAudioSpeaker(overlay, signal) {
+export function placeAudioSpeaker(overlay, signal, popupApi) {
     const speaker = overlay.querySelector(
         ".library-detail-summary > :is(.library-audio-sequence, .library-audio-speaker, .library-audio-unavailable)",
     );
     if (!speaker) return;
-    overlay.querySelector(".popup-heading")?.append(speaker);
+    popupApi.appendHeadingAccessory(speaker);
     const source = speaker.querySelector(".library-audio-unavailable-tooltip");
     if (!source) return;
     const tooltip = createAnchoredPopup({
@@ -77,18 +77,12 @@ export function placeAudioSpeaker(overlay, signal) {
     signal?.addEventListener("abort", () => tooltip.destroy(), { once: true });
 }
 
-export function bindDrawingPreview(overlay, entry, signal) {
+export function bindDrawingPreview(popupApi, entry, signal) {
     return uiCtx.capabilities.get("study:drawing:observe")?.(
         (card) => {
-            const masked = card?.id === entry.id && card?.label === entry.label;
-            overlay.classList.toggle("is-writing-preview", masked);
-            for (const element of overlay.querySelectorAll(
-                ".popup-heading, .popup-body",
-            )) {
-                element.inert = masked;
-                if (masked) element.setAttribute("aria-hidden", "true");
-                else element.removeAttribute("aria-hidden");
-            }
+            popupApi.setContentConcealed(
+                card?.id === entry.id && card?.label === entry.label,
+            );
         },
         { signal },
     );

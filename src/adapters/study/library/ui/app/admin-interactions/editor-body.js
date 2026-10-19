@@ -192,7 +192,7 @@ export function editorBody(
             .filter(Boolean);
         const savedValues =
             multiValue && values.length
-                ? `<span class="library-composer-saved-values" data-library-saved-values>${values.map((value, index) => `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${escapeHtml(value)}</button><button class="btn-cancel" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", fieldLabel))}">×</button></span>`).join("")}</span>`
+                ? `<span class="library-composer-saved-values" data-library-saved-values>${values.map((value, index) => `<span class="library-composer-saved-value" data-library-saved-index="${index}"><button class="btn-neutral" type="button" data-library-edit-saved-value>${escapeHtml(value)}</button><button class="btn-cancel library-composer-remove-value" type="button" data-library-delete-saved-value aria-label="${escapeHtml(i18n.t("gateway.study.library_delete_saved_value").replace("{{ field }}", fieldLabel))}">×</button></span>`).join("")}</span>`
                 : `<span class="library-composer-saved-values" data-library-saved-values hidden></span>`;
         return `${savedValues}${renderCompositionInput({
             id: kind,

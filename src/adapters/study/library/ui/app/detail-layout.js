@@ -5,8 +5,6 @@ import { pronunciationClass } from "/static/gateways/study/reuse/pronunciation.j
 
 export function bindDetailLayout(root, signal) {
     if (signal?.aborted) return;
-    if (root.querySelector('[data-popup-title-placement="reading"]'))
-        root.classList.add("library-entry-popup--composite");
     const groups = [...root.querySelectorAll(".library-related-entries")];
     const widths = new WeakMap();
     const update = (group) => {
@@ -33,7 +31,7 @@ export function bindDetailLayout(root, signal) {
         once: true,
     });
     for (const reading of root.querySelectorAll(
-        '[data-popup-title-placement="reading"], [data-library-transform-pronunciation]',
+        '[data-popup-title-placement="aside"], [data-library-transform-pronunciation]',
     )) {
         const className = pronunciationClass(reading.textContent);
         if (className) reading.classList.add(className);
@@ -43,11 +41,11 @@ export function bindDetailLayout(root, signal) {
 export function bindEntryDetail(
     root,
     entry,
-    { signal, audioObjectUrls, audioError, imageError, requestId },
+    { signal, audioObjectUrls, audioError, imageError, requestId, popupApi },
 ) {
     bindDetailLayout(root, signal);
-    bindDrawingPreview(root, entry, signal);
-    placeAudioSpeaker(root, signal);
+    bindDrawingPreview(popupApi, entry, signal);
+    placeAudioSpeaker(root, signal, popupApi);
     void loadLibraryAudio(root, audioObjectUrls, signal, audioError);
     void loadReferenceImages(root, {
         signal,

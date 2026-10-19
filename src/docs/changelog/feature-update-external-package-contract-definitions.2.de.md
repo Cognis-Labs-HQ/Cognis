@@ -64,6 +64,12 @@ Fortschritt, Ranglisten, Punkteberechnung und Kontingentverwaltung sind über ih
 
 Klassenberechtigungen und Erwähnungen verwenden den aktuellen Klassenvertrag und prüfen Mitgliedschaften erneut. Inhaltsaktualisierungen erhalten ausgelassene Einträge, die eigene Karten oder bearbeitete Anbieterkarten weiterhin rekursiv referenzieren. Wiederholte Antwortübermittlungen behalten ihre Versuchskennung über die Navigation hinweg und aktualisieren Zeitplan und Fortschritt nur einmal. Zeichenversuche vermeiden doppelte Ereignisse und Schwierigkeitssteigerungen. Kanonische JSON-Ereignisse ermöglichen die Wiederherstellung unterbrochener Fortschrittsprojektionen. Ranglistenspeicherung erholt sich nach Fehlern, erfordert dauerhaften Speicher und prüft Klassenzugriff bei jedem Aufruf. Geteilte Stapel verwenden aktuelle Schemata und Bibliotheksdaten. Die Produktionsverträge für Study entsprechen den Laufzeitschnittstellen, einschließlich Schema-Standardwerten und Audiodekodierung.
 
+## Gemeinsame UI-Verantwortung
+
+Study verwendet den vom Host verwalteten Ablauf `ui:pageOverlay.create({ signal, bottomInset })` für die Grenzen des schwebenden Zeichenfelds. Diese folgen Änderungen an Seite, Kopfzeile, Fußzeile und Ansichtsfenster, ohne das Seitenlayout zu verändern. Beim Schließen der Ansicht oder Entladen des Providers werden Beobachter, Listener und Element entfernt. Eingebettete Zeichenfelder behalten ihren übergebenen Container.
+
+Popup-Überschriften behalten ihre bisherige Typografie und ihr responsives Layout über `headingLayout: "annotated"` mit den neutralen Detailpositionen `aside` und `below`. Die Popup-API bietet `appendHeadingAccessory(element)` und `setContentConcealed(boolean)`. Die Verdeckung zeichnet Überschrift und Inhalt unscharf, blockiert Interaktionen und stellt anschließend den vorherigen Barrierefreiheitszustand wieder her. Study gestaltet nur eigene Bedienelemente. Die Navigation nutzt `ui:navbarLinks`, einschließlich deaktivierter Links mit lokalisierten Erklärungen, und entfernt beim Entladen ihren Link und die Suchregistrierung.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

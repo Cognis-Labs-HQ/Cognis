@@ -60,7 +60,7 @@ test("verb transformations link their changed reading to canonical kana", () => 
         { node: { value: "行かなくて", pronunciation: "いかなくて" } },
         verb,
         schemas[0],
-        [{ label: "いく", placement: "reading" }],
+        [{ label: "いく", placement: "aside" }],
         "body",
         ["to not go"],
         schemas,
@@ -68,7 +68,7 @@ test("verb transformations link their changed reading to canonical kana", () => 
     );
     assert.equal(presentation.title, "行かなくて");
     const reading = presentation.titleDetailItems.filter(
-        ({ placement }) => placement === "reading",
+        ({ placement }) => placement === "aside",
     );
     assert.equal(reading.map(({ label }) => label).join(""), "いかなくて");
     assert.deepEqual(
@@ -227,7 +227,7 @@ test("a transformed kana title does not repeat the same pronunciation", () => {
                 presentation.titleDetailItems,
                 ({ placement }) => placement,
             ),
-            ["definition"],
+            ["below"],
         );
     }
 });
@@ -259,6 +259,9 @@ test("transformed previews keep the selected heading and identify the base card 
         }),
         isMeaningLayer: () => false,
         layerForEntry: () => schemas[0].layers[1],
+        popupNavigationActions: () => [],
+        hasReadingDetails: (items) =>
+            items.some(({ placement }) => placement === "aside"),
         popupEntryEditMode: () => null,
         releaseEntryMedia: (controller) => controller.abort(),
         popupEntryNavigationState: () => ({ active: [verb], index: 0 }),

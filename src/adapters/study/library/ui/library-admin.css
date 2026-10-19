@@ -478,14 +478,13 @@ body[data-theme="dark"] .library-quick-search-control img {
     gap: 0.5rem;
 }
 
-.page-action-button[data-page-action-id="study-library:create"] {
+.library-create-action {
     color: #f4f7ff;
     font-size: 2rem;
     line-height: 1;
 }
 
-body[data-theme="light"]
-    .page-action-button[data-page-action-id="study-library:create"] {
+body[data-theme="light"] .library-create-action {
     color: #172033;
 }
 
@@ -503,7 +502,7 @@ body[data-theme="light"]
     gap: 0.35rem;
 }
 
-.library-composer-saved-value > .btn-cancel {
+.library-composer-remove-value {
     flex: 0 0 1rem;
     width: 1rem;
     height: 1rem;

@@ -827,13 +827,13 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     width: 1rem;
     height: 1rem;
 }
-.popup-heading > .library-scope {
+.library-entry-popup .library-scope {
     width: 2.5rem;
     height: 2.5rem;
     margin-inline: 0;
     flex: 0 0 auto;
 }
-.popup-heading > .library-scope img {
+.library-entry-popup .library-scope img {
     width: 1.4rem;
     height: 1.4rem;
 }
@@ -868,11 +868,4 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     -webkit-line-clamp: 2;
     overflow: hidden;
     overflow-wrap: anywhere;
-}
-
-.library-entry-popup.is-writing-preview .popup-heading,
-.library-entry-popup.is-writing-preview .popup-body {
-    filter: blur(0.55rem);
-    user-select: none;
-    pointer-events: none;
 }

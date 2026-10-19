@@ -263,6 +263,10 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:pagination"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/page-overlay.js",
+    providesCapabilities: ["ui:pageOverlay"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/image-preview.js",
     providesCapabilities: ["ui:imagePreview"],
 });

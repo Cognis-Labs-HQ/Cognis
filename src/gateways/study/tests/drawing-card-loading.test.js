@@ -110,6 +110,18 @@ async function drawingSession({
             child.parentElement = this;
         },
     };
+    capabilities.set("ui:pageOverlay", {
+        async create({ signal, bottomInset }) {
+            assert.equal(bottomInset, 16);
+            assert.equal(signal.aborted, false);
+            const boundary = element();
+            host.append(boundary);
+            signal.addEventListener("abort", () => boundary.remove(), {
+                once: true,
+            });
+            return { element: boundary, destroy: () => boundary.remove() };
+        },
+    });
     let floatingOptions;
     capabilities.set("ui:makeFloatingWindow", (element, options) => {
         floatingOptions = options;
@@ -400,7 +412,7 @@ test("drawing uses an independent floating boundary without resizing the main pa
     await session.open(card(1));
     const boundary = session.pad.parentElement;
     assert.equal(boundary.parentElement, session.host);
-    assert.equal(boundary.className, "study-drawing-host");
+    assert.ok(boundary);
     assert.equal(session.floatingOptions().boundaryElement, boundary);
     assert.equal(session.host.style.overflow, undefined);
     assert.equal(session.host.style.maxHeight, undefined);

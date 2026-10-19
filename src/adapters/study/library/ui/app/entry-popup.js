@@ -6,10 +6,12 @@ import { isMeaningLayer, layerForEntry } from "./presentation.js";
 import {
     popupTitleDetailItems,
     popupTitleItems,
+    hasReadingDetails,
     withParentTitleAttribution,
 } from "./popup-title.js";
 import {
     popupEntryNavigationState,
+    popupNavigationActions,
     resolvePopupNavigation,
 } from "./popup-navigation.js";
 import { titleDefinitionForRole } from "./title-definition.js";
@@ -23,8 +25,12 @@ import {
     transformedDetailEntry,
     transformedParentAttribution,
 } from "./transformation-detail.js";
-import { canDraw, resolveDraw, openDrawing } from "./drawing.js";
-import { drawingHeaderActions } from "./drawing.js";
+import {
+    canDraw,
+    resolveDraw,
+    openDrawing,
+    drawingHeaderActions,
+} from "./drawing.js";
 
 export async function openEntryPopup(
     root,
@@ -158,6 +164,9 @@ export async function openEntryPopup(
             titleItems: popupTitleItems(titleReferences),
             titleDetailItems,
             stackTitleDetailOnOverflow: true,
+            headingLayout: hasReadingDetails(titleDetailItems)
+                ? "annotated"
+                : "inline",
             headerActions: [
                 ...drawingHeaderActions(strokePattern, i18n),
                 ...(editMode && !selectedTransformation
@@ -179,36 +188,15 @@ export async function openEntryPopup(
             maxWidth: "min(56rem, 94vw)",
             closeButtonVariant: "neutral",
             actions: [
-                {
-                    id: "previous",
-                    label: i18n.t("gateway.study.library_previous"),
-                    icon: {
-                        light: "/static/assets/reuse/arrow-back-light.svg",
-                        dark: "/static/assets/reuse/arrow-back-dark.svg",
-                        position: "before",
-                    },
-                    variant: "neutral",
-                    disabled: index <= 0,
-                },
-                {
-                    id: "next",
-                    label: i18n.t("gateway.study.library_next"),
-                    icon: {
-                        light: "/static/assets/reuse/arrow-back-light.svg",
-                        dark: "/static/assets/reuse/arrow-back-dark.svg",
-                        position: "after",
-                        flip: true,
-                    },
-                    variant: "neutral",
-                    disabled: index < 0 || index >= active.length - 1,
-                },
+                ...popupNavigationActions(index, active.length, i18n),
                 ...composed.actions,
             ],
-            onOpen: (overlay, dismiss) => {
+            onOpen: (overlay, dismiss, popupApi) => {
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
                 bindEntryDetail(overlay, displayedEntry, {
                     signal: audioController.signal,
+                    popupApi,
                     requestId:
                         selectedEntry.id === initialEntry.id
                             ? options.requestId
