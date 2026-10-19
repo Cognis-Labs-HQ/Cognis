@@ -78,6 +78,14 @@ Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden
 
 Ledger-Zusammenfassungen, Booster-Einlösung und Aktivitätsentwertung durchlaufen eigene ctx-Abläufe mit Validierungs- und Ausführungsstufen. Ungültige Teilnehmerkennungen werden vor dem Lesen oder Ändern gespeicherter Daten abgelehnt.
 
+Die passende Kartenvorschau im Explore-Raster wird unscharf und nicht interaktiv, solange ihr Zeichen im Zeichenfeld geöffnet ist. Wiederholte und neu gerenderte Platzierungen folgen demselben Zustand; Zeichenwechsel, Schließen des Zeichenfelds oder Verlassen der Seite stellen sie ohne Größenänderung wieder her.
+
+Antwortmöglichkeiten in Lernkarten sind eigenständige Antwortschaltflächen. Kartenüberschriften und aufgedeckte Antworten verwenden interne Aktionen mit Bestätigung beim Verlassen und erhaltener Stapelreihenfolge, ohne Kartenadressen beim Überfahren anzuzeigen. In Explore öffnet ein zweiter Klick auf die aufgedeckte Zeichenüberschrift die Karte direkt über eine Aktion ohne Adresse.
+
+Schreibübungen verwenden nur die maskierte Überschrift des Zeichenfelds. SVG-Pfeile für Zurück/Weiter stehen darüber neben dem Favoriten; Weiter erfordert weiterhin eine Antwort. Flashcards übergibt `suppressRetry: true` an das gemeinsame Zeichenfeld und blendet Wiederholen aus und deaktiviert es; eigenständige Übungen erlauben Wiederholen standardmäßig.
+
+Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(card)` bereitstellen. Flashcards verbucht damit den aktuellen Versuch über den Ablauf zum Verlassen und erhält den Stapelkontext vor dem Öffnen von Explore.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -548,3 +548,5 @@ Study Library prüft die aktive Sprachfunktion, bevor gespeicherte Schemata, Kar
 Die Bibliotheksverfügbarkeit liest Sprachbeiträge aus der aktuellen Systemregistrierung statt aus dem lokalen Funktionsspeicher des Adapters. Das Deaktivieren einer Sprache lässt Schemata, Karten und Startdeck-Abhängigkeiten der anderen Sprache zugänglich; erneutes Aktivieren stellt gespeicherte Inhalte wieder bereit. Die öffentliche Registrierung hat Vorrang vor veralteten lokalen Kopien.
 
 Verbindliche Paketaktualisierungen erhalten ausgelassene Anbietereinträge, die von eigenen oder bearbeiteten Anbieterkarten weiterhin erreichbar sind. Der Schutz folgt rekursiven Abhängigkeiten und Zyklen; überholte Inhalte ohne solche Verweise können weiter entfernt werden.
+
+Die passende Kartenvorschau im Explore-Raster wird unscharf und nicht interaktiv, solange ihr Zeichen im Zeichenfeld geöffnet ist. Wiederholte und neu gerenderte Platzierungen folgen demselben Zustand; Zeichenwechsel, Schließen des Zeichenfelds oder Verlassen der Seite stellen sie ohne Größenänderung wieder her.

@@ -11,11 +11,11 @@ import { flashcardValues, renderFlashcard } from "../../reuse/flashcard.js";
 import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
 
-function entryLink(entry, text, schemas) {
+function entryAction(entry, text, schemas) {
     if (!text) return "";
     const url = entryExploreUrl(entry, schemas);
     return url
-        ? `<a class="study-entry-link btn-neutral" href="${escapeHtml(url)}" data-practice-link data-entry-id="${escapeHtml(entry.id)}">${escapeHtml(text)}</a>`
+        ? `<button type="button" class="study-entry-link btn-neutral" data-practice-link data-entry-id="${escapeHtml(entry.id)}">${escapeHtml(text)}</button>`
         : escapeHtml(text);
 }
 
@@ -50,11 +50,19 @@ export function mountPractice(
     ].filter(Boolean);
     const previewing = answeredGrade === "good";
     let grade = answeredGrade ?? (previewing ? "good" : null);
-    let assisted = false;
     let drawing;
     let revision = 0;
     const label = (key) =>
         escapeHtml(i18n.t(`adapter.study.flashcards.practice_${key}`));
+    const navigateToEntry = async (entry) => {
+        await onDeparture?.(grade ?? "again");
+        await navigateTo(entryExploreUrl(entry, schemas), {
+            state: {
+                studyEntryId: entry.id,
+                studyEntryIds: navigationEntryIds,
+            },
+        });
+    };
     const render = async () => {
         const currentRevision = ++revision;
         drawing?.close();
@@ -64,24 +72,38 @@ export function mountPractice(
             : activeMode === "writing" && pattern
               ? "<div data-practice-drawing></div>"
               : activeMode === "reading" && choices.length
-                ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral ${pronunciationClass(choice.text)}" data-reading-choice="${index}">${escapeHtml(choice.text)}</button>${entryLink(choice.entry, "↗", schemas)}</div>`).join("")}</div>`
+                ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral ${pronunciationClass(choice.text)}" data-reading-choice="${index}">${escapeHtml(choice.text)}</button></div>`).join("")}</div>`
                 : `<p>${label("unavailable")}</p>${activeMode === "reading" ? `<button type="button" class="btn-neutral" data-practice-reveal>${label("flip")}</button>` : ""}`;
-        const answer = renderFlashcard(detail, schemas, language, entryLink);
+        const answer = renderFlashcard(detail, schemas, language, entryAction);
         const writing = activeMode === "writing";
+        const navigation = formatTemplate(templates["practice-navigation"], {
+            previous_label: label("previous"),
+            next_label: label("next"),
+            previous_content: writing
+                ? '<span class="study-practice-arrow" aria-hidden="true"></span>'
+                : label("previous"),
+            next_content: writing
+                ? '<span class="study-practice-arrow study-practice-arrow--next" aria-hidden="true"></span>'
+                : label("next"),
+        });
         target.innerHTML = formatTemplate(templates.practice, {
             favourite: authenticated
                 ? renderFavourite("flashcard", detail.entry.id, i18n)
                 : "",
-            entry_heading: writing
-                ? `<button type="button" class="btn-neutral study-practice-concealed" data-practice-reveal aria-label="${label("reveal")}" aria-expanded="false"><span aria-hidden="true">${"漢".repeat([...values.front].length)}</span></button>`
-                : entryLink(detail.entry, values.front, schemas),
-            modes: label(activeMode),
+            mode: activeMode,
+            entry_heading:
+                writing && pattern && !previewing
+                    ? ""
+                    : entryAction(detail.entry, values.front, schemas),
+            writing_navigation: writing ? navigation : "",
+            reading_navigation: writing ? "" : navigation,
+            modes: writing ? "" : label(activeMode),
             task,
             front: renderFlashcard(
                 detail,
                 schemas,
                 language,
-                entryLink,
+                entryAction,
                 "front",
             ),
             answer,
@@ -103,15 +125,19 @@ export function mountPractice(
                 strokePattern: pattern,
                 container: target.querySelector("[data-practice-drawing]"),
                 signal: controller.signal,
+                suppressRetry: true,
+                onNavigate: (entry) =>
+                    runDeckAction(
+                        "depart",
+                        () => navigateToEntry(entry),
+                        controller.signal,
+                    ),
                 onResult: ({ correct, assisted: drawingAssisted }) =>
                     void runDeckAction(
                         "answer",
                         () => {
                             grade =
-                                correct &&
-                                !assisted &&
-                                !drawingAssisted &&
-                                grade !== "again"
+                                correct && !drawingAssisted && grade !== "again"
                                     ? "good"
                                     : "again";
                             onAnswer?.(grade);
@@ -146,24 +172,14 @@ export function mountPractice(
         async (event) => {
             const link = event.target.closest("[data-practice-link]");
             if (link) {
-                if (
-                    event.ctrlKey ||
-                    event.metaKey ||
-                    event.shiftKey ||
-                    event.altKey
-                ) {
-                    await runDeckAction(
-                        "depart",
-                        async () => {
-                            assisted ||= !grade;
-                            await onDeparture?.(grade ?? "again");
-                        },
-                        controller.signal,
-                    );
-                    return;
-                }
                 event.preventDefault();
-                if (!link.dataset.entryId || !link.getAttribute("href")) return;
+                const entry = [
+                    detail.entry,
+                    ...detail.references,
+                    ...entries,
+                ].find((entry) => entry.id === link.dataset.entryId);
+                const url = entry && entryExploreUrl(entry, schemas);
+                if (!url) return;
                 await runDeckAction(
                     "depart",
                     async () => {
@@ -187,46 +203,23 @@ export function mountPractice(
                                 },
                             ],
                         });
-                        if (choice === "leave") {
-                            await onDeparture?.(grade ?? "again");
-                            await navigateTo(link.getAttribute("href"), {
-                                state: {
-                                    studyEntryId: link.dataset.entryId,
-                                    studyEntryIds: navigationEntryIds,
-                                },
-                            });
-                        }
+                        if (choice === "leave") await navigateToEntry(entry);
                     },
                     controller.signal,
                 );
             }
             if (
                 event.target.closest("[data-practice-reveal]") &&
-                (mode === "writing" || !available.includes(mode))
+                mode === "reading" &&
+                !available.includes(mode)
             ) {
                 await runDeckAction(
                     "answer",
                     () => {
                         grade = "again";
                         onAnswer?.(grade);
-                        const reveal = target.querySelector(
-                            "[data-practice-reveal]",
-                        );
-                        if (mode === "writing") {
-                            const focused = document.activeElement === reveal;
-                            reveal.outerHTML = entryLink(
-                                detail.entry,
-                                values.front,
-                                schemas,
-                            );
-                            if (focused)
-                                target
-                                    .querySelector(
-                                        ".study-practice-heading [data-practice-link]",
-                                    )
-                                    ?.focus();
-                        } else reveal.hidden = true;
-                        reveal.setAttribute("aria-expanded", "true");
+                        target.querySelector("[data-practice-reveal]").hidden =
+                            true;
                         revealAnswer();
                         target.querySelector("[data-practice-next]").disabled =
                             false;
@@ -243,7 +236,7 @@ export function mountPractice(
                         const correct =
                             choices[Number(choice.dataset.readingChoice)]
                                 .correct;
-                        grade = correct && !assisted ? "good" : "again";
+                        grade = correct ? "good" : "again";
                         onAnswer?.(grade);
                         choice.classList.remove("btn-neutral");
                         choice.classList.add(

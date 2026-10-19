@@ -4,47 +4,44 @@ import { entryExploreUrl } from "./explore.js";
 
 export function bindDrawingHeading(
     heading,
-    { signal, i18n, schemas, getCard, onReveal, runAction, reportFailure },
+    {
+        signal,
+        i18n,
+        schemas,
+        getCard,
+        onReveal,
+        onNavigate,
+        runAction,
+        reportFailure,
+    },
 ) {
     let revealed = false;
-    heading.addEventListener(
-        "keydown",
-        (event) => {
-            if (!revealed && ["Enter", " "].includes(event.key)) {
-                event.preventDefault();
-                heading.click();
-            }
-        },
-        { signal },
+    const inExplore = /^\/study\/explore(?:\/|$)/.test(
+        window.location.pathname,
     );
+    const navigateCard = (card) =>
+        onNavigate
+            ? onNavigate(card)
+            : uiCtx.capabilities.get("ui:navigate")(
+                  entryExploreUrl(card, schemas),
+                  { state: { studyEntryId: card.id } },
+              );
     heading.addEventListener(
         "click",
         (event) => {
-            const modified =
-                event.ctrlKey ||
-                event.metaKey ||
-                event.shiftKey ||
-                event.altKey;
-            if (!revealed || !modified) event.preventDefault();
+            event.preventDefault();
             void runAction(async () => {
                 const card = getCard();
                 if (!revealed) {
                     revealed = true;
-                    heading.removeAttribute("role");
                     heading.classList.remove("study-drawing-concealed");
-                    heading.href = entryExploreUrl(card, schemas);
                     heading.textContent = card.label;
                     heading.setAttribute("aria-expanded", "true");
                     onReveal();
                     return;
                 }
-                if (modified) return;
-                if (
-                    /^\/study\/explore(?:\/|$)/.test(window.location.pathname)
-                ) {
-                    await uiCtx.capabilities.get("ui:navigate")(heading.href, {
-                        state: { studyEntryId: card.id },
-                    });
+                if (inExplore) {
+                    await navigateCard(card);
                     return;
                 }
                 let dismissPopup;
@@ -77,11 +74,9 @@ export function bindDrawingHeading(
                         choice === "open" &&
                         !signal.aborted &&
                         card === getCard()
-                    )
-                        await uiCtx.capabilities.get("ui:navigate")(
-                            heading.href,
-                            { state: { studyEntryId: card.id } },
-                        );
+                    ) {
+                        await navigateCard(card);
+                    }
                 } finally {
                     signal.removeEventListener("abort", abort);
                 }
@@ -93,8 +88,6 @@ export function bindDrawingHeading(
         revealed = false;
         heading.textContent = "漢".repeat([...getCard().label].length);
         heading.classList.add("study-drawing-concealed");
-        heading.removeAttribute("href");
-        heading.setAttribute("role", "button");
         heading.setAttribute("aria-expanded", "false");
     };
 }

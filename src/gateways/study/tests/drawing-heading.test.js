@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
-function headingSession(pathname, choice = "open") {
+function headingSession(pathname, choice = "open", onNavigate) {
     const listeners = new Map();
     const attributes = new Map();
     const navigations = [];
@@ -45,6 +45,7 @@ function headingSession(pathname, choice = "open") {
         i18n: { t: (key) => key },
         schemas: [],
         getCard: () => card,
+        onNavigate,
         onReveal: () => {
             revealed += 1;
         },
@@ -84,7 +85,8 @@ for (const pathname of [
         const session = headingSession(pathname);
         assert.equal((await session.click()).revealed, 1);
         assert.equal(session.navigations.length, 0);
-        await session.click();
+        assert.equal(session.heading.href, undefined);
+        assert.equal((await session.click({ ctrlKey: true })).prevented, true);
         assert.equal(session.prompts.length, 0);
         assert.equal(
             session.navigations[0][0],
@@ -108,12 +110,35 @@ for (const pathname of [
     });
 }
 
-test("cancelled navigation stays on the current page and revealed headings support Ctrl-click", async () => {
+test("cancelled heading actions stay on the current page even with modifier keys", async () => {
     const session = headingSession("/study/library", "cancel");
     await session.click();
     await session.click();
     assert.equal(session.navigations.length, 0);
-    assert.equal((await session.click({ ctrlKey: true })).prevented, false);
+    assert.equal((await session.click({ ctrlKey: true })).prevented, true);
+    assert.equal(session.prompts.length, 2);
+    assert.equal(session.navigations.length, 0);
+});
+
+test("embedded heading departure runs its consumer callback only after confirmation", async () => {
+    const departures = [];
+    const session = headingSession(
+        "/study/ja/flashcards/deck",
+        "open",
+        (card) => departures.push(card.id),
+    );
+    await session.click();
+    assert.deepEqual(departures, []);
+    await session.click();
+    assert.deepEqual(departures, ["character"]);
     assert.equal(session.prompts.length, 1);
-    assert.equal(session.heading.href, "/study/explore/ja/kanji/character");
+    assert.equal(session.navigations.length, 0);
+    const cancelled = headingSession(
+        "/study/ja/flashcards/deck",
+        "cancel",
+        (card) => departures.push(card.id),
+    );
+    await cancelled.click();
+    await cancelled.click();
+    assert.deepEqual(departures, ["character"]);
 });

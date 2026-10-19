@@ -78,6 +78,14 @@ Jadwal kartu belajar dan bukti percobaan disimpan sebelum pengiriman imbalan lin
 
 Ringkasan ledger, penukaran booster, dan pembatalan aktivitas menjalankan alur ctx khusus dengan tahap validasi dan eksekusi. Identitas peserta yang tidak valid ditolak sebelum membaca atau mengubah penyimpanan.
 
+Pratinjau kartu yang sesuai di kisi Explore diburamkan dan tidak dapat digunakan selama karakternya terbuka di papan gambar. Penempatan berulang dan yang baru dirender mengikuti keadaan yang sama; mengganti karakter, menutup papan, atau meninggalkan halaman memulihkannya tanpa mengubah ukuran kartu.
+
+Pilihan jawaban kartu belajar berupa tombol jawaban tersendiri. Judul kartu dan jawaban yang diungkap menggunakan tindakan dalam aplikasi dengan konfirmasi keluar dan urutan dek yang tetap terjaga, tanpa menampilkan URL kartu saat diarahkan penunjuk. Di Explore, klik kedua pada judul gambar yang telah diungkap membuka kartu langsung melalui tindakan tanpa URL.
+
+Latihan menulis hanya menggunakan judul tersamarkan pada papan gambar. Panah SVG sebelumnya/berikutnya berada di atas papan bersama kontrol favorit; berikutnya tetap memerlukan jawaban. Flashcards meneruskan `suppressRetry: true` ke papan bersama untuk menyembunyikan dan menonaktifkan percobaan ulang; latihan mandiri tetap mengizinkannya secara bawaan.
+
+Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi judul bersama. Flashcards menggunakannya untuk mencatat percobaan saat ini melalui alur keluar dan mempertahankan konteks navigasi dek sebelum membuka Explore.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

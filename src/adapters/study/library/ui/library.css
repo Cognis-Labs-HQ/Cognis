@@ -869,3 +869,8 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     overflow: hidden;
     overflow-wrap: anywhere;
 }
+
+.library-entry-card--drawing > * {
+    filter: blur(0.55rem);
+    user-select: none;
+}

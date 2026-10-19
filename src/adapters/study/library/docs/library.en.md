@@ -561,3 +561,5 @@ Study Library checks the live language capability before exposing retained schem
 Library availability resolves language contributions from the live system registry rather than the adapter-local capability store. Disabling one language keeps the other language’s schemas, cards and starter-deck dependencies accessible; re-enabling restores retained content. A public registry takes precedence over any stale local snapshot.
 
 Authoritative pack updates retain omitted provider entries that are still reachable from user-authored cards or modified provider cards. This protection follows recursive dependencies and cycles; provider-only obsolete content can still be pruned.
+
+The matching Explore grid preview is blurred and non-interactive while its character is open in the drawing pad. Repeated and newly rendered placements follow the same state; changing character, closing the pad or leaving the page restores them without changing card geometry.

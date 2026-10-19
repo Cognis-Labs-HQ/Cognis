@@ -66,8 +66,10 @@
 </template>
 
 <template data-deck-template="practice">
-    <section class="study-practice" data-practice>
-        <div class="study-practice-heading">{favourite}{entry_heading}</div>
+    <section class="study-practice study-practice--{mode}" data-practice>
+        <div class="study-practice-heading">
+            {writing_navigation}{favourite}{entry_heading}
+        </div>
         <div class="study-practice-modes">{modes}</div>
         <div
             class="study-practice-feedback"
@@ -89,14 +91,7 @@
                 {flip_label}
             </button>
         </section>
-        <div class="study-practice-navigation">
-            <button type="button" class="btn-neutral" data-practice-previous>
-                {previous_label}
-            </button>
-            <button type="button" class="btn-neutral" data-practice-next>
-                {next_label}
-            </button>
-        </div>
+        {reading_navigation}
     </section>
 </template>
 
@@ -107,4 +102,27 @@
             <option value="writing">{writing}</option>
         </select></label
     >
+</template>
+
+<template data-deck-template="practice-navigation">
+    <div class="study-practice-navigation">
+        <button
+            type="button"
+            class="btn-neutral"
+            data-practice-previous
+            aria-label="{previous_label}"
+            title="{previous_label}"
+        >
+            {previous_content}
+        </button>
+        <button
+            type="button"
+            class="btn-neutral"
+            data-practice-next
+            aria-label="{next_label}"
+            title="{next_label}"
+        >
+            {next_content}
+        </button>
+    </div>
 </template>

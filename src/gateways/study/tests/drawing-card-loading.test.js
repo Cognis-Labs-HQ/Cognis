@@ -192,6 +192,7 @@ async function drawingSession({
             body: { append() {} },
         },
         window: {
+            location: { pathname: "/study/explore/ja/kanji" },
             crypto: {
                 randomUUID: globalThis.crypto.randomUUID,
                 getRandomValues: (values) => values.fill(0),
@@ -610,5 +611,24 @@ test("guidance reveals every stroke after drawing starts, including completed st
         assert.deepEqual(session.annotations, ["1", "2", "3"]);
         assert.equal(guidance.disabled, true);
         session.navigate();
+    }
+});
+
+test("embedded callers can suppress retries while standalone practice retains them", async () => {
+    for (const suppressRetry of [false, true]) {
+        const session = await drawingSession();
+        const opened = await session.open({
+            ...card(1),
+            container: session.host,
+            suppressRetry,
+        });
+        const retry = session.elements.get("[data-try-again]");
+        assert.equal(retry.hidden, suppressRetry);
+        const completion = session.elements.get("[data-complete]");
+        completion.hidden = false;
+        retry.handlers.get("click")();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.equal(completion.hidden, !suppressRetry);
+        await opened.close();
     }
 });

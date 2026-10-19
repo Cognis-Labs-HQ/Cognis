@@ -297,3 +297,25 @@
         animation: none;
     }
 }
+
+.study-practice--writing .study-practice-heading {
+    flex-direction: row;
+    font-size: inherit;
+}
+.study-practice--writing .study-practice-navigation {
+    flex: 1;
+}
+.study-practice--writing .study-practice-modes:empty {
+    display: none;
+}
+.study-practice-arrow {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: currentColor;
+    mask: url("/static/assets/reuse/arrow-back-light.svg") center / contain
+        no-repeat;
+}
+.study-practice-arrow--next {
+    transform: rotate(180deg);
+}

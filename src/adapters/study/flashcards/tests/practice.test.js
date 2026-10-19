@@ -234,7 +234,12 @@ function practiceHarness(filter, status = "due", options = {}) {
     const grades = [];
     const dispose = context.mountPractice(target, {
         detail: { entry, references: [] },
-        templates: { practice: template },
+        templates: {
+            practice: template,
+            "practice-navigation": templateSource.match(
+                /<template data-deck-template="practice-navigation">([\s\S]*?)<\/template>/,
+            )[1],
+        },
         entries: [],
         schemas,
         progress: {},
@@ -394,22 +399,20 @@ test("Writing masks the character until an explicit reveal, grades hints as Agai
     });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
-    assert.match(
-        harness.target.innerHTML,
-        /study-practice-concealed[^>]*>.*漢/,
+    assert.equal(harness.drawing().suppressRetry, true);
+    assert.ok(
+        harness.target.innerHTML.indexOf("data-practice-previous") <
+            harness.target.innerHTML.indexOf("data-practice-drawing"),
     );
     const drawing = harness.drawing();
     await harness.click("[data-practice-mode]", { practiceMode: "reading" });
     assert.equal(harness.drawing(), drawing);
     await harness.click("[data-reading-choice]", { readingChoice: "0" });
     assert.deepEqual(answers, []);
-    await harness.click("[data-practice-reveal]", {});
+    drawing.onResult({ correct: false, assisted: true });
+    await new Promise((resolve) => setImmediate(resolve));
     assert.deepEqual(answers, ["again"]);
-    assert.match(
-        harness.nodes.get("[data-practice-reveal]").outerHTML,
-        /data-practice-link[^>]*>学<\/a>/,
-    );
-    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, false);
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
     await harness.click("[data-practice-next]", {});
     assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
@@ -467,28 +470,36 @@ test("Reading submissions acknowledge the result in the view and animate the sub
     }
 });
 
-test("option links carry shareable card identity and preserve native modified clicks", async () => {
+test("card heading actions confirm departure even with modifier keys and preserve deck navigation", async () => {
     const departures = [];
     const harness = practiceHarness("due", "due", {
         onDeparture: (grade) => departures.push(grade),
+        navigationEntryIds: ["one", "two"],
     });
     assert.match(
         harness.target.innerHTML,
-        /href="\/study\/explore\/ja\/kanji\/choice-0"/,
+        /<button type="button" class="study-entry-link btn-neutral" data-practice-link data-entry-id="one">学<\/button>/,
+    );
+    assert.equal(
+        (harness.target.innerHTML.match(/data-reading-choice=/g) ?? []).length,
+        4,
     );
     for (const modifier of ["ctrlKey", "metaKey", "shiftKey"]) {
         const { prevented } = await harness.click(
             "[data-practice-link]",
-            { entryId: "choice-0" },
+            { entryId: "one" },
             { [modifier]: true },
         );
-        assert.equal(prevented, false);
+        assert.equal(prevented, true);
     }
-    assert.deepEqual(departures, ["again", "again", "again"]);
-    assert.equal(harness.departures.length, 0);
-    await harness.click("[data-reading-choice]", { readingChoice: "0" });
-    await harness.click("[data-practice-next]", {});
-    assert.deepEqual(harness.grades, ["again"]);
+    assert.deepEqual(departures, []);
+    harness.decision("leave");
+    await harness.click("[data-practice-link]", { entryId: "one" });
+    assert.deepEqual(departures, ["again"]);
+    assert.deepEqual(
+        Array.from(harness.departures[0].options.state.studyEntryIds),
+        ["one", "two"],
+    );
     harness.dispose();
 });
 
@@ -548,4 +559,24 @@ test("writing-unit Reading questions use their sound while sentences resolve loc
         ).back,
         "Ich trinke Wasser",
     );
+});
+
+test("writing heading navigation settles the assisted answer and retains deck order", async () => {
+    const departures = [];
+    const harness = practiceHarness("new", "new", {
+        mode: "writing",
+        navigationEntryIds: ["one", "two"],
+        onDeparture: (grade) => departures.push(grade),
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    harness.drawing().onResult({ correct: false, assisted: true });
+    await new Promise((resolve) => setImmediate(resolve));
+    await harness.drawing().onNavigate(harness.drawing().card);
+    assert.deepEqual(departures, ["again"]);
+    assert.equal(harness.departures[0].url, "/study/explore/ja/kanji/one");
+    assert.deepEqual(
+        Array.from(harness.departures[0].options.state.studyEntryIds),
+        ["one", "two"],
+    );
+    harness.dispose();
 });

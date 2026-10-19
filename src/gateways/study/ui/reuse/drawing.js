@@ -226,6 +226,8 @@ async function createDrawingPad({
     container,
     signal,
     onResult,
+    onNavigate,
+    suppressRetry = false,
 }) {
     if (!card?.id || !strokePattern?.strokes?.length)
         throw new Error("drawing_card_required");
@@ -294,6 +296,7 @@ async function createDrawingPad({
         pad.querySelector("[data-close]").hidden = true;
         pad.querySelector("[data-complete-close]").hidden = true;
     }
+    pad.querySelector("[data-try-again]").hidden = suppressRetry;
     const canvas = pad.querySelector("canvas");
     const stage = pad.querySelector(".study-drawing-stage");
     const completion = pad.querySelector("[data-complete]");
@@ -665,6 +668,7 @@ async function createDrawingPad({
             i18n,
             schemas,
             getCard: () => currentCard,
+            onNavigate,
             onReveal: () => {
                 assistedAttempt = true;
                 onResult?.({ correct: false, assisted: true, mistakes });
@@ -778,6 +782,7 @@ async function createDrawingPad({
             void runDrawingAction(
                 "retry",
                 async () => {
+                    if (suppressRetry) return;
                     const restartingAttempt = attemptNumber;
                     await pendingCompletion;
                     if (

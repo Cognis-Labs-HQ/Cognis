@@ -1,3 +1,4 @@
+import { bindDrawingGridPreviews } from "./drawing-grid-preview.js";
 import { bindViewedEntries } from "./viewed-entries.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -46,6 +47,7 @@ export function bindLibraryInteractions(root, context) {
     interactionControllers.set(root, controller);
     const signal = controller.signal;
     bindSelectionEscape(root, signal);
+    bindDrawingGridPreviews(root, signal);
     if (root.querySelector(".library-browser"))
         void bindBrowseControls(root, context.entries, schemas, i18n, signal);
     window.addEventListener(

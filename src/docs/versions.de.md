@@ -55,9 +55,9 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.19` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.20` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
-| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.1`   |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.2`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.0`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.0`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |
@@ -77,7 +77,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.2.0`   |
+| Study                 | `src/gateways/study/`         | `2.2.1`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kernverträge

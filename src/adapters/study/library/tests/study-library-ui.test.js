@@ -238,7 +238,7 @@ test("Study Library integrates definitions and particles into item details", () 
     assert.doesNotMatch(stylesheet, /^\.popup-title\s*\{/m);
     assert.match(source, /headingLayout: hasReadingDetails/);
     assert.doesNotMatch(source, /if \(!layer\.displayDefinition\)/);
-    assert.doesNotMatch(source, /data-library-preview/);
+    assert.match(source, /bindDrawingGridPreviews\(root, signal\)/);
     assert.match(source, /function relationshipPresentationRole/);
     assert.match(
         source,

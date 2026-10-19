@@ -39,3 +39,9 @@ Lesen/Schreiben ist eine gespeicherte Kontoeinstellung im schwebenden Composer-M
 ## Navigation im Schreibfenster
 
 Das Öffnen des Schreibfensters aus den Kartendetails schließt die Detailansicht nach erfolgreichem Öffnen. Der verdeckte Titel wird weiterhin beim ersten Klick sichtbar. Auf Explore öffnet ein weiterer Klick die Karte direkt; auf anderen Study-Seiten bleibt die Bestätigung vor dem Wechsel zu Explore erhalten.
+
+Antwortmöglichkeiten in Lernkarten sind eigenständige Antwortschaltflächen. Kartenüberschriften und aufgedeckte Antworten verwenden interne Aktionen mit Bestätigung beim Verlassen und erhaltener Stapelreihenfolge, ohne Kartenadressen beim Überfahren anzuzeigen. In Explore öffnet ein zweiter Klick auf die aufgedeckte Zeichenüberschrift die Karte direkt über eine Aktion ohne Adresse.
+
+Schreibübungen verwenden nur die maskierte Überschrift des Zeichenfelds. SVG-Pfeile für Zurück/Weiter stehen darüber neben dem Favoriten; Weiter erfordert weiterhin eine Antwort. Flashcards übergibt `suppressRetry: true` an das gemeinsame Zeichenfeld und blendet Wiederholen aus und deaktiviert es; eigenständige Übungen erlauben Wiederholen standardmäßig.
+
+Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(card)` bereitstellen. Flashcards verbucht damit den aktuellen Versuch über den Ablauf zum Verlassen und erhält den Stapelkontext vor dem Öffnen von Explore.
