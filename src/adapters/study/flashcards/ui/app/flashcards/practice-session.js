@@ -13,6 +13,7 @@ export function createPracticeSession(cards, snapshot) {
         ),
     );
     const attempts = new Map(snapshot?.attempts ?? []);
+    const reviewAttempts = new Map(snapshot?.reviewAttempts ?? []);
     return {
         get current() {
             return cards[index];
@@ -26,12 +27,21 @@ export function createPracticeSession(cards, snapshot) {
         get answered() {
             return grades.has(index);
         },
+        get reviewAttempt() {
+            if (!reviewAttempts.has(index))
+                reviewAttempts.set(index, {
+                    id: crypto.randomUUID(),
+                    occurredAt: new Date().toISOString(),
+                });
+            return reviewAttempts.get(index);
+        },
         snapshot() {
             return {
                 cardIds: cards.map(({ entry }) => entry.id),
                 index,
                 grades: [...grades],
                 attempts: [...attempts],
+                reviewAttempts: [...reviewAttempts],
             };
         },
         answer(grade) {
@@ -77,11 +87,17 @@ export function resumePracticeSession(cards, snapshot) {
     };
     const grades = remap(snapshot.grades);
     const attempts = remap(snapshot.attempts);
+    const reviewAttempts = remap(snapshot.reviewAttempts);
     const index = snapshot.cardIds
         .slice(0, snapshot.index)
         .filter((id) => byId.has(id)).length;
     return {
         queue,
-        session: createPracticeSession(queue, { index, grades, attempts }),
+        session: createPracticeSession(queue, {
+            index,
+            grades,
+            attempts,
+            reviewAttempts,
+        }),
     };
 }

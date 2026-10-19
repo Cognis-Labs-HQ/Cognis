@@ -510,7 +510,7 @@ export class LibraryVisibilityService {
             );
             return {
                 ...request,
-                status: "withdrawn",
+                status: "withdrawn" as const,
                 reviewedBy: actor.accountId,
                 reviewedAt: new Date().toISOString(),
                 canReview: false,

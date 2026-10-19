@@ -24,3 +24,5 @@ Ranglisten zeigen einen Alias, sofern die Profil-Sichtbarkeitsprüfung die Ident
 ### Lebenszyklus
 
 `rollover` archiviert die abgeschlossene Saison und öffnet die nächste. Korrekturen entwerten frühere Evidenz vor dem Ersatz. Für eine barrierefreie lokalisierte Tabelle dient `requestTableModel`; `queryStandings` liefert das neutrale Ranglistenmodell.
+
+Der Start erfordert das DB-Gateway. Fehlgeschlagene Speicherungen werden protokolliert und blockieren spätere Speicherungen nicht. Wiederholte identische Beobachtungen speichern den Zustand ohne Duplikat. Klassenberechtigungen werden bei jedem Aufruf geprüft, auch nach einem Widerruf.

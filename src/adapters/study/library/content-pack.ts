@@ -226,11 +226,7 @@ async function validateContentRecords(
     const recordsById = new Map(records.map((record) => [record.id, record]));
     for (const layer of schema.layers) {
         for (const itemId of layer.grid?.items ?? []) {
-            if (
-                itemId === null ||
-                (typeof itemId === "object" && itemId.blank === true)
-            )
-                continue;
+            if (itemId === null || typeof itemId === "object") continue;
             const record =
                 typeof itemId === "number"
                     ? records.find(
@@ -368,6 +364,7 @@ async function validateContentRecords(
             scope: "global",
             scopeId: "global",
             createdBy: `content-pack:${manifest.id}`,
+            protected: manifest.protected === true,
             createdAt: "",
             updatedAt: "",
             references: [],

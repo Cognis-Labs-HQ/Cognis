@@ -1,4 +1,4 @@
-import type { RouteContext } from "../../../../../api/reuse/route-context.js";
+import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { LeaderboardCapability } from "../types.js";
 
 export function createLeaderboardRoutes(

@@ -30,3 +30,7 @@ Endpoint peristiwa biasa menolak `compensatesEventId`; klien harus memakai endpo
 ### Keamanan jadwal tinjauan
 
 Interval tinjauan dibatasi hingga empat belas hari. Stempel waktu peristiwa hanya diterima jika seluruh interval tersebut tetap dapat direpresentasikan, sehingga peristiwa yang diterima tidak dapat menggagalkan pembangunan ulang proyeksi akibat tanggal tinjauan yang melampaui rentang tanggal yang didukung.
+
+ID peristiwa stabil tetap berlaku setelah disimpan dan dibaca dari basis data. Pengiriman ulang peristiwa identik memperbaiki proyeksi yang terhenti tanpa menambah riwayat. Peristiwa kanonis mempertahankan isi, cakupan, waktu, petunjuk, ketepatan, penyelesaian dan referensi koreksi.
+
+Pelajar terdaftar dapat mencatat hasil kelas sendiri dengan hak baca, tanpa hak menyunting kelas. Pencatatan untuk pelajar lain tetap memerlukan peran istimewa. Konteks kelas mengikuti keanggotaan terkini; berbagi dek saja tidak memberikan keanggotaan.

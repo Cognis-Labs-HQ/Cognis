@@ -97,11 +97,10 @@ export async function bootstrapStudyAdapter(
         { id: "study-progress:project", order: -100 },
         async ({ data }) => {
             if (!ctx.isAdapterEnabled()) throw new Error("adapter_disabled");
-            if ((data as ProgressRecordFlowData).appendResult === "inserted") {
-                await rebuildProgressProjections(store);
-                return "rebuilt";
-            }
-            return "unchanged";
+            if (!(data as ProgressRecordFlowData).appendResult)
+                throw new Error("progress_flow_persistence_missing");
+            await rebuildProgressProjections(store);
+            return "rebuilt";
         },
     );
     const service = new ProgressService(

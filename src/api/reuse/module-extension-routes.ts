@@ -131,6 +131,7 @@ export function createModuleExtensionRoutes(
             id: string;
             uuid: string;
             requiresCapabilities?: string[];
+            version: string;
         },
         moduleRoot: string,
         nextHandlers: RouteHandler[],

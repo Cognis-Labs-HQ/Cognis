@@ -61,13 +61,14 @@ export function createDrawingRoutes(
                                     );
                                     return;
                                 }
+                                validateDrawingCompletion(input);
                                 await recordResult?.(
                                     {
                                         accountId: claims.sub,
                                         role: claims.role,
                                     },
                                     cardId,
-                                    input as DrawingCompletion,
+                                    input,
                                 );
                                 result = await service.complete(
                                     claims.sub,
@@ -101,6 +102,7 @@ export function createDrawingRoutes(
                 [
                     "invalid_drawing_card",
                     "invalid_drawing_completion",
+                    "invalid_study_attempt",
                     "invalid_json",
                 ].includes(code) ||
                 error instanceof URIError;

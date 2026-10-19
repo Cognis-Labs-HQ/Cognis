@@ -60,6 +60,10 @@ Wörterbuchimporte lösen noch nicht verknüpfte Karteninhalte vollständig in g
 
 Fortschritt, Ranglisten, Punkteberechnung und Kontingentverwaltung sind über ihre zuständigen Komponenten verfügbar. Zeichen- und Karteikartenergebnisse verwenden den Fortschrittsadapter; unterstützte Antworten gelten nicht als selbstständig richtig. Geteilte Stapel laden aktuelle Bibliothekseinträge anhand ihrer ID; importierte Notizen behalten eine eigene kanonische Identität. Leseantworten verwenden lokalisierte Definitionen und Zeichenlesungen. Ausspracheelemente verwenden kanonische Zeichenverweise; abgeschlossene Wörterbuchabfragen werden ausgeblendet, Bibliothekskarten sind bearbeitbar und Zeitstempelgleichstände werden anhand der Bibliotheksreihenfolge aufgelöst.
 
+## Zuverlässige Lernergebnisse
+
+Klassenberechtigungen und Erwähnungen verwenden den aktuellen Klassenvertrag und prüfen Mitgliedschaften erneut. Inhaltsaktualisierungen erhalten ausgelassene Einträge, die eigene Karten oder bearbeitete Anbieterkarten weiterhin rekursiv referenzieren. Wiederholte Antwortübermittlungen behalten ihre Versuchskennung über die Navigation hinweg und aktualisieren Zeitplan und Fortschritt nur einmal. Zeichenversuche vermeiden doppelte Ereignisse und Schwierigkeitssteigerungen. Kanonische JSON-Ereignisse ermöglichen die Wiederherstellung unterbrochener Fortschrittsprojektionen. Ranglistenspeicherung erholt sich nach Fehlern, erfordert dauerhaften Speicher und prüft Klassenzugriff bei jedem Aufruf. Geteilte Stapel verwenden aktuelle Schemata und Bibliotheksdaten. Die Produktionsverträge für Study entsprechen den Laufzeitschnittstellen, einschließlich Schema-Standardwerten und Audiodekodierung.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -491,3 +491,61 @@ test("option links carry shareable card identity and preserve native modified cl
     assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
 });
+
+test("writing-unit Reading questions use their sound while sentences resolve localized meaning references", () => {
+    const schemas = [
+        {
+            id: "ja",
+            layers: [
+                { id: "kana", semanticRole: "atomicWritingUnit" },
+                { id: "sentences", semanticRole: "orderedLexicalSequence" },
+                {
+                    id: "meanings",
+                    semanticRole: "definition",
+                    fields: [{ id: "text", type: "localizedText" }],
+                },
+            ],
+        },
+    ];
+    const kana = {
+        id: "a",
+        label: "あ",
+        schemaId: "ja",
+        layer: "kana",
+        fields: { pronunciation: ["a"] },
+    };
+    assert.equal(
+        environment.flashcardValues({ entry: kana }, schemas, "en").back,
+        "a",
+    );
+    const meaning = {
+        id: "meaning",
+        schemaId: "ja",
+        layer: "meanings",
+        fields: { text: { en: "I drink water", de: "Ich trinke Wasser" } },
+    };
+    const sentence = {
+        id: "sentence",
+        label: "私は水を飲む",
+        schemaId: "ja",
+        layer: "sentences",
+        fields: { pronunciation: ["わたしはみずをのむ"] },
+        references: [{ entryId: "meaning" }],
+    };
+    assert.equal(
+        environment.flashcardValues(
+            { entry: sentence, references: [meaning] },
+            schemas,
+            "en",
+        ).back,
+        "I drink water",
+    );
+    assert.equal(
+        environment.flashcardValues(
+            { entry: sentence, references: [meaning] },
+            schemas,
+            "de",
+        ).back,
+        "Ich trinke Wasser",
+    );
+});

@@ -60,6 +60,10 @@ Dictionary imports resolve unlinked card contents into complete, ordered referen
 
 Progress, Leaderboard, scoring and quota administration are available through their owning components. Drawing and flashcard results use Progress; assisted answers do not count as independently correct. Shared decks resolve current Library entries by ID, while imported notes retain a separate canonical identity. Reading choices use localized definitions and writing-unit readings. Pronunciation chips share canonical character links; dictionary imports hide the completed lookup, Library rows open editable cards, and chronological sorting breaks timestamp ties by Library sequence.
 
+## Reliable Study Results
+
+Class-scoped access and mentions use the current class-store contract and recheck membership. Content-pack pruning retains omitted records recursively referenced by user-authored cards or provider edits. Flashcard answer retries keep their attempt identity across navigation and update scheduling and Progress once. Drawing retries retain their event identity and avoid duplicate difficulty increments. Progress events use a canonical JSON shape; retrying an event repairs interrupted projections without duplicating history. Leaderboard saves recover after storage failures, require persistent storage, and resolve classroom access at call time. Shared decks resolve current schemas and Library records. Study production contracts align with their runtime interfaces, including schema defaults and audio decoding.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

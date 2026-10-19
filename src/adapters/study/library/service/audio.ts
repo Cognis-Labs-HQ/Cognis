@@ -49,6 +49,7 @@ export async function readEntryAudio(
         policy &&
         typeof policy === "object" &&
         !Array.isArray(policy) &&
+        "requiresReading" in policy &&
         policy.requiresReading === true &&
         !input.readings?.length
     )
@@ -159,7 +160,10 @@ export async function readAuthorizedEntryAudio(
                                 false,
                                 entry.scope === "global",
                             ),
-                    });
+                    }).then((recording) => ({
+                        ...recording,
+                        data: Buffer.from(recording.data),
+                    }));
                 }
             },
             ...(input.refresh

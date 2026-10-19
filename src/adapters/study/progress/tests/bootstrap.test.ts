@@ -2,21 +2,80 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCtx } from "@cognis/core";
 import { CoreStudyGateway } from "../../../../gateways/study/gateway.js";
+import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { LearningEventInput } from "../types.js";
+import type { ProgressCapability } from "../index.js";
 import { bootstrapStudyAdapter, createStudyAdapter } from "../index.js";
+
+const flowEvent: LearningEventInput = {
+    id: "flow-event",
+    occurredAt: "2026-09-11T12:00:00.000Z",
+    content: {
+        schema: "language-v1",
+        layer: "words",
+        language: "ja",
+        contentId: "word-one",
+    },
+    contentRevision: "revision-one",
+    activity: "recall",
+    context: {},
+    attempt: 1,
+    correct: true,
+    independentCorrect: true,
+    hints: 0,
+    durationMs: 500,
+    completion: "completed",
+    metadata: {},
+};
 
 function bootstrapContext() {
     const systemCtx = createCtx();
     const commands: Array<{ option: string; table: string }> = [];
+    const rows: Array<Record<string, unknown> & { table: string }> = [];
+    let failProjection = false;
     systemCtx.contributeCapability("system:ctx", systemCtx);
     systemCtx.contributeCapability("db:executor", {
         ensureTable: async () => {},
-        executeCommand: async (command: { option: string; table: string }) => {
+        executeCommand: async (command: StructuredDbCommand) => {
             commands.push(command);
-            return { rows: [], rowCount: 1 };
+            const matches = (row: Record<string, unknown>) =>
+                row.table === command.table &&
+                (!("where" in command) ||
+                    (command.where ?? []).every(
+                        (condition) =>
+                            row[condition.column] === condition.value,
+                    ));
+            if (command.option === "SELECT")
+                return { rows: rows.filter(matches) };
+            if (
+                command.table === "study_progress_projections" &&
+                failProjection
+            )
+                throw new Error("projection_storage_unavailable");
+            if (command.option === "INSERT") {
+                if (
+                    command.table === "study_progress_events" &&
+                    rows.some((row) => row.event_id === command.values.event_id)
+                )
+                    return { rowCount: 0 };
+                rows.push({ ...command.values, table: command.table });
+            }
+            if (command.option === "DELETE")
+                for (let index = rows.length - 1; index >= 0; index--)
+                    if (matches(rows[index])) rows.splice(index, 1);
+            return { rowCount: 1 };
         },
         transaction: async (
             callback: (executor: unknown) => Promise<unknown>,
-        ) => callback(systemCtx.getCapability("db:executor")),
+        ) => {
+            const before = structuredClone(rows);
+            try {
+                return await callback(systemCtx.getCapability("db:executor"));
+            } catch (error) {
+                rows.splice(0, rows.length, ...before);
+                throw error;
+            }
+        },
     });
     const routes: unknown[] = [];
     let enabled = true;
@@ -24,6 +83,9 @@ function bootstrapContext() {
         systemCtx,
         commands,
         routes,
+        failProjection(value: boolean) {
+            failProjection = value;
+        },
         setEnabled(value: boolean) {
             enabled = value;
         },
@@ -92,26 +154,7 @@ test("progress persistence and projection execute inside their flow stages", asy
     }>("study:progress");
     await progress.recordEvent(
         { accountId: "actor-one", role: "user" },
-        {
-            id: "flow-event",
-            occurredAt: "2026-09-11T12:00:00.000Z",
-            content: {
-                schema: "language-v1",
-                layer: "words",
-                language: "ja",
-                contentId: "word-one",
-            },
-            contentRevision: "revision-one",
-            activity: "recall",
-            context: {},
-            attempt: 1,
-            correct: true,
-            independentCorrect: true,
-            hints: 0,
-            durationMs: 500,
-            completion: "completed",
-            metadata: {},
-        },
+        flowEvent,
     );
 });
 
@@ -142,4 +185,28 @@ test("disabled progress adapter gates capabilities and flow hooks", async () => 
         ),
         /adapter_disabled/,
     );
+});
+
+test("retrying an inserted event repairs projections after projection persistence failed", async () => {
+    const fixture = bootstrapContext();
+    await bootstrapStudyAdapter(fixture.context as never);
+    const progress =
+        fixture.systemCtx.requireCapability<ProgressCapability>(
+            "study:progress",
+        );
+    const actor = { accountId: "actor-one", role: "user" as const };
+    fixture.failProjection(true);
+    await assert.rejects(
+        progress.recordEvent(actor, flowEvent),
+        /projection_storage_unavailable/,
+    );
+    assert.equal((await progress.listEvents(actor)).length, 1);
+    fixture.failProjection(false);
+    assert.equal(
+        (await progress.recordEvent(actor, flowEvent)).duplicate,
+        true,
+    );
+    const projections = await progress.listProjections(actor);
+    assert.equal(projections.length, 1);
+    assert.equal(projections[0].seen, 1);
 });

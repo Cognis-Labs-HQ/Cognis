@@ -8,7 +8,7 @@ Buka dek yang terlihat dari Flashcards untuk langsung berlatih. Pilih Total, Sel
 
 Dek menggunakan jenis sumber daya `studyDeck` dan kemampuan baca `study:flashcards:read`. Kontrol Berbagi Cognis mendukung pengguna, tautan publik, masa berlaku, kata sandi, dan pencabutan. Hanya pemilik dapat mengubah atau menghapus dek. Penerima dapat belajar dengan jadwal terpisah per akun; ekspor hanya untuk pembuat atau administrator. Tamu tautan belajar sementara tanpa mengubah jadwal akun. Masa berlaku dan pencabutan diperiksa pada setiap operasi dek.
 
-Berbagi secara eksplisit membagikan salinan keadaan dek beserta konten kartu dan definisi terpilih, tanpa memberikan akses pustaka sumber atau mengubah cakupannya. Perubahan pemilik memperbarui salinan ini. Kartu sumber yang tidak tersedia dilewati saat pemilik belajar. Salinan yang sudah dibagikan tetap menjadi konten dek hingga pemilik mengubah atau menghapus dek. Penghapusan mencabut pembagian dan menghapus kemajuan belajar.
+Berbagi memberikan akses terbatas pada dek ke kartu dan definisi Pustaka terkini, tanpa akses umum ke Pustaka atau perubahan cakupan kartu. Setelah izin berbagi diperiksa, ID diambil dengan hak pemilik. Kartu yang tidak tersedia atau berasal dari penyedia nonaktif dilewati. Metadata galeri dan respons penilaian tidak menampilkan salinan kartu tersimpan. Penghapusan dek mencabut berbagi serta menghapus jadwal dan bukti penerimaan jawaban.
 
 Impor dan ekspor memakai teks UTF-8 dengan kolom berpetik yang dipisahkan tab: Front, Back, dan Pronunciation opsional. Ekspor menyertakan kepala Anki untuk pemisah, dek, dan teks biasa serta konteks Cognis opsional yang dapat diabaikan Anki. Kutipan, tab, dan baris baru dipertahankan. Format ini adalah TSV, bukan arsip `.apkg`. Riwayat belajar pribadi tidak diekspor.
 
@@ -35,3 +35,5 @@ Menu samping dek bergulir bersama dokumen. Menampilkan navigasi utama tidak meng
 ## Mode Latihan Terlihat dan Kontrol Bertema
 
 Pemilih Baca/Tulis persisten kini menampilkan slot mengambangnya di halaman Flashcards. Perubahan mode tetap menyimpan preferensi dan meminta konfirmasi untuk memulai ulang sesi. Ikon ekspor dan pengaturan Study mengikuti warna kontrol aktif, tema terang/gelap aplikasi, dan keadaan hover tanpa bergantung pada tema sistem operasi.
+
+Jawaban dapat menyertakan objek `attempt` dengan `id` dan waktu ISO `occurredAt`. Kirim ulang objek dan nilai yang sama untuk mencoba lagi; jawaban baru memakai ID baru. Bukti penerimaan dan jadwal disimpan bersama, sedangkan ID peristiwa stabil mencegah duplikasi Kemajuan. Riwayat peramban mempertahankan percobaan tertunda tanpa data dalam URL. Kartu latihan menyatakan ketergantungan pada Pustaka dan Kemajuan. Kartu bersama beserta skemanya memuat data Pustaka terkini setelah otorisasi berbagi.

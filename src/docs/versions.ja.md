@@ -54,12 +54,12 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
-| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.2`    |
-| Library (Study)            | `src/adapters/study/library/`       | `2.28.16`  |
+| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.3`    |
+| Library (Study)            | `src/adapters/study/library/`       | `2.28.17`  |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.1`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.4.0`    |
-| Progress (Study)           | `src/adapters/study/progress/`      | `1.2.0`    |
-| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.1.6`    |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.0`    |
+| Progress (Study)           | `src/adapters/study/progress/`      | `1.2.1`    |
+| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.1.7`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging               | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -69,7 +69,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.9`    |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.70`   |
-| Share                 | `src/gateways/share/`         | `1.7.48`   |
+| Share                 | `src/gateways/share/`         | `1.7.49`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`   |
 | Social                | `src/gateways/social/`        | `1.3.6`    |
@@ -77,20 +77,20 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.1.0`    |
+| Study                 | `src/gateways/study/`         | `2.1.1`    |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.4.4`    |
+| Core Package   | `src/core/` | `0.4.5`    |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.13`   |
+| API Server     | `src/api/` | `0.6.14`   |
 
 ## ツール
 

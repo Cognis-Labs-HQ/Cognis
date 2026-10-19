@@ -21,5 +21,9 @@ export const saveStudyDeck = (input, id) =>
     request(id ? `/${encodeURIComponent(id)}` : "", id ? "PUT" : "POST", input);
 export const deleteStudyDeck = (id) =>
     request(`/${encodeURIComponent(id)}`, "DELETE");
-export const reviewStudyCard = (id, cardId, grade) =>
-    request(`/${encodeURIComponent(id)}/review`, "POST", { cardId, grade });
+export const reviewStudyCard = (id, cardId, grade, attempt) =>
+    request(`/${encodeURIComponent(id)}/review`, "POST", {
+        cardId,
+        grade,
+        attempt,
+    });

@@ -52,6 +52,7 @@ export async function resolveCompositeAudio(
         policy &&
         typeof policy === "object" &&
         !Array.isArray(policy) &&
+        "wordGapMs" in policy &&
         typeof policy.wordGapMs === "number"
             ? policy.wordGapMs
             : layer.semanticRole === "orderedLexicalSequence"

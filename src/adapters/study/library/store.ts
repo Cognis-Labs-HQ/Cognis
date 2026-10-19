@@ -1,3 +1,4 @@
+import { retainedPackEntries } from "./store/retained-pack-entries.js";
 import { replaceEntryContent } from "./store/entry-update.js";
 import { hasImageReference } from "./image-store.js";
 import type { CacheSnapshot } from "@cognis/core";
@@ -170,7 +171,7 @@ export class LibraryStore {
         });
         const unchanged = Boolean(existing.rows?.length);
         let newRecordCount = 0;
-        if (unchanged) {
+        if (existing.rows?.length) {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
         }
@@ -289,11 +290,17 @@ export class LibraryStore {
                 ),
             );
             if (manifest.pruneOmittedRecords !== false) {
+                const retained = await retainedPackEntries(
+                    db,
+                    previousEntryIds,
+                    importedSourceIds,
+                    providerModifiedEntryIds,
+                );
                 for (const row of previousEntries.rows ?? []) {
                     const previousId = String(row.id);
                     if (
                         importedSourceIds.has(previousId) ||
-                        providerModifiedEntryIds.has(previousId)
+                        retained.has(previousId)
                     )
                         continue;
                     for (const column of [

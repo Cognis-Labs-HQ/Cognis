@@ -1,3 +1,4 @@
+import type { StudyClassAccessCapability } from "./gateway.js";
 import { createHash, randomUUID } from "node:crypto";
 import type {
     ProgressCapability,
@@ -12,6 +13,8 @@ export interface StudyResult {
     assisted?: boolean;
     mistakes?: number;
     deckId?: string;
+    eventId?: string;
+    occurredAt?: string;
     readerAccountId?: string;
     importedNote?: { id: string; language: string; revision: string };
 }
@@ -42,6 +45,8 @@ export async function recordStudyResult(
             language: string;
             updatedAt?: string;
             fields?: unknown;
+            scope?: string;
+            scopeId?: string;
         } | null>;
     }>("study:library");
     const reader =
@@ -54,13 +59,23 @@ export async function recordStudyResult(
               schemaId: "study-flashcards",
               layer: "imported-notes",
               language: result.importedNote.language,
+              scope: "user",
+              scopeId: actor.accountId,
           }
         : await library.read(reader, result.entryId);
     if (!entry) throw new Error("not_found");
+    const classroomId =
+        entry.scope === "class" &&
+        entry.scopeId &&
+        (await ports
+            .require<StudyClassAccessCapability>("study:classes:access")
+            .canRead(entry.scopeId, actor.accountId, actor.role))
+            ? entry.scopeId
+            : undefined;
     const progress = ports.require<ProgressCapability>("study:progress");
     await progress.recordEvent(actor, {
-        id: randomUUID(),
-        occurredAt: new Date().toISOString(),
+        id: result.eventId ?? randomUUID(),
+        occurredAt: result.occurredAt ?? new Date().toISOString(),
         content: {
             schema: entry.schemaId,
             layer: entry.layer,
@@ -78,7 +93,7 @@ export async function recordStudyResult(
                 )
                 .digest("hex"),
         activity: result.activity,
-        context: {},
+        context: classroomId ? { classroomId } : {},
         attempt: 1,
         correct: result.correct,
         independentCorrect: result.correct && !result.assisted,

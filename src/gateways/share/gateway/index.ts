@@ -1,3 +1,4 @@
+import type { RoleAccessPolicy } from "@cognis/core";
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
 import {
     ShareTokenStore,
@@ -37,7 +38,7 @@ export interface ShareMethodAdapter {
         pattern: string;
         document: string;
         scriptUrl: string;
-        access?: { minRole: string };
+        access?: RoleAccessPolicy;
     };
     prepare(input: {
         recipients?: unknown;

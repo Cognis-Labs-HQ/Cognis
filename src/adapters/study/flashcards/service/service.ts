@@ -1,3 +1,4 @@
+import { studyAttempt } from "../../../../gateways/study/reuse/attempt.js";
 import type { StudyResult } from "../../../../gateways/study/progress.js";
 import type { BootstrapLog } from "../../../../gateways/shared.js";
 import { createHash, randomUUID } from "node:crypto";
@@ -81,6 +82,8 @@ export class DeckService {
                 ).values(),
             ].map(async (deck) => ({
                 ...deck,
+                cards: [],
+                schemas: [],
                 canEdit:
                     !deck.provider && deck.ownerAccountId === actor.accountId,
                 canExport:
@@ -125,9 +128,19 @@ export class DeckService {
                 this.card({ accountId, role: "user" }, entryId),
             ),
         );
+        const visibleCards = cards.filter((card): card is DeckDetail => !!card);
+        const schemaIds = new Set(
+            visibleCards
+                .flatMap((card) => [card.entry, ...card.references])
+                .map((entry) => entry.schemaId),
+        );
         return {
             ...deck,
-            cards: cards.filter((card): card is DeckDetail => !!card),
+            cards: visibleCards,
+            schemas:
+                this.library()
+                    ?.listSchemas?.()
+                    .filter((schema) => schemaIds.has(schema.id)) ?? [],
         };
     }
 
@@ -148,6 +161,8 @@ export class DeckService {
             throw new Error("deck_not_found");
         return {
             ...deck,
+            cards: [],
+            schemas: [],
             canEdit: !deck.provider && deck.ownerAccountId === actor.accountId,
             canExport:
                 deck.ownerAccountId === actor.accountId ||
@@ -391,7 +406,9 @@ export class DeckService {
         id: string,
         cardId: unknown,
         grade: unknown,
+        attemptInput?: unknown,
     ): Promise<StudyDeck> {
+        const attempt = studyAttempt(attemptInput);
         if (typeof cardId !== "string") throw new Error("invalid_deck_card");
         return this.store.transact(async (store) => {
             let deck!: StudyDeck;
@@ -437,6 +454,21 @@ export class DeckService {
                             );
                         },
                         persist: async () => {
+                            if (
+                                !(await store.reserveReview(
+                                    actor.accountId,
+                                    id,
+                                    attempt.id,
+                                    cardId,
+                                    String(grade),
+                                ))
+                            ) {
+                                deck.progress = await store.progress(
+                                    actor.accountId,
+                                    id,
+                                );
+                                return;
+                            }
                             const note = deck.notes.find(
                                 (note) => note.id === cardId,
                             );
@@ -450,6 +482,18 @@ export class DeckService {
                                     accountId: actor.accountId,
                                     entryId: cardId,
                                     activity: "flashcards",
+                                    eventId:
+                                        "flashcards-" +
+                                        createHash("sha256")
+                                            .update(
+                                                JSON.stringify([
+                                                    actor.accountId,
+                                                    id,
+                                                    attempt.id,
+                                                ]),
+                                            )
+                                            .digest("hex"),
+                                    occurredAt: attempt.occurredAt,
                                     correct: grade !== "again",
                                     deckId: id,
                                     readerAccountId: deck.provider

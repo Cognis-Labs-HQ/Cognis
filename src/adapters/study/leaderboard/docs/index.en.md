@@ -24,3 +24,5 @@ Standings expose an alias unless the profile visibility resolver authorizes iden
 ### Lifecycle
 
 Use `rollover` to archive the completed season and open the next one. Corrections invalidate prior evidence before replacement. Consumers should use `requestTableModel` for an accessible localized table, while `queryStandings` provides the neutral standings model.
+
+Bootstrap requires the DB gateway. Failed state saves are logged and do not block subsequent saves. Retrying an identical observation persists its state without adding another observation. Classroom access is resolved at call time, including after revocation.

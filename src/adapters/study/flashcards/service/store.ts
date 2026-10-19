@@ -22,6 +22,17 @@ export class DeckStore {
             indexes: [{ columns: ["account_id"] }],
         });
         await this.db.ensureTable({
+            name: "study_deck_reviews",
+            columns: [
+                { name: "deck_id", type: "text", notNull: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "review_id", type: "text", notNull: true },
+                { name: "card_id", type: "text", notNull: true },
+                { name: "grade", type: "text", notNull: true },
+            ],
+            primaryKey: ["deck_id", "account_id", "review_id"],
+        });
+        await this.db.ensureTable({
             name: "study_deck_progress",
             columns: [
                 { name: "deck_id", type: "text", notNull: true },
@@ -88,6 +99,46 @@ export class DeckStore {
         return result.rows?.[0]
             ? JSON.parse(String(result.rows[0].progress_json))
             : {};
+    }
+
+    async reserveReview(
+        accountId: string,
+        deckId: string,
+        reviewId: string,
+        cardId: string,
+        grade: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "INSERT",
+            table: "study_deck_reviews",
+            values: {
+                deck_id: deckId,
+                account_id: accountId,
+                review_id: reviewId,
+                card_id: cardId,
+                grade,
+            },
+            conflict: {
+                action: "ignore",
+                target: ["deck_id", "account_id", "review_id"],
+            },
+        });
+        if (result.rowCount === 1) return true;
+        const existing = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_deck_reviews",
+            where: [
+                { column: "deck_id", value: deckId },
+                { column: "account_id", value: accountId },
+                { column: "review_id", value: reviewId },
+            ],
+        });
+        if (
+            existing.rows?.[0]?.card_id !== cardId ||
+            existing.rows[0].grade !== grade
+        )
+            throw new Error("review_attempt_conflict");
+        return false;
     }
 
     async saveProgress(
@@ -165,6 +216,11 @@ export class DeckStore {
     }
 
     async delete(accountId: string, id: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "study_deck_reviews",
+            where: [{ column: "deck_id", value: id }],
+        });
         await this.db.executeCommand({
             option: "DELETE",
             table: "study_deck_progress",

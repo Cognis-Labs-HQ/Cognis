@@ -305,6 +305,14 @@ async function createDrawingPad({
     let difficulty = 0;
     let hiddenGuideIndices = new Set();
     let attemptNumber = 0;
+    let attemptIdentity;
+    const startAttempt = () => {
+        attemptNumber += 1;
+        attemptIdentity = {
+            id: crypto.randomUUID(),
+            occurredAt: new Date().toISOString(),
+        };
+    };
     let pendingCompletion;
     const persistAttempt = async (result) => {
         const attempt = attemptNumber;
@@ -314,6 +322,7 @@ async function createDrawingPad({
             mistakes,
             result,
             assisted: assistedAttempt,
+            attempt: attemptIdentity,
         });
         pendingCompletion = request;
         try {
@@ -676,7 +685,7 @@ async function createDrawingPad({
                     )
                         return;
                     completed.length = 0;
-                    attemptNumber += 1;
+                    startAttempt();
                     resetHiddenGuides();
                     hasStarted = false;
                     active = null;
@@ -784,7 +793,7 @@ async function createDrawingPad({
                     )
                         return;
                     completed.length = 0;
-                    attemptNumber += 1;
+                    startAttempt();
                     resetHiddenGuides();
                     hasStarted = false;
                     active = null;
@@ -842,7 +851,7 @@ async function createDrawingPad({
         });
         if (sequence !== loadSequence || controller.signal.aborted)
             return false;
-        attemptNumber += 1;
+        startAttempt();
         progress = loaded;
         currentCard = nextCard;
         currentDefinition = nextDefinition;

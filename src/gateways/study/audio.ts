@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "../shared.js";
 import { createHash } from "node:crypto";
 import type {
     FlowApi,
@@ -36,11 +37,7 @@ export class StudyAudio implements StudyAudioCapability {
 
     constructor(
         private readonly flow: FlowApi,
-        private readonly log?: (
-            level: string,
-            message: string,
-            metadata: Record<string, unknown>,
-        ) => unknown,
+        private readonly log?: BootstrapLog,
     ) {}
 
     registerLanguage(

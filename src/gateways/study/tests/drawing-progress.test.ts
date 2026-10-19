@@ -248,3 +248,30 @@ test("drawing results reach the progress integration only after validation and p
     await state.request("learner", "POST", { strokeCount: 0, mistakes: 0 });
     assert.equal(state.recorded.length, 2);
 });
+
+test("re-delivering a drawing completion does not increase guide difficulty twice", async () => {
+    const state = fixture();
+    const input = {
+        strokeCount: 4,
+        mistakes: 0,
+        attempt: {
+            id: "drawing-attempt",
+            occurredAt: "2026-10-19T00:00:00.000Z",
+        },
+    };
+    const first = await state.service.complete("learner", "card-a", input);
+    assert.equal(first.hiddenStrokeCount, 1);
+    assert.deepEqual(
+        await state.service.complete("learner", "card-a", input),
+        first,
+    );
+    assert.equal(
+        (
+            await state.service.complete("learner", "card-a", {
+                ...input,
+                attempt: { ...input.attempt, id: "next-attempt" },
+            })
+        ).hiddenStrokeCount,
+        2,
+    );
+});

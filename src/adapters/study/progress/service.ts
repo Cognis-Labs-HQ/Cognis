@@ -116,7 +116,6 @@ function normalizeEvent(
         throw new Error("invalid_independent_correctness");
     }
     return Object.freeze({
-        ...structuredClone(input),
         id: requireIdentifier(input.id, "invalid_event_id"),
         actorId: input.actorId ?? actor.accountId,
         occurredAt: occurredAt.toISOString(),
@@ -137,27 +136,39 @@ function normalizeEvent(
             "invalid_content_revision",
         ),
         activity: requireIdentifier(input.activity, "invalid_activity"),
+        attempt: input.attempt,
+        correct: input.correct,
+        independentCorrect: input.independentCorrect,
+        hints: input.hints,
+        durationMs: input.durationMs,
+        completion: input.completion,
         context: {
-            interestVein: input.context?.interestVein
-                ? requireIdentifier(
-                      input.context.interestVein,
-                      "invalid_interest_vein",
-                  )
-                : undefined,
-            classroomId: input.context?.classroomId
-                ? requireIdentifier(
-                      input.context.classroomId,
-                      "invalid_classroom_id",
-                  )
-                : undefined,
+            ...(input.context?.interestVein
+                ? {
+                      interestVein: requireIdentifier(
+                          input.context.interestVein,
+                          "invalid_interest_vein",
+                      ),
+                  }
+                : {}),
+            ...(input.context?.classroomId
+                ? {
+                      classroomId: requireIdentifier(
+                          input.context.classroomId,
+                          "invalid_classroom_id",
+                      ),
+                  }
+                : {}),
         },
         metadata: safeMetadata(input.metadata),
-        compensatesEventId: input.compensatesEventId
-            ? requireIdentifier(
-                  input.compensatesEventId,
-                  "invalid_compensated_event_id",
-              )
-            : undefined,
+        ...(input.compensatesEventId
+            ? {
+                  compensatesEventId: requireIdentifier(
+                      input.compensatesEventId,
+                      "invalid_compensated_event_id",
+                  ),
+              }
+            : {}),
     });
 }
 
@@ -210,7 +221,9 @@ function buildProjections(events: LearningEvent[]): ProgressProjection[] {
     const groups = new Map<string, LearningEvent[]>();
     for (const event of withoutCompensatedEvents(events)) {
         const key = `${event.actorId}\u0000${event.content.schema}\u0000${event.content.layer}\u0000${event.content.language}\u0000${event.content.contentId}`;
-        groups.set(key, [...(groups.get(key) ?? []), event]);
+        const group = groups.get(key) ?? [];
+        group.push(event);
+        groups.set(key, group);
     }
     return Array.from(groups.values(), (group) => {
         group.sort(
@@ -284,24 +297,17 @@ export class ProgressService implements ProgressCapability {
         actor: ProgressActor,
         actorId: string,
         classroomId?: string,
-        write = false,
     ): Promise<void> {
         if (actor.accountId.startsWith("share:"))
             throw new Error("forbidden_actor");
         if (actor.accountId !== actorId && !PRIVILEGED_ROLES.has(actor.role))
             throw new Error("forbidden_actor");
         if (classroomId && !PRIVILEGED_ROLES.has(actor.role)) {
-            const allowed = write
-                ? await this.classAccess?.canWrite(
-                      classroomId,
-                      actor.accountId,
-                      actor.role,
-                  )
-                : await this.classAccess?.canRead(
-                      classroomId,
-                      actor.accountId,
-                      actor.role,
-                  );
+            const allowed = await this.classAccess?.canRead(
+                classroomId,
+                actor.accountId,
+                actor.role,
+            );
             if (!allowed) throw new Error("forbidden_scope");
         }
     }
@@ -323,12 +329,7 @@ export class ProgressService implements ProgressCapability {
         event: LearningEvent,
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
         this.requireEnabled();
-        await this.authorize(
-            actor,
-            event.actorId,
-            event.context.classroomId,
-            true,
-        );
+        await this.authorize(actor, event.actorId, event.context.classroomId);
         let appendResult: "inserted" | "duplicate";
         if (this.flow) {
             const data: ProgressRecordFlowData = {};
@@ -368,12 +369,7 @@ export class ProgressService implements ProgressCapability {
         if (existingCorrection && existingCorrection.id !== input.id) {
             throw new Error("event_already_corrected");
         }
-        await this.authorize(
-            actor,
-            target.actorId,
-            target.context.classroomId,
-            true,
-        );
+        await this.authorize(actor, target.actorId, target.context.classroomId);
         if (
             JSON.stringify(input.content) !== JSON.stringify(target.content) ||
             input.context?.classroomId !== target.context.classroomId

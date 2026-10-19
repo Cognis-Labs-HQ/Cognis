@@ -1,4 +1,4 @@
-import decodeAudio from "@audio/decode";
+import decodeAudio, { type AudioData } from "@audio/decode";
 
 export interface AudioRecording {
     mediaType: string;
@@ -21,7 +21,7 @@ async function decode(recording: AudioRecording) {
         recording.data.length > 10_000_000
     )
         throw new Error("unsupported_audio_type");
-    let decoded: Awaited<ReturnType<typeof decodeAudio>>;
+    let decoded: AudioData;
     try {
         decoded = await decodeAudio(recording.data);
     } catch (error) {

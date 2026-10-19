@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { recordStudyResult } from "./progress.js";
 import { StudyAudio } from "./audio.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
@@ -247,6 +248,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         accountId: actor.accountId,
                         entryId,
                         activity: "drawing",
+                        eventId: result.attempt
+                            ? "drawing-" +
+                              createHash("sha256")
+                                  .update(
+                                      JSON.stringify([
+                                          actor.accountId,
+                                          entryId,
+                                          result.attempt.id,
+                                      ]),
+                                  )
+                                  .digest("hex")
+                            : undefined,
+                        occurredAt: result.attempt?.occurredAt,
                         correct: result.result !== "incorrect",
                         assisted: result.assisted,
                         mistakes: result.mistakes,

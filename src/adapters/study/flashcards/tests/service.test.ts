@@ -14,6 +14,7 @@ function session(
     ) => Promise<boolean> = async () => false,
     received: (accountId: string) => Promise<string[]> = async () => [],
     language?: string,
+    recordResult?: ConstructorParameters<typeof DeckService>[8],
 ) {
     const records: (Record<string, unknown> & { table: string })[] = [];
     const execute = async (command: StructuredDbCommand) => {
@@ -40,6 +41,8 @@ function session(
                               ),
                       )
                     : undefined;
+            if (previous && command.conflict?.action === "ignore")
+                return { rowCount: 0 };
             if (previous && "conflict" in command)
                 Object.assign(previous, command.conflict?.update);
             else
@@ -76,8 +79,12 @@ function session(
     registerDeckFlows(ctx);
     let readable = true;
     let label = "Card";
+    let schemaRevision = 1;
     const library = {
-        listSchemas: () => (language ? [{ id: "schema", language }] : []),
+        listSchemas: () =>
+            language
+                ? [{ id: "schema", language, version: schemaRevision }]
+                : [],
         read: async () => null,
         trace: async (actor: { accountId: string }, id: string) => {
             if (!readable || id !== "public") throw new Error("forbidden");
@@ -96,7 +103,13 @@ function session(
             undefined,
             access,
             received,
+            undefined,
+            undefined,
+            recordResult,
         ),
+        setSchemaRevision: (value: number) => {
+            schemaRevision = value;
+        },
         setLabel: (value: string) => {
             label = value;
         },
@@ -358,4 +371,95 @@ test("shared Library cards resolve current content after edits and omit unavaila
     setReadable(false);
     assert.equal((await service.details(learner, deck.id)).cards.length, 0);
     assert.equal((await service.details(learner, deck.id)).unavailable, 1);
+});
+
+test("a retried answer updates scheduling once and retains the same Progress event after a transaction failure", async () => {
+    const results: Array<{ eventId?: string; occurredAt?: string }> = [];
+    let fail = true;
+    const { service } = session(
+        undefined,
+        undefined,
+        undefined,
+        async (result) => {
+            results.push(result);
+            if (fail) throw new Error("result_delivery_failed");
+        },
+    );
+    const deck = await service.save(owner, {
+        name: "Retry",
+        entryIds: ["public"],
+    });
+    const attempt = {
+        id: "stable-attempt",
+        occurredAt: "2026-10-19T00:00:00.000Z",
+    };
+    await assert.rejects(
+        service.review(owner, deck.id, "public", "good", attempt),
+        /result_delivery_failed/,
+    );
+    assert.deepEqual((await service.details(owner, deck.id)).deck.progress, {});
+    fail = false;
+    const first = await service.review(
+        owner,
+        deck.id,
+        "public",
+        "good",
+        attempt,
+    );
+    const repeated = await service.review(
+        owner,
+        deck.id,
+        "public",
+        "good",
+        attempt,
+    );
+    assert.deepEqual(first.progress, repeated.progress);
+    assert.equal(repeated.progress.public.repetitions, 1);
+    assert.equal(results.length, 2);
+    assert.equal(results[0].eventId, results[1].eventId);
+    assert.equal(results[0].occurredAt, results[1].occurredAt);
+    await assert.rejects(
+        service.review(owner, deck.id, "public", "easy", attempt),
+        /review_attempt_conflict/,
+    );
+    const learner = { accountId: "learner", role: "user" };
+    await assert.rejects(
+        service.review(learner, deck.id, "public", "good", attempt),
+        /deck_not_found/,
+    );
+});
+
+test("shared deck schemas follow the current Library contract rather than the saved snapshot", async () => {
+    const { service, setSchemaRevision } = session(
+        async () => true,
+        undefined,
+        "ja",
+    );
+    const deck = await service.save(owner, {
+        name: "Schema",
+        entryIds: ["public"],
+    });
+    setSchemaRevision(2);
+    const schema = (await service.owned(owner.accountId, deck.id))
+        ?.schemas[0] as { version: number };
+    assert.equal(schema.version, 2);
+});
+
+test("deck metadata and details do not expose cached content after its Library access is revoked", async () => {
+    const { service, setReadable, setLabel } = session();
+    setLabel("Sensitive saved label");
+    const deck = await service.save(owner, {
+        name: "Saved",
+        entryIds: ["public"],
+    });
+    setReadable(false);
+    const listed = await service.list(owner);
+    assert.deepEqual(listed[0].cards, []);
+    const detail = await service.details(owner, deck.id);
+    assert.deepEqual(detail.cards, []);
+    assert.deepEqual(detail.deck.cards, []);
+    assert.equal(
+        JSON.stringify({ listed, detail }).includes("Sensitive saved label"),
+        false,
+    );
 });

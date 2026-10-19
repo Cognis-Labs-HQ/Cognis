@@ -82,10 +82,18 @@ export class LeaderboardService implements LeaderboardCapability {
     private persist(): Promise<void> {
         if (!this.persistState) return Promise.resolve();
         const state = this.state();
-        this.persistence = this.persistence.then(() =>
+        const operation = this.persistence.then(() =>
             this.persistState!(state),
         );
-        return this.persistence;
+        const log = this.log;
+        this.persistence = operation.catch((error) => {
+            log?.("error", "Leaderboard persistence failed.", {
+                component: "study-leaderboard",
+                operation: "persist",
+                errorName: error instanceof Error ? error.name : "Unknown",
+            });
+        });
+        return operation;
     }
 
     private progressCapability(): ProgressEvidenceCapability {
@@ -330,6 +338,7 @@ export class LeaderboardService implements LeaderboardCapability {
         if (existing) {
             if (!isDeepStrictEqual(existing, normalized))
                 throw new Error("observation_id_conflict");
+            await this.persist();
             return;
         }
         this.observations.set(observation.id, structuredClone(normalized));

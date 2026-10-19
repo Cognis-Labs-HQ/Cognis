@@ -4,7 +4,7 @@ import type {
     LibraryLookupProvider,
     LibraryLookupSuggestion,
     LibrarySchema,
-    LibraryLayer,
+    LibraryLayerSchema,
 } from "../types.js";
 import type { LibraryStore } from "../store.js";
 
@@ -125,7 +125,7 @@ export class LibraryDictionarySearch {
 export async function lookupDictionarySuggestions(
     provider: LibraryLookupProvider,
     schema: LibrarySchema,
-    layer: LibraryLayer,
+    layer: LibraryLayerSchema,
     label: string,
     refresh: boolean,
 ): Promise<LibraryLookupSuggestion[]> {
@@ -140,9 +140,11 @@ export async function lookupDictionarySuggestions(
             ...suggestion,
             provider: suggestion.provider?.trim() || provider.id,
             provenance: suggestion.provenance?.trim() || provider.id,
-            confidence: Number.isFinite(suggestion.confidence)
-                ? suggestion.confidence
-                : 1,
+            confidence:
+                typeof suggestion.confidence === "number" &&
+                Number.isFinite(suggestion.confidence)
+                    ? suggestion.confidence
+                    : 1,
         }))
         .filter(
             (suggestion) =>
@@ -176,7 +178,7 @@ export function registerLookupProvider(
 export function listLookupProviders(
     providers: Map<string, LibraryLookupProvider>,
     schema: LibrarySchema,
-    layer: LibraryLayer,
+    layer: LibraryLayerSchema,
 ) {
     return Array.from(providers.values())
         .filter((provider) => provider.supports(schema, layer))

@@ -7,7 +7,13 @@ function fixture() {
     const events: LearningEventInput[] = [];
     const readers: string[] = [];
     let available = true;
+    let classroom: string | undefined;
+    let classMember = true;
     const ports = new Map<string, unknown>([
+        [
+            "study:classes:access",
+            { canRead: async () => classMember, canWrite: async () => false },
+        ],
         [
             "study:library",
             {
@@ -20,6 +26,8 @@ function fixture() {
                               layer: "kana",
                               language: "ja",
                               fields: { pronunciation: ["a"] },
+                              scope: classroom ? "class" : "global",
+                              scopeId: classroom ?? "global",
                           }
                         : null;
                 },
@@ -46,6 +54,12 @@ function fixture() {
                 if (!ports.has(id)) throw new Error("capability_unavailable");
                 return ports.get(id) as T;
             },
+        },
+        setClassMember: (member: boolean) => {
+            classMember = member;
+        },
+        setClassroom: (id: string) => {
+            classroom = id;
         },
         disableLibrary: () => {
             available = false;
@@ -145,4 +159,22 @@ test("authorized shared decks resolve content as their owner but record the lear
         contentId: "note",
     });
     assert.equal(state.events[1].contentRevision, "revision");
+});
+
+test("authorized classroom practice retains scope while a deck share does not grant classroom membership", async () => {
+    const state = fixture();
+    state.setClassroom("classroom");
+    await recordStudyResult(state.ports, actor, result);
+    assert.deepEqual(state.events[0].context, { classroomId: "classroom" });
+    await recordStudyResult(state.ports, actor, {
+        ...result,
+        readerAccountId: "teacher",
+    });
+    assert.deepEqual(state.events[1].context, { classroomId: "classroom" });
+    state.setClassMember(false);
+    await recordStudyResult(state.ports, actor, {
+        ...result,
+        readerAccountId: "teacher",
+    });
+    assert.deepEqual(state.events[2].context, {});
 });

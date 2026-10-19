@@ -106,7 +106,7 @@ export interface ModuleDiscoveryResult {
 }
 
 export type ModuleMarketplaceLog = (
-    level: "info" | "warn",
+    level: "info" | "warn" | "error",
     message: string,
     meta: Record<string, unknown>,
 ) => void;

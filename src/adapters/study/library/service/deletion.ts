@@ -1,7 +1,8 @@
 import type { LibraryStore } from "../store.js";
 import { allInputReferences, validateEntrySelection } from "./dependencies.js";
 import type { LibraryPushRequest } from "../types.js";
-import type { LibraryActor, LibraryEntry, LibraryLocation } from "../types.js";
+import type { LibraryEntry, LibraryLocation } from "../types.js";
+import type { LibraryActor } from "../contracts.js";
 
 export function pendingDeletionEntries(
     requests: readonly LibraryPushRequest[],
@@ -9,7 +10,7 @@ export function pendingDeletionEntries(
     return new Set(
         requests.flatMap(({ sourceEntryId, proposedEntry }) => [
             sourceEntryId,
-            ...allInputReferences(proposedEntry ?? { references: [] }).map(
+            ...(proposedEntry ? allInputReferences(proposedEntry) : []).map(
                 ({ entryId }) => entryId,
             ),
         ]),
@@ -25,7 +26,7 @@ export async function authorizeDeletion(
         actor: LibraryActor,
         location: LibraryLocation,
         write: boolean,
-    ) => Promise<void>,
+    ) => Promise<unknown>,
     reviewedRelocation = false,
 ): Promise<void> {
     // Only a globally authorized administrator may remove foreign private
@@ -77,7 +78,7 @@ export async function planDeletion(
         actor: LibraryActor,
         location: LibraryLocation,
         write: boolean,
-    ) => Promise<void>,
+    ) => Promise<unknown>,
 ) {
     validateEntrySelection(entryIds);
     const plannedIds = await store.resolveDeletionCascade(
@@ -111,7 +112,7 @@ export async function notifyDeletedEntries(
     notify?: (
         entries: readonly LibraryEntry[],
         actor: LibraryActor,
-    ) => Promise<void>,
+    ) => Promise<unknown>,
     log?: (
         level: string,
         message: string,

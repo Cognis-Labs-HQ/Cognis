@@ -56,6 +56,14 @@ Tautan judul popup mempertahankan tampilan teks ringkas dan tipografi yang diwar
 
 Impor kamus menguraikan isi kartu yang belum tertaut menjadi referensi lengkap dan berurutan ke kartu karakter yang tersedia dari skema aktif dan karusel masukan yang dikonfigurasi. Kana berulang dan campuran satuan tulisan mempertahankan posisinya; tautan komposisi yang disediakan dan bacaan kamus tetap menjadi acuan. Kecocokan yang belum lengkap tetap tersedia untuk penguraian manual. Saat saran urutan lengkap tersedia untuk teks yang diketik manual, saran satu karakter yang berlebihan disembunyikan.
 
+## Pemulihan Kapabilitas Belajar
+
+Kemajuan, papan peringkat, penilaian dan administrasi kuota tersedia melalui komponen pemiliknya. Hasil menggambar dan kartu latihan menggunakan Kemajuan; jawaban dengan bantuan tidak dihitung sebagai benar secara mandiri. Dek bersama memuat entri Pustaka terkini berdasarkan ID, sedangkan catatan impor mempertahankan identitas kanonis tersendiri. Pilihan membaca menggunakan definisi terlokalisasi dan bacaan karakter. Elemen pelafalan menggunakan tautan karakter kanonis; pencarian kamus yang selesai disembunyikan, kartu Pustaka dapat disunting dan urutan Pustaka membedakan waktu pembuatan yang sama.
+
+## Hasil Belajar Andal
+
+Akses kelas dan penyebutan menggunakan kontrak penyimpanan kelas saat ini serta memeriksa ulang keanggotaan. Pemangkasan paket mempertahankan entri yang masih dirujuk secara rekursif oleh kartu pengguna atau kartu penyedia yang disunting. Pengiriman ulang jawaban mempertahankan identitas percobaan selama navigasi dan memperbarui jadwal serta Kemajuan hanya sekali. Percobaan menggambar menghindari peristiwa dan kenaikan kesulitan ganda. Peristiwa JSON kanonis memungkinkan pemulihan proyeksi yang terhenti. Penyimpanan papan peringkat pulih setelah kegagalan, memerlukan penyimpanan persisten, dan memeriksa akses kelas saat dipanggil. Dek bersama menggunakan skema dan entri Pustaka terkini. Kontrak produksi Study sesuai dengan antarmuka saat berjalan, termasuk nilai bawaan skema dan dekode audio.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)
@@ -63,7 +71,3 @@ Impor kamus menguraikan isi kartu yang belum tertaut menjadi referensi lengkap d
 - [20d0c172](https://github.com/Cognis-Labs-HQ/Cognis/commit/20d0c172e97697a4aed295b2e25f6346d2b9edfc)
 - [5a5d026f](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a5d026f1e4be9b474c3e1f458d3fbe6cd5ac967)
 - [b513366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b513366e7816352a0c357fddfd7b49a881341164)
-
-## Pemulihan Kapabilitas Belajar
-
-Kemajuan, papan peringkat, penilaian dan administrasi kuota tersedia melalui komponen pemiliknya. Hasil menggambar dan kartu latihan menggunakan Kemajuan; jawaban dengan bantuan tidak dihitung sebagai benar secara mandiri. Dek bersama memuat entri Pustaka terkini berdasarkan ID, sedangkan catatan impor mempertahankan identitas kanonis tersendiri. Pilihan membaca menggunakan definisi terlokalisasi dan bacaan karakter. Elemen pelafalan menggunakan tautan karakter kanonis; pencarian kamus yang selesai disembunyikan, kartu Pustaka dapat disunting dan urutan Pustaka membedakan waktu pembuatan yang sama.

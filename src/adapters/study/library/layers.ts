@@ -399,7 +399,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                                 return (
                                     relationship?.targetLayer ===
                                         targetLayerId &&
-                                    (relationship.presentationRole ===
+                                    (relationship?.presentationRole ===
                                         "pronunciation") ===
                                         pronunciation
                                 );

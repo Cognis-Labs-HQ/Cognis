@@ -68,13 +68,22 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("engagement:scoring", new ScoringEngine());
     capabilities.contribute("auth:routeContext", createDefaultRouteContext());
+    capabilities.contribute("db:executor", {
+        ensureTable: async () => {},
+        executeCommand: async () => ({ rows: [] }),
+        transaction: async (operation: (db: unknown) => Promise<unknown>) =>
+            operation(capabilities.get("db:executor")),
+    });
     let spaRoute:
         { pattern: string; requiredCapabilities?: string[] } | undefined;
     await bootstrapStudyAdapter({
         capabilities,
         isAdapterEnabled: () => true,
         registerRoute: () => undefined,
-        registerSpaRoute: (route) => {
+        registerSpaRoute: (route: {
+            pattern: string;
+            requiredCapabilities?: string[];
+        }) => {
             spaRoute = route;
         },
     } as unknown as StudyAdapterBootstrapCtx);
@@ -82,6 +91,35 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     assert.ok(systemCtx.getCapability("study:leaderboard"));
     assert.equal(spaRoute?.pattern, "^/study/leaderboard$");
     assert.deepEqual(spaRoute?.requiredCapabilities, undefined);
+    const capability =
+        capabilities.require<import("../types.js").LeaderboardCapability>(
+            "study:leaderboard",
+        );
+    capability.registerDefinition({
+        ...definition,
+        id: "classroom",
+        kind: "classroom",
+        classroomId: "room",
+        minimumCohortSize: 1,
+    });
+    assert.equal(
+        await capability.canAccessDefinition(actor("alice"), "classroom"),
+        false,
+    );
+    capabilities.contribute("study:classes:access", {
+        canRead: async () => true,
+    });
+    assert.equal(
+        await capability.canAccessDefinition(actor("alice"), "classroom"),
+        true,
+    );
+    capabilities.contribute("study:classes:access", {
+        canRead: async () => false,
+    });
+    assert.equal(
+        await capability.canAccessDefinition(actor("alice"), "classroom"),
+        false,
+    );
 });
 
 test("leaderboard resolves Progress lazily without changing gateway bootstrap", async () => {
@@ -391,4 +429,48 @@ test("persisted competitive state can be restored after restart", async () => {
         ).rows[0].score[0],
         -42,
     );
+});
+
+test("a failed leaderboard save does not poison future writes and retrying the observation persists it", async () => {
+    let rejectObservation = true;
+    let saved: import("../store.js").LeaderboardState | undefined;
+    const errors: unknown[] = [];
+    const service = new LeaderboardService(
+        progress,
+        () => true,
+        undefined,
+        undefined,
+        (level, _message, metadata) => {
+            if (level === "error") errors.push(metadata);
+        },
+        async (state) => {
+            if (state.observations.length && rejectObservation)
+                throw new Error("database_unavailable");
+            saved = state;
+        },
+    );
+    service.registerDefinition({
+        ...definition,
+        minimumCohortSize: 1,
+        criteria: [definition.criteria[0]],
+    });
+    service.setParticipation("alice", "weekly", { optedIn: true });
+    const observation = {
+        id: "retry",
+        definitionId: "weekly",
+        participantId: "alice",
+        criterionId: "accuracy",
+        value: 100,
+        observedAt: "2026-09-01T00:00:00.000Z",
+        evidenceEventIds: ["a"],
+        seasonId: "s1",
+    };
+    await assert.rejects(
+        service.submitObservation(actor("alice"), observation),
+        /database_unavailable/,
+    );
+    rejectObservation = false;
+    await service.submitObservation(actor("alice"), observation);
+    assert.equal(saved?.observations.length, 1);
+    assert.equal(errors.length, 1);
 });

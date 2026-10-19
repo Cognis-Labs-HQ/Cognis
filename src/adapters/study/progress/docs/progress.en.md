@@ -32,3 +32,7 @@ The ordinary event endpoint rejects `compensatesEventId`; clients must use the c
 ### Review scheduling safety
 
 Review intervals are capped at fourteen days. Event timestamps are accepted only when that complete interval remains representable, so an accepted event cannot later make projection rebuilding fail because its review date exceeds the supported date range.
+
+Stable event IDs survive database round-trips. Re-delivering an identical event repairs interrupted projections without adding history. Canonical events retain content, scope, timing, hints, correctness, completion and compensation fields.
+
+Enrolled learners may record their own classroom results with read access; classroom edit privileges are not required. Recording for another learner still requires a privileged actor. Classroom context follows current membership, and a deck share alone does not grant that membership.

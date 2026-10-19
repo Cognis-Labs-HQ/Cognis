@@ -1,3 +1,4 @@
+import { studyAttempt, type StudyAttempt } from "../reuse/attempt.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { SerialOperations } from "../reuse/serial-operations.js";
 
@@ -18,6 +19,7 @@ export interface DrawingProgress {
 }
 
 export interface DrawingCompletion {
+    attempt?: StudyAttempt;
     result?: "correct" | "incorrect";
     assisted?: boolean;
     strokeCount: number;
@@ -33,6 +35,7 @@ export function validateDrawingCompletion(
     input: unknown,
 ): asserts input is DrawingCompletion {
     const value = input as DrawingCompletion | null;
+    if (value?.attempt !== undefined) studyAttempt(value.attempt);
     if (
         !value ||
         (value.result !== undefined &&
@@ -48,6 +51,22 @@ export function validateDrawingCompletion(
         throw new Error("invalid_drawing_completion");
 }
 
+function parseDrawingProgress(stored: string | null): DrawingProgress {
+    if (stored === null) return { completed: false, hiddenStrokeCount: 0 };
+    const value = JSON.parse(stored) as DrawingProgress;
+    if (
+        typeof value.completed !== "boolean" ||
+        !Number.isSafeInteger(value.hiddenStrokeCount) ||
+        value.hiddenStrokeCount < 0 ||
+        value.hiddenStrokeCount > 10000
+    )
+        throw new Error("invalid_drawing_progress");
+    return {
+        completed: value.completed,
+        hiddenStrokeCount: value.hiddenStrokeCount,
+    };
+}
+
 /** Persist completion and a hiding count per account/card, never sampled positions. */
 export class DrawingProgressStore {
     private readonly operations = new SerialOperations();
@@ -60,19 +79,7 @@ export class DrawingProgressStore {
             accountId,
             `study-drawing:${cardId}`,
         );
-        if (stored === null) return { completed: false, hiddenStrokeCount: 0 };
-        const value = JSON.parse(stored) as DrawingProgress;
-        if (
-            typeof value.completed !== "boolean" ||
-            !Number.isSafeInteger(value.hiddenStrokeCount) ||
-            value.hiddenStrokeCount < 0 ||
-            value.hiddenStrokeCount > 10000
-        )
-            throw new Error("invalid_drawing_progress");
-        return {
-            completed: value.completed,
-            hiddenStrokeCount: value.hiddenStrokeCount,
-        };
+        return parseDrawingProgress(stored);
     }
 
     async complete(
@@ -85,7 +92,17 @@ export class DrawingProgressStore {
         return this.operations.run(
             JSON.stringify([accountId, cardId]),
             async () => {
-                const previous = await this.get(accountId, cardId);
+                const stored = await this.preferences.get(
+                    accountId,
+                    `study-drawing:${cardId}`,
+                );
+                const previous = parseDrawingProgress(stored);
+                if (
+                    input.attempt &&
+                    stored &&
+                    JSON.parse(stored).lastAttemptId === input.attempt.id
+                )
+                    return previous;
                 const progress = {
                     completed:
                         previous.completed || input.result !== "incorrect",
@@ -102,7 +119,12 @@ export class DrawingProgressStore {
                 await this.preferences.set(
                     accountId,
                     `study-drawing:${cardId}`,
-                    JSON.stringify(progress),
+                    JSON.stringify({
+                        ...progress,
+                        ...(input.attempt
+                            ? { lastAttemptId: input.attempt.id }
+                            : {}),
+                    }),
                 );
                 return progress;
             },

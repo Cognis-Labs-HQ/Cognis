@@ -36,6 +36,7 @@ export function createDeckRoutes(
                 const body = (await readJson(req)) as {
                     cardId: unknown;
                     grade: unknown;
+                    attempt?: unknown;
                 };
                 if (!body || typeof body !== "object")
                     throw new Error("invalid_deck_card");
@@ -45,6 +46,7 @@ export function createDeckRoutes(
                         id,
                         body.cardId,
                         body.grade,
+                        body.attempt,
                     ),
                 });
                 return true;
@@ -80,6 +82,8 @@ export function createDeckRoutes(
                 "empty_deck",
                 "deck_card_unavailable",
                 "invalid_review_grade",
+                "invalid_study_attempt",
+                "review_attempt_conflict",
                 "invalid_deck_card",
                 "deck_not_found",
                 "library_unavailable",

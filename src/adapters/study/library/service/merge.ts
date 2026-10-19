@@ -75,10 +75,8 @@ export function mergeEntryProposal(
             references.push(...incoming);
         const groups = input.referenceGroups?.[relationship.id];
         if (!groups) continue;
-        const field = layer.fields?.find(
-            ({ input }) =>
-                input?.linkRelationship === relationship.id ||
-                input?.linkRelationships?.includes(relationship.id),
+        const field = layer.fields?.find(({ input }) =>
+            input?.linkRelationships?.includes(relationship.id),
         );
         const before = field ? current.fields?.[field.id] : undefined;
         const added = field ? input.fields?.[field.id] : undefined;

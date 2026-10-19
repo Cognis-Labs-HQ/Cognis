@@ -211,7 +211,7 @@ export class LibraryEntryWriter {
                     if (layer.semanticRole === "definition") {
                         const localization = layer.definitionLocalization!;
                         fields[localization.stringKeyField] =
-                            current.fields[localization.stringKeyField];
+                            current.fields?.[localization.stringKeyField];
                         definitionTranslations(
                             fields[localization.translationsField],
                         );

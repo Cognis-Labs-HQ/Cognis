@@ -3,6 +3,7 @@ import type {
     LibraryEntry,
     LibraryEntryInput,
     LibraryLocation,
+    LibraryReferenceInput,
 } from "../types.js";
 
 /** Allocate and resolve a scoped graph before passing every node through normal validation. */
@@ -16,7 +17,7 @@ export async function createLinkedEntryGraph(
         candidates: Map<string, LibraryEntry>,
         root: boolean,
     ) => Promise<LibraryEntry>,
-    rootId = randomUUID(),
+    rootId: string = randomUUID(),
     existing?: (input: LibraryEntryInput) => Promise<LibraryEntry | undefined>,
 ): Promise<LibraryEntry> {
     const linked = input.linkedEntries ?? [];
@@ -38,7 +39,7 @@ export async function createLinkedEntryGraph(
     const resolve = (entry: LibraryEntryInput) => {
         const cloned = structuredClone(entry);
         delete cloned.linkedEntries;
-        const reference = (value: { entryId: string }) => ({
+        const reference = (value: LibraryReferenceInput) => ({
             ...value,
             entryId: ids.get(value.entryId) ?? value.entryId,
         });

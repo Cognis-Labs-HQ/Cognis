@@ -559,3 +559,5 @@ Study Library checks the live language capability before exposing retained schem
 ## Live Language Registry Lookup
 
 Library availability resolves language contributions from the live system registry rather than the adapter-local capability store. Disabling one language keeps the other language’s schemas, cards and starter-deck dependencies accessible; re-enabling restores retained content. A public registry takes precedence over any stale local snapshot.
+
+Authoritative pack updates retain omitted provider entries that are still reachable from user-authored cards or modified provider cards. This protection follows recursive dependencies and cycles; provider-only obsolete content can still be pruned.

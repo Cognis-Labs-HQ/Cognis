@@ -407,3 +407,34 @@ test("compensations remain effective outside the requested time window", async (
     assert.equal((await service.aggregate(user, window)).events, 0);
     assert.deepEqual(await service.listProjections(user, window), []);
 });
+
+test("enrolled students record their own classroom practice without edit privileges and revocation blocks later writes", async () => {
+    let member = true;
+    const service = new ProgressService(new MemoryProgressStore(), {
+        canRead: async () => member,
+        canWrite: async () => false,
+    });
+    await service.recordEvent(
+        user,
+        event("class-own", { context: { classroomId: "class-one" } }),
+    );
+    assert.equal((await service.listEvents(user)).length, 1);
+    await assert.rejects(
+        service.recordEvent(
+            user,
+            event("class-other", {
+                actorId: "actor-two",
+                context: { classroomId: "class-one" },
+            }),
+        ),
+        /forbidden_actor/,
+    );
+    member = false;
+    await assert.rejects(
+        service.recordEvent(
+            user,
+            event("class-revoked", { context: { classroomId: "class-one" } }),
+        ),
+        /forbidden_scope/,
+    );
+});

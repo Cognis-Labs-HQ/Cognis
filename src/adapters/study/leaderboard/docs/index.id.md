@@ -24,3 +24,5 @@ Peringkat menampilkan alias kecuali pemeriksa visibilitas profil mengizinkan ide
 ### Siklus hidup
 
 Gunakan `rollover` untuk mengarsipkan musim yang selesai dan membuka musim berikutnya. Koreksi membatalkan bukti lama sebelum penggantian. Gunakan `requestTableModel` untuk tabel lokal yang aksesibel, sedangkan `queryStandings` menyediakan model peringkat netral.
+
+Bootstrap memerlukan gateway DB. Kegagalan penyimpanan dicatat dan tidak menghalangi penyimpanan berikutnya. Pengiriman ulang observasi identik menyimpan status tanpa menambah observasi. Akses kelas diperiksa setiap pemanggilan, termasuk setelah pencabutan.

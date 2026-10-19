@@ -121,6 +121,7 @@ async function drawingSession({
         setDrawingCard,
         pronunciationClass,
         AbortController,
+        crypto: globalThis.crypto,
         entryExploreUrl,
         fetchLibrarySchemas: async () => [
             { id: "ja", language: "ja", layers: [{ id: "characters" }] },
@@ -179,7 +180,10 @@ async function drawingSession({
             body: { append() {} },
         },
         window: {
-            crypto: { getRandomValues: (values) => values.fill(0) },
+            crypto: {
+                randomUUID: globalThis.crypto.randomUUID,
+                getRandomValues: (values) => values.fill(0),
+            },
             innerWidth: 1440,
             innerHeight: 900,
             addEventListener(name, handler) {

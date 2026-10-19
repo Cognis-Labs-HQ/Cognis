@@ -30,3 +30,7 @@ Der gewöhnliche Ereignis-Endpunkt lehnt `compensatesEventId` ab; Clients müsse
 ### Sichere Wiederholungsplanung
 
 Wiederholungsintervalle sind auf vierzehn Tage begrenzt. Ereigniszeitstempel werden nur angenommen, wenn das vollständige Intervall darstellbar bleibt, sodass ein angenommenes Ereignis den späteren Projektionsaufbau nicht durch ein außerhalb des unterstützten Datumsbereichs liegendes Wiederholungsdatum scheitern lassen kann.
+
+Stabile Ereigniskennungen bleiben über Datenbankzugriffe hinweg gültig. Eine identische erneute Übermittlung repariert unterbrochene Projektionen ohne zusätzliche Verlaufseinträge. Kanonische Ereignisse behalten Inhalt, Geltungsbereich, Zeitangaben, Hinweise, Korrektheit, Abschluss und Korrekturverweise.
+
+Eingeschriebene Lernende dürfen mit Leseberechtigung ihre eigenen Klassenergebnisse aufzeichnen; Bearbeitungsrechte sind nicht erforderlich. Für andere Lernende bleibt eine privilegierte Rolle erforderlich. Der Klassenkontext folgt der aktuellen Mitgliedschaft; eine Stapelfreigabe allein gewährt keine Mitgliedschaft.

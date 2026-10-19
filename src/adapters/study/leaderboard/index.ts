@@ -35,6 +35,7 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
+    ready = false;
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     const scoring =
         ctx.capabilities.get<ScoringCapability>("engagement:scoring");
@@ -65,23 +66,25 @@ export async function bootstrapStudyAdapter(
     ] as const)
         if (!systemCtx.hasFlow(id))
             systemCtx.registerFlow({ id, description, stages: [...stages] });
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    const store = databaseExecutor
-        ? new DbLeaderboardStore(databaseExecutor)
-        : undefined;
-    if (store) await store.ensureSchema();
+    const databaseExecutor =
+        ctx.capabilities.require<DbExecutor>("db:executor");
+    const store = new DbLeaderboardStore(databaseExecutor);
+    await store.ensureSchema();
     const service = new LeaderboardService(
         () =>
             ctx.capabilities.get<ProgressEvidenceCapability>("study:progress"),
         () => ctx.isAdapterEnabled(),
         scoring,
-        ctx.capabilities.get<StudyClassAccessCapability>(
-            "study:classes:access",
-        ),
+        {
+            canRead: (...args) =>
+                ctx.capabilities
+                    .get<StudyClassAccessCapability>("study:classes:access")
+                    ?.canRead(...args) ?? Promise.resolve(false),
+        },
         ctx.log,
-        store ? (state) => store.save(state) : undefined,
+        (state) => store.save(state),
     );
-    const storedState = await store?.load();
+    const storedState = await store.load();
     if (storedState) service.restoreState(storedState);
     systemCtx.flow.extend(
         "study:leaderboard:submitObservation",

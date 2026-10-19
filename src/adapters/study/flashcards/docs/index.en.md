@@ -8,7 +8,7 @@ Open a visible deck from Flashcards to begin practicing immediately. Use Total, 
 
 Decks are shareable resources of type `studyDeck` with the read capability `study:flashcards:read`. The standard Cognis Share control supports user recipients and public links, expiry, passwords, and revocation. Owners alone may edit or delete decks. User recipients can study; exports require creator or administrator access; their review schedules are stored separately per account. A link guest studies in a temporary session without changing account schedules. Revocation and expiry are checked on every authenticated deck operation.
 
-Sharing explicitly shares a deck snapshot, including selected card content and definitions, without granting access to the source Library or changing its scope. Owner edits refresh that snapshot. Unavailable source cards are skipped during the owner’s Library-backed study; previously shared snapshots remain deck content until the owner edits or deletes the deck. Deleting a deck revokes its shares and removes learner progress.
+Sharing grants deck-scoped access to current Library cards and definitions, without granting general Library access or changing card scope. Every shared opening resolves those IDs under the owner’s access after checking the share. Unavailable or disabled-provider cards are omitted. Gallery metadata and review responses do not expose saved card snapshots. Deleting a deck revokes shares and removes review schedules and delivery receipts.
 
 Import and export UTF-8, quoted tab-separated text with Front, Back, and optional Pronunciation columns. Exports include Anki separator, deck, and plain-text headers plus an optional Cognis context column; Anki can ignore that column. Embedded quotes, tabs, and newlines round-trip safely. This is TSV interchange, not an `.apkg` archive. Review history is private and is not exported.
 
@@ -35,3 +35,5 @@ The deck side menu scrolls with the document. Revealing the primary navigation d
 ## Visible Practice Mode and Themed Controls
 
 The persistent Read/Write selector now reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
+
+Answer submissions may include an `attempt` object with `id` and ISO `occurredAt`. Re-deliver the same object and grade to retry; a new answer uses a new ID. Review receipts and scheduling changes commit together, and stable event IDs prevent duplicate Progress records. Browser history retains pending attempts without putting them in URLs. Flashcards declares Library and Progress dependencies. Shared cards and their schemas resolve current Library data after share authorization.

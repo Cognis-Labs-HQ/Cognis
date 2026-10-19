@@ -546,3 +546,5 @@ Study Library memeriksa kapabilitas bahasa aktif sebelum menyediakan skema, kart
 ## Pencarian Registri Bahasa Aktif
 
 Ketersediaan pustaka membaca kontribusi bahasa dari registri sistem aktif, bukan penyimpanan kapabilitas lokal adaptor. Menonaktifkan satu bahasa tetap mengizinkan skema, kartu, dan dependensi dek awal bahasa lain; mengaktifkannya kembali memulihkan konten tersimpan. Registri publik diutamakan daripada salinan lokal yang sudah usang.
+
+Pembaruan paket otoritatif mempertahankan entri penyedia yang dihilangkan jika masih dapat dijangkau dari kartu pengguna atau kartu penyedia yang disunting. Perlindungan mengikuti ketergantungan rekursif dan siklus; isi penyedia yang usang tanpa rujukan tersebut tetap dapat dipangkas.

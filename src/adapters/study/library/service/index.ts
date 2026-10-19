@@ -455,12 +455,15 @@ export class LibraryService implements LibraryCapability {
             this.immutable(entry),
             classAccess,
             this.audioProvider,
-            this.registeredSchema(entry.schemaId),
+            this.registeredSchema(entry.schemaId) ?? undefined,
         );
     }
 
     private immutable(entry: LibraryEntry): boolean {
-        return immutableEntry(this.registeredSchema(entry.schemaId), entry);
+        return immutableEntry(
+            this.registeredSchema(entry.schemaId) ?? undefined,
+            entry,
+        );
     }
 
     async read(

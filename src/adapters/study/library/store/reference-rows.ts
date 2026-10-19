@@ -1,6 +1,8 @@
 import type { LibraryEntryInput } from "../types.js";
 
-export function entryReferenceRows(input: LibraryEntryInput) {
+export function entryReferenceRows(
+    input: Pick<LibraryEntryInput, "references" | "referenceGroups">,
+) {
     return [
         ...(input.references ?? []).map((reference, index) => ({
             reference,

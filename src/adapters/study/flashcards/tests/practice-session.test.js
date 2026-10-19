@@ -107,3 +107,18 @@ test("assisted answers remain Again across Previous, Next and history restoratio
     assert.equal(restored.session.answeredGrade, "again");
     assert.equal(restored.session.answered, false);
 });
+
+test("an in-flight answer retains its attempt identity after Explore and browser Back", () => {
+    const cards = [{ entry: { id: "one" } }, { entry: { id: "two" } }];
+    const session = createPracticeSession(cards);
+    session.answer("good");
+    const attempt = session.reviewAttempt;
+    const restored = resumePracticeSession(
+        cards,
+        JSON.parse(JSON.stringify(session.snapshot())),
+    ).session;
+    assert.equal(restored.answered, false);
+    assert.deepEqual(restored.reviewAttempt, attempt);
+    restored.next("good");
+    assert.notEqual(restored.reviewAttempt.id, attempt.id);
+});

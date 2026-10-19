@@ -406,19 +406,22 @@ export async function mount(root, { signal: routerSignal } = {}) {
         const detail = practiceSession.current;
         let pendingReview;
         const reviewedSession = practiceSession;
+        const reviewedDeck = session;
         const recordAnswer = async (grade) => {
-            practiceSession.answer(grade);
+            reviewedSession.answer(grade);
+            const attempt = reviewedSession.reviewAttempt;
             persistSession();
-            if (!grade || practiceSession.answered) return true;
+            if (!grade || reviewedSession.answered) return true;
             if (!pendingReview)
                 pendingReview = runDeckAction("review", async () => {
                     const updated = await reviewStudyCard(
-                        session.deck.id,
+                        reviewedDeck.deck.id,
                         detail.entry.id,
                         grade,
+                        attempt,
                     );
-                    selected = updated;
-                    session.deck = updated;
+                    reviewedDeck.deck = updated;
+                    if (session === reviewedDeck) selected = updated;
                     reviewedSession.record(grade, detail.entry.id);
                     if (!signal.aborted && current === generation)
                         persistSession();
