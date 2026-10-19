@@ -21,6 +21,7 @@ export function createDrawingRoutes(
         cardId: string,
         input: DrawingCompletion,
     ) => Promise<void>,
+    available: () => boolean = () => true,
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (req, res, url) => {
         const match = /^\/api\/v1\/study\/drawing\/([^/]+)$/.exec(url.pathname);
@@ -32,6 +33,7 @@ export function createDrawingRoutes(
             res.end(JSON.stringify(body));
         };
         try {
+            if (!available()) throw new Error("adapter_disabled");
             const cardId = decodeURIComponent(match[1]);
             const input =
                 req.method === "POST" ? await readJson(req) : undefined;
@@ -106,14 +108,25 @@ export function createDrawingRoutes(
                     "invalid_json",
                 ].includes(code) ||
                 error instanceof URIError;
-            send(code === "forbidden" ? 403 : invalid ? 400 : 500, {
-                error:
-                    code === "forbidden"
-                        ? code
-                        : invalid
-                          ? "invalid_drawing_progress"
-                          : "drawing_progress_failed",
-            });
+            send(
+                code === "adapter_disabled"
+                    ? 503
+                    : code === "forbidden"
+                      ? 403
+                      : invalid
+                        ? 400
+                        : 500,
+                {
+                    error:
+                        code === "adapter_disabled"
+                            ? code
+                            : code === "forbidden"
+                              ? code
+                              : invalid
+                                ? "invalid_drawing_progress"
+                                : "drawing_progress_failed",
+                },
+            );
         }
         return true;
     };

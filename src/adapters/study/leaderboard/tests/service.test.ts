@@ -78,6 +78,7 @@ test("bootstrap publishes the leaderboard capability for language providers", as
         { pattern: string; requiredCapabilities?: string[] } | undefined;
     await bootstrapStudyAdapter({
         capabilities,
+        flow: systemCtx.flow,
         isAdapterEnabled: () => true,
         registerRoute: () => undefined,
         registerSpaRoute: (route: {

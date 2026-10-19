@@ -62,3 +62,7 @@ Administrasi hanya menandai adapter yang dipilih oleh `DB_TYPE` sebagai aktif. S
 | -------------- | ------------ | ------------------------------------------------------------ |
 | `DB_TYPE`      | `postgresql` | Backend database: `postgresql` atau `mariadb`                |
 | `DATABASE_URL` | —            | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
+
+## Imbalan Latihan Tersimpan
+
+Gateway basis data menyediakan `engagement:store` untuk bukti imbalan peserta, penukaran booster, dan pembatalan. Perintah terstruktur memeriksa revisi secara atomik agar proses bersamaan tidak menimpa imbalan proses lain secara diam-diam. Mesin inti menerima penyimpanan ini melalui ctx tanpa mengimpor implementasi basis data.

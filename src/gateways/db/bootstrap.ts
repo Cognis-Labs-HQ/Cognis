@@ -1,3 +1,4 @@
+import { createEngagementStore } from "./reuse/engagement-store.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import { createDbExecutor } from "./executor.js";
@@ -130,6 +131,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.capabilities.contribute("db:executor", executor);
+    ctx.capabilities.contribute(
+        "engagement:store",
+        createEngagementStore(() => executor),
+    );
     ctx.capabilities.contribute("db:type", dbType);
     ctx.capabilities.contribute("db:dialect", dialect);
 

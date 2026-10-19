@@ -1,3 +1,4 @@
+import type { EngagementStore } from "@cognis/core";
 import { buildServer, discoverModuleSourcesOnStartup } from "./server.js";
 import type {
     ModuleManifest,
@@ -295,8 +296,14 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
-const { scoring: scoringEngine, achievements: achievementRegistry } =
-    registerEngagementCapabilities(systemCtx);
+const {
+    scoring: scoringEngine,
+    achievements: achievementRegistry,
+    ledger: engagementLedger,
+} = registerEngagementCapabilities(systemCtx, () =>
+    capabilities.require<EngagementStore>("engagement:store"),
+);
+capabilities.contribute("engagement:ledger", engagementLedger);
 capabilities.contribute("engagement:scoring", scoringEngine);
 capabilities.contribute("engagement:achievements", achievementRegistry);
 capabilities.contribute(

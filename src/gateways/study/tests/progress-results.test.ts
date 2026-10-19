@@ -36,7 +36,7 @@ function fixture() {
         [
             "study:progress",
             {
-                recordEvent: async (
+                recordPractice: async (
                     actor: { accountId: string },
                     event: LearningEventInput,
                 ) => {

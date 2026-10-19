@@ -1,7 +1,8 @@
+import { reviewResult } from "./review-result.js";
 import { studyAttempt } from "../../../../gateways/study/reuse/attempt.js";
 import type { StudyResult } from "../../../../gateways/study/progress.js";
 import type { BootstrapLog } from "../../../../gateways/shared.js";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { FlowApi, FlowStageHook } from "@cognis/core";
 import type {
     DeckActor,
@@ -410,7 +411,7 @@ export class DeckService {
     ): Promise<StudyDeck> {
         const attempt = studyAttempt(attemptInput);
         if (typeof cardId !== "string") throw new Error("invalid_deck_card");
-        return this.store.transact(async (store) => {
+        const reviewed = await this.store.transact(async (store) => {
             let deck!: StudyDeck;
             await this.flow.run(
                 "study:decks:review",
@@ -469,52 +470,10 @@ export class DeckService {
                                 );
                                 return;
                             }
-                            const note = deck.notes.find(
-                                (note) => note.id === cardId,
-                            );
                             await store.saveProgress(
                                 actor.accountId,
                                 id,
                                 deck.progress,
-                            );
-                            await this.recordResult?.(
-                                {
-                                    accountId: actor.accountId,
-                                    entryId: cardId,
-                                    activity: "flashcards",
-                                    eventId:
-                                        "flashcards-" +
-                                        createHash("sha256")
-                                            .update(
-                                                JSON.stringify([
-                                                    actor.accountId,
-                                                    id,
-                                                    attempt.id,
-                                                ]),
-                                            )
-                                            .digest("hex"),
-                                    occurredAt: attempt.occurredAt,
-                                    correct: grade !== "again",
-                                    deckId: id,
-                                    readerAccountId: deck.provider
-                                        ? actor.accountId
-                                        : deck.ownerAccountId,
-                                    ...(note
-                                        ? {
-                                              importedNote: {
-                                                  id: note.id,
-                                                  language:
-                                                      deck.language ?? "und",
-                                                  revision: createHash("sha256")
-                                                      .update(
-                                                          JSON.stringify(note),
-                                                      )
-                                                      .digest("hex"),
-                                              },
-                                          }
-                                        : {}),
-                                },
-                                actor,
                             );
                         },
                         audit: () => {
@@ -530,6 +489,27 @@ export class DeckService {
             );
             return deck;
         });
+        if (this.recordResult)
+            await this.flow.run(
+                "study:decks:recordResult",
+                { actor, deckId: id },
+                {
+                    handlers: {
+                        deliver: () =>
+                            this.recordResult!(
+                                reviewResult(
+                                    actor,
+                                    reviewed,
+                                    cardId,
+                                    grade,
+                                    attempt,
+                                ),
+                                actor,
+                            ),
+                    },
+                },
+            );
+        return reviewed;
     }
 
     async delete(actor: DeckActor, id: string): Promise<void> {

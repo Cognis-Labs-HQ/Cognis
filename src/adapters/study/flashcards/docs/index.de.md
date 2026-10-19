@@ -37,3 +37,7 @@ Das seitliche Deckmenü scrollt mit dem Dokument. Das Einblenden der Hauptnaviga
 Die dauerhafte Auswahl für Lesen und Schreiben blendet ihren schwebenden Bereich auf der Lernkartenseite ein. Änderungen behalten die gespeicherte Einstellung und die Bestätigung zum Sitzungsneustart bei. Export- und Study-Einstellungssymbole folgen der aktuellen Bedienfarbe sowie dem hellen oder dunklen App-Design und Hover-Zustand, unabhängig vom Betriebssystem.
 
 Antworten können ein `attempt`-Objekt mit `id` und ISO-Zeitstempel `occurredAt` enthalten. Wiederholungen verwenden dasselbe Objekt und dieselbe Bewertung; neue Antworten erhalten eine neue Kennung. Empfangsbestätigung und Lernzeitplan werden gemeinsam gespeichert. Stabile Ereigniskennungen verhindern doppelte Fortschrittseinträge. Der Browserverlauf behält ausstehende Versuche ohne URL-Daten. Karteikarten deklarieren Bibliothek und Fortschritt als Abhängigkeiten. Geteilte Karten und Schemata laden nach der Freigabeprüfung aktuelle Bibliotheksdaten.
+
+## Dauerhafte Übungsbelohnungen
+
+Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden Belohnungszustellung festgeschrieben. Der getrennte Ablauf `study:decks:recordResult` stellt nach Fehlern dasselbe Ergebnis erneut zu, ohne den Zeitplan nochmals fortzuschreiben. Dadurch entstehen bei der Fortschrittsspeicherung keine verschachtelten Datenbanktransaktionen.

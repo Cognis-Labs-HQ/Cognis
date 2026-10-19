@@ -34,3 +34,7 @@ Interval tinjauan dibatasi hingga empat belas hari. Stempel waktu peristiwa hany
 ID peristiwa stabil tetap berlaku setelah disimpan dan dibaca dari basis data. Pengiriman ulang peristiwa identik memperbaiki proyeksi yang terhenti tanpa menambah riwayat. Peristiwa kanonis mempertahankan isi, cakupan, waktu, petunjuk, ketepatan, penyelesaian dan referensi koreksi.
 
 Pelajar terdaftar dapat mencatat hasil kelas sendiri dengan hak baca, tanpa hak menyunting kelas. Pencatatan untuk pelajar lain tetap memerlukan peran istimewa. Konteks kelas mengikuti keanggotaan terkini; berbagi dek saja tidak memberikan keanggotaan.
+
+## Imbalan Latihan Tersimpan
+
+ID proyeksi kemajuan memakai tupel identitas JSON yang tidak ambigu tanpa byte NUL yang ditolak kolom teks PostgreSQL. Hasil menggambar dan kartu belajar tepercaya memakai `study:progress:recordPractice` melalui tahap otorisasi, validasi, pencatatan peristiwa, dan imbalan. Impor peristiwa mentah tidak memberikan XP. `GET /api/v1/study/progress/engagement` yang terautentikasi mengembalikan ringkasan imbalan pelajar sendiri. Percobaan benar tanpa bantuan dapat memperoleh lencana latihan terlokalisasi. Koreksi membatalkan imbalan dan bukti peringkat terkait. Pengiriman ulang mempertahankan identitas peristiwa dan imbalan kanonis.

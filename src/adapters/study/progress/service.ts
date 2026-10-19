@@ -1,4 +1,5 @@
-import type { FlowApi } from "@cognis/core";
+import { projectionKey } from "./reuse/projection-key.js";
+import type { FlowApi, EngagementSummary } from "@cognis/core";
 import type { StudyClassAccessCapability } from "../../../gateways/study/gateway.js";
 import type { ProgressStore } from "./store.js";
 import type {
@@ -22,11 +23,20 @@ export interface ProgressRecordFlowData extends Record<string, unknown> {
 
 export async function rebuildProgressProjections(
     store: ProgressStore,
+    actorId?: string,
 ): Promise<void> {
-    await store.replaceProjections(buildProjections(await store.all()));
+    await store.replaceProjections(
+        buildProjections(await store.all(actorId)),
+        actorId,
+    );
 }
 
 export interface ProgressCapability {
+    engagement(actor: ProgressActor): Promise<EngagementSummary>;
+    recordPractice(
+        actor: ProgressActor,
+        input: LearningEventInput,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
     recordEvent(
         actor: ProgressActor,
         input: LearningEventInput,
@@ -220,7 +230,7 @@ function withoutCompensatedEvents(events: LearningEvent[]): LearningEvent[] {
 function buildProjections(events: LearningEvent[]): ProgressProjection[] {
     const groups = new Map<string, LearningEvent[]>();
     for (const event of withoutCompensatedEvents(events)) {
-        const key = `${event.actorId}\u0000${event.content.schema}\u0000${event.content.layer}\u0000${event.content.language}\u0000${event.content.contentId}`;
+        const key = projectionKey(event.actorId, event.content);
         const group = groups.get(key) ?? [];
         group.push(event);
         groups.set(key, group);
@@ -281,13 +291,30 @@ function buildProjections(events: LearningEvent[]): ProgressProjection[] {
 }
 
 export class ProgressService implements ProgressCapability {
+    private pending: Promise<unknown> = Promise.resolve();
+
     constructor(
         private readonly store: ProgressStore,
         private readonly classAccess?: StudyClassAccessCapability,
         private readonly flow?: FlowApi,
         private readonly log?: Log,
         private readonly isEnabled: () => boolean = () => true,
+        private readonly practice?: (
+            actor: ProgressActor,
+            event: LearningEvent,
+        ) => Promise<void>,
+        private readonly invalidate?: (event: LearningEvent) => Promise<void>,
+        private readonly rewards?: (
+            participantId: string,
+        ) => Promise<EngagementSummary>,
     ) {}
+
+    async engagement(actor: ProgressActor): Promise<EngagementSummary> {
+        this.requireEnabled();
+        await this.authorize(actor, actor.accountId);
+        if (!this.rewards) throw new Error("practice_rewards_unavailable");
+        return this.rewards(actor.accountId);
+    }
 
     private requireEnabled(): void {
         if (!this.isEnabled()) throw new Error("adapter_disabled");
@@ -324,7 +351,57 @@ export class ProgressService implements ProgressCapability {
         return this.persistEvent(actor, event);
     }
 
+    async recordPractice(
+        actor: ProgressActor,
+        input: LearningEventInput,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        this.requireEnabled();
+        if (!this.practice || !this.flow)
+            throw new Error("practice_rewards_unavailable");
+        let result: { event: LearningEvent; duplicate: boolean } | undefined;
+        await this.flow.run(
+            "study:progress:recordPractice",
+            { actor, input },
+            {
+                handlers: {
+                    authorize: () =>
+                        this.authorize(
+                            actor,
+                            input.actorId ?? actor.accountId,
+                            input.context?.classroomId,
+                        ),
+                    validate: () => {
+                        if (!["drawing", "flashcards"].includes(input.activity))
+                            throw new Error("invalid_practice_activity");
+                    },
+                    record: async () => {
+                        result = await this.recordEvent(actor, input);
+                    },
+                    rewards: async () => {
+                        if (!result)
+                            throw new Error(
+                                "progress_flow_persistence_missing",
+                            );
+                        await this.practice!(actor, result.event);
+                    },
+                },
+            },
+        );
+        if (!result) throw new Error("progress_flow_persistence_missing");
+        return result;
+    }
+
     private async persistEvent(
+        actor: ProgressActor,
+        event: LearningEvent,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }> {
+        const operation = () => this.persistAuthorizedEvent(actor, event);
+        const result = this.pending.then(operation, operation);
+        this.pending = result;
+        return result;
+    }
+
+    private async persistAuthorizedEvent(
         actor: ProgressActor,
         event: LearningEvent,
     ): Promise<{ event: LearningEvent; duplicate: boolean }> {
@@ -339,7 +416,7 @@ export class ProgressService implements ProgressCapability {
             appendResult = data.appendResult;
         } else {
             appendResult = await this.store.append(event);
-            if (appendResult === "inserted") await this.rebuildInternal();
+            await rebuildProgressProjections(this.store, event.actorId);
         }
         await this.log?.("info", "Recorded immutable learning event.", {
             component: "study-progress",
@@ -380,7 +457,9 @@ export class ProgressService implements ProgressCapability {
             ...input,
             actorId: target.actorId,
         });
-        return this.persistEvent(actor, correction);
+        const result = await this.persistEvent(actor, correction);
+        await this.invalidate?.(result.event);
+        return result;
     }
 
     async listEvents(
@@ -393,7 +472,7 @@ export class ProgressService implements ProgressCapability {
         await this.authorize(actor, actorId, filters.classroomId);
         const accessible: LearningEvent[] = [];
         const classroomAccess = new Map<string, boolean>();
-        for (const event of (await this.store.all()).filter(
+        for (const event of (await this.store.all(actorId)).filter(
             (candidate) => candidate.actorId === actorId,
         )) {
             const classroomId = event.context.classroomId;
@@ -495,7 +574,7 @@ export class ProgressService implements ProgressCapability {
     ): Promise<ProgressProjection[]> {
         this.requireEnabled();
         await this.authorize(actor, targetActorId);
-        await this.rebuildInternal();
+        await rebuildProgressProjections(this.store, targetActorId);
         const projections = (await this.store.projections()).filter(
             (projection) => projection.actorId === targetActorId,
         );
@@ -507,9 +586,5 @@ export class ProgressService implements ProgressCapability {
             projectionCount: projections.length,
         });
         return projections;
-    }
-
-    private async rebuildInternal(): Promise<void> {
-        await rebuildProgressProjections(this.store);
     }
 }

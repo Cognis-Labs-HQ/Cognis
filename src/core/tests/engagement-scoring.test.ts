@@ -116,6 +116,7 @@ test("engagement registration exposes provider capabilities and composes flows",
     registerEngagementCapabilities(ctx);
     assert.deepEqual(ctx.listPublicCapabilities(), [
         "engagement:achievements",
+        "engagement:ledger",
         "engagement:recordActivity",
         "engagement:scoring",
     ]);

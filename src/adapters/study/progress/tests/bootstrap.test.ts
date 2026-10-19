@@ -33,11 +33,58 @@ function bootstrapContext() {
     const commands: Array<{ option: string; table: string }> = [];
     const rows: Array<Record<string, unknown> & { table: string }> = [];
     let failProjection = false;
+    let failRewards = false;
+    const definitions: unknown[] = [];
+    const rewards: unknown[] = [];
+    const settled = new Set<string>();
+    const invalidated: unknown[] = [];
     systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.contributeCapability("engagement:achievements", {
+        register: (definition: unknown) => definitions.push(definition),
+    });
+    systemCtx.contributeCapability(
+        "engagement:recordActivity",
+        async (activity: { activityId: string }) => {
+            rewards.push(activity);
+            if (failRewards) throw new Error("reward_storage_unavailable");
+            settled.add(activity.activityId);
+            return {
+                stageResults: {
+                    score: [
+                        {
+                            xp: 10,
+                            baseXp: 10,
+                            completion: "standard",
+                            appliedModifiers: [],
+                        },
+                    ],
+                },
+            };
+        },
+    );
+    systemCtx.contributeCapability("engagement:ledger", {
+        summary: async () => ({
+            xp: settled.size * 10,
+            activities: settled.size,
+            achievements: [],
+        }),
+        invalidate: async (...args: string[]) => {
+            invalidated.push(args);
+            settled.delete(args[2]);
+        },
+    });
     systemCtx.contributeCapability("db:executor", {
         ensureTable: async () => {},
         executeCommand: async (command: StructuredDbCommand) => {
             commands.push(command);
+            if (command.option === "INSERT") {
+                for (const value of Object.values(command.values))
+                    if (typeof value === "string" && value.includes("\u0000"))
+                        throw Object.assign(
+                            new Error("invalid_text_encoding"),
+                            { code: "22021" },
+                        );
+            }
             const matches = (row: Record<string, unknown>) =>
                 row.table === command.table &&
                 (!("where" in command) ||
@@ -83,6 +130,12 @@ function bootstrapContext() {
         systemCtx,
         commands,
         routes,
+        definitions,
+        rewards,
+        invalidated,
+        failRewards(value: boolean) {
+            failRewards = value;
+        },
         failProjection(value: boolean) {
             failProjection = value;
         },
@@ -94,6 +147,8 @@ function bootstrapContext() {
             adapterId: "progress",
             adapterRoot: "",
             capabilities: {
+                require: <Value>(key: string) =>
+                    systemCtx.requireCapability<Value>(key),
                 get: <Value>(key: string) =>
                     systemCtx.getCapability<Value>(key),
                 contribute: (key: string, value: unknown) =>
@@ -105,7 +160,7 @@ function bootstrapContext() {
             registerStaticDir: () => {},
             registerNavbarPlugin: () => {},
             registerPageExtension: () => {},
-            isAdapterEnabled: () => enabled,
+            isAdapterEnabled: (id = "progress") => enabled && id === "progress",
         },
     };
 }
@@ -209,4 +264,86 @@ test("retrying an inserted event repairs projections after projection persistenc
     const projections = await progress.listProjections(actor);
     assert.equal(projections.length, 1);
     assert.equal(projections[0].seen, 1);
+});
+
+test("trusted practice runs its staged flow and settles rewards while raw history imports do not", async () => {
+    const fixture = bootstrapContext();
+    await bootstrapStudyAdapter(fixture.context as never);
+    const progress =
+        fixture.systemCtx.requireCapability<ProgressCapability>(
+            "study:progress",
+        );
+    const actor = { accountId: "actor-one", role: "user" as const };
+    await progress.recordEvent(actor, flowEvent);
+    assert.equal(fixture.rewards.length, 0);
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "record", "rewards"])
+        fixture.systemCtx.flow.extend(
+            "study:progress:recordPractice",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+            },
+        );
+    await progress.recordPractice(actor, {
+        ...flowEvent,
+        id: "practice",
+        activity: "drawing",
+    });
+    assert.deepEqual(stages, ["authorize", "validate", "record", "rewards"]);
+    assert.equal(fixture.definitions.length, 1);
+    assert.equal((await progress.engagement(actor)).xp, 10);
+});
+
+test("a reward failure preserves the canonical event and a retry completes reward delivery once", async () => {
+    const fixture = bootstrapContext();
+    await bootstrapStudyAdapter(fixture.context as never);
+    const progress =
+        fixture.systemCtx.requireCapability<ProgressCapability>(
+            "study:progress",
+        );
+    const actor = { accountId: "actor-one", role: "user" as const };
+    const event = { ...flowEvent, activity: "drawing" };
+    fixture.failRewards(true);
+    await assert.rejects(
+        progress.recordPractice(actor, event),
+        /reward_storage_unavailable/,
+    );
+    assert.equal((await progress.listEvents(actor)).length, 1);
+    fixture.failRewards(false);
+    assert.equal((await progress.recordPractice(actor, event)).duplicate, true);
+    await progress.recordPractice(actor, event);
+    assert.equal((await progress.engagement(actor)).activities, 1);
+});
+
+test("correcting settled practice revokes its reward evidence and cannot be used by another user", async () => {
+    const fixture = bootstrapContext();
+    await bootstrapStudyAdapter(fixture.context as never);
+    const progress =
+        fixture.systemCtx.requireCapability<ProgressCapability>(
+            "study:progress",
+        );
+    const actor = { accountId: "actor-one", role: "user" as const };
+    await progress.recordPractice(actor, { ...flowEvent, activity: "drawing" });
+    const correction = {
+        ...flowEvent,
+        id: "corrected",
+        compensatesEventId: flowEvent.id,
+        correct: false,
+        independentCorrect: false,
+    };
+    await assert.rejects(
+        progress.correctEvent(
+            { accountId: "intruder", role: "user" },
+            correction,
+        ),
+        /forbidden_actor/,
+    );
+    await progress.correctEvent(actor, correction);
+    assert.equal((await progress.engagement(actor)).xp, 0);
+    assert.equal(fixture.invalidated.length, 1);
+    const deliveries = fixture.rewards.length;
+    await progress.recordPractice(actor, { ...flowEvent, activity: "drawing" });
+    assert.equal(fixture.rewards.length, deliveries);
 });

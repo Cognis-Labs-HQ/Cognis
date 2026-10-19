@@ -24,3 +24,7 @@ An activity supplies unique evidence event IDs, provider and participant IDs, co
 ### Safety and evidence
 
 Weights and multipliers accept values from `0.01` through `10`; difficulty accepts `0.1` through `10`. Event IDs must be unique, durations and hint counts must be non-negative, and timing targets must be ordered. Consumable boosters are participant-specific and removed after their first matching score. Achievement awards freeze their labels, difficulty, icon, award time, and evidence IDs so later definition changes cannot rewrite earned badges.
+
+## Durable Practice Rewards
+
+`engagement:recordActivity` now validates, scores, evaluates achievements, persists a receipt, then publishes. The host injects `engagement:store`; production storage belongs to the Database gateway. Participant revisions reject conflicting writes. Replaying the same activity preserves its XP and awards; changed inputs or reused evidence are rejected. Scoring and award evaluation use isolated state until persistence succeeds. `engagement:ledger` exposes authoritative summaries, durable booster redemption and activity invalidation. Redeemed boosters and consumed evidence survive restarts. `repeatKey` groups repeated practice without changing the original receipt; corrections remove invalidated XP and award projections while retaining history. Low-level scoring methods remain policy calculators; durable consumers use the ledger and record capability.

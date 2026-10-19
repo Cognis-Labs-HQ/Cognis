@@ -36,3 +36,7 @@ Review intervals are capped at fourteen days. Event timestamps are accepted only
 Stable event IDs survive database round-trips. Re-delivering an identical event repairs interrupted projections without adding history. Canonical events retain content, scope, timing, hints, correctness, completion and compensation fields.
 
 Enrolled learners may record their own classroom results with read access; classroom edit privileges are not required. Recording for another learner still requires a privileged actor. Classroom context follows current membership, and a deck share alone does not grant that membership.
+
+## Durable Practice Rewards
+
+Progress projection IDs use an unambiguous JSON identity tuple without NUL bytes, which PostgreSQL text columns reject. Trusted Drawing and Flashcard results use `study:progress:recordPractice` through authorization, validation, event recording and reward stages. Raw event imports do not mint XP. The authenticated `GET /api/v1/study/progress/engagement` returns the learner’s reward summary. An independent correct attempt can earn the localized practice badge; corrections invalidate affected rewards and leaderboard evidence. Retrying interrupted delivery preserves the canonical event and reward identity.

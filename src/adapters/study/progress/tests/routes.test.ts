@@ -217,3 +217,20 @@ test("event routes report malformed JSON as a client error", async () => {
     assert.equal(result.status, 400);
     assert.equal((result.body.error as { code: string }).code, "invalid_json");
 });
+
+test("engagement summaries use the authenticated learner and ignore a requested foreign actor", async () => {
+    const actors: unknown[] = [];
+    const response = await dispatch(
+        {
+            engagement: async (actor: unknown) => {
+                actors.push(actor);
+                return { xp: 13, activities: 1, achievements: [] };
+            },
+        },
+        "GET",
+        "/api/v1/study/progress/engagement?actorId=victim",
+    );
+    assert.equal(response.status, 200);
+    assert.deepEqual(actors, [{ accountId: "actor-one", role: "user" }]);
+    assert.equal((response.body.data as { xp: number }).xp, 13);
+});

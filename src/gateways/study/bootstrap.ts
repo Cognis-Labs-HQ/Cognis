@@ -214,7 +214,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const routeHelpers = resolveRouteContext(routeContext);
-    const gateway = new CoreStudyGateway();
+    const gateway = new CoreStudyGateway(
+        (reference) =>
+            ctx.gatewayRegistry
+                .list()
+                .some(
+                    (dependency) =>
+                        dependency.uuid === reference &&
+                        dependency.status === "active",
+                ),
+        (reference) => ctx.capabilities.has(reference),
+    );
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (!systemCtx)
@@ -265,6 +275,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         assisted: result.assisted,
                         mistakes: result.mistakes,
                     }),
+                () =>
+                    gateway.isAdapterEnabled("library") &&
+                    gateway.isAdapterEnabled("progress"),
             ),
             "study",
         );

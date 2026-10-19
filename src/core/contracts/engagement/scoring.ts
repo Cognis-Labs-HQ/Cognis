@@ -1,3 +1,12 @@
+import {
+    registerEngagementLedger,
+    type EngagementLedgerCapability,
+} from "./ledger.js";
+import {
+    MemoryEngagementStore,
+    type EngagementStore,
+    type EngagementReceipt,
+} from "./ledger-store.js";
 import type { Ctx } from "../../ctx/types.js";
 
 export const ENGAGEMENT_SCORING_CAPABILITY = "engagement:scoring";
@@ -25,6 +34,7 @@ export interface ActivityScoreInput {
     basePoints?: number;
     activityWeight?: number;
     firstCompletion?: boolean;
+    repeatKey?: string;
     repeated?: boolean;
     completedAt: string;
     completionTargetMs?: { fast: number; slow: number };
@@ -160,9 +170,19 @@ export class ScoringEngine implements ScoringCapability {
             new Set(input.events.map(({ id }) => id)).size !==
                 input.events.length ||
             input.events.some(
-                ({ id, activityType, hints, durationMs }) =>
+                ({
+                    id,
+                    activityType,
+                    hints,
+                    durationMs,
+                    correct,
+                    independentCorrect,
+                }) =>
                     !id.trim() ||
                     !activityType.trim() ||
+                    typeof correct !== "boolean" ||
+                    typeof independentCorrect !== "boolean" ||
+                    (independentCorrect && (!correct || hints > 0)) ||
                     !Number.isInteger(hints) ||
                     hints < 0 ||
                     !validNumber(durationMs),
@@ -244,6 +264,11 @@ export class ScoringEngine implements ScoringCapability {
                 ),
             ),
         );
+        if (
+            !Number.isSafeInteger(baseXp) ||
+            !Number.isSafeInteger(experiencePoints)
+        )
+            throw new Error("invalid_activity_score_total");
         for (const modifier of applied) {
             if (modifier.source === "booster" && modifier.consumable) {
                 this.boosters.get(input.participantId)?.delete(modifier.id);
@@ -265,6 +290,51 @@ export class ScoringEngine implements ScoringCapability {
         return structuredClone(result);
     }
 
+    forkParticipant(
+        participantId: string,
+        receipts: readonly EngagementReceipt[],
+        boosters: readonly ScoreModifier[] = [],
+    ): ScoringEngine {
+        const fork = new ScoringEngine();
+        for (const [key, value] of this.weights) fork.weights.set(key, value);
+        for (const [key, value] of this.modifiers)
+            fork.modifiers.set(key, value);
+        fork.boosters.set(
+            participantId,
+            new Map(this.boosters.get(participantId)),
+        );
+        for (const modifier of boosters)
+            fork.boosters
+                .get(participantId)!
+                .set(modifier.id, structuredClone(modifier));
+        for (const receipt of receipts)
+            for (const modifier of receipt.score.appliedModifiers)
+                fork.boosters.get(participantId)?.delete(modifier.id);
+        return fork;
+    }
+
+    restoreParticipant(
+        participantId: string,
+        receipts: readonly EngagementReceipt[],
+        boosters: readonly ScoreModifier[] = [],
+    ): void {
+        const pending =
+            this.boosters.get(participantId) ??
+            new Map<string, ScoreModifier>();
+        for (const modifier of boosters)
+            pending.set(modifier.id, structuredClone(modifier));
+        this.boosters.set(participantId, pending);
+        for (const key of this.bests.keys())
+            if (key.startsWith(`${participantId}\0`)) this.bests.delete(key);
+        for (const { activity, score } of receipts) {
+            const key = `${participantId}\0${activity.events[0].activityType}`;
+            if ((this.bests.get(key)?.xp ?? -1) < score.xp)
+                this.bests.set(key, structuredClone(score));
+            for (const modifier of score.appliedModifiers)
+                this.boosters.get(participantId)?.delete(modifier.id);
+        }
+    }
+
     personalBest(participantId: string, activityType: string) {
         return structuredClone(
             this.bests.get(`${participantId}\0${activityType}`) ?? null,
@@ -275,53 +345,24 @@ export class ScoringEngine implements ScoringCapability {
 export interface EngagementCapabilities {
     scoring: ScoringCapability;
     achievements: AchievementCapability;
+    ledger: EngagementLedgerCapability;
 }
 
 /** Registers the public engagement capabilities and their staged orchestration flows. */
 export function registerEngagementCapabilities(
     ctx: Ctx,
+    storage?: () => EngagementStore,
 ): EngagementCapabilities {
     const scoring = new ScoringEngine();
     const achievements = new AchievementRegistry();
-    ctx.registerFlow({
-        id: "engagement:scoreActivity",
-        description: "Score a completed collection of learning events.",
-        stages: ["validate", "score", "achievements", "publish"],
-    });
-    ctx.registerFlow({
-        id: "engagement:evaluateAchievements",
-        description:
-            "Evaluate immutable achievement awards for scored activity.",
-        stages: ["collect", "evaluate", "award"],
-    });
-    ctx.flow.extend(
-        "engagement:scoreActivity",
-        "score",
-        { id: "core-engagement:score" },
-        ({ input }) => scoring.score(input as ActivityScoreInput),
+    const memory = new MemoryEngagementStore();
+    const { record, ledger } = registerEngagementLedger(
+        ctx,
+        scoring,
+        achievements,
+        storage ?? (() => memory),
     );
-    ctx.flow.extend(
-        "engagement:evaluateAchievements",
-        "evaluate",
-        { id: "core-engagement:evaluate" },
-        ({ input }) => {
-            const { activity, score } = input as {
-                activity: ActivityScoreInput;
-                score: ActivityScore;
-            };
-            return achievements.evaluate(activity, score);
-        },
-    );
-    ctx.flow.extend(
-        "engagement:scoreActivity",
-        "achievements",
-        { id: "core-engagement:achievements" },
-        async ({ input, stageResults }) =>
-            ctx.flow.run("engagement:evaluateAchievements", {
-                activity: input,
-                score: stageResults.score?.[0] as ActivityScore,
-            }),
-    );
+    ctx.contributePublicCapability("engagement:ledger", ledger);
     ctx.contributePublicCapability(ENGAGEMENT_SCORING_CAPABILITY, scoring);
     ctx.contributePublicCapability(
         ENGAGEMENT_ACHIEVEMENTS_CAPABILITY,
@@ -329,10 +370,9 @@ export function registerEngagementCapabilities(
     );
     ctx.contributePublicCapability(
         ENGAGEMENT_RECORD_ACTIVITY_CAPABILITY,
-        (input: ActivityScoreInput) =>
-            ctx.flow.run("engagement:scoreActivity", input),
+        record,
     );
-    return { scoring, achievements };
+    return { scoring, achievements, ledger };
 }
 
 export class AchievementRegistry implements AchievementCapability {
@@ -371,6 +411,37 @@ export class AchievementRegistry implements AchievementCapability {
             awarded.push(award);
         }
         return awarded;
+    }
+
+    forkParticipant(
+        participantId: string,
+        awards: readonly AchievementAward[],
+    ): AchievementRegistry {
+        const fork = new AchievementRegistry();
+        for (const [key, value] of this.definitions)
+            fork.definitions.set(key, value);
+        fork.restoreParticipant(participantId, awards);
+        return fork;
+    }
+
+    restoreParticipant(
+        participantId: string,
+        awards: readonly AchievementAward[],
+    ): void {
+        for (const [key, award] of this.awards)
+            if (award.participantId === participantId) this.awards.delete(key);
+        for (const award of awards)
+            this.awards.set(
+                `${participantId}\0${award.definitionId}`,
+                Object.freeze({
+                    ...structuredClone(award),
+                    title: Object.freeze({ ...award.title }),
+                    description: Object.freeze({ ...award.description }),
+                    evidenceEventIds: Object.freeze([
+                        ...award.evidenceEventIds,
+                    ]),
+                }),
+            );
     }
 
     list(participantId: string) {

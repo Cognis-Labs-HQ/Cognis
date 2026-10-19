@@ -1,3 +1,9 @@
+import { publishPractice, invalidatePractice } from "./practice.js";
+import { registerPracticeAchievements } from "./achievements.js";
+import type {
+    AchievementCapability,
+    EngagementLedgerCapability,
+} from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import type {
@@ -30,6 +36,7 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
+    adapterReady = false;
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (!systemCtx) {
         await ctx.log?.(
@@ -56,6 +63,19 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
+    const achievements = ctx.capabilities.require<AchievementCapability>(
+        "engagement:achievements",
+    );
+    const ledger =
+        ctx.capabilities.require<EngagementLedgerCapability>(
+            "engagement:ledger",
+        );
+    ctx.capabilities.require("engagement:recordActivity");
+    if (!systemCtx.hasFlow("study:progress:recordPractice"))
+        systemCtx.registerFlow({
+            id: "study:progress:recordPractice",
+            stages: ["authorize", "validate", "record", "rewards"],
+        });
     if (!systemCtx.hasFlow("study:progress:recordEvent")) {
         systemCtx.registerFlow({
             id: "study:progress:recordEvent",
@@ -95,11 +115,14 @@ export async function bootstrapStudyAdapter(
         "study:progress:recordEvent",
         "project",
         { id: "study-progress:project", order: -100 },
-        async ({ data }) => {
+        async ({ input, data }) => {
             if (!ctx.isAdapterEnabled()) throw new Error("adapter_disabled");
             if (!(data as ProgressRecordFlowData).appendResult)
                 throw new Error("progress_flow_persistence_missing");
-            await rebuildProgressProjections(store);
+            await rebuildProgressProjections(
+                store,
+                (input as LearningEvent).actorId,
+            );
             return "rebuilt";
         },
     );
@@ -118,6 +141,15 @@ export async function bootstrapStudyAdapter(
         ctx.flow,
         ctx.log,
         () => ctx.isAdapterEnabled(),
+        (actor, event) => publishPractice(ctx, actor, event),
+        (event) => invalidatePractice(ctx, event),
+        (participantId) => ledger.summary(participantId),
+    );
+    await registerPracticeAchievements(achievements);
+    ctx.registerAdapterStaticDir?.(
+        "study",
+        "progress",
+        `${ctx.adapterRoot}/ui`,
     );
     ctx.capabilities.contribute("study:progress", service);
     ctx.registerRoute(

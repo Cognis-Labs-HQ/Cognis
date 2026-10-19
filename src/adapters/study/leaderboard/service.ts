@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type {
     LeaderboardCapability,
     LeaderboardDefinition,
@@ -113,7 +114,8 @@ export class LeaderboardService implements LeaderboardCapability {
         recordedScore?: ActivityScore,
     ) {
         this.requireEnabled();
-        if (!this.scoring) throw new Error("scoring_unavailable");
+        if (!recordedScore && !this.scoring)
+            throw new Error("scoring_unavailable");
         if (
             actor.accountId !== activity.participantId &&
             !privileged.has(actor.role)
@@ -122,9 +124,20 @@ export class LeaderboardService implements LeaderboardCapability {
         const definition = this.definitions.get(definitionId);
         if (!definition?.criteria.some(({ id }) => id === criterionId))
             throw new Error("criterion_not_found");
-        const score = recordedScore ?? this.scoring.score(activity);
+        const score = recordedScore ?? this.scoring!.score(activity);
         await this.submitObservation(actor, {
-            id: `${activity.activityId}:xp`,
+            id:
+                "xp-" +
+                createHash("sha256")
+                    .update(
+                        JSON.stringify([
+                            activity.participantId,
+                            activity.activityId,
+                            definitionId,
+                            criterionId,
+                        ]),
+                    )
+                    .digest("hex"),
             definitionId,
             participantId: activity.participantId,
             criterionId,
@@ -352,6 +365,16 @@ export class LeaderboardService implements LeaderboardCapability {
         });
     }
 
+    async invalidateEvidence(
+        actor: LeaderboardActor,
+        eventId: string,
+    ): Promise<void> {
+        this.requireEnabled();
+        for (const observation of this.observations.values())
+            if (observation.evidenceEventIds.includes(eventId))
+                await this.invalidateObservation(actor, observation.id);
+    }
+
     async invalidateObservation(
         actor: LeaderboardActor,
         observationId: string,
@@ -436,6 +459,7 @@ export class LeaderboardService implements LeaderboardCapability {
             (a, b) => a.priority - b.priority || a.id.localeCompare(b.id),
         );
         const values = new Map<string, Map<string, LeaderboardObservation[]>>();
+        const classAccess = new Map<string, boolean>();
         for (const observation of this.observations.values()) {
             if (
                 this.invalid.has(observation.id) ||
@@ -444,6 +468,19 @@ export class LeaderboardService implements LeaderboardCapability {
                 (query.seasonId && observation.seasonId !== query.seasonId)
             )
                 continue;
+            if (definition.kind === "classroom") {
+                if (!classAccess.has(observation.participantId))
+                    classAccess.set(
+                        observation.participantId,
+                        !!definition.classroomId &&
+                            !!(await this.classAccess?.canRead(
+                                definition.classroomId,
+                                observation.participantId,
+                                "user",
+                            )),
+                    );
+                if (!classAccess.get(observation.participantId)) continue;
+            }
             const criterion = criteria.find(
                 (item) => item.id === observation.criterionId,
             )!;

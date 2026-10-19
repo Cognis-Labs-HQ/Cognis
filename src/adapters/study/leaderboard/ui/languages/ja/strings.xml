@@ -21,4 +21,5 @@
   <string name="gateway.study.leaderboard_gold">金</string>
   <string name="gateway.study.leaderboard_silver">銀</string>
   <string name="gateway.study.leaderboard_bronze">銅</string>
+  <string name="gateway.study.leaderboard_classroom">クラスのスコア</string>
 </resources>

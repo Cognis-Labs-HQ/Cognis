@@ -1,3 +1,4 @@
+import { ProgressService } from "../service.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
@@ -13,6 +14,14 @@ function persistentExecutor(): DbExecutor {
         },
         transaction: async (callback) => callback(executor),
         executeCommand: async (command: StructuredDbCommand) => {
+            if (command.option === "INSERT") {
+                for (const value of Object.values(command.values))
+                    if (typeof value === "string" && value.includes("\u0000"))
+                        throw Object.assign(
+                            new Error("invalid_text_encoding"),
+                            { code: "22021" },
+                        );
+            }
             const rows = tables.get(command.table) ?? [];
             if (command.option === "SELECT") {
                 const selected = rows.filter((row) =>
@@ -40,7 +49,15 @@ function persistentExecutor(): DbExecutor {
                 return { rowCount: 1 };
             }
             if (command.option === "DELETE") {
-                tables.set(command.table, []);
+                tables.set(
+                    command.table,
+                    rows.filter(
+                        (row) =>
+                            !(command.where ?? []).every(
+                                ({ column, value }) => row[column] === value,
+                            ),
+                    ),
+                );
                 return { rowCount: rows.length };
             }
             return { rowCount: 0 };
@@ -157,4 +174,24 @@ test("DB progress atomically permits one correction per target", async () => {
         store.append(secondCorrection),
         /event_already_corrected/,
     );
+});
+
+test("projection identity stays distinct when valid identity fields contain delimiter characters", async () => {
+    const databaseExecutor = persistentExecutor();
+    const store = new DbProgressStore(databaseExecutor);
+    await store.ensureSchema();
+    const service = new ProgressService(store);
+    for (const [actorId, schema, id] of [
+        ["a", "b:c", "one"],
+        ["a:b", "c", "two"],
+    ]) {
+        const event = {
+            ...learningEvent(),
+            id,
+            actorId,
+            content: { ...learningEvent().content, schema },
+        };
+        await service.recordEvent({ accountId: actorId, role: "user" }, event);
+    }
+    assert.equal((await store.projections()).length, 2);
 });

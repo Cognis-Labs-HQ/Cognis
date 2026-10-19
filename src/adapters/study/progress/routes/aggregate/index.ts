@@ -13,14 +13,19 @@ export function createAggregateRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (
-            url.pathname !== "/api/v1/study/progress/aggregate" ||
+            ![
+                "/api/v1/study/progress/aggregate",
+                "/api/v1/study/progress/engagement",
+            ].includes(url.pathname) ||
             request.method !== "GET"
         )
             return false;
         const claims = routeContext.requireAuth(request, response);
         if (!claims) return true;
         sendJson(response, 200, {
-            data: await progress.aggregate(actorFrom(claims), filtersFrom(url)),
+            data: url.pathname.endsWith("/engagement")
+                ? await progress.engagement(actorFrom(claims))
+                : await progress.aggregate(actorFrom(claims), filtersFrom(url)),
         });
         return true;
     };

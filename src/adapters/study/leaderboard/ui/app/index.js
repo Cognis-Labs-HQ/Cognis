@@ -41,10 +41,14 @@ export async function mount(root, { signal } = {}) {
               return null;
           })
         : null;
+    const definitionLabel = (definition) =>
+        definition.metadata?.labels?.[document.documentElement.lang] ||
+        definition.metadata?.labels?.en ||
+        i18n.t("gateway.study.leaderboard_heading");
     const renderLeaderboard = () => {
         const selector =
             definitions.length > 1
-                ? `<label class="study-leaderboard-selector"><span>${escapeHtml(i18n.t("gateway.study.leaderboard_select"))}</span><select class="theme-select" data-leaderboard-definition>${definitions.map((definition) => `<option value="${escapeHtml(definition.id)}"${definition.id === selectedDefinition?.id ? " selected" : ""}>${escapeHtml(definition.id)}</option>`).join("")}</select></label>`
+                ? `<label class="study-leaderboard-selector"><span>${escapeHtml(i18n.t("gateway.study.leaderboard_select"))}</span><select class="theme-select" data-leaderboard-definition>${definitions.map((definition) => `<option value="${escapeHtml(definition.id)}"${definition.id === selectedDefinition?.id ? " selected" : ""}>${escapeHtml(definitionLabel(definition))}</option>`).join("")}</select></label>`
                 : "";
         if (requestFailed)
             return `<section class="study-leaderboard-empty">${selector}<h2>${escapeHtml(i18n.t("gateway.study.leaderboard_heading"))}</h2><p>${escapeHtml(i18n.t("gateway.study.leaderboard_error"))}</p></section>`;
@@ -85,7 +89,7 @@ export async function mount(root, { signal } = {}) {
                 return `<tr class="leaderboard-row${row.participant.isViewer ? " leaderboard-row--viewer" : ""}${movementClass}" aria-label="${escapeHtml(row.screenReaderLabel)}" data-rank="${row.rank}">${values}</tr>`;
             })
             .join("");
-        return `<section class="study-leaderboard">${selector}<h2>${escapeHtml(selectedDefinition.id)}</h2><div class="leaderboard-table-scroll"><table><caption>${escapeHtml(table.caption)}</caption><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
+        return `<section class="study-leaderboard">${selector}<h2>${escapeHtml(definitionLabel(selectedDefinition))}</h2><div class="leaderboard-table-scroll"><table><caption>${escapeHtml(table.caption)}</caption><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
     };
     const composer = createPageComposer(root, {
         allowCustomization: false,

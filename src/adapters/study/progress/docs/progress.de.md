@@ -34,3 +34,7 @@ Wiederholungsintervalle sind auf vierzehn Tage begrenzt. Ereigniszeitstempel wer
 Stabile Ereigniskennungen bleiben über Datenbankzugriffe hinweg gültig. Eine identische erneute Übermittlung repariert unterbrochene Projektionen ohne zusätzliche Verlaufseinträge. Kanonische Ereignisse behalten Inhalt, Geltungsbereich, Zeitangaben, Hinweise, Korrektheit, Abschluss und Korrekturverweise.
 
 Eingeschriebene Lernende dürfen mit Leseberechtigung ihre eigenen Klassenergebnisse aufzeichnen; Bearbeitungsrechte sind nicht erforderlich. Für andere Lernende bleibt eine privilegierte Rolle erforderlich. Der Klassenkontext folgt der aktuellen Mitgliedschaft; eine Stapelfreigabe allein gewährt keine Mitgliedschaft.
+
+## Dauerhafte Übungsbelohnungen
+
+Fortschrittsprojektionen verwenden eindeutige JSON-Identitätstupel ohne NUL-Bytes, die PostgreSQL-Textspalten ablehnen. Vertrauenswürdige Zeichen- und Karteikartenergebnisse durchlaufen `study:progress:recordPractice` mit Autorisierung, Validierung, Ereignisspeicherung und Belohnung. Rohe Ereignisimporte vergeben keine XP. Der authentifizierte Aufruf `GET /api/v1/study/progress/engagement` liefert die eigene Belohnungsübersicht. Ein selbstständig korrekt gelöster Versuch kann das lokalisierte Übungsabzeichen vergeben. Korrekturen entwerten betroffene Belohnungen und Ranglistennachweise. Wiederholte Zustellung behält die kanonische Ereignis- und Belohnungsidentität.

@@ -1,11 +1,15 @@
+import { projectionKey } from "./reuse/projection-key.js";
 import type { LearningEvent, ProgressProjection } from "./types.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { isDeepStrictEqual } from "node:util";
 
 export interface ProgressStore {
     append(event: LearningEvent): Promise<"inserted" | "duplicate">;
-    all(): Promise<LearningEvent[]>;
-    replaceProjections(projections: ProgressProjection[]): Promise<void>;
+    all(actorId?: string): Promise<LearningEvent[]>;
+    replaceProjections(
+        projections: ProgressProjection[],
+        actorId?: string,
+    ): Promise<void>;
     projections(): Promise<ProgressProjection[]>;
 }
 
@@ -34,14 +38,24 @@ export class MemoryProgressStore implements ProgressStore {
         return "inserted";
     }
 
-    async all(): Promise<LearningEvent[]> {
-        return Array.from(this.events.values(), (event) =>
-            structuredClone(event),
-        );
+    async all(actorId?: string): Promise<LearningEvent[]> {
+        return Array.from(this.events.values())
+            .filter((event) => !actorId || event.actorId === actorId)
+            .map((event) => structuredClone(event));
     }
 
-    async replaceProjections(projections: ProgressProjection[]): Promise<void> {
-        this.currentProjections = structuredClone(projections);
+    async replaceProjections(
+        projections: ProgressProjection[],
+        actorId?: string,
+    ): Promise<void> {
+        this.currentProjections = structuredClone([
+            ...(actorId
+                ? this.currentProjections.filter(
+                      (projection) => projection.actorId !== actorId,
+                  )
+                : []),
+            ...projections,
+        ]);
     }
 
     async projections(): Promise<ProgressProjection[]> {
@@ -127,10 +141,13 @@ export class DbProgressStore implements ProgressStore {
         });
     }
 
-    async all(): Promise<LearningEvent[]> {
+    async all(actorId?: string): Promise<LearningEvent[]> {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_progress_events",
+            ...(actorId
+                ? { where: [{ column: "actor_id", value: actorId }] }
+                : {}),
             orderBy: [
                 { column: "occurred_at", direction: "ASC" },
                 { column: "event_id", direction: "ASC" },
@@ -141,11 +158,17 @@ export class DbProgressStore implements ProgressStore {
         );
     }
 
-    async replaceProjections(projections: ProgressProjection[]): Promise<void> {
+    async replaceProjections(
+        projections: ProgressProjection[],
+        actorId?: string,
+    ): Promise<void> {
         await this.db.transaction(async (databaseExecutor) => {
             await databaseExecutor.executeCommand({
                 option: "DELETE",
                 table: "study_progress_projections",
+                ...(actorId
+                    ? { where: [{ column: "actor_id", value: actorId }] }
+                    : {}),
             });
             for (const projection of projections) {
                 const content = projection.content;
@@ -153,13 +176,10 @@ export class DbProgressStore implements ProgressStore {
                     option: "INSERT",
                     table: "study_progress_projections",
                     values: {
-                        projection_id: [
+                        projection_id: projectionKey(
                             projection.actorId,
-                            content.schema,
-                            content.layer,
-                            content.language,
-                            content.contentId,
-                        ].join("\u0000"),
+                            content,
+                        ),
                         actor_id: projection.actorId,
                         projection_json: JSON.stringify(projection),
                     },

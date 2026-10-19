@@ -37,3 +37,7 @@ Menu samping dek bergulir bersama dokumen. Menampilkan navigasi utama tidak meng
 Pemilih Baca/Tulis persisten kini menampilkan slot mengambangnya di halaman Flashcards. Perubahan mode tetap menyimpan preferensi dan meminta konfirmasi untuk memulai ulang sesi. Ikon ekspor dan pengaturan Study mengikuti warna kontrol aktif, tema terang/gelap aplikasi, dan keadaan hover tanpa bergantung pada tema sistem operasi.
 
 Jawaban dapat menyertakan objek `attempt` dengan `id` dan waktu ISO `occurredAt`. Kirim ulang objek dan nilai yang sama untuk mencoba lagi; jawaban baru memakai ID baru. Bukti penerimaan dan jadwal disimpan bersama, sedangkan ID peristiwa stabil mencegah duplikasi Kemajuan. Riwayat peramban mempertahankan percobaan tertunda tanpa data dalam URL. Kartu latihan menyatakan ketergantungan pada Pustaka dan Kemajuan. Kartu bersama beserta skemanya memuat data Pustaka terkini setelah otorisasi berbagi.
+
+## Imbalan Latihan Tersimpan
+
+Jadwal kartu belajar dan bukti percobaan disimpan sebelum pengiriman imbalan lintas adapter. Alur terpisah `study:decks:recordResult` mengirim ulang hasil yang sama setelah kegagalan tanpa memajukan jadwal lagi. Ini menghindari transaksi basis data bersarang ketika Progress menyimpan peristiwa.

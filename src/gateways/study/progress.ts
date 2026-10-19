@@ -73,7 +73,7 @@ export async function recordStudyResult(
             ? entry.scopeId
             : undefined;
     const progress = ports.require<ProgressCapability>("study:progress");
-    await progress.recordEvent(actor, {
+    await progress.recordPractice(actor, {
         id: result.eventId ?? randomUUID(),
         occurredAt: result.occurredAt ?? new Date().toISOString(),
         content: {
@@ -96,7 +96,8 @@ export async function recordStudyResult(
         context: classroomId ? { classroomId } : {},
         attempt: 1,
         correct: result.correct,
-        independentCorrect: result.correct && !result.assisted,
+        independentCorrect:
+            result.correct && !result.assisted && !result.mistakes,
         hints: result.assisted ? 1 : 0,
         durationMs: 0,
         completion: "completed",

@@ -24,3 +24,7 @@ Aktivitas menyertakan ID peristiwa bukti yang unik, ID penyedia dan peserta, kes
 ### Keamanan dan bukti
 
 Bobot dan pengali menerima nilai `0.01` hingga `10`; kesulitan menerima `0.1` hingga `10`. ID peristiwa harus unik, durasi dan jumlah petunjuk tidak boleh negatif, serta target waktu harus berurutan. Booster sekali pakai khusus peserta dan dihapus setelah skor pertama yang cocok. Penghargaan achievement membekukan label, kesulitan, ikon, waktu, dan ID bukti agar perubahan definisi tidak menulis ulang lencana yang sudah diperoleh.
+
+## Imbalan Latihan Tersimpan
+
+`engagement:recordActivity` memvalidasi, menghitung skor, mengevaluasi pencapaian, menyimpan bukti, lalu menerbitkan hasil. Host menyuntikkan `engagement:store`; penyimpanan produksi dimiliki gateway basis data. Revisi peserta menolak penulisan yang berbenturan. Pengiriman ulang aktivitas yang sama mempertahankan XP dan penghargaan; masukan yang berubah atau bukti yang dipakai ulang ditolak. Penghitungan dan evaluasi memakai status terisolasi hingga penyimpanan berhasil. `engagement:ledger` menyediakan ringkasan otoritatif, penukaran booster tersimpan, dan pembatalan aktivitas. Booster yang ditukar serta bukti yang terpakai bertahan setelah mulai ulang. `repeatKey` mengelompokkan latihan berulang tanpa mengubah bukti asli. Koreksi menghapus XP dan proyeksi penghargaan yang dibatalkan sambil mempertahankan riwayat. Metode penghitungan dasar tetap menjadi kalkulator kebijakan; konsumen persisten memakai ledger dan kapabilitas pencatatan.

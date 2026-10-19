@@ -1,4 +1,5 @@
 import type { Ctx, ScoringCapability } from "@cognis/core";
+import { registerPracticeIntegration } from "./practice.js";
 import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
@@ -25,7 +26,6 @@ export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "leaderboard",
         adapterName: "Leaderboard",
-        requires: ["progress"],
         getConfig: () => ({}),
         setConfig: () => {},
         isConfigured: () => ready,
@@ -86,6 +86,7 @@ export async function bootstrapStudyAdapter(
     );
     const storedState = await store.load();
     if (storedState) service.restoreState(storedState);
+    registerPracticeIntegration(ctx, service);
     systemCtx.flow.extend(
         "study:leaderboard:submitObservation",
         "persist",

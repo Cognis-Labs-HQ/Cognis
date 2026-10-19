@@ -70,6 +70,12 @@ Study menggunakan alur milik host `ui:pageOverlay.create({ signal, bottomInset }
 
 Judul popup mempertahankan tipografi dan tata letak responsif sebelumnya melalui `headingLayout: "annotated"`, dengan posisi detail netral `aside` dan `below`. API popup menyediakan `appendHeadingAccessory(element)` dan `setContentConcealed(boolean)`. Penyembunyian memburamkan judul dan isi, memblokir interaksi, lalu memulihkan status aksesibilitas sebelumnya. Study hanya menata kontrol miliknya sendiri. Navigasi menggunakan `ui:navbarLinks`, termasuk tautan nonaktif dengan penjelasan terlokalisasi, serta menghapus tautan dan pendaftaran pencariannya saat dilepas.
 
+## Imbalan Latihan Tersimpan
+
+Study memuat dependensi UUID adapter dan kapabilitas inti wajib dari manifest. Dependensi diinisialisasi sebelum konsumen dan ketersediaan dihitung ulang setelah dinonaktifkan. Dependensi yang tidak tersedia membatasi Menggambar, Kartu Belajar, dan Papan Peringkat. Endpoint menggambar mengembalikan 503 jika Library atau Progress tidak tersedia. Progress menyimpan identitas proyeksi yang aman bagi basis data; latihan tepercaya menetapkan XP, pencapaian, dan peringkat berbukti secara persisten. Pengiriman imbalan kartu belajar berjalan setelah transaksi jadwal; percobaan ulang mempertahankan satu peristiwa, satu bukti imbalan, dan satu pembaruan jadwal.
+
+Jadwal kartu belajar dan bukti percobaan disimpan sebelum pengiriman imbalan lintas adapter. Alur terpisah `study:decks:recordResult` mengirim ulang hasil yang sama setelah kegagalan tanpa memajukan jadwal lagi. Ini menghindari transaksi basis data bersarang ketika Progress menyimpan peristiwa.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

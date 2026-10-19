@@ -26,3 +26,7 @@ Peringkat menampilkan alias kecuali pemeriksa visibilitas profil mengizinkan ide
 Gunakan `rollover` untuk mengarsipkan musim yang selesai dan membuka musim berikutnya. Koreksi membatalkan bukti lama sebelum penggantian. Gunakan `requestTableModel` untuk tabel lokal yang aksesibel, sedangkan `queryStandings` menyediakan model peringkat netral.
 
 Bootstrap memerlukan gateway DB. Kegagalan penyimpanan dicatat dan tidak menghalangi penyimpanan berikutnya. Pengiriman ulang observasi identik menyimpan status tanpa menambah observasi. Akses kelas diperiksa setiap pemanggilan, termasuk setelah pencabutan.
+
+## Imbalan Latihan Tersimpan
+
+XP latihan yang telah disimpan mencapai papan peringkat melalui `study:leaderboard:recordPractice`, memakai skor tersimpan tanpa menghabiskan pengubah lagi. Latihan kelas kanonis membuat papan XP kelas dengan aturan privasi ukuran kelompok minimum yang sudah ada. Kriteria XP eksplisit pada acara yang dapat diakses dan telah disetujui pesertanya juga dapat menerima hasil. Identitas pengamatan mencakup papan dan kriterianya. Koreksi membatalkan pengamatan terkait, dan keanggotaan kelas terkini diperiksa sebelum menampilkan peringkat.

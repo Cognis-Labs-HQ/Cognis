@@ -37,3 +37,7 @@ The deck side menu scrolls with the document. Revealing the primary navigation d
 The persistent Read/Write selector now reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
 
 Answer submissions may include an `attempt` object with `id` and ISO `occurredAt`. Re-deliver the same object and grade to retry; a new answer uses a new ID. Review receipts and scheduling changes commit together, and stable event IDs prevent duplicate Progress records. Browser history retains pending attempts without putting them in URLs. Flashcards declares Library and Progress dependencies. Shared cards and their schemas resolve current Library data after share authorization.
+
+## Durable Practice Rewards
+
+Flashcard scheduling and its attempt receipt commit before cross-adapter reward delivery. The separate `study:decks:recordResult` flow retries the same result after delivery failure without advancing the schedule again. This avoids nested database transactions when Progress persists the event.

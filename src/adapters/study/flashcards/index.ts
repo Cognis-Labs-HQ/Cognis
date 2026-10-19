@@ -25,7 +25,6 @@ export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "flashcards",
         adapterName: "Flashcards",
-        requires: ["library", "progress"],
         getConfig: () => ({}),
         setConfig: () => {},
         isConfigured: () => ready,

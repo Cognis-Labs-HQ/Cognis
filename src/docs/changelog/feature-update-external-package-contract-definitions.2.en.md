@@ -70,6 +70,12 @@ Study uses the host-owned `ui:pageOverlay.create({ signal, bottomInset })` flow 
 
 Popup headings retain their existing typography and responsive layout through `headingLayout: "annotated"`, with neutral `aside` and `below` detail placements. The popup API exposes `appendHeadingAccessory(element)` and `setContentConcealed(boolean)`; concealment blurs the heading and body, blocks interaction and restores their prior accessibility state when released. Study styles only its own controls. Navigation uses `ui:navbarLinks`, including disabled links with localized explanations, and removes its link and search registration when unloaded.
 
+## Durable Practice Rewards
+
+Study loads adapter UUID dependencies and required core capabilities from each manifest. It bootstraps dependencies before consumers and recomputes availability after disablement; unavailable dependencies gate Drawing, Flashcards and Leaderboard. Drawing endpoints return 503 when Library or Progress is unavailable. Progress stores database-safe projection identities and trusted practice settles durable XP, achievements and evidence-backed standings. Flashcard reward delivery runs after its scheduling transaction, and retries retain one event, reward receipt and schedule update.
+
+Flashcard scheduling and its attempt receipt commit before cross-adapter reward delivery. The separate `study:decks:recordResult` flow retries the same result after delivery failure without advancing the schedule again. This avoids nested database transactions when Progress persists the event.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

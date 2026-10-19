@@ -87,3 +87,7 @@ Administration marks only the adapter selected by `DB_TYPE` as active. Every dat
 | -------------- | ------------ | --------------------------------------------------------- |
 | `DB_TYPE`      | `postgresql` | Database backend: `postgresql` or `mariadb`               |
 | `DATABASE_URL` | —            | Connection string; required for `postgresql` or `mariadb` |
+
+## Durable Practice Rewards
+
+The Database gateway provides `engagement:store` for participant reward receipts, booster redemptions and invalidations. Structured commands enforce atomic revision checks so concurrent writers cannot silently overwrite another worker’s rewards. The core engine receives this storage through ctx rather than importing database implementations.

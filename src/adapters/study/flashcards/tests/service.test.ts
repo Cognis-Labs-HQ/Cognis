@@ -17,6 +17,7 @@ function session(
     recordResult?: ConstructorParameters<typeof DeckService>[8],
 ) {
     const records: (Record<string, unknown> & { table: string })[] = [];
+    let transactionDepth = 0;
     const execute = async (command: StructuredDbCommand) => {
         const matching = (row: Record<string, unknown>) =>
             row.table === command.table &&
@@ -67,11 +68,14 @@ function session(
         executeCommand: execute,
         transaction: async (callback) => {
             const before = structuredClone(records);
+            transactionDepth += 1;
             try {
                 return await callback(db);
             } catch (error) {
                 records.splice(0, records.length, ...before);
                 throw error;
+            } finally {
+                transactionDepth -= 1;
             }
         },
     };
@@ -105,7 +109,16 @@ function session(
             received,
             undefined,
             undefined,
-            recordResult,
+            recordResult
+                ? async (result, actor) => {
+                      assert.equal(
+                          transactionDepth,
+                          0,
+                          "cross-adapter results must be delivered after the schedule transaction commits",
+                      );
+                      await recordResult(result, actor);
+                  }
+                : undefined,
         ),
         setSchemaRevision: (value: number) => {
             schemaRevision = value;
@@ -373,7 +386,7 @@ test("shared Library cards resolve current content after edits and omit unavaila
     assert.equal((await service.details(learner, deck.id)).unavailable, 1);
 });
 
-test("a retried answer updates scheduling once and retains the same Progress event after a transaction failure", async () => {
+test("a retried answer retains its committed schedule and repairs Progress delivery outside the transaction", async () => {
     const results: Array<{ eventId?: string; occurredAt?: string }> = [];
     let fail = true;
     const { service } = session(
@@ -397,7 +410,11 @@ test("a retried answer updates scheduling once and retains the same Progress eve
         service.review(owner, deck.id, "public", "good", attempt),
         /result_delivery_failed/,
     );
-    assert.deepEqual((await service.details(owner, deck.id)).deck.progress, {});
+    assert.equal(
+        (await service.details(owner, deck.id)).deck.progress.public
+            .repetitions,
+        1,
+    );
     fail = false;
     const first = await service.review(
         owner,
@@ -415,7 +432,7 @@ test("a retried answer updates scheduling once and retains the same Progress eve
     );
     assert.deepEqual(first.progress, repeated.progress);
     assert.equal(repeated.progress.public.repetitions, 1);
-    assert.equal(results.length, 2);
+    assert.equal(results.length, 3);
     assert.equal(results[0].eventId, results[1].eventId);
     assert.equal(results[0].occurredAt, results[1].occurredAt);
     await assert.rejects(

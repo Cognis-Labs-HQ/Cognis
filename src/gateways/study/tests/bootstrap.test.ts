@@ -1,3 +1,5 @@
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -98,15 +100,38 @@ async function bootstrapStudyGateway(
     capabilities.contribute("system:ctx", systemCtx);
     configure?.(capabilities);
 
+    const adaptersRoot = await mkdtemp(path.join(tmpdir(), "study-bootstrap-"));
+    const directory = path.join(adaptersRoot, "study");
+    await mkdir(directory);
+    for (const id of ["library", "progress", "drawing", "classes"]) {
+        const adapterRoot = path.join(directory, id);
+        await mkdir(adapterRoot);
+        await writeFile(
+            path.join(adapterRoot, "package.json"),
+            JSON.stringify({ main: "index.mjs", version: "1.0.0" }),
+        );
+        await writeFile(
+            path.join(adapterRoot, "manifest.json"),
+            JSON.stringify({ uuid: id, publisher: "Test", requires: [] }),
+        );
+        await writeFile(
+            path.join(adapterRoot, "index.mjs"),
+            `export function createStudyAdapter() { return { adapterId: ${JSON.stringify(id)}, adapterName: ${JSON.stringify(id)}, getConfig: () => ({}), setConfig: (value) => value, isConfigured: () => true }; }`,
+        );
+    }
     const uiRegistry = new UIRegistry();
-    await bootstrap({
-        capabilities,
-        routeRegistry,
-        uiRegistry,
-        gatewayRegistry: new GatewayRegistry(),
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        flow: systemCtx.flow,
-    } as any);
+    try {
+        await bootstrap({
+            capabilities,
+            routeRegistry,
+            uiRegistry,
+            gatewayRegistry: new GatewayRegistry(),
+            adaptersRoot,
+            flow: systemCtx.flow,
+        } as any);
+    } finally {
+        await rm(adaptersRoot, { recursive: true, force: true });
+    }
 
     return {
         capabilities,
@@ -474,7 +499,7 @@ test("the registered drawing endpoint records canonical results through the rest
         }),
     });
     capabilities.contribute("study:progress", {
-        recordEvent: async (
+        recordPractice: async (
             actor: { accountId: string },
             input: (typeof events)[number]["input"],
         ) => {
@@ -503,4 +528,44 @@ test("the registered drawing endpoint records canonical results through the rest
     assert.equal(events[0].input.content.contentId, "card-a");
     assert.equal(events[0].input.correct, true);
     assert.equal(events[0].input.independentCorrect, false);
+});
+
+test("drawing requests are unavailable when their Progress dependency is disabled", async () => {
+    const { routeRegistry } = await bootstrapStudyGateway((capabilities) => {
+        const values = new Map<string, string>();
+        capabilities.contribute("preferences:store", {
+            get: async (accountId: string, key: string) =>
+                values.get(JSON.stringify([accountId, key])) ?? null,
+            set: async (accountId: string, key: string, value: string) => {
+                values.set(JSON.stringify([accountId, key]), value);
+            },
+            clearUser: async () => values.clear(),
+        });
+    });
+    const disabled = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            bearerToken: issueAccessToken("admin", "admin", 60),
+        }),
+        disabled,
+        new URL(
+            "http://localhost/api/v1/gateways/study/adapters/progress/disable",
+        ),
+    );
+    assert.equal(disabled.statusCode, 200);
+    const response = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            cookieToken: issueAccessToken("learner", "user", 60),
+            body: { strokeCount: 1, mistakes: 0 },
+        }),
+        response,
+        new URL("http://localhost/api/v1/study/drawing/card-a"),
+    );
+    assert.equal(response.statusCode, 503);
+    assert.equal(JSON.parse(response.payload).error, "adapter_disabled");
 });

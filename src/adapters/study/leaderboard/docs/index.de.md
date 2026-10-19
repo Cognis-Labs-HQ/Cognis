@@ -26,3 +26,7 @@ Ranglisten zeigen einen Alias, sofern die Profil-Sichtbarkeitsprüfung die Ident
 `rollover` archiviert die abgeschlossene Saison und öffnet die nächste. Korrekturen entwerten frühere Evidenz vor dem Ersatz. Für eine barrierefreie lokalisierte Tabelle dient `requestTableModel`; `queryStandings` liefert das neutrale Ranglistenmodell.
 
 Der Start erfordert das DB-Gateway. Fehlgeschlagene Speicherungen werden protokolliert und blockieren spätere Speicherungen nicht. Wiederholte identische Beobachtungen speichern den Zustand ohne Duplikat. Klassenberechtigungen werden bei jedem Aufruf geprüft, auch nach einem Widerruf.
+
+## Dauerhafte Übungsbelohnungen
+
+Gespeicherte Übungs-XP erreichen die Rangliste über `study:leaderboard:recordPractice`; dabei wird das festgeschriebene Ergebnis verwendet, ohne Modifikatoren erneut zu verbrauchen. Kanonische Klassenübungen erzeugen eine Klassenrangliste mit der bestehenden Mindestgruppengröße zum Datenschutz. Ausdrückliche XP-Kriterien zugänglicher Veranstaltungen mit Teilnahmezustimmung können ebenfalls Ergebnisse erhalten. Die Beobachtungsidentität umfasst Rangliste und Kriterium. Korrekturen entwerten passende Beobachtungen; vor der Darstellung wird die aktuelle Klassenmitgliedschaft geprüft.

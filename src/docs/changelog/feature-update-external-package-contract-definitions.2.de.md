@@ -70,6 +70,12 @@ Study verwendet den vom Host verwalteten Ablauf `ui:pageOverlay.create({ signal,
 
 Popup-Überschriften behalten ihre bisherige Typografie und ihr responsives Layout über `headingLayout: "annotated"` mit den neutralen Detailpositionen `aside` und `below`. Die Popup-API bietet `appendHeadingAccessory(element)` und `setContentConcealed(boolean)`. Die Verdeckung zeichnet Überschrift und Inhalt unscharf, blockiert Interaktionen und stellt anschließend den vorherigen Barrierefreiheitszustand wieder her. Study gestaltet nur eigene Bedienelemente. Die Navigation nutzt `ui:navbarLinks`, einschließlich deaktivierter Links mit lokalisierten Erklärungen, und entfernt beim Entladen ihren Link und die Suchregistrierung.
 
+## Dauerhafte Übungsbelohnungen
+
+Study lädt UUID-Abhängigkeiten und erforderliche Kern-Capabilities aus den Adaptermanifesten. Abhängigkeiten starten vor Verbrauchern; nach dem Deaktivieren wird die Verfügbarkeit erneut berechnet. Fehlende Abhängigkeiten sperren Zeichenübungen, Karteikarten und Ranglisten. Zeichenendpunkte liefern 503, wenn Bibliothek oder Fortschritt fehlen. Fortschrittsprojektionen verwenden datenbanksichere Identitäten. Vertrauenswürdige Übungen speichern XP, Erfolge und nachweisgestützte Ranglisten dauerhaft. Die Belohnungszustellung folgt auf die Karteikartentransaktion; Wiederholungen behalten genau ein Ereignis, einen Belohnungsbeleg und eine Zeitplanänderung.
+
+Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden Belohnungszustellung festgeschrieben. Der getrennte Ablauf `study:decks:recordResult` stellt nach Fehlern dasselbe Ergebnis erneut zu, ohne den Zeitplan nochmals fortzuschreiben. Dadurch entstehen bei der Fortschrittsspeicherung keine verschachtelten Datenbanktransaktionen.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

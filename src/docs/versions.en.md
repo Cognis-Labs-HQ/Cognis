@@ -54,12 +54,12 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35`  |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.3`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.18` |
-| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.1`   |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.0`   |
-| Progress (Study)      | `src/adapters/study/progress/`      | `1.2.1`   |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.1.7`   |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.19` |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.1`   |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.3.0`   |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.0`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`   |
 
@@ -67,7 +67,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
-| Database (db)         | `src/gateways/db/`            | `1.3.9`   |
+| Database (db)         | `src/gateways/db/`            | `1.3.10`  |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.70`  |
 | Share                 | `src/gateways/share/`         | `1.7.49`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`  |
@@ -77,20 +77,20 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.1.2`   |
+| Study                 | `src/gateways/study/`         | `2.2.0`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Core contracts
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.4.5` |
+| Core Package | `src/core/` | `0.5.0` |
 
 ## API
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.6.15` |
+| API Server | `src/api/` | `0.6.16` |
 
 ## Tooling
 

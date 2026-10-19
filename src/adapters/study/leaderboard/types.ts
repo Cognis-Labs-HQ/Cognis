@@ -22,10 +22,12 @@ export interface LeaderboardCriterion {
         | { kind: "season" };
     scope: "participant" | "classroom" | "event";
     weight?: number;
+    metric?: "xp";
 }
 
 export interface LeaderboardDefinition {
     id: string;
+    metadata?: { labels: Readonly<Record<string, string>> };
     kind: "classroom" | "event";
     strategy?: RankingStrategy;
     criteria: readonly LeaderboardCriterion[];

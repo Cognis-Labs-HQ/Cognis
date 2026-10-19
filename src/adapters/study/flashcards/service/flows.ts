@@ -9,6 +9,7 @@ export function registerDeckFlows(
         details: ["authorize", "read", "audit"],
         save: ["authorize", "validate", "persist", "audit"],
         review: ["authorize", "validate", "persist", "audit"],
+        recordResult: ["deliver"],
         delete: ["authorize", "persist", "audit"],
     }))
         if (!ctx.hasFlow(`study:decks:${id}`))
