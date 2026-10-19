@@ -108,3 +108,4 @@ Der gespeicherte Ranglistenzustand fordert ausdrücklich große Textfelder an, d
 - [95ff5b75](https://github.com/Cognis-Labs-HQ/Cognis/commit/95ff5b7542de1a4d06df974462a917dc2388fae2)
 - [e0d5ee9d](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0d5ee9d097422d673f3e34185f71c9e27137e53)
 - [337c806e](https://github.com/Cognis-Labs-HQ/Cognis/commit/337c806eaa01da43b3a098a641f618ee9745af43)
+- [6d3f8f27](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d3f8f273e8b97a0f97692a52ff3c674eb6f7892)
