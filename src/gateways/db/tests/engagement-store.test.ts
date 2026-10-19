@@ -8,12 +8,6 @@ function database(): DbExecutor {
     const executor: DbExecutor = {
         ensureTable: async (definition) => {
             assert.equal(definition.name, "engagement_participants");
-            assert.equal(
-                definition.columns.find(
-                    (column) => column.name === "state_json",
-                )?.textSize,
-                "large",
-            );
         },
         transaction: async (operation) => operation(executor),
         executeCommand: async (command) => {

@@ -39,7 +39,3 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-client timeout in milliseconds (1,000–600,000)                       |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                          |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Optional statement timeout in milliseconds (1–3,600,000)                  |
-
-## Schema reconciliation
-
-Schema initialization changes a primary key only when one is explicitly declared and adds missing declared uniqueness. Existing independent primary keys, unique constraints and unique indexes remain intact; equivalent unique keys in another column order satisfy the declaration. The catalog reads only valid, ready indexes and joins only the table’s own primary/unique constraints. Repair rechecks the catalog under a table lock and shares a caller-owned transaction, so a failure rolls back the caller’s work correctly. A matching schema performs no key DDL or repair transaction.

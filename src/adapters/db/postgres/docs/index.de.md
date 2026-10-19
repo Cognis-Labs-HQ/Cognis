@@ -34,7 +34,3 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                         |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |
-
-## Schemaabgleich
-
-Die Schemainitialisierung ändert Primärschlüssel nur bei ausdrücklicher Deklaration und ergänzt fehlende deklarierte Eindeutigkeit. Unabhängige Primärschlüssel, eindeutige Constraints und Indizes bleiben erhalten; gleichwertige eindeutige Schlüssel mit anderer Spaltenreihenfolge erfüllen die Deklaration. Der Katalog berücksichtigt nur gültige, fertige Indizes und eigene Primär-/Unique-Constraints der Tabelle. Reparaturen prüfen unter Tabellensperre erneut und verwenden eine bereits offene Transaktion, sodass Fehler auch die Arbeit des Aufrufers zurückrollen. Passende Schemas benötigen weder Schlüssel-DDL noch Reparaturtransaktion.

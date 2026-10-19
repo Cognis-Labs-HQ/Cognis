@@ -524,17 +524,9 @@ Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle 
 
 Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zugänglichen installierten Karten zu, auch für gruppierte Links. Fehlende oder mehrdeutige Ziele lassen die Werte mit einer Warnung unverknüpft, statt das Speichern zu verhindern. Übernommene Definitionen bieten eine Bearbeiten-Aktion über den bestehenden berechtigungsabhängigen Karteneditor; gespeicherte Änderungen aktualisieren ihre Zusammenfassung. Versteckte Schemafelder, einschließlich Wörterbuch-Quelldaten, erscheinen nicht im Formular, behalten aber ihre gespeicherten Werte.
 
-## Ältere Beziehungsschlüssel aktualisieren
-
-Die Datenbankschemainitialisierung gleicht vorhandene Schlüssel mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten, Änderungen werden protokolliert und ungültige Deklarationen schlagen fehl, statt Daten zu verwerfen. Eine versionsspezifische Schlüsselmigration ist nicht erforderlich.
-
 ## Korrekturen am Karteneditor
 
 Die Strichsuche wird ausgeblendet, sobald ein abgerufenes Muster vorhanden ist, auch bei Wörterbuchergebnissen und gespeicherten Karten. Das Löschen des Musters zeigt die Suche wieder an. Definitionseditoren zeigen Übersetzungen unter Inhalt und lassen den überflüssigen Reiter Definitionen weg. Durch Semikolon getrennte Wörterbuchbedeutungen werden einzeln übernommen; zugeordnete Übersetzungen und ursprüngliche Quelldaten bleiben erhalten. Strukturierte Bedeutungen ersetzen Verknüpfungen zu zusammengefassten Quelldefinitionen.
-
-## Vollständige Schlüsselreparatur
-
-Die Schemainitialisierung gleicht Primärschlüssel und eindeutige Schlüssel in einer Transaktion mit der aktuellen Deklaration ab, ohne versionsspezifische Indexnamen oder Migrationsfunktionen.
 
 ## Aussprache aus dem Wörterbuch
 
@@ -554,7 +546,7 @@ Satzerstellung, Bearbeitung und Detailansicht leiten Aussprachen aus der gewähl
 
 ## Schlanke Komponenten
 
-Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen sind zusammengeführt. Inhaltsaudio und Schemaabgleich liegen in fokussierten Modulen mit lesbaren Funktionsabständen. Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten; versionsabhängige Identitätsumwandlungen und Kompatibilitätspfade für umbenannte Spalten entfallen. Datenbankadapter gleichen deklarierte Schlüssel bei der Schemainitialisierung ab, mit adapterspezifischer Dokumentation und Tests des aktuellen Schemas.
+Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen verwenden gemeinsame fokussierte Hilfsfunktionen. Inhaltsaudio besitzt eigene Module, und Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten.
 
 ## Direkte Bereichswechsel
 

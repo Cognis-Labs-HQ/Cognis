@@ -7,10 +7,6 @@ export type StructuredDbColumnDefault =
 export interface StructuredDbColumnDef {
     name: string;
     type: StructuredDbColumnType;
-    /** Opt in to large, unindexed text storage; other text columns retain their normal size. */
-    textSize?: "large";
-    /** Storage hint for text identifiers that the caller validates as ASCII. */
-    textEncoding?: "ascii";
     notNull?: boolean;
     primaryKey?: boolean;
     unique?: boolean;

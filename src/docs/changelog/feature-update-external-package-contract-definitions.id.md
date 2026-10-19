@@ -524,17 +524,9 @@ Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan 
 
 Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses sebelum menambahkan tautan biasa atau berkelompok. Target yang hilang atau ambigu membiarkan nilai hasil tanpa tautan dengan peringatan, bukan menghalangi penyimpanan. Definisi yang telah disimpan memiliki tindakan Edit melalui editor kartu yang memeriksa izin, dan perubahan tersimpan memperbarui ringkasannya. Bidang skema tersembunyi, termasuk data sumber kamus, tidak ditampilkan dalam formulir tetapi nilai tersimpannya dipertahankan.
 
-## Memperbarui kunci relasi lama
-
-Inisialisasi skema basis data menyelaraskan kunci yang ada dengan deklarasi tabel terkini. Baris tetap tersimpan, perubahan dicatat, dan deklarasi tidak valid gagal tanpa membuang data. Tidak diperlukan migrasi kunci khusus versi.
-
 ## Perbaikan pencarian editor
 
 Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termasuk pola dari hasil kamus atau kartu tersimpan. Menghapus pola menampilkan pencarian kembali. Editor definisi menampilkan terjemahan di Konten tanpa tab Definisi yang berlebihan. Makna kamus yang dipisahkan titik koma menjadi definisi tersendiri yang langsung disimpan, dengan terjemahan yang sesuai dan metadata sumber asli tetap tersimpan. Makna terstruktur menggantikan tautan definisi sumber gabungan.
-
-## Perbaikan kunci referensi
-
-Inisialisasi skema menyelaraskan kunci utama dan unik dengan deklarasi terkini dalam satu transaksi, tanpa nama indeks khusus versi atau fungsi migrasi.
 
 ## Tautan pelafalan kamus
 
@@ -554,7 +546,7 @@ Pembuatan, penyuntingan, dan tampilan detail kalimat menurunkan pelafalan dari t
 
 ## Komponen yang ringkas
 
-Validasi masukan, pola pengenal, bahasa definisi, dan arah varian telah disatukan. Penanganan audio konten dan penyelarasan skema berada dalam modul terfokus dengan jarak antarfungsi yang tetap mudah dibaca. Paket konten langsung memakai identitas rekaman stabil; konversi identitas berdasarkan versi dan jalur kompatibilitas kolom lama telah dihapus. Adapter basis data menyelaraskan kunci yang dideklarasikan saat inisialisasi skema, disertai dokumentasi khusus adapter dan pengujian skema terkini.
+Validasi masukan, pola pengenal, bahasa definisi, dan arah varian memakai fungsi bantu bersama yang terfokus. Penanganan audio konten memiliki modul tersendiri, dan paket konten langsung memakai identitas rekaman stabil.
 
 ## Kontrol pemindahan langsung
 
@@ -579,8 +571,6 @@ Administrator yang memasang modul dengan ID yang dimiliki UUID lain menerima kon
 ## Tindakan browser terbatas dan administrasi terverifikasi
 
 Penyedia browser memperoleh `ui:scopedActions` dari ctx terbatasnya. Pemanggilan dengan `(ctx, moduleId, actions)` mendaftarkan alur yang dapat dijalankan untuk setiap tindakan bernama dan mengembalikan fungsi tindakan. Gunakan fungsi ini untuk membaca dan mengubah administrasi; host membuang alur dan menangani penolakan fungsi usang setelah penghentian. Hak administrator berasal dari peran terkini akun aktif, bukan bidang peran yang diberikan pemanggil.
-
-## Commit
 
 ## Resolusi Kamus yang Efisien
 

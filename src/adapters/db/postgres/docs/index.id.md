@@ -34,7 +34,3 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu klien menganggur dalam milidetik (1.000–600.000)           |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                      |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Batas waktu pernyataan opsional dalam milidetik (1–3.600.000)          |
-
-## Penyelarasan skema
-
-Inisialisasi skema hanya mengubah kunci primer yang dinyatakan secara eksplisit dan menambahkan keunikan yang diperlukan. Kunci primer, batasan unik, dan indeks unik yang dikelola terpisah dipertahankan; kunci unik setara dengan urutan kolom berbeda memenuhi deklarasi. Katalog hanya membaca indeks valid yang siap digunakan dan batasan primer/unik milik tabel itu sendiri. Perbaikan memeriksa ulang katalog di bawah kunci tabel dan menggunakan transaksi pemanggil yang sudah terbuka, sehingga kegagalan membatalkan pekerjaan pemanggil dengan benar. Skema yang cocok tidak menjalankan DDL kunci atau transaksi perbaikan.

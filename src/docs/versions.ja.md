@@ -43,8 +43,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.23`   |
 | SMTP TFA                   | `src/adapters/tfa/smtp/`            | `1.0.37`   |
 | TOTP TFA                   | `src/adapters/tfa/totp/`            | `1.0.26`   |
-| PostgreSQL Database        | `src/adapters/db/postgres/`         | `0.5.29`   |
-| MariaDB Database           | `src/adapters/db/mariadb/`          | `0.5.34`   |
+| PostgreSQL Database        | `src/adapters/db/postgres/`         | `0.5.25`   |
+| MariaDB Database           | `src/adapters/db/mariadb/`          | `0.5.31`   |
 | SQLite Database            | `src/adapters/db/sqlite/`           | `0.3.27`   |
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.38`   |
@@ -55,11 +55,11 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.4`    |
-| Library (Study)            | `src/adapters/study/library/`       | `2.28.21`  |
+| Library (Study)            | `src/adapters/study/library/`       | `2.28.22`  |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.2`    |
 | フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.2`    |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.0`    |
-| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.1`    |
+| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.2`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging               | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -67,7 +67,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
-| Database (db)         | `src/gateways/db/`            | `1.3.11`   |
+| Database (db)         | `src/gateways/db/`            | `1.3.12`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.70`   |
 | Share                 | `src/gateways/share/`         | `1.7.49`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |

@@ -86,15 +86,7 @@ Writing practice uses only the drawing pad’s masked heading. Previous/next SVG
 
 Embedded consumers may supply `onNavigate(card)` after the shared heading confirmation. Flashcards uses it to settle the current attempt through its departure flow and preserve the deck navigation context before opening Explore.
 
-Schema initialization changes a primary key only when one is explicitly declared and adds missing declared uniqueness. Existing independent primary keys, unique constraints and unique indexes remain intact; equivalent unique keys in another column order satisfy the declaration. The catalog reads only valid, ready indexes and joins only the table’s own primary/unique constraints. Repair rechecks the catalog under a table lock and shares a caller-owned transaction, so a failure rolls back the caller’s work correctly. A matching schema performs no key DDL or repair transaction.
-
-Text columns may opt in to `textSize: "large"` for LONGTEXT or `textEncoding: "ascii"` for identifiers already restricted to ASCII by their owning contract. Defaults remain TEXT or VARCHAR(255). Initialization widens only explicitly declared large fields and reconciles explicitly requested encoding; indexed large text is rejected. Ledger/Leaderboard snapshots and packaged assets use large storage. Pack IDs and semantic versions use ASCII storage to keep the four-part asset primary key within InnoDB limits; publisher names and asset paths retain Unicode support. Library lookup indexes split scoped browsing and source-record lookup without changing entry encodings.
-
-Structured text columns accept optional storage hints `textSize: "large"` and `textEncoding: "ascii"`. MariaDB maps them to LONGTEXT and ASCII storage; PostgreSQL and SQLite retain their native text representation. Callers must already validate identifiers as ASCII before requesting that encoding. Reward snapshots opt in to large text to preserve JSON beyond 64 KB; compare-and-swap revisions and transaction boundaries remain unchanged.
-
-Packaged asset data uses explicit large-text storage. The asset primary key stores only validated pack IDs and semantic versions as ASCII; Unicode publisher names and asset paths retain their encoding. Entry columns retain Unicode capacity. Separate `(scope_id, schema_id, layer)` and `(scope_id, source_record_id)` indexes support browsing and provider lookup within MariaDB’s composite key limit.
-
-The persisted leaderboard snapshot explicitly requests large-text storage so MariaDB can retain growing observations and archives beyond 64 KB without truncating JSON. PostgreSQL and SQLite keep their native text storage.
+Schema initialization creates declared tables and adds missing columns and indexes. It does not replace existing primary or unique keys. The structured storage contract does not express large text fields: MariaDB TEXT is limited to 65,535 bytes, and multibyte composite keys are subject to InnoDB’s key-size limit. Study payload sizes and schema changes must be assessed against those provider limits.
 
 ## Commits
 

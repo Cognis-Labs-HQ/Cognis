@@ -30,5 +30,3 @@ Bootstrap requires the DB gateway. Failed state saves are logged and do not bloc
 ## Durable Practice Rewards
 
 Settled practice XP reaches Leaderboard through `study:leaderboard:recordPractice`, using the saved score rather than consuming modifiers again. Canonical classroom practice creates a classroom XP board with the existing minimum-cohort privacy rule. Explicit XP criteria in accessible, opted-in events can also receive results. Observation identity includes its board and criterion. Corrections invalidate matching observations, and current classroom membership is checked before presenting standings.
-
-The persisted leaderboard snapshot explicitly requests large-text storage so MariaDB can retain growing observations and archives beyond 64 KB without truncating JSON. PostgreSQL and SQLite keep their native text storage.

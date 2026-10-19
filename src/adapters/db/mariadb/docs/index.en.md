@@ -44,9 +44,3 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                    |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000` | Maximum startup readiness window in milliseconds (1,000–600,000)    |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`  | Delay between readiness attempts in milliseconds (100–30,000)       |
-
-## Schema reconciliation
-
-MariaDB reconciles existing primary keys with the current table declaration during schema initialization. Rows remain in place; an incompatible declaration fails rather than discarding data. Changes are logged. No version-specific migration or renamed-column compatibility path is used.
-
-Text columns may opt in to `textSize: "large"` for LONGTEXT or `textEncoding: "ascii"` for identifiers already restricted to ASCII by their owning contract. Defaults remain TEXT or VARCHAR(255). Initialization widens only explicitly declared large fields and reconciles explicitly requested encoding; indexed large text is rejected. Ledger/Leaderboard snapshots and packaged assets use large storage. Pack IDs and semantic versions use ASCII storage to keep the four-part asset primary key within InnoDB limits; publisher names and asset paths retain Unicode support. Library lookup indexes split scoped browsing and source-record lookup without changing entry encodings.

@@ -348,6 +348,41 @@ test("mariadb repairs text index columns before creating their indexes", async (
     assert.ok(createIndex > repairIndex);
 });
 
+test("mariadb renames legacy columns without losing their values", async () => {
+    const statements: string[] = [];
+    const executor = await createDbExecutor({
+        databaseUrl: "mariadb://unused",
+        pool: createPool({
+            query: async (sql: string) => {
+                statements.push(sql);
+                if (sql.includes("information_schema.COLUMNS")) {
+                    return [[{ column_name: "read", data_type: "int" }], {}];
+                }
+                return [[], {}];
+            },
+        }),
+    });
+
+    await executor.ensureTable({
+        name: "internal_notifications",
+        columns: [
+            {
+                name: "is_read",
+                type: "integer",
+                notNull: true,
+                default: 0,
+                renamedFrom: "read",
+            },
+        ],
+    } as Parameters<typeof executor.ensureTable>[0]);
+
+    assert.ok(
+        statements.includes(
+            "ALTER TABLE internal_notifications CHANGE COLUMN `read` is_read INT NOT NULL DEFAULT 0",
+        ),
+    );
+});
+
 test("mariadb formats ISO values for declared timestamp columns", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const executor = await createDbExecutor({
@@ -434,126 +469,4 @@ test("mariadb safely parses repeated datetime error text", async () => {
         ],
     );
     assert.deepEqual(transactionCalls, ["BEGIN", "COMMIT"]);
-});
-
-test("mariadb provides opt-in large text and widens only explicitly requested columns", async () => {
-    for (const existingType of ["text", "longtext"]) {
-        const statements: string[] = [];
-        const executor = await createDbExecutor({
-            databaseUrl: "mariadb://unused",
-            pool: createPool({
-                query: async (sql: string) => {
-                    statements.push(sql);
-                    return sql.includes("information_schema.COLUMNS")
-                        ? [
-                              [
-                                  {
-                                      column_name: "state_json",
-                                      data_type: existingType,
-                                  },
-                                  { column_name: "label", data_type: "text" },
-                              ],
-                              {},
-                          ]
-                        : [[], {}];
-                },
-            }),
-        });
-        await executor.ensureTable({
-            name: "rewards",
-            columns: [
-                {
-                    name: "state_json",
-                    type: "text",
-                    textSize: "large",
-                    notNull: true,
-                },
-                { name: "label", type: "text" },
-            ],
-        });
-        assert.equal(
-            statements.find((sql) => sql.startsWith("CREATE TABLE")),
-            "CREATE TABLE IF NOT EXISTS rewards (state_json LONGTEXT NOT NULL, label TEXT)",
-        );
-        assert.deepEqual(
-            statements.filter((sql) => sql.startsWith("ALTER TABLE")),
-            existingType === "text"
-                ? [
-                      "ALTER TABLE rewards MODIFY COLUMN state_json LONGTEXT NOT NULL",
-                  ]
-                : [],
-        );
-    }
-});
-
-test("mariadb rejects indexing large text instead of silently limiting its storage", async () => {
-    const executor = await createDbExecutor({
-        databaseUrl: "mariadb://unused",
-        pool: createPool(),
-    });
-    await assert.rejects(
-        executor.ensureTable({
-            name: "rewards",
-            columns: [
-                {
-                    name: "state_json",
-                    type: "text",
-                    textSize: "large",
-                    unique: true,
-                },
-            ],
-        }),
-        /large_text_cannot_be_indexed/,
-    );
-});
-
-test("mariadb uses explicit ASCII storage only for declared identifier columns", async () => {
-    const statements: string[] = [];
-    const executor = await createDbExecutor({
-        databaseUrl: "mariadb://unused",
-        pool: createPool({
-            query: async (sql: string) => {
-                statements.push(sql);
-                return sql.includes("information_schema.COLUMNS")
-                    ? [
-                          [
-                              {
-                                  column_name: "pack_id",
-                                  data_type: "varchar",
-                                  character_set_name: "utf8mb4",
-                              },
-                              {
-                                  column_name: "publisher",
-                                  data_type: "text",
-                                  character_set_name: "utf8mb4",
-                              },
-                          ],
-                          {},
-                      ]
-                    : [[], {}];
-            },
-        }),
-    });
-    await executor.ensureTable({
-        name: "assets",
-        columns: [
-            {
-                name: "pack_id",
-                type: "text",
-                primaryKey: true,
-                textEncoding: "ascii",
-            },
-            { name: "publisher", type: "text", notNull: true },
-        ],
-    });
-    assert.equal(
-        statements.find((sql) => sql.startsWith("CREATE TABLE")),
-        "CREATE TABLE IF NOT EXISTS assets (pack_id VARCHAR(255) CHARACTER SET ascii NOT NULL PRIMARY KEY, publisher TEXT NOT NULL)",
-    );
-    assert.deepEqual(
-        statements.filter((sql) => sql.startsWith("ALTER TABLE")),
-        [
-            "ALTER TABLE assets MODIFY COLUMN pack_id VARCHAR(255) CHARACTER SET ascii NOT NULL",
-        ],
-    );
 });

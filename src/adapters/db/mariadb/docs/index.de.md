@@ -35,9 +35,3 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 | `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                              |
 | `MARIADB_STARTUP_TIMEOUT_MS`         | `60000`  | Maximales Zeitfenster für die Startbereitschaft in Millisekunden (1.000–600.000) |
 | `MARIADB_STARTUP_RETRY_INTERVAL_MS`  | `1000`   | Pause zwischen Bereitschaftsversuchen in Millisekunden (100–30.000)              |
-
-## Schemaabgleich
-
-MariaDB gleicht vorhandene Primärschlüssel bei der Schemainitialisierung mit der aktuellen Tabellendeklaration ab. Zeilen bleiben erhalten; eine unvereinbare Deklaration schlägt fehl, statt Daten zu verwerfen. Änderungen werden protokolliert. Versionsspezifische Migrationen und Kompatibilitätspfade für umbenannte Spalten entfallen.
-
-Textspalten können mit `textSize: "large"` LONGTEXT und mit `textEncoding: "ascii"` ASCII-Speicherung für vertraglich bereits auf ASCII beschränkte Kennungen anfordern. Standard bleibt TEXT beziehungsweise VARCHAR(255). Die Initialisierung erweitert nur ausdrücklich markierte große Felder und gleicht ausdrücklich angeforderte Kodierungen ab; indizierter großer Text wird abgelehnt. Belohnungs-/Ranglistenzustände und Paketdaten verwenden große Felder. Paketkennungen und semantische Versionen verwenden ASCII, damit der vierteilige Asset-Primärschlüssel die InnoDB-Grenze einhält; Herausgebernamen und Asset-Pfade behalten Unicode. Getrennte Library-Indizes unterstützen Bereichsübersicht und Quelldatensatzsuche ohne Änderung der Eintragskodierung.

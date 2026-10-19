@@ -62,13 +62,11 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             {
                 name: "pack_id",
                 type: "text",
-                textEncoding: "ascii",
                 notNull: true,
             },
             {
                 name: "version",
                 type: "text",
-                textEncoding: "ascii",
                 notNull: true,
             },
             { name: "asset_path", type: "text", notNull: true },
@@ -76,7 +74,6 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             {
                 name: "data_base64",
                 type: "text",
-                textSize: "large",
                 notNull: true,
             },
         ],

@@ -30,7 +30,6 @@ export class DbLeaderboardStore implements LeaderboardStore {
                 {
                     name: "state_json",
                     type: "text",
-                    textSize: "large",
                     notNull: true,
                 },
             ],

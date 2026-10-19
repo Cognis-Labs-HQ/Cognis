@@ -1,4 +1,3 @@
-import { KEY_CATALOG_QUERY, planKeyReconciliation } from "./schema.js";
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
@@ -182,7 +181,6 @@ class PostgresExecutor implements RawDbExecutor {
     constructor(
         private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
-        private readonly inTransaction = false,
     ) {}
 
     async execute(sql: string, params: unknown[] = []) {
@@ -226,7 +224,6 @@ class PostgresExecutor implements RawDbExecutor {
                 end: async () => undefined,
             },
             this.log,
-            true,
         );
         try {
             await client.query("BEGIN");
@@ -344,6 +341,14 @@ class PostgresExecutor implements RawDbExecutor {
         );
         for (const col of def.columns) {
             if (existingCols.has(col.name)) continue;
+            const renamedFrom = readRenamedColumn(col);
+            if (renamedFrom && existingCols.has(renamedFrom)) {
+                await this.execute(
+                    `ALTER TABLE ${def.name} RENAME COLUMN ${renamedFrom} TO ${col.name}`,
+                );
+                existingCols.add(col.name);
+                continue;
+            }
             const defaultClause =
                 col.default !== undefined
                     ? `DEFAULT ${pgDefault(col.default)}`
@@ -358,36 +363,6 @@ class PostgresExecutor implements RawDbExecutor {
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
-        const catalog = await this.execute(KEY_CATALOG_QUERY, [def.name]);
-        const keyChanges = planKeyReconciliation(def, catalog.rows ?? []);
-        if (keyChanges.length) {
-            const reconcile = async (transaction: RawDbExecutor) => {
-                await transaction.execute(
-                    `LOCK TABLE ${def.name} IN ACCESS EXCLUSIVE MODE`,
-                );
-                const current = await transaction.execute(KEY_CATALOG_QUERY, [
-                    def.name,
-                ]);
-                const changes = planKeyReconciliation(def, current.rows ?? []);
-                for (const statement of changes)
-                    await transaction.execute(statement);
-                return changes.length;
-            };
-            const changed = this.inTransaction
-                ? await reconcile(this)
-                : await this.transaction(reconcile);
-            if (changed)
-                writeDbLog(
-                    this.log,
-                    "info",
-                    "Reconciled declared database keys.",
-                    {
-                        component: "db",
-                        provider: "postgresql",
-                        table: def.name,
-                    },
-                );
-        }
         for (const index of def.indexes ?? []) {
             const indexName =
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
@@ -396,6 +371,15 @@ class PostgresExecutor implements RawDbExecutor {
             );
         }
     }
+}
+
+function readRenamedColumn(
+    column: StructuredDbTableDef["columns"][number],
+): string | undefined {
+    if (!("renamedFrom" in column)) return undefined;
+    return typeof column.renamedFrom === "string"
+        ? column.renamedFrom
+        : undefined;
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {

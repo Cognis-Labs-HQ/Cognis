@@ -404,7 +404,7 @@ Sentence creation, editing, and detail views derive pronunciations from each ord
 
 ## Lean component implementation
 
-Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
+Entry validation, identifier patterns, definition languages, and variant directions share focused helpers. Content audio handling has its own modules, and content packs use stable record identities directly.
 
 ## Dictionary search and caching
 
@@ -563,5 +563,3 @@ Library availability resolves language contributions from the live system regist
 Authoritative pack updates retain omitted provider entries that are still reachable from user-authored cards or modified provider cards. This protection follows recursive dependencies and cycles; provider-only obsolete content can still be pruned.
 
 The matching Explore grid preview is blurred and non-interactive while its character is open in the drawing pad. Repeated and newly rendered placements follow the same state; changing character, closing the pad or leaving the page restores them without changing card geometry.
-
-Packaged asset data uses explicit large-text storage. The asset primary key stores only validated pack IDs and semantic versions as ASCII; Unicode publisher names and asset paths retain their encoding. Entry columns retain Unicode capacity. Separate `(scope_id, schema_id, layer)` and `(scope_id, source_record_id)` indexes support browsing and provider lookup within MariaDB’s composite key limit.

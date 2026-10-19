@@ -4,7 +4,7 @@ import { ensureLibraryStoreSchema } from "../db-schema.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
-test("Library schema declares bounded composite lookup indexes and large Unicode asset storage", async () => {
+test("Library schema declares scoped lookup indexes and Unicode asset fields", async () => {
     const definitions: StructuredDbTableDef[] = [];
     const executor: DbExecutor = {
         async ensureTable(definition) {
@@ -32,15 +32,6 @@ test("Library schema declares bounded composite lookup indexes and large Unicode
     const assets = definitions.find(
         ({ name }) => name === "study_library_content_pack_assets",
     )!;
-    assert.equal(
-        assets.columns.find(({ name }) => name === "data_base64")?.textSize,
-        "large",
-    );
-    for (const name of ["pack_id", "version"])
-        assert.equal(
-            assets.columns.find((column) => column.name === name)?.textEncoding,
-            "ascii",
-        );
     for (const name of ["publisher", "asset_path"])
         assert.deepEqual(
             assets.columns.find((column) => column.name === name),

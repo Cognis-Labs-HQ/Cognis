@@ -86,15 +86,7 @@ Schreibübungen verwenden nur die maskierte Überschrift des Zeichenfelds. SVG-P
 
 Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(card)` bereitstellen. Flashcards verbucht damit den aktuellen Versuch über den Ablauf zum Verlassen und erhält den Stapelkontext vor dem Öffnen von Explore.
 
-Die Schemainitialisierung ändert Primärschlüssel nur bei ausdrücklicher Deklaration und ergänzt fehlende deklarierte Eindeutigkeit. Unabhängige Primärschlüssel, eindeutige Constraints und Indizes bleiben erhalten; gleichwertige eindeutige Schlüssel mit anderer Spaltenreihenfolge erfüllen die Deklaration. Der Katalog berücksichtigt nur gültige, fertige Indizes und eigene Primär-/Unique-Constraints der Tabelle. Reparaturen prüfen unter Tabellensperre erneut und verwenden eine bereits offene Transaktion, sodass Fehler auch die Arbeit des Aufrufers zurückrollen. Passende Schemas benötigen weder Schlüssel-DDL noch Reparaturtransaktion.
-
-Textspalten können mit `textSize: "large"` LONGTEXT und mit `textEncoding: "ascii"` ASCII-Speicherung für vertraglich bereits auf ASCII beschränkte Kennungen anfordern. Standard bleibt TEXT beziehungsweise VARCHAR(255). Die Initialisierung erweitert nur ausdrücklich markierte große Felder und gleicht ausdrücklich angeforderte Kodierungen ab; indizierter großer Text wird abgelehnt. Belohnungs-/Ranglistenzustände und Paketdaten verwenden große Felder. Paketkennungen und semantische Versionen verwenden ASCII, damit der vierteilige Asset-Primärschlüssel die InnoDB-Grenze einhält; Herausgebernamen und Asset-Pfade behalten Unicode. Getrennte Library-Indizes unterstützen Bereichsübersicht und Quelldatensatzsuche ohne Änderung der Eintragskodierung.
-
-Strukturierte Textspalten unterstützen die optionalen Speicherhinweise `textSize: "large"` und `textEncoding: "ascii"`. MariaDB verwendet dafür LONGTEXT und ASCII; PostgreSQL und SQLite behalten ihre native Textdarstellung. Aufrufer müssen Kennungen bereits als ASCII validieren, bevor sie diese Kodierung anfordern. Belohnungszustände verwenden große Textfelder für JSON über 64 KB; atomare Revisionsprüfungen und Transaktionsgrenzen bleiben erhalten.
-
-Paketdaten verwenden ausdrücklich große Textfelder. Nur validierte Paketkennungen und semantische Versionen werden im Asset-Primärschlüssel als ASCII gespeichert; Herausgebernamen und Asset-Pfade behalten Unicode. Eintragsspalten behalten ihre Unicode-Kapazität. Getrennte Indizes `(scope_id, schema_id, layer)` und `(scope_id, source_record_id)` unterstützen Übersicht und Anbieterabfragen innerhalb der MariaDB-Schlüsselgrenze.
-
-Der gespeicherte Ranglistenzustand fordert ausdrücklich große Textfelder an, damit MariaDB wachsende Beobachtungen und Archive über 64 KB ohne abgeschnittenes JSON speichert. PostgreSQL und SQLite behalten ihre native Textspeicherung.
+Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Spalten und Indizes. Bestehende Primärschlüssel oder eindeutige Schlüssel werden nicht ersetzt. Der strukturierte Speichervertrag beschreibt keine großen Textfelder: MariaDB-TEXT ist auf 65.535 Byte begrenzt, und mehrbytekodierte zusammengesetzte Schlüssel unterliegen der InnoDB-Schlüsselgrenze. Study-Nutzdaten und Schemaänderungen müssen gegen diese Anbietergrenzen geprüft werden.
 
 ## Commits
 

@@ -398,10 +398,6 @@ Dictionary lookup now fills the open card composer directly and commits all retu
 
 Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
 
-## Declared schema reconciliation
-
-Database schema initialization reconciles existing keys with the current table declaration. Rows are retained, changes are logged, and invalid declarations fail rather than discarding data. No version-specific key migration is needed.
-
 ## Multi-value staging no longer mutates committed values
 
 Field-level `multi_value` is now ingested as the canonical contract. Committed pills remain separate from an initially empty staging field, the visible Save action alone commits staged references, and compact × controls remove staged cards without confirmation or changing saved values. Clicking a committed pill no longer reloads it into staging.
@@ -532,10 +528,6 @@ The Retrieve missing translations action calls `POST /api/v1/study/library/defin
 
 Stroke lookup is hidden whenever a retrieved pattern is present, including patterns loaded from dictionary results or saved cards. Clearing the pattern restores lookup. Definition editors keep translations in Content and omit the redundant Definitions tab. Dictionary meanings separated by semicolons become individually committed definitions, preserving aligned translations and original source metadata. Structured imported meanings replace aggregate source-definition links.
 
-## Complete reference-key repair
-
-Schema initialization reconciles primary and unique keys with the current declaration in one transaction, without version-specific index names or migration functions.
-
 ## Dictionary pronunciation links
 
 Dictionary imports resolve complete pronunciations to installed Kana using longest complete matches, preserving compound characters such as きょ and っく and repeated positions. Canonical entry IDs are stored in ordered reading groups; a reading with missing characters is never partially linked. Definitions reuse matching cards or create cards through the normal composer flow. Carousels remain the primary way to create downstream cards. Characters and particles remain provider-owned read-only layers. Sentence composers do not offer dictionary lookup.
@@ -554,7 +546,7 @@ Sentence creation, editing, and detail views derive pronunciations from each ord
 
 ## Lean component implementation
 
-Consolidated entry validation, identifier patterns, definition languages, and variant directions. Content audio handling and schema reconciliation live in focused modules, with readable function spacing preserved. Content packs use stable record identities directly; version-derived identity conversion and renamed-column compatibility paths have been removed. Database adapters reconcile declared keys through schema initialization, with adapter-specific documentation and current-schema tests.
+Entry validation, identifier patterns, definition languages, and variant directions share focused helpers. Content audio handling has its own modules, and content packs use stable record identities directly.
 
 ## Direct relocation controls
 

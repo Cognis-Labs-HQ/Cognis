@@ -391,7 +391,7 @@ Satzerstellung, Bearbeitung und Detailansicht leiten Aussprachen aus der gewähl
 
 ## Schlanke Komponenten
 
-Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen sind zusammengeführt. Inhaltsaudio und Schemaabgleich liegen in fokussierten Modulen mit lesbaren Funktionsabständen. Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten; versionsabhängige Identitätsumwandlungen und Kompatibilitätspfade für umbenannte Spalten entfallen. Datenbankadapter gleichen deklarierte Schlüssel bei der Schemainitialisierung ab, mit adapterspezifischer Dokumentation und Tests des aktuellen Schemas.
+Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen verwenden gemeinsame fokussierte Hilfsfunktionen. Inhaltsaudio besitzt eigene Module, und Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten.
 
 ## Wörterbuchsuche und Cache
 
@@ -550,5 +550,3 @@ Die Bibliotheksverfügbarkeit liest Sprachbeiträge aus der aktuellen Systemregi
 Verbindliche Paketaktualisierungen erhalten ausgelassene Anbietereinträge, die von eigenen oder bearbeiteten Anbieterkarten weiterhin erreichbar sind. Der Schutz folgt rekursiven Abhängigkeiten und Zyklen; überholte Inhalte ohne solche Verweise können weiter entfernt werden.
 
 Die passende Kartenvorschau im Explore-Raster wird unscharf und nicht interaktiv, solange ihr Zeichen im Zeichenfeld geöffnet ist. Wiederholte und neu gerenderte Platzierungen folgen demselben Zustand; Zeichenwechsel, Schließen des Zeichenfelds oder Verlassen der Seite stellen sie ohne Größenänderung wieder her.
-
-Paketdaten verwenden ausdrücklich große Textfelder. Nur validierte Paketkennungen und semantische Versionen werden im Asset-Primärschlüssel als ASCII gespeichert; Herausgebernamen und Asset-Pfade behalten Unicode. Eintragsspalten behalten ihre Unicode-Kapazität. Getrennte Indizes `(scope_id, schema_id, layer)` und `(scope_id, source_record_id)` unterstützen Übersicht und Anbieterabfragen innerhalb der MariaDB-Schlüsselgrenze.
