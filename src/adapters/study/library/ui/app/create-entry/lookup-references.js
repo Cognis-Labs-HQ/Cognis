@@ -1,5 +1,14 @@
 import { resolveSegments } from "../reuse/segments.js";
 
+function layerCandidates(entries, schema, layerId) {
+    return entries.filter(
+        (entry) =>
+            entry.schemaId === schema.id &&
+            entry.layer === layerId &&
+            (entry.schemaVersion ?? schema.version) <= schema.version,
+    );
+}
+
 function resolvePronunciation(value, candidates, relation) {
     const label = value.trim().normalize("NFKC");
     const ordered = candidates
@@ -14,7 +23,58 @@ function resolvePronunciation(value, candidates, relation) {
     }));
 }
 
-export function resolveLookupReferences(suggestion, entries, schema, layer) {
+function characterComposition(
+    suggestion,
+    entries,
+    schema,
+    layer,
+    inputCarouselIds,
+) {
+    const relationships = (layer.relationships ?? []).filter(
+        (relationship) =>
+            inputCarouselIds.has(relationship.id) &&
+            ["atomicWritingUnit", "compoundWritingUnit"].includes(
+                schema.layers?.find(({ id }) => id === relationship.targetLayer)
+                    ?.semanticRole,
+            ),
+    );
+    if (
+        (suggestion.references ?? []).some(({ relation }) =>
+            inputCarouselIds.has(relation),
+        )
+    )
+        return [];
+    const candidates = relationships
+        .flatMap((relationship) =>
+            layerCandidates(entries, schema, relationship.targetLayer)
+                .filter((entry) => entry.hidden !== true && entry.label?.trim())
+                .map((entry) => ({ ...entry, relation: relationship.id })),
+        )
+        .toSorted(
+            (left, right) =>
+                right.label.normalize("NFKC").length -
+                left.label.normalize("NFKC").length,
+        );
+    return resolveSegments(
+        String(suggestion.label ?? "")
+            .trim()
+            .normalize("NFKC"),
+        candidates,
+        ({ label }) => label.trim().normalize("NFKC"),
+    ).map(({ id, relation }, position) => ({
+        entryId: id,
+        relation,
+        position,
+    }));
+}
+
+export function resolveLookupReferences(
+    suggestion,
+    entries,
+    schema,
+    layer,
+    inputCarouselIds = new Set(),
+) {
     const resolve = (reference) => {
         const relationship = layer.relationships?.find(
             ({ id }) => id === reference.relation,
@@ -24,11 +84,10 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
             ({ key }) => key === reference.entryId,
         );
         if (linked?.entry.layer === relationship.targetLayer) return reference;
-        const candidates = entries.filter(
-            (entry) =>
-                entry.schemaId === schema.id &&
-                entry.layer === relationship.targetLayer &&
-                (entry.schemaVersion ?? schema.version) <= schema.version,
+        const candidates = layerCandidates(
+            entries,
+            schema,
+            relationship.targetLayer,
         );
         const direct = candidates.find(({ id }) => id === reference.entryId);
         const matching = direct
@@ -57,6 +116,15 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
         if (!resolved) unresolvedRelations.add(reference.relation);
         return resolved ? [resolved] : [];
     });
+    references.push(
+        ...characterComposition(
+            suggestion,
+            entries,
+            schema,
+            layer,
+            inputCarouselIds,
+        ),
+    );
     const referenceGroups = {};
     for (const [relation, groups] of Object.entries(
         suggestion.referenceGroups ?? {},
@@ -95,12 +163,7 @@ export function resolveLookupReferences(suggestion, entries, schema, layer) {
             target?.semanticRole !== "atomicWritingUnit"
         )
             continue;
-        const candidates = entries.filter(
-            (entry) =>
-                entry.schemaId === schema.id &&
-                entry.layer === target.id &&
-                (entry.schemaVersion ?? schema.version) <= schema.version,
-        );
+        const candidates = layerCandidates(entries, schema, target.id);
         const groups = pronunciations.map((value) =>
             resolvePronunciation(value, candidates, relationship.id),
         );

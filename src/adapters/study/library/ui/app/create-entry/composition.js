@@ -186,7 +186,7 @@ export function bindTextComposition(
             ? exactMatches
             : prefixMatches.matches;
         const fallbackRelationship = relationships[0]?.id;
-        output.innerHTML = `${sequenceMatch}${matches
+        output.innerHTML = `${sequenceMatch}${(sequenceMatch ? [] : matches)
             .slice(0, 1)
             .map(
                 (match) =>

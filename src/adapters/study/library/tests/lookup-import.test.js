@@ -53,6 +53,7 @@ test("dictionary results directly import definitions, source fields, readings, g
     const imports = [];
     const toasts = [];
     let listener;
+    const listeners = new Map();
     let redraws = 0;
     const pronunciation = {
         value: "",
@@ -80,12 +81,17 @@ test("dictionary results directly import definitions, source fields, readings, g
             "relationship:spelling": { options: [option], append() {} },
         },
         addEventListener: (type, handler) => {
+            listeners.set(type, handler);
             if (type === "click") listener = handler;
         },
-        querySelector: () => input,
+        querySelector: (selector) =>
+            selector.startsWith("[data-library-lookup-provider=")
+                ? button
+                : input,
         dispatchEvent() {},
     };
     const context = {
+        CSS: { escape: (value) => value },
         resolveLookupPrerequisites: async (suggestion) => suggestion,
         resolveLookupReferences,
         LIBRARY_COMPOSER_LIMITS,
@@ -118,7 +124,11 @@ test("dictionary results directly import definitions, source fields, readings, g
     const schema = {
         id: "test",
         version: 1,
-        layers: [{ id: "definitions", semanticRole: "definition" }],
+        layers: [
+            { id: "definitions", semanticRole: "definition" },
+            { id: "kana", semanticRole: "atomicWritingUnit" },
+            { id: "kanji", semanticRole: "compoundWritingUnit" },
+        ],
     };
     const entries = [
         { id: "kanji", schemaId: "test", layer: "kanji", schemaVersion: 1 },
@@ -136,12 +146,13 @@ test("dictionary results directly import definitions, source fields, readings, g
                 relationships: [
                     { id: "definitions", targetLayer: "definitions" },
                     { id: "spelling", targetLayer: "kanji" },
+                    { id: "kana-components", targetLayer: "kana" },
                     { id: "reading-kana", targetLayer: "kana" },
                 ],
             },
             entries,
             nestedDefinitionIds,
-            inputCarouselIds: new Set(["spelling"]),
+            inputCarouselIds: new Set(["spelling", "kana-components"]),
         },
     );
     const button = {
@@ -164,6 +175,43 @@ test("dictionary results directly import definitions, source fields, readings, g
     assert.equal(option.selected, true);
     assert.deepEqual(form.referenceGroups, suggestions[0].referenceGroups);
     assert.equal(button.disabled, false);
+    assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
+
+    // Search results without spelling links commit their character composition
+    // during import, without pressing any suggestion controls.
+    const characters = ["テ", "ス", "ト"].map((label, index) => ({
+        id: `character-${index}`,
+        schemaId: schema.id,
+        layer: "kana",
+        label,
+    }));
+    entries.push(...characters);
+    const options = characters.map(({ id }) => ({
+        value: id,
+        selected: false,
+    }));
+    form.elements["relationship:kana-components"] = { options, append() {} };
+    form.elements.label.value = "テスト";
+    input.hasAttribute = () => false;
+    await listeners.get("library-import-dictionary")({
+        type: "library-import-dictionary",
+        detail: {
+            providerId: "provider",
+            suggestion: {
+                label: "テスト",
+                fields: { pronunciation: ["てすと"] },
+            },
+        },
+        target: { closest: () => button },
+    });
+    assert.deepEqual(
+        Array.from(form.compositionOrder),
+        characters.map(({ id }) => id),
+    );
+    assert.ok(options.every(({ selected }) => selected));
+    assert.equal(input.value, "");
+    assert.equal(pronunciation.value, "てすと");
+    assert.equal(form.elements.label.value, "テスト");
     assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
 });
 

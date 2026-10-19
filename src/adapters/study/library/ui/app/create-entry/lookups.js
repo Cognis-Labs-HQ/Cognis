@@ -169,6 +169,7 @@ export function bindLookupProviders(
                 entries,
                 schema,
                 layer,
+                inputCarouselIds,
             );
             if (unresolved)
                 showToast(i18n.t("gateway.study.library_lookup_unlinked"), {

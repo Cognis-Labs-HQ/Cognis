@@ -52,6 +52,10 @@ Referensi balik kartu menerapkan pemeriksaan ketersediaan bahasa dan akses yang 
 
 Tautan judul popup mempertahankan tampilan teks ringkas dan tipografi yang diwarisi meskipun gaya tombol bersama dimuat belakangan. Tombol bantuan pad gambar selalu menampilkan seluruh pola goresan bernomor, termasuk goresan yang selesai dan semua kelompok, setelah latihan dimulai atau pada karakter yang pernah diselesaikan. Latihan biasa tetap menampilkan goresan berikutnya; memulai goresan baru mengatur ulang tampilan bantuan.
 
+## Isi Kamus Otomatis
+
+Impor kamus menguraikan isi kartu yang belum tertaut menjadi referensi lengkap dan berurutan ke kartu karakter yang tersedia dari skema aktif dan karusel masukan yang dikonfigurasi. Kana berulang dan campuran satuan tulisan mempertahankan posisinya; tautan komposisi yang disediakan dan bacaan kamus tetap menjadi acuan. Kecocokan yang belum lengkap tetap tersedia untuk penguraian manual. Saat saran urutan lengkap tersedia untuk teks yang diketik manual, saran satu karakter yang berlebihan disembunyikan.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

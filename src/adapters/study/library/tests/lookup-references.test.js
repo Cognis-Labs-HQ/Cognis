@@ -238,3 +238,57 @@ test("dictionary pronunciations resolve to canonical Kana, including compound an
     assert.equal(missing.unresolved, true);
     assert.deepEqual(missing.suggestion.referenceGroups, {});
 });
+
+test("dictionary character composition resolves complete ordered placements with repeated kana", () => {
+    const schema = {
+        id: "language",
+        version: 1,
+        layers: [
+            { id: "kana", semanticRole: "atomicWritingUnit" },
+            { id: "kanji", semanticRole: "compoundWritingUnit" },
+        ],
+    };
+    const layer = {
+        relationships: [
+            { id: "letters", targetLayer: "kana" },
+            { id: "symbols", targetLayer: "kanji" },
+        ],
+    };
+    const characters = [
+        { id: "t", label: "テ", layer: "kana" },
+        { id: "s", label: "ス", layer: "kana" },
+        { id: "room", label: "室", layer: "kanji" },
+    ].map((entry) => ({ ...entry, schemaId: schema.id }));
+    const input = {
+        label: "テス室テ",
+        fields: { pronunciation: ["authored reading"] },
+    };
+    const resolve = (value, available = characters) =>
+        resolveLookupReferences(
+            value,
+            available,
+            schema,
+            layer,
+            new Set(["letters", "symbols"]),
+        ).suggestion;
+    const result = resolve(input);
+    assert.deepEqual(result.references, [
+        { entryId: "t", relation: "letters", position: 0 },
+        { entryId: "s", relation: "letters", position: 1 },
+        { entryId: "room", relation: "symbols", position: 2 },
+        { entryId: "t", relation: "letters", position: 3 },
+    ]);
+    assert.deepEqual(result.fields.pronunciation, ["authored reading"]);
+    assert.equal(input.references, undefined);
+    for (const available of [
+        characters.slice(1),
+        characters.map((entry) => ({ ...entry, schemaId: "other" })),
+        characters.map((entry) => ({ ...entry, hidden: true })),
+    ])
+        assert.deepEqual(resolve(input, available).references, []);
+    const authored = {
+        ...input,
+        references: [{ entryId: "room", relation: "symbols", position: 0 }],
+    };
+    assert.deepEqual(resolve(authored).references, authored.references);
+});

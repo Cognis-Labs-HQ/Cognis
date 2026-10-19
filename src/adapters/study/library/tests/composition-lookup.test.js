@@ -16,7 +16,8 @@ test("vocabulary composition supplies the full lookup label without generating p
         value: "",
         dataset: {},
         setCustomValidity() {},
-        addEventListener() {},
+        addEventListener: (kind, handler) =>
+            listeners.set(`input:${kind}`, handler),
     };
     const output = { addEventListener() {} };
     const blocks = { addEventListener() {} };
@@ -78,4 +79,13 @@ test("vocabulary composition supplies the full lookup label without generating p
     assert.equal(controller.validate(), true);
     input.value = "教わる";
     assert.equal(controller.validate(), false);
+    input.value = "教教";
+    context.resolveCompositionPrefix = (_text, candidates) => ({
+        matches: [candidates[0], candidates[0]],
+        remainder: "",
+    });
+    listeners.get("input:input")();
+    assert.match(output.innerHTML, /data-library-suggestion-sequence=/);
+    assert.doesNotMatch(output.innerHTML, /data-library-suggestion=/);
+    assert.equal(pronunciation.value, "manually committed reading");
 });

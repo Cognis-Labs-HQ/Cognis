@@ -52,6 +52,10 @@ Rückwärtsverweise auf Karten wenden dieselben Prüfungen für Sprachverfügbar
 
 Verlinkte Popup-Titel behalten ihre kompakte Textdarstellung und geerbte Typografie auch dann, wenn gemeinsame Schaltflächenstile später geladen werden. Die Hilfeschaltfläche des Zeichenfelds zeigt stets das vollständige nummerierte Strichmuster, einschließlich abgeschlossener Striche und aller Gruppen, auch nach Beginn der Übung oder bei bereits abgeschlossenen Zeichen. Im normalen Übungsablauf bleibt der nächste Strich sichtbar; ein neuer Strich setzt die Aufdeckung zurück.
 
+## Automatische Wörterbuchinhalte
+
+Wörterbuchimporte lösen noch nicht verknüpfte Karteninhalte vollständig in geordnete Verweise auf vorhandene Zeichenkarten des aktiven Schemas und der konfigurierten Eingabekarussells auf. Wiederholte Kana und gemischte Schreibeinheiten behalten ihre Positionen; gelieferte Kompositionsverweise und Wörterbuchlesungen bleiben maßgeblich. Unvollständige Treffer bleiben zur manuellen Auflösung verfügbar. Bei einem vollständigen Sequenzvorschlag für manuell eingegebenen Text wird der redundante Einzelzeichenvorschlag ausgeblendet.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

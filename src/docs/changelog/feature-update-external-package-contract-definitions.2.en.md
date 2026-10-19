@@ -52,6 +52,10 @@ Reverse card traces apply the same live language availability and access checks 
 
 Popup title links retain their compact text appearance and inherited typography even when shared button styles load afterward. The drawing pad’s guidance button always reveals the complete numbered stroke pattern, including completed strokes and all groups, after practice has started or on a previously completed character. Normal practice continues to show the next stroke; starting a new stroke resets the reveal.
 
+## Automatic Dictionary Contents
+
+Dictionary imports resolve unlinked card contents into complete, ordered references to existing character cards from the active schema and configured input carousels. Repeated kana and mixed writing units retain their positions; supplied composition links and dictionary readings remain authoritative. Incomplete matches stay available for manual resolution. When a complete sequence suggestion is offered for manually entered text, the redundant single-character suggestion is hidden.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)
