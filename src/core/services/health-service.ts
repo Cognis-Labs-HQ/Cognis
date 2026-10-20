@@ -36,8 +36,16 @@ export class HealthService {
     private readonly startedAtDate = new Date();
     private readonly contributors = new Map<string, HealthContributor>();
 
-    contribute(componentId: string, contributor: HealthContributor): void {
+    contribute(
+        componentId: string,
+        contributor: HealthContributor,
+    ): () => void {
         this.contributors.set(componentId, contributor);
+        return () => {
+            if (this.contributors.get(componentId) === contributor) {
+                this.contributors.delete(componentId);
+            }
+        };
     }
 
     async status(now = new Date()): Promise<HealthStatus> {

@@ -165,3 +165,46 @@ test("chatroom deletion authorizes and deletes in the same transaction", async (
     assert.equal(commands.at(-1)?.table, "chatrooms");
     assert.equal(commands.at(-1)?.option, "DELETE");
 });
+
+test("authoritative administrators can delete another account's room", async () => {
+    let deleted = "";
+    const remove = createChatroomDeletionCapability(
+        {
+            ensureSchema: async () => {},
+            getRoom: async () => ({ id: "room" }),
+            deleteRoom: async (id: string) => {
+                deleted = id;
+            },
+            deleteRoomForActor: async () =>
+                assert.fail("Use the authorized administrator path"),
+        } as never,
+        undefined,
+        async (accountId) => {
+            assert.equal(accountId, "admin-account");
+            return "admin";
+        },
+    );
+    await remove({ roomId: "room", actorAccountId: "admin-account" });
+    assert.equal(deleted, "room");
+});
+
+test("a caller-supplied role cannot grant administrative deletion", async () => {
+    const remove = createChatroomDeletionCapability(
+        {
+            ensureSchema: async () => {},
+            deleteRoomForActor: async () => "forbidden",
+            deleteRoom: async () =>
+                assert.fail("Never trust the requested role"),
+        } as never,
+        undefined,
+        async () => "user",
+    );
+    await assert.rejects(
+        remove({
+            roomId: "room",
+            actorAccountId: "user",
+            role: "admin",
+        } as never),
+        /owner/,
+    );
+});

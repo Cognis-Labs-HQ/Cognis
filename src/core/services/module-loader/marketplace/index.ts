@@ -106,7 +106,7 @@ export interface ModuleDiscoveryResult {
 }
 
 export type ModuleMarketplaceLog = (
-    level: "info" | "warn",
+    level: "info" | "warn" | "error",
     message: string,
     meta: Record<string, unknown>,
 ) => void;
@@ -808,9 +808,27 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             const { contentType } = JSON.parse(metadata) as {
                 contentType?: unknown;
             };
-            if (typeof contentType !== "string") return undefined;
+            if (!body.length || typeof contentType !== "string") {
+                this.log("error", "Module asset cache entry is invalid.", {
+                    component: "module-marketplace",
+                    operation: "readAsset",
+                    assetId: id,
+                    reason: !body.length
+                        ? "asset_empty"
+                        : "asset_metadata_invalid",
+                });
+                return undefined;
+            }
             return { body, contentType };
         } catch (error) {
+            this.log("error", "Module asset cache read failed.", {
+                component: "module-marketplace",
+                operation: "readAsset",
+                assetId: id,
+                reason:
+                    (error as NodeJS.ErrnoException).code ??
+                    "asset_metadata_unreadable",
+            });
             if ((error as NodeJS.ErrnoException).code === "ENOENT") {
                 return undefined;
             }

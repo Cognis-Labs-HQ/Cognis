@@ -1,0 +1,4 @@
+.page-overlay-boundary {
+    position: fixed;
+    pointer-events: none;
+}

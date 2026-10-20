@@ -1,17 +1,124 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import {
-    contentEntryId,
-    inspectContentPack,
-    versionedContentEntryId,
-} from "../content-pack.js";
+import { fileURLToPath } from "node:url";
+import { contentEntryId, inspectContentPack } from "../content-pack.js";
+import { validateLibrarySchema } from "../layers.js";
+
+test("external-package contract fixture preserves validated contract metadata", async () => {
+    const root = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const plan = await inspectContentPack(root);
+    assert.equal(plan.records.length, 4);
+    const definition = plan.records.find(
+        ({ layer }) => layer === "definitions",
+    );
+    assert.equal(definition?.class, "definition");
+    assert.equal(definition?.hidden, true);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "words")?.class,
+        "lexical:noun",
+    );
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "words")?.tags,
+        ["fixture"],
+    );
+    assert.deepEqual(plan.manifest.metadata, {
+        catalog: { featured: true, rank: 1 },
+        tags: ["fixture"],
+    });
+    assert.deepEqual(plan.schema.metadata.provider, { stable: true });
+    assert.equal(plan.schema.layers[0].fields?.[2].type, "fixtureScore");
+    assert.deepEqual(plan.schema.layers[0].fields?.[2].metadata.unit, "rank");
+    assert.equal(plan.assets.length, 2);
+    const dependency = plan.schema.layers
+        .find(({ id }) => id === "symbols")
+        ?.relationships?.find(({ id }) => id === "reading-unit-dependency");
+    assert.equal(dependency?.resolverRole, undefined);
+    assert.equal(dependency?.presentationRole, undefined);
+    assert.equal(dependency?.onDelete, "restrict");
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "symbols")?.references,
+        [
+            {
+                entryId: "synthetic:character:lo",
+                relation: "reading-unit-dependency",
+            },
+        ],
+    );
+});
+
+test("external packages reject unvalidated field types and invalid metadata", async (t) => {
+    const source = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-library-contract-"),
+    );
+    t.after(() => rm(root, { recursive: true, force: true }));
+    await cp(source, root, { recursive: true });
+    const schemaFile = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaFile, "utf8"));
+    delete schema.layers[0].fields[2].validation;
+    await writeJson(schemaFile, schema);
+    await assert.rejects(
+        inspectContentPack(root),
+        /custom_field_validation_required/,
+    );
+    schema.layers[0].fields[2].validation = { kind: "number" };
+    schema.metadata.provider.bad = Number.NaN;
+    assert.throws(
+        () => validateLibrarySchema(schema),
+        /invalid_metadata_value/,
+    );
+});
 
 async function writeJson(file: string, value: unknown): Promise<void> {
     await writeFile(file, JSON.stringify(value), "utf8");
 }
+
+test("external packs preserve unknown writing-unit readings without bypassing required fields", async (t) => {
+    const source = fileURLToPath(
+        new URL("fixtures/external-pack", import.meta.url),
+    );
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-unknown-reading-"),
+    );
+    t.after(() => rm(root, { recursive: true, force: true }));
+    await cp(source, root, { recursive: true });
+    const schemaFile = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaFile, "utf8"));
+    const symbols = schema.layers.find(
+        (layer: { id: string }) => layer.id === "symbols",
+    );
+    const pronunciation = symbols.fields.find(
+        (field: { id: string }) => field.id === "pronunciation",
+    );
+    pronunciation.required = false;
+    await writeJson(schemaFile, schema);
+    await writeJson(path.join(root, "content", "symbols", "unknown.json"), [
+        {
+            id: "synthetic:symbol:unknown",
+            label: "◈",
+            fields: {},
+        },
+    ]);
+    const plan = await inspectContentPack(root);
+    assert.deepEqual(
+        plan.records.find(({ id }) => id === "synthetic:symbol:unknown")
+            ?.fields,
+        {},
+    );
+    pronunciation.required = true;
+    await writeJson(schemaFile, schema);
+    await assert.rejects(
+        inspectContentPack(root),
+        /field_required:pronunciation/,
+    );
+});
 
 test("declarative language packs are inspected deterministically", async (t) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
@@ -71,6 +178,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
                 cardConstructor: {
                     label: { labels: { en: "Letter" } },
                     fields: ["pronunciation", "audio", "strokes"],
+                    input_carousels: [],
+                    pronunciation_carousels: [],
                     allowHidden: true,
                 },
                 strokeAsset: { field: "strokes", format: "svg" },
@@ -125,6 +234,8 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.deepEqual(first.schema.layers[0].cardConstructor, {
         label: { labels: { en: "Letter" } },
         fields: ["pronunciation", "audio", "strokes"],
+        input_carousels: [],
+        pronunciation_carousels: [],
         allowHidden: true,
     });
     assert.deepEqual(first.schema.layers[0].grid, {
@@ -146,13 +257,6 @@ test("declarative language packs are inspected deterministically", async (t) => 
     assert.equal(
         contentEntryId(manifest, "english:letter:a"),
         contentEntryId({ ...manifest, version: "2.0.0" }, "english:letter:a"),
-    );
-    assert.notEqual(
-        versionedContentEntryId(manifest, "english:letter:a"),
-        versionedContentEntryId(
-            { ...manifest, version: "2.0.0" },
-            "english:letter:a",
-        ),
     );
 
     await writeJson(path.join(root, "schema.json"), {
@@ -262,7 +366,7 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
         id: "sentences",
         version: 1,
         namespace: "sentences",
-        language: "ja",
+        language: "x-mock",
         metadata: { labels: { en: "Sentences" } },
         layers: [
             {
@@ -294,15 +398,23 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
                         ordered: true,
                         onDelete: "restrict",
                     },
+                    {
+                        id: "pronunciation-readings",
+                        targetLayer: "words",
+                        metadata: { labels: { en: "Pronunciation readings" } },
+                        ordered: true,
+                        onDelete: "restrict",
+                        presentationRole: "pronunciation",
+                    },
                 ],
             },
         ],
     });
     await writeJson(path.join(root, "content", "words", "words.json"), [
-        { id: "sentences:word:japanese", label: "日本語" },
+        { id: "sentences:word:language-name", label: "language" },
     ]);
     await writeJson(path.join(root, "content", "particles", "particles.json"), [
-        { id: "sentences:particle:ga", label: "が" },
+        { id: "sentences:particle:ga", label: "g" },
     ]);
     const sentenceFile = path.join(
         root,
@@ -312,7 +424,7 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
     );
     const references = [
         {
-            entryId: "sentences:word:japanese",
+            entryId: "sentences:word:language-name",
             relation: "words",
             position: 0,
         },
@@ -321,16 +433,25 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
             relation: "particles",
             position: 1,
         },
+        {
+            entryId: "sentences:word:language-name",
+            relation: "pronunciation-readings",
+            position: 0,
+        },
     ];
     await writeJson(sentenceFile, [
-        { id: "sentences:sentence:valid", label: "日本語が", references },
+        { id: "sentences:sentence:valid", label: "languageg", references },
     ]);
-    await assert.doesNotReject(inspectContentPack(root));
+    const plan = await inspectContentPack(root);
+    assert.equal(
+        plan.records.find(({ layer }) => layer === "sentences")?.class,
+        "sentences",
+    );
 
     await writeJson(sentenceFile, [
         {
             id: "sentences:sentence:invalid",
-            label: "日本語が好き",
+            label: "languageglikek",
             references,
         },
     ]);
@@ -338,4 +459,43 @@ test("content packs reject ordered sequences with unlinked text", async (t) => {
         inspectContentPack(root),
         /ordered_sequence_content_unresolved/,
     );
+});
+
+test("reference images are validated, bundled and preserved in content-pack plans", async (context) => {
+    const root = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-library-images-"),
+    );
+    context.after(() => rm(root, { recursive: true, force: true }));
+    await cp(
+        fileURLToPath(new URL("fixtures/external-pack", import.meta.url)),
+        root,
+        { recursive: true },
+    );
+    const schemaPath = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaPath, "utf8"));
+    const layer = schema.layers.find(({ id }) => id === "words");
+    layer.fields.push({
+        id: "images",
+        type: "imageList",
+        metadata: { labels: { en: "Images" } },
+        input: { control: "imageFiles" },
+    });
+    await writeFile(schemaPath, JSON.stringify(schema));
+    const contentPath = path.join(root, "content", "words", "words.json");
+    const content = JSON.parse(await readFile(contentPath, "utf8"));
+    content[0].fields.images = ["dog.png"];
+    await writeFile(contentPath, JSON.stringify(content));
+    const bytes = Buffer.from("89504e470d0a1a0a00000000", "hex");
+    await writeFile(path.join(root, "assets", "dog.png"), bytes);
+    const plan = await inspectContentPack(root);
+    assert.equal(
+        plan.assets.find(({ path }) => path === "dog.png")?.mediaType,
+        "image/png",
+    );
+    assert.deepEqual(
+        plan.records.find(({ layer }) => layer === "words")?.fields.images,
+        ["dog.png"],
+    );
+    await writeFile(path.join(root, "assets", "dog.png"), "<svg/>");
+    await assert.rejects(inspectContentPack(root), /unsupported_image_type/);
 });

@@ -20,6 +20,14 @@ export const PRIVILEGED_FLOW_IDS = new Set([
     "login",
     "startSsoLogin",
 ]);
+const STUDY_LANGUAGE_MODULE_PREFIX = "study-language-";
+const LANGUAGE_CODE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+
+function studyLanguageCode(moduleId: string): string {
+    if (!moduleId.startsWith(STUDY_LANGUAGE_MODULE_PREFIX)) return "";
+    const languageCode = moduleId.slice(STUDY_LANGUAGE_MODULE_PREFIX.length);
+    return LANGUAGE_CODE_PATTERN.test(languageCode) ? languageCode : "";
+}
 const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
 const RUNTIME_FILE_EXTENSIONS = new Set([
     ".cjs",
@@ -62,10 +70,17 @@ export function assertModuleOwnedRoute(
     privilege: ModulePrivilege,
 ): void {
     const ownedPrefix = `/api/v1/modules/${moduleId}`;
+    const languageCode = studyLanguageCode(moduleId);
+    const languagePrefix = languageCode
+        ? `/api/v1/study/languages/${languageCode}`
+        : "";
     if (
         !privilege.requested &&
         routePath !== ownedPrefix &&
-        !routePath.startsWith(`${ownedPrefix}/`)
+        !routePath.startsWith(`${ownedPrefix}/`) &&
+        (!languagePrefix ||
+            (routePath !== languagePrefix &&
+                !routePath.startsWith(`${languagePrefix}/`)))
     ) {
         throw new Error("module_privileged_access_required");
     }
@@ -76,7 +91,17 @@ export function assertModuleOwnedCtxRegistration(
     moduleId: string,
     privilege: ModulePrivilege,
 ): void {
-    if (!privilege.requested && !registrationId.startsWith(`${moduleId}:`)) {
+    const languageCode = studyLanguageCode(moduleId);
+    const languageCapability = languageCode
+        ? `study:language:${languageCode}`
+        : "";
+    if (
+        !privilege.requested &&
+        !registrationId.startsWith(`${moduleId}:`) &&
+        (!languageCapability ||
+            (registrationId !== languageCapability &&
+                !registrationId.startsWith(`${languageCapability}:`)))
+    ) {
         throw new Error("module_privileged_access_required");
     }
 }

@@ -28,7 +28,7 @@ export async function loadLibrary(languageCode, i18n) {
         const viewed = new Set(await fetchViewedLibraryEntryIds());
         entries = entries.map((entry) => ({
             ...entry,
-            isNew: !viewed.has(entry.id),
+            isNew: !entry.relocatedAt && !viewed.has(entry.id),
         }));
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {

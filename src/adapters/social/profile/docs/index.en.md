@@ -138,3 +138,7 @@ The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that rend
 ## External Visibility
 
 `profile:applyExternalProfile` accepts `profileVisibility` values of `hidden`, `private`, `friends`, or `community`. A valid value becomes the persisted profile visibility after profile creation or synchronization; unknown values are ignored.
+
+## Unknown availability without lookup errors
+
+GET availability returns a successful unknown status for a missing or privacy-restricted profile. Both cases have the same response shape and never query its manual preference or calendar status. Existing owner, block, community, friend and private visibility rules remain enforced; writes still require the owner. Avatar indicators display unknown without repeated not-found errors.

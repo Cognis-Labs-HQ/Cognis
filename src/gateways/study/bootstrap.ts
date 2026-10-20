@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { recordStudyResult } from "./progress.js";
+import { StudyAudio } from "./audio.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +16,14 @@ import {
 } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
+import { StudyFavourites } from "./reuse/favourites.js";
+import { createFavouriteRoutes } from "./reuse/favourite-routes.js";
+import {
+    DRAWING_PROGRESS_FLOWS,
+    DrawingProgressStore,
+} from "./drawing/progress.js";
+import { createDrawingRoutes } from "./drawing/routes/index.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 export type {
@@ -203,17 +214,125 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const routeHelpers = resolveRouteContext(routeContext);
-    const gateway = new CoreStudyGateway();
+    const gateway = new CoreStudyGateway(
+        (reference) =>
+            ctx.gatewayRegistry
+                .list()
+                .some(
+                    (dependency) =>
+                        dependency.uuid === reference &&
+                        dependency.status === "active",
+                ),
+        (reference) => ctx.capabilities.has(reference),
+    );
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (!systemCtx)
+        throw new Error("Study requires the platform ctx capability.");
+    if (!systemCtx.hasFlow("study:audio:fetch"))
+        systemCtx?.registerFlow({
+            id: "study:audio:fetch",
+            stages: ["validate", "fetch"],
+        });
+    const audio = new StudyAudio(ctx.flow, ctx.log);
+    ctx.capabilities.contribute("study:audio", audio);
+    systemCtx.contributePublicCapability("study:audio:provider", {
+        registerProvider: audio.registerProvider.bind(audio),
+        registerLanguage: audio.registerLanguage.bind(audio),
+    });
+    const preferences =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    if (preferences) {
+        for (const contract of DRAWING_PROGRESS_FLOWS) {
+            if (!systemCtx.hasFlow(contract.id))
+                systemCtx.registerFlow(contract);
+        }
+        ctx.routeRegistry.register(
+            createDrawingRoutes(
+                new DrawingProgressStore(preferences),
+                routeHelpers,
+                ctx.flow,
+                ctx.log,
+                (actor, entryId, result) =>
+                    recordStudyResult(ctx.capabilities, actor, {
+                        accountId: actor.accountId,
+                        entryId,
+                        activity: "drawing",
+                        eventId: result.attempt
+                            ? "drawing-" +
+                              createHash("sha256")
+                                  .update(
+                                      JSON.stringify([
+                                          actor.accountId,
+                                          entryId,
+                                          result.attempt.id,
+                                      ]),
+                                  )
+                                  .digest("hex")
+                            : undefined,
+                        occurredAt: result.attempt?.occurredAt,
+                        correct: result.result !== "incorrect",
+                        assisted: result.assisted,
+                        mistakes: result.mistakes,
+                    }),
+                () =>
+                    gateway.isAdapterEnabled("library") &&
+                    gateway.isAdapterEnabled("progress"),
+            ),
+            "study",
+        );
+        if (!systemCtx?.hasFlow("study:favourites:save"))
+            systemCtx?.registerFlow({
+                id: "study:favourites:save",
+                stages: ["authorize", "validate", "persist"],
+            });
+        const favourites = new StudyFavourites(preferences);
+        ctx.capabilities.contribute("study:favourites", favourites);
+        ctx.routeRegistry.register(
+            createFavouriteRoutes(favourites, routeHelpers, ctx.flow, ctx.log),
+            "study",
+        );
+    }
     for (const flow of [
+        {
+            id: "study:library:import",
+            stages: ["authorize", "validate", "persist"],
+        },
         {
             id: "study:library:create",
             stages: ["normalize", "resolve", "validate", "persist"],
         },
         {
+            id: "study:library:update",
+            stages: ["authorize", "validate", "persist", "audit"],
+        },
+        {
             id: "study:library:resolve",
             stages: ["normalize", "propose", "rank"],
+        },
+        {
+            id: "study:library:search",
+            stages: ["authorize", "validate", "search", "audit"],
+        },
+        { id: "study:library:notifyRequest", stages: ["deliver"] },
+        { id: "study:library:stageRequest", stages: ["authorize", "persist"] },
+        {
+            id: "study:library:uploadImage",
+            stages: ["authorize", "validate", "persist"],
+        },
+        { id: "study:library:readImage", stages: ["authorize"] },
+        { id: "study:library:discardImage", stages: ["authorize", "discard"] },
+        {
+            id: "study:library:uploadAudio",
+            stages: ["authorize", "validate", "persist"],
+        },
+        {
+            id: "study:library:regenerateAudio",
+            stages: ["authorize", "validate", "resolve", "persist"],
+        },
+        {
+            id: "study:library:audio",
+            stages: ["authorize", "validate", "resolve"],
         },
         {
             id: "study:library:lookup",
@@ -222,6 +341,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         {
             id: "study:library:ingest",
             stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+        {
+            id: "study:library:merge",
+            stages: ["authorize", "validate", "merge", "audit"],
+        },
+        {
+            id: "study:library:move",
+            stages: ["authorize", "validate", "move", "audit"],
         },
         {
             id: "study:library:delete",
@@ -237,10 +364,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
 
+    const languageModuleStates = new Map<string, boolean>();
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
         const capabilityIds =
             systemCtx?.listCapabilities() ?? ctx.capabilities.list();
+        const activeModuleIds = new Set<string>();
         for (const capabilityId of capabilityIds.filter((id) =>
             /^study:language:[^:]+$/.test(id),
         )) {
@@ -266,6 +395,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!languageCode) continue;
             const moduleId =
                 descriptor?.moduleId ?? `study-language-${languageCode}`;
+            activeModuleIds.add(moduleId);
             gateway.registerLanguageModule(
                 {
                     languageCode,
@@ -291,7 +421,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
                 { moduleId },
             );
-            gateway.setLanguageModuleEnabled(moduleId, true);
+            gateway.setLanguageModuleEnabled(
+                moduleId,
+                languageModuleStates.get(moduleId) !== false,
+            );
+        }
+        for (const registered of gateway.listRegisteredLanguageModules()) {
+            if (
+                registered.moduleClass !== "core" &&
+                !activeModuleIds.has(registered.moduleId)
+            )
+                gateway.setLanguageModuleEnabled(registered.moduleId, false);
         }
     };
 
@@ -306,6 +446,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         moduleId: string,
         enabled: boolean,
     ): void => {
+        languageModuleStates.set(moduleId, enabled);
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
     /**

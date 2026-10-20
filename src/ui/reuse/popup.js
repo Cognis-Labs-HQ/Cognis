@@ -36,7 +36,8 @@
  * Options:
  *   title    — heading text (rendered as plain text, HTML-escaped).
  *   titleDetail — optional secondary heading text rendered smaller beside the title.
- *   titleDetailItems — optional ordered `{ label, actionId? }` secondary heading fragments.
+ *   titleDetailItems — optional ordered `{ label, actionId?, placement? }` secondary heading fragments.
+ *   headingLayout — "inline" (default) or "annotated" with aside/below detail placements.
  *   titleLeading — optional trusted HTML rendered immediately before the title.
  *   titleAction — optional `{ id, label }` that renders the heading as an action.
  *   titleItems — optional ordered `{ label, actionId? }` title fragments.
@@ -45,7 +46,7 @@
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
- *              When omitted, a single green 'Done' (confirm) button is rendered.
+ *              When omitted, a single green 'Done' (confirm) button is rendered. An empty array renders no footer actions.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   mandatory — When true, hides the header close button and disables
  *              backdrop and Escape-key dismissal. Explicit actions still work.
@@ -80,16 +81,19 @@
  * @param {{
  *   title: string,
  *   titleDetail?: string,
- *   titleDetailItems?: Array<{ label: string, actionId?: string }>,
+ *   headingLayout?: "inline" | "annotated",
+ *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: string }>,
  *   titleLeading?: string,
  *   titleAction?: { id: string, label: string },
  *   titleItems?: Array<{ label: string, actionId?: string }>,
+ *   stackTitleDetailOnOverflow?: boolean,
+ *   headerActions?: Array<{ id: string, label: string, icon?: string | { light: string, dark?: string } }>,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
- *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: { updateBody: (body: string) => HTMLElement | null }) => void,
- *   onAction?: (actionId: string | null, overlay: HTMLElement, api: { updateBody: (body: string) => HTMLElement | null }) => Promise<boolean | void> | boolean | void,
+ *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
@@ -99,8 +103,11 @@
  * @returns {Promise<string|null>}
  */
 
+import { createPopupContentApi } from "./popup/content.js";
 import { createI18n } from "./i18n.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
+
+/** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
 
 let stylesheetReady = null;
 let stylesheetRefresh = null;
@@ -121,11 +128,14 @@ const scrollLockState = {
     count: 0,
     bodyOverflow: null,
     bodyScrollbarGutter: null,
+    rootScrollbarGutter: null,
     mainOverflowValues: [],
 };
 
 function getScrollableMainElements() {
-    return Array.from(document.querySelectorAll("main"));
+    return Array.from(document.querySelectorAll("main")).filter((element) =>
+        /^(auto|scroll)$/.test(getComputedStyle(element).overflowY),
+    );
 }
 
 function lockPageScroll() {
@@ -133,6 +143,8 @@ function lockPageScroll() {
         scrollLockState.bodyOverflow = document.body.style.overflow;
         scrollLockState.bodyScrollbarGutter =
             document.body.style.scrollbarGutter;
+        scrollLockState.rootScrollbarGutter =
+            document.documentElement.style.scrollbarGutter;
         scrollLockState.mainOverflowValues = getScrollableMainElements().map(
             (element) => ({
                 element,
@@ -143,10 +155,12 @@ function lockPageScroll() {
         // Reserve each scrolling surface's gutter before hiding its scrollbar.
         // Without this, opening or closing a modal changes the available inline
         // space and forces the page beneath it to redraw at a different width.
-        document.body.style.scrollbarGutter = "stable";
+        if (window.innerWidth > document.documentElement.clientWidth)
+            document.documentElement.style.scrollbarGutter = "stable";
         document.body.style.overflow = "hidden";
         scrollLockState.mainOverflowValues.forEach(({ element }) => {
-            element.style.scrollbarGutter = "stable";
+            if (element.scrollHeight > element.clientHeight)
+                element.style.scrollbarGutter = "stable";
             element.style.overflow = "hidden";
         });
     }
@@ -160,6 +174,8 @@ function unlockPageScroll() {
     document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
     document.body.style.scrollbarGutter =
         scrollLockState.bodyScrollbarGutter ?? "";
+    document.documentElement.style.scrollbarGutter =
+        scrollLockState.rootScrollbarGutter ?? "";
     scrollLockState.mainOverflowValues.forEach(
         ({ element, overflow, scrollbarGutter }) => {
             element.style.overflow = overflow;
@@ -168,6 +184,7 @@ function unlockPageScroll() {
     );
     scrollLockState.bodyOverflow = null;
     scrollLockState.bodyScrollbarGutter = null;
+    scrollLockState.rootScrollbarGutter = null;
     scrollLockState.mainOverflowValues = [];
 }
 
@@ -405,6 +422,9 @@ export async function openPopup({
     titleLeading,
     titleAction,
     titleItems,
+    stackTitleDetailOnOverflow = false,
+    headingLayout = "inline",
+    headerActions = [],
     body,
     variant = "info",
     actions,
@@ -423,6 +443,11 @@ export async function openPopup({
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "popup-overlay";
+        const highestPopupZIndex = Array.from(
+            document.querySelectorAll(".popup-overlay"),
+            (candidate) => Number.parseInt(candidate.style.zIndex, 10) || 2000,
+        ).reduce((highest, zIndex) => Math.max(highest, zIndex), 1990);
+        overlay.style.zIndex = String(highestPopupZIndex + 10);
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
@@ -447,14 +472,31 @@ export async function openPopup({
             detailItemValues,
         ) {
             const detail = String(detailValue ?? "");
-            const renderHeadingItems = (items) =>
-                items
-                    .map((item) =>
-                        item.actionId
-                            ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
-                            : escapeHtml(item.label),
+            const renderHeadingItems = (items) => {
+                const rendered = items.map((item) => {
+                    const content = item.actionId
+                        ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                        : escapeHtml(item.label);
+                    return { content, placement: item.placement };
+                });
+                const groups = [];
+                for (const item of rendered) {
+                    const previous = groups.at(-1);
+                    if (
+                        item.placement &&
+                        previous?.placement === item.placement
+                    )
+                        previous.content += item.content;
+                    else groups.push({ ...item });
+                }
+                return groups
+                    .map(({ content, placement }) =>
+                        placement
+                            ? `<span data-popup-title-placement="${escapeHtml(placement)}">${content}</span>`
+                            : content,
                     )
                     .join("");
+            };
             const titleContent =
                 Array.isArray(itemValues) && itemValues.length
                     ? renderHeadingItems(itemValues)
@@ -465,7 +507,7 @@ export async function openPopup({
                 Array.isArray(detailItemValues) && detailItemValues.length
                     ? renderHeadingItems(detailItemValues)
                     : escapeHtml(detail);
-            return `${leadingValue ?? ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
+            return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
         }
 
         function renderActionContent(action) {
@@ -487,7 +529,11 @@ export async function openPopup({
                 manuallyDirty ||
                 (closeProtectionTracker?.isAnyDirty() ??
                     hasUnsavedFormChanges(overlay));
-            if (actionId === null && closeProtection && hasUnsavedChanges) {
+            if (
+                (actionId === null || actionId === "cancel") &&
+                closeProtection &&
+                hasUnsavedChanges
+            ) {
                 const i18n = await getI18n();
                 const confirmed = await openPopup({
                     title: i18n.t("ui.reuse.unsaved_changes"),
@@ -558,7 +604,7 @@ export async function openPopup({
 
         const effectiveActions = popupPages
             ? (currentPage?.actions ?? actions ?? [])
-            : Array.isArray(actions) && actions.length > 0
+            : Array.isArray(actions)
               ? actions
               : [{ id: "close", label: "Done", variant: "confirm" }];
 
@@ -583,7 +629,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <div class="popup-heading">${renderPopupHeading(
+          <div class="popup-heading${headingLayout === "annotated" ? " popup-heading--annotated" : ""}">${renderPopupHeading(
               currentPage?.title ?? title,
               currentPage?.titleDetail ?? titleDetail,
               currentPage?.titleAction ?? titleAction,
@@ -591,7 +637,20 @@ export async function openPopup({
               currentPage?.titleItems ?? titleItems,
               currentPage?.titleDetailItems ?? titleDetailItems,
           )}</div>
-          ${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}
+          <div class="popup-header-actions">${headerActions
+              .map((action) => {
+                  const icon = action.icon;
+                  const content =
+                      icon && typeof icon === "object" && icon.light
+                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt=""></picture>`
+                          : icon
+                            ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
+                            : escapeHtml(action.label);
+                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}" title="${escapeHtml(action.label)}">${content}</button>`;
+              })
+              .join(
+                  "",
+              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
@@ -605,6 +664,8 @@ export async function openPopup({
         overlay.addEventListener("click", async (event) => {
             if (!mandatory && event.target === overlay) await dismiss(null);
         });
+
+        const contentApi = createPopupContentApi(overlay, fitPopupTitleRow);
 
         function renderPopupPage(pageId) {
             if (!popupPages) return false;
@@ -654,6 +715,7 @@ export async function openPopup({
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
                 updateBody,
+                ...contentApi,
                 markDirty: () => {
                     manuallyDirty = true;
                 },
@@ -685,6 +747,7 @@ export async function openPopup({
                                     pageId: currentPage?.id,
                                     requestClose: () => dismiss(null),
                                     updateBody,
+                                    ...contentApi,
                                     markDirty: () => {
                                         manuallyDirty = true;
                                     },
@@ -705,6 +768,7 @@ export async function openPopup({
             const titleElement = heading?.querySelector(".popup-title");
             const detailElement = heading?.querySelector(".popup-title-detail");
             if (!heading || !titleElement) return;
+            heading.classList.remove("popup-heading--stacked-detail");
             heading.style.setProperty("--popup-title-scale", "1");
             heading.style.setProperty("--popup-title-detail-scale", "1");
             const style = window.getComputedStyle(heading);
@@ -733,6 +797,26 @@ export async function openPopup({
                     "--popup-title-scale",
                     String(titleScale),
                 );
+            }
+            const detailIsStressed = Array.from(
+                detailElement?.children ?? [],
+            ).some((element) => {
+                const elementStyle = window.getComputedStyle(element);
+                const lineHeight = Number.parseFloat(elementStyle.lineHeight);
+                return (
+                    element.scrollWidth > element.clientWidth + 1 ||
+                    (Number.isFinite(lineHeight) &&
+                        element.scrollHeight > lineHeight * 1.5)
+                );
+            });
+            if (
+                stackTitleDetailOnOverflow &&
+                (titleElement.scrollWidth > titleElement.clientWidth + 1 ||
+                    detailIsStressed)
+            ) {
+                heading.classList.add("popup-heading--stacked-detail");
+                heading.style.setProperty("--popup-title-scale", "1");
+                heading.style.setProperty("--popup-title-detail-scale", "1");
             }
         }
         bindActionButtons(overlay);
@@ -770,6 +854,7 @@ export async function openPopup({
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {
                 updateBody,
+                ...contentApi,
                 setPage: renderPopupPage,
                 pageId: currentPage?.id,
                 markDirty: () => {
@@ -818,7 +903,7 @@ export async function openPopup({
         const firstFocusable =
             overlay.querySelector("input, textarea, select") ??
             overlay.querySelector("button:not(.popup-close-btn)");
-        firstFocusable?.focus();
+        firstFocusable?.focus({ preventScroll: true });
     });
 }
 

@@ -1,9 +1,12 @@
+import { filterItems } from "/static/reuse/collection-view.js";
+import { renderBrowseControls } from "/static/gateways/study/reuse/favourites.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
 
-function filterDescriptors(layer, layerEntries, contentLanguage) {
-    return filterFields(layer).flatMap((field) => {
+function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
+    layerEntries = layerEntries.filter((entry) => !entry.hidden);
+    const fieldFilters = filterFields(layer).flatMap((field) => {
         const values = [
             ...new Set(
                 layerEntries.flatMap((entry) =>
@@ -26,18 +29,46 @@ function filterDescriptors(layer, layerEntries, contentLanguage) {
               ]
             : [];
     });
+    const transformTags = [
+        ...new Set(
+            (layer.views ?? [])
+                .filter(({ layout }) => layout === "transformTree")
+                .flatMap(({ includeTags }) => includeTags)
+                .filter((tag) =>
+                    layerEntries.some(
+                        (entry) =>
+                            !entry.hidden && (entry.tags ?? []).includes(tag),
+                    ),
+                ),
+        ),
+    ];
+    return transformTags.length
+        ? [
+              ...fieldFilters,
+              {
+                  id: "__tags",
+                  label: i18n.t("gateway.study.library_word_type"),
+                  values: transformTags,
+                  detail: { exclusive: false },
+              },
+          ]
+        : fieldFilters;
 }
 
 export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
-    const filters = filterDescriptors(layer, layerEntries, contentLanguage);
-    if (!filters.length) return "";
+    const filters = filterDescriptors(
+        layer,
+        layerEntries,
+        contentLanguage,
+        i18n,
+    );
     const groups = groupByToMap(
         filters,
         (filter) =>
             (layer.fields ?? []).find(({ id }) => id === filter.id)?.detail
                 ?.group ?? filter.id,
     );
-    return `<div class="library-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
+    return `<div class="library-filters study-browse-filters" aria-label="${escapeHtml(i18n.t("gateway.study.library_filters"))}">${Array.from(
         groups.entries(),
     )
         .map(([groupId, groupFilters]) => {
@@ -58,7 +89,9 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
             );
             const selectedTag =
                 tags.find(({ value }) => value === defaultTag) ??
-                (required || tags.length === 1 ? tags[0] : undefined);
+                (required || (tags.length === 1 && groupId !== "__tags")
+                    ? tags[0]
+                    : undefined);
             return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}" data-library-filter-required="${required}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${tags
                 .map((tag) => {
                     const { filter, value } = tag;
@@ -67,7 +100,7 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
                 })
                 .join("")}</div></fieldset>`;
         })
-        .join("")}</div>`;
+        .join("")}${renderBrowseControls(i18n)}</div>`;
 }
 
 export function applyLibraryFilters(filter) {
@@ -104,21 +137,34 @@ export function refreshLibraryFilterResults(panel) {
         selectedFilters,
         (item) => item.dataset.libraryFilter,
     );
+    const query = panel.querySelector("[data-study-query]")?.value ?? "";
     let visibleCount = 0;
     const filterableCards = panel.querySelectorAll(
         ".library-entry-card[data-library-filter-values]",
     );
+    const visibleCards = new Set(
+        filterItems(filterableCards, {
+            query,
+            text: (card) => card.textContent,
+            predicates: [
+                (card) => card.dataset.studyFavouriteHidden !== "true",
+                (card) => {
+                    const values = JSON.parse(card.dataset.libraryFilterValues);
+                    return Array.from(selections.entries()).every(
+                        ([fieldId, controls]) =>
+                            controls.some((control) =>
+                                (Array.isArray(values[fieldId])
+                                    ? values[fieldId]
+                                    : []
+                                ).includes(control.dataset.libraryFilterValue),
+                            ),
+                    );
+                },
+            ],
+        }),
+    );
     filterableCards.forEach((card) => {
-        const values = JSON.parse(card.dataset.libraryFilterValues);
-        const visible = Array.from(selections.entries()).every(
-            ([fieldId, controls]) =>
-                controls.some((control) =>
-                    (Array.isArray(values[fieldId])
-                        ? values[fieldId]
-                        : []
-                    ).includes(control.dataset.libraryFilterValue),
-                ),
-        );
+        const visible = visibleCards.has(card);
         card.hidden = !visible;
         card.closest(".library-entry-card-shell").hidden = !visible;
         if (visible) visibleCount += 1;

@@ -12,6 +12,7 @@ import {
     type BootstrapLog,
     type ModuleManifest,
     type ModuleRuntimeGateway,
+    type Ctx,
 } from "@cognis/core";
 import {
     createModuleRoutes,
@@ -329,6 +330,21 @@ export function assertModuleCapabilityDependencies(
     }
 }
 
+export function isModuleCapabilityAvailable(
+    capabilityId: string,
+    routeContext: RouteContext,
+    uiRegistry?: UIRegistry,
+): boolean {
+    if (routeContext.getCapability(capabilityId) !== undefined) return true;
+    const systemCtx = routeContext.getCapability<Ctx>("system:ctx");
+    if (
+        systemCtx?.isPublicCapability(capabilityId) &&
+        systemCtx.getCapability(capabilityId) !== undefined
+    )
+        return true;
+    return uiRegistry?.hasActiveCapabilityProvider(capabilityId) ?? false;
+}
+
 /**
  * Resolves a module's startup enabled state from highest to lowest priority:
  * core-module requirement, persisted runtime override, then manifest default.
@@ -424,9 +440,11 @@ export function buildServer(deps: ApiDependencies) {
             moduleId,
             manifest?.requiresCapabilities ?? [],
             (capabilityId) =>
-                routeContext.getCapability(capabilityId) !== undefined ||
-                (deps.uiRegistry?.hasActiveCapabilityProvider(capabilityId) ??
-                    false),
+                isModuleCapabilityAvailable(
+                    capabilityId,
+                    routeContext,
+                    deps.uiRegistry,
+                ),
         );
         await (
             deps.runModuleTests ?? moduleTestService.run.bind(moduleTestService)

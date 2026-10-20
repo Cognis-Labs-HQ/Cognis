@@ -1,3 +1,7 @@
+import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
+import { showToast } from "/static/reuse/toast.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -8,9 +12,13 @@ import {
     isAdminScope,
     parseLanguageCode,
 } from "/static/gateways/study/ui/language.js";
-import { fetchLibrarySchemas } from "/static/gateways/study/ui/library-client.js";
+import {
+    dictionarySearchContext,
+    fetchLibrarySchemas,
+    fetchSearchableDictionaryProviders,
+} from "/static/gateways/study/ui/library-client.js";
 
-const SETTINGS_GEAR_ICON = `<picture><source media="(prefers-color-scheme: dark)" srcset="/static/assets/reuse/settings-cog-dark.svg"><img src="/static/assets/reuse/settings-cog-light.svg" alt=""></picture>`;
+const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 
 async function loadLearningLanguages() {
     try {
@@ -32,7 +40,7 @@ const SUB_NAV_CACHE = {
 
 export function readSelectedStudyLanguageCode() {
     const selectedButton = document.querySelector(
-        ".study-subnav-language-options .dropdown-item.active[data-language-code]",
+        ".study-subnav-language-options [data-language-code].active",
     );
     return parseLanguageCode(
         history.state?.studyLanguageCode ??
@@ -40,7 +48,72 @@ export function readSelectedStudyLanguageCode() {
     );
 }
 
-export function bindStudySubNavigation(root, { signal } = {}) {
+const navigationScopes = new WeakMap();
+
+export function bindStudySubNavigation(
+    root,
+    { signal: externalSignal, i18n } = {},
+) {
+    const controller = replaceMountScope(
+        navigationScopes.get(root),
+        externalSignal,
+    );
+    navigationScopes.set(root, controller);
+    const signal = controller.signal;
+    window.addEventListener(
+        "cognis:route-will-change",
+        () => controller.abort(),
+        { signal, once: true },
+    );
+    root.addEventListener(
+        "change",
+        (event) => {
+            const select = event.target.closest(
+                "[data-study-dictionary-search] select[name=provider]",
+            );
+            if (!select) return;
+            const button = select.form.querySelector("button[type=submit]");
+            const label = select.selectedOptions[0].dataset.searchLabel;
+            button.title = label;
+            button.setAttribute("aria-label", label);
+        },
+        { signal },
+    );
+    root.addEventListener(
+        "submit",
+        async (event) => {
+            const form = event.target.closest("[data-study-dictionary-search]");
+            if (!form) return;
+            event.preventDefault();
+            const query = form.elements.query.value.trim();
+            if (!query) return;
+            const provider = JSON.parse(form.elements.provider.value);
+            const button = form.querySelector("button[type=submit]");
+            if (button.disabled) return;
+            button.disabled = true;
+            try {
+                await dictionarySearchContext({
+                    query,
+                    providerId: provider.id,
+                    schemaId: provider.schemaId,
+                    language: form.dataset.language,
+                });
+                if (!signal?.aborted)
+                    uiCtx.capabilities.get("ui:navigate")?.(
+                        "/study/library/search",
+                    );
+            } catch {
+                showToast(
+                    i18n?.t("gateway.study.library_dictionary_error") ??
+                        form.elements.query.getAttribute("aria-label"),
+                    { variant: "error" },
+                );
+            } finally {
+                button.disabled = false;
+            }
+        },
+        { signal },
+    );
     root.addEventListener(
         "click",
         (event) => {
@@ -135,8 +208,7 @@ export async function loadStudySubNavigationModel({
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const subPages = uiCtx.capabilities.get("study:subPages");
     if (!subPages) throw new Error("Study sub-page provider unavailable.");
-    const learningLanguagesRaw = await (SUB_NAV_CACHE.learningLanguages ??
-        loadLearningLanguages());
+    const learningLanguagesRaw = await loadLearningLanguages();
     SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
 
     const requestedModel = await subPages.load("study", {
@@ -161,60 +233,71 @@ export async function loadStudySubNavigationModel({
 
     const learningLanguages = learningLanguagesRaw
         .map((languageCode) => parseLanguageCode(languageCode))
-        .filter(Boolean);
+        .filter((languageCode) => languageCatalogByCode.has(languageCode));
     const activeLanguageCodes = Array.from(
         new Set([
             ...learningLanguages,
-            ...[requestedLanguageCode].filter(Boolean),
+            ...[requestedLanguageCode].filter((languageCode) =>
+                languageCatalogByCode.has(languageCode),
+            ),
         ]),
     );
-    for (const languageCode of activeLanguageCodes) {
-        if (!languageCatalogByCode.has(languageCode)) {
-            languageCatalogByCode.set(languageCode, {
-                code: languageCode,
-                flag: "",
-                name: resolveLanguageLabel(languageCode),
-            });
-        }
-    }
 
-    const selectedLanguageCode =
-        requestedLanguageCode || activeLanguageCodes[0];
+    const selectedLanguageCode = activeLanguageCodes.includes(
+        requestedLanguageCode,
+    )
+        ? requestedLanguageCode
+        : activeLanguageCodes[0];
 
     const modulesByLanguage = requestedModel.pagesByGroup;
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
-    const schemas = selectedLanguageCode
-        ? await fetchLibrarySchemas(selectedLanguageCode).catch(() => [])
-        : [];
+    const schemas = await fetchLibrarySchemas().catch(() => []);
     const activeLocale = document.documentElement.lang;
-    for (const schema of schemas) {
-        for (const layer of schema.layers ?? []) {
-            if (
-                ["definition", "meaning", "particle"].includes(
-                    layer.semanticRole,
-                )
-            ) {
-                continue;
-            }
-            const labels = layer.metadata?.labels ?? {};
-            const label = labels[activeLocale] ?? layer.id;
-            modules.push({
-                id: `library-${schema.id}-${layer.id}`,
-                label,
-                pageUrl: `/study/layers/${encodeURIComponent(schema.id)}/${encodeURIComponent(layer.id)}`,
-                order: 200,
-            });
-        }
-    }
     const spaRoutes = await loadSpaRoutes();
-    if (spaRoutes.some((route) => route.base === "/study/leaderboard")) {
+    if (spaRoutes.some((route) => route.base === "/study/explore"))
         modules.push({
-            id: "leaderboard",
-            label: "Leaderboard",
-            labelKey: "gateway.study.leaderboard_label",
-            pageUrl: "/study/leaderboard",
-            order: 300,
+            id: "explore",
+            labelKey: "gateway.study.explore",
+            pageUrl: "/study/explore",
+            order: 200,
+        });
+    for (const route of spaRoutes.filter(
+        (route) =>
+            Object.values(route.navigationLabels ?? {}).some(
+                (label) => typeof label === "string" && label.trim(),
+            ) &&
+            route.base.startsWith("/study/") &&
+            route.base !== "/study/library/requests" &&
+            !modules.some((page) => page.pageUrl === route.base),
+    )) {
+        const labels = route.navigationLabels;
+        modules.push({
+            id: route.id,
+            label:
+                labels[activeLocale] ??
+                labels[activeLocale.split("-")[0]] ??
+                labels.en,
+            pageUrl:
+                route.base === "/study/flashcards"
+                    ? languageFlashcardsUrl(selectedLanguageCode)
+                    : route.base,
+            order: 210,
+        });
+    }
+    const requestsRoute = spaRoutes.find(
+        (route) => route.base === "/study/library/requests",
+    );
+    if (requestsRoute) {
+        const navigationLabels = requestsRoute.navigationLabels ?? {};
+        modules.push({
+            id: "library-requests",
+            label:
+                navigationLabels[activeLocale] ??
+                navigationLabels[activeLocale.split("-")[0]] ??
+                navigationLabels.en,
+            pageUrl: "/study/library/requests",
+            order: 290,
         });
     }
     modules.sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
@@ -231,15 +314,46 @@ export async function loadStudySubNavigationModel({
             );
             return [
                 languageCode,
-                rememberedPageUrl && registeredPageUrls.has(rememberedPageUrl)
-                    ? rememberedPageUrl
-                    : resolveDefaultChildPageUrl(languageModules),
+                /^\/study(?:\/[^/]+)?\/flashcards(?:\/|$)/.test(
+                    rememberedPageUrl ?? "",
+                )
+                    ? languageFlashcardsUrl(languageCode)
+                    : rememberedPageUrl &&
+                        registeredPageUrls.has(rememberedPageUrl)
+                      ? rememberedPageUrl
+                      : rememberedPageUrl &&
+                          spaRoutes.some(
+                              (route) =>
+                                  route.base !== "/study/explore" &&
+                                  route.base.startsWith("/study/") &&
+                                  (route.base === rememberedPageUrl ||
+                                      rememberedPageUrl.startsWith(
+                                          `${route.base}/`,
+                                      )),
+                          )
+                        ? rememberedPageUrl
+                        : languageModules.length
+                          ? resolveDefaultChildPageUrl(languageModules)
+                          : spaRoutes.some(
+                                  (route) => route.base === "/study/explore",
+                              )
+                            ? (languageExploreUrl(
+                                  schemas,
+                                  languageCode,
+                                  rememberedPageUrl,
+                              ) ?? "/study")
+                            : "/study",
             ];
         }),
     );
 
     return {
         selectedLanguageCode,
+        dictionaryProviders:
+            selectedLanguageCode &&
+            schemas.some((schema) => schema.language === selectedLanguageCode)
+                ? await fetchSearchableDictionaryProviders(selectedLanguageCode)
+                : [],
         modules,
         learningLanguages: activeLanguageCodes,
         languageCatalogByCode,
@@ -272,6 +386,15 @@ export async function loadStudySubNavigationModel({
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
+    const providerSearchLabel = (provider) =>
+        i18n
+            .t("gateway.study.dictionary_search_with")
+            .replace(
+                "{{ provider }}",
+                provider.metadata.labels?.[document.documentElement.lang] ||
+                    provider.metadata.labels?.en ||
+                    provider.id,
+            );
     const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
@@ -288,7 +411,11 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 translatedLabel && translatedLabel !== component?.labelKey
                     ? translatedLabel
                     : String(component?.label ?? pageUrl);
-            const activeClass = rawPageUrl === currentPath ? " active" : "";
+            const activeClass =
+                rawPageUrl === currentPath ||
+                currentPath.startsWith(`${rawPageUrl}/`)
+                    ? " active"
+                    : "";
             return `
                 <li>
                     <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
@@ -346,6 +473,26 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}
             </ul>
+            ${
+                model.dictionaryProviders?.length
+                    ? createFormBuilder(
+                          { i18n, escapeHtml },
+                          {
+                              formId: "study-dictionary-search",
+                              formClassName: "study-dictionary-search",
+                              formAttributes: {
+                                  "data-study-dictionary-search": true,
+                                  "data-language": model.selectedLanguageCode,
+                              },
+                              includeSubmitButton: false,
+                              fields: [],
+                              trustedContentHtml: `<select class="theme-select" name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option data-search-label="${escapeHtml(providerSearchLabel(provider))}" value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
+                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
+                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="study-dictionary-search-icon" aria-hidden="true"></span></button>`,
+                          },
+                      ).render()
+                    : ""
+            }
             <ul class="page-subnav-list study-subnav-settings">
                 <li>
                     <a

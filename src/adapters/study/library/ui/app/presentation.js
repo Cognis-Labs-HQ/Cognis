@@ -1,7 +1,12 @@
+import { activateLibraryMediaSession } from "./audio-media-session.js";
+import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
 import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
+import { referencedTransformation } from "./transformations.js";
+import { resolveReferenceTitleComposition } from "./composition-links.js";
 
 export function entryAttributes(entry) {
     return `data-library-schema="${escapeHtml(entry.schemaId)}" data-library-layer="${escapeHtml(entry.layer)}" data-library-entry="${escapeHtml(entry.id)}"`;
@@ -89,18 +94,23 @@ export function definitionText(entry, layer, languageCode) {
     return localizedTextValue(translations);
 }
 
-export function metadataFields(layer) {
+export function visibleDetailFields(layer) {
     return (layer?.fields ?? []).filter(
-        (field) => field.detail?.renderer === "badge" && !field.detail.hidden,
+        (field) => !field.hidden && !field.detail?.hidden,
+    );
+}
+
+export function metadataFields(layer) {
+    return visibleDetailFields(layer).filter(
+        (field) => field.detail?.renderer === "badge",
     );
 }
 
 export function filterFields(layer) {
-    return (layer?.fields ?? []).filter(
+    return visibleDetailFields(layer).filter(
         (field) =>
-            !field.detail?.hidden &&
-            (field.detail?.renderer === "badge" ||
-                field.detail?.filterable === true),
+            field.detail?.renderer === "badge" ||
+            field.detail?.filterable === true,
     );
 }
 
@@ -147,15 +157,14 @@ export function scopeLabel(entry, i18n) {
     return i18n.t(`gateway.study.library_scope_${entry.scope}`);
 }
 
-export function renderScope(entry, i18n) {
+export function renderScope(entry, i18n, label = scopeLabel(entry, i18n)) {
     const icon =
         entry.scope === "global"
             ? "globe"
             : entry.scope === "class"
               ? "class"
               : "user";
-    const label = scopeLabel(entry, i18n);
-    return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
+    return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><span class="library-scope-icon library-scope-icon--${icon}" aria-hidden="true"></span></span>`;
 }
 
 export function relationSection(title, entries, emptyLabel, labelForEntry) {
@@ -180,14 +189,6 @@ export function isWritingUnitLayer(layer) {
     );
 }
 
-export function pronunciationValues(entry) {
-    const pronunciation = entry.fields?.pronunciation;
-    if (!pronunciation) return [];
-    return (Array.isArray(pronunciation) ? pronunciation : [pronunciation]).map(
-        (value) => String(value),
-    );
-}
-
 export function relationshipPresentationRole(
     relationship,
     sourceLayer,
@@ -200,7 +201,7 @@ export function relationshipPresentationRole(
     if (targetLayer?.semanticRole === "lexicalUnit") return "pronunciation";
     if (targetLayer?.id === sourceLayer?.id && relationship.variant)
         return "alternateSpelling";
-    return "composition";
+    return relationship.resolverRole ? "composition" : undefined;
 }
 
 export function compositionReferenceGroups(detail, schemas) {
@@ -212,6 +213,49 @@ export function compositionReferenceGroups(detail, schemas) {
         (sourceLayer?.relationships ?? [])
             .filter((relationship) => relationship.resolverRole)
             .map((relationship) => [relationship.id, relationship]),
+    );
+    const grouped = Object.entries(detail.entry.referenceGroups ?? {}).flatMap(
+        ([relation, groups]) =>
+            groups.map((references, groupIndex) => ({
+                relation,
+                groupIndex,
+                references,
+            })),
+    );
+    const groupedResults = grouped.flatMap(
+        ({ relation, groupIndex, references }) => {
+            const relationship = relationshipsById.get(relation);
+            if (!relationship) return [];
+            const entries = references
+                .slice()
+                .sort(
+                    (left, right) =>
+                        (left.position ?? 0) - (right.position ?? 0),
+                )
+                .map((reference) => {
+                    const entry = entriesById.get(reference.entryId);
+                    return entry
+                        ? {
+                              ...entry,
+                              referenceTransformation: reference.transformation,
+                          }
+                        : null;
+                })
+                .filter(Boolean);
+            return entries.length
+                ? [
+                      {
+                          id: `${relation}:${groupIndex}`,
+                          presentationRole: relationshipPresentationRole(
+                              relationship,
+                              sourceLayer,
+                              schemas,
+                          ),
+                          entries,
+                      },
+                  ]
+                : [];
+        },
     );
     const groupsByRole = new Map();
     for (const reference of detail.entry.references ?? []) {
@@ -233,39 +277,125 @@ export function compositionReferenceGroups(detail, schemas) {
             presentationRole,
             references: [],
         };
-        group.references.push({ entry, position: reference.position ?? 0 });
+        group.references.push({
+            entry: {
+                ...entry,
+                referenceTransformation: reference.transformation,
+            },
+            position: reference.position ?? 0,
+        });
         groupsByRole.set(presentationRole, group);
     }
-    return Array.from(groupsByRole.values(), (group) => ({
-        id: group.id,
-        presentationRole: group.presentationRole,
-        entries: group.references
-            .sort((left, right) => left.position - right.position)
-            .map(({ entry }) => entry),
-    }));
+    return [
+        ...groupedResults,
+        ...Array.from(groupsByRole.values(), (group) => ({
+            id: group.id,
+            presentationRole: group.presentationRole,
+            entries: group.references
+                .sort((left, right) => left.position - right.position)
+                .map(({ entry }) => entry),
+        })),
+    ];
 }
 
 export function headingCompositionReferences(detail, schemas) {
-    return (
-        compositionReferenceGroups(detail, schemas).find(
-            (group) =>
-                group.presentationRole === "composition" &&
-                group.entries.length > 0 &&
-                group.entries.map(({ label }) => label).join("") ===
-                    detail.entry.label,
-        )?.entries ?? []
-    );
+    const schema = schemas.find(({ id }) => id === detail.entry.schemaId);
+    const literals = (
+        layerForEntry(schemas, detail.entry)?.cardConstructor
+            ?.literal_carousels ?? []
+    ).flatMap(({ values }) => values);
+    for (const group of compositionReferenceGroups(detail, schemas)) {
+        if (group.presentationRole !== "composition") continue;
+        const references = group.entries.map((entry) => {
+            const transformation = referencedTransformation(
+                entry,
+                schema,
+                entry.referenceTransformation,
+            );
+            return transformation
+                ? { ...entry, label: transformation.node.value }
+                : entry;
+        });
+        const title = resolveReferenceTitleComposition(
+            detail.entry.label,
+            references,
+            literals,
+        );
+        if (title.length) return title;
+    }
+    return [];
 }
 
-export function renderAudio(entry, layer) {
+function entryAudio(entry, layer) {
     const audioField = (layer?.fields ?? []).find(
         (field) => field.id === "audio" && field.type === "audio",
     );
     const value = audioField ? entry.fields?.[audioField.id] : undefined;
-    if (typeof value !== "string" || !value) return "";
+    return {
+        audioField,
+        valid:
+            (typeof value === "string" && value.startsWith("file:")) ||
+            (entry.scope === "global" &&
+                audioField?.audioLookupAvailable === true &&
+                !entry.tags?.includes("punctuation") &&
+                (!layer?.metadata?.audio?.requiresReading ||
+                    entry.fields?.pronunciation?.length > 0)),
+    };
+}
+
+function allEntryReferences(entry) {
+    return [
+        ...(entry.references ?? []),
+        ...Object.values(entry.referenceGroups ?? {}).flat(2),
+    ];
+}
+
+export function renderAudio(
+    entry,
+    layer,
+    entries = [],
+    schemas = [],
+    fallbackLabel = "",
+    missingDependencyLabel = "",
+    allowUpload = false,
+) {
+    const own = entryAudio(entry, layer);
+    const composite = own.audioField && allEntryReferences(entry).length > 0;
+    const sources =
+        own.valid || composite || (allowUpload && own.audioField)
+            ? [{ entry, field: own.audioField }]
+            : [];
+    const complete = sources.length > 0;
     const label =
-        localizedLabel(audioField.metadata, entry.language) || audioField.id;
-    return `<div class="library-audio" data-library-audio-player><audio preload="none" data-library-audio-entry="${escapeHtml(entry.id)}" data-library-audio-field="${escapeHtml(audioField.id)}" aria-label="${escapeHtml(label)}"></audio><button class="library-audio-toggle btn-neutral" type="button" data-library-audio-toggle aria-label="${escapeHtml(label)}">▶</button><span class="library-audio-time" data-library-audio-time>0:00</span><input class="library-audio-progress" type="range" min="0" max="1000" value="0" step="1" data-library-audio-progress aria-label="${escapeHtml(label)}"></div>`;
+        (own.audioField &&
+            localizedLabel(own.audioField.metadata, entry.language)) ||
+        fallbackLabel;
+    if (!label) throw new Error("audio_label_required");
+    if (!complete || !sources.length) {
+        const dependenciesMissingAudio =
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer?.semanticRole,
+            ) && allEntryReferences(entry).length > 0;
+        const unavailableLabel = dependenciesMissingAudio
+            ? missingDependencyLabel
+            : "";
+        const button = `<button class="library-audio-speaker btn-neutral" type="button" disabled aria-label="${escapeHtml(unavailableLabel || label)}">${speakerPicture()}</button>`;
+        return unavailableLabel
+            ? `<span class="library-audio-unavailable">${button}<span class="library-audio-unavailable-tooltip" role="tooltip">${escapeHtml(unavailableLabel)}</span></span>`
+            : button;
+    }
+    return `<div class="library-audio-sequence" data-library-audio-sequence>${sources
+        .map(
+            ({ entry: source, field }) =>
+                `<audio preload="none" data-library-audio-title="${escapeHtml(source.label)}" data-library-audio-album="${escapeHtml(localizedLabel(layer.metadata))}" data-library-audio-entry="${escapeHtml(source.id)}" data-library-audio-field="${escapeHtml(field.id)}"${source.referenceTransformation ? ` data-library-audio-transformation="${escapeHtml(JSON.stringify(source.referenceTransformation))}"` : ""}></audio>`,
+        )
+        .join(
+            "",
+        )}<button class="library-audio-speaker btn-neutral" type="button" data-library-audio-sequence-toggle${!own.valid && !composite ? " disabled" : ""} aria-label="${escapeHtml(label)}">${speakerPicture()}</button></div>`;
+}
+
+function speakerPicture() {
+    return '<img class="library-speaker-icon library-speaker-icon-light" src="/static/adapters/study/library/assets/speaker-light.svg" alt="" aria-hidden="true"><img class="library-speaker-icon library-speaker-icon-dark" src="/static/adapters/study/library/assets/speaker-dark.svg" alt="" aria-hidden="true">';
 }
 
 export function formatAudioTime(value) {
@@ -314,38 +444,90 @@ export async function loadLibraryAudio(
     signal,
     errorMessage,
 ) {
-    await Promise.all(
-        Array.from(
-            overlay.querySelectorAll(
-                "audio[data-library-audio-entry][data-library-audio-field]",
-            ),
-            async (audio) => {
-                try {
-                    const objectUrl = await fetchLibraryAudioUrl(
-                        audio.dataset.libraryAudioEntry,
-                        audio.dataset.libraryAudioField,
-                        { signal },
-                    );
-                    if (!audio.isConnected || signal?.aborted) {
-                        URL.revokeObjectURL(objectUrl);
-                        return;
-                    }
-                    objectUrls.add(objectUrl);
-                    audio.src = objectUrl;
-                    connectLibraryAudioControls(audio);
-                } catch (error) {
-                    if (error?.name === "AbortError" || !audio.isConnected) {
-                        return;
-                    }
-                    const message = document.createElement("p");
-                    message.className = "library-audio library-audio-error";
-                    message.setAttribute("role", "status");
-                    message.textContent = errorMessage;
-                    audio
-                        .closest("[data-library-audio-player]")
-                        ?.replaceWith(message);
-                }
+    async function prepare(audio) {
+        if (audio.src) return;
+        const objectUrl = await fetchLibraryAudioUrl(
+            audio.dataset.libraryAudioEntry,
+            audio.dataset.libraryAudioField,
+            {
+                signal,
+                transformation: audio.dataset.libraryAudioTransformation
+                    ? JSON.parse(audio.dataset.libraryAudioTransformation)
+                    : undefined,
             },
-        ),
-    );
+        );
+        if (!audio.isConnected || signal?.aborted || audio.src) {
+            URL.revokeObjectURL(objectUrl);
+            return;
+        }
+        objectUrls.add(objectUrl);
+        audio.src = objectUrl;
+        connectLibraryAudioControls(audio);
+    }
+
+    async function play(audio) {
+        if (signal?.aborted || !audio.isConnected) return;
+        await activateLibraryMediaSession(audio, signal);
+        if (signal?.aborted || !audio.isConnected) return;
+        await new Promise((resolve, reject) => {
+            const finish = (error) => {
+                audio.removeEventListener("ended", ended);
+                audio.removeEventListener("error", failed);
+                signal?.removeEventListener("abort", aborted);
+                if (error) reject(error);
+                else resolve();
+            };
+            const ended = () => finish();
+            const failed = () => finish(new Error("audio_playback_failed"));
+            const aborted = () => {
+                audio.pause();
+                finish();
+            };
+            audio.addEventListener("ended", ended, { once: true });
+            audio.addEventListener("error", failed, { once: true });
+            signal?.addEventListener("abort", aborted, { once: true });
+            audio.currentTime = 0;
+            audio.play().catch(finish);
+        });
+    }
+
+    overlay
+        .querySelectorAll("[data-library-audio-sequence]")
+        .forEach((group) => {
+            const audio = Array.from(group.querySelectorAll("audio"));
+            const toggle = group.querySelector(
+                "[data-library-audio-sequence-toggle]",
+            );
+            if (!toggle || !audio.length) return;
+            toggle.addEventListener(
+                "click",
+                async () => {
+                    if (toggle.disabled) return;
+                    toggle.disabled = true;
+                    try {
+                        await Promise.all(audio.map(prepare));
+                        for (const item of audio) await play(item);
+                    } catch (error) {
+                        if (signal?.aborted || error?.name === "AbortError")
+                            return;
+                        uiCtx.capabilities.get("ui:log")?.(
+                            "error",
+                            "Library audio playback failed.",
+                            {
+                                component: "study-library",
+                                operation: "playAudio",
+                                errorName:
+                                    error instanceof Error
+                                        ? error.name
+                                        : "Error",
+                            },
+                        );
+                        showToast(errorMessage, { variant: "error" });
+                    } finally {
+                        toggle.disabled = false;
+                    }
+                },
+                { signal },
+            );
+        });
 }

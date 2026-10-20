@@ -1,3 +1,8 @@
+export * from "./contracts/engagement/ledger.js";
+export * from "./contracts/engagement/ledger-store.js";
+export * from "./contracts/engagement/scoring.js";
+export * from "./contracts/speech.js";
+export * from "./contracts/study/audio.js";
 export * from "./contracts/auth-account.js";
 export * from "./contracts/access-policy.js";
 export * from "./contracts/components/lifecycle.js";
@@ -19,3 +24,5 @@ export * from "./services/health-service.js";
 export * from "./services/gateway-service.js";
 export * from "./smtp-verification-codes.js";
 export * from "./contracts/local-account-store.js";
+
+export * from "./services/cache/index.js";

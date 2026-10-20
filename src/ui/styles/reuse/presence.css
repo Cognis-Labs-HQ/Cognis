@@ -348,3 +348,7 @@
 .pointer-style-toggle {
     font-size: 1.1rem;
 }
+
+button.pointer-style-toggle[data-pointer-style] {
+    color: var(--text);
+}

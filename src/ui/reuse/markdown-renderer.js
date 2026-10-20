@@ -70,7 +70,7 @@ function renderInline(markdown) {
         },
     );
     rendered = rendered.replace(
-        /\[((?:\\.|[^\]])+)\]\(([^)\s]+)\)/g,
+        /\[((?:\\.|[^\]\\])+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
             const token = `@@LINK_${linkTokens.length}@@`;
             linkTokens.push(renderLinkMarkup(label, href));

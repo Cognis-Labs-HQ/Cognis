@@ -31,6 +31,8 @@ test("popup exposes core-owned title actions and body updates", () => {
     assert.match(source, /titleAction/);
     assert.match(source, /titleItems/);
     assert.match(source, /item\.actionId/);
+    assert.match(source, /item\.placement/);
+    assert.match(source, /data-popup-title-placement/);
     assert.match(source, /class="popup-title-action btn-neutral"/);
     assert.match(source, /function updateBody\(nextBody\)/);
     assert.match(stylesheet, /\.popup-title-action/);
@@ -46,12 +48,17 @@ test("popup exposes core-owned title actions and body updates", () => {
 
 test("popup supports leading title content, standard close controls, and action icons", () => {
     assert.match(source, /titleLeading/);
-    assert.match(source, /class="popup-heading"/);
+    assert.match(source, /class="popup-heading/);
     assert.match(source, /popup-close-btn btn-close btn-neutral/);
     assert.match(source, /function renderActionContent/);
     assert.match(source, /class="popup-action-icon/);
     assert.match(stylesheet, /\.popup-heading/);
     assert.match(stylesheet, /\.popup-action-icon--flip/);
+});
+
+test("nested popups stack above their parent dialog", () => {
+    assert.match(source, /highestPopupZIndex \+ 10/);
+    assert.match(source, /candidate\.style\.zIndex/);
 });
 
 test("popup typography scales from the user font-size preference", () => {
@@ -63,7 +70,7 @@ test("popup typography scales from the user font-size preference", () => {
     );
     assert.match(
         stylesheet,
-        /\.popup-title[\s\S]*font-size: calc\(2\.25em \* var\(--popup-title-scale, 1\)\)/,
+        /\.popup-title[\s\S]*font-size: calc\(1\.6875em \* var\(--popup-title-scale, 1\)\)/,
     );
     assert.doesNotMatch(stylesheet, /font-size\s*:\s*[\d.]+(?:px|pt)\b/);
 });

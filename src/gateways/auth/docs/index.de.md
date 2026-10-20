@@ -123,3 +123,11 @@ Beim Löschen eines extern authentifizierten Kontos wird vor dem Entfernen der k
 ### Anbieterbezogene Kontonamen
 
 Neue externe Konten verwenden den Anbieter-Namensraum sowohl im lokalen Kontoschlüssel als auch im Profilnamen. Eine Anbietersitzung für den Namen `firehawksystems` mit `accountNamespace` auf `x` wird daher zu `x:firehawksystems`; ein lokales Konto `firehawksystems` und Identitäten wie `line:firehawksystems` bleiben getrennt. Bestehende Zuordnungen aus `(provider, external_user_id)` bleiben bei späteren Anmeldungen maßgeblich, auch wenn sich ein Anbietername ändert.
+
+## Medienrichtlinie im Browser
+
+Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und browsererzeugten `blob:`-URLs. Vertrauenswürdige UI-Clients können dadurch authentifizierte Audioantworten wiedergeben, ohne beliebige externe Medienquellen zuzulassen.
+
+### Modul-Lebenszyklus
+
+`auth:registerKeyringDataOwner(ownerId, purge)` ist eine öffentliche Serverfähigkeit. Doppelte Eigentümer-IDs werden abgelehnt; zurückgegeben wird ein identitätsgeprüfter Disposer. Module verwenden `module:<id>` und registrieren die Bereinigung mit `ctx.registerDisposer`; purge erhält die normalisierte Konto-ID. Nur Keyring-abhängigen Zustand bereinigen, Kontenidentität und fremde gemeinsame Ressourcen erhalten.

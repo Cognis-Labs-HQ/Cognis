@@ -135,3 +135,7 @@ document
 ```
 
 Source: `src/ui/reuse/page-composer/init.js`
+
+## Theme-aware pointer controls
+
+The shared pointer-style button uses the standard theme foreground (`--text`) for mouse, laser and crosshair icons, including in embedded component pages. Participant pointer colours remain unchanged.

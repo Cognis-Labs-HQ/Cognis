@@ -1,5 +1,7 @@
 # Externe Module
 
+Für den Start externer Module gilt standardmäßig ein begrenztes Zeitfenster von zwei Minuten, damit validierte Inhaltspakete vor der Veröffentlichung ihrer Fähigkeiten vollständig importiert werden können. Ein explizites Zeitlimit des Hosts bleibt wirksam. Bei Fehlern oder Zeitüberschreitung werden registrierte Beiträge entfernt; das Modul bleibt nicht verfügbar. Mitgelieferte Audiodateien werden bei erneuter Aktivierung aus dem versionierten Dateispeicher wiederverwendet; fehlende Dateien werden über das Files-Gateway neu angelegt. Bibliothekseinträge und Beziehungen werden weiterhin abgeglichen, auch bei unveränderten Paketen.
+
 Externe Module erweitern Cognis um unabhängig installierbares Server- und Browserverhalten und bleiben dabei hinter Manifest-, Fähigkeits-, Ablauf-, Routen-, Integritäts- und Lebenszyklusverträgen isoliert.
 
 ## Anwendungsbeispiele
@@ -21,11 +23,9 @@ Der Bootstrap stellt Verhalten ausschließlich über seinen begrenzten Kontext b
 <!-- prettier-ignore -->
 ```js
 export async function bootstrapModule(ctx) {
-  const remove = ctx.flow.inject('construct-example-page', 'content', {
-    id: 'example-module.content',
-    handler: async () => ({ ready: true }),
-  });
-  return () => remove();
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
 }
 ```
 
@@ -39,9 +39,9 @@ Jedes Modul verfügt über einen menschenlesbaren `id` und einen RFC 4122 `uuid`
 
 ### Repository-Vertrag
 
-Ein Git-Repository liefert ein Modul. Sein Stamm enthält `manifest.json`, `package.json`, `routes.json` und die optionalen Orchestrator-Einstiegspunkte `bootstrap.js`, `api/index.js`, `ui/index.js` und `cli/index.js`. `bootstrap.js` ist der einzige Systemintegrationseintrag und erhält `ctx`; es darf Dateien innerhalb seines Repositorys sowie vom Deployment bereitgestellte Cognis-Laufzeitressourcen importieren. Exportierte Fähigkeiten und Flow-Stufen sollten weiterhin `ctx` verwenden, damit die Lebenszyklusbereinigung sie verfolgen kann. Sicherheitsrelevante Registrierungen bleiben eingeschränkt und erfordern `privileged: true`; gewöhnliche Importe, API-URLs und gemeinsame Stilklassen machen ein Modul nicht privilegiert.
+Ein Git-Repository liefert ein Modul. Sein Stamm enthält `manifest.json`, `package.json`, `routes.json` und den erforderlichen Einstieg `bootstrap.js` sowie optionale Einstiegspunkte `api/index.js`, `ui/index.js` und `cli/index.js`. `bootstrap.js` ist der einzige Systemintegrationseintrag und erhält `ctx`; es darf nur Dateien seines Repositorys importieren; Verhalten des Hosts und fremder Komponenten wird über ctx-Fähigkeiten und Flows bezogen. Exportierte Fähigkeiten und Flow-Stufen müssen `ctx` verwenden, damit die Lebenszyklusbereinigung sie verfolgen kann. Sicherheitsrelevante Registrierungen bleiben eingeschränkt und erfordern `privileged: true`; gewöhnliche Importe, API-URLs und gemeinsame Stilklassen machen ein Modul nicht privilegiert.
 
-`package.json` muss `"type": "module"` verwenden und seine Version muss genau mit `manifest.json` übereinstimmen. `routes.json` ist immer vorhanden und enthält ein Array, einschließlich eines leeren Arrays, wenn das Modul keine Routen beansprucht. Jeder deklarierte Einstiegspunkt muss innerhalb des Checkouts in eine reguläre Datei aufgelöst werden. Behalten Sie die Orchestrierung in den deklarierten Einstiegspunkten bei und platzieren Sie frei organisierten Implementierungscode dahinter; Cognis importiert keinen anderen Modulpfad.
+`package.json` muss `"type": "module"` verwenden und seine Version muss genau mit `manifest.json` übereinstimmen. `routes.json` ist immer vorhanden und enthält ein Array, einschließlich eines leeren Arrays, wenn das Modul keine Routen beansprucht. Jeder deklarierte Einstiegspunkt muss innerhalb des Checkouts in eine reguläre Datei aufgelöst werden. Behalten Sie die Orchestrierung in den deklarierten Einstiegspunkten bei und platzieren Sie Implementierungscode in den vorgeschriebenen Verzeichnissen; Cognis importiert keinen anderen Modulpfad.
 
 Jedes externe Modul deklariert `entrypoints.bootstrap`. Cognis importiert nur diese Datei und ruft `bootstrapModule(ctx)` auf, wenn das Modul aktiviert ist. Der bereichsbezogene Kontext bietet API-Routenregistrierung, statische Modulverzeichnisse, SPA-Routen, Navigation, Einstellungen und Seitenerweiterungen, Fähigkeitsbeiträge, Flow-Erstellung und Stufeninjektion. Platzieren Sie die lokalisierte Dokumentation unter `docs/` und die Versionshinweise für Module unter `docs/changelog/`. Beide werden aus installierten Repositorys ohne Registrierung des Kernpfads erkannt. Browser-Assets bleiben Eigentum des Moduls und werden nur über `ctx.registerStaticDir` verfügbar gemacht. Ein Modul kann einen dedizierten Browser-Fähigkeitsanbieter mit `ctx.registerCapabilityProvider({ scriptUrl, providesCapabilities })` veröffentlichen; Cognis nimmt ihn nur in den Anbieterkatalog auf, solange das Modul aktiviert ist, und entfernt ihn bei der Lebenszyklusbereinigung.
 
@@ -91,6 +91,8 @@ Bevor Sie ein gebündeltes Modul in sein eigenes Repository verschieben, kopiere
 
 Ein Modul kann `tags` neben seinem umfassenderen `categories` deklarieren. beide beteiligen sich an der Marktplatzfilterung. Speichern Sie Bildmaterial im Stammverzeichnis des Repositorys unter `assets/`: Geben Sie `assets/icon.svg` oder `assets/icon.png` für das Katalogsymbol und `assets/banner.svg`, `assets/banner.png` oder `assets/banner.jpg` für den Detailseiten-Helden an. Deklarieren Sie die gewählten Pfade als `assets.icon` und `assets.banner` in `manifest.json`. Optionale Galeriebilder sind in `assets.screenshots` aufgeführt. Halten Sie Kunstwerke frei von Geheimnissen und persönlichen Daten. Das Deaktivieren oder Neustarten eines Moduls muss diese gespeicherte Konfiguration erhalten; nur der Deinstallationsablauf darf sie löschen. Detailseiten installierter Module wählen für die aktive UI-Sprache `README.<locale>.md` und verwenden danach in dieser Reihenfolge `README.en.md`, `README.md` und die Katalogbeschreibung. Der optionale Kompatibilitätsalias `README.md` im Stammverzeichnis ist weder erforderlich noch wird seine Prüfsumme validiert; lokalisierte Dateien `README.<locale>.md` können weiterhin in das Integritätsinventar des Manifests aufgenommen werden.
 
+Modulbilder werden unabhängig von der Codeinstallation abgerufen. Öffentliche GitHub-Dateien werden von raw.githubusercontent.com gestreamt; private und Enterprise-Repositories verwenden authentifizierte Rohantworten, GitLab seinen Raw-Dateiendpunkt. Cognis speichert Bytes und Medientyp in einem separaten Hash-Cache und liefert sie über den authentifizierten Katalogendpunkt aus. So entfällt die Größenbegrenzung eingebetteter Inhalte im GitHub-Contents-JSON. Leere Dateien und Downloads über der bestehenden Grenze von 10 MiB werden abgewiesen. Protokolle nennen Quelle, Repository, Referenz, Pfad, Transport, Phase und HTTP-Status oder Fehlergrund. Aktualisieren Sie den Katalog, um den Abruf erneut zu versuchen. Fehlende Icons behalten das Fragezeichen-SVG; fehlende oder nicht dekodierbare Banner zeigen den lokalisierten Hinweis Bild nicht verfügbar.
+
 ### Moduleinstellungen
 
 Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen bereitstellen. Jedes Feld deklariert einen stabilen `key`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey`, einen `type` aus `boolean`, `string` oder `number` einen optionalen passenden `default`, einen `password`-Typ für verdeckte sensible Zeichenfolgen und `required: true`, wenn die Aktivierung blockiert werden muss, bis der moduleigene Konfigurationsendpunkt einen Wert zurückgibt; `ui.stringsBaseUrl` bezeichnet die moduleigenen Übersetzungen. Fehlt diese Angabe, erkennt Cognis automatisch das Standardpaket `ui/languages/<locale>/strings.xml`. Cognis rendert diesen Manifestvertrag in der Detailansicht des installierten Moduls, fragt `GET /api/v1/modules/<id>/config` ab und sendet Änderungen mit `PUT` an denselben moduleigenen Endpunkt. Das Modul validiert, übernimmt und speichert seine Betriebskonfiguration. Es darf weder eine zweite Einstellungsoberfläche anbieten noch Cognis-Benutzereinstellungen als Konfigurationsspeicher verwenden. Für jedes gespeicherte Passwort gibt die Konfigurationsantwort `<key>Configured: true` statt des Geheimnisses zurück; Cognis zeigt `****` an, betrachtet das Pflichtfeld als erfüllt und sendet bei unveränderter Maske einen leeren Wert, damit das Modul sein gespeichertes Passwort beibehält.
@@ -125,8 +127,60 @@ Module, die ein Laufzeitskript laden müssen, deklarieren `ui:resourceLoader` un
 
 Externe Manifeste können `hardDependencies` und `softDependencies` als Listen von Modul-UUIDs oder IDs deklarieren. Harte Abhängigkeiten werden nicht empfohlen, da Administratoren sie vor der Installation installieren und aktivieren müssen. Weiche Abhängigkeiten können im Installationsdialog optional ausgewählt werden.
 
-Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren.
+Deaktivierte Module importieren oder starten niemals ihren normalen Bootstrap. Muss ein Modul im deaktivierten Zustand Konfiguration bereitstellen, deklariert es `entrypoints.disabledApi`; diese isolierte Datei exportiert `registerDisabledApiRoutes(ctx)` und darf nur ausdrücklich mit `allowWhenDisabled` markierte Routen registrieren. Es darf außerdem moduleigene Konfigurations-Flows und Hooks für diese Flows registrieren. Diese Registrierungen werden bei Aktualisierung oder fehlgeschlagener Einrichtung entfernt; öffentliche Capabilities bleiben bis zur Aktivierung nicht verfügbar.
+
+Vor dem Entfernen ihrer Flows auf aktive Modulanfragen warten und neue Anfragen bis zum Abschluss des Abgleichs zurückstellen, auch bei fehlgeschlagener Aktivierung. Zustimmungsprüfungen behalten einen vollständigen Routen- und Flow-Lebenszyklus, während unabhängige Study-Module aktiviert werden.
 
 ### Hinweise nach der Aktivierung
 
 Ein Modul, das Konfigurationsoberflächen an anderer Stelle in Cognis beiträgt, kann `ui.activationGuidance` deklarieren, anstatt ein leeres Moduleinstellungsformular zu erstellen. Der Vertrag enthält einen lokalisierten `titleKey`, einen optionalen `descriptionKey` und geordnete `steps`. Jeder Schritt besitzt eine stabile `id`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey` und optionale `targets`. Ein Adapterziel verwendet `{ "kind": "adapter", "gatewayId": "<gateway>", "adapterId": "<adapter>" }`. Nach erfolgreicher Aktivierung zeigt Cognis alle Schritte an und bietet an, die Administration zu öffnen. Ein Modul kann mehrere Adapterziele aufführen, ohne dass der Core die Anbieternamen kennen muss.
+
+### Öffentliche Capabilities
+
+Externe Module veröffentlichen gemeinsame Server-Capabilities mit `ctx.contributePublicCapability(key, value)`. `ctx.getCapability` sowie `ctx.capabilities.get`, `has` und `require` beziehen öffentliche Capabilities aus der aktuellen Systemregistrierung, auch wenn der Anbieter erst nach dem Verbraucher startet. Private System-Capabilities bleiben verborgen; `system:ctx` wird Modulen niemals bereitgestellt. Aktualisierungen laufen nacheinander, damit Abbau und Registrierung sich nicht überschneiden. Das Deaktivieren entfernt die Beiträge des Anbieters; das erneute Aktivieren veröffentlicht sie wieder. Eine fehlgeschlagene Aktualisierung meldet dem Aufrufer einen Fehler, ohne spätere Aktualisierungen zu blockieren.
+
+### Entwicklung aus der Vorlage
+
+Alle neuen Module müssen aus [cognis-module-template](https://github.com/Cognis-Labs-HQ/cognis-module-template) entstehen: eigene Produkt-UUID sowie ersetzte Identität, Repositoryangaben, Grafiken und Beispiele. AGENTS.md und Prüfskripte beibehalten. Der [Beitragsstandard](/docs/standard) schreibt API-Handler in `api/routes/<domain>/index.js`, CSS in `ui/styles/`, Vorlagen in `ui/templates/`, schichteigene Tests und Release-Notizen in `docs/changelog/` vor. Jitsi Meet erprobt diese Struktur bei stabilen Routen-URLs. Importe bleiben repositorylokal; fremde Komponenten werden ausschließlich über ctx genutzt.
+
+### Lebenszyklus der Registrierungen
+
+Serverregistrierungen mit Rückgabebereinigung werden mit `ctx.registerDisposer(dispose)` verbunden. Cognis führt sie bei Aktualisierung, Deaktivierung und fehlgeschlagenem Bootstrap in umgekehrter Reihenfolge aus, auch für deaktivierte Konfigurationseinstiege. Die öffentlichen Verträge `system:health:contribute(id, callback)` und `auth:registerKeyringDataOwner(id, purge)` liefern eigene Disposer. Keyring-Bereinigung setzt nur abhängige Daten zurück und löscht weder Kontenidentität noch fremde geteilte Inhalte.
+
+Browseranbieter exportieren `mountProvider(scopedUiCtx)` statt beim Import Fähigkeiten oder Listener anzulegen. Der begrenzte Kontext besitzt Fähigkeiten, erstellte Flows und Stufenhooks; sein AbortSignal beendet Listener, ein zurückgegebener Disposer andere Ressourcen. Katalogabgleich mountet eine URL nur einmal, auch wenn beide Kataloge sie enthalten, und mountet gecachte Skripte nach erneuter Aktivierung wieder. `ui:navbarLinks.contribute(id, { href, label, visible })` registriert Navigation beim Host. Routenseiten behalten ihren `mount`/`unmount`-Vertrag.
+
+### Befehls- und Versionsumfang
+
+Npm-Skripte laufen im Repository; `npm --prefix <module-checkout> test` wählt es ausdrücklich. Installierte Modulaktionen verwenden `cognisctl modules:<module-id>:<action>`. Dies sind getrennte Schnittstellen. Erforderliche Fähigkeiten steuern Verfügbarkeit; eine angezeigte getestete Anbieterversion ist Diagnoseinformation, keine erzwungene Versionsgrenze. Tatsächliche Abhängigkeiten deklarieren und installierte öffentliche Verträge testen; keine nicht implementierten Versionsprüfungen versprechen.
+
+## Modulidentität und Besitz von Browser-Anbietern
+
+Installiert ein Administrator ein Modul, dessen ID bereits einer anderen UUID gehört, enthält der Konflikt `moduleId`, `installedModuleUuid` und `requestedModuleUuid`. Server und Modulverwaltung protokollieren diese Identitäten; Nichtadministratoren erhalten keinen Zugriff. Eine übereinstimmende ID und UUID erlaubt weiterhin eine Aktualisierung. Veröffentlichte UUIDs dürfen nicht geändert und kollidierende Installationen nicht überschrieben werden, um diese Prüfung zu umgehen. Der Browser-Anbieter-Lebenszyklus wird über `ui:providerLifecycle` gemeinsam verwaltet, sodass gebündelte und direkt bereitgestellte Loader denselben Katalog abgleichen und einen Anbieter nicht doppelt einbinden.
+
+## Scoped Browser-Aktionen und verifizierte Administration
+
+Browser-Provider beziehen `ui:scopedActions` über ihren Scoped ctx. Ein Aufruf mit `(ctx, moduleId, actions)` registriert einen ausführbaren Flow für jede benannte Aktion und liefert die veröffentlichten Funktionen zurück. Verwaltungsabfragen und Änderungen verwenden diese Funktionen; der Host entfernt die Flows und veraltete Handles werden nach dem Abbau zurückgewiesen. Administratorrechte stammen aus der aktuellen Rolle des aktivierten Kontos, nicht aus Rollenfeldern des Aufrufers.
+
+Der Host-Helfer `mountWhenDirect` übergibt `mount(root, { signal })` ein AbortSignal, das bei ausgeführter Routennavigation oder Seitenende endet. Seiten binden Aufräumarbeiten daran und prüfen es nach asynchroner Initialisierung. Fehlgeschlagene Mounts brechen eigene Ressourcen ab; abgebrochene Arbeit veröffentlicht keine Fehler auf der Zielseite. Markdown-Linktexte unterscheiden maskierte von gewöhnlichen Zeichen, um mehrdeutiges Backtracking zu vermeiden. CI fordert ausschließlich Lesezugriff auf Repository-Inhalte an.
+
+Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch bei ausstehender Übersetzungs-, Anbieter- oder Composer-Initialisierung. Die Ressourcenbereinigung bleibt an dasselbe Host-Signal gebunden.
+
+## Modul-IDs in Übersetzungen erhalten
+
+Übersetzungsschlüssel verwenden `module.<manifest.id>.<feature>.<label>`. Eine mehrteilige Modul-ID bleibt mit ihren Bindestrichen erhalten; für `terms-of-service` lautet ein Schlüssel `module.terms-of-service.admin.title`. Der Suffix nach der Modul-ID verwendet kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, XML-Dateien und Codeverweise müssen denselben Namensraum verwenden.
+
+Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kategorien und Tags mit den zugehörigen Katalogübersetzungen zusammen, wenn das installierte Modul einen anderen Namensraum verwendet. Installierte Einstellungen behalten ihre eigene Übersetzungs-URL; eine neue Katalogsuche ersetzt die zwischengespeicherte Darstellung.
+
+### Rechtstextlinks im Footer erhalten
+
+Alle Browserclients verwenden die Footer-Registrierung von `ctx`, auch getrennt geladene statische Skripte und Bundles. Footer-Deskriptoren können `target: "_blank"` anfordern; die Darstellung ergänzt `noopener noreferrer`. Authentifizierungsanbieter liefern übersetzte Beschriftungen und Authentifizierungskontexte, während Rechtstextlinks angemeldeter Sitzungen ausdrücklich zum Anwendungskontext gehören. Verlauf und Browser-Cache-Wiederherstellung aktualisieren veröffentlichte Rechtstextlinks, ohne die Core-Links für Lizenz oder Änderungen zu ersetzen.
+
+Die gemeinsamen Core-Funktionen `createI18n` und `extendI18n` lösen fehlende oder leere Werte der bevorzugten Sprache je Schlüssel aus englischen XML-Ressourcen für Core, Module und Komponenten auf. Nicht auflösbare Schlüssel lösen `missing_translation:<key>` aus. Module geben ihre Ressourcen-URLs an und verwenden den Host-Resolver, statt eine eigene Ersatzlogik zu implementieren.
+
+Core ergänzt modulbezogene UI-Ressourcen-URLs bei der Registrierung um die installierte Modulrevision. Modulskripte und Sprachdateien werden neu validiert, statt die unveränderliche Cache-Laufzeit der Host-Version zu übernehmen. Der Service Worker lädt Modulressourcen direkt ohne zwischengespeicherte Ersatzantwort und erneuert seine Ressourcen-Caches. Ein Modulupdate ändert die Importadresse des Einstiegspunkts, damit veraltete Skripte keine entfernten Abhängigkeiten anfordern.
+
+Eigenständige Authentifizierungsrückrufe verwenden `navigateToDocument(path, { signal })` aus `page-entry.js` für Wechsel zu Serverdokumenten. Die Funktion prüft HTTP(S)-URLs desselben Ursprungs ohne eingebettete Zugangsdaten, beachtet den bestehenden Navigationsschutz und verhindert Navigation nach Abbruch. Dashboard-Navigation und das Verhalten bei fehlenden Renderern bleiben beim unveränderten SPA-Router. `ui:log` überspringt anonyme Anfragen und fängt Zustellfehler ab; der Protokollierungsendpunkt erfordert weiterhin Authentifizierung.
+
+Externe SSO-Rückrufe benötigen `mountWhenDirect` und `navigateToDocument` aus der Hostdatei `page-entry.js`. `npm run check:ui-host` prüft den Quellstand und `npm run check:ui-build` die gebauten Ressourcen. Nach der Bereitstellung `npm run check:ui-host -- --origin https://your-cognis-host.example` aus einem Netzwerk mit Zugriff auf den Host ausführen. Die Fernprüfung liest nur öffentliches JavaScript, sendet keine Zugangsdaten und analysiert Exporte, ohne heruntergeladenen Code auszuführen. Proxy-Umgebungen können Nodes Unterstützung mit `NODE_USE_ENV_PROXY=1` aktivieren.
+
+Den passenden Core-Host einschließlich UI-Ressourcen und Ressourcenmanifest vor den Rückrufmodulen bereitstellen; einen Prozess, der noch die vorige Veröffentlichung verwendet, neu starten. Die Rückrufseite erst nach erfolgreicher Prüfung der öffentlichen Host-Exporte neu laden. Eine Modulversion belegt nicht den Stand der ausgelieferten Hostressource. Bei deaktivierter öffentlicher Registrierung benötigen unbekannte externe Identitäten weiterhin eine Registrierungsautorisierung; bereits zugeordnete Identitäten durchlaufen sie nicht erneut. HTTP 403 allein erklärt die Ablehnung nicht: Fehlercode und Registrierungsfortsetzungsfelder prüfen, ohne Zugangsdaten oder Cookies weiterzugeben.

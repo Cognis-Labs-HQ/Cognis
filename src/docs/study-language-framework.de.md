@@ -118,7 +118,7 @@ Eine untergeordnete Komponente ist eine unabhängig durchzuführende Lernfunktio
 interface LanguageChildComponent {
     id: string; // Unique within the language, e.g. 'hiragana-alphabet'
     label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/explore/ja/kana'
     order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
@@ -224,3 +224,41 @@ Wenn eine untergeordnete Komponente selbst Unterabschnitte erfordert (z. B. Stri
   – Jedes Sprachmodul sollte eine untergeordnete Komponentenroute **Klassenzimmer** registrieren, damit sowohl Lehrer als auch Schüler auf sprachspezifische Klassenansichten zugreifen können.
 - Die Klassenzimmerseiten müssen eine Klassenauswahl, eine Visualisierung der Sitzplatzkapazität und rollenbasiertes Verhalten (Lehrerverwaltungskontrollen vs. überwiegend lesender + verlassender Schülerfluss) enthalten.
   – Sprachmodule besitzen ihre Bibliotheks- und Klassenzimmer-UI-Implementierungen und machen sie über ihre deklarierten Routen für untergeordnete Komponenten verfügbar.
+
+Lernebenen stehen im Seitenmenü Erkunden unter `/study/explore/<ISO-Sprache>/<navigationSlug>`. Module können pro Ebene einen eindeutigen `navigationSlug` angeben; andernfalls gilt die Ebenen-ID. Bibliothek und Anfragen behalten ihre Routen. Nur Satzvorschauen kürzen lange Titel und Definitionen.
+
+[Strukturierter Bibliotheksimport](/docs/adapters/study/library/import)
+
+## Study-Ansicht und Favoriten
+
+Flashcards öffnet eine Übersicht eigener Decks, mit dem Konto geteilter Decks und vollständiger Startdecks aktivierter Sprachanbieter. Linkfreigaben behalten ihre Zugriffsregeln und bilden kein öffentliches Verzeichnis. Das +-Menü rechts oben bietet Deck erstellen und Deck importieren. Erkunden, Library und Flashcards verwenden gespeicherte Study-Favoriten und gemeinsame Sortierung (Anbieterreihenfolge, A–Z, Z–A, neueste oder älteste zuerst). Der goldene Stern filtert die Ergebnisse nach Favoriten. Library-Einträge, Decks und einzelne Lernkarten haben getrennte Favoriten. Favoriten gewähren keinen zusätzlichen Zugriff. Das Zeichenfeld beendet seine Sitzung bei Routenwechseln und überschreibt keine Composer- oder Shell-Klassen.
+
+## Lernkarten üben
+
+Browseraktionen verwenden deklarierte study:decks-Abläufe mit before, execute und after. Serverseitiges Auflisten und Details verwenden authorize, read und audit; Speichern, Bewerten und Löschen behalten Prüfung, Berechtigung und Transaktionen. Study besitzt gemeinsame Zeichenoberfläche, Musterzusammenstellung, Ähnlichkeiten und Aktionsabläufe. Der optionale Zeichenadapter integriert nur das schwebende Schreibfeld; eingebettetes Schreiben funktioniert ohne ihn. Seiten und Sitzungen werden beim Verlassen abgebrochen.
+
+## Gemeinsame Sprachseiten
+
+Die Sprachauswahl öffnet Cognis-eigene Erkunden-Seiten auch ohne Unterseiten des Inhaltsanbieters. Ein Sprachwechsel behält die entsprechende Schrift-, Wortschatz- oder Satzrolle. Lernkarten, Bibliothek und Anfragen behalten ihren gemeinsamen Seitenkontext. Englisch deklariert Alphabet, Buchstabenverbindungen, Wortschatz und Sätze über eigene Pfadnamen. Abgebrochene Favoritenabfragen beenden die Einbindung ohne irreführende Fehlermeldung.
+
+Der schwebende Zeichenbereich liegt über der Seitenaktionsleiste. Abschnitte mit verknüpften Karten umbrechen bis zu fünf Zeilen und scrollen danach horizontal mit ausgeblendeten Bildlaufleisten. Größenänderungen berechnen die Grenze neu; beim Schließen wird der Beobachter freigegeben. IPA-Aussprachewerte behalten ihre ursprüngliche Notation und verwenden gut lesbare phonetische Typografie.
+
+Study stellt öffentliche Ausspracheklassifizierung und Stile für Library-Vorschauen, Detailüberschriften, Varianten, Lernkartenantworten und Leseoptionen sowie den Zeichenbereich bereit. IPA behält seine ursprüngliche Notation; normale Lesungen behalten die gewählte App-Typografie. Japanische und englische Satzschemata verlangen mindestens zwei Wortverweise.
+
+## Gemeinsame Sprachsynthese
+
+ElevenLabs-Synthese in ein eigenes konfigurierbares Modul verlagern. Study nutzt optionale sprachbezogene Stimmen für gespeicherte globale Karten. Private und Klassenkarten erlauben begrenzte Uploads und Mikrofonaufnahmen. Die kontinuierliche Satzkomposition aus vorhandenen Aufnahmen bleibt als Rückfall erhalten. Administratoren können globale Audios im Editor neu erzeugen.
+
+`study:audio:provider.registerLanguage(language, configuration, resolveSpeech)` → `elevenlabs-tts:synthesis.synthesize({ text, language, voiceId? }, signal?)`
+
+Die tatsächlichen englischen und japanischen Inhaltspaketversionen beim Entfernen gebündelter Aufnahmen erhöhen. Unabhängige Module werden vor der Fehlermeldung vollständig abgeglichen, damit Einwilligungsrouten ihre registrierten Flows behalten.
+
+## Gemeinsame UI-Verantwortung
+
+Study verwendet den vom Host verwalteten Ablauf `ui:pageOverlay.create({ signal, bottomInset })` für die Grenzen des schwebenden Zeichenfelds. Diese folgen Änderungen an Seite, Kopfzeile, Fußzeile und Ansichtsfenster, ohne das Seitenlayout zu verändern. Beim Schließen der Ansicht oder Entladen des Providers werden Beobachter, Listener und Element entfernt. Eingebettete Zeichenfelder behalten ihren übergebenen Container.
+
+Popup-Überschriften behalten ihre bisherige Typografie und ihr responsives Layout über `headingLayout: "annotated"` mit den neutralen Detailpositionen `aside` und `below`. Die Popup-API bietet `appendHeadingAccessory(element)` und `setContentConcealed(boolean)`. Die Verdeckung zeichnet Überschrift und Inhalt unscharf, blockiert Interaktionen und stellt anschließend den vorherigen Barrierefreiheitszustand wieder her. Study gestaltet nur eigene Bedienelemente. Die Navigation nutzt `ui:navbarLinks`, einschließlich deaktivierter Links mit lokalisierten Erklärungen, und entfernt beim Entladen ihren Link und die Suchregistrierung.
+
+## Dauerhafte Übungsbelohnungen
+
+Study lädt UUID-Abhängigkeiten und erforderliche Kern-Capabilities aus den Adaptermanifesten. Abhängigkeiten starten vor Verbrauchern; nach dem Deaktivieren wird die Verfügbarkeit erneut berechnet. Fehlende Abhängigkeiten sperren Zeichenübungen, Karteikarten und Ranglisten. Zeichenendpunkte liefern 503, wenn Bibliothek oder Fortschritt fehlen. Fortschrittsprojektionen verwenden datenbanksichere Identitäten. Vertrauenswürdige Übungen speichern XP, Erfolge und nachweisgestützte Ranglisten dauerhaft. Die Belohnungszustellung folgt auf die Karteikartentransaktion; Wiederholungen behalten genau ein Ereignis, einen Belohnungsbeleg und eine Zeitplanänderung.

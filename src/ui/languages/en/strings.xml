@@ -309,8 +309,10 @@
   <string name="ui.reuse.elements">Elements</string>
   <string name="ui.reuse.all_elements_visible">All elements are visible.</string>
   <string name="ui.reuse.reset_layout">Reset Layout</string>
+  <string name="ui.reuse.image_preview">Image Preview</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
+  <string name="ui.reuse.delete">Delete</string>
   <string name="ui.reuse.return_to_dashboard">Return to Dashboard</string>
 
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
@@ -595,4 +597,22 @@
   <string name="ui.reuse.name">Name</string>
   <string name="ui.reuse.uninstall">Uninstall</string>
   <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
+  <string name="ui.reuse.lookup">Lookup</string>
+  <string name="ui.reuse.continue">Continue</string>
+  <string name="ui.reuse.import">Import</string>
+  <string name="ui.reuse.export">Export</string>
+  <string name="ui.reuse.file">File</string>
+  <string name="ui.reuse.search">Search</string>
+  <string name="ui.reuse.favourite">Favourite</string>
+  <string name="ui.reuse.favourites_only">Show Favourites Only</string>
+  <string name="ui.reuse.sort">Sort</string>
+  <string name="ui.reuse.sort_default">Provider Order</string>
+  <string name="ui.reuse.sort_az">A–Z</string>
+  <string name="ui.reuse.sort_za">Z–A</string>
+  <string name="ui.reuse.sort_newest">Newest First</string>
+  <string name="ui.reuse.sort_oldest">Oldest First</string>
+    <string name="ui.reuse.image_unavailable">Image Not Available</string>
+    <string name="ui.app.modules.config_action_failed">The configuration action failed. Check your settings or enter a voice ID manually.</string>
+    <string name="ui.reuse.home">Home</string>
+    <string name="ui.reuse.try_again">Try Again</string>
 </resources>

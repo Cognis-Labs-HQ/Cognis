@@ -9,6 +9,7 @@ export function createChatroomDeletionCapability(
         message: string,
         metadata?: Record<string, unknown>,
     ) => void,
+    resolveActorRole?: (accountId: string) => Promise<string | null>,
 ) {
     return async function deleteChatroom(input: {
         roomId?: unknown;
@@ -27,10 +28,16 @@ export function createChatroomDeletionCapability(
 
         try {
             await store.ensureSchema();
-            const result = await store.deleteRoomForActor(
-                roomId,
-                actorAccountId,
-            );
+            const role = await resolveActorRole?.(actorAccountId);
+            const administrator = role === "admin" || role === "owner";
+            let result: "deleted" | "not_found" | "forbidden";
+            if (administrator) {
+                const room = await store.getRoom(roomId);
+                result = room ? "deleted" : "not_found";
+                if (room) await store.deleteRoom(roomId);
+            } else {
+                result = await store.deleteRoomForActor(roomId, actorAccountId);
+            }
             if (result === "not_found") {
                 throw new ChatroomDeletionRequestError("Chatroom not found.");
             }

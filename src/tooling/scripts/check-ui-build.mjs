@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { checkUiHostContracts } from "./check-ui-host-contracts.mjs";
 
 const outputRoot = path.resolve("dist/ui");
 async function walk(directory) {
@@ -67,6 +68,14 @@ for (const sourcePath of (await walk(path.resolve("src"))).filter(
         );
     }
 }
+await checkUiHostContracts(async (moduleUrl) => {
+    const emittedUrl = manifest[moduleUrl];
+    assert.ok(
+        emittedUrl,
+        `${moduleUrl} must be published for external callbacks`,
+    );
+    return readFile(path.join(outputRoot, emittedUrl), "utf8");
+});
 console.log(
     `Validated ${Object.keys(manifest).length} dynamic contribution URLs.`,
 );

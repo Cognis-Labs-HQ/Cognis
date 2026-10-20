@@ -1,3 +1,5 @@
+import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -38,14 +40,22 @@ class ResponseRecorder extends EventEmitter {
 class RequestRecorder extends EventEmitter {
     method: string;
     headers: Record<string, string>;
+    body?: unknown;
+
+    async *[Symbol.asyncIterator]() {
+        if (this.body !== undefined)
+            yield Buffer.from(JSON.stringify(this.body));
+    }
 
     constructor(options: {
         method: string;
         bearerToken?: string;
         cookieToken?: string;
+        body?: unknown;
     }) {
         super();
         this.method = options.method;
+        this.body = options.body;
         this.headers = {};
         if (options.bearerToken) {
             this.headers.authorization = `Bearer ${options.bearerToken}`;
@@ -73,7 +83,9 @@ async function dispatchRoute(
     return false;
 }
 
-async function bootstrapStudyGateway() {
+async function bootstrapStudyGateway(
+    configure?: (capabilities: CapabilityStore) => void,
+) {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const systemCtx = createCtx();
@@ -86,23 +98,79 @@ async function bootstrapStudyGateway() {
     };
     capabilities.contribute("db:executor", dbExecutor);
     capabilities.contribute("system:ctx", systemCtx);
+    configure?.(capabilities);
 
+    const adaptersRoot = await mkdtemp(path.join(tmpdir(), "study-bootstrap-"));
+    const directory = path.join(adaptersRoot, "study");
+    await mkdir(directory);
+    for (const id of ["library", "progress", "drawing", "classes"]) {
+        const adapterRoot = path.join(directory, id);
+        await mkdir(adapterRoot);
+        await writeFile(
+            path.join(adapterRoot, "package.json"),
+            JSON.stringify({ main: "index.mjs", version: "1.0.0" }),
+        );
+        await writeFile(
+            path.join(adapterRoot, "manifest.json"),
+            JSON.stringify({ uuid: id, publisher: "Test", requires: [] }),
+        );
+        await writeFile(
+            path.join(adapterRoot, "index.mjs"),
+            `export function createStudyAdapter() { return { adapterId: ${JSON.stringify(id)}, adapterName: ${JSON.stringify(id)}, getConfig: () => ({}), setConfig: (value) => value, isConfigured: () => true }; }`,
+        );
+    }
     const uiRegistry = new UIRegistry();
-    await bootstrap({
-        capabilities,
-        routeRegistry,
-        uiRegistry,
-        gatewayRegistry: new GatewayRegistry(),
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        flow: systemCtx.flow,
-    } as any);
+    try {
+        await bootstrap({
+            capabilities,
+            routeRegistry,
+            uiRegistry,
+            gatewayRegistry: new GatewayRegistry(),
+            adaptersRoot,
+            flow: systemCtx.flow,
+        } as any);
+    } finally {
+        await rm(adaptersRoot, { recursive: true, force: true });
+    }
 
     return {
+        capabilities,
         routeRegistry,
         systemCtx,
         uiRegistry,
     };
 }
+
+test("Study registers executable drawing progress routes when account preferences are available", async () => {
+    const { systemCtx, routeRegistry } = await bootstrapStudyGateway(
+        (capabilities) => {
+            capabilities.contribute("preferences:store", {
+                get: async () => null,
+                set: async () => {},
+                clearUser: async () => {},
+            });
+        },
+    );
+    assert.equal(systemCtx.hasFlow("study:drawing:readProgress"), true);
+    assert.equal(systemCtx.hasFlow("study:drawing:complete"), true);
+    const response = new ResponseRecorder();
+    assert.equal(
+        await dispatchRoute(
+            routeRegistry,
+            new RequestRecorder({
+                method: "GET",
+                cookieToken: issueAccessToken("learner", "user", 60),
+            }),
+            response,
+            new URL("http://localhost/api/v1/study/drawing/card-a"),
+        ),
+        true,
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.payload), {
+        data: { completed: false, hiddenStrokeCount: 0 },
+    });
+});
 
 test("Study owns its SPA routes and Library detail-flow provider", async () => {
     const { uiRegistry, systemCtx } = await bootstrapStudyGateway();
@@ -169,7 +237,8 @@ test("direct Study requests redirect to unavailable when no language is valid", 
 });
 
 test("study registered languages reflect installed language capabilities", async () => {
-    const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
+    const { capabilities, routeRegistry, systemCtx } =
+        await bootstrapStudyGateway();
     const userToken = issueAccessToken("learner", "user", 60);
 
     const disabledResponse = new ResponseRecorder();
@@ -206,6 +275,30 @@ test("study registered languages reflect installed language capabilities", async
         enabledPayload.data.some((language) => language.code === "ja"),
         true,
     );
+
+    capabilities.get<(moduleId: string, enabled: boolean) => void>(
+        "modules:onStateChanged",
+    )?.("study-language-ja", false);
+    const lifecycleDisabledResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        lifecycleDisabledResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(lifecycleDisabledResponse.payload), {
+        data: [],
+    });
+
+    systemCtx.removeCapability("study:language:ja");
+    const removedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userToken }),
+        removedResponse,
+        new URL("http://localhost/api/v1/study/registered-languages"),
+    );
+    assert.deepEqual(JSON.parse(removedResponse.payload), { data: [] });
 });
 
 test("study child components come from installed language capabilities", async () => {
@@ -339,4 +432,140 @@ test("study adapter routes announce controls and support disable toggles", async
         (adapter) => adapter.id === "classes",
     );
     assert.equal(updatedClassesAdapter?.active, false);
+});
+
+test("Study registers an executable Library move flow before advertising the provider", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "move", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:move",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:move", {
+        entryId: "authored-card",
+    });
+    assert.deepEqual(stages, ["authorize", "validate", "move", "audit"]);
+});
+
+test("Study registers an executable dictionary search flow", async () => {
+    const { systemCtx } = await bootstrapStudyGateway();
+    const stages: string[] = [];
+    for (const stage of ["authorize", "validate", "search", "audit"]) {
+        systemCtx.flow.extend(
+            "study:library:search",
+            stage,
+            { id: `test:${stage}` },
+            () => {
+                stages.push(stage);
+                return {};
+            },
+        );
+    }
+    await systemCtx.flow.run("study:library:search", { query: "word" });
+    assert.deepEqual(stages, ["authorize", "validate", "search", "audit"]);
+});
+
+test("the registered drawing endpoint records canonical results through the restored Progress capability", async () => {
+    const { capabilities, routeRegistry } = await bootstrapStudyGateway(
+        (capabilities) => {
+            capabilities.contribute("preferences:store", {
+                get: async () => null,
+                set: async () => {},
+                clearUser: async () => {},
+            });
+        },
+    );
+    const events: Array<{
+        actor: { accountId: string };
+        input: {
+            content: { contentId: string };
+            correct: boolean;
+            independentCorrect: boolean;
+        };
+    }> = [];
+    capabilities.contribute("study:library", {
+        read: async (_actor: unknown, id: string) => ({
+            id,
+            schemaId: "japanese",
+            layer: "kanji",
+            language: "ja",
+        }),
+    });
+    capabilities.contribute("study:progress", {
+        recordPractice: async (
+            actor: { accountId: string },
+            input: (typeof events)[number]["input"],
+        ) => {
+            events.push({ actor, input });
+        },
+    });
+    const response = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            cookieToken: issueAccessToken("learner", "user", 60),
+            body: {
+                strokeCount: 4,
+                mistakes: 0,
+                result: "correct",
+                assisted: true,
+            },
+        }),
+        response,
+        new URL("http://localhost/api/v1/study/drawing/card-a"),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(events.length, 1);
+    assert.equal(events[0].actor.accountId, "learner");
+    assert.equal(events[0].input.content.contentId, "card-a");
+    assert.equal(events[0].input.correct, true);
+    assert.equal(events[0].input.independentCorrect, false);
+});
+
+test("drawing requests are unavailable when their Progress dependency is disabled", async () => {
+    const { routeRegistry } = await bootstrapStudyGateway((capabilities) => {
+        const values = new Map<string, string>();
+        capabilities.contribute("preferences:store", {
+            get: async (accountId: string, key: string) =>
+                values.get(JSON.stringify([accountId, key])) ?? null,
+            set: async (accountId: string, key: string, value: string) => {
+                values.set(JSON.stringify([accountId, key]), value);
+            },
+            clearUser: async () => values.clear(),
+        });
+    });
+    const disabled = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            bearerToken: issueAccessToken("admin", "admin", 60),
+        }),
+        disabled,
+        new URL(
+            "http://localhost/api/v1/gateways/study/adapters/progress/disable",
+        ),
+    );
+    assert.equal(disabled.statusCode, 200);
+    const response = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "POST",
+            cookieToken: issueAccessToken("learner", "user", 60),
+            body: { strokeCount: 1, mistakes: 0 },
+        }),
+        response,
+        new URL("http://localhost/api/v1/study/drawing/card-a"),
+    );
+    assert.equal(response.statusCode, 503);
+    assert.equal(JSON.parse(response.payload).error, "adapter_disabled");
 });

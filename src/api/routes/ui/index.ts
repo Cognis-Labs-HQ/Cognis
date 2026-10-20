@@ -57,7 +57,9 @@ async function serveVersionedAsset(
     routeContext?: RouteContext,
 ) {
     routeContext?.setPageSecurityHeaders(res);
-    const isVersioned = url.searchParams.get("v") === ASSET_VERSION;
+    const isVersioned =
+        !url.pathname.startsWith("/static/modules/") &&
+        url.searchParams.get("v") === ASSET_VERSION;
     await serveStaticAsset(
         req,
         res,

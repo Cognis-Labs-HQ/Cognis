@@ -19,6 +19,9 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /form-builder-required-flag/);
     assert.match(source, /form-builder-label-text/);
     assert.match(source, /aria-hidden="true"/);
+    assert.match(source, /export function bindTabbedFormValidation\(/);
+    assert.match(source, /dataset\.formValidationPanel/);
+    assert.match(source, /revealFirstInvalid/);
 });
 
 test("form builder applies theme styling to every select control", () => {

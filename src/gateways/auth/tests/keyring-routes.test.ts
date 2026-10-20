@@ -93,6 +93,54 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     assert.match(emptyResponse.payload, /"vault":null/);
 });
 
+test("keyring policy bounds default vaults and accepts a configured bounded increase", async () => {
+    let stored = "";
+    let policyBytes = 2 * 1024 * 1024;
+    const route = createKeyringRoutes({
+        routeContext: createDefaultRouteContext(),
+        store: {
+            async ensureSchema() {},
+            async get() {
+                return null;
+            },
+            async set(_accountId: string, value: string) {
+                stored = value;
+            },
+            async delete() {},
+        },
+        getAccountInstanceId: async () => "instance-1",
+        getPolicy: () => ({
+            maxVaultBytes: policyBytes,
+            derivationIterations: 310000,
+        }),
+    });
+    const token = issueAccessToken("large-keyring-user", "user", 60);
+    const response = makeResponse();
+    const vault = {
+        ...validVault(),
+        cipher: "a".repeat(3 * 1024 * 1024),
+    };
+
+    await route(
+        makeJsonRequest("PUT", { vault }, { authorization: `Bearer ${token}` }),
+        response as any,
+        new URL("http://localhost/api/v1/auth/keyring"),
+        {} as any,
+    );
+
+    assert.equal(response.status, 413);
+    assert.equal(stored, "");
+    policyBytes = 4 * 1024 * 1024;
+    const allowed = makeResponse();
+    await route(
+        makeJsonRequest("PUT", { vault }, { authorization: `Bearer ${token}` }),
+        allowed as any,
+        new URL("http://localhost/api/v1/auth/keyring"),
+    );
+    assert.equal(allowed.status, 200);
+    assert.equal(JSON.parse(stored).cipher.length, 3 * 1024 * 1024);
+});
+
 test("keyring API rejects malformed vault payloads", async () => {
     const store = {
         async ensureSchema() {},

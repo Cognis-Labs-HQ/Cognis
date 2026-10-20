@@ -327,7 +327,7 @@ test("share origins can suppress read-only choices", async () => {
     assert.match(popupSource, /hidePermissionLabels: !state\.supportsReadOnly/);
     assert.match(
         popupSource,
-        /state\.supportsReadOnly[\s\S]*\? selectedShare\.accessControls/,
+        /state\.supportsReadOnly[\s\S]*state\.allowedPermissions\.includes\("write"\)[\s\S]*selectedShare\.accessControls/,
     );
 });
 

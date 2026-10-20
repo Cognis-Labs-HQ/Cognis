@@ -5,7 +5,9 @@ import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { DbClassesStore } from "./store/index.js";
+import type { ClassesRouteOptions } from "./routes/index.js";
 import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
@@ -109,7 +111,7 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.get("db:executor");
+    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     if (!dbExecutor) {
         ctx.log?.(
             "warn",
@@ -273,9 +275,12 @@ export async function bootstrapStudyAdapter(
         async (input: { classId: string }): Promise<string[]> => {
             const classId = String(input?.classId ?? "").trim();
             if (!classId) return [];
-            const classRow = await store.getClass(classId);
+            const classRow = await store.getClassById(classId);
             if (!classRow) return [];
-            const members = await store.listClassMembers(classId);
+            const members = await store.getClassMembers(
+                classId,
+                classRow.teacherAccountId,
+            );
 
             const accountIds = Array.from(
                 new Set([
@@ -308,11 +313,15 @@ export async function bootstrapStudyAdapter(
 
     ctx.capabilities.contribute("study:classes:access", {
         async canRead(classId: string, accountId: string, role: string) {
+            if (!ctx.isAdapterEnabled()) return false;
             if (role === "admin" || role === "owner") return true;
-            const classRow = await store.getClass(classId);
+            const classRow = await store.getClassById(classId);
             if (!classRow) return false;
             if (classRow.teacherAccountId === accountId) return true;
-            const members = await store.listClassMembers(classId);
+            const members = await store.getClassMembers(
+                classId,
+                classRow.teacherAccountId,
+            );
             return members.some(
                 (member) =>
                     member.studentAccountId === accountId &&
@@ -320,23 +329,31 @@ export async function bootstrapStudyAdapter(
             );
         },
         async canWrite(classId: string, accountId: string, role: string) {
+            if (!ctx.isAdapterEnabled()) return false;
             if (role === "admin" || role === "owner") return true;
-            const classRow = await store.getClass(classId);
+            const classRow = await store.getClassById(classId);
             return classRow?.teacherAccountId === accountId;
         },
         async listReadable(accountId: string, role: string) {
+            if (!ctx.isAdapterEnabled()) return [];
             if (role === "admin" || role === "owner")
                 return (await store.getAvailableClasses()).map(({ id }) => id);
             const taught = await store.getClassesForTeacher(accountId);
             const enrolled = await store.getEnrolledClasses(accountId);
             return [...new Set([...taught, ...enrolled].map(({ id }) => id))];
         },
-        async listWritable(accountId: string, role: string) {
-            if (role === "admin" || role === "owner")
-                return (await store.getAvailableClasses()).map(({ id }) => id);
-            return (await store.getClassesForTeacher(accountId)).map(
-                ({ id }) => id,
-            );
+        async listWritable(accountId: string, role: string, language?: string) {
+            if (!ctx.isAdapterEnabled()) return [];
+            const classes =
+                role === "admin" || role === "owner"
+                    ? await store.getAvailableClasses()
+                    : await store.getClassesForTeacher(accountId);
+            return classes
+                .filter(
+                    ({ languageCode }) =>
+                        !language || languageCode === language,
+                )
+                .map(({ id }) => id);
         },
     });
 
@@ -360,7 +377,9 @@ export async function bootstrapStudyAdapter(
                 const dispatch = ctx.capabilities.get<
                     (
                         role: "admin" | "teacher" | "user",
-                        envelope: typeof envelope,
+                        envelope: Parameters<
+                            NonNullable<ClassesRouteOptions["dispatchToRole"]>
+                        >[1],
                     ) => Promise<unknown>
                 >("notify:dispatchToRole");
                 return dispatch?.(role, envelope) ?? Promise.resolve(null);

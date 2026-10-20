@@ -60,4 +60,23 @@
   <string name="gateway.study.library_revisions">Revisionen</string>
   <string name="gateway.study.library_progress">Fortschritt</string>
   <string name="gateway.study.library_strokes">Striche</string>
+  <string name="gateway.study.dictionary_search">Wörterbuchsuche</string>
+  <string name="gateway.study.dictionary_provider">Wörterbuchanbieter</string>
+  <string name="gateway.study.dictionary_search_with">Suchen mit {{ provider }}</string>
+  <string name="gateway.study.explore">Entdecken</string>
+  <string name="gateway.study.favourite_failed">Study-Favoriten konnten nicht aktualisiert werden.</string>
+  <string name="gateway.study.favourite_added">Zu Favoriten hinzugefügt.</string>
+  <string name="gateway.study.favourite_removed">Aus Favoriten entfernt.</string>
+<string name="gateway.study.drawing.title">Schreibübung</string>
+  <string name="gateway.study.drawing.reset">Zurücksetzen</string>
+  <string name="gateway.study.drawing.guidance">Vollständige Anleitung zeigen</string>
+  <string name="gateway.study.drawing.well_done">Gut gemacht</string>
+  <string name="gateway.study.drawing.loser">Verloren!</string>
+  <string name="gateway.study.drawing.mistakes">Fehler: {{ count }}</string>
+  <string name="gateway.study.drawing.close">Schließen</string>
+  <string name="gateway.study.drawing.try_again">Erneut versuchen</string>
+  <string name="gateway.study.drawing.error">Die Schreibübung konnte nicht geladen werden.</string>
+  <string name="gateway.study.drawing.reveal">Zeichen anzeigen</string>
+  <string name="gateway.study.drawing_open_card">Karte in Explore öffnen?</string>
+  <string name="gateway.study.drawing_open_card_body">Die aufgedeckte Karte in Explore öffnen und diese Seite verlassen?</string>
 </resources>

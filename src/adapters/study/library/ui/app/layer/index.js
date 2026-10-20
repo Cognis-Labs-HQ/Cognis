@@ -1,3 +1,8 @@
+import { exploreLayers } from "/static/gateways/study/reuse/explore.js";
+import { openEntryPopup } from "../entry-popup.js";
+import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
+import { createSideMenu } from "/static/reuse/side-menu.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -13,20 +18,22 @@ import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
 import { librarySelectionFloatingMenu } from "../selection.js";
-import { openCreateEntryPopup } from "../create-entry.js";
-import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
-    bindLibraryRequestReviews,
-    loadLibraryRequests,
-    renderLibraryRequests,
-} from "../requests.js";
+    chooseCreateLayer,
+    openCreateEntryPopup,
+} from "../create-entry/index.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { loadLibraryRequests } from "../requests.js";
+import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
+import { canCreateLayerEntries } from "../editability.js";
 
 function requestedLayer() {
     const parts = window.location.pathname.split("/").filter(Boolean);
-    if (parts.length !== 4 || parts[1] !== "layers") return null;
+    if (![4, 5].includes(parts.length) || parts[1] !== "explore") return null;
     return {
-        schemaId: decodeURIComponent(parts[2]),
-        layerId: decodeURIComponent(parts[3]),
+        language: decodeURIComponent(parts[2]),
+        slug: decodeURIComponent(parts[3]),
+        entryId: parts[4] ? decodeURIComponent(parts[4]) : null,
     };
 }
 
@@ -37,24 +44,62 @@ export async function mount(root, { signal } = {}) {
             "/static/adapters/study/library/languages",
         ],
     });
-    const selectedLayer = requestedLayer();
+    const requested = requestedLayer();
     const model = await loadStudySubNavigationModel({
-        fallbackLanguageCode: readSelectedStudyLanguageCode(),
+        fallbackLanguageCode:
+            requested?.language ?? readSelectedStudyLanguageCode(),
     });
-    const languageCode = model.selectedLanguageCode;
+    const languageCode = requested?.language ?? model.selectedLanguageCode;
     const { schemas, entries: loadedEntries } = await loadLibrary(
         languageCode,
         i18n,
     );
     const entries = loadedEntries;
-    const schema = schemas.find(({ id }) => id === selectedLayer?.schemaId);
-    const layer = schema?.layers?.find(
-        ({ id }) => id === selectedLayer?.layerId,
-    );
-    const requests = await loadLibraryRequests();
-    const title = layer
-        ? localizedLabel(layer.metadata, schema.language) || layer.id
-        : i18n.t("gateway.study.library_label");
+    const browseable = exploreLayers(schemas);
+    const selected =
+        browseable.find(
+            ({ layer }) =>
+                (layer.navigationSlug ?? layer.id) === requested?.slug,
+        ) ?? (!requested ? browseable[0] : undefined);
+    const schema = selected?.schema;
+    const layer = selected?.layer;
+    const selectedLayer =
+        schema && layer
+            ? { schemaId: schema.id, layerId: layer.id }
+            : { schemaId: "", layerId: "" };
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "explore",
+                label: i18n.t("gateway.study.explore"),
+                collapsible: false,
+                items: browseable.map(({ schema, layer }) => ({
+                    id: `${schema.language}/${layer.navigationSlug ?? layer.id}`,
+                    label:
+                        localizedLabel(
+                            layer.metadata,
+                            document.documentElement.lang,
+                        ) || layer.id,
+                })),
+            },
+        ],
+        activeId: selected
+            ? `${schema.language}/${layer.navigationSlug ?? layer.id}`
+            : "",
+        storageKeyPrefix: "study-explore",
+        onSelect: (id) => navigateTo(`/study/explore/${id}`),
+    });
+    const [requests, formContributions] = await Promise.all([
+        loadLibraryRequests(i18n),
+        fetchLibraryForms(),
+    ]);
+    const canCreate = Boolean(schema) && canCreateLayerEntries(layer);
+    const view = null;
+    const title = view
+        ? localizedLabel(view.metadata, schema.language) || view.id
+        : layer
+          ? localizedLabel(layer.metadata, schema.language) || layer.id
+          : i18n.t("gateway.study.library_label");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -77,26 +122,13 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [
-            ...(layer?.cardConstructor
-                ? [
-                      {
-                          id: "library-create",
-                          label: i18n.t("gateway.study.library_create"),
-                          render: () =>
-                              `<button class="btn-confirm" type="button" data-library-create>${escapeHtml(i18n.t("gateway.study.library_create"))}</button>`,
-                      },
-                  ]
-                : []),
-            ...(requests.length
-                ? [
-                      {
-                          id: "library-requests",
-                          label: i18n.t("gateway.study.library_requests"),
-                          render: () => renderLibraryRequests(requests, i18n),
-                      },
-                  ]
-                : []),
+            {
+                id: "explore-layers",
+                label: i18n.t("gateway.study.explore"),
+                render: () => menu.render(),
+            },
         ],
+        toolbarScrollable: true,
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
         subNavigation: [
             {
@@ -113,35 +145,61 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     signal?.throwIfAborted();
-    bindLibraryRequestReviews(root, requests, { i18n, signal });
+    menu.mount(root, { signal });
     root.querySelectorAll("[data-library-panel]").forEach((panel) => {
         if (panel.querySelector("button[data-library-filter].active")) {
             refreshLibraryFilterResults(panel);
         }
     });
-    bindStudySubNavigation(root, { signal });
-    root.addEventListener(
-        "click",
-        async (event) => {
-            if (!event.target.closest("[data-library-create]")) return;
-            const created = await openCreateEntryPopup({
-                schemas,
-                entries,
-                schemaId: selectedLayer?.schemaId,
-                layerId: selectedLayer?.layerId,
-                i18n,
-            });
-            if (!created) return;
-            entries.push(created);
-            root.querySelector(".library-browser").innerHTML = renderBrowser(
-                schemas,
-                entries,
-                i18n,
-                selectedLayer,
-            );
-        },
-        { signal },
-    );
+    bindStudySubNavigation(root, { signal, i18n });
+    if (canCreate) {
+        const createButton = document.createElement("button");
+        createButton.type = "button";
+        createButton.className = "btn-confirm";
+        createButton.innerHTML =
+            '<span class="library-create-action" aria-hidden="true">+</span>';
+        createButton.setAttribute(
+            "aria-label",
+            i18n.t("gateway.study.library_create"),
+        );
+        createButton.addEventListener(
+            "click",
+            async () => {
+                const schema = schemas.find(
+                    ({ id }) => id === selectedLayer?.schemaId,
+                );
+                if (!schema) return;
+                const layerId = await chooseCreateLayer({
+                    schema,
+                    contributions: formContributions,
+                    preferredLayerId: selectedLayer?.layerId,
+                    i18n,
+                });
+                if (!layerId) return;
+                const created = await openCreateEntryPopup({
+                    schemas,
+                    entries,
+                    schemaId: selectedLayer?.schemaId,
+                    layerId,
+                    i18n,
+                    contributions: formContributions,
+                });
+                if (!created) return;
+                entries.push(created);
+                root.querySelector(".library-browser").innerHTML =
+                    renderBrowser(schemas, entries, i18n, selectedLayer);
+            },
+            { signal },
+        );
+        const removeAction = uiCtx.capabilities.get("page:actions")?.add({
+            id: "study-library:create",
+            element: createButton,
+            order: 20,
+        });
+        signal?.addEventListener("abort", () => removeAction?.(), {
+            once: true,
+        });
+    }
     bindLibraryInteractions(root, {
         entries,
         i18n,
@@ -151,6 +209,22 @@ export async function mount(root, { signal } = {}) {
         schemas,
         signal,
     });
+    const requestedEntryId = requested?.entryId ?? history.state?.studyEntryId;
+    if (requestedEntryId) {
+        const entry =
+            entries.find(({ id }) => id === requestedEntryId) ??
+            (await fetchLibraryEntry(requestedEntryId)).entry;
+        await openEntryPopup(
+            root,
+            entry,
+            schemas,
+            entries,
+            i18n,
+            languageCode,
+            signal,
+            { navigationEntryIds: history.state?.studyEntryIds },
+        );
+    }
 }
 
 await mountWhenDirect(mount);

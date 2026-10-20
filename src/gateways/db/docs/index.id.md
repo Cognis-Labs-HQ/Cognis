@@ -62,3 +62,9 @@ Administrasi hanya menandai adapter yang dipilih oleh `DB_TYPE` sebagai aktif. S
 | -------------- | ------------ | ------------------------------------------------------------ |
 | `DB_TYPE`      | `postgresql` | Backend database: `postgresql` atau `mariadb`                |
 | `DATABASE_URL` | —            | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
+
+## Imbalan Latihan Tersimpan
+
+Gateway basis data menyediakan `engagement:store` untuk bukti imbalan peserta, penukaran booster, dan pembatalan. Perintah terstruktur memeriksa revisi secara atomik agar proses bersamaan tidak menimpa imbalan proses lain secara diam-diam. Mesin inti menerima penyimpanan ini melalui ctx tanpa mengimpor implementasi basis data.
+
+Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan indeks yang belum ada. Kunci utama atau unik yang sudah ada tidak diganti. Kontrak penyimpanan terstruktur tidak menyediakan kolom teks besar: TEXT MariaDB dibatasi 65.535 byte, dan kunci gabungan multibita tunduk pada batas ukuran kunci InnoDB. Ukuran data dan perubahan skema Study harus diperiksa terhadap batas penyedia tersebut.

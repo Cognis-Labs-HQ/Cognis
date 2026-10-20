@@ -64,3 +64,9 @@ Die Administration markiert nur den durch `DB_TYPE` ausgewählten Adapter als ak
 | -------------- | ------------ | --------------------------------------------------------------------- |
 | `DB_TYPE`      | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                        |
 | `DATABASE_URL` | —            | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
+
+## Dauerhafte Übungsbelohnungen
+
+Das Datenbank-Gateway stellt `engagement:store` für Belohnungsbelege, Booster-Einlösungen und Entwertungen bereit. Strukturierte Befehle prüfen Revisionen atomar, damit konkurrierende Prozesse keine fremden Belohnungen unbemerkt überschreiben. Die Kern-Engine erhält die Speicherung über ctx statt durch direkte Importe der Datenbankimplementierung.
+
+Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Spalten und Indizes. Bestehende Primärschlüssel oder eindeutige Schlüssel werden nicht ersetzt. Der strukturierte Speichervertrag beschreibt keine großen Textfelder: MariaDB-TEXT ist auf 65.535 Byte begrenzt, und mehrbytekodierte zusammengesetzte Schlüssel unterliegen der InnoDB-Schlüsselgrenze. Study-Nutzdaten und Schemaänderungen müssen gegen diese Anbietergrenzen geprüft werden.

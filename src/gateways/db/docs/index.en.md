@@ -87,3 +87,9 @@ Administration marks only the adapter selected by `DB_TYPE` as active. Every dat
 | -------------- | ------------ | --------------------------------------------------------- |
 | `DB_TYPE`      | `postgresql` | Database backend: `postgresql` or `mariadb`               |
 | `DATABASE_URL` | —            | Connection string; required for `postgresql` or `mariadb` |
+
+## Durable Practice Rewards
+
+The Database gateway provides `engagement:store` for participant reward receipts, booster redemptions and invalidations. Structured commands enforce atomic revision checks so concurrent writers cannot silently overwrite another worker’s rewards. The core engine receives this storage through ctx rather than importing database implementations.
+
+Schema initialization creates declared tables and adds missing columns and indexes. It does not replace existing primary or unique keys. The structured storage contract does not express large text fields: MariaDB TEXT is limited to 65,535 bytes, and multibyte composite keys are subject to InnoDB’s key-size limit. Study payload sizes and schema changes must be assessed against those provider limits.

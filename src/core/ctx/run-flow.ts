@@ -31,6 +31,10 @@ export async function runFlow(
         throw new Error(`Flow "${flowId}" is not registered.`);
     }
 
+    for (const stageId of Object.keys(options?.handlers ?? {})) {
+        if (!flowEntry.flow.stages.includes(stageId))
+            throw new Error(`Flow "${flowId}" has no stage "${stageId}".`);
+    }
     const data = options?.data ?? {};
     const stageResults: Record<string, unknown[]> = {};
     const meta = Object.freeze({ ...(options?.meta ?? {}) });
@@ -52,6 +56,8 @@ export async function runFlow(
         };
 
         const currentStageResults: unknown[] = [];
+        const owner = options?.handlers?.[stageId];
+        if (owner) currentStageResults.push(await owner(executionContext));
         for (const hook of stageHooks) {
             const result = await hook.handler(executionContext);
             currentStageResults.push(result);

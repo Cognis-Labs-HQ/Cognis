@@ -1,3 +1,12 @@
+import { languageAvailability } from "./service/availability.js";
+import { createNotificationDelivery } from "./notification-delivery.js";
+import { createRequestNotifier } from "./request-notifications.js";
+import { LibraryImageStore } from "./image-store.js";
+import type { StudyAudioCapability } from "@cognis/core";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import { DictionarySearchState } from "./service/search-context.js";
+import { createDictionarySearchContextRoutes } from "./routes/search-context.js";
+import { CORE_CACHE_CAPABILITY, type ProbeCacheFactory } from "@cognis/core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
@@ -13,7 +22,10 @@ import type {
 } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
-import { LibraryService, type LibraryProviderCapability } from "./service.js";
+import {
+    LibraryService,
+    type LibraryProviderCapability,
+} from "./service/index.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import {
@@ -69,6 +81,18 @@ export async function bootstrapStudyAdapter(
             namespaceId: "study-library-audio",
             callerComponent: "study-library",
         }),
+        ctx.log,
+    );
+    registerFileNamespace({
+        id: "study-library-images",
+        ownerComponent: "study-library",
+        acl: { visibility: "component-managed" },
+    });
+    const imageStore = new LibraryImageStore(
+        createNamespaceClient({
+            namespaceId: "study-library-images",
+            callerComponent: "study-library",
+        }),
     );
     const store = new LibraryStore(databaseExecutor);
     try {
@@ -88,20 +112,9 @@ export async function bootstrapStudyAdapter(
     }
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
-    )?.("study-library", "Study Library");
-    const dispatchNotification =
-        ctx.capabilities.get<
-            (envelope: {
-                category: string;
-                recipientUsername: string;
-                subject: string;
-                body: string;
-                actionUrl?: string;
-            }) => Promise<unknown>
-        >("notify:dispatch");
-    const accountStore = ctx.capabilities.get<{
-        list(): Promise<Array<{ username: string; enabled: boolean }>>;
-    }>("auth:accountStore");
+    )?.("study", "Study");
+    const { dispatch: dispatchNotification, accounts: accountStore } =
+        createNotificationDelivery(ctx);
     const service = new LibraryService(
         store,
         ctx.capabilities.get<StudyClassAccessCapability>(
@@ -113,39 +126,87 @@ export async function bootstrapStudyAdapter(
             STRING_LOCALIZATION_CAPABILITY,
         ),
         audioCache,
-        dispatchNotification && accountStore
-            ? async ({ entryCount, language }) => {
-                  try {
-                      const accounts = await accountStore.list();
-                      await Promise.allSettled(
-                          accounts
-                              .filter(({ enabled }) => enabled)
-                              .map(({ username }) =>
-                                  dispatchNotification({
-                                      category: "study-library",
-                                      recipientUsername: username,
-                                      subject: "New Study Library content",
-                                      body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
-                                      actionUrl: "/study/library",
-                                  }),
-                              ),
-                      );
-                  } catch (error) {
-                      await ctx.log?.(
-                          "error",
-                          "Could not notify accounts about new Study Library content.",
-                          {
-                              component: "study-library",
-                              operation: "notify-new-content",
-                              error:
-                                  error instanceof Error
-                                      ? error.message
-                                      : String(error),
-                          },
-                      );
-                  }
-              }
-            : undefined,
+        async ({ entryCount, language }) => {
+            try {
+                const accounts = await accountStore.list();
+                await Promise.allSettled(
+                    accounts
+                        .filter(({ enabled }) => enabled)
+                        .map(({ username }) =>
+                            dispatchNotification({
+                                category: "study",
+                                recipientUsername: username,
+                                subject: "New Study Library content",
+                                body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
+                                actionUrl: "/study/library",
+                            }),
+                        ),
+                );
+            } catch (error) {
+                await ctx.log?.(
+                    "error",
+                    "Could not notify accounts about new Study Library content.",
+                    {
+                        component: "study-library",
+                        operation: "notify-new-content",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+            }
+        },
+        ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
+        async (entries, actor) => {
+            const recipients = new Map<string, string[]>();
+            for (const entry of entries) {
+                const recipient =
+                    entry.scope === "user" ? entry.scopeId : entry.createdBy;
+                if (
+                    recipient === actor.accountId ||
+                    recipient.startsWith("content-pack:")
+                )
+                    continue;
+                const labels = recipients.get(recipient) ?? [];
+                labels.push(entry.label);
+                recipients.set(recipient, labels);
+            }
+            const results = await Promise.allSettled(
+                Array.from(recipients, ([recipientUsername, labels]) =>
+                    dispatchNotification({
+                        category: "study",
+                        recipientUsername,
+                        subject: "Study cards removed",
+                        body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
+                        actionUrl: "/study/library",
+                    }),
+                ),
+            );
+            for (const result of results)
+                if (result.status === "rejected")
+                    await ctx.log?.(
+                        "error",
+                        "Could not notify affected Study card owner.",
+                        {
+                            component: "study-library",
+                            operation: "notify-deletion",
+                            errorName:
+                                result.reason instanceof Error
+                                    ? result.reason.name
+                                    : "Error",
+                        },
+                    );
+        },
+        ctx.capabilities.get<StudyAudioCapability>("study:audio"),
+        imageStore,
+        createRequestNotifier({
+            flow: ctx.flow,
+            accounts: accountStore,
+            dispatch: dispatchNotification,
+            log: ctx.log,
+        }),
+        languageAvailability((id) => ctx.capabilities.get(id)),
     );
     ctx.capabilities.contribute("study:library", service);
     const registerConstructor = service.registerFormContribution.bind(service);
@@ -161,9 +222,32 @@ export async function bootstrapStudyAdapter(
         );
     if (!systemCtx?.hasCapability("study:library:provider"))
         systemCtx?.contributePublicCapability("study:library:provider", {
+            inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
+            deleteContentPack: service.deleteContentPack.bind(service),
             registerConstructor,
+            registerLookupProvider:
+                service.registerLookupProvider.bind(service),
         } satisfies LibraryProviderCapability);
+    const preferences =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");
+    if (preferences && auth) {
+        if (!systemCtx?.hasFlow("study:library:searchContext"))
+            systemCtx?.registerFlow({
+                id: "study:library:searchContext",
+                stages: ["authorize", "persist"],
+            });
+        ctx.registerRoute(
+            createDictionarySearchContextRoutes(
+                new DictionarySearchState(preferences),
+                auth,
+                ctx.flow,
+                ctx.log,
+            ),
+            "study",
+        );
+    }
     ctx.registerRoute(
         createLibraryRoutes(
             service,
@@ -190,8 +274,8 @@ export async function bootstrapStudyAdapter(
     });
     ctx.registerSpaRoute?.({
         id: "study-library-layer-page",
-        pattern: "^/study/layers/[^/]+/[^/]+$",
-        base: "/study/layers",
+        pattern: "^/study/explore(?:/[^/]+/[^/]+(?:/[^/]+)?)?$",
+        base: "/study/explore",
         scriptUrl: "/static/adapters/study/library/app/layer/index.js",
         stylesheets: [
             "/static/styles/page-builder.css",
@@ -203,7 +287,41 @@ export async function bootstrapStudyAdapter(
         requiredCapabilities: ["study:library:detailFlow"],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+    ctx.registerSpaRoute?.({
+        id: "study-library-requests-page",
+        pattern: "^/study/library/requests$",
+        base: "/study/library/requests",
+        scriptUrl: "/static/adapters/study/library/app/requests/index.js",
+        navigationLabels: {
+            de: "Anfragen",
+            en: "Requests",
+            id: "Permintaan",
+            ja: "リクエスト",
+        },
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     adapterReady = true;
+    ctx.registerSpaRoute?.({
+        id: "study-library-search-page",
+        pattern: "^/study/library/search$",
+        base: "/study/library/search",
+        scriptUrl: "/static/adapters/study/library/app/search/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+            "/static/adapters/study/library/library.css",
+        ],
+        requiredCapabilities: ["study:library:detailFlow"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     await ctx.log?.("info", "Study/library adapter bootstrapped.", {
         component: "study-library",
         operation: "bootstrap",

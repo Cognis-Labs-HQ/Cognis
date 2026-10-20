@@ -559,6 +559,22 @@ test("external login retries account creation through the registration token gat
     }>("auth:accountStore");
     assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
 
+    const authorizationsBeforeReturningLogin = authorizationInputs.length;
+    const returningLogin = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(returningLogin.res.status, 200);
+    assert.equal(
+        authorizationInputs.length,
+        authorizationsBeforeReturningLogin,
+    );
+    assert.equal(
+        JSON.parse(returningLogin.res.payload).data.accountId,
+        "x:thefirehawk",
+    );
+
     await accountStore.delete("x:thefirehawk");
     assert.equal(
         await accountStore.isExternalIdentityDeleted(

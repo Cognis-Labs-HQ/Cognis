@@ -615,14 +615,9 @@ test("module marketplace discovers repository manifests", async () => {
             : /\/LICENSE(?:\.md|\.txt)?(?:\?|$)/.test(String(input))
               ? new Response("", { status: 404 })
               : String(input).includes("/assets/")
-                ? String(input).includes(".svg?")
+                ? /\.svg(?:\?|$)/.test(String(input))
                     ? new Response("", { status: 404 })
-                    : new Response(
-                          JSON.stringify({
-                              content:
-                                  Buffer.from(assetBody).toString("base64"),
-                          }),
-                      )
+                    : new Response(assetBody)
                 : String(input).includes("/tags?")
                   ? new Response(
                         JSON.stringify([
