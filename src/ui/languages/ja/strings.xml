@@ -613,4 +613,6 @@
   <string name="ui.reuse.sort_oldest">古い順</string>
     <string name="ui.reuse.image_unavailable">画像を表示できません</string>
     <string name="ui.app.modules.config_action_failed">設定操作に失敗しました。設定を確認するか、音声IDを手動で入力してください。</string>
+    <string name="ui.reuse.home">ホーム</string>
+    <string name="ui.reuse.try_again">もう一度</string>
 </resources>

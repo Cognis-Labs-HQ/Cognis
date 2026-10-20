@@ -52,6 +52,10 @@
     cursor: grabbing;
 }
 
+.composition-input-suggestions:empty {
+    display: none;
+}
+
 .composition-input-suggestions:not(:empty) {
     display: flex;
     flex: 1 0 100%;

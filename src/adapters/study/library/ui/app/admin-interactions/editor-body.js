@@ -23,6 +23,7 @@ import {
 import {
     definitionText,
     layerForEntry,
+    isWritingUnitLayer,
     localizedLabel,
 } from "../presentation.js";
 import { canCreateLayerEntries, entryEditMode } from "../editability.js";
@@ -116,7 +117,7 @@ function relationshipEditor(
     );
     const visibleTargets = availableTargets.filter(
         (candidate) =>
-            candidate.hidden !== true &&
+            (candidate.hidden !== true || isWritingUnitLayer(targetLayer)) &&
             !(candidate.tags ?? []).some((tag) => excludedTags.has(tag)),
     );
     const previewFor = (target) =>

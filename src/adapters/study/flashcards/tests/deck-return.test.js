@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { formatTemplate } from "../../../../ui/reuse/format-template.js";
+import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import {
@@ -36,6 +38,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         progress: {},
     };
     const nodes = new Map();
+    const listeners = new Map();
     const root = {
         querySelector(selector) {
             if (!nodes.has(selector))
@@ -43,7 +46,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             return nodes.get(selector);
         },
         querySelectorAll: () => [],
-        addEventListener() {},
+        addEventListener(type, handler) {
+            listeners.set(type, handler);
+        },
     };
     const history = {
         state: { routerIndex: 7 },
@@ -55,6 +60,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     const mounts = [];
     let choices = 0;
     const reviews = [];
+    const queueCalls = [];
     const menus = [];
     const navigations = [];
     const environment = vm.createContext({
@@ -78,7 +84,14 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         }),
         fetchStudyDecks: async () => [deck],
         fetchLibrarySchemas: async () => [{ id: "ja", language: "ja" }],
-        loadDeckTemplates: async () => ({}),
+        loadDeckTemplates: async () => ({
+            completion: readFileSync(
+                new URL("../ui/templates/gallery.html", import.meta.url),
+                "utf8",
+            ).match(
+                /<template data-deck-template="completion">([\s\S]*?)<\/template>/,
+            )[1],
+        }),
         fetchStudyDeck: async () => ({ deck, cards }),
         loadFavourites: async () => ({ bind() {} }),
         createSideMenu: (options) => {
@@ -108,7 +121,12 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         },
         fetchLibraryLocations: async () => ({ readable: [] }),
         noteDetails: () => [],
-        practiceQueue: (all) => all,
+        practiceQueue: (all, progress, filter) => {
+            queueCalls.push({ progress, filter });
+            return filter === "new"
+                ? all.filter(({ entry }) => !progress[entry.id])
+                : all;
+        },
         practiceSummary: () => ({}),
         mountPractice: (_target, options) => {
             mounts.push(options);
@@ -116,9 +134,11 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         },
         reviewStudyCard: async (_deckId, entryId, grade) => {
             reviews.push({ entryId, grade });
+            deck.progress[entryId] = { due: "2099-01-01" };
             return deck;
         },
-        escapeHtml: String,
+        escapeHtml,
+        formatTemplate,
         mountWhenDirect: async () => {},
         showToast: () => assert.fail("Unexpected deck failure"),
     });
@@ -129,6 +149,14 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     vm.runInContext(source("../ui/app/actions.js"), environment);
     await vm.runInContext(
         `(async () => { ${source("../ui/app/index.js")}; globalThis.mountDeck = mount; })()`,
+        environment,
+    );
+    vm.runInContext(
+        source("../ui/app/markup.js").slice(
+            source("../ui/app/markup.js").indexOf(
+                "function renderDeckCompletion",
+            ),
+        ),
         environment,
     );
     await environment.mountDeck(root);
@@ -174,4 +202,52 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         { entryId: "one", grade: "good" },
         { entryId: "two", grade: "again" },
     ]);
+    await mounts.at(-1).onNext("again");
+    await mounts.at(-1).onNext("good");
+    const completed = root.querySelector("[data-study-session]").innerHTML;
+    assert.match(completed, /study-deck-completion-check/);
+    assert.match(completed, /data-practice-restart/);
+    assert.match(completed, /ui.reuse.home/);
+    const completedFilter = history.state.studyDeckSession.filter;
+    const reviewsBeforeRetry = reviews.length;
+    await listeners.get("click")({
+        target: {
+            closest: (selector) =>
+                selector === "[data-practice-restart]" ? {} : null,
+        },
+    });
+    assert.equal(mounts.at(-1).detail.entry.id, "one");
+    assert.equal(mounts.at(-1).answeredGrade, undefined);
+    assert.equal(history.state.studyDeckSession.filter, completedFilter);
+    assert.equal(history.state.studyDeckSession.index, 0);
+    assert.equal(reviews.length, reviewsBeforeRetry);
+    assert.equal(queueCalls.at(-1).progress, deck.progress);
+    assert.equal(queueCalls.at(-1).filter, completedFilter);
+    // A focused New queue becomes empty after review; retry must not replay it.
+    const filterButton = { dataset: { practiceFilter: "new" } };
+    await listeners.get("click")({
+        target: {
+            closest: (selector) =>
+                selector === "[data-practice-filter]" ? filterButton : null,
+        },
+    });
+    const mountCount = mounts.length;
+    await listeners.get("click")({
+        target: {
+            closest: (selector) =>
+                selector === "[data-practice-restart]" ? {} : null,
+        },
+    });
+    assert.equal(mounts.length, mountCount);
+    assert.equal(queueCalls.at(-1).filter, "new");
+    assert.equal(history.state.studyDeckSession.filter, "new");
+    assert.deepEqual(history.state.studyDeckSession.cardIds, []);
+    const home = { dataset: { deckAction: "browse" }, disabled: false };
+    await listeners.get("click")({
+        target: {
+            closest: (selector) =>
+                selector === "[data-deck-action]" ? home : null,
+        },
+    });
+    assert.equal(navigations.at(-1), "/study/ja/flashcards");
 });

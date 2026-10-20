@@ -90,6 +90,12 @@ Schema initialization creates declared tables and adds missing columns and index
 
 The main browser entry is `ui/app/index.js`; its actions, markup, language and practice modules live beside it. Shared decks mount `ui/app/shared-deck.js`. Server-side deck behavior uses `service/index.ts` with its route, flow, store and result modules in the same service directory.
 
+Composer suggestions occupy a separate row, keeping input and Save Pronunciation controls stable. Selecting a dictionary result commits unresolved spelling to canonical character references, including hidden writing units such as small っ. Existing committed compositions remain intact; hidden units stay out of browsing.
+
+Completing a deck shows a centered green check and congratulations. Home returns to All. Try Again rebuilds the selected queue using updated review status and starts it from its first card, retaining the Total/Done/Due/New focus even when submitted reviews have changed card status. Only session answers and attempt identities reset; saved review progress remains intact. Shared-link practice uses the same completion view and temporary-session restart.
+
+Study settings, dictionary search and card scope icons use SVG masks colored by the active application theme. The settings mask no longer receives an unrelated background-image override. SVG assets remain served by their existing owners.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

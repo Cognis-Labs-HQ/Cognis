@@ -61,6 +61,12 @@ export function createPracticeSession(cards, snapshot) {
             if (grade) grades.set(index, grade);
             index = Math.min(cards.length, index + 1);
         },
+        restart() {
+            index = 0;
+            grades.clear();
+            attempts.clear();
+            reviewAttempts.clear();
+        },
         previous() {
             index = Math.max(0, index - 1);
         },

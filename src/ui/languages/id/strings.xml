@@ -613,4 +613,6 @@
   <string name="ui.reuse.sort_oldest">Terlama Dahulu</string>
     <string name="ui.reuse.image_unavailable">Gambar Tidak Tersedia</string>
     <string name="ui.app.modules.config_action_failed">Tindakan konfigurasi gagal. Periksa pengaturan atau masukkan ID suara secara manual.</string>
+    <string name="ui.reuse.home">Beranda</string>
+    <string name="ui.reuse.try_again">Coba Lagi</string>
 </resources>

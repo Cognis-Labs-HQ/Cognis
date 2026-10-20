@@ -47,7 +47,7 @@ function characterComposition(
     const candidates = relationships
         .flatMap((relationship) =>
             layerCandidates(entries, schema, relationship.targetLayer)
-                .filter((entry) => entry.hidden !== true && entry.label?.trim())
+                .filter((entry) => entry.label?.trim())
                 .map((entry) => ({ ...entry, relation: relationship.id })),
         )
         .toSorted(

@@ -102,3 +102,11 @@ export function renderDeckDetail(templates, deck, summary, filter, i18n) {
             : "",
     });
 }
+
+export function renderDeckCompletion(templates, i18n) {
+    return formatTemplate(templates.completion, {
+        message: escapeHtml(i18n.t("adapter.study.flashcards.deck_finished")),
+        home_label: escapeHtml(i18n.t("ui.reuse.home")),
+        retry_label: escapeHtml(i18n.t("ui.reuse.try_again")),
+    });
+}

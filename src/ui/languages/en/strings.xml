@@ -613,4 +613,6 @@
   <string name="ui.reuse.sort_oldest">Oldest First</string>
     <string name="ui.reuse.image_unavailable">Image Not Available</string>
     <string name="ui.app.modules.config_action_failed">The configuration action failed. Check your settings or enter a voice ID manually.</string>
+    <string name="ui.reuse.home">Home</string>
+    <string name="ui.reuse.try_again">Try Again</string>
 </resources>

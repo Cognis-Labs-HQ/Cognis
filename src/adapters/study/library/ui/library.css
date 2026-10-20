@@ -822,10 +822,25 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     border-radius: 999px;
     background: var(--surface-2);
 }
-.library-scope img {
+.library-scope-icon {
     display: block;
     width: 1rem;
     height: 1rem;
+}
+.library-scope-icon {
+    background-color: currentColor;
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+}
+.library-scope-icon--globe {
+    mask-image: url("./assets/scope-globe-light.svg");
+}
+.library-scope-icon--class {
+    mask-image: url("./assets/scope-class-light.svg");
+}
+.library-scope-icon--user {
+    mask-image: url("./assets/scope-user-light.svg");
 }
 .library-entry-popup .library-scope {
     width: 2.5rem;
@@ -833,7 +848,7 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     margin-inline: 0;
     flex: 0 0 auto;
 }
-.library-entry-popup .library-scope img {
+.library-entry-popup .library-scope-icon {
     width: 1.4rem;
     height: 1.4rem;
 }

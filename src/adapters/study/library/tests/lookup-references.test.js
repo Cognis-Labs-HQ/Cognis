@@ -283,9 +283,15 @@ test("dictionary character composition resolves complete ordered placements with
     for (const available of [
         characters.slice(1),
         characters.map((entry) => ({ ...entry, schemaId: "other" })),
-        characters.map((entry) => ({ ...entry, hidden: true })),
     ])
         assert.deepEqual(resolve(input, available).references, []);
+    assert.deepEqual(
+        resolve(
+            input,
+            characters.map((entry) => ({ ...entry, hidden: true })),
+        ).references,
+        result.references,
+    );
     const authored = {
         ...input,
         references: [{ entryId: "room", relation: "symbols", position: 0 }],

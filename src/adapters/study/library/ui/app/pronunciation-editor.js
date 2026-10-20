@@ -1,3 +1,4 @@
+import { isWritingUnitLayer } from "./presentation.js";
 import { pronunciationComponents } from "./pronunciation-components.js";
 import {
     clearHorizontalCarouselSelection,
@@ -157,8 +158,12 @@ export function mountEditableRelationshipCarousels(
             ),
         );
         return entries.filter(
-            ({ layer: entryLayer, hidden }) =>
-                hidden !== true && targetLayers.has(entryLayer),
+            (entry) =>
+                targetLayers.has(entry.layer) &&
+                (entry.hidden !== true ||
+                    isWritingUnitLayer(
+                        schema.layers?.find(({ id }) => id === entry.layer),
+                    )),
         );
     };
     const carouselItem = (kind, entryId, selectedOnly = false) =>

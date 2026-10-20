@@ -10,7 +10,7 @@
   <string name="adapter.study.flashcards.deck_save_error">Could not save the deck. Check the selected cards and imported note format.</string>
   <string name="adapter.study.flashcards.deck_load_error">Could not load the deck or library cards.</string>
   <string name="adapter.study.flashcards.deck_empty">No flashcard decks found</string>
-  <string name="adapter.study.flashcards.deck_finished">All selected cards have been reviewed.</string>
+  <string name="adapter.study.flashcards.deck_finished">Well done! You have completed this deck.</string>
   <string name="adapter.study.flashcards.deck_review_error">Could not save this review. Please try again.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} card(s) are no longer available and were skipped.</string>
   <string name="adapter.study.flashcards.page_subtitle">Browse Your Visible Flashcard Decks</string>

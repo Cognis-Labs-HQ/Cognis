@@ -63,7 +63,7 @@ export function renderCompositionInput({
     const save = saveAction
         ? `<button class="btn-confirm" type="button"${renderAttributes(saveAction.attributes)}>${escapeHtml(saveAction.label)}</button>`
         : "";
-    return `<span class="composition-input" data-composition-input="${escapeHtml(id)}"${renderAttributes(containerAttributes)}><span class="composition-input-items" data-composition-items="${escapeHtml(id)}" aria-live="polite"${renderAttributes(itemsAttributes)}>${renderCompositionItems({ items, removeLabel, itemAttributes })}</span><input autocomplete="off" aria-label="${escapeHtml(label)}" value="${escapeHtml(value)}"${required ? " required" : ""}${renderAttributes(inputAttributes)}><span class="composition-input-suggestions" data-composition-suggestions></span>${save}</span>`;
+    return `<span class="composition-input" data-composition-input="${escapeHtml(id)}"${renderAttributes(containerAttributes)}><span class="composition-input-items" data-composition-items="${escapeHtml(id)}" aria-live="polite"${renderAttributes(itemsAttributes)}>${renderCompositionItems({ items, removeLabel, itemAttributes })}</span><input autocomplete="off" aria-label="${escapeHtml(label)}" value="${escapeHtml(value)}"${required ? " required" : ""}${renderAttributes(inputAttributes)}>${save}<span class="composition-input-suggestions" data-composition-suggestions></span></span>`;
 }
 
 /**

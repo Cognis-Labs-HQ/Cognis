@@ -1,3 +1,4 @@
+import { isWritingUnitLayer } from "../presentation.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -36,7 +37,12 @@ export function bindTextComposition(
                     .filter(
                         (entry) =>
                             entry.layer === relationship.targetLayer &&
-                            entry.hidden !== true,
+                            (entry.hidden !== true ||
+                                isWritingUnitLayer(
+                                    schema.layers?.find(
+                                        ({ id }) => id === entry.layer,
+                                    ),
+                                )),
                     )
                     .flatMap((entry) => {
                         const pathways = transformationPathways(entry, schema);

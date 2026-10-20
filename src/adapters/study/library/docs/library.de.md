@@ -1,5 +1,7 @@
 # Bibliotheksadapter
 
+Vorschläge im Karteneditor stehen in einer eigenen Zeile, damit Eingabe und Aussprache-Speichern stabil bleiben. Die Auswahl eines Wörterbuchergebnisses übernimmt unaufgelösten Text als kanonische Zeichenreferenzen, einschließlich ausgeblendeter Schreibeinheiten wie kleinem っ. Bereits übernommene Zusammensetzungen bleiben erhalten; ausgeblendete Einheiten erscheinen nicht in der Übersicht.
+
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.
 
 Diagrammraster reservieren innen einen Kartenabstand, damit Karten- und Fokusrahmen vollständig sichtbar bleiben. Die räumliche Kindplatzierung misst die verbleibende Kapazität in jeder Richtung, reserviert nur die vom aktiven Vorfahrenpfad belegten Koordinaten, sodass Nachkommen die Plätze cursorbedingt ausgeblendeter Alternativzweige wiederverwenden können und bevorzugt eine Richtung, die den Nachkommenzweig aufnehmen kann, bevor sie auf die größte sichtbare Kapazität zurückfällt.

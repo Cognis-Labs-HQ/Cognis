@@ -10,7 +10,7 @@
   <string name="adapter.study.flashcards.deck_save_error">Der Kartensatz konnte nicht gespeichert werden. Prüfen Sie die gewählten Karten und das Notizformat.</string>
   <string name="adapter.study.flashcards.deck_load_error">Kartensatz oder Bibliothekskarten konnten nicht geladen werden.</string>
   <string name="adapter.study.flashcards.deck_empty">Keine Lernkartendecks gefunden</string>
-  <string name="adapter.study.flashcards.deck_finished">Alle ausgewählten Karten wurden wiederholt.</string>
+  <string name="adapter.study.flashcards.deck_finished">Gut gemacht! Du hast diesen Stapel abgeschlossen.</string>
   <string name="adapter.study.flashcards.deck_review_error">Diese Wiederholung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.</string>
   <string name="adapter.study.flashcards.deck_unavailable">{{ count }} Karte(n) sind nicht mehr verfügbar und wurden übersprungen.</string>
   <string name="adapter.study.flashcards.page_subtitle">Sichtbare Lernkartendecks durchsuchen</string>

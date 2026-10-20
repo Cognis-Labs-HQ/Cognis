@@ -55,9 +55,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.4`    |
-| Library (Study)            | `src/adapters/study/library/`       | `2.28.22`  |
+| Library (Study)            | `src/adapters/study/library/`       | `2.28.23`  |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.2`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.3`    |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.4`    |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.0`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.2`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -77,14 +77,14 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.2.1`    |
+| Study                 | `src/gateways/study/`         | `2.2.2`    |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.5.1`    |
+| Core Package   | `src/core/` | `0.5.2`    |
 
 ## API
 

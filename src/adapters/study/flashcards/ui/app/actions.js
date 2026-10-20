@@ -11,6 +11,7 @@ export const DECK_ACTIONS = [
     "export",
     "filter",
     "practiceMode",
+    "restart",
     "answer",
     "flip",
     "previous",

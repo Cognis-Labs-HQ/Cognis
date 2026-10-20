@@ -90,6 +90,12 @@ Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan
 
 Titik masuk peramban utama adalah `ui/app/index.js`; modul tindakan, tampilan, bahasa, dan latihan berada di sebelahnya. Dek bersama memakai `ui/app/shared-deck.js`. Perilaku dek di server memakai `service/index.ts` bersama modul rute, alur, penyimpanan, dan hasil dalam direktori layanan yang sama.
 
+Saran penyusun kartu menempati baris terpisah agar masukan dan tombol Simpan Pelafalan tetap stabil. Memilih hasil kamus mengubah ejaan yang belum dikomit menjadi referensi karakter kanonis, termasuk unit tulisan tersembunyi seperti っ kecil. Komposisi yang sudah dikomit tetap dipertahankan; unit tersembunyi tidak ditampilkan dalam penelusuran.
+
+Setelah dek selesai, tanda centang hijau dan ucapan selamat ditampilkan di tengah. Beranda kembali ke Semua. Coba Lagi membangun ulang antrean berdasarkan status ulasan terbaru dan memulainya dari kartu pertama, mempertahankan fokus Total/Selesai/Jatuh Tempo/Baru meskipun ulasan tersimpan telah mengubah status kartu. Hanya jawaban sesi dan identitas percobaan yang direset; kemajuan ulasan tersimpan tetap utuh. Latihan melalui tautan berbagi menggunakan tampilan selesai yang sama dan memulai ulang sesi sementara.
+
+Ikon pengaturan belajar, pencarian kamus, dan cakupan kartu menggunakan masker SVG yang mengikuti warna tema aplikasi aktif. Masker pengaturan tidak lagi ditimpa gambar latar yang tidak terkait. Aset SVG tetap disajikan oleh komponen pemiliknya.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

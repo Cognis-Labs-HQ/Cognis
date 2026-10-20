@@ -205,7 +205,9 @@ export function bindLookupProviders(
             const preserveInput =
                 layer.semanticRole === "lexicalUnit" &&
                 !imported &&
-                !selectedSuggestion.replaceInput;
+                !selectedSuggestion.replaceInput &&
+                form.compositionOrder?.length > 0 &&
+                !input.value.trim();
             clearLookupValues(form, draft, {
                 preserveComposition: preserveInput,
                 preservedRelationshipIds: preserveInput

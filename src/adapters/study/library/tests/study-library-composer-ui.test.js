@@ -289,7 +289,7 @@ test("Study Library preserves each multi-value pronunciation reference group", (
     assert.match(popupTitleSource, /resolveGroupedPronunciation/);
 });
 
-test("Study Library excludes hidden cards from every composer candidate list", () => {
+test("Study Library filters hidden lexical cards while allowing writing units in composers", () => {
     assert.match(
         adminInteractionsSource,
         /visibleTargets = availableTargets\.filter\([\s\S]*candidate\.hidden !== true/,
@@ -297,7 +297,7 @@ test("Study Library excludes hidden cards from every composer candidate list", (
     assert.match(createEntrySource, /entry\.hidden !== true/);
     assert.match(
         adminInteractionsSource,
-        /hidden !== true && targetLayers\.has/,
+        /entry\.hidden !== true \|\|[\s\S]*isWritingUnitLayer/,
     );
 });
 

@@ -102,7 +102,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         RadioNodeList: class {},
         structuredClone,
         fetchLibraryLookupSuggestions: async (_provider, input) => {
-            assert.equal(input.label, "教室");
+            assert.equal(input.label, suggestions[0].label);
             return suggestions;
         },
         hasLookupValues: () => true,
@@ -144,6 +144,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         {
             schema,
             layer: {
+                semanticRole: "lexicalUnit",
                 relationships: [
                     { id: "definitions", targetLayer: "definitions" },
                     { id: "spelling", targetLayer: "kanji" },
@@ -217,6 +218,54 @@ test("dictionary results directly import definitions, source fields, readings, g
     assert.equal(button.hidden, true);
     assert.equal(button.dataset.libraryLookupApplied, "テスト");
     assert.equal(toasts.at(-1)[0], "gateway.study.library_lookup_applied");
+    const kana = ["こ", "っ", "ち"].map((label, index) => ({
+        id: `small-kana-${index}`,
+        schemaId: schema.id,
+        layer: "kana",
+        label,
+        hidden: label === "っ",
+    }));
+    entries.push(...kana);
+    const kanaOptions = kana.map(({ id }) => ({ value: id, selected: false }));
+    form.elements["relationship:kana-components"] = {
+        options: kanaOptions,
+        append() {},
+    };
+    for (const label of ["こっち", "っち", "こっこ"]) {
+        for (const option of kanaOptions) option.selected = false;
+        form.elements.label.value = label;
+        input.value = label;
+        await listeners.get("library-import-dictionary")({
+            type: "library-import-dictionary",
+            detail: {
+                providerId: "provider",
+                suggestion: { label, fields: { pronunciation: [label] } },
+            },
+            target: { closest: () => button },
+        });
+        assert.deepEqual(
+            Array.from(form.compositionOrder),
+            [...label].map(
+                (character) => kana.find(({ label }) => label === character).id,
+            ),
+        );
+        assert.equal(input.value, "");
+        assert.equal(form.elements.label.value, label);
+        assert.equal(pronunciation.value, label);
+        assert.equal(button.hidden, true);
+    }
+    // Looking up raw vocabulary in the composer commits it just like importing a search result.
+    suggestions[0] = { label: "こっち", fields: { pronunciation: ["こっち"] } };
+    form.compositionOrder = [];
+    input.value = "こっち";
+    form.elements.label.value = "こっち";
+    await listener({ target: { closest: () => button } });
+    assert.deepEqual(
+        Array.from(form.compositionOrder),
+        kana.map(({ id }) => id),
+    );
+    assert.equal(input.value, "");
+    assert.equal(button.hidden, true);
     form.elements.label.value = "変更";
     listeners.get("input")();
     assert.equal(button.hidden, false);

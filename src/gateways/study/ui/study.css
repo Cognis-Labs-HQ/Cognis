@@ -243,18 +243,12 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-settings-icon {
-    background-color: currentColor;
-    mask: url("/static/assets/reuse/settings-cog-light.svg") center / contain
-        no-repeat;
     display: block;
     width: 1.125rem;
     height: 1.125rem;
-    background: center / contain no-repeat
-        url("/static/assets/reuse/search-light.svg");
-}
-
-body[data-theme="dark"] .study-dictionary-search-icon {
-    background-image: url("/static/assets/reuse/search-dark.svg");
+    background-color: currentColor;
+    mask: url("/static/assets/reuse/settings-cog-light.svg") center / contain
+        no-repeat;
 }
 
 .study-subnav-language-options {
@@ -372,12 +366,9 @@ body[data-theme="dark"] .study-dictionary-search-icon {
     display: block;
     width: 1.125rem;
     height: 1.125rem;
-    background: center / contain no-repeat
-        url("/static/assets/reuse/search-light.svg");
-}
-
-body[data-theme="dark"] .study-dictionary-search-icon {
-    background-image: url("/static/assets/reuse/search-dark.svg");
+    background-color: currentColor;
+    mask: url("/static/assets/reuse/search-light.svg") center / contain
+        no-repeat;
 }
 
 .study-browse-controls {

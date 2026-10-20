@@ -164,7 +164,7 @@ export function renderScope(entry, i18n, label = scopeLabel(entry, i18n)) {
             : entry.scope === "class"
               ? "class"
               : "user";
-    return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><picture><source media="(prefers-color-scheme: dark)" srcset="/static/adapters/study/library/assets/scope-${icon}-dark.svg"><img src="/static/adapters/study/library/assets/scope-${icon}-light.svg" alt=""></picture></span>`;
+    return `<span class="library-scope" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><span class="library-scope-icon library-scope-icon--${icon}" aria-hidden="true"></span></span>`;
 }
 
 export function relationSection(title, entries, emptyLabel, labelForEntry) {

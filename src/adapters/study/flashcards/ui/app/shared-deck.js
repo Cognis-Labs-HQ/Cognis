@@ -4,7 +4,9 @@ import { noteDetails } from "../reuse/flashcard.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { mountPractice } from "./practice.js";
-import { loadDeckTemplates } from "./markup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+import { languageFlashcardsUrl } from "/static/gateways/study/reuse/explore.js";
+import { loadDeckTemplates, renderDeckCompletion } from "./markup.js";
 import { runDeckAction } from "./actions.js";
 
 /** Authorized shared Library cards are new cards in a temporary session without granting Library access. */
@@ -59,18 +61,34 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         release?.();
         const target = root.querySelector("[data-shared-card]");
         if (!practiceSession.current) {
-            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p><button class="btn-neutral" type="button" data-shared-previous>${escapeHtml(i18n.t("adapter.study.flashcards.practice_previous"))}</button>`;
-            target
-                .querySelector("[data-shared-previous]")
-                .addEventListener("click", () =>
+            target.innerHTML = renderDeckCompletion(templates, i18n);
+            target.querySelector("[data-practice-restart]").addEventListener(
+                "click",
+                () =>
                     runDeckAction(
-                        "previous",
+                        "restart",
                         () => {
-                            practiceSession.previous();
+                            practiceSession.restart();
                             next();
                         },
                         signal,
                     ),
+                { signal },
+            );
+            target
+                .querySelector('[data-deck-action="browse"]')
+                .addEventListener(
+                    "click",
+                    () =>
+                        runDeckAction(
+                            "browse",
+                            () =>
+                                navigateTo(
+                                    languageFlashcardsUrl(deck.language),
+                                ),
+                            signal,
+                        ),
+                    { signal },
                 );
             return;
         }

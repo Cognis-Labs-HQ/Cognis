@@ -1,5 +1,7 @@
 # Library Adapter
 
+Composer suggestions occupy a separate row, keeping input and Save Pronunciation controls stable. Selecting a dictionary result commits unresolved spelling to canonical character references, including hidden writing units such as small っ. Existing committed compositions remain intact; hidden units stay out of browsing.
+
 Card composers confirm cancellation before discarding edits. Carousel selections append repeated card placements, and dragging reorders individual placements. Sentence pronunciation previews box each source component; redundant input feedback is omitted. Carousel hover previews show only the primary pronunciation and definition, positioned within the viewport.
 
 ## Consumer-defined schemas

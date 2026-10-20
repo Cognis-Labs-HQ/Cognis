@@ -1,5 +1,7 @@
 # Lernkartenadapter
 
+Nach Abschluss eines Stapels erscheinen ein zentrierter grüner Haken und Glückwünsche. Startseite führt zu Alle. Erneut versuchen erstellt die ausgewählte Warteschlange anhand des aktuellen Bewertungsstatus neu und beginnt bei der ersten Karte und behält den Fokus Gesamt/Erledigt/Fällig/Neu bei, auch wenn gespeicherte Bewertungen den Kartenstatus verändert haben. Nur Sitzungsantworten und Versuchskennungen werden zurückgesetzt; gespeicherter Lernfortschritt bleibt erhalten. Über Freigabelinks werden dieselbe Abschlussansicht und ein Neustart der temporären Sitzung verwendet.
+
 ## Verwendung
 
 Ein sichtbarer Stapel öffnet sofort die Übung. Gesamt, Erledigt, Fällig und Neu bestimmen die Lernkarten.

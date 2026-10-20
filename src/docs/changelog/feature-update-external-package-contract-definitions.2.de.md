@@ -90,6 +90,12 @@ Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Sp
 
 Der Browser-Haupteinstieg ist `ui/app/index.js`; Aktionen, Darstellung, Sprache und Übungsmodule liegen daneben. Geteilte Stapel verwenden `ui/app/shared-deck.js`. Serverseitiges Stapelverhalten verwendet `service/index.ts` mit Routen-, Ablauf-, Speicher- und Ergebnismodulen im selben Dienstverzeichnis.
 
+Vorschläge im Karteneditor stehen in einer eigenen Zeile, damit Eingabe und Aussprache-Speichern stabil bleiben. Die Auswahl eines Wörterbuchergebnisses übernimmt unaufgelösten Text als kanonische Zeichenreferenzen, einschließlich ausgeblendeter Schreibeinheiten wie kleinem っ. Bereits übernommene Zusammensetzungen bleiben erhalten; ausgeblendete Einheiten erscheinen nicht in der Übersicht.
+
+Nach Abschluss eines Stapels erscheinen ein zentrierter grüner Haken und Glückwünsche. Startseite führt zu Alle. Erneut versuchen erstellt die ausgewählte Warteschlange anhand des aktuellen Bewertungsstatus neu und beginnt bei der ersten Karte und behält den Fokus Gesamt/Erledigt/Fällig/Neu bei, auch wenn gespeicherte Bewertungen den Kartenstatus verändert haben. Nur Sitzungsantworten und Versuchskennungen werden zurückgesetzt; gespeicherter Lernfortschritt bleibt erhalten. Über Freigabelinks werden dieselbe Abschlussansicht und ein Neustart der temporären Sitzung verwendet.
+
+Die Symbole für Studieneinstellungen, Wörterbuchsuche und Kartenbereich verwenden SVG-Masken mit der Farbe des aktiven Anwendungsthemas. Die Einstellungsmaske erhält keine fremde Hintergrundgrafik mehr. SVG-Dateien werden weiterhin durch ihre bisherigen Komponenten bereitgestellt.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

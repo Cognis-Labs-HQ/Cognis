@@ -122,3 +122,29 @@ test("an in-flight answer retains its attempt identity after Explore and browser
     restored.next("good");
     assert.notEqual(restored.reviewAttempt.id, attempt.id);
 });
+
+test("retry restarts the original focused queue with fresh answers and review attempts", () => {
+    const cards = ["one", "two"].map((id) => ({ entry: { id } }));
+    const session = createPracticeSession(cards);
+    const originalAttempt = session.reviewAttempt;
+    session.answer("again");
+    session.next("again");
+    session.answer("good");
+    session.next("good");
+    assert.equal(session.current, undefined);
+    session.restart();
+    assert.equal(session.current, cards[0]);
+    assert.equal(session.canPrevious, false);
+    assert.equal(session.answered, false);
+    assert.equal(session.answeredGrade, undefined);
+    assert.notEqual(session.reviewAttempt.id, originalAttempt.id);
+    const snapshot = session.snapshot();
+    assert.deepEqual(snapshot.cardIds, ["one", "two"]);
+    assert.deepEqual(snapshot.grades, []);
+    assert.deepEqual(snapshot.attempts, []);
+    const restored = resumePracticeSession(cards, snapshot).session;
+    assert.equal(restored.current, cards[0]);
+    session.next();
+    assert.equal(session.current, cards[1]);
+    assert.equal(session.answeredGrade, undefined);
+});

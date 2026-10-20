@@ -9,7 +9,7 @@ import {
     compositionTokenLabel,
 } from "../ui/app/composition-tokens.js";
 
-function editor(value = "ab") {
+function editor(value = "ab", hiddenSecond = false) {
     const source = readFileSync(
         new URL("../ui/app/pronunciation-editor.js", import.meta.url),
         "utf8",
@@ -27,6 +27,7 @@ function editor(value = "ab") {
         value,
         dispatchEvent: () => listeners.get("input")?.({ target: field }),
     };
+    const suggestions = { innerHTML: "" };
     const composition = {
         dataset: {
             libraryCompositionField: "pronunciation",
@@ -36,7 +37,9 @@ function editor(value = "ab") {
         querySelector: (selector) =>
             selector === "[data-library-save-composed-value]"
                 ? save
-                : { value: "" },
+                : selector === "[data-composition-suggestions]"
+                  ? suggestions
+                  : { value: "" },
     };
     const save = {
         closest: (selector) =>
@@ -73,7 +76,12 @@ function editor(value = "ab") {
     };
     const entries = [
         { id: "a", label: "a", layer: "characters" },
-        { id: "b", label: "b", layer: "characters" },
+        {
+            id: "b",
+            label: hiddenSecond ? "っ" : "b",
+            layer: "characters",
+            hidden: hiddenSecond,
+        },
     ];
     const layer = {
         semanticRole: "compoundWritingUnit",
@@ -87,8 +95,19 @@ function editor(value = "ab") {
             },
         ],
     };
+    const presentation = {};
+    vm.runInNewContext(
+        readFileSync(
+            new URL("../ui/app/presentation.js", import.meta.url),
+            "utf8",
+        )
+            .replace(/^import[\s\S]*?;\n/gm, "")
+            .replace(/export (async )?function/g, "$1function"),
+        presentation,
+    );
     let carousel;
     const context = {
+        isWritingUnitLayer: presentation.isWritingUnitLayer,
         pronunciationComponents,
         document: { createElement: () => ({ dataset: {} }) },
         AbortController,
@@ -129,6 +148,18 @@ function editor(value = "ab") {
     return {
         form,
         listeners,
+        suggest(value) {
+            const input = {
+                value,
+                setCustomValidity() {},
+                closest: (selector) =>
+                    selector === "[data-library-carousel-text]"
+                        ? input
+                        : composition,
+            };
+            listeners.get("input")({ target: input });
+            return suggestions.innerHTML;
+        },
         reorder: (detail) => context.reorder(detail),
         field,
         saved,
@@ -265,4 +296,12 @@ test("dragging one repeated stage placement preserves the other instances", () =
     session.form.compositionOrder = ["a", "b", "a"];
     session.reorder({ kind: "input", from: 2, to: 0 });
     assert.deepEqual(session.form.compositionOrder, ["a", "a", "b"]);
+});
+
+test("pronunciation suggestions include hidden small writing units", () => {
+    const session = editor("", true);
+    assert.match(
+        session.suggest("っ"),
+        /data-library-carousel-suggestion="b"[^>]*>っ<\/button>/,
+    );
 });

@@ -126,3 +126,18 @@
         </button>
     </div>
 </template>
+
+<template data-deck-template="completion">
+    <section class="study-deck-completion" aria-live="polite">
+        <span class="study-deck-completion-check" aria-hidden="true"></span>
+        <h3>{message}</h3>
+        <div class="study-deck-actions">
+            <button type="button" class="btn-neutral" data-deck-action="browse">
+                {home_label}
+            </button>
+            <button type="button" class="btn-confirm" data-practice-restart>
+                {retry_label}
+            </button>
+        </div>
+    </section>
+</template>

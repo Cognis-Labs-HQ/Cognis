@@ -1,5 +1,7 @@
 # Flashcards Adapter
 
+Completing a deck shows a centered green check and congratulations. Home returns to All. Try Again rebuilds the selected queue using updated review status and starts it from its first card, retaining the Total/Done/Due/New focus even when submitted reviews have changed card status. Only session answers and attempt identities reset; saved review progress remains intact. Shared-link practice uses the same completion view and temporary-session restart.
+
 ## Usage
 
 Open a visible deck from Flashcards to begin practicing immediately. Use Total, Done, Due or New to choose the cards to study.

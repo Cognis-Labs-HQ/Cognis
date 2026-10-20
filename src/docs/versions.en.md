@@ -55,9 +55,9 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.22` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.23` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.3`   |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.4`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.0`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.2`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |
@@ -77,14 +77,14 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.2.1`   |
+| Study                 | `src/gateways/study/`         | `2.2.2`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Core contracts
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.5.1` |
+| Core Package | `src/core/` | `0.5.2` |
 
 ## API
 

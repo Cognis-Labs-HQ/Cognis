@@ -1,5 +1,7 @@
 # Adapter Pustaka
 
+Saran penyusun kartu menempati baris terpisah agar masukan dan tombol Simpan Pelafalan tetap stabil. Memilih hasil kamus mengubah ejaan yang belum dikomit menjadi referensi karakter kanonis, termasuk unit tulisan tersembunyi seperti っ kecil. Komposisi yang sudah dikomit tetap dipertahankan; unit tersembunyi tidak ditampilkan dalam penelusuran.
+
 Editor kartu meminta konfirmasi sebelum membuang perubahan. Pilihan karusel menambahkan penempatan kartu berulang, dan seret mengurutkan ulang setiap penempatan. Pratinjau pelafalan kalimat membingkai setiap komponen sumber; umpan balik masukan yang berlebihan dihilangkan. Pratinjau saat kursor berada di atas kartu hanya menampilkan pelafalan dan definisi utama di dalam area layar.
 
 Kisi bagan menyediakan inset sebesar jarak kartu agar garis tepi kartu dan fokus tetap terlihat sepenuhnya. Penempatan anak spasial mengukur kapasitas tersisa pada setiap arah, hanya mencadangkan koordinat yang dipakai jalur leluhur aktif sehingga turunan dapat memakai kembali slot cabang alternatif yang dipangkas oleh kursor, dan mengutamakan arah yang dapat memuat cabang turunan sebelum memakai kapasitas terlihat terbesar sebagai pilihan cadangan.

@@ -18,6 +18,7 @@ import {
     renderDeckBrowser,
     renderDeckDetail,
     renderDeckPreviews,
+    renderDeckCompletion,
 } from "./markup.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { loadFavourites } from "/static/gateways/study/reuse/favourites.js";
@@ -400,7 +401,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
         releasePractice?.();
         const current = ++generation;
         if (!practiceSession.current) {
-            target.innerHTML = `<p>${escapeHtml(i18n.t("adapter.study.flashcards.deck_finished"))}</p>${practiceSession.canPrevious ? `<button type="button" class="btn-neutral" data-practice-history-previous>${escapeHtml(i18n.t("adapter.study.flashcards.practice_previous"))}</button>` : ""}`;
+            target.innerHTML = renderDeckCompletion(templates, i18n);
             return;
         }
         const detail = practiceSession.current;
@@ -651,11 +652,16 @@ export async function mount(root, { signal: routerSignal } = {}) {
     root.addEventListener(
         "click",
         async (event) => {
-            if (event.target.closest("[data-practice-history-previous]")) {
+            if (event.target.closest("[data-practice-restart]")) {
                 await runDeckAction(
-                    "previous",
+                    "restart",
                     () => {
-                        practiceSession.previous();
+                        queue = practiceQueue(
+                            session.cards,
+                            selected.progress,
+                            filter,
+                        );
+                        practiceSession = createPracticeSession(queue);
                         nextCard();
                     },
                     signal,

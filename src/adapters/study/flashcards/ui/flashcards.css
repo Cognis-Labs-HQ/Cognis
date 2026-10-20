@@ -319,3 +319,22 @@
 .study-practice-arrow--next {
     transform: rotate(180deg);
 }
+
+.study-deck-completion {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 1.25rem;
+    min-height: 18rem;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+.study-deck-completion h3 {
+    margin: 0;
+}
+.study-deck-completion-check {
+    width: 4rem;
+    height: 4rem;
+    background: var(--color-success-outline-text);
+    mask: url("/static/assets/reuse/check.svg") center / contain no-repeat;
+}
