@@ -100,6 +100,8 @@ Die Symbole für Studieneinstellungen, Wörterbuchsuche und Kartenbereich verwen
 
 Für den Start externer Module gilt standardmäßig ein begrenztes Zeitfenster von zwei Minuten, damit validierte Inhaltspakete vor der Veröffentlichung ihrer Fähigkeiten vollständig importiert werden können. Ein explizites Zeitlimit des Hosts bleibt wirksam. Bei Fehlern oder Zeitüberschreitung werden registrierte Beiträge entfernt; das Modul bleibt nicht verfügbar. Mitgelieferte Audiodateien werden bei erneuter Aktivierung aus dem versionierten Dateispeicher wiederverwendet; fehlende Dateien werden über das Files-Gateway neu angelegt. Bibliothekseinträge und Beziehungen werden weiterhin abgeglichen, auch bei unveränderten Paketen.
 
+Erneut versuchen wird nur angezeigt, wenn die aktualisierte Warteschlange für den gewählten Fokus Karten enthält. Bei leerem Fokus bleiben die Glückwünsche und die Startseite-Aktion erhalten, ohne einen leeren Neustart anzubieten.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

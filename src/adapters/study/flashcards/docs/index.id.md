@@ -1,5 +1,7 @@
 # Adaptor Kartu Belajar
 
+Coba Lagi hanya ditampilkan jika antrean terbaru untuk fokus yang dipilih berisi kartu. Fokus kosong tetap menampilkan ucapan selamat dan tindakan Beranda tanpa menawarkan pengulangan kosong.
+
 Setelah dek selesai, tanda centang hijau dan ucapan selamat ditampilkan di tengah. Beranda kembali ke Semua. Coba Lagi membangun ulang antrean berdasarkan status ulasan terbaru dan memulainya dari kartu pertama, mempertahankan fokus Total/Selesai/Jatuh Tempo/Baru meskipun ulasan tersimpan telah mengubah status kartu. Hanya jawaban sesi dan identitas percobaan yang direset; kemajuan ulasan tersimpan tetap utuh. Latihan melalui tautan berbagi menggunakan tampilan selesai yang sama dan memulai ulang sesi sementara.
 
 ## Penggunaan

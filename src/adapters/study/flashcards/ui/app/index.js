@@ -401,7 +401,12 @@ export async function mount(root, { signal: routerSignal } = {}) {
         releasePractice?.();
         const current = ++generation;
         if (!practiceSession.current) {
-            target.innerHTML = renderDeckCompletion(templates, i18n);
+            target.innerHTML = renderDeckCompletion(
+                templates,
+                i18n,
+                practiceQueue(session.cards, selected.progress, filter).length >
+                    0,
+            );
             return;
         }
         const detail = practiceSession.current;

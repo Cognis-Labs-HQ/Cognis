@@ -61,8 +61,12 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         release?.();
         const target = root.querySelector("[data-shared-card]");
         if (!practiceSession.current) {
-            target.innerHTML = renderDeckCompletion(templates, i18n);
-            target.querySelector("[data-practice-restart]").addEventListener(
+            target.innerHTML = renderDeckCompletion(
+                templates,
+                i18n,
+                queue.length > 0,
+            );
+            target.querySelector("[data-practice-restart]")?.addEventListener(
                 "click",
                 () =>
                     runDeckAction(

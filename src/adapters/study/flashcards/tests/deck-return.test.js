@@ -84,14 +84,20 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         }),
         fetchStudyDecks: async () => [deck],
         fetchLibrarySchemas: async () => [{ id: "ja", language: "ja" }],
-        loadDeckTemplates: async () => ({
-            completion: readFileSync(
-                new URL("../ui/templates/gallery.html", import.meta.url),
-                "utf8",
-            ).match(
-                /<template data-deck-template="completion">([\s\S]*?)<\/template>/,
-            )[1],
-        }),
+        loadDeckTemplates: async () =>
+            Object.fromEntries(
+                [
+                    ...readFileSync(
+                        new URL(
+                            "../ui/templates/gallery.html",
+                            import.meta.url,
+                        ),
+                        "utf8",
+                    ).matchAll(
+                        /<template data-deck-template="([^"]+)">([\s\S]*?)<\/template>/g,
+                    ),
+                ].map((match) => [match[1], match[2]]),
+            ),
         fetchStudyDeck: async () => ({ deck, cards }),
         loadFavourites: async () => ({ bind() {} }),
         createSideMenu: (options) => {
@@ -231,6 +237,14 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                 selector === "[data-practice-filter]" ? filterButton : null,
         },
     });
+    assert.doesNotMatch(
+        root.querySelector("[data-study-session]").innerHTML,
+        /data-practice-restart/,
+    );
+    assert.match(
+        root.querySelector("[data-study-session]").innerHTML,
+        /ui.reuse.home/,
+    );
     const mountCount = mounts.length;
     await listeners.get("click")({
         target: {
