@@ -1,5 +1,7 @@
 # Bibliotheksadapter
 
+Für den Start externer Module gilt standardmäßig ein begrenztes Zeitfenster von zwei Minuten, damit validierte Inhaltspakete vor der Veröffentlichung ihrer Fähigkeiten vollständig importiert werden können. Ein explizites Zeitlimit des Hosts bleibt wirksam. Bei Fehlern oder Zeitüberschreitung werden registrierte Beiträge entfernt; das Modul bleibt nicht verfügbar. Mitgelieferte Audiodateien werden bei erneuter Aktivierung aus dem versionierten Dateispeicher wiederverwendet; fehlende Dateien werden über das Files-Gateway neu angelegt. Bibliothekseinträge und Beziehungen werden weiterhin abgeglichen, auch bei unveränderten Paketen.
+
 Vorschläge im Karteneditor stehen in einer eigenen Zeile, damit Eingabe und Aussprache-Speichern stabil bleiben. Die Auswahl eines Wörterbuchergebnisses übernimmt unaufgelösten Text als kanonische Zeichenreferenzen, einschließlich ausgeblendeter Schreibeinheiten wie kleinem っ. Bereits übernommene Zusammensetzungen bleiben erhalten; ausgeblendete Einheiten erscheinen nicht in der Übersicht.
 
 Karteneditoren bestätigen den Abbruch vor dem Verwerfen von Änderungen. Karussellauswahlen fügen wiederholte Kartenplatzierungen hinzu; Ziehen ordnet einzelne Platzierungen neu. Aussprachevorschauen für Sätze zeigen jede Quellkomponente in einem Rahmen; redundante Eingaberückmeldungen entfallen. Karussellvorschauen zeigen nur die primäre Aussprache und Definition innerhalb des sichtbaren Bereichs.

@@ -144,7 +144,7 @@ test("content-pack notifications report only newly introduced records", async ()
             undefined,
             undefined,
             undefined,
-            { store: async () => {} } as never,
+            { readThrough: async () => {} } as never,
             async (notification) => notifications.push(notification),
         );
 

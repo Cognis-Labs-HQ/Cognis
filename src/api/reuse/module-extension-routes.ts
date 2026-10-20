@@ -80,7 +80,7 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
-    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 10_000;
+    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 120_000;
     let refreshQueue = Promise.resolve();
     const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];

@@ -96,6 +96,10 @@ Nach Abschluss eines Stapels erscheinen ein zentrierter grüner Haken und Glück
 
 Die Symbole für Studieneinstellungen, Wörterbuchsuche und Kartenbereich verwenden SVG-Masken mit der Farbe des aktiven Anwendungsthemas. Die Einstellungsmaske erhält keine fremde Hintergrundgrafik mehr. SVG-Dateien werden weiterhin durch ihre bisherigen Komponenten bereitgestellt.
 
+## Zuverlässige Sprachaktivierung
+
+Für den Start externer Module gilt standardmäßig ein begrenztes Zeitfenster von zwei Minuten, damit validierte Inhaltspakete vor der Veröffentlichung ihrer Fähigkeiten vollständig importiert werden können. Ein explizites Zeitlimit des Hosts bleibt wirksam. Bei Fehlern oder Zeitüberschreitung werden registrierte Beiträge entfernt; das Modul bleibt nicht verfügbar. Mitgelieferte Audiodateien werden bei erneuter Aktivierung aus dem versionierten Dateispeicher wiederverwendet; fehlende Dateien werden über das Files-Gateway neu angelegt. Bibliothekseinträge und Beziehungen werden weiterhin abgeglichen, auch bei unveränderten Paketen.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

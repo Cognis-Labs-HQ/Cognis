@@ -96,6 +96,10 @@ Setelah dek selesai, tanda centang hijau dan ucapan selamat ditampilkan di tenga
 
 Ikon pengaturan belajar, pencarian kamus, dan cakupan kartu menggunakan masker SVG yang mengikuti warna tema aplikasi aktif. Masker pengaturan tidak lagi ditimpa gambar latar yang tidak terkait. Aset SVG tetap disajikan oleh komponen pemiliknya.
 
+## Aktivasi Bahasa yang Andal
+
+Bootstrap modul eksternal memiliki batas waktu bawaan dua menit agar impor paket konten tervalidasi selesai sebelum kapabilitas dipublikasikan. Pengaturan batas waktu eksplisit dari host tetap berlaku. Kegagalan dan habisnya waktu menghapus kontribusi terdaftar serta menjaga modul tetap tidak tersedia. Audio bawaan menggunakan kembali rekaman berversi yang tersimpan saat aktivasi ulang, dan membuat ulang berkas yang hilang melalui gateway Files. Rekonsiliasi catatan dan relasi pustaka tetap berjalan, termasuk untuk paket yang tidak berubah.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

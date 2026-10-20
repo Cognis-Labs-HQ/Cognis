@@ -1,5 +1,7 @@
 # Externe Module
 
+Für den Start externer Module gilt standardmäßig ein begrenztes Zeitfenster von zwei Minuten, damit validierte Inhaltspakete vor der Veröffentlichung ihrer Fähigkeiten vollständig importiert werden können. Ein explizites Zeitlimit des Hosts bleibt wirksam. Bei Fehlern oder Zeitüberschreitung werden registrierte Beiträge entfernt; das Modul bleibt nicht verfügbar. Mitgelieferte Audiodateien werden bei erneuter Aktivierung aus dem versionierten Dateispeicher wiederverwendet; fehlende Dateien werden über das Files-Gateway neu angelegt. Bibliothekseinträge und Beziehungen werden weiterhin abgeglichen, auch bei unveränderten Paketen.
+
 Externe Module erweitern Cognis um unabhängig installierbares Server- und Browserverhalten und bleiben dabei hinter Manifest-, Fähigkeits-, Ablauf-, Routen-, Integritäts- und Lebenszyklusverträgen isoliert.
 
 ## Anwendungsbeispiele

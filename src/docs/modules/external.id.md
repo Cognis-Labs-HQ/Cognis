@@ -1,5 +1,7 @@
 # Modul Eksternal
 
+Bootstrap modul eksternal memiliki batas waktu bawaan dua menit agar impor paket konten tervalidasi selesai sebelum kapabilitas dipublikasikan. Pengaturan batas waktu eksplisit dari host tetap berlaku. Kegagalan dan habisnya waktu menghapus kontribusi terdaftar serta menjaga modul tetap tidak tersedia. Audio bawaan menggunakan kembali rekaman berversi yang tersimpan saat aktivasi ulang, dan membuat ulang berkas yang hilang melalui gateway Files. Rekonsiliasi catatan dan relasi pustaka tetap berjalan, termasuk untuk paket yang tidak berubah.
+
 Modul eksternal memperluas Cognis dengan perilaku server dan browser yang dipasang secara mandiri serta tetap terisolasi di balik kontrak manifes, kapabilitas, alur, rute, integritas, dan siklus hidup.
 
 ## Contoh penggunaan

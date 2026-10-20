@@ -96,6 +96,10 @@ Completing a deck shows a centered green check and congratulations. Home returns
 
 Study settings, dictionary search and card scope icons use SVG masks colored by the active application theme. The settings mask no longer receives an unrelated background-image override. SVG assets remain served by their existing owners.
 
+## Reliable Language Activation
+
+External-module bootstrap has a bounded two-minute default budget, allowing validated content-pack ingestion to finish before capabilities are published. An explicit host timeout override still applies. Failures and deadline expiry remove scoped contributions and keep the module unavailable. Packaged audio reuses persisted versioned recordings on reactivation, recreating missing files through the Files gateway. Library record and relationship reconciliation still runs, including for unchanged packs.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

@@ -35,11 +35,10 @@ export async function storeContentPackAudio(
                         `${plan.manifest.publisher}:${plan.manifest.id}:${plan.manifest.version}:${audioPath}`,
                     )
                     .digest("hex")}.audio`;
-                await audioCache.store(
-                    key,
-                    asset.mediaType,
-                    Buffer.from(asset.data, "base64"),
-                );
+                await audioCache.readThrough(key, async () => ({
+                    mediaType: asset.mediaType,
+                    data: Buffer.from(asset.data, "base64"),
+                }));
                 stored.push(`file:${key}`);
                 audioPaths.set(audioPath, `file:${key}`);
             }

@@ -1,5 +1,7 @@
 # External Modules
 
+External-module bootstrap has a bounded two-minute default budget, allowing validated content-pack ingestion to finish before capabilities are published. An explicit host timeout override still applies. Failures and deadline expiry remove scoped contributions and keep the module unavailable. Packaged audio reuses persisted versioned recordings on reactivation, recreating missing files through the Files gateway. Library record and relationship reconciliation still runs, including for unchanged packs.
+
 External modules extend Cognis with independently installed server and browser behavior while remaining isolated behind manifest, capability, flow, route, integrity, and lifecycle contracts.
 
 ## Usage examples
