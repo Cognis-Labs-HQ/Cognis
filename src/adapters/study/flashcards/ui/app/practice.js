@@ -42,6 +42,13 @@ export function mountPractice(
     signal.addEventListener("abort", () => controller.abort(), { once: true });
     const language = document.documentElement.lang;
     const values = flashcardValues(detail, schemas, language);
+    const primaryPronunciation =
+        values.pronunciation.split(" · ").find(Boolean) ?? "";
+    const showPronunciation =
+        mode === "reading" &&
+        primaryPronunciation &&
+        primaryPronunciation.normalize("NFKC").trim() !==
+            values.front.normalize("NFKC").trim();
     const choices = readingChoices(detail, entries, schemas, language);
     const pattern = writingPattern(detail, entries, schemas);
     const available = [
@@ -50,6 +57,7 @@ export function mountPractice(
     ].filter(Boolean);
     const previewing = answeredGrade === "good";
     let grade = answeredGrade ?? (previewing ? "good" : null);
+    let assisted = false;
     let drawing;
     let revision = 0;
     const label = (key) =>
@@ -94,10 +102,16 @@ export function mountPractice(
             entry_heading:
                 writing && pattern && !previewing
                     ? ""
-                    : entryAction(detail.entry, values.front, schemas),
+                    : `<div class="study-practice-prompt">${entryAction(detail.entry, values.front, schemas)}${showPronunciation ? `<span class="study-practice-pronunciation ${pronunciationClass(primaryPronunciation)}">${escapeHtml(primaryPronunciation)}</span>` : ""}</div>`,
             writing_navigation: writing ? navigation : "",
             reading_navigation: writing ? "" : navigation,
             modes: writing ? "" : label(activeMode),
+            reading_hint:
+                !writing && !grade && choices.length
+                    ? formatTemplate(templates["practice-hint"], {
+                          hint_label: label("hint"),
+                      })
+                    : "",
             task,
             front: renderFlashcard(
                 detail,
@@ -227,6 +241,36 @@ export function mountPractice(
                     controller.signal,
                 );
             }
+            const hint = event.target.closest("[data-reading-hint]");
+            if (hint && mode === "reading")
+                await runDeckAction(
+                    "hint",
+                    async () => {
+                        if (grade || assisted || !choices.length) return;
+                        const index = choices.findIndex(
+                            (choice) => choice.correct,
+                        );
+                        if (index < 0) return;
+                        assisted = true;
+                        const answer = target.querySelector(
+                            `[data-reading-choice="${index}"]`,
+                        );
+                        answer.classList.add("study-reading-hinted");
+                        answer.setAttribute(
+                            "aria-label",
+                            i18n
+                                .t(
+                                    "adapter.study.flashcards.practice_hint_answer",
+                                )
+                                .replace("{{ answer }}", choices[index].text),
+                        );
+                        hint.setAttribute("aria-pressed", "true");
+                        hint.disabled = true;
+                        answer.focus();
+                        await onAnswer?.("again");
+                    },
+                    controller.signal,
+                );
             const choice = event.target.closest("[data-reading-choice]");
             if (choice && mode === "reading")
                 await runDeckAction(
@@ -236,7 +280,11 @@ export function mountPractice(
                         const correct =
                             choices[Number(choice.dataset.readingChoice)]
                                 .correct;
-                        grade = correct ? "good" : "again";
+                        grade = correct && !assisted ? "good" : "again";
+                        const hint = target.querySelector(
+                            "[data-reading-hint]",
+                        );
+                        if (hint) hint.disabled = true;
                         onAnswer?.(grade);
                         choice.classList.remove("btn-neutral");
                         choice.classList.add(

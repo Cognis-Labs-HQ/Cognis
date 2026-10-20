@@ -57,7 +57,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
 | Library (Study)       | `src/adapters/study/library/`       | `2.28.24` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
-| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.5`   |
+| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.6`   |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.0`   |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.2`   |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |

@@ -1,5 +1,7 @@
 # Adaptor Kartu Belajar
 
+Latihan membaca menampilkan pelafalan utama di samping nilai kartu jika berbeda; teks setara setelah normalisasi tidak diulang. Petunjuk tanda tanya berbentuk lingkaran menyorot dan memfokuskan jawaban benar saat ini, termasuk setelah pilihan diacak. Penggunaan petunjuk mencatat Ulang melalui alur ulasan yang ada, dan pilihan benar berikutnya tetap dianggap dibantu. Jawaban benar tanpa bantuan tetap mendapat nilai Baik. Latihan menulis mempertahankan kontrol panduannya sendiri.
+
 Coba Lagi hanya ditampilkan jika antrean terbaru untuk fokus yang dipilih berisi kartu. Fokus kosong tetap menampilkan ucapan selamat dan tindakan Beranda tanpa menawarkan pengulangan kosong.
 
 Setelah dek selesai, tanda centang hijau dan ucapan selamat ditampilkan di tengah. Beranda kembali ke Semua. Coba Lagi membangun ulang antrean berdasarkan status ulasan terbaru dan memulainya dari kartu pertama, mempertahankan fokus Total/Selesai/Jatuh Tempo/Baru meskipun ulasan tersimpan telah mengubah status kartu. Hanya jawaban sesi dan identitas percobaan yang direset; kemajuan ulasan tersimpan tetap utuh. Latihan melalui tautan berbagi menggunakan tampilan selesai yang sama dan memulai ulang sesi sementara.

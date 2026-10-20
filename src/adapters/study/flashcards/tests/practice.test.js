@@ -162,6 +162,22 @@ function practiceHarness(filter, status = "due", options = {}) {
             if (!nodes.has(selector))
                 nodes.set(selector, {
                     dataset: {},
+                    classes: new Set(),
+                    classList: {
+                        add(...values) {
+                            values.forEach((value) =>
+                                nodes.get(selector).classes.add(value),
+                            );
+                        },
+                        remove(...values) {
+                            values.forEach((value) =>
+                                nodes.get(selector).classes.delete(value),
+                            );
+                        },
+                    },
+                    focus() {
+                        this.focused = true;
+                    },
                     hidden: selector === "[data-practice-back]",
                     disabled: false,
                     setAttribute(name, value) {
@@ -236,6 +252,9 @@ function practiceHarness(filter, status = "due", options = {}) {
         detail: { entry, references: [] },
         templates: {
             practice: template,
+            "practice-hint": templateSource.match(
+                /<template data-deck-template="practice-hint">([\s\S]*?)<\/template>/,
+            )[1],
             "practice-navigation": templateSource.match(
                 /<template data-deck-template="practice-navigation">([\s\S]*?)<\/template>/,
             )[1],
@@ -266,6 +285,9 @@ function practiceHarness(filter, status = "due", options = {}) {
             let prevented = false;
             const control = {
                 dataset,
+                setAttribute(name, value) {
+                    this[name] = value;
+                },
                 classList: { add() {}, remove() {} },
                 getAttribute: () =>
                     `/study/explore/ja/kanji/${dataset.entryId}`,
@@ -578,5 +600,62 @@ test("writing heading navigation settles the assisted answer and retains deck or
         Array.from(harness.departures[0].options.state.studyEntryIds),
         ["one", "two"],
     );
+    harness.dispose();
+});
+
+test("reading prompts show only a distinct primary pronunciation", () => {
+    for (const [label, readings, expected] of [
+        ["学", ["がく", "まなぶ"], "がく"],
+        ["がく", ["がく", "まなぶ"], null],
+        ["ｷ", ["キ"], null],
+        ["学", [], null],
+    ]) {
+        const harness = practiceHarness("total", "new", {
+            detail: {
+                entry: {
+                    id: "one",
+                    label,
+                    schemaId: "ja",
+                    layer: "kanji",
+                    fields: { pronunciation: readings },
+                },
+                references: [],
+            },
+        });
+        const heading = harness.target.innerHTML.split(
+            'class="study-practice-modes"',
+        )[0];
+        if (expected) {
+            assert.match(heading, /study-practice-pronunciation/);
+            assert.ok(heading.includes(expected));
+            assert.ok(!heading.includes("まなぶ"));
+        } else assert.doesNotMatch(heading, /study-practice-pronunciation/);
+        harness.dispose();
+    }
+});
+
+test("reading hints highlight the actual correct option and keep assisted results Again", async () => {
+    const answers = [];
+    const harness = practiceHarness("total", "new", {
+        choices: [false, false, true, false].map((correct, index) => ({
+            correct,
+            text: `answer-${index}`,
+        })),
+        onAnswer: (grade) => answers.push(grade),
+    });
+    assert.match(harness.target.innerHTML, /data-reading-hint/);
+    const { control } = await harness.click("[data-reading-hint]", {});
+    const highlighted = harness.nodes.get('[data-reading-choice="2"]');
+    assert.ok(highlighted.classes.has("study-reading-hinted"));
+    assert.equal(highlighted.focused, true);
+    assert.equal(control.disabled, true);
+    assert.deepEqual(answers, ["again"]);
+    assert.equal(harness.nodes.get("[data-practice-next]").disabled, true);
+    await harness.click("[data-reading-hint]", {});
+    assert.deepEqual(answers, ["again"]);
+    await harness.click("[data-reading-choice]", { readingChoice: "2" });
+    assert.equal(harness.nodes.get("[data-practice-next]").disabled, false);
+    await harness.click("[data-practice-next]", {});
+    assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
 });

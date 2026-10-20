@@ -338,3 +338,31 @@
     background: var(--color-success-outline-text);
     mask: url("/static/assets/reuse/check.svg") center / contain no-repeat;
 }
+
+.study-practice-prompt {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.study-practice-pronunciation {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+.study-practice-modes {
+    align-items: center;
+}
+.study-practice-modes .study-practice-hint {
+    justify-self: end;
+    width: 1.9rem;
+    min-width: 0;
+    height: 1.9rem;
+    padding: 0;
+    border-radius: 50%;
+    font-weight: 700;
+}
+.study-reading-choices button[data-reading-choice].study-reading-hinted {
+    border-color: var(--color-success-border);
+    background: var(--color-success-hover-bg);
+    color: var(--color-success-outline-text);
+}

@@ -70,7 +70,7 @@
         <div class="study-practice-heading">
             {writing_navigation}{favourite}{entry_heading}
         </div>
-        <div class="study-practice-modes">{modes}</div>
+        <div class="study-practice-modes">{modes}{reading_hint}</div>
         <div
             class="study-practice-feedback"
             data-practice-feedback
@@ -143,5 +143,18 @@
 <template data-deck-template="completion-retry">
     <button type="button" class="btn-confirm" data-practice-restart>
         {retry_label}
+    </button>
+</template>
+
+<template data-deck-template="practice-hint">
+    <button
+        type="button"
+        class="btn-neutral study-practice-hint"
+        data-reading-hint
+        aria-label="{hint_label}"
+        title="{hint_label}"
+        aria-pressed="false"
+    >
+        ?
     </button>
 </template>

@@ -1,5 +1,7 @@
 # Lernkartenadapter
 
+Leseaufgaben zeigen die primäre Aussprache neben dem Kartenwert, wenn beide voneinander abweichen; gleichwertiger normalisierter Text wird nicht wiederholt. Ein rundes Fragezeichen hebt die richtige aktuelle Antwort hervor und fokussiert sie, auch bei gemischter Reihenfolge. Die Nutzung des Hinweises speichert Erneut über den bestehenden Bewertungsablauf; eine anschließend richtige Auswahl bleibt unterstützt. Richtige Antworten ohne Hilfe werden weiterhin als Gut bewertet. Schreibübungen behalten ihre eigenen Hilfefunktionen.
+
 Erneut versuchen wird nur angezeigt, wenn die aktualisierte Warteschlange für den gewählten Fokus Karten enthält. Bei leerem Fokus bleiben die Glückwünsche und die Startseite-Aktion erhalten, ohne einen leeren Neustart anzubieten.
 
 Nach Abschluss eines Stapels erscheinen ein zentrierter grüner Haken und Glückwünsche. Startseite führt zu Alle. Erneut versuchen erstellt die ausgewählte Warteschlange anhand des aktuellen Bewertungsstatus neu und beginnt bei der ersten Karte und behält den Fokus Gesamt/Erledigt/Fällig/Neu bei, auch wenn gespeicherte Bewertungen den Kartenstatus verändert haben. Nur Sitzungsantworten und Versuchskennungen werden zurückgesetzt; gespeicherter Lernfortschritt bleibt erhalten. Über Freigabelinks werden dieselbe Abschlussansicht und ein Neustart der temporären Sitzung verwendet.

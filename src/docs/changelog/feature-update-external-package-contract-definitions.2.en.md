@@ -102,6 +102,8 @@ External-module bootstrap has a bounded two-minute default budget, allowing vali
 
 Try Again is shown only when the updated queue for the selected focus contains cards. An empty focus keeps the congratulations and Home action without offering an empty restart.
 
+Reading prompts display the primary pronunciation beside the card value when they differ; equivalent normalized text is not repeated. A round question-mark hint highlights and focuses the correct current answer, including after choices are shuffled. Hint use records Again through the existing review flow, and a subsequent correct selection remains assisted. Ordinary unaided answers retain Good grading. Writing practice keeps its own guidance controls.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

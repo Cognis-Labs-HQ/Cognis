@@ -13,6 +13,7 @@ export const DECK_ACTIONS = [
     "practiceMode",
     "restart",
     "answer",
+    "hint",
     "flip",
     "previous",
     "review",

@@ -1,5 +1,7 @@
 # Flashcards Adapter
 
+Reading prompts display the primary pronunciation beside the card value when they differ; equivalent normalized text is not repeated. A round question-mark hint highlights and focuses the correct current answer, including after choices are shuffled. Hint use records Again through the existing review flow, and a subsequent correct selection remains assisted. Ordinary unaided answers retain Good grading. Writing practice keeps its own guidance controls.
+
 Try Again is shown only when the updated queue for the selected focus contains cards. An empty focus keeps the congratulations and Home action without offering an empty restart.
 
 Completing a deck shows a centered green check and congratulations. Home returns to All. Try Again rebuilds the selected queue using updated review status and starts it from its first card, retaining the Total/Done/Due/New focus even when submitted reviews have changed card status. Only session answers and attempt identities reset; saved review progress remains intact. Shared-link practice uses the same completion view and temporary-session restart.

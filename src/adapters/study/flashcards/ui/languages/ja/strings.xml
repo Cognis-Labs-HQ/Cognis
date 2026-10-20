@@ -38,4 +38,6 @@
   <string name="adapter.study.flashcards.practice_correct">正しい読み方です。</string>
   <string name="adapter.study.flashcards.practice_incorrect">読み方が違います。答えを確認し、次の復習で再挑戦しましょう。</string>
   <string name="adapter.study.flashcards.practice_restart_warning">練習モードを変更すると、このセッションの位置と回答を破棄して最初からやり直します。送信済みの復習記録は保持されます。</string>
+  <string name="adapter.study.flashcards.practice_hint">正解を表示</string>
+  <string name="adapter.study.flashcards.practice_hint_answer">正解：{{ answer }}</string>
 </resources>
