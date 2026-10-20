@@ -268,8 +268,4 @@ GitHub cannot resolve the following abbreviated implementation hashes previously
 
 ## Study: Reliability and Isolation
 
-Remaining storage blocker: Flashcard deck JSON and per-deck progress still use unbounded TEXT cells. A valid import with two long notes, or a sufficiently large review queue, exceeds the supported text budget. Drawing attempt receipts and dictionary-result caches also need bounded growth. Do not infer provider safety from permissive fakes. Preserve attempt identities, scheduling atomicity and live Library access when replacing these stores; verify cold registration, restart, concurrent review and rollback against live supported database providers before merge. The broader TypeScript coverage gap remains tracked in #520. No database adapter runtime changes are part of this patch.
-
-Browser orchestration remains incomplete: Library creation and editing call gateway HTTP helpers directly (create-entry/index.js and admin-interactions/index.js). Server-side Library flows remain enforced, but these browser actions do not yet expose owner-scoped before/execute/after hooks or tests that demonstrate extension veto and teardown. Complete that integration through the owning component and public ctx contracts; do not move Library orchestration into the router, shell or API host.
-
-Deck writes also persist complete card/schema snapshots even though visible cards and exports resolve current Library IDs. Remove that redundant persisted representation as part of the schema-safe storage redesign, preserving dynamic export/share responses and saved deck identities.
+Keep drawing attempt receipts and dictionary-result caches bounded without losing retry identities. The broader TypeScript coverage gap remains tracked in #520. Exercise supported database providers whenever persistence changes.

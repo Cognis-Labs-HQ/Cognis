@@ -140,6 +140,14 @@ PUT-Anfragen für Tresore verwenden den gemeinsamen JSON-Datenstromleser der API
 
 Study-Seiten teilen einen Composer-Platz für die Unternavigation, verwenden gemeinsame Navigations- und Aktionsbeschriftungen aus ui.reuse in allen vier Sprachen und bestimmen die aktive Route beim Rendern. Abgebrochene Router-Bereiche bleiben beim Ersetzen abgebrochen. Fehler der Bildvorschau zeigen eine lokalisierte Meldung und geben die Öffnungssperre für einen weiteren Versuch frei.
 
+## Begrenzte Deckdokumente
+
+Deckzugehörigkeit, importierte Notizen und Lernpläne verwenden Unicode-sichere Fragmente mit höchstens 60.000 UTF-8-Bytes. Eine verknüpfte Abfrage setzt jedes bestätigte Dokument zusammen; Ersetzen und Löschen erfolgen in der Decktransaktion. Upserts der Lernendenzeile serialisieren Wiederholungen und Deckänderungen vor Snapshot-Lesezugriffen, auch bei Repeatable Read. Versuchsbelege werden mit dem Lernplan bestätigt; die Progress-Zustellung bleibt außerhalb dieser Transaktion. Antworten und Exporte lösen Karten und Schemas anhand aktueller Library-IDs auf; Speichern dupliziert keine Library-Karteninhalte.
+
+## Erweiterbare Browseraktionen
+
+Der Library-Anbieter veröffentlicht `study:library:client` über seinen lebenszyklusgebundenen ctx. Jede Gateway-Clientoperation führt `study:library:<clientFunction>` mit `before`, `execute` und `after` aus. Eine Erweiterung von `study:library:createLibraryEntry` bei `before` kann `input.args` (die Positionsargumente der Clientfunktion) prüfen oder ändern beziehungsweise vor der Anfrage einen Fehler zum Ablehnen auslösen. `after` erhält `data.result` und kann den Rückgabewert anpassen. Serverseitige Berechtigungsprüfung und Validierung gelten weiterhin. Lesen, Wörterbuchauflösung, Import, Veröffentlichungsanfragen und Medienänderungen verwenden dieselbe Grenze. Beim Entfernen werden laufende Anfragen abgebrochen und Fähigkeiten, Abläufe und Hooks entfernt; veraltete Aufrufe werden abgewiesen. Erneutes Aktivieren registriert neue Aktionen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

@@ -1,5 +1,9 @@
 # Flashcards Adapter
 
+## Bounded Deck Documents
+
+Deck membership, imported notes and learner schedules use Unicode-safe fragments of at most 60,000 UTF-8 bytes. A single joined read reconstructs each committed document; replacement and deletion share the deck transaction. Learner-row upserts serialize reviews and deck edits before snapshot reads, including under repeatable-read isolation. Attempt receipts commit with scheduling, and Progress delivery remains outside that transaction. Cards and schemas in responses and exports resolve current Library item IDs; saves do not duplicate Library card payloads.
+
 Review requests accept at most 16 KiB of JSON; deck writes accept at most 5 MiB. Larger requests return HTTP 413 without changing a deck or schedule. Reading, writing, retry queues, imported notes and Library-backed cards keep their current behavior.
 
 Practice uses a question and a single review answer; there is no front/back flipping. Wrong answers, previously answered cards and explicit Show Answer retain the full Library-backed review and existing Again grading. Sentence-only decks use Reading and hide the floating mode slot without overwriting the saved preference for drawable decks. Mixed decks keep the chosen mode. Sentence and long-answer layouts expand to 72rem within the page width. Malformed language tags return invalid_language with HTTP 400.

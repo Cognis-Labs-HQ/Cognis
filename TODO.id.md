@@ -8,8 +8,4 @@ GitHub tidak dapat menyelesaikan hash implementasi singkat berikut yang sebelumn
 
 ## Study: Keandalan dan Isolasi
 
-Penghambat penyimpanan yang tersisa: JSON dek Flashcard dan kemajuan per dek masih memakai sel TEXT tanpa batas. Impor yang valid dengan dua catatan panjang atau antrean tinjauan yang cukup besar melampaui anggaran teks. Tanda terima percobaan menggambar dan cache hasil kamus juga memerlukan pertumbuhan terbatas. Fake yang longgar tidak membuktikan keamanan penyedia. Pertahankan identitas percobaan, penjadwalan atomik, dan akses Library terkini saat mengganti penyimpanan ini; verifikasi pendaftaran awal, mulai ulang, penilaian bersamaan, serta pembatalan transaksi pada basis data nyata yang didukung sebelum penggabungan. Kesenjangan cakupan TypeScript tetap dilacak di #520. Patch ini tidak mengubah kode runtime adaptor basis data.
-
-Orkestrasi browser belum lengkap: pembuatan dan penyuntingan Library memanggil helper HTTP gateway secara langsung (create-entry/index.js dan admin-interactions/index.js). Alur Library di server tetap ditegakkan, tetapi tindakan browser ini belum menyediakan hook before/execute/after yang dimiliki komponennya atau pengujian veto ekstensi dan pelepasan sumber daya. Lengkapi integrasi melalui komponen pemilik dan kontrak ctx publik; jangan memindahkan orkestrasi Library ke router, shell, atau host API.
-
-Penulisan dek juga menyimpan snapshot kartu/skema lengkap meskipun kartu yang ditampilkan dan ekspor menyelesaikan ID Library terkini. Hilangkan representasi tersimpan yang berulang ini saat merancang ulang penyimpanan secara aman, sambil mempertahankan respons ekspor/berbagi dinamis dan identitas dek tersimpan.
+Batasi pertumbuhan tanda terima percobaan menggambar dan cache hasil kamus tanpa kehilangan identitas percobaan ulang. Kesenjangan cakupan TypeScript yang lebih luas tetap dilacak di #520. Uji penyedia basis data yang didukung saat persistensi berubah.

@@ -257,6 +257,11 @@ export async function bootstrapStudyAdapter(
         "study",
     );
     ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
+    ctx.registerCapabilityProvider({
+        scriptUrl: "/static/adapters/study/library/provider.js",
+        providesCapabilities: ["study:library:client"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     ctx.registerSpaRoute?.({
         id: "study-library-page",
         pattern: "^/study/library$",
@@ -269,7 +274,10 @@ export async function bootstrapStudyAdapter(
             "/static/adapters/study/library/library.css",
             "/static/adapters/study/library/library-selection.css",
         ],
-        requiredCapabilities: ["study:library:detailFlow"],
+        requiredCapabilities: [
+            "study:library:detailFlow",
+            "study:library:client",
+        ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     ctx.registerSpaRoute?.({
@@ -284,7 +292,10 @@ export async function bootstrapStudyAdapter(
             "/static/adapters/study/library/library.css",
             "/static/adapters/study/library/library-selection.css",
         ],
-        requiredCapabilities: ["study:library:detailFlow"],
+        requiredCapabilities: [
+            "study:library:detailFlow",
+            "study:library:client",
+        ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     ctx.registerSpaRoute?.({
@@ -304,7 +315,10 @@ export async function bootstrapStudyAdapter(
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
         ],
-        requiredCapabilities: ["study:library:detailFlow"],
+        requiredCapabilities: [
+            "study:library:detailFlow",
+            "study:library:client",
+        ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     adapterReady = true;
@@ -319,7 +333,10 @@ export async function bootstrapStudyAdapter(
             "/static/gateways/study/study.css",
             "/static/adapters/study/library/library.css",
         ],
-        requiredCapabilities: ["study:library:detailFlow"],
+        requiredCapabilities: [
+            "study:library:detailFlow",
+            "study:library:client",
+        ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     await ctx.log?.("info", "Study/library adapter bootstrapped.", {

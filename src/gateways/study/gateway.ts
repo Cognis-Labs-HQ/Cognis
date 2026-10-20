@@ -162,6 +162,11 @@ export interface StudyAdapterBootstrapCtx {
         absoluteDir: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
+    registerCapabilityProvider(provider: {
+        scriptUrl: string;
+        providesCapabilities: string[];
+        isEnabled?: () => boolean;
+    }): void;
     registerSpaRoute?(route: {
         id: string;
         pattern: string;

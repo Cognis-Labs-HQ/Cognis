@@ -257,6 +257,7 @@ export class DeckService {
                 authorize: async () => {
                     if (actor.accountId.startsWith("share:"))
                         throw new Error("deck_read_only");
+                    if (id) await store.lockProgress(actor.accountId, id);
                     if (id && !(await store.read(actor.accountId, id)))
                         throw new Error("deck_not_found");
                 },
@@ -311,11 +312,12 @@ export class DeckService {
                     const previous = id
                         ? await store.read(actor.accountId, id)
                         : undefined;
-                    if (previous)
+                    if (previous) {
                         previous.progress = await store.progress(
                             actor.accountId,
                             id!,
                         );
+                    }
                     const previousNotes = new Map(
                         previous?.notes.map((note) => [note.id, note]) ?? [],
                     );
@@ -370,18 +372,18 @@ export class DeckService {
                             language,
                             entryIds: input.entryIds,
                             notes,
-                            schemas: (
-                                this.library()?.listSchemas?.() ?? []
-                            ).filter((schema) =>
-                                snapshots.some((detail) =>
-                                    [detail.entry, ...detail.references].some(
-                                        (entry) => entry.schemaId === schema.id,
-                                    ),
-                                ),
-                            ),
-                            cards: snapshots,
                         },
                         id,
+                    );
+                    result.cards = snapshots;
+                    result.schemas = (
+                        this.library()?.listSchemas?.() ?? []
+                    ).filter((schema) =>
+                        snapshots.some((detail) =>
+                            [detail.entry, ...detail.references].some(
+                                (entry) => entry.schemaId === schema.id,
+                            ),
+                        ),
                     );
                     result.progress = progress;
                     result.canEdit = true;
@@ -425,6 +427,7 @@ export class DeckService {
                         authorize: async () => {
                             if (actor.accountId.startsWith("share:"))
                                 throw new Error("deck_read_only");
+                            await store.lockProgress(actor.accountId, id);
                             const current = await this.readable(
                                 store,
                                 actor,
@@ -530,7 +533,9 @@ export class DeckService {
                         const deck = await this.store.read(actor.accountId, id);
                         if (!deck) throw new Error("deck_not_found");
                         await this.revoke(deck);
-                        await this.store.delete(actor.accountId, id);
+                        await this.store.transact((store) =>
+                            store.delete(actor.accountId, id),
+                        );
                     },
                     audit: () => {
                         this.log?.("info", "Study deck deleted.", {

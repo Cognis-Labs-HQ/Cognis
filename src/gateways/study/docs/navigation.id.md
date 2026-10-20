@@ -49,3 +49,7 @@ Pilihan jawaban kartu belajar berupa tombol jawaban tersendiri. Judul kartu dan 
 Latihan menulis hanya menggunakan judul tersamarkan pada papan gambar. Panah SVG sebelumnya/berikutnya berada di atas papan bersama kontrol favorit; berikutnya tetap memerlukan jawaban. Flashcards meneruskan `suppressRetry: true` ke papan bersama untuk menyembunyikan dan menonaktifkan percobaan ulang; latihan mandiri tetap mengizinkannya secara bawaan.
 
 Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi judul bersama. Flashcards menggunakannya untuk mencatat percobaan saat ini melalui alur keluar dan mempertahankan konteks navigasi dek sebelum membuka Explore.
+
+## Aksi Peramban yang Diperluas
+
+Klien Library di peramban memperoleh `study:library:client` melalui ctx. Penyedianya mendaftarkan `study:library:<clientFunction>` dengan tahap `before`, `execute`, dan `after` untuk pembacaan, kamus, permintaan, impor, dan media. Kapabilitas yang diwajibkan rute memuat penyedia sebelum halaman dipasang. Lihat dokumentasi adaptor Library untuk argumen ekstensi, penolakan, dan pelepasan.

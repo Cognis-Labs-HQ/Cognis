@@ -3,14 +3,20 @@ export function registerScopedUiActions(ctx, namespace, actions) {
     const published = {};
     for (const [action, execute] of Object.entries(actions)) {
         const flowId = `${namespace}:${action}`;
-        ctx.registerFlow(flowId, ["execute"]);
+        ctx.registerFlow(flowId, ["before", "execute", "after"]);
         ctx.extendFlow(flowId, "execute", { id: flowId }, async (stage) => {
             ctx.signal.throwIfAborted();
+            stage.input?.signal?.throwIfAborted();
             stage.data.result = await execute(stage.input);
+            ctx.signal.throwIfAborted();
+            stage.input?.signal?.throwIfAborted();
         });
         published[action] = async (input) => {
             ctx.signal.throwIfAborted();
-            return (await ctx.runFlow(flowId, input)).data.result;
+            const result = await ctx.runFlow(flowId, input);
+            ctx.signal.throwIfAborted();
+            input?.signal?.throwIfAborted();
+            return result.data.result;
         };
     }
     return published;

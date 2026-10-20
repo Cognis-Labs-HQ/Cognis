@@ -472,16 +472,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         if (!languageModule) return false;
         return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
+    const isStudyEnabled = () =>
+        ctx.gatewayRegistry.get("study")?.status !== "disabled";
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/study/flow-contracts.js",
         providesCapabilities: ["study:library:detailFlow", "study:subPages"],
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+        isEnabled: isStudyEnabled,
     });
 
     await gateway.bootstrapAdapters(adaptersRoot, {
         ...uiHooks,
+        registerCapabilityProvider: (provider) =>
+            ctx.uiRegistry?.registerCapabilityProvider({
+                ...provider,
+                isEnabled: () =>
+                    isStudyEnabled() &&
+                    (!provider.isEnabled || provider.isEnabled()),
+            }),
         gateway,
         capabilities: ctx.capabilities,
         gatewayRegistry: ctx.gatewayRegistry,

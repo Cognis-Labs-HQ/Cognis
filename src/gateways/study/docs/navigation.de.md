@@ -49,3 +49,7 @@ Antwortmöglichkeiten in Lernkarten sind eigenständige Antwortschaltflächen. K
 Schreibübungen verwenden nur die maskierte Überschrift des Zeichenfelds. SVG-Pfeile für Zurück/Weiter stehen darüber neben dem Favoriten; Weiter erfordert weiterhin eine Antwort. Flashcards übergibt `suppressRetry: true` an das gemeinsame Zeichenfeld und blendet Wiederholen aus und deaktiviert es; eigenständige Übungen erlauben Wiederholen standardmäßig.
 
 Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(card)` bereitstellen. Flashcards verbucht damit den aktuellen Versuch über den Ablauf zum Verlassen und erhält den Stapelkontext vor dem Öffnen von Explore.
+
+## Erweiterbare Browseraktionen
+
+Library-Browserclients lösen `study:library:client` über ctx auf. Der Anbieter registriert `study:library:<clientFunction>` mit `before`, `execute` und `after` für Lesezugriffe, Wörterbuchaktionen, Anfragen, Importe und Medien. Erforderliche Routenfähigkeiten laden den Anbieter vor dem Einhängen. Erweiterungsargumente, Ablehnung und Lebenszyklus sind in der Dokumentation des Library-Adapters beschrieben.

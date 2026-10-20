@@ -1,5 +1,9 @@
 # Adaptor Kartu Belajar
 
+## Dokumen Dek Terbatas
+
+Keanggotaan dek, catatan impor, dan jadwal pelajar menggunakan fragmen aman Unicode hingga 60.000 byte UTF-8. Satu kueri gabungan menyusun kembali setiap dokumen yang telah dikomit; penggantian dan penghapusan berada dalam transaksi dek. Upsert baris pelajar menyerialkan ulasan dan pengeditan dek sebelum pembacaan snapshot, termasuk pada isolasi repeatable read. Tanda terima percobaan dikomit bersama jadwal, sedangkan pengiriman Progress tetap di luar transaksi tersebut. Kartu dan skema dalam respons serta ekspor merujuk ID Library terkini; penyimpanan tidak menggandakan isi kartu Library.
+
 Permintaan penilaian menerima paling besar 16 KiB JSON; penulisan dek menerima paling besar 5 MiB. Permintaan lebih besar menghasilkan HTTP 413 tanpa mengubah dek atau jadwal. Membaca, menulis, antrean ulang, catatan impor, dan kartu berbasis Library tetap berperilaku sama.
 
 Latihan menggunakan pertanyaan dan satu tampilan tinjauan jawaban, tanpa membalik sisi depan dan belakang. Jawaban salah, kartu yang telah dijawab, dan Tampilkan Jawaban tetap menyediakan tinjauan lengkap berbasis Library serta penilaian Ulang. Dek yang hanya berisi kalimat menggunakan Membaca dan menyembunyikan pilihan mode mengambang tanpa menimpa preferensi tersimpan untuk dek yang dapat ditulis. Dek campuran mempertahankan mode pilihan. Kalimat dan jawaban panjang dapat melebar hingga 72rem sesuai lebar halaman. Tag bahasa tidak valid menghasilkan invalid_language dengan HTTP 400.

@@ -6,10 +6,11 @@ import { createCtx } from "@cognis/core";
 import { DeckService, nextReview } from "../service/index.js";
 import { registerDeckFlows } from "../service/flows.js";
 import { DeckStore } from "../service/store.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
 
-function session(
+async function session(
     access: (
         actor: { accountId: string },
         deck: { id: string },
@@ -18,69 +19,22 @@ function session(
     language?: string,
     recordResult?: ConstructorParameters<typeof DeckService>[8],
 ) {
-    const records: (Record<string, unknown> & { table: string })[] = [];
+    const storage = structuredStore();
     let transactionDepth = 0;
-    const execute = async (command: StructuredDbCommand) => {
-        const matching = (row: Record<string, unknown>) =>
-            row.table === command.table &&
-            (!("where" in command) ||
-                (command.where ?? []).every(
-                    (condition) => row[condition.column] === condition.value,
-                ));
-        if (command.option === "SELECT")
-            return {
-                rows: records
-                    .filter(matching)
-                    .map((row) => structuredClone(row)),
-            };
-        if (command.option === "INSERT") {
-            const previous =
-                "conflict" in command
-                    ? records.find(
-                          (row) =>
-                              row.table === command.table &&
-                              command.conflict?.target?.every(
-                                  (key) => row[key] === command.values[key],
-                              ),
-                      )
-                    : undefined;
-            if (previous && command.conflict?.action === "ignore")
-                return { rowCount: 0 };
-            if (previous && "conflict" in command)
-                Object.assign(previous, command.conflict?.update);
-            else
-                records.push({
-                    ...structuredClone(command.values),
-                    table: command.table,
-                });
-        }
-        if (command.option === "UPDATE")
-            records
-                .filter(matching)
-                .forEach((row) =>
-                    Object.assign(row, structuredClone(command.set)),
-                );
-        if (command.option === "DELETE")
-            for (let index = records.length - 1; index >= 0; index--)
-                if (matching(records[index])) records.splice(index, 1);
-        return { rowCount: 1 };
-    };
     const db: DbExecutor = {
-        ensureTable: async () => {},
-        executeCommand: execute,
-        transaction: async (callback) => {
-            const before = structuredClone(records);
-            transactionDepth += 1;
-            try {
-                return await callback(db);
-            } catch (error) {
-                records.splice(0, records.length, ...before);
-                throw error;
-            } finally {
-                transactionDepth -= 1;
-            }
-        },
+        ...storage.db,
+        transaction: (callback) =>
+            storage.db.transaction(async (executor) => {
+                transactionDepth++;
+                try {
+                    return await callback(executor);
+                } finally {
+                    transactionDepth--;
+                }
+            }),
     };
+    const store = new DeckStore(db);
+    await store.initialize();
     const ctx = createCtx();
     registerDeckFlows(ctx);
     let readable = true;
@@ -103,7 +57,7 @@ function session(
     return {
         ctx,
         service: new DeckService(
-            new DeckStore(db),
+            store,
             () => library,
             ctx.flow,
             undefined,
@@ -131,14 +85,14 @@ function session(
         setReadable: (value: boolean) => {
             readable = value;
         },
-        records,
+        storage,
     };
 }
 
 const owner = { accountId: "owner", role: "user" };
 
 test("decks persist privately and users cannot edit or review another account's deck", async () => {
-    const { service } = session();
+    const { service } = await session();
     const deck = await service.save(owner, {
         name: "My deck",
         entryIds: ["public"],
@@ -162,7 +116,7 @@ test("decks persist privately and users cannot edit or review another account's 
 });
 
 test("review persistence retains other progress and imported note identities", async () => {
-    const { service } = session();
+    const { service } = await session();
     const deck = await service.save(owner, {
         name: "Deck",
         entryIds: ["public"],
@@ -184,7 +138,7 @@ test("review persistence retains other progress and imported note identities", a
 });
 
 test("relocated or deleted library cards are skipped when they become inaccessible", async () => {
-    const { service, setReadable } = session();
+    const { service, setReadable } = await session();
     const deck = await service.save(owner, {
         name: "Deck",
         entryIds: ["public"],
@@ -219,7 +173,7 @@ test("recall grades schedule one-minute retries, daily reviews, and longer easy 
 test("shared decks isolate learner schedules and revocation takes effect immediately", async () => {
     let granted = true;
     let deckId = "";
-    const { service } = session(
+    const { service } = await session(
         async (actor) => granted && actor.accountId === "learner",
         async (accountId) => (accountId === "learner" ? [deckId] : []),
     );
@@ -273,7 +227,7 @@ test("shared decks isolate learner schedules and revocation takes effect immedia
 });
 
 test("link guests cannot persist personal decks or learner review history", async () => {
-    const { service } = session();
+    const { service } = await session();
     const guest = { accountId: "share:link:session", role: "user" };
     await assert.rejects(
         () => service.save(guest, { name: "Guest", entryIds: ["public"] }),
@@ -286,7 +240,7 @@ test("link guests cannot persist personal decks or learner review history", asyn
 });
 
 test("deck reads and mutations execute the owning ctx stages", async () => {
-    const { service, ctx } = session();
+    const { service, ctx } = await session();
     const observed: string[] = [];
     for (const [action, stages] of Object.entries({
         list: ["authorize", "read", "audit"],
@@ -343,16 +297,13 @@ test("deck reads and mutations execute the owning ctx stages", async () => {
 });
 
 test("deck language is inferred and persisted while mismatched imports are rejected", async () => {
-    const { service, records } = session(undefined, undefined, "en");
+    const { service, storage } = await session(undefined, undefined, "en");
     const deck = await service.save(owner, {
         name: "English",
         entryIds: ["public"],
     });
     assert.equal(deck.language, "en");
-    assert.equal(
-        records.find((row) => row.table === "study_decks")?.language,
-        "en",
-    );
+    assert.equal(storage.rows("study_decks")[0]?.language, "en");
     await assert.rejects(
         service.save(owner, {
             name: "Wrong",
@@ -361,14 +312,11 @@ test("deck language is inferred and persisted while mismatched imports are rejec
         }),
         /deck_language_mismatch/,
     );
-    assert.equal(
-        records.filter((row) => row.table === "study_decks").length,
-        1,
-    );
+    assert.equal(storage.rows("study_decks").length, 1);
 });
 
 test("shared Library cards resolve current content after edits and omit unavailable entries", async () => {
-    const { service, setLabel, setReadable } = session(async () => true);
+    const { service, setLabel, setReadable } = await session(async () => true);
     const deck = await service.save(owner, {
         name: "Current",
         entryIds: ["public"],
@@ -391,7 +339,7 @@ test("shared Library cards resolve current content after edits and omit unavaila
 test("a retried answer retains its committed schedule and repairs Progress delivery outside the transaction", async () => {
     const results: Array<{ eventId?: string; occurredAt?: string }> = [];
     let fail = true;
-    const { service } = session(
+    const { service } = await session(
         undefined,
         undefined,
         undefined,
@@ -449,7 +397,7 @@ test("a retried answer retains its committed schedule and repairs Progress deliv
 });
 
 test("shared deck schemas follow the current Library contract rather than the saved snapshot", async () => {
-    const { service, setSchemaRevision } = session(
+    const { service, setSchemaRevision } = await session(
         async () => true,
         undefined,
         "ja",
@@ -465,7 +413,7 @@ test("shared deck schemas follow the current Library contract rather than the sa
 });
 
 test("deck metadata and details do not expose cached content after its Library access is revoked", async () => {
-    const { service, setReadable, setLabel } = session();
+    const { service, setReadable, setLabel } = await session();
     setLabel("Sensitive saved label");
     const deck = await service.save(owner, {
         name: "Saved",
@@ -484,7 +432,7 @@ test("deck metadata and details do not expose cached content after its Library a
 });
 
 test("malformed deck languages return a client error through the actual save route", async () => {
-    const { service } = session();
+    const { service } = await session();
     const route = createDeckRoutes(service, {
         requireAuth: () => ({ sub: owner.accountId, role: owner.role }),
     } as never);
@@ -551,4 +499,136 @@ test("deck review rejects oversized JSON before changing a schedule", async () =
         "request_body_too_large",
     );
     assert.equal(reviews, 0);
+});
+
+test("large Unicode imports survive restarts and failed replacements retain notes and schedules", async () => {
+    const { service, storage } = await session();
+    const notes = Array.from({ length: 3 }, (_, index) => ({
+        front: `${index}${"日".repeat(9000)}`,
+        back: "本".repeat(9000),
+        pronunciation: "にほん",
+    }));
+    const deck = await service.save(owner, {
+        name: "Unicode",
+        entryIds: [],
+        notes,
+    });
+    assert.ok(Buffer.byteLength(JSON.stringify(deck.notes)) > 65_535);
+    await service.review(owner, deck.id, deck.notes[0].id, "good", {
+        id: "large-import-review",
+        occurredAt: "2026-10-20T12:00:00.000Z",
+    });
+    const schedule = await new DeckStore(storage.db).progress(
+        owner.accountId,
+        deck.id,
+    );
+    const restarted = new DeckStore(storage.db);
+    await restarted.initialize();
+    assert.deepEqual(
+        (await restarted.read(owner.accountId, deck.id))?.notes,
+        deck.notes,
+    );
+    storage.fail(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "study_deck_document_parts" &&
+            command.values.position === 2,
+    );
+    await assert.rejects(
+        service.save(
+            owner,
+            { name: "Replacement", entryIds: [], notes },
+            deck.id,
+        ),
+        /storage_failed/,
+    );
+    assert.equal(
+        (await restarted.read(owner.accountId, deck.id))?.name,
+        "Unicode",
+    );
+    assert.deepEqual(
+        await restarted.progress(owner.accountId, deck.id),
+        schedule,
+    );
+    storage.fail(() => false);
+    const shortened = await service.save(
+        owner,
+        {
+            name: "Short",
+            entryIds: [],
+            notes: [{ ...deck.notes[0], front: "Short", back: "Answer" }],
+        },
+        deck.id,
+    );
+    assert.deepEqual((await restarted.find(deck.id))?.notes, shortened.notes);
+    assert.deepEqual(
+        await restarted.progress(owner.accountId, deck.id),
+        schedule,
+    );
+});
+
+test("review and editing acquire the learner lock before transaction snapshot reads", async () => {
+    const { service, storage } = await session();
+    const deck = await service.save(owner, {
+        name: "Serialized",
+        entryIds: ["public"],
+    });
+    const commands: StructuredDbCommand[] = [];
+    const execute = storage.db.executeCommand;
+    storage.db.executeCommand = async (command) => {
+        commands.push(command);
+        return execute(command);
+    };
+    for (const operation of [
+        () => service.review(owner, deck.id, "public", "good"),
+        () =>
+            service.save(
+                owner,
+                { name: "Edited", entryIds: ["public"] },
+                deck.id,
+            ),
+    ]) {
+        commands.length = 0;
+        await operation();
+        const firstRead = commands.findIndex(
+            (command) => command.option === "SELECT",
+        );
+        const lock = commands.findIndex(
+            (command) =>
+                command.option === "INSERT" &&
+                command.table === "study_deck_progress" &&
+                command.conflict?.action === "update",
+        );
+        assert.ok(
+            lock >= 0 && lock < firstRead,
+            "Repeatable-read snapshots must start after the learner row is locked",
+        );
+    }
+    assert.equal(
+        (await new DeckStore(storage.db).progress(owner.accountId, deck.id))
+            .public.repetitions,
+        1,
+    );
+});
+
+test("a failed deck deletion rolls back documents, reviews and all learner schedules", async () => {
+    const { service, storage } = await session();
+    const deck = await service.save(owner, {
+        name: "Atomic deletion",
+        entryIds: ["public"],
+    });
+    await service.review(owner, deck.id, "public", "good");
+    const store = new DeckStore(storage.db);
+    const schedule = await store.progress(owner.accountId, deck.id);
+    storage.fail(
+        (command) =>
+            command.option === "DELETE" &&
+            command.table === "study_deck_document_parts",
+    );
+    await assert.rejects(service.delete(owner, deck.id), /storage_failed/);
+    assert.equal((await store.find(deck.id))?.name, deck.name);
+    assert.deepEqual(await store.progress(owner.accountId, deck.id), schedule);
+    storage.fail(() => false);
+    await service.delete(owner, deck.id);
+    assert.deepEqual(await service.list(owner), []);
 });

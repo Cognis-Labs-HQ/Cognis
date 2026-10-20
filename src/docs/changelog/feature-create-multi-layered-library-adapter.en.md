@@ -140,6 +140,14 @@ Vault PUT requests use the API shared streaming JSON reader with the effective v
 
 Study pages share one composer sub-navigation slot, resolve common navigation/action labels from ui.reuse in all four languages, and retain current route selection at rendering time. Cancelled router scopes stay cancelled when replaced. Image-preview failures show a localized error toast and release the open-state lock so another attempt is possible.
 
+## Bounded Deck Documents
+
+Deck membership, imported notes and learner schedules use Unicode-safe fragments of at most 60,000 UTF-8 bytes. A single joined read reconstructs each committed document; replacement and deletion share the deck transaction. Learner-row upserts serialize reviews and deck edits before snapshot reads, including under repeatable-read isolation. Attempt receipts commit with scheduling, and Progress delivery remains outside that transaction. Cards and schemas in responses and exports resolve current Library item IDs; saves do not duplicate Library card payloads.
+
+## Extensible Browser Actions
+
+The Library provider publishes `study:library:client` through its lifecycle-scoped ctx. Every gateway client operation runs `study:library:<clientFunction>` through `before`, `execute` and `after`. For example, extend `study:library:createLibraryEntry` at `before` to inspect or adjust `input.args` (the client function’s positional arguments), or throw to veto before the request. The `after` stage receives `data.result` and may adjust the returned value. Server authorization and validation still apply. Reads, dictionary resolution, imports, publishing requests and media mutations use the same boundary. Provider teardown aborts in-flight requests and removes capabilities, flows and hooks; stale handles reject. Re-enabling registers fresh actions.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

@@ -105,7 +105,7 @@ export async function bootstrapStudyAdapter(
             "/static/gateways/study/study.css",
             "/static/adapters/study/flashcards/flashcards.css",
         ],
-        requiredCapabilities: ["study:subPages"],
+        requiredCapabilities: ["study:subPages", "study:library:client"],
         navigationLabels: {
             en: "Flashcards",
             de: "Lernkarten",

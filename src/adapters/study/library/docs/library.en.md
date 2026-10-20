@@ -1,5 +1,9 @@
 # Library Adapter
 
+## Extensible Browser Actions
+
+The Library provider publishes `study:library:client` through its lifecycle-scoped ctx. Every gateway client operation runs `study:library:<clientFunction>` through `before`, `execute` and `after`. For example, extend `study:library:createLibraryEntry` at `before` to inspect or adjust `input.args` (the client function’s positional arguments), or throw to veto before the request. The `after` stage receives `data.result` and may adjust the returned value. Server authorization and validation still apply. Reads, dictionary resolution, imports, publishing requests and media mutations use the same boundary. Provider teardown aborts in-flight requests and removes capabilities, flows and hooks; stale handles reject. Re-enabling registers fresh actions.
+
 Grouped relationship names are treated as data, including constructor, without inheriting object properties.
 
 Library JSON mutations accept at most 5 MiB and reject larger streams with HTTP 413 before invoking a mutation. Card field JSON and its normalized searchable form each have a 50,000-byte UTF-8 budget, leaving space for labels and tags in the search projection. Audio attachments require an exact upload path; traversal and nested paths are rejected before storage access. Creating and editing cards share one canonical reference writer, preserving groups, positions and selected transformations. Failed location loading shows a localized toast; responses from cancelled mounts do not update current controls.

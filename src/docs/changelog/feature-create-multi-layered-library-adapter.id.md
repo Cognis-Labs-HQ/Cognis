@@ -140,6 +140,14 @@ PUT brankas memakai pembaca aliran JSON bersama milik API dengan anggaran branka
 
 Halaman Study berbagi satu slot subnavigasi composer, memakai label navigasi dan tindakan bersama dari ui.reuse dalam keempat bahasa, serta menentukan rute aktif saat dirender. Lingkup router yang dibatalkan tetap dibatalkan ketika diganti. Kegagalan pratinjau gambar menampilkan notifikasi galat terlokalisasi dan membuka kunci status agar dapat dicoba lagi.
 
+## Dokumen Dek Terbatas
+
+Keanggotaan dek, catatan impor, dan jadwal pelajar menggunakan fragmen aman Unicode hingga 60.000 byte UTF-8. Satu kueri gabungan menyusun kembali setiap dokumen yang telah dikomit; penggantian dan penghapusan berada dalam transaksi dek. Upsert baris pelajar menyerialkan ulasan dan pengeditan dek sebelum pembacaan snapshot, termasuk pada isolasi repeatable read. Tanda terima percobaan dikomit bersama jadwal, sedangkan pengiriman Progress tetap di luar transaksi tersebut. Kartu dan skema dalam respons serta ekspor merujuk ID Library terkini; penyimpanan tidak menggandakan isi kartu Library.
+
+## Aksi Peramban yang Diperluas
+
+Penyedia Library menerbitkan `study:library:client` melalui ctx yang dibatasi siklus hidupnya. Setiap operasi klien gateway menjalankan `study:library:<clientFunction>` melalui `before`, `execute`, dan `after`. Misalnya, perluas `study:library:createLibraryEntry` pada `before` untuk memeriksa atau mengubah `input.args` (argumen posisi fungsi klien), atau lempar galat untuk menolak sebelum permintaan. Tahap `after` menerima `data.result` dan dapat menyesuaikan nilai hasil. Otorisasi dan validasi server tetap berlaku. Pembacaan, resolusi kamus, impor, permintaan publikasi, dan perubahan media menggunakan batas yang sama. Pelepasan penyedia membatalkan permintaan aktif serta menghapus kapabilitas, alur, dan hook; pemanggilan lama ditolak. Pengaktifan ulang mendaftarkan aksi baru.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

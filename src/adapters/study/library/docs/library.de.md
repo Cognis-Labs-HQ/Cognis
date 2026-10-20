@@ -1,5 +1,9 @@
 # Bibliotheksadapter
 
+## Erweiterbare Browseraktionen
+
+Der Library-Anbieter veröffentlicht `study:library:client` über seinen lebenszyklusgebundenen ctx. Jede Gateway-Clientoperation führt `study:library:<clientFunction>` mit `before`, `execute` und `after` aus. Eine Erweiterung von `study:library:createLibraryEntry` bei `before` kann `input.args` (die Positionsargumente der Clientfunktion) prüfen oder ändern beziehungsweise vor der Anfrage einen Fehler zum Ablehnen auslösen. `after` erhält `data.result` und kann den Rückgabewert anpassen. Serverseitige Berechtigungsprüfung und Validierung gelten weiterhin. Lesen, Wörterbuchauflösung, Import, Veröffentlichungsanfragen und Medienänderungen verwenden dieselbe Grenze. Beim Entfernen werden laufende Anfragen abgebrochen und Fähigkeiten, Abläufe und Hooks entfernt; veraltete Aufrufe werden abgewiesen. Erneutes Aktivieren registriert neue Aktionen.
+
 Gruppierte Beziehungsnamen werden als Daten behandelt, einschließlich constructor, ohne geerbte Objekteigenschaften zu verwenden.
 
 JSON-Änderungen der Bibliothek akzeptieren höchstens 5 MiB und weisen größere Datenströme vor einer Änderung mit HTTP 413 zurück. Kartenfeld-JSON und seine normalisierte Suchform haben jeweils ein Budget von 50.000 UTF-8-Bytes; dadurch bleibt Platz für Titel und Tags im Suchtext. Audioanhänge benötigen einen exakten Uploadpfad; Pfadwechsel und verschachtelte Pfade werden vor dem Speicherzugriff abgewiesen. Erstellen und Bearbeiten verwenden denselben kanonischen Referenzschreiber für Gruppen, Positionen und gewählte Transformationen. Fehler beim Laden der Speicherorte erscheinen als lokalisierte Meldung; Antworten abgebrochener Seiten aktualisieren keine aktuellen Bedienelemente.

@@ -1,5 +1,9 @@
 # Lernkartenadapter
 
+## Begrenzte Deckdokumente
+
+Deckzugehörigkeit, importierte Notizen und Lernpläne verwenden Unicode-sichere Fragmente mit höchstens 60.000 UTF-8-Bytes. Eine verknüpfte Abfrage setzt jedes bestätigte Dokument zusammen; Ersetzen und Löschen erfolgen in der Decktransaktion. Upserts der Lernendenzeile serialisieren Wiederholungen und Deckänderungen vor Snapshot-Lesezugriffen, auch bei Repeatable Read. Versuchsbelege werden mit dem Lernplan bestätigt; die Progress-Zustellung bleibt außerhalb dieser Transaktion. Antworten und Exporte lösen Karten und Schemas anhand aktueller Library-IDs auf; Speichern dupliziert keine Library-Karteninhalte.
+
 Bewertungsanfragen akzeptieren höchstens 16 KiB JSON, Deckänderungen höchstens 5 MiB. Größere Anfragen liefern HTTP 413 ohne Änderung an Deck oder Lernplan. Lesen, Schreiben, Wiederholungslisten, importierte Notizen und Bibliothekskarten behalten ihr Verhalten.
 
 Übungen verwenden eine Frage und eine einzige Antwortansicht; Vorder- und Rückseite werden nicht mehr umgedreht. Falsche Antworten, bereits beantwortete Karten und Antwort zeigen behalten die vollständige bibliotheksbasierte Ansicht sowie die Bewertung Erneut bei. Reine Satzstapel verwenden Lesen und blenden den schwebenden Modusschalter aus, ohne die gespeicherte Einstellung für beschreibbare Stapel zu ändern. Gemischte Stapel behalten den gewählten Modus. Sätze und lange Antworten können innerhalb der Seitenbreite bis zu 72rem nutzen. Ungültige Sprachkennungen liefern invalid_language mit HTTP 400.

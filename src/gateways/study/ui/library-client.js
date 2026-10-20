@@ -1,64 +1,61 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
-export async function fetchLibrarySchemas(languageCode) {
+async function executeFetchLibrarySchemas(request, languageCode) {
     const query = new URLSearchParams();
     if (languageCode) query.set("language", languageCode);
     const suffix = query.size > 0 ? `?${query}` : "";
-    const response = await apiFetch(`/api/v1/study/library/schemas${suffix}`);
+    const response = await request(`/api/v1/study/library/schemas${suffix}`);
     if (!response.ok) throw new Error("schemas_failed");
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLocations(languageCode) {
+async function executeFetchLibraryLocations(request, languageCode) {
     const query = new URLSearchParams();
     if (languageCode) query.set("language", languageCode);
     const suffix = query.size > 0 ? `?${query}` : "";
-    const response = await apiFetch(`/api/v1/study/library/locations${suffix}`);
+    const response = await request(`/api/v1/study/library/locations${suffix}`);
     if (!response.ok) throw new Error("locations_failed");
     return (await response.json()).data;
 }
 
-export async function fetchLibraryForms() {
-    const response = await apiFetch("/api/v1/study/library/forms");
+async function executeFetchLibraryForms(request) {
+    const response = await request("/api/v1/study/library/forms");
     if (!response.ok) throw new Error("forms_failed");
     return (await response.json()).data;
 }
 
-export async function fetchLibraryEntries({
-    scope,
-    scopeId,
-    schemaId,
-    layer,
-    entryIds,
-    sourceRecordIds,
-}) {
+async function executeFetchLibraryEntries(
+    request,
+    { scope, scopeId, schemaId, layer, entryIds, sourceRecordIds },
+) {
     const query = new URLSearchParams({ scope });
     if (scopeId) query.set("scopeId", scopeId);
     if (schemaId) query.set("schemaId", schemaId);
     if (layer) query.set("layer", layer);
     for (const id of entryIds ?? []) query.append("entryId", id);
     for (const id of sourceRecordIds ?? []) query.append("sourceRecordId", id);
-    const response = await apiFetch(`/api/v1/study/library/entries?${query}`);
+    const response = await request(`/api/v1/study/library/entries?${query}`);
     if (!response.ok) throw new Error("entries_failed");
     return (await response.json()).data;
 }
 
-export async function fetchLibraryEntry(entryId) {
-    const response = await apiFetch(
+async function executeFetchLibraryEntry(request, entryId) {
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/trace`,
     );
     if (!response.ok) throw new Error("entry_failed");
     return (await response.json()).data;
 }
 
-export async function fetchViewedLibraryEntryIds() {
-    const response = await apiFetch("/api/v1/study/library/viewed-entries");
+async function executeFetchViewedLibraryEntryIds(request) {
+    const response = await request("/api/v1/study/library/viewed-entries");
     if (!response.ok) throw new Error("viewed_entries_failed");
     return (await response.json()).data;
 }
 
-export async function markLibraryEntriesViewed(entryIds) {
-    const response = await apiFetch("/api/v1/study/library/viewed-entries", {
+async function executeMarkLibraryEntriesViewed(request, entryIds) {
+    const response = await request("/api/v1/study/library/viewed-entries", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryIds }),
@@ -66,12 +63,13 @@ export async function markLibraryEntriesViewed(entryIds) {
     if (!response.ok) throw new Error("mark_viewed_failed");
 }
 
-export async function fetchLibraryAudioUrl(
+async function executeFetchLibraryAudioUrl(
+    request,
     entryId,
     fieldId,
     { signal, transformation, refresh = false } = {},
 ) {
-    const response = await apiFetch(
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/audio/${encodeURIComponent(fieldId)}`,
         {
             signal,
@@ -91,8 +89,8 @@ export async function fetchLibraryAudioUrl(
     return URL.createObjectURL(await response.blob());
 }
 
-export async function createLibraryEntry(location, entry) {
-    const response = await apiFetch("/api/v1/study/library/entries", {
+async function executeCreateLibraryEntry(request, location, entry) {
+    const response = await request("/api/v1/study/library/entries", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ location, entry }),
@@ -106,26 +104,26 @@ export async function createLibraryEntry(location, entry) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryPushRequests({ status } = {}) {
+async function executeFetchLibraryPushRequests(request, { status } = {}) {
     const query = new URLSearchParams();
     if (status) query.set("status", status);
-    const response = await apiFetch(
+    const response = await request(
         `/api/v1/study/library/push-requests${status ? `?${query}` : ""}`,
     );
     if (!response.ok) throw new Error("requests_failed");
     return (await response.json()).data;
 }
 
-export async function fetchSearchableDictionaryProviders(language) {
-    const response = await apiFetch(
+async function executeFetchSearchableDictionaryProviders(request, language) {
+    const response = await request(
         `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
     );
     if (!response.ok) throw new Error("lookup_providers_failed");
     return (await response.json()).data;
 }
 
-export async function searchLibraryDictionary(input) {
-    const response = await apiFetch("/api/v1/study/library/dictionary/search", {
+async function executeSearchLibraryDictionary(request, input) {
+    const response = await request("/api/v1/study/library/dictionary/search", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(input),
@@ -137,8 +135,8 @@ export async function searchLibraryDictionary(input) {
     return (await response.json()).data;
 }
 
-export async function requestLibraryPromotion(entryId, destination) {
-    const response = await apiFetch("/api/v1/study/library/push-requests", {
+async function executeRequestLibraryPromotion(request, entryId, destination) {
+    const response = await request("/api/v1/study/library/push-requests", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryId, destination }),
@@ -147,8 +145,8 @@ export async function requestLibraryPromotion(entryId, destination) {
     return (await response.json()).data;
 }
 
-export async function relocateLibraryEntry(entryId, destination) {
-    const response = await apiFetch(
+async function executeRelocateLibraryEntry(request, entryId, destination) {
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/relocate`,
         {
             method: "POST",
@@ -163,8 +161,8 @@ export async function relocateLibraryEntry(entryId, destination) {
     return (await response.json()).data;
 }
 
-export async function requestLibraryUpdate(entryId, proposedEntry) {
-    const response = await apiFetch("/api/v1/study/library/push-requests", {
+async function executeRequestLibraryUpdate(request, entryId, proposedEntry) {
+    const response = await request("/api/v1/study/library/push-requests", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -182,8 +180,8 @@ export async function requestLibraryUpdate(entryId, proposedEntry) {
     return (await response.json()).data;
 }
 
-export async function reviewLibraryPromotion(requestId, decision) {
-    const response = await apiFetch(
+async function executeReviewLibraryPromotion(request, requestId, decision) {
+    const response = await request(
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
         {
             method: "PUT",
@@ -198,8 +196,8 @@ export async function reviewLibraryPromotion(requestId, decision) {
     return (await response.json()).data;
 }
 
-export async function withdrawLibraryPromotion(requestId) {
-    const response = await apiFetch(
+async function executeWithdrawLibraryPromotion(request, requestId) {
+    const response = await request(
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
         { method: "DELETE" },
     );
@@ -210,8 +208,8 @@ export async function withdrawLibraryPromotion(requestId) {
     return (await response.json()).data;
 }
 
-export async function moveLibraryEntryToPersonal(entryId) {
-    const response = await apiFetch(
+async function executeMoveLibraryEntryToPersonal(request, entryId) {
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/move-to-personal`,
         { method: "POST" },
     );
@@ -219,8 +217,8 @@ export async function moveLibraryEntryToPersonal(entryId) {
     return (await response.json()).data;
 }
 
-export async function updateLibraryEntry(entryId, entry) {
-    const response = await apiFetch(
+async function executeUpdateLibraryEntry(request, entryId, entry) {
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}`,
         {
             method: "PUT",
@@ -237,8 +235,8 @@ export async function updateLibraryEntry(entryId, entry) {
     return (await response.json()).data;
 }
 
-export async function planLibraryEntryDeletion(entryIds) {
-    const response = await apiFetch(
+async function executePlanLibraryEntryDeletion(request, entryIds) {
+    const response = await request(
         "/api/v1/study/library/entries/deletion-plan",
         {
             method: "POST",
@@ -251,11 +249,12 @@ export async function planLibraryEntryDeletion(entryIds) {
     return result.data;
 }
 
-export async function deleteLibraryEntries(
+async function executeDeleteLibraryEntries(
+    request,
     entryIds,
     { blacklistContentHashes = false } = {},
 ) {
-    const response = await apiFetch("/api/v1/study/library/entries", {
+    const response = await request("/api/v1/study/library/entries", {
         method: "DELETE",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryIds, blacklistContentHashes }),
@@ -265,8 +264,8 @@ export async function deleteLibraryEntries(
     return result.data;
 }
 
-export async function previewLibraryResolution(location, entry) {
-    const response = await apiFetch("/api/v1/study/library/resolve", {
+async function executePreviewLibraryResolution(request, location, entry) {
+    const response = await request("/api/v1/study/library/resolve", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ location, entry }),
@@ -275,23 +274,26 @@ export async function previewLibraryResolution(location, entry) {
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLookupProviders({
-    schemaId,
-    schemaVersion,
-    layer,
-}) {
+async function executeFetchLibraryLookupProviders(
+    request,
+    { schemaId, schemaVersion, layer },
+) {
     const parameters = new URLSearchParams({ schemaId, layer });
     if (schemaVersion !== undefined)
         parameters.set("schemaVersion", String(schemaVersion));
-    const response = await apiFetch(
+    const response = await request(
         `/api/v1/study/library/lookup/providers?${parameters}`,
     );
     if (!response.ok) throw new Error("lookup_providers_failed");
     return (await response.json()).data;
 }
 
-export async function fetchLibraryLookupSuggestions(providerId, entry) {
-    const response = await apiFetch("/api/v1/study/library/lookup", {
+async function executeFetchLibraryLookupSuggestions(
+    request,
+    providerId,
+    entry,
+) {
+    const response = await request("/api/v1/study/library/lookup", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ providerId, entry }),
@@ -300,8 +302,12 @@ export async function fetchLibraryLookupSuggestions(providerId, entry) {
     return (await response.json()).data;
 }
 
-export async function localizeLibraryDefinition(translations, languages) {
-    const response = await apiFetch(
+async function executeLocalizeLibraryDefinition(
+    request,
+    translations,
+    languages,
+) {
+    const response = await request(
         "/api/v1/study/library/definitions/localize",
         {
             method: "POST",
@@ -318,8 +324,8 @@ export async function localizeLibraryDefinition(translations, languages) {
 /** Merge a duplicate draft or submit its additions for review at the canonical card's scope.
  * @example const { entry, request } = await mergeLibraryEntry(existing.id, draft);
  */
-export async function mergeLibraryEntry(entryId, proposedEntry) {
-    const response = await apiFetch(
+async function executeMergeLibraryEntry(request, entryId, proposedEntry) {
+    const response = await request(
         `/api/v1/study/library/entries/${encodeURIComponent(entryId)}/merge`,
         {
             method: "POST",
@@ -336,8 +342,8 @@ export async function mergeLibraryEntry(entryId, proposedEntry) {
     return (await response.json()).data;
 }
 
-export async function importLibraryEntries(location, document) {
-    const response = await apiFetch("/api/v1/study/library/import", {
+async function executeImportLibraryEntries(request, location, document) {
+    const response = await request("/api/v1/study/library/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ location, document }),
@@ -348,8 +354,8 @@ export async function importLibraryEntries(location, document) {
 }
 
 /** Store or retrieve the latest account-owned search without exposing its parameters in the URL. */
-export async function dictionarySearchContext(input) {
-    const response = await apiFetch(
+async function executeDictionarySearchContext(request, input) {
+    const response = await request(
         "/api/v1/study/library/dictionary/context",
         input
             ? {
@@ -363,8 +369,8 @@ export async function dictionarySearchContext(input) {
     return (await response.json()).data;
 }
 
-export async function uploadLibraryAudio(file, signal) {
-    const response = await apiFetch("/api/v1/study/library/audio", {
+async function executeUploadLibraryAudio(request, file, signal) {
+    const response = await request("/api/v1/study/library/audio", {
         method: "PUT",
         headers: { "content-type": file.type },
         body: file,
@@ -374,8 +380,8 @@ export async function uploadLibraryAudio(file, signal) {
     return (await response.json()).data;
 }
 
-export async function uploadLibraryImage(file, signal) {
-    const response = await apiFetch("/api/v1/study/library/images", {
+async function executeUploadLibraryImage(request, file, signal) {
+    const response = await request("/api/v1/study/library/images", {
         method: "PUT",
         headers: { "content-type": file.type },
         body: file,
@@ -387,13 +393,14 @@ export async function uploadLibraryImage(file, signal) {
     return payload.data;
 }
 
-export async function fetchLibraryImageUrl(
+async function executeFetchLibraryImageUrl(
+    request,
     entryId,
     fieldId,
     index,
     { signal, requestId } = {},
 ) {
-    const response = await apiFetch(
+    const response = await request(
         `/api/v1/study/library/${requestId ? "push-requests" : "entries"}/${encodeURIComponent(requestId ?? entryId)}/images/${encodeURIComponent(fieldId)}/${index}`,
         { signal },
     );
@@ -401,8 +408,8 @@ export async function fetchLibraryImageUrl(
     return URL.createObjectURL(await response.blob());
 }
 
-export async function stageLibraryPromotion(requestId, proposedEntry) {
-    const response = await apiFetch(
+async function executeStageLibraryPromotion(request, requestId, proposedEntry) {
+    const response = await request(
         `/api/v1/study/library/push-requests/${encodeURIComponent(requestId)}`,
         {
             method: "PATCH",
@@ -416,11 +423,12 @@ export async function stageLibraryPromotion(requestId, proposedEntry) {
     return payload.data;
 }
 
-export async function discardLibraryImage(
+async function executeDiscardLibraryImage(
+    request,
     value,
     { signal, keepalive = false } = {},
 ) {
-    const response = await apiFetch("/api/v1/study/library/images", {
+    const response = await request("/api/v1/study/library/images", {
         method: "DELETE",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ value }),
@@ -430,3 +438,127 @@ export async function discardLibraryImage(
     if (!response.ok) throw new Error("image_discard_failed");
     return (await response.json()).data;
 }
+
+const operations = {
+    fetchLibrarySchemas: executeFetchLibrarySchemas,
+    fetchLibraryLocations: executeFetchLibraryLocations,
+    fetchLibraryForms: executeFetchLibraryForms,
+    fetchLibraryEntries: executeFetchLibraryEntries,
+    fetchLibraryEntry: executeFetchLibraryEntry,
+    fetchViewedLibraryEntryIds: executeFetchViewedLibraryEntryIds,
+    markLibraryEntriesViewed: executeMarkLibraryEntriesViewed,
+    fetchLibraryAudioUrl: executeFetchLibraryAudioUrl,
+    createLibraryEntry: executeCreateLibraryEntry,
+    fetchLibraryPushRequests: executeFetchLibraryPushRequests,
+    fetchSearchableDictionaryProviders:
+        executeFetchSearchableDictionaryProviders,
+    searchLibraryDictionary: executeSearchLibraryDictionary,
+    requestLibraryPromotion: executeRequestLibraryPromotion,
+    relocateLibraryEntry: executeRelocateLibraryEntry,
+    requestLibraryUpdate: executeRequestLibraryUpdate,
+    reviewLibraryPromotion: executeReviewLibraryPromotion,
+    withdrawLibraryPromotion: executeWithdrawLibraryPromotion,
+    moveLibraryEntryToPersonal: executeMoveLibraryEntryToPersonal,
+    updateLibraryEntry: executeUpdateLibraryEntry,
+    planLibraryEntryDeletion: executePlanLibraryEntryDeletion,
+    deleteLibraryEntries: executeDeleteLibraryEntries,
+    previewLibraryResolution: executePreviewLibraryResolution,
+    fetchLibraryLookupProviders: executeFetchLibraryLookupProviders,
+    fetchLibraryLookupSuggestions: executeFetchLibraryLookupSuggestions,
+    localizeLibraryDefinition: executeLocalizeLibraryDefinition,
+    mergeLibraryEntry: executeMergeLibraryEntry,
+    importLibraryEntries: executeImportLibraryEntries,
+    dictionarySearchContext: executeDictionarySearchContext,
+    uploadLibraryAudio: executeUploadLibraryAudio,
+    uploadLibraryImage: executeUploadLibraryImage,
+    fetchLibraryImageUrl: executeFetchLibraryImageUrl,
+    stageLibraryPromotion: executeStageLibraryPromotion,
+    discardLibraryImage: executeDiscardLibraryImage,
+};
+
+/** The Library provider owns these flows; consumers resolve the current mount through ctx. */
+export function registerLibraryClient(ctx) {
+    const registerActions = ctx.capabilities.get("ui:scopedActions");
+    if (!registerActions) throw new Error("scoped_actions_unavailable");
+    const actions = registerActions(
+        ctx,
+        "study:library",
+        Object.fromEntries(
+            Object.entries(operations).map(([name, execute]) => [
+                name,
+                async (input) => {
+                    const signal = AbortSignal.any([
+                        ctx.signal,
+                        ...(input.signal ? [input.signal] : []),
+                        ...input.args.flatMap((value) =>
+                            value instanceof AbortSignal
+                                ? [value]
+                                : value?.signal instanceof AbortSignal
+                                  ? [value.signal]
+                                  : [],
+                        ),
+                    ]);
+                    input.signal = signal;
+                    signal.throwIfAborted();
+                    return execute(
+                        (path, options = {}) =>
+                            apiFetch(path, {
+                                ...options,
+                                signal: AbortSignal.any([
+                                    signal,
+                                    ...(options.signal ? [options.signal] : []),
+                                ]),
+                            }),
+                        ...input.args,
+                    );
+                },
+            ]),
+        ),
+    );
+    ctx.capabilities.contribute("study:library:client", actions);
+}
+
+export const {
+    fetchLibrarySchemas,
+    fetchLibraryLocations,
+    fetchLibraryForms,
+    fetchLibraryEntries,
+    fetchLibraryEntry,
+    fetchViewedLibraryEntryIds,
+    markLibraryEntriesViewed,
+    fetchLibraryAudioUrl,
+    createLibraryEntry,
+    fetchLibraryPushRequests,
+    fetchSearchableDictionaryProviders,
+    searchLibraryDictionary,
+    requestLibraryPromotion,
+    relocateLibraryEntry,
+    requestLibraryUpdate,
+    reviewLibraryPromotion,
+    withdrawLibraryPromotion,
+    moveLibraryEntryToPersonal,
+    updateLibraryEntry,
+    planLibraryEntryDeletion,
+    deleteLibraryEntries,
+    previewLibraryResolution,
+    fetchLibraryLookupProviders,
+    fetchLibraryLookupSuggestions,
+    localizeLibraryDefinition,
+    mergeLibraryEntry,
+    importLibraryEntries,
+    dictionarySearchContext,
+    uploadLibraryAudio,
+    uploadLibraryImage,
+    fetchLibraryImageUrl,
+    stageLibraryPromotion,
+    discardLibraryImage,
+} = Object.fromEntries(
+    Object.keys(operations).map((name) => [
+        name,
+        async (...args) => {
+            const actions = uiCtx.capabilities.get("study:library:client");
+            if (!actions) throw new Error("library_client_unavailable");
+            return actions[name]({ args });
+        },
+    ]),
+);

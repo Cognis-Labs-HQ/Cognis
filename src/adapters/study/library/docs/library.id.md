@@ -1,5 +1,9 @@
 # Adapter Pustaka
 
+## Aksi Peramban yang Diperluas
+
+Penyedia Library menerbitkan `study:library:client` melalui ctx yang dibatasi siklus hidupnya. Setiap operasi klien gateway menjalankan `study:library:<clientFunction>` melalui `before`, `execute`, dan `after`. Misalnya, perluas `study:library:createLibraryEntry` pada `before` untuk memeriksa atau mengubah `input.args` (argumen posisi fungsi klien), atau lempar galat untuk menolak sebelum permintaan. Tahap `after` menerima `data.result` dan dapat menyesuaikan nilai hasil. Otorisasi dan validasi server tetap berlaku. Pembacaan, resolusi kamus, impor, permintaan publikasi, dan perubahan media menggunakan batas yang sama. Pelepasan penyedia membatalkan permintaan aktif serta menghapus kapabilitas, alur, dan hook; pemanggilan lama ditolak. Pengaktifan ulang mendaftarkan aksi baru.
+
 Nama relasi berkelompok diperlakukan sebagai data, termasuk constructor, tanpa mewarisi properti objek.
 
 Perubahan JSON Library menerima paling besar 5 MiB dan menolak aliran lebih besar dengan HTTP 413 sebelum menjalankan perubahan. JSON bidang kartu serta bentuk pencarian ternormalisasinya masing-masing dibatasi 50.000 byte UTF-8 agar tersedia ruang bagi judul dan tag. Lampiran audio harus memakai jalur unggahan yang tepat; lintasan keluar direktori dan jalur bersarang ditolak sebelum mengakses penyimpanan. Pembuatan dan penyuntingan kartu berbagi penulis referensi kanonis untuk kelompok, posisi, dan transformasi pilihan. Kegagalan memuat lokasi ditampilkan sebagai notifikasi terlokalisasi; jawaban dari tampilan yang dibatalkan tidak mengubah kontrol tampilan aktif.
