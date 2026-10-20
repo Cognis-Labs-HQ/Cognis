@@ -1,10 +1,7 @@
 import { executeReferences } from "./reference-storage.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { LibraryEntryInput } from "../types.js";
-import {
-    entryReferenceRows,
-    referenceTransformationValue,
-} from "./reference-rows.js";
+import { insertEntryReferences } from "./reference-rows.js";
 
 export async function replaceEntryContent(
     db: DbExecutor,
@@ -36,19 +33,5 @@ export async function replaceEntryContent(
         option: "DELETE",
         where: [{ column: "source_entry_id", value: id }],
     });
-    for (const row of entryReferenceRows(input)) {
-        await executeReferences(db, {
-            option: "INSERT",
-            values: {
-                source_entry_id: id,
-                target_entry_id: row.reference.entryId,
-                relation: row.reference.relation,
-                group_index: row.groupIndex,
-                position: row.position,
-                transformation_json: referenceTransformationValue(
-                    row.reference,
-                ),
-            },
-        });
-    }
+    await insertEntryReferences(db, id, input);
 }

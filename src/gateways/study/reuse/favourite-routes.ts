@@ -26,7 +26,7 @@ export function createFavouriteRoutes(
                 return true;
             }
             if (req.method !== "PUT") return false;
-            const input = await readJson(req);
+            const input = await readJson(req, { maxBytes: 16 * 1024 });
             let result: StudyFavourite[] = [];
             await flow.run(
                 "study:favourites:save",
@@ -55,13 +55,16 @@ export function createFavouriteRoutes(
                 errorName: error instanceof Error ? error.name : "Unknown",
             });
             send(
-                code === "forbidden"
-                    ? 403
-                    : ["invalid_favourite", "favourite_limit"].includes(code)
-                      ? 400
-                      : 500,
+                code === "request_body_too_large"
+                    ? 413
+                    : code === "forbidden"
+                      ? 403
+                      : ["invalid_favourite", "favourite_limit"].includes(code)
+                        ? 400
+                        : 500,
                 {
                     error:
+                        code === "request_body_too_large" ||
                         code === "forbidden" ||
                         ["invalid_favourite", "favourite_limit"].includes(code)
                             ? code

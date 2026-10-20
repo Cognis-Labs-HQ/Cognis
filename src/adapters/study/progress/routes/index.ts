@@ -3,7 +3,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { ProgressCapability } from "../service.js";
+import type { ProgressCapability } from "../../../../gateways/study/reuse/progress.js";
 import { createAggregateRoutes } from "./aggregate/index.js";
 import { createEventRoutes } from "./events/index.js";
 import { createProjectionRoutes } from "./projections/index.js";
@@ -79,18 +79,21 @@ export function createProgressRoutes(
                 path: url.pathname,
                 error: code,
             });
-            const status = code.startsWith("forbidden")
-                ? 403
-                : code === "adapter_disabled"
-                  ? 503
-                  : code === "event_not_found"
-                    ? 404
-                    : code === "event_id_conflict" ||
-                        code === "event_already_corrected"
-                      ? 409
-                      : REQUEST_ERROR_CODES.has(code)
-                        ? 400
-                        : 500;
+            const status =
+                code === "request_body_too_large"
+                    ? 413
+                    : code.startsWith("forbidden")
+                      ? 403
+                      : code === "adapter_disabled"
+                        ? 503
+                        : code === "event_not_found"
+                          ? 404
+                          : code === "event_id_conflict" ||
+                              code === "event_already_corrected"
+                            ? 409
+                            : REQUEST_ERROR_CODES.has(code)
+                              ? 400
+                              : 500;
             sendJson(response, status, {
                 error: { code: status === 500 ? "internal_error" : code },
             });

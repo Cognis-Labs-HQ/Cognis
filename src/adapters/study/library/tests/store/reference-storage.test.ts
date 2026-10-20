@@ -97,3 +97,59 @@ test("a failed grouped-edge transfer retains the complete existing graph for ret
     await ensureReferenceStorage(fixture.db);
     assert.equal(fixture.rows("study_library_reference_groups").length, 1);
 });
+
+test("creating and editing cards preserve the same grouped placements and selected transformations", async () => {
+    const fixture = structuredStore();
+    const { LibraryStore } = await import("../../store.js");
+    const store = new LibraryStore(fixture.db);
+    await store.ensureSchema();
+    const input = {
+        schemaId: "test",
+        schemaVersion: 1,
+        layer: "words",
+        label: "word",
+        references: [{ entryId: "a", relation: "spelling", position: 0 }],
+        referenceGroups: {
+            constructor: [
+                [{ entryId: "a", relation: "constructor", position: 0 }],
+            ],
+            reading: [
+                [{ entryId: "a", relation: "reading", position: 0 }],
+                [
+                    {
+                        entryId: "a",
+                        relation: "reading",
+                        position: 0,
+                        transformation: { setId: "verb", path: ["past"] },
+                    },
+                ],
+            ],
+        },
+    };
+    const created = await store.create(
+        { scope: "user", scopeId: "alice" },
+        input,
+        "ja",
+        "alice",
+    );
+    assert.deepEqual(created.references, input.references);
+    assert.deepEqual(created.referenceGroups, input.referenceGroups);
+    const edited = {
+        ...input,
+        label: "edited",
+        referenceGroups: {
+            constructor: input.referenceGroups.constructor,
+            reading: [
+                input.referenceGroups.reading[1],
+                input.referenceGroups.reading[0],
+            ],
+        },
+    };
+    const updated = await store.update(created.id, edited);
+    assert.deepEqual(updated.references, input.references);
+    assert.deepEqual(updated.referenceGroups, edited.referenceGroups);
+    assert.deepEqual(
+        (await new LibraryStore(fixture.db).get(created.id))?.referenceGroups,
+        edited.referenceGroups,
+    );
+});

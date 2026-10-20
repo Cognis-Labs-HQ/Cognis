@@ -1,5 +1,7 @@
 # Gateway Database
 
+Snapshot imbalan mempertahankan pemeriksaan revisi peserta dan memakai fragmen utama beserta engagement_participant_parts. Commit memeriksa serta menaikkan revisi dan mengganti semua fragmen dalam satu transaksi. Pembacaan menggabungkan data utama dan fragmen berurutan dalam satu pernyataan agar revisi dan muatan tidak berasal dari commit berbeda. Setiap fragmen paling besar 60.000 byte UTF-8. Kegagalan membatalkan revisi dan byte; penulis yang berbenturan menerima engagement_state_conflict. Pengujian menegakkan batas teks fisik, bukan menerima string tanpa batas.
+
 ## Ikhtisar
 
 Gateway Database adalah satu-satunya titik akses untuk semua operasi database di Cognis. Gateway ini menyediakan antarmuka executor yang seragam yang menyembunyikan perbedaan antara PostgreSQL dan MariaDB. Gateway membaca `DB_TYPE` dari environment, membuat executor yang sesuai, menginisialisasi skema, dan berkontribusi executor dan helper dialek ke capability store.

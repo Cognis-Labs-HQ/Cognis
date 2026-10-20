@@ -10,6 +10,7 @@ export function structuredStore() {
     let tables = new Map<string, Record<string, unknown>[]>();
     const schemas = new Map<string, StructuredDbTableDef>();
     let fail = (_command: StructuredDbCommand) => false;
+    let transactionQueue = Promise.resolve();
     const matches = (
         row: Record<string, unknown>,
         clauses: StructuredDbWhereClause[] = [],
@@ -30,14 +31,21 @@ export function structuredStore() {
                 schemas.set(schema.name, structuredClone(schema));
             if (!tables.has(schema.name)) tables.set(schema.name, []);
         },
-        transaction: async (run) => {
-            const previous = structuredClone(tables);
-            try {
-                return await run(db);
-            } catch (error) {
-                tables = previous;
-                throw error;
-            }
+        transaction: (run) => {
+            const operation = transactionQueue.then(async () => {
+                const previous = structuredClone(tables);
+                try {
+                    return await run(db);
+                } catch (error) {
+                    tables = previous;
+                    throw error;
+                }
+            });
+            transactionQueue = operation.then(
+                () => {},
+                () => {},
+            );
+            return operation;
         },
         executeCommand: async (command) => {
             if (fail(command)) throw new Error("storage_failed");
@@ -52,7 +60,12 @@ export function structuredStore() {
                     );
                 let selected = command.alias
                     ? rows.map((row) => qualify(row, command.alias!))
-                    : rows;
+                    : command.joins?.length
+                      ? rows.map((row) => ({
+                            ...row,
+                            ...qualify(row, command.table),
+                        }))
+                      : rows;
                 for (const join of command.joins ?? []) {
                     selected = selected.flatMap((row) => {
                         const related = (tables.get(join.table) ?? [])
@@ -106,6 +119,20 @@ export function structuredStore() {
                 return {
                     rowCount: rows.length - tables.get(command.table)!.length,
                 };
+            }
+            if (command.option === "UPDATE") {
+                const selected = rows.filter((row) =>
+                    matches(row, command.where),
+                );
+                for (const value of Object.values(command.set))
+                    if (
+                        typeof value === "string" &&
+                        Buffer.byteLength(value, "utf8") > 65_535
+                    )
+                        throw new Error("text_too_large");
+                for (const row of selected)
+                    Object.assign(row, structuredClone(command.set));
+                return { rowCount: selected.length };
             }
             if (command.option !== "INSERT")
                 throw new Error("unsupported_fixture_command");

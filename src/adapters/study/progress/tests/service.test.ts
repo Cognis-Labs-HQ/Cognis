@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { ProgressService } from "../service.js";
 import { MemoryProgressStore } from "../store.js";
-import type { LearningEventInput, ProgressActor } from "../types.js";
+import type {
+    LearningEventInput,
+    ProgressActor,
+} from "../../../../gateways/study/reuse/progress.js";
 
 const user: ProgressActor = { accountId: "actor-one", role: "user" };
 

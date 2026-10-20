@@ -1,9 +1,16 @@
+import { readSchemaJson, writeSchemaJson } from "./store/schema-storage.js";
+import {
+    replacePackAssets,
+    readPackAsset,
+    forgetPackAssets,
+} from "./store/pack-assets.js";
 import { executeReferences } from "./store/reference-storage.js";
 import { retainedPackEntries } from "./store/retained-pack-entries.js";
 import { replaceEntryContent } from "./store/entry-update.js";
 import { hasImageReference } from "./image-store.js";
 import type { CacheSnapshot } from "@cognis/core";
 import {
+    insertEntryReferences,
     entryReferenceRows,
     referenceTransformationValue,
 } from "./store/reference-rows.js";
@@ -133,27 +140,18 @@ export class LibraryStore {
     }
 
     async saveSchema(schema: LibrarySchema): Promise<void> {
-        const existing = await this.db.executeCommand({
-            option: "SELECT",
-            table: "study_library_schemas",
-            where: [
-                { column: "schema_id", value: schema.id },
-                { column: "version", value: schema.version },
-            ],
-        });
-        if (existing.rows?.length) {
-            if (String(existing.rows[0].schema_json) !== JSON.stringify(schema))
-                throw new Error("schema_version_conflict");
-            return;
-        }
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "study_library_schemas",
-            values: {
-                schema_id: schema.id,
-                version: schema.version,
-                schema_json: JSON.stringify(schema),
-            },
+        await this.db.transaction(async (db) => {
+            const existing = await readSchemaJson(
+                db,
+                schema.id,
+                schema.version,
+            );
+            if (existing !== null) {
+                if (existing !== JSON.stringify(schema))
+                    throw new Error("schema_version_conflict");
+                return;
+            }
+            await writeSchemaJson(db, schema, false);
         });
     }
 
@@ -230,19 +228,13 @@ export class LibraryStore {
                     previousEntryIds.has(canonicalId) ? null : canonicalId,
                 ).filter((id): id is string => id !== null),
             ).size;
-            const registeredSchema = await db.executeCommand({
-                option: "SELECT",
-                table: "study_library_schemas",
-                where: [
-                    { column: "schema_id", value: schema.id },
-                    { column: "version", value: schema.version },
-                ],
-            });
-            if (registeredSchema.rows?.length) {
-                if (
-                    String(registeredSchema.rows[0].schema_json) !==
-                    JSON.stringify(schema)
-                ) {
+            const registeredSchema = await readSchemaJson(
+                db,
+                schema.id,
+                schema.version,
+            );
+            if (registeredSchema !== null) {
+                if (registeredSchema !== JSON.stringify(schema)) {
                     const schemaOwners = await db.executeCommand({
                         option: "SELECT",
                         table: "study_library_content_packs",
@@ -263,26 +255,10 @@ export class LibraryStore {
                     ) {
                         throw new Error("schema_version_conflict");
                     }
-                    await db.executeCommand({
-                        option: "UPDATE",
-                        table: "study_library_schemas",
-                        set: { schema_json: JSON.stringify(schema) },
-                        where: [
-                            { column: "schema_id", value: schema.id },
-                            { column: "version", value: schema.version },
-                        ],
-                    });
+                    await writeSchemaJson(db, schema, true);
                 }
             } else {
-                await db.executeCommand({
-                    option: "INSERT",
-                    table: "study_library_schemas",
-                    values: {
-                        schema_id: schema.id,
-                        version: schema.version,
-                        schema_json: JSON.stringify(schema),
-                    },
-                });
+                await writeSchemaJson(db, schema, false);
             }
             const importedSourceIds = new Set(
                 Array.from(
@@ -404,21 +380,7 @@ export class LibraryStore {
                     updated_at: new Date().toISOString(),
                 });
             }
-            for (const asset of plan.assets) {
-                await this.upsert(
-                    db,
-                    "study_library_content_pack_assets",
-                    ["publisher", "pack_id", "version", "asset_path"],
-                    {
-                        publisher: manifest.publisher,
-                        pack_id: manifest.id,
-                        version: manifest.version,
-                        asset_path: asset.path,
-                        media_type: asset.mediaType,
-                        data_base64: asset.data,
-                    },
-                );
-            }
+            await replacePackAssets(db, plan);
             for (const record of records) {
                 const source = recordIdentity.get(record.id);
                 if (!source) continue;
@@ -493,18 +455,17 @@ export class LibraryStore {
     }
 
     async forgetContentPack(publisher: string, packId: string): Promise<void> {
-        for (const table of [
-            "study_library_content_pack_assets",
-            "study_library_content_packs",
-        ])
+        await this.transaction(async () => {
+            await forgetPackAssets(this.db, publisher, packId);
             await this.db.executeCommand({
                 option: "DELETE",
-                table,
+                table: "study_library_content_packs",
                 where: [
                     { column: "publisher", value: publisher },
                     { column: "pack_id", value: packId },
                 ],
             });
+        });
     }
 
     async deleteEntries(
@@ -609,20 +570,13 @@ export class LibraryStore {
                 const schemaKey = `${String(source.schema_id)}:${Number(source.schema_version)}`;
                 let schema = schemaCache.get(schemaKey);
                 if (!schema) {
-                    const schemaResult = await db.executeCommand({
-                        option: "SELECT",
-                        table: "study_library_schemas",
-                        columns: ["schema_json"],
-                        where: [
-                            { column: "schema_id", value: source.schema_id },
-                            { column: "version", value: source.schema_version },
-                        ],
-                    });
-                    if (!schemaResult.rows?.[0]?.schema_json)
-                        throw new Error("schema_not_found");
-                    schema = JSON.parse(
-                        String(schemaResult.rows[0].schema_json),
-                    ) as LibrarySchema;
+                    const schemaJson = await readSchemaJson(
+                        db,
+                        String(source.schema_id),
+                        Number(source.schema_version),
+                    );
+                    if (!schemaJson) throw new Error("schema_not_found");
+                    schema = JSON.parse(schemaJson) as LibrarySchema;
                     schemaCache.set(schemaKey, schema);
                 }
                 const relationship = schema.layers
@@ -671,22 +625,7 @@ export class LibraryStore {
         version: string,
         assetPath: string,
     ): Promise<LibraryAsset | null> {
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "study_library_content_pack_assets",
-            where: [
-                { column: "publisher", value: publisher },
-                { column: "pack_id", value: packId },
-                { column: "version", value: version },
-                { column: "asset_path", value: assetPath },
-            ],
-        });
-        const row = result.rows?.[0];
-        if (!row) return null;
-        return {
-            mediaType: String(row.media_type) as LibraryAsset["mediaType"],
-            data: Buffer.from(String(row.data_base64), "base64"),
-        };
+        return readPackAsset(this.db, publisher, packId, version, assetPath);
     }
 
     private contentPackReceipt(
@@ -792,21 +731,7 @@ export class LibraryStore {
                     created_by: accountId,
                 },
             });
-            for (const row of entryReferenceRows(input)) {
-                await executeReferences(transactionDb, {
-                    option: "INSERT",
-                    values: {
-                        source_entry_id: id,
-                        target_entry_id: row.reference.entryId,
-                        relation: row.reference.relation,
-                        group_index: row.groupIndex,
-                        position: row.position,
-                        transformation_json: referenceTransformationValue(
-                            row.reference,
-                        ),
-                    },
-                });
-            }
+            await insertEntryReferences(transactionDb, id, input);
         });
         return (await this.get(id))!;
     }

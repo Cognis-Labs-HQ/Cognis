@@ -515,3 +515,40 @@ test("malformed deck languages return a client error through the actual save rou
         assert.equal(JSON.parse(payload).error.code, "invalid_language");
     }
 });
+
+test("deck review rejects oversized JSON before changing a schedule", async () => {
+    let reviews = 0;
+    const route = createDeckRoutes(
+        {
+            review: async () => {
+                reviews++;
+            },
+        } as never,
+        { requireAuth: () => ({ sub: "alice", role: "user" }) } as never,
+    );
+    const response = {
+        status: 0,
+        body: "",
+        writeHead(code: number) {
+            this.status = code;
+        },
+        end(body: string) {
+            this.body = body;
+        },
+    };
+    const request = Readable.from([
+        JSON.stringify({ cardId: "a".repeat(16 * 1024) }),
+    ]);
+    Object.assign(request, { method: "POST", headers: {} });
+    await route(
+        request as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/decks/deck/review"),
+    );
+    assert.equal(response.status, 413);
+    assert.equal(
+        JSON.parse(response.body).error.code,
+        "request_body_too_large",
+    );
+    assert.equal(reviews, 0);
+});

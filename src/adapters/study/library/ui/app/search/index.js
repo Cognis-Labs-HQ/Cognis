@@ -8,7 +8,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
-    renderStudySubNavigation,
+    createStudySubNavigationSlot,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     dictionarySearchContext,
@@ -269,18 +269,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 render,
             },
         ],
-        subNavigation: [
-            {
-                id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () =>
-                    renderStudySubNavigation({
-                        model,
-                        currentPath: location.pathname,
-                        i18n,
-                    }),
-            },
-        ],
+        subNavigation: [createStudySubNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();

@@ -64,10 +64,18 @@ export function bindLibraryInteractions(root, context) {
             context.renderContent?.(entries) ??
             renderBrowser(schemas, entries, i18n, requestedLayer);
     };
-    void fetchLibraryLocations().then((value) => {
-        locations = value;
-        updateSelectionActions(root, entries, requests, locations);
-    });
+    void fetchLibraryLocations()
+        .then((value) => {
+            if (signal.aborted) return;
+            locations = value;
+            updateSelectionActions(root, entries, requests, locations);
+        })
+        .catch(() => {
+            if (signal.aborted) return;
+            showToast(i18n.t("gateway.study.library_load_error"), {
+                variant: "error",
+            });
+        });
     const visibilityActions = createLibraryVisibilityActions({
         root,
         getEntries: () => entries,
@@ -216,7 +224,7 @@ export function bindLibraryInteractions(root, context) {
             )
                 .catch(() =>
                     showToast(i18n.t("gateway.study.library_load_error"), {
-                        type: "error",
+                        variant: "error",
                     }),
                 )
                 .finally(() => {

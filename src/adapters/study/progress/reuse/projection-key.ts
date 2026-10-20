@@ -1,4 +1,4 @@
-import type { ContentIdentity } from "../types.js";
+import type { ContentIdentity } from "../../../../gateways/study/reuse/progress.js";
 
 /** Encode every identity dimension without database-forbidden delimiter bytes. */
 export function projectionKey(

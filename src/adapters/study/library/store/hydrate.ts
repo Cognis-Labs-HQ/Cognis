@@ -37,6 +37,7 @@ function hydrateEntry(
     const entry = mapEntry(row);
     entry.references = [];
     entry.referenceGroups = {};
+    const byRelation = new Map<string, (typeof entry.references)[]>();
     for (const reference of referenceRows) {
         const value = {
             entryId: String(reference.target_entry_id),
@@ -55,11 +56,12 @@ function hydrateEntry(
             entry.references.push(value);
             continue;
         }
-        const groups = (entry.referenceGroups[value.relation] ??= []);
+        const groups = byRelation.get(value.relation) ?? [];
+        byRelation.set(value.relation, groups);
         (groups[groupIndex] ??= []).push(value);
     }
     entry.references.sort((left, right) => left.position! - right.position!);
-    for (const [relation, groups] of Object.entries(entry.referenceGroups)) {
+    for (const [relation, groups] of byRelation) {
         entry.referenceGroups[relation] = groups
             .filter((group) => Array.isArray(group))
             .map((group) =>

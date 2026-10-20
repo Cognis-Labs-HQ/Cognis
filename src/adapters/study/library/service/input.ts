@@ -59,7 +59,13 @@ export function validateEntryFields(
     layer: string,
     fields: Record<string, unknown>,
 ): void {
-    if (JSON.stringify(fields).length > 100_000)
+    const serialized = JSON.stringify(fields);
+    // Leave space for the label and tags in the normalized search projection.
+    if (
+        Buffer.byteLength(serialized, "utf8") > 50_000 ||
+        Buffer.byteLength(serialized.normalize().toLocaleLowerCase(), "utf8") >
+            50_000
+    )
         throw new Error("fields_too_large");
     validateFields(schema, layer, fields);
 }

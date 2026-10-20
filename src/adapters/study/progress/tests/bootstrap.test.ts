@@ -3,7 +3,7 @@ import test from "node:test";
 import { createCtx } from "@cognis/core";
 import { CoreStudyGateway } from "../../../../gateways/study/gateway.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
-import type { LearningEventInput } from "../types.js";
+import type { LearningEventInput } from "../../../../gateways/study/reuse/progress.js";
 import type { ProgressCapability } from "../index.js";
 import { bootstrapStudyAdapter, createStudyAdapter } from "../index.js";
 

@@ -1,8 +1,6 @@
 <resources>
   <string name="gateway.study.picker.title">Choose A Language To Study</string>
   <string name="gateway.study.picker.select">Select a language:</string>
-  <string name="gateway.study.picker.start">Study</string>
-  <string name="gateway.study.page_title">Study</string>
   <string name="gateway.study.page_subtitle">Your language learning dashboard</string>
   <string name="gateway.study.settings_subtitle">Manage your active study languages</string>
   <string name="gateway.study.alphabet_subtitle">Browse the letters of the English alphabet</string>
@@ -21,7 +19,6 @@
   <string name="gateway.study.change_languages">Change Languages</string>
   <string name="gateway.study.no_modules">No learning modules available.</string>
   <string name="gateway.study.language_settings">Language Settings</string>
-  <string name="gateway.study.language">Language</string>
   <string name="gateway.study.available_languages">Available Languages</string>
   <string name="gateway.study.active_languages">Active Languages</string>
   <string name="gateway.study.remove_last_language_title">Remove Last Active Language</string>
@@ -29,7 +26,6 @@
   <string name="gateway.study.library_label">Library</string>
   <string name="gateway.study.library_language_filter">Language Filter</string>
   <string name="gateway.study.classroom_page_title">Classroom</string>
-  <string name="gateway.study.classroom_select_class">Class</string>
   <string name="gateway.study.classroom_no_classes">No classes are available for this language.</string>
   <string name="gateway.study.classroom_student_limit">Student Limit</string>
   <string name="gateway.study.classroom_seat">Seat</string>
@@ -68,13 +64,10 @@
   <string name="gateway.study.favourite_added">Added to favourites.</string>
   <string name="gateway.study.favourite_removed">Removed from favourites.</string>
 <string name="gateway.study.drawing.title">Writing Practice</string>
-  <string name="gateway.study.drawing.reset">Reset</string>
   <string name="gateway.study.drawing.guidance">Show full guidance</string>
   <string name="gateway.study.drawing.well_done">Well Done</string>
   <string name="gateway.study.drawing.loser">Loser!</string>
   <string name="gateway.study.drawing.mistakes">Mistakes: {{ count }}</string>
-  <string name="gateway.study.drawing.close">Close</string>
-  <string name="gateway.study.drawing.try_again">Try Again</string>
   <string name="gateway.study.drawing.error">Drawing practice could not be loaded.</string>
   <string name="gateway.study.drawing.reveal">Show character</string>
   <string name="gateway.study.drawing_open_card">Open Card in Explore?</string>

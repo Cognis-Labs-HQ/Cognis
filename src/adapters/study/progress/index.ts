@@ -19,7 +19,7 @@ import {
 } from "./service.js";
 import { DbProgressStore } from "./store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { LearningEvent } from "./types.js";
+import type { LearningEvent } from "../../../gateways/study/reuse/progress.js";
 
 let adapterReady = false;
 
@@ -167,5 +167,8 @@ export async function bootstrapStudyAdapter(
     });
 }
 
-export type { ProgressCapability } from "./service.js";
-export type { ProgressActor, LearningEventInput } from "./types.js";
+export type { ProgressCapability } from "../../../gateways/study/reuse/progress.js";
+export type {
+    ProgressActor,
+    LearningEventInput,
+} from "../../../gateways/study/reuse/progress.js";

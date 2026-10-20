@@ -21,6 +21,7 @@ async function fixture(t) {
     let dismissed = 0;
     let focused = 0;
     let executions = 0;
+    const failures = [];
     const closeAttributes = {};
     const overlayAttributes = {};
     const stylesLoaded = [];
@@ -42,6 +43,7 @@ async function fixture(t) {
         },
     };
     const context = vm.createContext({
+        showToast: (...values) => failures.push(values),
         escapeHtml,
         uiCtx,
         registerScopedUiActions,
@@ -54,6 +56,8 @@ async function fixture(t) {
                 ({
                     "ui.reuse.close": "Schließen",
                     "ui.reuse.image_preview": "Bildvorschau",
+                    "ui.reuse.image_preview_failed":
+                        "Die Bildvorschau konnte nicht geöffnet werden.",
                 })[key],
         }),
         openPopup: (options) => {
@@ -118,6 +122,7 @@ async function fixture(t) {
         image,
         controller,
         activate,
+        failures,
         opened: () => opened,
         dismiss: () => resolvePopup(null),
         focused: () => focused,
@@ -230,4 +235,25 @@ test("the preview provider waits for its shared stylesheet before publishing con
         "function",
     );
     assert.equal(uiCtx.flowExists("ui:imagePreview:open"), true);
+});
+
+test("a failed preview action reports a localized error toast and permits another attempt", async (t) => {
+    const state = await fixture(t);
+    uiCtx.extendFlow(
+        "ui:imagePreview:open",
+        "execute",
+        { id: "test:reject-preview", order: -100 },
+        () => {
+            throw new Error("preview_failed");
+        },
+    );
+    await state.activate();
+    assert.equal(state.failures.length, 1);
+    assert.equal(
+        state.failures[0][0],
+        "Die Bildvorschau konnte nicht geöffnet werden.",
+    );
+    assert.equal(state.failures[0][1].variant, "error");
+    await state.activate();
+    assert.equal(state.failures.length, 2);
 });

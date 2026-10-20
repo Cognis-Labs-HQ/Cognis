@@ -162,18 +162,16 @@ test("Study renders Requests from route translations without an adapter locale b
         const model = await context.loadStudySubNavigationModel({
             fallbackLanguageCode: "ja",
         });
-        const html = context.renderStudySubNavigation({
-            model,
-            currentPath: "/study",
-            i18n: {
-                t(key) {
-                    lookups.push(key);
-                    const value = preferred.get(key) || english.get(key);
-                    if (!value) throw new Error(`missing_translation:${key}`);
-                    return value;
-                },
+        const slot = context.createStudySubNavigationSlot(model, {
+            t(key) {
+                lookups.push(key);
+                const value = preferred.get(key) || english.get(key);
+                if (!value) throw new Error(`missing_translation:${key}`);
+                return value;
             },
         });
+        assert.equal(slot.id, "study-subnav");
+        const html = slot.render();
         const label =
             labels[locale] ?? labels[locale.split("-")[0]] ?? labels.en;
         assert.match(
@@ -196,10 +194,12 @@ test("Study renders Requests from route translations without an adapter locale b
 
 function localeStrings(locale) {
     if (!["de", "en", "id", "ja"].includes(locale)) return new Map();
-    const xml = readFileSync(
+    const xml = [
+        new URL(`../../../ui/languages/${locale}/strings.xml`, import.meta.url),
         new URL(`../ui/languages/${locale}/strings.xml`, import.meta.url),
-        "utf8",
-    );
+    ]
+        .map((url) => readFileSync(url, "utf8"))
+        .join("\n");
     return new Map(
         [...xml.matchAll(/<string name="([^"]+)">([^<]*)<\/string>/g)].map(
             (match) => [match[1], match[2]],

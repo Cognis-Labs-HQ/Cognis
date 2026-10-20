@@ -1,8 +1,6 @@
 <resources>
   <string name="gateway.study.picker.title">学習言語を選択</string>
   <string name="gateway.study.picker.select">言語を選択してください：</string>
-  <string name="gateway.study.picker.start">学習開始</string>
-  <string name="gateway.study.page_title">学習</string>
   <string name="gateway.study.page_subtitle">言語学習ダッシュボード</string>
   <string name="gateway.study.settings_subtitle">学習中の言語を管理する</string>
   <string name="gateway.study.alphabet_subtitle">英語アルファベットの文字を閲覧する</string>
@@ -21,7 +19,6 @@
   <string name="gateway.study.change_languages">言語を変更する</string>
   <string name="gateway.study.no_modules">学習モジュールがありません。</string>
   <string name="gateway.study.language_settings">言語設定</string>
-  <string name="gateway.study.language">言語</string>
   <string name="gateway.study.available_languages">利用可能な言語</string>
   <string name="gateway.study.active_languages">有効な言語</string>
   <string name="gateway.study.remove_last_language_title">最後の有効な言語を削除</string>
@@ -29,7 +26,6 @@
   <string name="gateway.study.library_label">ライブラリ</string>
   <string name="gateway.study.library_language_filter">言語フィルター</string>
   <string name="gateway.study.classroom_page_title">教室</string>
-  <string name="gateway.study.classroom_select_class">クラス</string>
   <string name="gateway.study.classroom_no_classes">この言語で利用できるクラスはありません。</string>
   <string name="gateway.study.classroom_student_limit">受講者上限</string>
   <string name="gateway.study.classroom_seat">席</string>
@@ -68,13 +64,10 @@
   <string name="gateway.study.favourite_added">お気に入りに追加しました。</string>
   <string name="gateway.study.favourite_removed">お気に入りから削除しました。</string>
 <string name="gateway.study.drawing.title">書き取り練習</string>
-  <string name="gateway.study.drawing.reset">リセット</string>
   <string name="gateway.study.drawing.guidance">全ガイドを表示</string>
   <string name="gateway.study.drawing.well_done">よくできました</string>
   <string name="gateway.study.drawing.loser">負け！</string>
   <string name="gateway.study.drawing.mistakes">間違い: {{ count }}</string>
-  <string name="gateway.study.drawing.close">閉じる</string>
-  <string name="gateway.study.drawing.try_again">もう一度</string>
   <string name="gateway.study.drawing.error">書く練習を読み込めませんでした。</string>
   <string name="gateway.study.drawing.reveal">文字を表示</string>
   <string name="gateway.study.drawing_open_card">Explore でカードを開きますか？</string>

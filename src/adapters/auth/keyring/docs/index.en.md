@@ -1,5 +1,7 @@
 # User Keyring Adapter
 
+Vault PUT requests use the API shared streaming JSON reader with the effective vault budget and 1 KiB of envelope space. The adapter retains its own policy, 413 error and serialized-vault validation; no second buffering implementation is maintained.
+
 The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET checks stored size before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
 
 ## Overview

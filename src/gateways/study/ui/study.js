@@ -51,7 +51,7 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
-    applyDocumentTitle(i18n, "gateway.study.page_title");
+    applyDocumentTitle(i18n, "ui.reuse.study");
 
     const currentPath = window.location.pathname;
     const requestedLanguageCode = readSelectedStudyLanguageCode();
@@ -175,7 +175,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         elements: [
             {
                 id: "study-welcome",
-                label: i18n.t("gateway.study.page_title"),
+                label: i18n.t("ui.reuse.study"),
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: renderWelcomeContent,
@@ -185,7 +185,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         preferenceKey: "study-welcome-layout",
         i18n,
         pageContext: {
-            title: i18n.t("gateway.study.page_title"),
+            title: i18n.t("ui.reuse.study"),
             subtitle: i18n.t("gateway.study.page_subtitle"),
         },
         toolbar: [],
@@ -337,7 +337,7 @@ async function mountHub(
                         : modules
                               .map(
                                   (component) => `
-                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
+                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("ui.reuse.study"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("ui.reuse.study"), language.name, component.label].filter(Boolean).join(" "))}">
                                         ${escapeHtml(component.label)}
                                     </a>
                                 `,
@@ -418,7 +418,7 @@ async function mountHub(
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.language"))}</th>
                                     <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
                                 </tr>
                             </thead>
@@ -431,7 +431,7 @@ async function mountHub(
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.language"))}</th>
                                     <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
                                 </tr>
                             </thead>
@@ -450,14 +450,12 @@ async function mountHub(
             const languageName = language.name || languageCode;
             items.push({
                 id: `study-language:${languageCode}`,
-                label: [i18n.t("gateway.study.page_title"), languageName].join(
-                    " / ",
-                ),
-                description: i18n.t("gateway.study.page_title"),
+                label: [i18n.t("ui.reuse.study"), languageName].join(" / "),
+                description: i18n.t("ui.reuse.study"),
                 url: buildHubUrl(languageCode),
                 resultClass: "page",
                 searchText: [
-                    i18n.t("gateway.study.page_title"),
+                    i18n.t("ui.reuse.study"),
                     languageName,
                     languageCode,
                 ]
@@ -471,19 +469,16 @@ async function mountHub(
                 if (!pageUrl || !label) continue;
                 items.push({
                     id: `study-module:${languageCode}:${component?.id ?? label}`,
-                    label: [
-                        i18n.t("gateway.study.page_title"),
-                        languageName,
-                        label,
-                    ].join(" / "),
-                    description: [
-                        i18n.t("gateway.study.page_title"),
-                        languageName,
-                    ].join(" / "),
+                    label: [i18n.t("ui.reuse.study"), languageName, label].join(
+                        " / ",
+                    ),
+                    description: [i18n.t("ui.reuse.study"), languageName].join(
+                        " / ",
+                    ),
                     url: pageUrl,
                     resultClass: "page",
                     searchText: [
-                        i18n.t("gateway.study.page_title"),
+                        i18n.t("ui.reuse.study"),
                         languageName,
                         label,
                         component?.id,
@@ -496,14 +491,14 @@ async function mountHub(
         items.push({
             id: "study-settings",
             label: [
-                i18n.t("gateway.study.page_title"),
+                i18n.t("ui.reuse.study"),
                 i18n.t("gateway.study.language_settings"),
             ].join(" / "),
-            description: i18n.t("gateway.study.page_title"),
+            description: i18n.t("ui.reuse.study"),
             url: buildSettingsUrl(),
             resultClass: "setting",
             searchText: [
-                i18n.t("gateway.study.page_title"),
+                i18n.t("ui.reuse.study"),
                 i18n.t("gateway.study.language_settings"),
             ].join(" "),
         });
@@ -523,7 +518,7 @@ async function mountHub(
           }
         : {
               id: "study-hub",
-              label: i18n.t("gateway.study.page_title"),
+              label: i18n.t("ui.reuse.study"),
               pinned: true,
               gridSize: { default: [12, 8], min: [4, 4], max: "full" },
               render: renderDashboardContent,
@@ -537,7 +532,7 @@ async function mountHub(
             : "study-hub-layout",
         i18n,
         pageContext: {
-            title: i18n.t("gateway.study.page_title"),
+            title: i18n.t("ui.reuse.study"),
             subtitle: isSettingsPath
                 ? i18n.t("gateway.study.settings_subtitle")
                 : i18n.t("gateway.study.page_subtitle"),
@@ -546,7 +541,7 @@ async function mountHub(
         subNavigation: [
             {
                 id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
+                label: i18n.t("ui.reuse.study"),
                 render: renderSubNavigation,
             },
         ],

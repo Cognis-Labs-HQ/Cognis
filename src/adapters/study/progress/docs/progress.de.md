@@ -1,5 +1,7 @@
 # Lernfortschritt
 
+Gemeinsame Typen für Fortschrittsereignisse, Akteure, Projektionen und Fähigkeiten liegen in gateways/study/reuse/progress.ts. Das Gateway importiert dafür keinen optionalen Adapter-Einstiegspunkt mehr; der Adapter implementiert dieselbe Fähigkeit und behält seine öffentlichen Exporte. JSON für Ereignisse und Korrekturen ist auf 60.000 Bytes begrenzt; größere Anfragen liefern vor der Aufzeichnung 413. Datenschutz, Klassenprüfungen, Korrekturen, Belohnungen und Neuaufbau bleiben aktiv.
+
 Der Fortschrittsadapter zeichnet unveränderliche, idempotente Lernereignisse auf und erstellt daraus wiederherstellbare Projektionen. Jedes Ereignis enthält Akteur, kanonischen Inhalt samt Revision, Aktivität und Geltungsbereich, Versuchsergebnis, Hinweise, Dauer, Abschlussstatus und begrenzte Metadaten.
 
 ## Verwendung

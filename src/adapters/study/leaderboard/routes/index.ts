@@ -1,12 +1,17 @@
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { LeaderboardCapability } from "../types.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 
 export function createLeaderboardRoutes(
     leaderboard: LeaderboardCapability,
     routeContext: RouteContext | undefined,
 ) {
     if (!routeContext) throw new Error("route_context_missing");
-    return async (req: any, res: any, url: URL) => {
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
         if (
             req.method !== "GET" ||
             ![
@@ -15,8 +20,8 @@ export function createLeaderboardRoutes(
             ].includes(url.pathname)
         )
             return false;
-        const claims = routeContext.getAuthClaims(req);
-        if (!claims || !routeContext.requireAuth(req, res, "user")) return true;
+        const claims = routeContext.requireAuth(req, res, "user");
+        if (!claims) return true;
         const actor = { accountId: claims.sub, role: claims.role };
         if (url.pathname === "/api/v1/study/leaderboard/definitions") {
             const definitions = leaderboard.listDefinitions(actor);

@@ -20,7 +20,7 @@ import { canonicalizeLanguageTag } from "../language.js";
 
 async function readJson(req: IncomingMessage): Promise<unknown> {
     try {
-        const body = await readRequestJson(req);
+        const body = await readRequestJson(req, { maxBytes: 5 * 1024 * 1024 });
         if (!body || typeof body !== "object" || Array.isArray(body))
             throw new Error("invalid_request_json");
         return body;

@@ -122,6 +122,24 @@ Kartu kini mempertahankan urutan definisi penyedia: definisi terlokalkan pertama
 
 Penyesuaian varian saat jalan kini melacak kartu akar dan setiap anak terlihat yang sudah ditempatkan sebagai persegi panjang terisi. Posisi pilihan penyedia yang masih kosong dan berada dalam batas dipertahankan; jika tidak, alternatif dalam batas dengan tumpang tindih paling kecil dipilih agar kartu saudara tidak lagi jatuh ke slot yang sama.
 
+## Keandalan dan Isolasi
+
+Aset paket memakai study_library_asset_chunks dengan identitas SHA-256 dari penerbit, paket, versi, dan jalur aset lengkap serta posisi bilangan bulat. URL publik dan byte asli tetap dipertahankan. Indeks paket membatasi penghapusan. Skema tetap memakai identitas skema/versinya dengan fragmen utama dan study_library_schema_parts. Kedua muatan memakai fragmen aman Unicode paling besar 60.000 byte UTF-8. Pembacaan menyusun fragmen berurutan; impor menggantinya dalam transaksi yang sudah ada. Konflik versi, penggantian oleh penerbit tunggal, pembatalan transaksi, dan penggantian lebih pendek tetap berlaku.
+
+Perubahan JSON Library menerima paling besar 5 MiB dan menolak aliran lebih besar dengan HTTP 413 sebelum menjalankan perubahan. JSON bidang kartu serta bentuk pencarian ternormalisasinya masing-masing dibatasi 50.000 byte UTF-8 agar tersedia ruang bagi judul dan tag. Lampiran audio harus memakai jalur unggahan yang tepat; lintasan keluar direktori dan jalur bersarang ditolak sebelum mengakses penyimpanan. Pembuatan dan penyuntingan kartu berbagi penulis referensi kanonis untuk kelompok, posisi, dan transformasi pilihan. Kegagalan memuat lokasi ditampilkan sebagai notifikasi terlokalisasi; jawaban dari tampilan yang dibatalkan tidak mengubah kontrol tampilan aktif.
+
+Snapshot imbalan mempertahankan pemeriksaan revisi peserta dan memakai fragmen utama beserta engagement_participant_parts. Commit memeriksa serta menaikkan revisi dan mengganti semua fragmen dalam satu transaksi. Pembacaan menggabungkan data utama dan fragmen berurutan dalam satu pernyataan agar revisi dan muatan tidak berasal dari commit berbeda. Setiap fragmen paling besar 60.000 byte UTF-8. Kegagalan membatalkan revisi dan byte; penulis yang berbenturan menerima engagement_state_conflict. Pengujian menegakkan batas teks fisik, bukan menerima string tanpa batas.
+
+Tipe bersama untuk peristiwa, pelaku, proyeksi, dan kapabilitas kemajuan berada di gateways/study/reuse/progress.ts. Gateway tidak lagi mengimpor titik masuk adaptor opsional untuk kontrak ini; adaptor tetap menerapkan kapabilitas dan ekspor publik yang sama. JSON peristiwa serta koreksi dibatasi 60.000 byte; permintaan lebih besar menghasilkan 413 sebelum pencatatan. Privasi, pemeriksaan kelas, koreksi, imbalan, dan alur pembangunan ulang tetap aktif.
+
+Permintaan definisi dan peringkat tanpa autentikasi menjalankan pemeriksaan autentikasi yang diinjeksi dan selesai dengan HTTP 401 sebelum membaca data. Parameter rute memakai kontrak HTTP bertipe dan otorisasi yang sudah ada.
+
+Permintaan penilaian menerima paling besar 16 KiB JSON; penulisan dek menerima paling besar 5 MiB. Permintaan lebih besar menghasilkan HTTP 413 tanpa mengubah dek atau jadwal. Membaca, menulis, antrean ulang, catatan impor, dan kartu berbasis Library tetap berperilaku sama.
+
+PUT brankas memakai pembaca aliran JSON bersama milik API dengan anggaran brankas efektif dan tambahan 1 KiB untuk amplop. Kebijakan, galat 413, dan validasi data terserialisasi tetap dimiliki adaptor; tidak ada implementasi penyanggaan kedua.
+
+Halaman Study berbagi satu slot subnavigasi composer, memakai label navigasi dan tindakan bersama dari ui.reuse dalam keempat bahasa, serta menentukan rute aktif saat dirender. Lingkup router yang dibatalkan tetap dibatalkan ketika diganti. Kegagalan pratinjau gambar menampilkan notifikasi galat terlokalisasi dan membuka kunci status agar dapat dicoba lagi.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

@@ -10,7 +10,7 @@ import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
-    renderStudySubNavigation,
+    createStudySubNavigationSlot,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import { loadLibrary } from "../data.js";
 import { renderBrowser } from "../layer-cards.js";
@@ -130,18 +130,7 @@ export async function mount(root, { signal } = {}) {
         ],
         toolbarScrollable: true,
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
-        subNavigation: [
-            {
-                id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () =>
-                    renderStudySubNavigation({
-                        model,
-                        currentPath: window.location.pathname,
-                        i18n,
-                    }),
-            },
-        ],
+        subNavigation: [createStudySubNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();

@@ -46,7 +46,7 @@ test("audio uploads enforce the 5 MiB boundary and verified media signatures", a
     ]) as IncomingMessage;
     await assert.rejects(
         readRawBody(request, { maxBytes: MAX_AUDIO_UPLOAD_BYTES }),
-        /audio_upload_too_large/,
+        /request_body_too_large/,
     );
 });
 
@@ -110,4 +110,32 @@ test("owned uploads execute authorization before persistence and reject foreign 
         /forbidden/,
     );
     assert.equal(objects.size, 1);
+});
+
+test("audio attachments reject traversal and malformed upload paths before consulting storage", async () => {
+    let reads = 0;
+    const cache = new LibraryAudioCache({
+        get: async () => {
+            reads++;
+            return null;
+        },
+    } as never);
+    for (const value of [
+        "file:uploads/alice/../bob/a.audio",
+        "file:uploads/alice/nested/a.audio",
+        "file:uploads/alice/a.audio/extra",
+    ]) {
+        await assert.rejects(
+            validateUploadedAudioFields(
+                actor,
+                schema,
+                "words",
+                { audio: value },
+                {},
+                cache,
+            ),
+            /invalid_audio_upload/,
+        );
+    }
+    assert.equal(reads, 0);
 });

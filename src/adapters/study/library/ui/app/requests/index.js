@@ -9,7 +9,7 @@ import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
-    renderStudySubNavigation,
+    createStudySubNavigationSlot,
 } from "/static/gateways/study/ui/sub-navigation.js";
 import {
     bindLibraryRequestReviews,
@@ -112,18 +112,7 @@ export async function mount(root, { signal } = {}) {
                 render: () => filterMenu.render(),
             },
         ],
-        subNavigation: [
-            {
-                id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () =>
-                    renderStudySubNavigation({
-                        model,
-                        currentPath: window.location.pathname,
-                        i18n,
-                    }),
-            },
-        ],
+        subNavigation: [createStudySubNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();

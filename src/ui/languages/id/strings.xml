@@ -310,6 +310,7 @@
   <string name="ui.reuse.all_elements_visible">Semua elemen ditampilkan.</string>
   <string name="ui.reuse.reset_layout">Setel ulang tata letak</string>
   <string name="ui.reuse.image_preview">Pratinjau Gambar</string>
+  <string name="ui.reuse.image_preview_failed">Pratinjau gambar tidak dapat dibuka.</string>
   <string name="ui.reuse.close">Tutup</string>
   <string name="ui.reuse.cancel">Batal</string>
   <string name="ui.reuse.delete">Hapus</string>

@@ -37,7 +37,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.25`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.23`   |
 | Local Auth                 | `src/adapters/auth/local/`          | `0.3.30`   |
-| User Keyring               | `src/adapters/auth/keyring/`        | `1.0.53`   |
+| User Keyring               | `src/adapters/auth/keyring/`        | `1.0.54`   |
 | LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.37`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.23`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.23`   |
@@ -55,11 +55,11 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.4`    |
-| Library (Study)            | `src/adapters/study/library/`       | `2.28.25`  |
+| Library (Study)            | `src/adapters/study/library/`       | `2.28.26`  |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.2`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.7`    |
-| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.0`    |
-| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.3`    |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.8`    |
+| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
+| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.4`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging               | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -67,7 +67,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
-| Database (db)         | `src/gateways/db/`            | `1.3.12`   |
+| Database (db)         | `src/gateways/db/`            | `1.3.13`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.70`   |
 | Share                 | `src/gateways/share/`         | `1.7.49`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
@@ -77,7 +77,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.2.3`    |
+| Study                 | `src/gateways/study/`         | `2.2.4`    |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115`  |
 
 ## コア契約
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.6.17`   |
+| API Server     | `src/api/` | `0.6.18`   |
 
 ## ツール
 

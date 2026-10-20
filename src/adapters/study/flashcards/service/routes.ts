@@ -33,7 +33,7 @@ export function createDeckRoutes(
                 return true;
             }
             if (req.method === "POST" && id && match[2]) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(req, { maxBytes: 16 * 1024 })) as {
                     cardId: unknown;
                     grade: unknown;
                     attempt?: unknown;
@@ -56,7 +56,11 @@ export function createDeckRoutes(
                 (req.method === "PUT" && id && !match[2])
             ) {
                 sendJson(res, id ? 200 : 201, {
-                    data: await service.save(actor, await readJson(req), id),
+                    data: await service.save(
+                        actor,
+                        await readJson(req, { maxBytes: 5 * 1024 * 1024 }),
+                        id,
+                    ),
                 });
                 return true;
             }
@@ -89,16 +93,19 @@ export function createDeckRoutes(
                 "invalid_deck_card",
                 "deck_not_found",
                 "library_unavailable",
+                "request_body_too_large",
             ].includes(reason);
             sendJson(
                 res,
-                reason === "deck_not_found"
-                    ? 404
-                    : reason === "deck_read_only"
-                      ? 403
-                      : known
-                        ? 400
-                        : 500,
+                reason === "request_body_too_large"
+                    ? 413
+                    : reason === "deck_not_found"
+                      ? 404
+                      : reason === "deck_read_only"
+                        ? 403
+                        : known
+                          ? 400
+                          : 500,
                 {
                     error: { code: known ? reason : "deck_failed" },
                 },

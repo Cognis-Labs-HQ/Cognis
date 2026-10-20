@@ -47,7 +47,10 @@ export async function validateUploadedAudioFields(
         const prior = [previous[field.id]].flat();
         for (const value of values) {
             if (!value || prior.includes(value)) continue;
-            if (typeof value !== "string" || !value.startsWith("file:uploads/"))
+            if (
+                typeof value !== "string" ||
+                !/^file:uploads\/[^/]+\/[a-f0-9-]+\.audio$/.test(value)
+            )
                 throw new Error("invalid_audio_upload");
             if (
                 !["admin", "owner"].includes(actor.role) &&

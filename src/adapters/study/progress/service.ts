@@ -3,13 +3,14 @@ import type { FlowApi, EngagementSummary } from "@cognis/core";
 import type { StudyClassAccessCapability } from "../../../gateways/study/gateway.js";
 import type { ProgressStore } from "./store.js";
 import type {
+    ProgressCapability,
     LearningEvent,
     LearningEventInput,
     ProgressActor,
     ProgressAggregate,
     ProgressFilters,
     ProgressProjection,
-} from "./types.js";
+} from "../../../gateways/study/reuse/progress.js";
 
 type Log = (
     level: string,
@@ -29,38 +30,6 @@ export async function rebuildProgressProjections(
         buildProjections(await store.all(actorId)),
         actorId,
     );
-}
-
-export interface ProgressCapability {
-    engagement(actor: ProgressActor): Promise<EngagementSummary>;
-    recordPractice(
-        actor: ProgressActor,
-        input: LearningEventInput,
-    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
-    recordEvent(
-        actor: ProgressActor,
-        input: LearningEventInput,
-    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
-    correctEvent(
-        actor: ProgressActor,
-        input: LearningEventInput & { compensatesEventId: string },
-    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
-    listEvents(
-        actor: ProgressActor,
-        filters?: ProgressFilters,
-    ): Promise<LearningEvent[]>;
-    listProjections(
-        actor: ProgressActor,
-        filters?: ProgressFilters,
-    ): Promise<ProgressProjection[]>;
-    aggregate(
-        actor: ProgressActor,
-        filters?: ProgressFilters,
-    ): Promise<ProgressAggregate>;
-    rebuild(
-        actor: ProgressActor,
-        targetActorId?: string,
-    ): Promise<ProgressProjection[]>;
 }
 
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;

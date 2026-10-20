@@ -234,3 +234,24 @@ test("engagement summaries use the authenticated learner and ignore a requested 
     assert.deepEqual(actors, [{ accountId: "actor-one", role: "user" }]);
     assert.equal((response.body.data as { xp: number }).xp, 13);
 });
+
+test("event routes reject oversized bodies before recording events or corrections", async () => {
+    let writes = 0;
+    const mutation = async () => {
+        writes++;
+    };
+    for (const path of ["events", "events/corrections"]) {
+        const result = await dispatch(
+            { recordEvent: mutation, correctEvent: mutation },
+            "POST",
+            `/api/v1/study/progress/${path}`,
+            { metadata: { text: "a".repeat(64 * 1024) } },
+        );
+        assert.equal(result.status, 413);
+        assert.equal(
+            (result.body.error as { code: string }).code,
+            "request_body_too_large",
+        );
+    }
+    assert.equal(writes, 0);
+});

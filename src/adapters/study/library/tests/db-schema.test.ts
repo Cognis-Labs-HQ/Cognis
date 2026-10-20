@@ -4,7 +4,7 @@ import { ensureLibraryStoreSchema } from "../db-schema.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
-test("Library schema declares scoped lookup indexes and Unicode asset fields", async () => {
+test("Library schema declares scoped lookup indexes and bounded asset keys", async () => {
     const definitions: StructuredDbTableDef[] = [];
     const executor: DbExecutor = {
         async ensureTable(definition) {
@@ -36,11 +36,8 @@ test("Library schema declares scoped lookup indexes and Unicode asset fields", a
         { name: "label", type: "text", notNull: true },
     );
     const assets = definitions.find(
-        ({ name }) => name === "study_library_content_pack_assets",
+        ({ name }) => name === "study_library_asset_chunks",
     )!;
-    for (const name of ["publisher", "asset_path"])
-        assert.deepEqual(
-            assets.columns.find((column) => column.name === name),
-            { name, type: "text", notNull: true },
-        );
+    assert.deepEqual(assets.primaryKey, ["asset_id", "position"]);
+    assert.deepEqual(assets.indexes, [{ columns: ["pack_key"] }]);
 });

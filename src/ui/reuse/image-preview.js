@@ -4,6 +4,7 @@ import { ensurePageStylesheet } from "./page-styles.js";
 import { createI18n } from "./i18n.js";
 import { uiCtx } from "./ui-ctx.js";
 import { registerScopedUiActions } from "./scoped-actions.js";
+import { showToast } from "./toast.js";
 
 /** Render a thumbnail with an optional removal action. Data attributes belong to the caller. */
 export function renderImagePreview({
@@ -46,6 +47,12 @@ export function bindImagePreviews(root, { signal }) {
                 await preview.open({ src, alt: image.alt, signal });
                 if (button.isConnected && !signal?.aborted)
                     button.focus({ preventScroll: true });
+            } catch {
+                if (signal?.aborted) return;
+                const i18n = await createI18n();
+                showToast(i18n.t("ui.reuse.image_preview_failed"), {
+                    variant: "error",
+                });
             } finally {
                 opened = false;
             }

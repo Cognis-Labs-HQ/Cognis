@@ -122,6 +122,24 @@ Cards now preserve provider definition order: the first localized definition is 
 
 Runtime variant fitting now tracks the root and each already-positioned visible child as occupied rectangles. It preserves provider-preferred bounded positions when free and selects the least-overlapping bounded alternative otherwise, so siblings no longer collapse into the same slot.
 
+## Reliability and Isolation
+
+Packaged assets use study_library_asset_chunks, keyed by a SHA-256 identity of the publisher, pack, version and full asset path plus an integer position. The public asset URL and original bytes remain unchanged. A pack-key index scopes removal. Schemas retain their schema/version identity and use a base fragment plus study_library_schema_parts. Both payloads use Unicode-safe fragments of at most 60,000 UTF-8 bytes. Reads assemble fragments in order; ingestion replaces them in its existing transaction. Schema-version conflicts, sole-publisher replacement, rollback and shorter replacements retain their existing semantics.
+
+Library JSON mutations accept at most 5 MiB and reject larger streams with HTTP 413 before invoking a mutation. Card field JSON and its normalized searchable form each have a 50,000-byte UTF-8 budget, leaving space for labels and tags in the search projection. Audio attachments require an exact upload path; traversal and nested paths are rejected before storage access. Creating and editing cards share one canonical reference writer, preserving groups, positions and selected transformations. Failed location loading shows a localized toast; responses from cancelled mounts do not update current controls.
+
+Reward snapshots retain participant revision checks and use a base fragment plus engagement_participant_parts. A commit checks and advances the revision and replaces all fragments in one transaction. Reads join the base and ordered fragments in one statement so revisions and payloads cannot come from different commits. Each fragment is at most 60,000 UTF-8 bytes. Failure rolls back the revision and bytes; conflicting writers receive engagement_state_conflict. Tests enforce the physical text budget rather than accepting unbounded strings.
+
+Shared Progress event, actor, projection and capability types live in gateways/study/reuse/progress.ts. The gateway no longer imports an optional adapter entry point for these contracts; the adapter implements the same capability and keeps its public exports. Event and correction JSON bodies are limited to 60,000 bytes; oversized requests return 413 before recording. Existing privacy, classroom checks, correction, rewards and rebuild flows remain active.
+
+Unauthenticated definitions and standings requests invoke the injected authentication guard and finish with HTTP 401 before reading leaderboard data. Route parameters use the existing typed HTTP and authorization contracts.
+
+Review requests accept at most 16 KiB of JSON; deck writes accept at most 5 MiB. Larger requests return HTTP 413 without changing a deck or schedule. Reading, writing, retry queues, imported notes and Library-backed cards keep their current behavior.
+
+Vault PUT requests use the API shared streaming JSON reader with the effective vault budget and 1 KiB of envelope space. The adapter retains its own policy, 413 error and serialized-vault validation; no second buffering implementation is maintained.
+
+Study pages share one composer sub-navigation slot, resolve common navigation/action labels from ui.reuse in all four languages, and retain current route selection at rendering time. Cancelled router scopes stay cancelled when replaced. Image-preview failures show a localized error toast and release the open-state lock so another attempt is possible.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

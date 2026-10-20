@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { recordStudyResult } from "../progress.js";
-import type { LearningEventInput } from "../../../adapters/study/progress/index.js";
+import type { LearningEventInput } from "../reuse/progress.js";
 
 function fixture() {
     const events: LearningEventInput[] = [];

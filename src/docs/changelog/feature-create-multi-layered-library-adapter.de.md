@@ -122,6 +122,24 @@ Karten bewahren jetzt die Definitionsreihenfolge des Anbieters: Die erste lokali
 
 Die Laufzeiteinpassung verfolgt nun die Stammkarte und jedes bereits positionierte sichtbare Kind als belegte Rechtecke. Freie, vom Anbieter bevorzugte Positionen innerhalb der Grenze bleiben erhalten; andernfalls wird die begrenzte Alternative mit der geringsten Überlappung gewählt, sodass Geschwister nicht mehr auf denselben Platz fallen.
 
+## Zuverlässigkeit und Isolation
+
+Paketressourcen verwenden study_library_asset_chunks mit einer SHA-256-Kennung aus Herausgeber, Paket, Version und vollständigem Ressourcenpfad sowie einer ganzzahligen Position. Öffentliche Ressourcen-URLs und Originalbytes bleiben erhalten. Ein Paketindex begrenzt das Entfernen. Schemas behalten ihre Schema-/Versionskennung und verwenden ein Basisfragment mit study_library_schema_parts. Beide Inhalte verwenden Unicode-sichere Fragmente mit höchstens 60.000 UTF-8-Bytes. Lesezugriffe setzen Fragmente geordnet zusammen; der Import ersetzt sie in seiner bestehenden Transaktion. Versionskonflikte, Ersetzen durch den alleinigen Herausgeber, Zurückrollen und kürzere Ersetzungen behalten ihre Semantik.
+
+JSON-Änderungen der Bibliothek akzeptieren höchstens 5 MiB und weisen größere Datenströme vor einer Änderung mit HTTP 413 zurück. Kartenfeld-JSON und seine normalisierte Suchform haben jeweils ein Budget von 50.000 UTF-8-Bytes; dadurch bleibt Platz für Titel und Tags im Suchtext. Audioanhänge benötigen einen exakten Uploadpfad; Pfadwechsel und verschachtelte Pfade werden vor dem Speicherzugriff abgewiesen. Erstellen und Bearbeiten verwenden denselben kanonischen Referenzschreiber für Gruppen, Positionen und gewählte Transformationen. Fehler beim Laden der Speicherorte erscheinen als lokalisierte Meldung; Antworten abgebrochener Seiten aktualisieren keine aktuellen Bedienelemente.
+
+Belohnungszustände behalten die Revisionsprüfung pro Teilnehmer und verwenden ein Basisfragment mit engagement_participant_parts. Ein Commit prüft und erhöht die Revision und ersetzt sämtliche Fragmente in einer Transaktion. Ein einzelner verbundener Lesezugriff liest Basis und geordnete Fragmente, sodass Revision und Inhalt nicht aus verschiedenen Commits stammen können. Jedes Fragment umfasst höchstens 60.000 UTF-8-Bytes. Fehler rollen Revision und Bytes zurück; konkurrierende Schreibvorgänge erhalten engagement_state_conflict. Tests erzwingen das physische Textbudget statt unbegrenzter Zeichenfolgen.
+
+Gemeinsame Typen für Fortschrittsereignisse, Akteure, Projektionen und Fähigkeiten liegen in gateways/study/reuse/progress.ts. Das Gateway importiert dafür keinen optionalen Adapter-Einstiegspunkt mehr; der Adapter implementiert dieselbe Fähigkeit und behält seine öffentlichen Exporte. JSON für Ereignisse und Korrekturen ist auf 60.000 Bytes begrenzt; größere Anfragen liefern vor der Aufzeichnung 413. Datenschutz, Klassenprüfungen, Korrekturen, Belohnungen und Neuaufbau bleiben aktiv.
+
+Nicht authentifizierte Anfragen für Definitionen und Ranglisten rufen die injizierte Authentifizierungsprüfung auf und enden vor dem Datenzugriff mit HTTP 401. Routenparameter verwenden die bestehenden typisierten HTTP- und Berechtigungsverträge.
+
+Bewertungsanfragen akzeptieren höchstens 16 KiB JSON, Deckänderungen höchstens 5 MiB. Größere Anfragen liefern HTTP 413 ohne Änderung an Deck oder Lernplan. Lesen, Schreiben, Wiederholungslisten, importierte Notizen und Bibliothekskarten behalten ihr Verhalten.
+
+PUT-Anfragen für Tresore verwenden den gemeinsamen JSON-Datenstromleser der API mit dem wirksamen Tresorbudget und 1 KiB zusätzlichem Platz für den Umschlag. Richtlinie, 413-Fehler und Prüfung der serialisierten Daten bleiben im Adapter; eine zweite Pufferimplementierung entfällt.
+
+Study-Seiten teilen einen Composer-Platz für die Unternavigation, verwenden gemeinsame Navigations- und Aktionsbeschriftungen aus ui.reuse in allen vier Sprachen und bestimmen die aktive Route beim Rendern. Abgebrochene Router-Bereiche bleiben beim Ersetzen abgebrochen. Fehler der Bildvorschau zeigen eine lokalisierte Meldung und geben die Öffnungssperre für einen weiteren Versuch frei.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

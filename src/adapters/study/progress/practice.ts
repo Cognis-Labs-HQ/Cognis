@@ -4,8 +4,11 @@ import type {
     FlowRunResult,
     EngagementLedgerCapability,
 } from "@cognis/core";
-import type { LearningEvent, ProgressActor } from "./types.js";
-import type { ProgressCapability } from "./service.js";
+import type {
+    LearningEvent,
+    ProgressActor,
+} from "../../../gateways/study/reuse/progress.js";
+import type { ProgressCapability } from "../../../gateways/study/reuse/progress.js";
 import type { StudyAdapterBootstrapCtx } from "../../../gateways/study/gateway.js";
 
 /** Only server-validated practice uses this path; raw event imports never mint rewards. */

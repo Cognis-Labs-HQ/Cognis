@@ -285,9 +285,15 @@ async function createDrawingPad({
     pad.innerHTML = formatTemplate(
         padTemplate,
         Object.fromEntries(
-            ["guidance", "close", "try_again", "reset", "reveal"].map((key) => [
+            Object.entries({
+                guidance: "gateway.study.drawing.guidance",
+                close: "ui.reuse.close",
+                try_again: "ui.reuse.try_again",
+                reset: "ui.reuse.reset",
+                reveal: "gateway.study.drawing.reveal",
+            }).map(([key, translation]) => [
                 key,
-                escapeHtml(i18n.t(`gateway.study.drawing.${key}`)),
+                escapeHtml(i18n.t(translation)),
             ]),
         ),
     );

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">フラッシュカード</string>
-  <string name="adapter.study.flashcards.deck_import">デッキをインポート</string>
   <string name="adapter.study.flashcards.deck_edit">デッキを編集</string>
   <string name="adapter.study.flashcards.deck_create">デッキを作成</string>
   <string name="adapter.study.flashcards.deck_layer">カードの層</string>
@@ -22,7 +21,6 @@
   <string name="adapter.study.flashcards.deck_due_count">新規または復習予定 {{ count }} 件</string>
   <string name="adapter.study.flashcards.deck_search">デッキを検索</string>
   <string name="adapter.study.flashcards.practice_total">合計</string>
-  <string name="adapter.study.flashcards.practice_done">完了</string>
   <string name="adapter.study.flashcards.practice_due">復習</string>
   <string name="adapter.study.flashcards.practice_new">新規</string>
   <string name="adapter.study.flashcards.practice_writing">書く</string>

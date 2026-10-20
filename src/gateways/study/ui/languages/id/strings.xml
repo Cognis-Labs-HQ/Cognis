@@ -1,8 +1,6 @@
 <resources>
   <string name="gateway.study.picker.title">Pilih Bahasa yang Dipelajari</string>
   <string name="gateway.study.picker.select">Pilih bahasa:</string>
-  <string name="gateway.study.picker.start">Mulai Belajar</string>
-  <string name="gateway.study.page_title">Belajar</string>
   <string name="gateway.study.page_subtitle">Dasbor pembelajaran bahasamu</string>
   <string name="gateway.study.settings_subtitle">Kelola bahasa belajar aktifmu</string>
   <string name="gateway.study.alphabet_subtitle">Jelajahi huruf-huruf alfabet bahasa Inggris</string>
@@ -21,7 +19,6 @@
   <string name="gateway.study.change_languages">Ubah Bahasa</string>
   <string name="gateway.study.no_modules">Tidak ada modul belajar yang tersedia.</string>
   <string name="gateway.study.language_settings">Pengaturan Bahasa</string>
-  <string name="gateway.study.language">Bahasa</string>
   <string name="gateway.study.available_languages">Bahasa Tersedia</string>
   <string name="gateway.study.active_languages">Bahasa Aktif</string>
   <string name="gateway.study.remove_last_language_title">Hapus Bahasa Aktif Terakhir</string>
@@ -29,7 +26,6 @@
   <string name="gateway.study.library_label">Perpustakaan</string>
   <string name="gateway.study.library_language_filter">Filter Bahasa</string>
   <string name="gateway.study.classroom_page_title">Kelas</string>
-  <string name="gateway.study.classroom_select_class">Kelas</string>
   <string name="gateway.study.classroom_no_classes">Tidak ada kelas untuk bahasa ini.</string>
   <string name="gateway.study.classroom_student_limit">Batas Siswa</string>
   <string name="gateway.study.classroom_seat">Kursi</string>
@@ -68,13 +64,10 @@
   <string name="gateway.study.favourite_added">Ditambahkan ke favorit.</string>
   <string name="gateway.study.favourite_removed">Dihapus dari favorit.</string>
 <string name="gateway.study.drawing.title">Latihan Menulis</string>
-  <string name="gateway.study.drawing.reset">Atur Ulang</string>
   <string name="gateway.study.drawing.guidance">Tampilkan panduan lengkap</string>
   <string name="gateway.study.drawing.well_done">Bagus Sekali</string>
   <string name="gateway.study.drawing.loser">Kalah!</string>
   <string name="gateway.study.drawing.mistakes">Kesalahan: {{ count }}</string>
-  <string name="gateway.study.drawing.close">Tutup</string>
-  <string name="gateway.study.drawing.try_again">Coba Lagi</string>
   <string name="gateway.study.drawing.error">Latihan menulis tidak dapat dimuat.</string>
   <string name="gateway.study.drawing.reveal">Tampilkan karakter</string>
   <string name="gateway.study.drawing_open_card">Buka Kartu di Explore?</string>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <string name="gateway.study.library_search">Cari</string>
   <string name="gateway.study.library_search_placeholder">Cari semua lapisan</string>
   <string name="gateway.study.library_search_clear">Hapus pencarian</string>
   <string name="gateway.study.library_create">Buat kartu</string>
@@ -21,8 +20,6 @@
   <string name="gateway.study.library_create_anyway">Gabungkan dengan yang ada</string>
   <string name="gateway.study.library_new">Baru</string>
   <string name="gateway.study.library_layer_empty">Lapisan ini belum memiliki entri.</string>
-  <string name="gateway.study.library_previous">Sebelumnya</string>
-  <string name="gateway.study.library_next">Berikutnya</string>
   <string name="gateway.study.library_filters">Filter entri perpustakaan</string>
   <string name="gateway.study.library_filter_empty">Tidak ada entri yang cocok dengan filter terpilih.</string>
   <string name="gateway.study.library_variant_hint">Tekan lama untuk menampilkan kartu lainnya</string>

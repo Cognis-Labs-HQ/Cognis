@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">Kartu Latihan</string>
-  <string name="adapter.study.flashcards.deck_import">Impor kumpulan kartu</string>
   <string name="adapter.study.flashcards.deck_edit">Edit kumpulan kartu</string>
   <string name="adapter.study.flashcards.deck_create">Buat kumpulan kartu</string>
   <string name="adapter.study.flashcards.deck_layer">Lapisan kartu</string>
@@ -22,7 +21,6 @@
   <string name="adapter.study.flashcards.deck_due_count">{{ count }} Baru atau Jatuh Tempo</string>
   <string name="adapter.study.flashcards.deck_search">Cari Dek</string>
   <string name="adapter.study.flashcards.practice_total">Total</string>
-  <string name="adapter.study.flashcards.practice_done">Selesai</string>
   <string name="adapter.study.flashcards.practice_due">Jatuh Tempo</string>
   <string name="adapter.study.flashcards.practice_new">Baru</string>
   <string name="adapter.study.flashcards.practice_writing">Menulis</string>

@@ -1,5 +1,7 @@
 # Database Gateway
 
+Reward snapshots retain participant revision checks and use a base fragment plus engagement_participant_parts. A commit checks and advances the revision and replaces all fragments in one transaction. Reads join the base and ordered fragments in one statement so revisions and payloads cannot come from different commits. Each fragment is at most 60,000 UTF-8 bytes. Failure rolls back the revision and bytes; conflicting writers receive engagement_state_conflict. Tests enforce the physical text budget rather than accepting unbounded strings.
+
 ## Overview
 
 The Database Gateway is the single point of access for all database operations in Cognis. It provides a uniform executor interface that hides the differences between PostgreSQL and MariaDB so that the rest of the application never needs to know which database is running. The gateway reads `DB_TYPE` from the environment, creates the appropriate executor, initialises the schema, and contributes the executor and dialect helpers to the capability store.

@@ -310,6 +310,7 @@
   <string name="ui.reuse.all_elements_visible">すべての要素が表示されています。</string>
   <string name="ui.reuse.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.image_preview">画像プレビュー</string>
+  <string name="ui.reuse.image_preview_failed">画像のプレビューを開けませんでした。</string>
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
   <string name="ui.reuse.delete">削除</string>

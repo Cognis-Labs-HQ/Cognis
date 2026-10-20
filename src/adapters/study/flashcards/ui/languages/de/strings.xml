@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="adapter.study.flashcards.page_title">Lernkarten</string>
-  <string name="adapter.study.flashcards.deck_import">Kartensatz importieren</string>
   <string name="adapter.study.flashcards.deck_edit">Kartensatz bearbeiten</string>
   <string name="adapter.study.flashcards.deck_create">Kartensatz erstellen</string>
   <string name="adapter.study.flashcards.deck_layer">Kartenebene</string>
@@ -22,7 +21,6 @@
   <string name="adapter.study.flashcards.deck_due_count">{{ count }} neu oder fällig</string>
   <string name="adapter.study.flashcards.deck_search">Stapel suchen</string>
   <string name="adapter.study.flashcards.practice_total">Gesamt</string>
-  <string name="adapter.study.flashcards.practice_done">Erledigt</string>
   <string name="adapter.study.flashcards.practice_due">Fällig</string>
   <string name="adapter.study.flashcards.practice_new">Neu</string>
   <string name="adapter.study.flashcards.practice_writing">Schreiben</string>

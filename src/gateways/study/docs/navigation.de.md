@@ -1,5 +1,7 @@
 # Study-Navigation
 
+Study-Seiten teilen einen Composer-Platz für die Unternavigation, verwenden gemeinsame Navigations- und Aktionsbeschriftungen aus ui.reuse in allen vier Sprachen und bestimmen die aktive Route beim Rendern. Abgebrochene Router-Bereiche bleiben beim Ersetzen abgebrochen. Fehler der Bildvorschau zeigen eine lokalisierte Meldung und geben die Öffnungssperre für einen weiteren Versuch frei.
+
 Der Zeichenfortschritt speichert jede zugestellte Versuchskennung zusammen mit dem Zähler. Ein erneuter Versuch A nach B oder nach einem Neustart erhöht die Schwierigkeit nicht nochmals. Die bestehenden validierten Fortschritts- und Belohnungsintegrationen bleiben aktiv.
 
 Flashcards verwendet `/study/<iso>/flashcards` und `/study/<iso>/flashcards/<deck-id>`. Die Sprachsteuerung öffnet die entsprechende Galerie und übernimmt kein fremdsprachiges Deck. `/study/flashcards` löst die aktuelle Sprache auf. Bibliothek und Anfragen bleiben gemeinsame Seiten.

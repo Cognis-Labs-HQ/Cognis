@@ -1,5 +1,8 @@
 import { projectionKey } from "./reuse/projection-key.js";
-import type { LearningEvent, ProgressProjection } from "./types.js";
+import type {
+    LearningEvent,
+    ProgressProjection,
+} from "../../../gateways/study/reuse/progress.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { isDeepStrictEqual } from "node:util";
 

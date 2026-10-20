@@ -38,7 +38,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
     loadStudySubNavigationModel,
-    renderStudySubNavigation,
+    createStudySubNavigationSlot,
     bindStudySubNavigation,
     readSelectedStudyLanguageCode,
 } from "/static/gateways/study/sub-navigation.js";
@@ -621,18 +621,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
         ],
         toolbarScrollable: false,
         floatingMenu: [modePreference],
-        subNavigation: [
-            {
-                id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () =>
-                    renderStudySubNavigation({
-                        model,
-                        currentPath: location.pathname,
-                        i18n,
-                    }),
-            },
-        ],
+        subNavigation: [createStudySubNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();

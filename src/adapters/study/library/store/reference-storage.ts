@@ -86,7 +86,7 @@ export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
             { columns: ["target_entry_id"] },
         ],
     });
-    // Move persisted grouped edges before writes can encounter the old flat key.
+    // Keep grouped placements in their own keyed store before accepting graph writes.
     await db.transaction(async (tx) => {
         const grouped = await tx.executeCommand({
             option: "SELECT",

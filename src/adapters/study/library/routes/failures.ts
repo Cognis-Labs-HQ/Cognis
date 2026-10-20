@@ -193,6 +193,7 @@ export function libraryFailure(error: unknown): {
 } {
     const message = error instanceof Error ? error.message : "";
     const [code, detail] = message.split(":");
+    if (code === "request_body_too_large") return { code, status: 413 };
     if (code === "image_not_found") return { code, status: 404 };
     if (code === "image_upload_too_large") return { code, status: 413 };
     if (code === "audio_upload_too_large") return { code, status: 413 };

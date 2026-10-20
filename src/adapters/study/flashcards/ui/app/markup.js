@@ -91,7 +91,7 @@ export function renderDeckDetail(templates, deck, summary, filter, i18n) {
         summary: Object.entries(summary)
             .map(
                 ([key, count]) =>
-                    `<button type="button" class="btn-neutral" data-practice-filter="${key}" aria-pressed="${filter === key}"><strong>${count}</strong><span>${labelText(`adapter.study.flashcards.practice_${key}`)}</span></button>`,
+                    `<button type="button" class="btn-neutral" data-practice-filter="${key}" aria-pressed="${filter === key}"><strong>${count}</strong><span>${labelText(key === "done" ? "ui.reuse.done" : `adapter.study.flashcards.practice_${key}`)}</span></button>`,
             )
             .join(""),
         editable_actions: deck.canEdit

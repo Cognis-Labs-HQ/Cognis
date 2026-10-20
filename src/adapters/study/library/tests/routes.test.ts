@@ -453,3 +453,33 @@ test("transformed audio requests keep descriptors in an authenticated POST body"
         transformation: descriptor,
     });
 });
+
+test("Library rejects oversized JSON before invoking a mutation", async () => {
+    let writes = 0;
+    const route = createLibraryRoutes(
+        {
+            create: async () => {
+                writes++;
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "learner",
+            body: JSON.stringify({ label: "a".repeat(5 * 1024 * 1024) }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries"),
+    );
+    assert.equal(response.statusCode, 413);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "request_body_too_large",
+    );
+    assert.equal(writes, 0);
+});

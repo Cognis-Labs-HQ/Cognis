@@ -88,7 +88,13 @@ async function searchPage(lookup, selectedIndex) {
         mountWhenDirect: async () => {},
     });
     await vm.runInContext(
-        source("../ui/app/search/index.js") + "\nmount(root)",
+        source("../../../../gateways/study/ui/sub-navigation.js")
+            .split("function createStudySubNavigationSlot")[1]
+            .split("function renderStudySubNavigation")[0]
+            .replace(/^/, "function createStudySubNavigationSlot") +
+            "\n" +
+            source("../ui/app/search/index.js") +
+            "\nmount(root)",
         vm.createContext({ ...context, root }),
     );
     if (selectedIndex !== undefined)

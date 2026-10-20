@@ -68,7 +68,7 @@ export function popupNavigationActions(index, count, i18n) {
     return [
         {
             id: "previous",
-            label: i18n.t("gateway.study.library_previous"),
+            label: i18n.t("ui.reuse.previous"),
             icon: {
                 light: "/static/assets/reuse/arrow-back-light.svg",
                 dark: "/static/assets/reuse/arrow-back-dark.svg",
@@ -79,7 +79,7 @@ export function popupNavigationActions(index, count, i18n) {
         },
         {
             id: "next",
-            label: i18n.t("gateway.study.library_next"),
+            label: i18n.t("ui.reuse.next"),
             icon: {
                 light: "/static/assets/reuse/arrow-back-light.svg",
                 dark: "/static/assets/reuse/arrow-back-dark.svg",

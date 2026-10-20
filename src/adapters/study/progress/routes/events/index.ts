@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../../api/reuse/read-json.js";
 import type { RouteContext } from "../../../../../api/reuse/route-context.js";
-import type { ProgressCapability } from "../../service.js";
-import type { LearningEventInput } from "../../types.js";
+import type { ProgressCapability } from "../../../../../gateways/study/reuse/progress.js";
+import type { LearningEventInput } from "../../../../../gateways/study/reuse/progress.js";
 import { actorFrom, filtersFrom, sendJson } from "../http.js";
 
 export function createEventRoutes(
@@ -29,7 +29,9 @@ export function createEventRoutes(
             return true;
         }
         if (request.method === "POST") {
-            const input = (await readJson(request)) as LearningEventInput;
+            const input = (await readJson(request, {
+                maxBytes: 60_000,
+            })) as LearningEventInput;
             const result = isCorrection
                 ? await progress.correctEvent(
                       actor,

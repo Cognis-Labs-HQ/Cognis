@@ -310,6 +310,7 @@
   <string name="ui.reuse.all_elements_visible">All elements are visible.</string>
   <string name="ui.reuse.reset_layout">Reset Layout</string>
   <string name="ui.reuse.image_preview">Image Preview</string>
+  <string name="ui.reuse.image_preview_failed">The image preview could not be opened.</string>
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
   <string name="ui.reuse.delete">Delete</string>

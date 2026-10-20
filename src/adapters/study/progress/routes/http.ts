@@ -1,5 +1,8 @@
 import type { ServerResponse } from "node:http";
-import type { ProgressActor, ProgressFilters } from "../types.js";
+import type {
+    ProgressActor,
+    ProgressFilters,
+} from "../../../../gateways/study/reuse/progress.js";
 
 export function sendJson(
     response: ServerResponse,

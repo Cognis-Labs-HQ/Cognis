@@ -290,3 +290,16 @@ test("re-delivering a drawing completion does not increase guide difficulty twic
         2,
     );
 });
+
+test("drawing rejects oversized JSON before recording progress or rewards", async () => {
+    const state = fixture();
+    const response = await state.request("learner", "POST", {
+        strokeCount: 4,
+        mistakes: 0,
+        extra: "a".repeat(16 * 1024),
+    });
+    assert.equal(response.status, 413);
+    assert.equal(response.payload.error, "request_body_too_large");
+    assert.equal(state.recorded.length, 0);
+    assert.equal(state.values.size, 0);
+});

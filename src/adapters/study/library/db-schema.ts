@@ -1,3 +1,5 @@
+import { ensureSchemaParts } from "./store/schema-storage.js";
+import { ensurePackAssets } from "./store/pack-assets.js";
 import { ensureReferenceStorage } from "./store/reference-storage.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { ensureEntryStateSchema } from "./entry-state.js";
@@ -20,6 +22,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             { name: "schema_id", type: "text", notNull: true },
             { name: "version", type: "integer", notNull: true },
             { name: "schema_json", type: "text", notNull: true },
+            { name: "schema_key", type: "text" },
             {
                 name: "created_at",
                 type: "timestamp",
@@ -29,6 +32,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         ],
         primaryKey: ["schema_id", "version"],
     });
+    await ensureSchemaParts(db);
     await db.ensureTable({
         name: "study_library_content_packs",
         columns: [
@@ -56,30 +60,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         ],
         primaryKey: ["publisher", "pack_id", "version"],
     });
-    await db.ensureTable({
-        name: "study_library_content_pack_assets",
-        columns: [
-            { name: "publisher", type: "text", notNull: true },
-            {
-                name: "pack_id",
-                type: "text",
-                notNull: true,
-            },
-            {
-                name: "version",
-                type: "text",
-                notNull: true,
-            },
-            { name: "asset_path", type: "text", notNull: true },
-            { name: "media_type", type: "text", notNull: true },
-            {
-                name: "data_base64",
-                type: "text",
-                notNull: true,
-            },
-        ],
-        primaryKey: ["publisher", "pack_id", "version", "asset_path"],
-    });
+    await ensurePackAssets(db);
     await db.ensureTable({
         name: "study_library_entries",
         indexes: [

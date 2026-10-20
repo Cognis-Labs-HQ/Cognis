@@ -1,4 +1,4 @@
-import type { AccessRole } from "@cognis/core";
+import type { AccessRole, EngagementSummary } from "@cognis/core";
 
 export type CompletionState =
     "started" | "inProgress" | "completed" | "abandoned";
@@ -79,4 +79,36 @@ export interface ProgressAggregate {
     hints: number;
     durationMs: number;
     confidence: number;
+}
+
+export interface ProgressCapability {
+    engagement(actor: ProgressActor): Promise<EngagementSummary>;
+    recordPractice(
+        actor: ProgressActor,
+        input: LearningEventInput,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
+    recordEvent(
+        actor: ProgressActor,
+        input: LearningEventInput,
+    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
+    correctEvent(
+        actor: ProgressActor,
+        input: LearningEventInput & { compensatesEventId: string },
+    ): Promise<{ event: LearningEvent; duplicate: boolean }>;
+    listEvents(
+        actor: ProgressActor,
+        filters?: ProgressFilters,
+    ): Promise<LearningEvent[]>;
+    listProjections(
+        actor: ProgressActor,
+        filters?: ProgressFilters,
+    ): Promise<ProgressProjection[]>;
+    aggregate(
+        actor: ProgressActor,
+        filters?: ProgressFilters,
+    ): Promise<ProgressAggregate>;
+    rebuild(
+        actor: ProgressActor,
+        targetActorId?: string,
+    ): Promise<ProgressProjection[]>;
 }

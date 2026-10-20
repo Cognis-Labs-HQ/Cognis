@@ -46,6 +46,20 @@ test("a directly opened Explore card path opens the requested preview without hi
         openEntryPopup: async (...args) => opened.push(args),
         mountWhenDirect: async () => {},
     });
+    const navigationSource = readFileSync(
+        new URL(
+            "../../../../gateways/study/ui/sub-navigation.js",
+            import.meta.url,
+        ),
+        "utf8",
+    ).replace(/export (async )?function/g, "$1function");
+    vm.runInContext(
+        navigationSource.slice(
+            navigationSource.indexOf("function createStudySubNavigationSlot"),
+            navigationSource.indexOf("function renderStudySubNavigation"),
+        ),
+        context,
+    );
     await vm.runInContext(
         `(async () => { ${source}; globalThis.mountLayer = mount; })()`,
         context,

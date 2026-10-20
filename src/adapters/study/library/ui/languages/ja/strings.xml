@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <string name="gateway.study.library_search">検索</string>
   <string name="gateway.study.library_search_placeholder">すべてのレイヤーを検索</string>
   <string name="gateway.study.library_search_clear">検索をクリア</string>
   <string name="gateway.study.library_create">カードを作成</string>
@@ -21,8 +20,6 @@
   <string name="gateway.study.library_create_anyway">作成を続行</string>
   <string name="gateway.study.library_new">新着</string>
   <string name="gateway.study.library_layer_empty">このレイヤーにはまだ項目がありません。</string>
-  <string name="gateway.study.library_previous">前へ</string>
-  <string name="gateway.study.library_next">次へ</string>
   <string name="gateway.study.library_filters">ライブラリ項目を絞り込む</string>
   <string name="gateway.study.library_filter_empty">選択した絞り込み条件に一致する項目はありません。</string>
   <string name="gateway.study.library_variant_hint">長押しして他のカードを表示</string>

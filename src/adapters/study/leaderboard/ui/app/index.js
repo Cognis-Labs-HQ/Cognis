@@ -12,7 +12,7 @@ import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
-    renderStudySubNavigation,
+    createStudySubNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 
 export async function mount(root, { signal } = {}) {
@@ -108,18 +108,7 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.leaderboard_subtitle"),
         },
         preferenceKey: "study-leaderboard-layout",
-        subNavigation: [
-            {
-                id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () =>
-                    renderStudySubNavigation({
-                        model,
-                        currentPath: window.location.pathname,
-                        i18n,
-                    }),
-            },
-        ],
+        subNavigation: [createStudySubNavigationSlot(model, i18n)],
         toolbar: [],
     });
     await composer.init();

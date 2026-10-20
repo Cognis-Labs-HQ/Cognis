@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <string name="gateway.study.library_search">Suchen</string>
   <string name="gateway.study.library_search_placeholder">Alle Ebenen durchsuchen</string>
   <string name="gateway.study.library_search_clear">Suche löschen</string>
   <string name="gateway.study.library_create">Karte erstellen</string>
@@ -21,8 +20,6 @@
   <string name="gateway.study.library_create_anyway">Mit vorhandener zusammenführen</string>
   <string name="gateway.study.library_new">Neu</string>
   <string name="gateway.study.library_layer_empty">Diese Ebene enthält noch keine Einträge.</string>
-  <string name="gateway.study.library_previous">Zurück</string>
-  <string name="gateway.study.library_next">Weiter</string>
   <string name="gateway.study.library_filters">Bibliothekseinträge filtern</string>
   <string name="gateway.study.library_filter_empty">Keine Einträge entsprechen den ausgewählten Filtern.</string>
   <string name="gateway.study.library_variant_hint">Gedrückt halten, um weitere Karten anzuzeigen</string>

@@ -1,3 +1,4 @@
+import { readJson } from "../../../../../api/reuse/read-json.js";
 import { boundedVaultBytes } from "../../limits.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { KeyringVaultStore } from "../../store.js";
@@ -111,20 +112,15 @@ export function createKeyringRoutes(input: {
         }
 
         if (req.method === "PUT") {
-            const chunks: Buffer[] = [];
-            let bytes = 0;
-            for await (const chunk of req) {
-                const data = Buffer.isBuffer(chunk)
-                    ? chunk
-                    : Buffer.from(chunk);
-                bytes += data.length;
-                if (bytes > maxVaultBytes + 1024) return rejectSize();
-                chunks.push(data);
-            }
             let body: Record<string, unknown>;
             try {
-                body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+                body = await readJson(req, { maxBytes: maxVaultBytes + 1024 });
             } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "request_body_too_large"
+                )
+                    return rejectSize();
                 input.log?.("warn", "Invalid keyring request JSON.", {
                     component: "auth-keyring-adapter",
                     operation: "write_vault",

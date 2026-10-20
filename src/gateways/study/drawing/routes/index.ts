@@ -36,7 +36,9 @@ export function createDrawingRoutes(
             if (!available()) throw new Error("adapter_disabled");
             const cardId = decodeURIComponent(match[1]);
             const input =
-                req.method === "POST" ? await readJson(req) : undefined;
+                req.method === "POST"
+                    ? await readJson(req, { maxBytes: 16 * 1024 })
+                    : undefined;
             let result: DrawingProgress | undefined;
             await flow.run(
                 req.method === "GET"
@@ -109,22 +111,26 @@ export function createDrawingRoutes(
                 ].includes(code) ||
                 error instanceof URIError;
             send(
-                code === "adapter_disabled"
-                    ? 503
-                    : code === "forbidden"
-                      ? 403
-                      : invalid
-                        ? 400
-                        : 500,
+                code === "request_body_too_large"
+                    ? 413
+                    : code === "adapter_disabled"
+                      ? 503
+                      : code === "forbidden"
+                        ? 403
+                        : invalid
+                          ? 400
+                          : 500,
                 {
                     error:
-                        code === "adapter_disabled"
+                        code === "request_body_too_large"
                             ? code
-                            : code === "forbidden"
+                            : code === "adapter_disabled"
                               ? code
-                              : invalid
-                                ? "invalid_drawing_progress"
-                                : "drawing_progress_failed",
+                              : code === "forbidden"
+                                ? code
+                                : invalid
+                                  ? "invalid_drawing_progress"
+                                  : "drawing_progress_failed",
                 },
             );
         }

@@ -150,6 +150,16 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         mountWhenDirect: async () => {},
         showToast: () => assert.fail("Unexpected deck failure"),
     });
+    const navigationSource = source(
+        "../../../../gateways/study/ui/sub-navigation.js",
+    );
+    vm.runInContext(
+        navigationSource.slice(
+            navigationSource.indexOf("function createStudySubNavigationSlot"),
+            navigationSource.indexOf("function renderStudySubNavigation"),
+        ),
+        environment,
+    );
     vm.runInContext(
         source("../../../../gateways/study/ui/reuse/action-flows.js"),
         environment,

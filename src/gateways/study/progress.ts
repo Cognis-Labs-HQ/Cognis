@@ -1,9 +1,6 @@
 import type { StudyClassAccessCapability } from "./gateway.js";
 import { createHash, randomUUID } from "node:crypto";
-import type {
-    ProgressCapability,
-    ProgressActor,
-} from "../../adapters/study/progress/index.js";
+import type { ProgressCapability, ProgressActor } from "./reuse/progress.js";
 
 export interface StudyResult {
     accountId: string;

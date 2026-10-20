@@ -4,7 +4,10 @@ import test from "node:test";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DbProgressStore } from "../store.js";
-import type { LearningEvent, ProgressProjection } from "../types.js";
+import type {
+    LearningEvent,
+    ProgressProjection,
+} from "../../../../gateways/study/reuse/progress.js";
 
 function persistentExecutor(): DbExecutor {
     const tables = new Map<string, Array<Record<string, unknown>>>();

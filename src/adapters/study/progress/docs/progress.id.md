@@ -1,5 +1,7 @@
 # Kemajuan Belajar
 
+Tipe bersama untuk peristiwa, pelaku, proyeksi, dan kapabilitas kemajuan berada di gateways/study/reuse/progress.ts. Gateway tidak lagi mengimpor titik masuk adaptor opsional untuk kontrak ini; adaptor tetap menerapkan kapabilitas dan ekspor publik yang sama. JSON peristiwa serta koreksi dibatasi 60.000 byte; permintaan lebih besar menghasilkan 413 sebelum pencatatan. Privasi, pemeriksaan kelas, koreksi, imbalan, dan alur pembangunan ulang tetap aktif.
+
 Adaptor Kemajuan mencatat peristiwa belajar yang tidak dapat diubah dan idempoten, lalu membentuk proyeksi yang dapat dibangun ulang. Setiap peristiwa memuat pelaku, identitas dan revisi konten kanonis, aktivitas, lingkup, hasil percobaan, petunjuk, durasi, status penyelesaian, dan metadata terbatas.
 
 ## Penggunaan

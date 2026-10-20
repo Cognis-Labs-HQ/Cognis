@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-  <string name="gateway.study.library_search">Search</string>
   <string name="gateway.study.library_search_placeholder">Search all layers</string>
   <string name="gateway.study.library_search_clear">Clear search</string>
   <string name="gateway.study.library_create">Create card</string>
@@ -21,8 +20,6 @@
   <string name="gateway.study.library_create_anyway">Merge with existing</string>
   <string name="gateway.study.library_new">New</string>
   <string name="gateway.study.library_layer_empty">This layer has no entries yet.</string>
-  <string name="gateway.study.library_previous">Previous</string>
-  <string name="gateway.study.library_next">Next</string>
   <string name="gateway.study.library_filters">Filter library entries</string>
   <string name="gateway.study.library_filter_empty">No entries match the selected filters.</string>
   <string name="gateway.study.library_variant_hint">Long-press to show more cards</string>
