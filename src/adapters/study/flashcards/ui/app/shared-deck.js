@@ -1,3 +1,4 @@
+import { supportsDeckWriting } from "./practice-model.js";
 import { createPracticeModePreference } from "../reuse/practice-mode.js";
 import { createPracticeSession } from "./practice-session.js";
 import { noteDetails } from "../reuse/flashcard.js";
@@ -28,6 +29,11 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         templates,
         signal,
         isActive: () => Boolean(practiceSession.current),
+        writingAvailable: supportsDeckWriting(
+            queue,
+            queue.flatMap((detail) => [detail.entry, ...detail.references]),
+            schemas,
+        ),
         onChange: () => {
             practiceSession = createPracticeSession(queue);
             next();

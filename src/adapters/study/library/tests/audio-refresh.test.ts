@@ -153,7 +153,9 @@ function regenerationStore(
                     rows:
                         command.table === "study_library_entries"
                             ? [{ ...row }]
-                            : structuredClone(references),
+                            : command.table === "study_library_reference_groups"
+                              ? structuredClone(references)
+                              : [],
                 };
             if (
                 command.option !== "UPDATE" ||

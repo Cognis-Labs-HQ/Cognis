@@ -1,5 +1,7 @@
 # Lernkartenadapter
 
+Übungen verwenden eine Frage und eine einzige Antwortansicht; Vorder- und Rückseite werden nicht mehr umgedreht. Falsche Antworten, bereits beantwortete Karten und Antwort zeigen behalten die vollständige bibliotheksbasierte Ansicht sowie die Bewertung Erneut bei. Reine Satzstapel verwenden Lesen und blenden den schwebenden Modusschalter aus, ohne die gespeicherte Einstellung für beschreibbare Stapel zu ändern. Gemischte Stapel behalten den gewählten Modus. Sätze und lange Antworten können innerhalb der Seitenbreite bis zu 72rem nutzen. Ungültige Sprachkennungen liefern invalid_language mit HTTP 400.
+
 Leseaufgaben zeigen die primäre Aussprache neben dem Kartenwert, wenn beide voneinander abweichen; gleichwertiger normalisierter Text wird nicht wiederholt. Ein rundes Fragezeichen hebt die richtige aktuelle Antwort hervor und fokussiert sie, auch bei gemischter Reihenfolge. Die Nutzung des Hinweises speichert Erneut über den bestehenden Bewertungsablauf; eine anschließend richtige Auswahl bleibt unterstützt. Richtige Antworten ohne Hilfe werden weiterhin als Gut bewertet. Schreibübungen behalten ihre eigenen Hilfefunktionen.
 
 Erneut versuchen wird nur angezeigt, wenn die aktualisierte Warteschlange für den gewählten Fokus Karten enthält. Bei leerem Fokus bleiben die Glückwünsche und die Startseite-Aktion erhalten, ohne einen leeren Neustart anzubieten.

@@ -440,7 +440,7 @@ test("Writing masks the character until an explicit reveal, grades hints as Agai
     harness.dispose();
 });
 
-test("a correctly answered previous card uses its front preview and can flip without repeating practice", async () => {
+test("a correctly answered previous card shows its full answer without repeating practice", async () => {
     let previous = 0;
     const harness = practiceHarness("due", "done", {
         answeredGrade: "good",
@@ -450,7 +450,8 @@ test("a correctly answered previous card uses its front preview and can flip wit
     assert.equal(harness.drawing(), undefined);
     await harness.click("[data-practice-previous]", {});
     assert.equal(previous, 1);
-    await harness.click("[data-practice-flip]", {});
+    assert.match(harness.target.innerHTML, /がく/);
+    assert.deepEqual(harness.grades, []);
     harness.dispose();
 });
 
@@ -658,4 +659,43 @@ test("reading hints highlight the actual correct option and keep assisted result
     await harness.click("[data-practice-next]", {});
     assert.deepEqual(harness.grades, ["again"]);
     harness.dispose();
+});
+
+test("sentence-only decks disable Writing while drawable decks retain their saved mode", () => {
+    const schemas = [
+        {
+            id: "ja",
+            layers: [
+                { id: "sentences", semanticRole: "orderedLexicalSequence" },
+                {
+                    id: "characters",
+                    semanticRole: "compoundWritingUnit",
+                    fields: [{ id: "strokes", type: "strokePattern" }],
+                },
+            ],
+        },
+    ];
+    const character = {
+        id: "character",
+        schemaId: "ja",
+        layer: "characters",
+        label: "学",
+        fields: { strokes: { strokes: [{ points: [] }] } },
+    };
+    const sentence = {
+        entry: { schemaId: "ja", layer: "sentences", label: "学" },
+        references: [character],
+    };
+    assert.equal(
+        environment.supportsDeckWriting([sentence], [character], schemas),
+        false,
+    );
+    assert.equal(
+        environment.supportsDeckWriting(
+            [sentence, { entry: character }],
+            [character],
+            schemas,
+        ),
+        true,
+    );
 });

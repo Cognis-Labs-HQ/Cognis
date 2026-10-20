@@ -15,7 +15,14 @@ test("pack pruning retains recursive dependencies of user cards and provider edi
         ensureTable: async () => {},
         transaction: async (operation) => operation(db),
         executeCommand: async (command) => {
-            assert.equal(command.table, "study_library_references");
+            assert.ok(
+                [
+                    "study_library_references",
+                    "study_library_reference_groups",
+                ].includes(command.table),
+            );
+            if (command.table === "study_library_reference_groups")
+                return { rows: [] };
             return {
                 rows: edges.map(([source_entry_id, target_entry_id]) => ({
                     source_entry_id,

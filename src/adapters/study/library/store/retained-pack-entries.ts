@@ -1,3 +1,4 @@
+import { executeReferences } from "./reference-storage.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
 /** Keep omitted provider dependencies reachable from authored or modified cards. */
@@ -15,9 +16,8 @@ export async function retainedPackEntries(
     const dependencies = new Map<string, string[]>();
     const roots = new Set(modified);
     for (let offset = 0; offset < omitted.length; offset += 500) {
-        const result = await db.executeCommand({
+        const result = await executeReferences(db, {
             option: "SELECT",
-            table: "study_library_references",
             columns: ["source_entry_id", "target_entry_id"],
             where: [
                 {

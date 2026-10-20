@@ -727,7 +727,7 @@ test("entry updates replace editable fields and relationships atomically", async
             .filter(
                 (command) =>
                     command.option === "INSERT" &&
-                    command.table === "study_library_references" &&
+                    command.table === "study_library_reference_groups" &&
                     command.values.relation === "readings",
             )
             .map((command) => ({

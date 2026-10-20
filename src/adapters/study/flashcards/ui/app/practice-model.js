@@ -94,3 +94,10 @@ export function writingPattern(detail, entries, schemas) {
     const layer = schema?.layers.find(({ id }) => id === detail.entry.layer);
     return drawingPattern(detail.entry, layer, entries, schemas);
 }
+
+/** Deck-level availability preserves the saved preference for other decks. */
+export function supportsDeckWriting(cards, entries, schemas) {
+    return cards.some((detail) =>
+        Boolean(writingPattern(detail, entries, schemas)),
+    );
+}

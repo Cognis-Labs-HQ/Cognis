@@ -81,7 +81,7 @@ export function mountPractice(
               ? "<div data-practice-drawing></div>"
               : activeMode === "reading" && choices.length
                 ? `<div class="study-reading-choices">${choices.map((choice, index) => `<div><button type="button" class="btn-neutral ${pronunciationClass(choice.text)}" data-reading-choice="${index}">${escapeHtml(choice.text)}</button></div>`).join("")}</div>`
-                : `<p>${label("unavailable")}</p>${activeMode === "reading" ? `<button type="button" class="btn-neutral" data-practice-reveal>${label("flip")}</button>` : ""}`;
+                : `<p>${label("unavailable")}</p>${activeMode === "reading" ? `<button type="button" class="btn-neutral" data-practice-reveal>${label("show_answer")}</button>` : ""}`;
         const answer = renderFlashcard(detail, schemas, language, entryAction);
         const writing = activeMode === "writing";
         const navigation = formatTemplate(templates["practice-navigation"], {
@@ -99,6 +99,20 @@ export function mountPractice(
                 ? renderFavourite("flashcard", detail.entry.id, i18n)
                 : "",
             mode: activeMode,
+            long_content:
+                [...values.front].length > 24 ||
+                schemas.some(
+                    (schema) =>
+                        schema.id === detail.entry.schemaId &&
+                        schema.layers.some(
+                            (layer) =>
+                                layer.id === detail.entry.layer &&
+                                layer.semanticRole === "orderedLexicalSequence",
+                        ),
+                ) ||
+                choices.some((choice) => [...choice.text].length > 70)
+                    ? " study-practice--long"
+                    : "",
             entry_heading:
                 writing && pattern && !previewing
                     ? ""
@@ -113,15 +127,7 @@ export function mountPractice(
                       })
                     : "",
             task,
-            front: renderFlashcard(
-                detail,
-                schemas,
-                language,
-                entryAction,
-                "front",
-            ),
             answer,
-            flip_label: label("flip"),
             previous_label: label("previous"),
             next_label: label("next"),
         });
@@ -170,11 +176,6 @@ export function mountPractice(
     };
     function revealAnswer() {
         target.querySelector("[data-practice-answer]").hidden = false;
-        target.querySelector("[data-practice-front]").hidden = true;
-        target.querySelector("[data-practice-back]").hidden = false;
-        target
-            .querySelector("[data-practice-flip]")
-            .setAttribute("aria-pressed", "true");
     }
     void render().catch(() =>
         showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
@@ -311,26 +312,6 @@ export function mountPractice(
                         if (!correct) revealAnswer();
                         target.querySelector("[data-practice-next]").disabled =
                             false;
-                    },
-                    controller.signal,
-                );
-            if (
-                event.target.closest("[data-practice-flip]") ||
-                (!link && event.target.closest("[data-practice-front]"))
-            )
-                await runDeckAction(
-                    "flip",
-                    () => {
-                        const back = target.querySelector(
-                            "[data-practice-back]",
-                        );
-                        const showBack = back.hidden;
-                        back.hidden = !showBack;
-                        target.querySelector("[data-practice-front]").hidden =
-                            showBack;
-                        target
-                            .querySelector("[data-practice-flip]")
-                            .setAttribute("aria-pressed", String(showBack));
                     },
                     controller.signal,
                 );

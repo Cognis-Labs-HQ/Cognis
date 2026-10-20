@@ -25,6 +25,7 @@ export function registerPracticeIntegration(
     >,
     service: LeaderboardService,
 ): void {
+    const registrations = new Map<string, Promise<void>>();
     const system =
         ctx.capabilities.require<import("@cognis/core").Ctx>("system:ctx");
     const flowId = "study:leaderboard:recordPractice";
@@ -76,60 +77,71 @@ export function registerPracticeIntegration(
                         !service
                             .listDefinitions()
                             .some((definition) => definition.id === id)
-                    )
-                        service.registerDefinition({
-                            id,
-                            metadata: {
-                                labels: Object.fromEntries(
-                                    Object.entries(labels).map(
-                                        ([locale, strings]) => {
-                                            const language =
-                                                /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(
-                                                    event.content.language,
-                                                )
-                                                    ? new Intl.DisplayNames(
-                                                          [locale],
-                                                          { type: "language" },
-                                                      ).of(
-                                                          event.content
-                                                              .language,
-                                                      )
-                                                    : undefined;
-                                            return [
-                                                locale,
-                                                language
-                                                    ? `${language} · ${strings.classroom}`
-                                                    : strings.classroom,
-                                            ];
-                                        },
-                                    ),
-                                ),
-                            },
-                            kind: "classroom",
-                            classroomId,
-                            minimumCohortSize: 2,
-                            criteria: [
-                                {
-                                    id: "xp",
-                                    metric: "xp",
-                                    label: Object.fromEntries(
-                                        Object.entries(labels).map(
-                                            ([locale, strings]) => [
-                                                locale,
-                                                strings.score,
-                                            ],
+                    ) {
+                        let registration = registrations.get(id);
+                        if (!registration) {
+                            registration = service
+                                .registerDefinition({
+                                    id,
+                                    metadata: {
+                                        labels: Object.fromEntries(
+                                            Object.entries(labels).map(
+                                                ([locale, strings]) => {
+                                                    const language =
+                                                        /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(
+                                                            event.content
+                                                                .language,
+                                                        )
+                                                            ? new Intl.DisplayNames(
+                                                                  [locale],
+                                                                  {
+                                                                      type: "language",
+                                                                  },
+                                                              ).of(
+                                                                  event.content
+                                                                      .language,
+                                                              )
+                                                            : undefined;
+                                                    return [
+                                                        locale,
+                                                        language
+                                                            ? `${language} · ${strings.classroom}`
+                                                            : strings.classroom,
+                                                    ];
+                                                },
+                                            ),
                                         ),
-                                    ),
-                                    priority: 1,
-                                    direction: "descending",
-                                    valueType: "number",
-                                    minimumEvidence: 1,
-                                    tieBreak: "participantId",
-                                    window: { kind: "allTime" },
-                                    scope: "classroom",
-                                },
-                            ],
-                        });
+                                    },
+                                    kind: "classroom",
+                                    classroomId,
+                                    minimumCohortSize: 2,
+                                    criteria: [
+                                        {
+                                            id: "xp",
+                                            metric: "xp",
+                                            label: Object.fromEntries(
+                                                Object.entries(labels).map(
+                                                    ([locale, strings]) => [
+                                                        locale,
+                                                        strings.score,
+                                                    ],
+                                                ),
+                                            ),
+                                            priority: 1,
+                                            direction: "descending",
+                                            valueType: "number",
+                                            minimumEvidence: 1,
+                                            tieBreak: "participantId",
+                                            window: { kind: "allTime" },
+                                            scope: "classroom",
+                                        },
+                                    ],
+                                })
+                                .finally(() => registrations.delete(id));
+                            registrations.set(id, registration);
+                        }
+                        await registration;
+                    }
                 }
             }
             for (const definition of service.listDefinitions()) {

@@ -1,5 +1,7 @@
 # Adaptor Kartu Belajar
 
+Latihan menggunakan pertanyaan dan satu tampilan tinjauan jawaban, tanpa membalik sisi depan dan belakang. Jawaban salah, kartu yang telah dijawab, dan Tampilkan Jawaban tetap menyediakan tinjauan lengkap berbasis Library serta penilaian Ulang. Dek yang hanya berisi kalimat menggunakan Membaca dan menyembunyikan pilihan mode mengambang tanpa menimpa preferensi tersimpan untuk dek yang dapat ditulis. Dek campuran mempertahankan mode pilihan. Kalimat dan jawaban panjang dapat melebar hingga 72rem sesuai lebar halaman. Tag bahasa tidak valid menghasilkan invalid_language dengan HTTP 400.
+
 Latihan membaca menampilkan pelafalan utama di samping nilai kartu jika berbeda; teks setara setelah normalisasi tidak diulang. Petunjuk tanda tanya berbentuk lingkaran menyorot dan memfokuskan jawaban benar saat ini, termasuk setelah pilihan diacak. Penggunaan petunjuk mencatat Ulang melalui alur ulasan yang ada, dan pilihan benar berikutnya tetap dianggap dibantu. Jawaban benar tanpa bantuan tetap mendapat nilai Baik. Latihan menulis mempertahankan kontrol panduannya sendiri.
 
 Coba Lagi hanya ditampilkan jika antrean terbaru untuk fokus yang dipilih berisi kartu. Fokus kosong tetap menampilkan ucapan selamat dan tindakan Beranda tanpa menawarkan pengulangan kosong.

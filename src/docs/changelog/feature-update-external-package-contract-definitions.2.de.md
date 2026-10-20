@@ -104,6 +104,20 @@ Erneut versuchen wird nur angezeigt, wenn die aktualisierte Warteschlange für d
 
 Leseaufgaben zeigen die primäre Aussprache neben dem Kartenwert, wenn beide voneinander abweichen; gleichwertiger normalisierter Text wird nicht wiederholt. Ein rundes Fragezeichen hebt die richtige aktuelle Antwort hervor und fokussiert sie, auch bei gemischter Reihenfolge. Die Nutzung des Hinweises speichert Erneut über den bestehenden Bewertungsablauf; eine anschließend richtige Auswahl bleibt unterstützt. Richtige Antworten ohne Hilfe werden weiterhin als Gut bewertet. Schreibübungen behalten ihre eigenen Hilfefunktionen.
 
+## Zuverlässigkeit und Bereinigung
+
+Einfache Referenzen behalten ihren bestehenden Schlüssel. Gruppierte Platzierungen verwenden study_library_reference_groups mit einer deterministischen reference_id einschließlich Gruppe und Position. Die Schemainitialisierung verschiebt vorhandene gruppierte Zeilen transaktional vor weiteren Schreibvorgängen; bei Fehlern bleibt der bisherige Graph für einen erneuten Versuch erhalten. Lesen, Rückreferenzen, Löschen, Bearbeiten und Bereinigung verwenden beide aktiven Kantenspeicher. Importierte Referenzen werden in Gruppen von 500 Quell-IDs bereinigt, wobei Anbieteränderungen erhalten bleiben. Benachrichtigungen über neue Karten erfolgen erst nach Bestätigung der äußeren Erstellungstransaktion.
+
+Zustände werden an Unicode-Grenzen in Zeilen mit höchstens 60.000 UTF-8-Bytes aufgeteilt und transaktional ersetzt. Bereits einzeilig gespeicherte Zustände verwenden denselben Lesepfad. Die Metadatenmethoden registerDefinition, assignCohort und setParticipation liefern jetzt Promise<void> und müssen abgewartet werden. Sie durchlaufen benannte ctx-Abläufe, geben Speicherfehler weiter und setzen fehlgeschlagene Metadatenänderungen zurück. Auch der Saisonwechsel liefert ein abzuwartendes Promise. Gleichzeitige Registrierungen einer Klassenrangliste teilen einen laufenden Registrierungsvorgang.
+
+Die Standardgrenze für Tresore beträgt 2 MiB, die absolute Verarbeitungsgrenze 8 MiB. Die wirksame Richtlinie wird an Clients zurückgegeben. PUT zählt eingehende Bytes vor dem Puffern oder Parsen und weist übergroße Anfragen zurück; GET prüft die gespeicherte Größe vor dem Parsen. Verschlüsselte Umschläge verwenden eine Basiszeile und begrenzte Folgezeilen mit atomarem Ersetzen und Löschen sowie einer gemeinsamen Leseabfrage. Jeder Abschnitt umfasst höchstens 60.000 UTF-8-Bytes; der Server entschlüsselt weiterhin keine Geheimnisse.
+
+Neue Gruppenräume schließen Schlüsselerzeugung und alle Mitgliedseinträge ab, bevor sie eine Integrationsquelle beanspruchen. Bei Initialisierungs- oder Bindungsfehlern wird der unvollständige Raum gelöscht; Bereinigungsfehler werden protokolliert und weitergegeben. Bestehende Räume und exklusive Quellenbindungen behalten ihr Verhalten.
+
+Der Zeichenfortschritt speichert jede zugestellte Versuchskennung zusammen mit dem Zähler. Ein erneuter Versuch A nach B oder nach einem Neustart erhöht die Schwierigkeit nicht nochmals. Die bestehenden validierten Fortschritts- und Belohnungsintegrationen bleiben aktiv.
+
+Übungen verwenden eine Frage und eine einzige Antwortansicht; Vorder- und Rückseite werden nicht mehr umgedreht. Falsche Antworten, bereits beantwortete Karten und Antwort zeigen behalten die vollständige bibliotheksbasierte Ansicht sowie die Bewertung Erneut bei. Reine Satzstapel verwenden Lesen und blenden den schwebenden Modusschalter aus, ohne die gespeicherte Einstellung für beschreibbare Stapel zu ändern. Gemischte Stapel behalten den gewählten Modus. Sätze und lange Antworten können innerhalb der Seitenbreite bis zu 72rem nutzen. Ungültige Sprachkennungen liefern invalid_language mit HTTP 400.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

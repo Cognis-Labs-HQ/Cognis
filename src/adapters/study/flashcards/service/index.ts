@@ -340,7 +340,11 @@ export class DeckService {
                     if (language !== undefined) {
                         if (typeof language !== "string")
                             throw new Error("invalid_language");
-                        [language] = Intl.getCanonicalLocales(language);
+                        try {
+                            [language] = Intl.getCanonicalLocales(language);
+                        } catch {
+                            throw new Error("invalid_language");
+                        }
                         if (
                             !language ||
                             [...schemaLanguages].some(

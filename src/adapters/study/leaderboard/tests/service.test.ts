@@ -96,13 +96,23 @@ test("bootstrap publishes the leaderboard capability for language providers", as
         capabilities.require<import("../types.js").LeaderboardCapability>(
             "study:leaderboard",
         );
-    capability.registerDefinition({
+    let registrations = 0;
+    systemCtx.flow.extend(
+        "study:leaderboard:registerDefinition",
+        "persist",
+        { id: "test:registration-hook", order: -200 },
+        () => {
+            registrations++;
+        },
+    );
+    await capability.registerDefinition({
         ...definition,
         id: "classroom",
         kind: "classroom",
         classroomId: "room",
         minimumCohortSize: 1,
     });
+    assert.equal(registrations, 1);
     assert.equal(
         await capability.canAccessDefinition(actor("alice"), "classroom"),
         false,
@@ -128,9 +138,9 @@ test("leaderboard resolves Progress lazily without changing gateway bootstrap", 
     const service = new LeaderboardService(() =>
         capabilities.get<ProgressEvidenceCapability>("study:progress"),
     );
-    service.registerDefinition({ ...definition, minimumCohortSize: 1 });
-    service.setParticipation("alice", "weekly", { optedIn: true });
-    service.assignCohort("alice", "weekly", "red");
+    await service.registerDefinition({ ...definition, minimumCohortSize: 1 });
+    await service.setParticipation("alice", "weekly", { optedIn: true });
+    await service.assignCohort("alice", "weekly", "red");
     capabilities.contribute("study:progress", progress);
 
     await service.submitObservation(actor("alice"), {
@@ -148,13 +158,13 @@ test("leaderboard resolves Progress lazily without changing gateway bootstrap", 
 
 async function fixture() {
     const service = new LeaderboardService(progress);
-    service.registerDefinition(definition);
+    await service.registerDefinition(definition);
     for (const participant of ["alice", "bob"]) {
-        service.setParticipation(participant, "weekly", {
+        await service.setParticipation(participant, "weekly", {
             optedIn: true,
             alias: participant,
         });
-        service.assignCohort(participant, "weekly", "red");
+        await service.assignCohort(participant, "weekly", "red");
     }
     const submit = (
         participantId: string,
@@ -227,7 +237,7 @@ test("corrections, expiry, cohort isolation, ties and rollover archives", async 
         seasonId: "s1",
     });
     assert.equal(result.total, 0);
-    service.rollover("weekly", {
+    await service.rollover("weekly", {
         id: "s2",
         startsAt: "2026-09-08T00:00:00Z",
         endsAt: "2026-09-15T00:00:00Z",
@@ -237,7 +247,7 @@ test("corrections, expiry, cohort isolation, ties and rollover archives", async 
 
 test("weighted ranking is explicit and rolling observations expire", async () => {
     const service = new LeaderboardService(progress);
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         id: "weighted",
@@ -249,8 +259,8 @@ test("weighted ranking is explicit and rolling observations expire", async () =>
             weight: 1,
         })),
     });
-    service.setParticipation("alice", "weighted", { optedIn: true });
-    service.setParticipation("bob", "weighted", { optedIn: true });
+    await service.setParticipation("alice", "weighted", { optedIn: true });
+    await service.setParticipation("bob", "weighted", { optedIn: true });
     assert.equal(
         (
             await service.queryStandings({
@@ -266,7 +276,7 @@ test("weighted ranking is explicit and rolling observations expire", async () =>
 test("activity collections score through core and become evidence-backed XP", async () => {
     const scoring = new ScoringEngine();
     const service = new LeaderboardService(progress, () => true, scoring);
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         criteria: [
@@ -278,7 +288,7 @@ test("activity collections score through core and become evidence-backed XP", as
             },
         ],
     });
-    service.setParticipation("alice", "weekly", {
+    await service.setParticipation("alice", "weekly", {
         optedIn: true,
         alias: "alice",
     });
@@ -306,15 +316,15 @@ test("activity collections score through core and become evidence-backed XP", as
     assert.equal(standings.rows[0].criteria.xp, score.xp);
 });
 
-test("definition validation rejects unsafe cohort thresholds and duplicate IDs", () => {
+test("definition validation rejects unsafe cohort thresholds and duplicate IDs", async () => {
     const service = new LeaderboardService(progress);
-    assert.throws(
+    await assert.rejects(
         () =>
             service.registerDefinition({ ...definition, minimumCohortSize: 0 }),
         /invalid_minimum_cohort_size/,
     );
-    service.registerDefinition(definition);
-    assert.throws(
+    await service.registerDefinition(definition);
+    await assert.rejects(
         () => service.registerDefinition(definition),
         /definition_exists/,
     );
@@ -322,12 +332,12 @@ test("definition validation rejects unsafe cohort thresholds and duplicate IDs",
 
 test("evidence is immutable, window-derived, and scored once per criterion", async () => {
     const service = new LeaderboardService(progress);
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         criteria: [definition.criteria[0]],
     });
-    service.setParticipation("alice", "weekly", { optedIn: true });
+    await service.setParticipation("alice", "weekly", { optedIn: true });
     const observation = {
         id: "immutable-observation",
         definitionId: "weekly",
@@ -362,13 +372,15 @@ test("evidence is immutable, window-derived, and scored once per criterion", asy
 
 test("all participants in a multi-way tie retain the same rank", async () => {
     const service = new LeaderboardService(progress);
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         criteria: [definition.criteria[0]],
     });
     for (const participant of ["alice", "bob", "carol"]) {
-        service.setParticipation(participant, "weekly", { optedIn: true });
+        await service.setParticipation(participant, "weekly", {
+            optedIn: true,
+        });
         await service.submitObservation(actor(participant), {
             id: `tie-${participant}`,
             definitionId: "weekly",
@@ -402,12 +414,12 @@ test("persisted competitive state can be restored after restart", async () => {
             saved = state;
         },
     );
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         criteria: [definition.criteria[0]],
     });
-    service.setParticipation("alice", "weekly", { optedIn: true });
+    await service.setParticipation("alice", "weekly", { optedIn: true });
     await service.submitObservation(actor("alice"), {
         id: "persisted",
         definitionId: "weekly",
@@ -450,12 +462,12 @@ test("a failed leaderboard save does not poison future writes and retrying the o
             saved = state;
         },
     );
-    service.registerDefinition({
+    await service.registerDefinition({
         ...definition,
         minimumCohortSize: 1,
         criteria: [definition.criteria[0]],
     });
-    service.setParticipation("alice", "weekly", { optedIn: true });
+    await service.setParticipation("alice", "weekly", { optedIn: true });
     const observation = {
         id: "retry",
         definitionId: "weekly",
@@ -474,4 +486,46 @@ test("a failed leaderboard save does not poison future writes and retrying the o
     await service.submitObservation(actor("alice"), observation);
     assert.equal(saved?.observations.length, 1);
     assert.equal(errors.length, 1);
+});
+
+test("metadata saves propagate failure, roll back unpublished changes and remain retryable", async () => {
+    let reject = true;
+    const service = new LeaderboardService(
+        progress,
+        () => true,
+        undefined,
+        undefined,
+        () => {},
+        async () => {
+            if (reject) throw new Error("storage_failed");
+        },
+    );
+    await assert.rejects(
+        service.registerDefinition(definition),
+        /storage_failed/,
+    );
+    assert.deepEqual(service.listDefinitions(), []);
+    reject = false;
+    await service.registerDefinition(definition);
+    reject = true;
+    await assert.rejects(
+        service.assignCohort("alice", "weekly", "red"),
+        /storage_failed/,
+    );
+    assert.equal(service.resolveCohort(actor("alice"), "weekly"), undefined);
+    await assert.rejects(
+        service.setParticipation("alice", "weekly", { optedIn: true }),
+        /storage_failed/,
+    );
+    assert.equal(
+        await service.canAccessDefinition(actor("alice"), "weekly"),
+        false,
+    );
+    reject = false;
+    await service.assignCohort("alice", "weekly", "red");
+    await service.setParticipation("alice", "weekly", { optedIn: true });
+    assert.equal(
+        await service.canAccessDefinition(actor("alice"), "weekly", "red"),
+        true,
+    );
 });

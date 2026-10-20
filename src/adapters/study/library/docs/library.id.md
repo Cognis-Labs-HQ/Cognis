@@ -1,5 +1,7 @@
 # Adapter Pustaka
 
+Referensi biasa mempertahankan kunci yang ada. Penempatan berkelompok menggunakan study_library_reference_groups dengan reference_id deterministik yang menyertakan kelompok dan posisi. Inisialisasi skema memindahkan baris berkelompok secara transaksional sebelum penulisan; kegagalan mempertahankan graf lama untuk percobaan ulang. Pembacaan, referensi balik, penghapusan, penyuntingan, dan pemangkasan menggunakan kedua penyimpanan relasi aktif. Pembersihan referensi impor memproses 500 ID sumber per kelompok sambil mempertahankan perubahan penyedia. Notifikasi kartu baru dikirim setelah transaksi pembuatan terluar berhasil dikomit.
+
 Bootstrap modul eksternal memiliki batas waktu bawaan dua menit agar impor paket konten tervalidasi selesai sebelum kapabilitas dipublikasikan. Pengaturan batas waktu eksplisit dari host tetap berlaku. Kegagalan dan habisnya waktu menghapus kontribusi terdaftar serta menjaga modul tetap tidak tersedia. Audio bawaan menggunakan kembali rekaman berversi yang tersimpan saat aktivasi ulang, dan membuat ulang berkas yang hilang melalui gateway Files. Rekonsiliasi catatan dan relasi pustaka tetap berjalan, termasuk untuk paket yang tidak berubah.
 
 Saran penyusun kartu menempati baris terpisah agar masukan dan tombol Simpan Pelafalan tetap stabil. Memilih hasil kamus mengubah ejaan yang belum dikomit menjadi referensi karakter kanonis, termasuk unit tulisan tersembunyi seperti っ kecil. Komposisi yang sudah dikomit tetap dipertahankan; unit tersembunyi tidak ditampilkan dalam penelusuran.

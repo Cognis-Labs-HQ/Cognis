@@ -1,5 +1,7 @@
 # Library Adapter
 
+Flat references keep their established key. Grouped placements use study_library_reference_groups with a deterministic reference_id including group and position. Schema initialization transactionally moves existing grouped rows before writes begin; failed transfers retain the old graph for retry. Reads, reverse references, deletion, editing and pruning use both active edge stores. Imported reference cleanup batches 500 source IDs while preserving provider edits. New-card notifications run only after the outer creation transaction commits.
+
 External-module bootstrap has a bounded two-minute default budget, allowing validated content-pack ingestion to finish before capabilities are published. An explicit host timeout override still applies. Failures and deadline expiry remove scoped contributions and keep the module unavailable. Packaged audio reuses persisted versioned recordings on reactivation, recreating missing files through the Files gateway. Library record and relationship reconciliation still runs, including for unchanged packs.
 
 Composer suggestions occupy a separate row, keeping input and Save Pronunciation controls stable. Selecting a dictionary result commits unresolved spelling to canonical character references, including hidden writing units such as small っ. Existing committed compositions remain intact; hidden units stay out of browsing.

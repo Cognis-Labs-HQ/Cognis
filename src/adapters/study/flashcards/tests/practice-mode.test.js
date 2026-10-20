@@ -52,6 +52,14 @@ test("the floating practice preference restores the saved mode, confirms session
     preference.mount(slot);
     assert.equal(slot.hidden, false);
     assert.equal(select.value, "writing");
+    preference.setWritingAvailable(false);
+    assert.equal(slot.hidden, true);
+    assert.equal(preference.value, "reading");
+    assert.equal(saved.length, 0);
+    preference.setWritingAvailable(true);
+    assert.equal(slot.hidden, false);
+    assert.equal(preference.value, "writing");
+
     select.value = "reading";
     await handler();
     assert.equal(select.value, "writing");

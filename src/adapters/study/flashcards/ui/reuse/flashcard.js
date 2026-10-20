@@ -57,15 +57,7 @@ export function flashcardValues(detail, schemas = [], language = "en") {
 }
 
 /** Group declared references so pronunciations and definitions appear once with canonical links. */
-export function renderFlashcard(
-    detail,
-    schemas,
-    language,
-    link,
-    face = "back",
-) {
-    if (face === "front")
-        return `<div class="study-flashcard-face"><strong>${link(detail.entry, detail.entry.label, schemas)}</strong></div>`;
+export function renderFlashcard(detail, schemas, language, link) {
     const values = flashcardValues(detail, schemas, language);
     const references = detail.references ?? [];
     const role = (entry) =>

@@ -117,8 +117,32 @@ export async function bootstrapStudyAdapter(
             return service.rollover(rollover.definitionId, rollover.nextSeason);
         },
     );
+    const metadataMethods = [
+        "registerDefinition",
+        "assignCohort",
+        "setParticipation",
+    ] as const;
+    for (const method of metadataMethods) {
+        const id = `study:leaderboard:${method}`;
+        if (!systemCtx.hasFlow(id))
+            systemCtx.registerFlow({ id, stages: ["persist"] });
+        systemCtx.flow.extend(
+            id,
+            "persist",
+            { id: `study-leaderboard:${method}` },
+            ({ input }) =>
+                Reflect.apply(service[method], service, input as unknown[]),
+        );
+    }
     const capability = new Proxy(service, {
         get(target, property, receiver) {
+            if (metadataMethods.some((method) => method === property))
+                return async (...args: unknown[]) => {
+                    await systemCtx.flow.run(
+                        `study:leaderboard:${String(property)}`,
+                        args,
+                    );
+                };
             if (property === "submitObservation")
                 return async (
                     actor: LeaderboardActor,
@@ -156,7 +180,7 @@ export async function bootstrapStudyAdapter(
                     );
                 };
             if (property === "rollover")
-                return (
+                return async (
                     definitionId: string,
                     nextSeason: {
                         id: string;
@@ -164,7 +188,7 @@ export async function bootstrapStudyAdapter(
                         endsAt: string;
                     },
                 ) => {
-                    void systemCtx.flow.run("study:leaderboard:rollover", {
+                    await systemCtx.flow.run("study:leaderboard:rollover", {
                         definitionId,
                         nextSeason,
                     });

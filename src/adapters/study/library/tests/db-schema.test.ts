@@ -10,11 +10,17 @@ test("Library schema declares scoped lookup indexes and Unicode asset fields", a
         async ensureTable(definition) {
             definitions.push(definition);
         },
-        async executeCommand() {
-            throw new Error("unexpected_query");
+        async executeCommand(command) {
+            assert.equal(command.table, "study_library_references");
+            assert.ok(["SELECT", "DELETE"].includes(command.option));
+            if ("where" in command)
+                assert.deepEqual(command.where, [
+                    { column: "group_index", operator: ">=", value: 0 },
+                ]);
+            return { rows: [] };
         },
-        async transaction() {
-            throw new Error("unexpected_transaction");
+        async transaction(operation) {
+            return operation(executor);
         },
     };
     await ensureLibraryStoreSchema(executor);

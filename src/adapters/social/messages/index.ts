@@ -420,6 +420,7 @@ export async function bootstrapSocialAdapter(
         messagesStore,
         profileStore,
         membership,
+        ctx.log,
     );
     if (!systemCtx)
         throw new Error("Messages group resolution requires the host context.");

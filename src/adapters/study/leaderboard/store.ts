@@ -1,3 +1,4 @@
+import { textChunks } from "../../../gateways/reuse/text-chunks.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     LeaderboardDefinition,
@@ -40,11 +41,18 @@ export class DbLeaderboardStore implements LeaderboardStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_leaderboard_state",
-            where: [{ column: "state_id", value: "current" }],
+            where: [
+                { column: "state_id", operator: "LIKE", value: "current%" },
+            ],
         });
-        const value = result.rows?.[0]?.state_json;
-        return value
-            ? (JSON.parse(String(value)) as LeaderboardState)
+        const rows = result.rows ?? [];
+        rows.sort((left, right) =>
+            String(left.state_id).localeCompare(String(right.state_id)),
+        );
+        return rows.length
+            ? (JSON.parse(
+                  rows.map((row) => String(row.state_json)).join(""),
+              ) as LeaderboardState)
             : undefined;
     }
 
@@ -53,16 +61,25 @@ export class DbLeaderboardStore implements LeaderboardStore {
             await db.executeCommand({
                 option: "DELETE",
                 table: "study_leaderboard_state",
-                where: [{ column: "state_id", value: "current" }],
+                where: [
+                    { column: "state_id", operator: "LIKE", value: "current%" },
+                ],
             });
-            await db.executeCommand({
-                option: "INSERT",
-                table: "study_leaderboard_state",
-                values: {
-                    state_id: "current",
-                    state_json: JSON.stringify(state),
-                },
-            });
+            let index = 0;
+            for (const chunk of textChunks(JSON.stringify(state), 60_000)) {
+                await db.executeCommand({
+                    option: "INSERT",
+                    table: "study_leaderboard_state",
+                    values: {
+                        state_id:
+                            index === 0
+                                ? "current"
+                                : `current:${String(index).padStart(10, "0")}`,
+                        state_json: chunk,
+                    },
+                });
+                index++;
+            }
         });
     }
 }

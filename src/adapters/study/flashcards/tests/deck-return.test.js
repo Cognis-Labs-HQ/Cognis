@@ -123,6 +123,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                 id: "mode",
                 render: () => "",
                 mount() {},
+                setWritingAvailable() {},
             };
         },
         fetchLibraryLocations: async () => ({ readable: [] }),
@@ -134,6 +135,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                 : all;
         },
         practiceSummary: () => ({}),
+        supportsDeckWriting: () => true,
         mountPractice: (_target, options) => {
             mounts.push(options);
             return () => {};

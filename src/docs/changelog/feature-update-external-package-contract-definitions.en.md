@@ -186,7 +186,7 @@ Composite and ordered sentence details now always show a readable class pill, in
 
 ## Expanded keyring payload capacity
 
-The default encrypted keyring vault capacity is now 2,000 MiB, one thousand times the former 2 MiB cap, so large encrypted audio-backed secrets can be persisted without a 413 response.
+The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET checks stored size before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
 
 ## Structured card authoring and editing
 

@@ -138,7 +138,6 @@ export class LibraryService implements LibraryCapability {
             read: this.read.bind(this),
             entryWithPermissions: this.entryWithPermissions.bind(this),
             stringLocalization,
-            notifyNewContent,
             validateAudio: async (actor, schema, layer, fields, previous) => {
                 await Promise.all([
                     validateUploadedAudioFields(
@@ -674,9 +673,15 @@ export class LibraryService implements LibraryCapability {
         validateEntryInput(input);
         if (!input.linkedEntries?.length) {
             const operation = () => this.writer.create(actor, raw, input);
-            return this.store.transaction
+            const result = await (this.store.transaction
                 ? this.store.transaction(operation)
-                : operation();
+                : operation());
+            if (result.scope === "global" && !result.hidden)
+                await this.notifyNewContent?.({
+                    entryCount: 1,
+                    language: result.language,
+                });
+            return result;
         }
         const location = await this.authorize(actor, raw, true);
         const language = this.schema(input.schemaId).language;

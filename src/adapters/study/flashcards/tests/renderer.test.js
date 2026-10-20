@@ -96,7 +96,7 @@ test("both deck surfaces preserve imported note identity and answer context", ()
     assert.equal(notes[0].back, "Answer");
 });
 
-test("the front contains the question while the flipside owns pronunciation and meaning", () => {
+test("the review answer contains the question, pronunciation and meaning", () => {
     const detail = {
         entry: {
             id: "word",
@@ -108,11 +108,8 @@ test("the front contains the question while the flipside owns pronunciation and 
         references: [],
     };
     const link = (_entry, label) => label;
-    const front = context.renderFlashcard(detail, schemas, "en", link, "front");
-    assert.ok(front.includes("dog"));
-    assert.ok(!front.includes("/dɒɡ/"));
-    assert.ok(!front.includes("a canine"));
-    const back = context.renderFlashcard(detail, schemas, "en", link, "back");
-    assert.ok(back.includes("/dɒɡ/"));
-    assert.ok(back.includes("a canine"));
+    const answer = context.renderFlashcard(detail, schemas, "en", link);
+    assert.ok(answer.includes("dog"));
+    assert.ok(answer.includes("/dɒɡ/"));
+    assert.ok(answer.includes("a canine"));
 });

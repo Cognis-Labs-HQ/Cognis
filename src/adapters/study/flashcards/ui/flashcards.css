@@ -26,11 +26,11 @@
     gap: 0.75rem;
 }
 .study-flashcard-face {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    justify-items: center;
+    gap: 1rem;
     padding: 2rem;
     border-radius: 14px;
     background: var(--surface-2);
@@ -125,8 +125,7 @@
     display: grid;
     gap: 0.5rem;
 }
-.study-practice-summary [aria-pressed="true"],
-.study-practice-modes [aria-pressed="true"] {
+.study-practice-summary [aria-pressed="true"] {
     border-color: var(--color-success-border);
     background: var(--surface-2);
 }
@@ -209,11 +208,6 @@
 .study-entry-link:is(:hover, :focus-visible) {
     border-color: var(--accent-2);
 }
-.study-flashcard-face {
-    display: grid;
-    gap: 1rem;
-    justify-items: center;
-}
 .study-practice-navigation {
     display: flex;
     justify-content: space-between;
@@ -224,24 +218,18 @@
 }
 
 .study-practice-heading [data-practice-link],
-.study-practice-heading [data-practice-reveal],
 .study-practice-heading [data-study-favourite],
 .study-practice-heading
-    :is(
-        [data-practice-link],
-        [data-practice-reveal],
-        [data-study-favourite]
-    ):is(:hover, :focus-visible) {
+    :is([data-practice-link], [data-study-favourite]):is(
+        :hover,
+        :focus-visible
+    ) {
     background: transparent;
     border-color: transparent;
     box-shadow: none;
 }
 .study-practice-heading
-    :is(
-        [data-practice-link],
-        [data-practice-reveal],
-        [data-study-favourite]
-    ):focus-visible {
+    :is([data-practice-link], [data-study-favourite]):focus-visible {
     outline: 2px solid var(--accent-2);
     outline-offset: 2px;
 }
@@ -253,11 +241,6 @@
     .study-reading-choices [data-reading-result] {
         animation: none;
     }
-}
-
-.study-practice-concealed > span {
-    filter: blur(0.4rem);
-    user-select: none;
 }
 
 .study-practice-mode-preference {
@@ -365,4 +348,15 @@
     border-color: var(--color-success-border);
     background: var(--color-success-hover-bg);
     color: var(--color-success-outline-text);
+}
+
+.study-practice--long {
+    width: min(100%, 72rem);
+}
+.study-practice-prompt,
+.study-reading-choices > div {
+    min-width: 0;
+}
+.study-reading-choices button {
+    overflow-wrap: anywhere;
 }

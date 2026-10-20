@@ -1,5 +1,7 @@
 # User Keyring Adapter
 
+The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET checks stored size before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
+
 ## Overview
 
 The User Keyring adapter persists opaque browser-encrypted vaults for authenticated accounts. It is a required Authentication adapter because passwords, encryption keys, and other user-specific secrets need one stable capability regardless of the active login provider.
@@ -20,7 +22,7 @@ Not responsible for: authenticating users, deriving encryption keys, or interpre
 
 ## Configuration
 
-The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created. The default encrypted-vault capacity is 2,000 MiB.
+The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created. The default encrypted-vault capacity is 2 MiB.
 
 ## API Routes
 

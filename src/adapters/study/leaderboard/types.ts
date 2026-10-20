@@ -105,7 +105,7 @@ export interface LeaderboardCapability {
         actor: LeaderboardActor,
         definitionId: string,
     ): string | undefined;
-    registerDefinition(definition: LeaderboardDefinition): void;
+    registerDefinition(definition: LeaderboardDefinition): Promise<void>;
     submitObservation(
         actor: LeaderboardActor,
         observation: LeaderboardObservation,
@@ -125,16 +125,16 @@ export interface LeaderboardCapability {
         participantId: string,
         definitionId: string,
         cohortId: string,
-    ): void;
+    ): Promise<void>;
     setParticipation(
         participantId: string,
         definitionId: string,
         options: { optedIn: boolean; alias?: string },
-    ): void;
+    ): Promise<void>;
     rollover(
         definitionId: string,
         nextSeason: { id: string; startsAt: string; endsAt: string },
-    ): void;
+    ): Promise<void>;
     archivedResults(
         definitionId: string,
     ): readonly { seasonId: string; rows: readonly StandingRow[] }[];

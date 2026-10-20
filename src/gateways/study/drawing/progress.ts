@@ -97,11 +97,10 @@ export class DrawingProgressStore {
                     `study-drawing:${cardId}`,
                 );
                 const previous = parseDrawingProgress(stored);
-                if (
-                    input.attempt &&
-                    stored &&
-                    JSON.parse(stored).lastAttemptId === input.attempt.id
-                )
+                const attempts: string[] = stored
+                    ? (JSON.parse(stored).attemptIds ?? [])
+                    : [];
+                if (input.attempt && attempts.includes(input.attempt.id))
                     return previous;
                 const progress = {
                     completed:
@@ -121,8 +120,12 @@ export class DrawingProgressStore {
                     `study-drawing:${cardId}`,
                     JSON.stringify({
                         ...progress,
-                        ...(input.attempt
-                            ? { lastAttemptId: input.attempt.id }
+                        ...(input.attempt || attempts.length
+                            ? {
+                                  attemptIds: input.attempt
+                                      ? [...attempts, input.attempt.id]
+                                      : attempts,
+                              }
                             : {}),
                     }),
                 );

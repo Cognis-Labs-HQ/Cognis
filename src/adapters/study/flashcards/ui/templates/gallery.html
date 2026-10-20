@@ -66,7 +66,10 @@
 </template>
 
 <template data-deck-template="practice">
-    <section class="study-practice study-practice--{mode}" data-practice>
+    <section
+        class="study-practice study-practice--{mode}{long_content}"
+        data-practice
+    >
         <div class="study-practice-heading">
             {writing_navigation}{favourite}{entry_heading}
         </div>
@@ -80,16 +83,7 @@
         ></div>
         <div data-practice-task>{task}</div>
         <section class="study-flashcard-answer" data-practice-answer hidden>
-            <div data-practice-front>{front}</div>
-            <div data-practice-back hidden>{answer}</div>
-            <button
-                type="button"
-                class="btn-neutral"
-                data-practice-flip
-                aria-pressed="false"
-            >
-                {flip_label}
-            </button>
+            {answer}
         </section>
         {reading_navigation}
     </section>

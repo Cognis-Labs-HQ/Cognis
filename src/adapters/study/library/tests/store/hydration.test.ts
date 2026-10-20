@@ -3,7 +3,7 @@ import test from "node:test";
 import { LibraryStore } from "../../store.js";
 import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
-test("listing cards hydrates ordered and grouped references in two queries", async () => {
+test("listing cards hydrates ordered and grouped references with one batch per edge kind", async () => {
     const commands: object[] = [];
     const database: DbExecutor = {
         ensureTable: async () => {},
@@ -42,7 +42,11 @@ test("listing cards hydrates ordered and grouped references in two queries", asy
                         position: 0,
                         transformation_json: '{"form":"polite"}',
                     },
-                ],
+                ].filter(
+                    (row) =>
+                        row.group_index >= 0 ===
+                        (command.table === "study_library_reference_groups"),
+                ),
             };
         },
     };
@@ -50,7 +54,7 @@ test("listing cards hydrates ordered and grouped references in two queries", asy
         scope: "global",
         scopeId: "global",
     });
-    assert.equal(commands.length, 2);
+    assert.equal(commands.length, 3);
     assert.equal(entries.length, 100);
     assert.deepEqual(
         entries[0].referenceGroups?.reading[0].map((value) => value.entryId),
@@ -63,7 +67,7 @@ test("listing cards hydrates ordered and grouped references in two queries", asy
         { scope: "global", scopeId: "global" },
         { entryIds: ["card-0", "card-1"] },
     );
-    assert.deepEqual((commands[2] as { where: object[] }).where.at(-1), {
+    assert.deepEqual((commands[3] as { where: object[] }).where.at(-1), {
         column: "id",
         operator: "IN",
         value: ["card-0", "card-1"],

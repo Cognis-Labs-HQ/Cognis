@@ -1,5 +1,7 @@
 # Navigasi Study
 
+Kemajuan menggambar menyimpan setiap ID percobaan yang telah dikirim bersama penghitungnya, sehingga pengiriman ulang A setelah B maupun setelah mulai ulang tidak meningkatkan kesulitan panduan lagi. Integrasi kemajuan dan imbalan tervalidasi yang sama tetap aktif.
+
 Flashcards memakai `/study/<iso>/flashcards` dan `/study/<iso>/flashcards/<deck-id>`. Kontrol bahasa membuka galeri terkait tanpa membawa dek bahasa lain. `/study/flashcards` menentukan bahasa saat ini. Pustaka dan Permintaan tetap merupakan halaman bersama.
 
 ## Contoh penggunaan

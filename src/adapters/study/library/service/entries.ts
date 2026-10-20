@@ -24,7 +24,6 @@ import {
     validateDependencyVisibility,
     validatePendingPublicationEdits,
 } from "./dependencies.js";
-import type { LibraryContentNotifier } from "../contracts.js";
 import type { StringLocalizationCapability } from "../types.js";
 
 interface EntryWriterContext {
@@ -42,7 +41,6 @@ interface EntryWriterContext {
         entry: LibraryEntry,
     ): Promise<LibraryEntry> | LibraryEntry;
     stringLocalization?: StringLocalizationCapability;
-    notifyNewContent?: LibraryContentNotifier;
     validateAudio?(
         actor: LibraryActor,
         schema: LibrarySchema,
@@ -148,11 +146,6 @@ export class LibraryEntryWriter {
                 },
             },
         );
-        if (location.scope === "global" && !candidates && !input.hidden)
-            await this.context.notifyNewContent?.({
-                entryCount: 1,
-                language: schema.language,
-            });
         return this.context.entryWithPermissions(actor, created);
     }
 

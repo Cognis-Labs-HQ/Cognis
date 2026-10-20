@@ -31,7 +31,7 @@
   <string name="adapter.study.flashcards.practice_unavailable">No practice is available for this card.</string>
   <string name="adapter.study.flashcards.practice_leave">Leave Practice?</string>
   <string name="adapter.study.flashcards.practice_leave_body">Open this card in Explore and leave the current practice session?</string>
-  <string name="adapter.study.flashcards.practice_flip">Flip card</string>
+  <string name="adapter.study.flashcards.practice_show_answer">Show Answer</string>
   <string name="adapter.study.flashcards.practice_previous">Previous card</string>
   <string name="adapter.study.flashcards.practice_reveal">Show character</string>
   <string name="adapter.study.flashcards.practice_choose_mode">Choose Reading or Writing</string>

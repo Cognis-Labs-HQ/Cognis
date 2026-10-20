@@ -1,3 +1,4 @@
+import { executeReferences } from "./reference-storage.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { mapEntry } from "../entry-row.js";
 import type { LibraryEntry } from "../types.js";
@@ -7,9 +8,8 @@ export async function hydrateEntries(
     rows: Record<string, unknown>[],
 ): Promise<LibraryEntry[]> {
     if (!rows.length) return [];
-    const references = await db.executeCommand({
+    const references = await executeReferences(db, {
         option: "SELECT",
-        table: "study_library_references",
         where: [
             {
                 column: "source_entry_id",

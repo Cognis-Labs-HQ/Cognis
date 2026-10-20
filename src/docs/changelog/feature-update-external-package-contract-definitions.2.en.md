@@ -104,6 +104,20 @@ Try Again is shown only when the updated queue for the selected focus contains c
 
 Reading prompts display the primary pronunciation beside the card value when they differ; equivalent normalized text is not repeated. A round question-mark hint highlights and focuses the correct current answer, including after choices are shuffled. Hint use records Again through the existing review flow, and a subsequent correct selection remains assisted. Ordinary unaided answers retain Good grading. Writing practice keeps its own guidance controls.
 
+## Review Reliability and Cleanup
+
+Flat references keep their established key. Grouped placements use study_library_reference_groups with a deterministic reference_id including group and position. Schema initialization transactionally moves existing grouped rows before writes begin; failed transfers retain the old graph for retry. Reads, reverse references, deletion, editing and pruning use both active edge stores. Imported reference cleanup batches 500 source IDs while preserving provider edits. New-card notifications run only after the outer creation transaction commits.
+
+Snapshots are split at Unicode boundaries into rows of at most 60,000 UTF-8 bytes and replaced transactionally. Existing single-row snapshots use the same read path. Metadata methods registerDefinition, assignCohort and setParticipation now return Promise<void> and must be awaited; they execute named ctx flows, propagate storage failures and roll back failed metadata changes. Rollover also returns an awaited promise. Concurrent classroom-board registration shares one pending registration.
+
+The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET checks stored size before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
+
+New group rooms finish key generation and all member insertions before claiming an integration source. Any setup or binding failure deletes the partial room; cleanup failures are logged and propagated. Existing rooms and source exclusivity keep their current behavior.
+
+Drawing progress retains every delivered attempt ID alongside its count, so retrying A after B and after restart cannot increment guidance difficulty again. The same validated progress and reward integrations remain active.
+
+Practice uses a question and a single review answer; there is no front/back flipping. Wrong answers, previously answered cards and explicit Show Answer retain the full Library-backed review and existing Again grading. Sentence-only decks use Reading and hide the floating mode slot without overwriting the saved preference for drawable decks. Mixed decks keep the chosen mode. Sentence and long-answer layouts expand to 72rem within the page width. Malformed language tags return invalid_language with HTTP 400.
+
 ## Commits
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

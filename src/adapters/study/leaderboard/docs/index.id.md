@@ -1,5 +1,7 @@
 # Papan Peringkat Study
 
+Snapshot dibagi pada batas Unicode menjadi baris paling besar 60.000 byte UTF-8 dan diganti secara transaksional. Snapshot satu baris yang sudah ada menggunakan jalur baca yang sama. Metode metadata registerDefinition, assignCohort, dan setParticipation kini mengembalikan Promise<void> dan harus ditunggu. Metode menjalankan alur ctx bernama, meneruskan kegagalan penyimpanan, dan membatalkan perubahan metadata yang gagal. Pergantian musim juga mengembalikan promise yang ditunggu. Pendaftaran papan kelas secara bersamaan berbagi satu proses pendaftaran yang masih berjalan.
+
 Adaptor papan peringkat mengurutkan bukti belajar terverifikasi dalam kelompok yang diizinkan dan menyajikan peringkat yang aksesibel.
 
 ## Penggunaan

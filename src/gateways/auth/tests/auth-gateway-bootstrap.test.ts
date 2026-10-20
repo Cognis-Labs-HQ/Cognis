@@ -37,6 +37,9 @@ test("keyring adapter purges a vault after every persisted user deletion", async
     const capabilities = new CapabilityStore();
     capabilities.contribute("db:executor", {
         async ensureTable() {},
+        async transaction(operation: (executor: unknown) => Promise<unknown>) {
+            return operation(capabilities.get("db:executor"));
+        },
         async executeCommand(command: Record<string, unknown>) {
             commands.push(command);
             return { rows: [] };

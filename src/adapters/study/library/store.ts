@@ -1,3 +1,4 @@
+import { executeReferences } from "./store/reference-storage.js";
 import { retainedPackEntries } from "./store/retained-pack-entries.js";
 import { replaceEntryContent } from "./store/entry-update.js";
 import { hasImageReference } from "./image-store.js";
@@ -307,9 +308,8 @@ export class LibraryStore {
                         "source_entry_id",
                         "target_entry_id",
                     ]) {
-                        await db.executeCommand({
+                        await executeReferences(db, {
                             option: "DELETE",
-                            table: "study_library_references",
                             where: [{ column, value: previousId }],
                         });
                     }
@@ -320,13 +320,22 @@ export class LibraryStore {
                     });
                 }
             }
-            for (const sourceEntryId of importedSourceIds) {
-                if (providerModifiedEntryIds.has(sourceEntryId)) continue;
-                await db.executeCommand({
+            const replacedSources = [...importedSourceIds].filter(
+                (id) => !providerModifiedEntryIds.has(id),
+            );
+            for (
+                let offset = 0;
+                offset < replacedSources.length;
+                offset += 500
+            ) {
+                await executeReferences(db, {
                     option: "DELETE",
-                    table: "study_library_references",
                     where: [
-                        { column: "source_entry_id", value: sourceEntryId },
+                        {
+                            column: "source_entry_id",
+                            operator: "IN",
+                            value: replacedSources.slice(offset, offset + 500),
+                        },
                     ],
                 });
             }
@@ -433,9 +442,8 @@ export class LibraryStore {
                             row.reference,
                         ),
                     };
-                    await db.executeCommand({
+                    await executeReferences(db, {
                         option: "INSERT",
-                        table: "study_library_references",
                         values,
                         conflict: { action: "ignore" },
                     });
@@ -553,9 +561,8 @@ export class LibraryStore {
                         "source_entry_id",
                         "target_entry_id",
                     ]) {
-                        await db.executeCommand({
+                        await executeReferences(db, {
                             option: "DELETE",
-                            table: "study_library_references",
                             where: [{ column, value: entryId }],
                         });
                     }
@@ -583,9 +590,8 @@ export class LibraryStore {
         const schemaCache = new Map<string, LibrarySchema>();
         while (pendingIds.length > 0) {
             const targetEntryId = pendingIds.shift()!;
-            const dependents = await db.executeCommand({
+            const dependents = await executeReferences(db, {
                 option: "SELECT",
-                table: "study_library_references",
                 columns: ["source_entry_id", "relation"],
                 where: [{ column: "target_entry_id", value: targetEntryId }],
             });
@@ -787,9 +793,8 @@ export class LibraryStore {
                 },
             });
             for (const row of entryReferenceRows(input)) {
-                await transactionDb.executeCommand({
+                await executeReferences(transactionDb, {
                     option: "INSERT",
-                    table: "study_library_references",
                     values: {
                         source_entry_id: id,
                         target_entry_id: row.reference.entryId,
@@ -930,9 +935,8 @@ export class LibraryStore {
     }
 
     async referencesFor(targetEntryId: string): Promise<LibraryEntry[]> {
-        const result = await this.db.executeCommand({
+        const result = await executeReferences(this.db, {
             option: "SELECT",
-            table: "study_library_references",
             where: [{ column: "target_entry_id", value: targetEntryId }],
         });
         const entries = await Promise.all(

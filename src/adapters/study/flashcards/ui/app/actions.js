@@ -14,7 +14,6 @@ export const DECK_ACTIONS = [
     "restart",
     "answer",
     "hint",
-    "flip",
     "previous",
     "review",
     "depart",

@@ -186,7 +186,7 @@ Details zusammengesetzter Einträge und geordneter Sätze zeigen nun stets eine 
 
 ## Erweiterte Nutzlastkapazität des Schlüsselbunds
 
-Die Standardkapazität des verschlüsselten Schlüsselbund-Tresors beträgt jetzt 2.000 MiB und ist damit tausendmal so groß wie die bisherige Grenze von 2 MiB. Große verschlüsselte Geheimnisse mit Audiodaten können dadurch ohne 413-Antwort gespeichert werden.
+Die Standardgrenze für Tresore beträgt 2 MiB, die absolute Verarbeitungsgrenze 8 MiB. Die wirksame Richtlinie wird an Clients zurückgegeben. PUT zählt eingehende Bytes vor dem Puffern oder Parsen und weist übergroße Anfragen zurück; GET prüft die gespeicherte Größe vor dem Parsen. Verschlüsselte Umschläge verwenden eine Basiszeile und begrenzte Folgezeilen mit atomarem Ersetzen und Löschen sowie einer gemeinsamen Leseabfrage. Jeder Abschnitt umfasst höchstens 60.000 UTF-8-Bytes; der Server entschlüsselt weiterhin keine Geheimnisse.
 
 ## Strukturierte Kartenerstellung und -bearbeitung
 

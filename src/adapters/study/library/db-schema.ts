@@ -1,3 +1,4 @@
+import { ensureReferenceStorage } from "./store/reference-storage.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { ensureEntryStateSchema } from "./entry-state.js";
 import { ensurePushRequestSchema } from "./push-requests.js";
@@ -180,39 +181,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             },
         ],
     });
-    await db.ensureTable({
-        name: "study_library_references",
-        columns: [
-            { name: "source_entry_id", type: "text", notNull: true },
-            { name: "target_entry_id", type: "text", notNull: true },
-            {
-                name: "relation",
-                type: "text",
-                notNull: true,
-                default: "contains",
-            },
-            {
-                name: "position",
-                type: "integer",
-                notNull: true,
-                default: 0,
-            },
-            {
-                name: "group_index",
-                type: "integer",
-                notNull: true,
-                default: -1,
-            },
-            { name: "transformation_json", type: "text" },
-        ],
-        primaryKey: [
-            "source_entry_id",
-            "target_entry_id",
-            "relation",
-            "group_index",
-            "position",
-        ],
-    });
+    await ensureReferenceStorage(db);
     await ensurePushRequestSchema(db);
     await ensureEntryStateSchema(db);
 }

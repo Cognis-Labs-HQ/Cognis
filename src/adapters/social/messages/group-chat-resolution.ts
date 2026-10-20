@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "@cognis/core";
 import type { DbMessagesStore } from "./store.js";
 import type { SocialMessagesProfileStore } from "./profile-store-contract.js";
 import type { createChatroomMembershipCapability } from "./membership.js";
@@ -22,6 +23,7 @@ export function createGroupChatResolver(
     messagesStore: DbMessagesStore,
     profileStore: SocialMessagesProfileStore,
     membership: ReturnType<typeof createChatroomMembershipCapability>,
+    log?: BootstrapLog,
 ): (input: GroupChatInput) => Promise<GroupChatResolution> {
     return async (input: GroupChatInput): Promise<GroupChatResolution> => {
         const normalizedUsernames = Array.from(
@@ -92,20 +94,47 @@ export function createGroupChatResolver(
             title,
             ownerAccountId,
         );
-        if (input.source)
-            await messagesStore.bindSource({
+        try {
+            await messagesStore.generateAndStoreRoomKey(room.id);
+            for (const accountId of accountIds) {
+                await membership.add({
+                    roomId: room.id,
+                    actorAccountId: ownerAccountId,
+                    userAccountId: accountId,
+                    role: accountId === ownerAccountId ? "owner" : "member",
+                });
+            }
+            if (input.source)
+                await messagesStore.bindSource({
+                    roomId: room.id,
+                    actorAccountId: ownerAccountId,
+                    ...input.source,
+                });
+        } catch (error) {
+            log?.("error", "Group room initialization failed.", {
+                component: "social-messages",
+                operation: "resolve_group",
                 roomId: room.id,
-                actorAccountId: ownerAccountId,
-                ...input.source,
+                errorName: error instanceof Error ? error.name : "Unknown",
             });
-        await messagesStore.generateAndStoreRoomKey(room.id);
-        for (const accountId of accountIds) {
-            await membership.add({
-                roomId: room.id,
-                actorAccountId: ownerAccountId,
-                userAccountId: accountId,
-                role: accountId === ownerAccountId ? "owner" : "member",
-            });
+            try {
+                await messagesStore.deleteRoom(room.id);
+            } catch (cleanupError) {
+                log?.("error", "Partial group room cleanup failed.", {
+                    component: "social-messages",
+                    operation: "cleanup_group",
+                    roomId: room.id,
+                    errorName:
+                        cleanupError instanceof Error
+                            ? cleanupError.name
+                            : "Unknown",
+                });
+                throw new AggregateError(
+                    [error, cleanupError],
+                    "group_room_setup_failed",
+                );
+            }
+            throw error;
         }
         return {
             roomId: room.id,

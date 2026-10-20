@@ -31,7 +31,7 @@
   <string name="adapter.study.flashcards.practice_unavailable">このカードで利用できる練習はありません。</string>
   <string name="adapter.study.flashcards.practice_leave">練習を終了しますか？</string>
   <string name="adapter.study.flashcards.practice_leave_body">このカードを探索で開き、現在の練習を終了しますか？</string>
-  <string name="adapter.study.flashcards.practice_flip">カードを裏返す</string>
+  <string name="adapter.study.flashcards.practice_show_answer">答えを表示</string>
   <string name="adapter.study.flashcards.practice_previous">前のカード</string>
   <string name="adapter.study.flashcards.practice_reveal">文字を表示</string>
   <string name="adapter.study.flashcards.practice_choose_mode">読み取りか書き取りを選択</string>

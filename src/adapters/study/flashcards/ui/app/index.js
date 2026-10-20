@@ -10,7 +10,11 @@ import {
     deckMatchesLanguage,
     deckRouteKey,
 } from "./language.js";
-import { practiceSummary, practiceQueue } from "./practice-model.js";
+import {
+    practiceSummary,
+    practiceQueue,
+    supportsDeckWriting,
+} from "./practice-model.js";
 import { mountPractice } from "./practice.js";
 import { runDeckAction } from "./actions.js";
 import {
@@ -523,10 +527,18 @@ export async function mount(root, { signal: routerSignal } = {}) {
                     .replace("{{ count }}", String(session.unavailable)),
                 { variant: "warning" },
             );
+        modePreference.setWritingAvailable(
+            supportsDeckWriting(session.cards, entries, schemas),
+        );
+        practiceMode = modePreference.value;
         queue = practiceQueue(session.cards, selected.progress, filter);
+        const snapshot =
+            restoredSession?.mode === practiceMode
+                ? restoredSession
+                : undefined;
         const restored = resumePracticeSession(
-            restoredSession ? session.cards : queue,
-            restoredSession,
+            snapshot ? session.cards : queue,
+            snapshot,
         );
         queue = restored.queue;
         practiceSession = restored.session;
@@ -548,6 +560,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             nextCard();
         },
     });
+    if (selected) modePreference.setWritingAvailable(false);
     practiceMode = modePreference.value;
     const menu = createSideMenu({
         groups: [

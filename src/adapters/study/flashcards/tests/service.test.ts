@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+import { createDeckRoutes } from "../service/routes.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createCtx } from "@cognis/core";
@@ -479,4 +481,37 @@ test("deck metadata and details do not expose cached content after its Library a
         JSON.stringify({ listed, detail }).includes("Sensitive saved label"),
         false,
     );
+});
+
+test("malformed deck languages return a client error through the actual save route", async () => {
+    const { service } = session();
+    const route = createDeckRoutes(service, {
+        requireAuth: () => ({ sub: owner.accountId, role: owner.role }),
+    } as never);
+    for (const language of ["en_", "not a language"]) {
+        let status = 0;
+        let payload = "";
+        const request = Readable.from([
+            JSON.stringify({
+                name: "Invalid language",
+                entryIds: ["public"],
+                language,
+            }),
+        ]);
+        Object.assign(request, { method: "POST" });
+        await route(
+            request as never,
+            {
+                writeHead: (code: number) => {
+                    status = code;
+                },
+                end: (text: string) => {
+                    payload = text;
+                },
+            } as never,
+            new URL("http://localhost/api/v1/study/decks"),
+        );
+        assert.equal(status, 400);
+        assert.equal(JSON.parse(payload).error.code, "invalid_language");
+    }
 });

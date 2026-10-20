@@ -79,6 +79,8 @@ export function createDeckRoutes(
                 "deck_read_only",
                 "invalid_deck",
                 "invalid_deck_notes",
+                "invalid_language",
+                "deck_language_mismatch",
                 "empty_deck",
                 "deck_card_unavailable",
                 "invalid_review_grade",

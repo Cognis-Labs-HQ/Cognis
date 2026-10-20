@@ -104,6 +104,20 @@ Coba Lagi hanya ditampilkan jika antrean terbaru untuk fokus yang dipilih berisi
 
 Latihan membaca menampilkan pelafalan utama di samping nilai kartu jika berbeda; teks setara setelah normalisasi tidak diulang. Petunjuk tanda tanya berbentuk lingkaran menyorot dan memfokuskan jawaban benar saat ini, termasuk setelah pilihan diacak. Penggunaan petunjuk mencatat Ulang melalui alur ulasan yang ada, dan pilihan benar berikutnya tetap dianggap dibantu. Jawaban benar tanpa bantuan tetap mendapat nilai Baik. Latihan menulis mempertahankan kontrol panduannya sendiri.
 
+## Keandalan dan Pembersihan
+
+Referensi biasa mempertahankan kunci yang ada. Penempatan berkelompok menggunakan study_library_reference_groups dengan reference_id deterministik yang menyertakan kelompok dan posisi. Inisialisasi skema memindahkan baris berkelompok secara transaksional sebelum penulisan; kegagalan mempertahankan graf lama untuk percobaan ulang. Pembacaan, referensi balik, penghapusan, penyuntingan, dan pemangkasan menggunakan kedua penyimpanan relasi aktif. Pembersihan referensi impor memproses 500 ID sumber per kelompok sambil mempertahankan perubahan penyedia. Notifikasi kartu baru dikirim setelah transaksi pembuatan terluar berhasil dikomit.
+
+Snapshot dibagi pada batas Unicode menjadi baris paling besar 60.000 byte UTF-8 dan diganti secara transaksional. Snapshot satu baris yang sudah ada menggunakan jalur baca yang sama. Metode metadata registerDefinition, assignCohort, dan setParticipation kini mengembalikan Promise<void> dan harus ditunggu. Metode menjalankan alur ctx bernama, meneruskan kegagalan penyimpanan, dan membatalkan perubahan metadata yang gagal. Pergantian musim juga mengembalikan promise yang ditunggu. Pendaftaran papan kelas secara bersamaan berbagi satu proses pendaftaran yang masih berjalan.
+
+Batas bawaan brankas adalah 2 MiB dengan batas mutlak pemrosesan 8 MiB. Kebijakan efektif dikembalikan kepada klien. PUT menghitung byte masuk sebelum penyanggaan atau penguraian JSON dan menolak permintaan terlalu besar; GET memeriksa ukuran tersimpan sebelum penguraian. Amplop terenkripsi menggunakan baris utama serta baris lanjutan terbatas, dengan penggantian dan penghapusan atomik serta satu pembacaan gabungan. Tiap bagian tersimpan paling besar 60.000 byte UTF-8; server tetap tidak mendekripsi rahasia.
+
+Ruang grup baru menyelesaikan pembuatan kunci dan seluruh penambahan anggota sebelum mengikat sumber integrasi. Kegagalan inisialisasi atau pengikatan menghapus ruang parsial; kegagalan pembersihan dicatat dan diteruskan. Ruang yang sudah ada dan eksklusivitas sumber tetap berperilaku sama.
+
+Kemajuan menggambar menyimpan setiap ID percobaan yang telah dikirim bersama penghitungnya, sehingga pengiriman ulang A setelah B maupun setelah mulai ulang tidak meningkatkan kesulitan panduan lagi. Integrasi kemajuan dan imbalan tervalidasi yang sama tetap aktif.
+
+Latihan menggunakan pertanyaan dan satu tampilan tinjauan jawaban, tanpa membalik sisi depan dan belakang. Jawaban salah, kartu yang telah dijawab, dan Tampilkan Jawaban tetap menyediakan tinjauan lengkap berbasis Library serta penilaian Ulang. Dek yang hanya berisi kalimat menggunakan Membaca dan menyembunyikan pilihan mode mengambang tanpa menimpa preferensi tersimpan untuk dek yang dapat ditulis. Dek campuran mempertahankan mode pilihan. Kalimat dan jawaban panjang dapat melebar hingga 72rem sesuai lebar halaman. Tag bahasa tidak valid menghasilkan invalid_language dengan HTTP 400.
+
 ## Komit
 
 - [f81a683f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f81a683f913c54821501fe475ba3fa317074aedd)

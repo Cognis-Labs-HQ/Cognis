@@ -15,14 +15,34 @@ export async function createPracticeModePreference({
     mode,
     isActive,
     onChange,
+    writingAvailable = true,
 }) {
     const preferences = await runDeckAction("load", loadUiPreferences, signal);
     let selected =
         mode ??
         (preferences?.studyPracticeMode === "writing" ? "writing" : "reading");
+    let mountedSlot;
+    const value = () => (writingAvailable ? selected : "reading");
+    const updateAvailability = () => {
+        if (!mountedSlot) return;
+        mountedSlot.hidden = !writingAvailable;
+        const select = mountedSlot.querySelector(
+            "[data-practice-mode-preference]",
+        );
+        select.value = value();
+        const writing = select.querySelector?.('option[value="writing"]');
+        if (writing) {
+            writing.hidden = !writingAvailable;
+            writing.disabled = !writingAvailable;
+        }
+    };
     return {
+        setWritingAvailable(available) {
+            writingAvailable = available;
+            updateAvailability();
+        },
         get value() {
-            return selected;
+            return value();
         },
         id: "study-practice-mode",
         label: i18n.t("adapter.study.flashcards.practice_choose_mode"),
@@ -39,17 +59,19 @@ export async function createPracticeModePreference({
                 ),
             }),
         mount(slot) {
-            slot.hidden = false;
+            mountedSlot = slot;
+            updateAvailability();
             const select = slot.querySelector(
                 "[data-practice-mode-preference]",
             );
-            select.value = selected;
+            select.value = value();
             select.addEventListener(
                 "change",
                 async () => {
                     const next = select.value;
-                    select.value = selected;
+                    select.value = value();
                     if (
+                        !writingAvailable ||
                         next === selected ||
                         !["reading", "writing"].includes(next)
                     )
@@ -110,7 +132,7 @@ export async function createPracticeModePreference({
                                 });
                                 if (signal.aborted) return;
                                 selected = next;
-                                select.value = selected;
+                                select.value = value();
                                 await onChange(selected);
                             },
                             signal,

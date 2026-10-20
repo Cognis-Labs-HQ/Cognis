@@ -274,4 +274,19 @@ test("re-delivering a drawing completion does not increase guide difficulty twic
         ).hiddenStrokeCount,
         2,
     );
+    const restarted = new DrawingProgressStore(state.preferences);
+    assert.equal(
+        (await restarted.complete("learner", "card-a", input))
+            .hiddenStrokeCount,
+        2,
+    );
+    await restarted.complete("learner", "card-a", {
+        strokeCount: 4,
+        mistakes: 3,
+    });
+    assert.equal(
+        (await restarted.complete("learner", "card-a", input))
+            .hiddenStrokeCount,
+        2,
+    );
 });

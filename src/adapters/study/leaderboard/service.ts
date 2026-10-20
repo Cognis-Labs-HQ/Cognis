@@ -80,12 +80,16 @@ export class LeaderboardService implements LeaderboardCapability {
         });
     }
 
-    private persist(): Promise<void> {
-        if (!this.persistState) return Promise.resolve();
-        const state = this.state();
-        const operation = this.persistence.then(() =>
-            this.persistState!(state),
-        );
+    private persist(change?: () => () => void): Promise<void> {
+        const operation = this.persistence.then(async () => {
+            const rollback = change?.();
+            try {
+                await this.persistState?.(this.state());
+            } catch (error) {
+                rollback?.();
+                throw error;
+            }
+        });
         const log = this.log;
         this.persistence = operation.catch((error) => {
             log?.("error", "Leaderboard persistence failed.", {
@@ -95,6 +99,25 @@ export class LeaderboardService implements LeaderboardCapability {
             });
         });
         return operation;
+    }
+
+    private updateMetadata<K, V>(
+        map: Map<K, V>,
+        key: K,
+        value: V,
+        createOnly = false,
+    ): Promise<void> {
+        return this.persist(() => {
+            if (createOnly && map.has(key))
+                throw new Error("definition_exists");
+            const existed = map.has(key);
+            const previous = map.get(key);
+            map.set(key, value);
+            return () => {
+                if (existed) map.set(key, previous!);
+                else map.delete(key);
+            };
+        });
     }
 
     private progressCapability(): ProgressEvidenceCapability {
@@ -203,7 +226,7 @@ export class LeaderboardService implements LeaderboardCapability {
         );
     }
 
-    registerDefinition(input: LeaderboardDefinition): void {
+    async registerDefinition(input: LeaderboardDefinition): Promise<void> {
         this.requireEnabled();
         if (!IDENTIFIER_PATTERN.test(input.id) || !input.criteria.length)
             throw new Error("invalid_definition");
@@ -239,7 +262,8 @@ export class LeaderboardService implements LeaderboardCapability {
                 throw new Error("weight_required");
             ids.add(criterion.id);
         }
-        this.definitions.set(
+        await this.updateMetadata(
+            this.definitions,
             input.id,
             structuredClone({
                 ...input,
@@ -247,8 +271,8 @@ export class LeaderboardService implements LeaderboardCapability {
                 minimumCohortSize: input.minimumCohortSize ?? 2,
                 lateJoinPolicy: input.lateJoinPolicy ?? "allow",
             }),
+            true,
         );
-        void this.persist();
     }
 
     async submitObservation(
@@ -310,9 +334,6 @@ export class LeaderboardService implements LeaderboardCapability {
                         occurredAt >= Date.parse(definition.season.endsAt)))
             )
                 throw new Error("evidence_outside_window");
-            const evidenceKey = [definition.id, criterion.id, eventId].join(
-                "\0",
-            );
             const duplicate = [...this.observations.values()].find(
                 (candidate) =>
                     !this.invalid.has(candidate.id) &&
@@ -322,7 +343,6 @@ export class LeaderboardService implements LeaderboardCapability {
                     candidate.evidenceEventIds.includes(eventId),
             );
             if (duplicate) throw new Error("evidence_already_scored");
-            void evidenceKey;
             evidenceTimes.push(event.occurredAt);
         }
         const normalized = {
@@ -397,17 +417,20 @@ export class LeaderboardService implements LeaderboardCapability {
         });
     }
 
-    assignCohort(
+    async assignCohort(
         participantId: string,
         definitionId: string,
         cohortId: string,
-    ): void {
+    ): Promise<void> {
         this.requireEnabled();
         if (!this.definitions.has(definitionId))
             throw new Error("definition_not_found");
-        this.cohorts.set(this.key(participantId, definitionId), cohortId);
-        void this.persist();
-        void this.log?.("info", "Assigned leaderboard cohort.", {
+        await this.updateMetadata(
+            this.cohorts,
+            this.key(participantId, definitionId),
+            cohortId,
+        );
+        await this.log?.("info", "Assigned leaderboard cohort.", {
             component: "study-leaderboard",
             operation: "assign_cohort",
             participantId,
@@ -415,11 +438,12 @@ export class LeaderboardService implements LeaderboardCapability {
             cohortId,
         });
     }
-    setParticipation(
+
+    async setParticipation(
         participantId: string,
         definitionId: string,
         options: { optedIn: boolean; alias?: string },
-    ): void {
+    ): Promise<void> {
         this.requireEnabled();
         const definition = this.definitions.get(definitionId);
         if (!definition) throw new Error("definition_not_found");
@@ -434,11 +458,12 @@ export class LeaderboardService implements LeaderboardCapability {
                     ? "participant_waiting_for_next_season"
                     : "late_join_denied",
             );
-        this.participation.set(this.key(participantId, definitionId), {
-            ...options,
-        });
-        void this.persist();
-        void this.log?.("info", "Changed leaderboard participation.", {
+        await this.updateMetadata(
+            this.participation,
+            this.key(participantId, definitionId),
+            { ...options },
+        );
+        await this.log?.("info", "Changed leaderboard participation.", {
             component: "study-leaderboard",
             operation: "set_participation",
             participantId,
@@ -761,10 +786,10 @@ export class LeaderboardService implements LeaderboardCapability {
         };
     }
 
-    rollover(
+    async rollover(
         definitionId: string,
         nextSeason: { id: string; startsAt: string; endsAt: string },
-    ): void {
+    ): Promise<void> {
         this.requireEnabled();
         const definition = this.definitions.get(definitionId);
         if (!definition?.season || !definition.recurring)
@@ -816,8 +841,8 @@ export class LeaderboardService implements LeaderboardCapability {
             ...definition,
             season: nextSeason,
         });
-        void this.persist();
-        void this.log?.("info", "Rolled over leaderboard season.", {
+        await this.persist();
+        await this.log?.("info", "Rolled over leaderboard season.", {
             component: "study-leaderboard",
             operation: "rollover",
             definitionId,

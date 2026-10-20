@@ -95,3 +95,48 @@ test("a saved room is retained after membership changes and a deleted room is re
     );
     assert.equal(created, 1);
 });
+
+test("failed key or membership setup cannot claim a source, and a retry creates a complete room", async () => {
+    for (const failAt of ["key", "member", "source"]) {
+        const events = [];
+        let failure = true;
+        let sequence = 0;
+        const resolve = createGroupChatResolver(
+            {
+                createRoom: async () => ({ id: `room-${++sequence}` }),
+                generateAndStoreRoomKey: async () => {
+                    events.push("key");
+                    if (failure && failAt === "key")
+                        throw new Error("setup_failed");
+                },
+                bindSource: async () => {
+                    events.push("source");
+                    if (failure && failAt === "source")
+                        throw new Error("setup_failed");
+                },
+                deleteRoom: async (id) => events.push(`delete:${id}`),
+            },
+            { getProfileByHandle: async (id) => ({ accountId: id }) },
+            {
+                add: async () => {
+                    events.push("member");
+                    if (failure && failAt === "member")
+                        throw new Error("setup_failed");
+                },
+            },
+        );
+        const input = {
+            usernames: ["alice", "bob"],
+            createdByAccountId: "alice",
+            reuseExisting: false,
+            source: { sourceType: "fixture", sourceId: "source" },
+        };
+        await assert.rejects(resolve(input), /setup_failed/);
+        assert.equal(events.at(-1), "delete:room-1");
+        if (failAt !== "source") assert.ok(!events.includes("source"));
+        failure = false;
+        events.length = 0;
+        assert.equal((await resolve(input)).roomId, "room-2");
+        assert.deepEqual(events, ["key", "member", "member", "source"]);
+    }
+});
