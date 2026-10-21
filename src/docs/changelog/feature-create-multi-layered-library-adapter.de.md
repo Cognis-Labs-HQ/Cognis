@@ -198,3 +198,4 @@ Wiederholte Verben, Adverbien und Einträge mit Pluralformen öffnen vor dem Ein
 - [f9740de0](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9740de0c23433da63e296677b64f21540da44db)
 - [f90334ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/f90334ced0dc442d6e0c1627704cd36984128910)
 - [52002ada](https://github.com/Cognis-Labs-HQ/Cognis/commit/52002ada74f6d3a6e80ee796e2348128434b524c)
+- [43d7b6f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/43d7b6f7eee4628e6fcca5b8c72e1ba49158c290)
