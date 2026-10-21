@@ -1,4 +1,8 @@
 import { isDeepStrictEqual } from "node:util";
+import {
+    validateGeneratedCopy,
+    validateTransformationSource,
+} from "../reuse/generated-transformations.js";
 import type { LibraryStore } from "../store.js";
 import type {
     LibraryEntry,
@@ -40,17 +44,17 @@ function storedReferences(
         );
 }
 
-export async function findContentConflict(
+export async function authoredContentCandidates(
     store: LibraryStore,
     location: LibraryLocation,
     schemaId: string,
     input: LibraryEntryInput,
     schema?: LibrarySchema,
-): Promise<LibraryEntry | undefined> {
-    const locations = [
-        location,
-        { scope: "global", scopeId: "global" } as const,
-    ];
+): Promise<LibraryEntry[]> {
+    const locations =
+        location.scope === "global"
+            ? [location]
+            : [location, { scope: "global", scopeId: "global" } as const];
     const candidates = (
         await Promise.all(
             locations.map(
@@ -60,6 +64,27 @@ export async function findContentConflict(
             ),
         )
     ).flat();
+    if (schema) {
+        validateTransformationSource(schema, input);
+        validateGeneratedCopy(schema, input, candidates);
+    }
+    return candidates;
+}
+
+export async function findContentConflict(
+    store: LibraryStore,
+    location: LibraryLocation,
+    schemaId: string,
+    input: LibraryEntryInput,
+    schema?: LibrarySchema,
+): Promise<LibraryEntry | undefined> {
+    const candidates = await authoredContentCandidates(
+        store,
+        location,
+        schemaId,
+        input,
+        schema,
+    );
     const label = input.label.trim().normalize("NFKC").toLocaleLowerCase();
     return candidates.find(
         (candidate) =>

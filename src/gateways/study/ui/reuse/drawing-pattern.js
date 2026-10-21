@@ -25,17 +25,18 @@ function orderedDrawingPieces(entry, entries, schemas) {
             (left, right) => right.entry.label.length - left.entry.label.length,
         );
     const written = [];
+    const label = entry.label.replaceAll(/\s/gu, "");
     let offset = 0;
-    while (offset < entry.label.length) {
+    while (offset < label.length) {
         const candidate = drawable.find(
             ({ entry: item }) =>
-                item.label && entry.label.startsWith(item.label, offset),
+                item.label && label.startsWith(item.label, offset),
         );
         if (!candidate) break;
         written.push(candidate);
         offset += candidate.entry.label.length;
     }
-    if (written.length && offset === entry.label.length) return written;
+    if (written.length && offset === label.length) return written;
     return [];
 }
 

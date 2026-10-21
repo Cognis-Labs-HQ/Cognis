@@ -88,7 +88,6 @@ test("audio access checks ownership and derives transformed speech from the sche
         },
     };
     const entry = {
-        scope: "global",
         id: "dog",
         schemaId: "test",
         language: "en",
@@ -99,7 +98,15 @@ test("audio access checks ownership and derives transformed speech from the sche
         tags: ["noun"],
         fields: { audio: "file:base.audio", pronunciation: ["dog"] },
     } as LibraryEntry;
-    const store = { get: async () => entry, saveSchema: async () => {} };
+    let writes = 0;
+    const store = {
+        get: async () => entry,
+        saveSchema: async () => {},
+        updateField: async () => {
+            writes++;
+            return true;
+        },
+    };
     const ctx = createCtx();
     ctx.registerFlow({
         id: "study:library:audio",
@@ -150,6 +157,7 @@ test("audio access checks ownership and derives transformed speech from the sche
         transformSets: [
             {
                 id: "number",
+                flag: "noun",
                 matchTags: ["noun"],
                 baseState: "base",
                 metadata: { labels: { en: "Number" } },
@@ -198,7 +206,21 @@ test("audio access checks ownership and derives transformed speech from the sche
     );
     assert.deepEqual(requests, ["dogs"]);
     assert.deepEqual(stages.slice(-3), ["authorize", "validate", "resolve"]);
-    assert.equal(entry.fields.audio, "file:base.audio");
+    assert.equal(entry.fields!.audio, "file:base.audio");
+    ctx.registerFlow({
+        id: "study:library:regenerateAudio",
+        stages: ["authorize", "validate", "resolve", "persist"],
+    });
+    await library.readAudio(
+        { accountId: "admin", role: "admin" },
+        "dog",
+        "audio",
+        descriptor,
+        true,
+    );
+    assert.equal(writes, 0);
+    assert.equal(entry.fields!.audio, "file:base.audio");
+    assert.deepEqual(requests, ["dogs", "dogs"]);
     const published = library.listSchemas()[0].layers[0].fields![0];
     assert.equal(published.audioLookupAvailable, true);
     assert.deepEqual(published.metadata, schema.layers[0].fields![0].metadata);

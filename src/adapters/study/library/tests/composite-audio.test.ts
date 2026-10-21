@@ -262,6 +262,7 @@ function transformedFixture() {
     context.schema.transformSets = [
         {
             id: "verb",
+            flag: "verb",
             matchTags: ["verb"],
             baseState: "base",
             rules: [

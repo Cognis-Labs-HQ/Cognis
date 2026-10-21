@@ -5,7 +5,7 @@
     "type": "module",
     "private": true,
     "dependencies": {
-        "@cognis/gateways": "<=0.1.28",
+        "@cognis/gateways": "<=0.1.29",
         "@cognis/core": "<=0.5.2"
     }
 }

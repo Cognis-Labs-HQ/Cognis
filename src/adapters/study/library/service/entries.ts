@@ -1,4 +1,5 @@
 import { validateCardLimits } from "./card-limits.js";
+import { validateTransformationSource } from "../reuse/generated-transformations.js";
 import { randomUUID } from "node:crypto";
 import type { FlowApi } from "@cognis/core";
 import type {
@@ -9,7 +10,10 @@ import type {
 } from "../types.js";
 import type { LibraryActor } from "../contracts.js";
 import type { LibraryStore } from "../store.js";
-import { findContentConflict } from "./content-conflicts.js";
+import {
+    findContentConflict,
+    authoredContentCandidates,
+} from "./content-conflicts.js";
 import { prepareDefinitionFields } from "./definitions.js";
 import { definitionTranslations } from "../reuse/definitions.js";
 import { runOperation } from "../reuse/operation.js";
@@ -82,6 +86,7 @@ export class LibraryEntryWriter {
                     if (isImmutableLayer(layer))
                         throw new Error("immutable_layer");
                     normalizeEntryClass(input, layer);
+                    validateTransformationSource(schema, input);
                     validateCardLimits(schema, input);
 
                     const conflict = await findContentConflict(
@@ -185,10 +190,18 @@ export class LibraryEntryWriter {
                     validateEntryInput(input);
                     const schema = this.context.schema(current.schemaId);
                     input.schemaVersion = schema.version;
+                    await authoredContentCandidates(
+                        this.context.store,
+                        { scope: current.scope, scopeId: current.scopeId },
+                        schema.id,
+                        input,
+                        schema,
+                    );
                     const layer = findLayer(schema, input.layer);
                     if (isImmutableLayer(layer))
                         throw new Error("immutable_layer");
                     normalizeEntryClass(input, layer);
+                    validateTransformationSource(schema, input);
                     validateCardLimits(schema, input);
 
                     fields = structuredClone(input.fields ?? {});

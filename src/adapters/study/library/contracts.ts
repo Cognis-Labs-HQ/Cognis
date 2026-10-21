@@ -52,6 +52,7 @@ export type LibraryContentNotifier = (input: {
 
 /** Public surface used by language modules during their bootstrap. */
 export interface LibraryProviderCapability {
+    readonly transformationModel: "generated";
     /** Validate a provider pack against the installed contract without mutating storage. */
     inspectContentPack(root: string): Promise<LibraryContentPackPlan>;
     ingestContentPack(root: string): Promise<LibraryContentPackReceipt>;

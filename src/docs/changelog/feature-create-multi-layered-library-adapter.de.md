@@ -168,9 +168,13 @@ Study-Erkennungstests kopieren statische Adaptermodule und speichern konfigurier
 
 Wiederholte Verben, Adverbien und Einträge mit Pluralformen öffnen vor dem Einfügen die Formauswahl. Abbrechen erhält die Satzkomposition. Schlüsselbundaktivitäten sind begrenzt, ohne Geheimnisse zu löschen; bestehende Tresore bleiben innerhalb der festen Grenze zur Kürzung lesbar. Fehler der Hintergrundsynchronisierung werden angezeigt.
 
-## Abgeleitete Karten verlangen
+## Generierte Wortformen
 
-Ein Formensatz kann ein nicht leeres Array `requiredCardStates` deklarieren. Für jede passende Ausgangskarte löst `inspectContentPack(root)` der öffentlichen Anbieterfähigkeit diese Zustände mit derselben Regelverarbeitung wie Browser und serverseitige Referenzprüfung auf. Jede abgeleitete Schreibweise und primäre Aussprache benötigt genau eine Karte in der Ebene der Ausgangskarte, verknüpft durch eine Referenz mit passender Formensatz-ID und passendem Regelpfad. Gleicher Anzeigetext allein genügt nicht. Unerreichbare Zustände, fehlende Karten, doppelte Ableitungen und falsche Schreibweisen oder Aussprachen lassen die Prüfung vor dem Import scheitern. Gewöhnliche Karten bleiben unverändert, solange ihre Tags keinen Satz mit Pflichtzuständen auswählen. Abgeleitete Karten dürfen die Aktivierungsdeklaration der Ausgangskarte nicht übernehmen. Wachsende Zyklen mit wiederholten Regeln scheitern ausdrücklich. Die Prüfung erzeugt weder Karten noch Medien.
+Jeder Formensatz deklariert ein erforderliches `flag`, etwa `transform:verb` oder `transform:plural`, neben seinen grammatischen `matchTags`. Nur entsprechend markierte Basiskarten aktivieren die Gruppe. Unbekannte oder wirkungslose Flags scheitern an der Validierung. Formen sind schreibgeschützte Ansichten mit der kanonischen Basis-UUID und `{setId, path}`; eigenständige Formenkarten dürfen weder erstellt noch importiert oder ausgeliefert werden. Echte Homografen mit anderer grammatischer Klasse bleiben zulässig.
+
+Regeln verändern Schreibweise und Aussprache durch Entfernen und Anfügen von Suffixen, optionale Präfixoperationen, geordnete `suffixes`-Alternativen und lemmaabhängige `forms` für unregelmäßige Grammatik. Überschreibungen ersetzen die allgemeine Textoperation. Pfade verbinden mehrere Zustände einschließlich mehrteiliger Formen; wachsende Zyklen scheitern. Definitionstemplates werden einmal interpoliert, eingesetzter Text bleibt unverändert.
+
+Detailansichten, Satzprüfung und Audio nutzen denselben Resolver. Generierte Ansichten behalten Referenzbilder, entfernen jedoch die Audio- und Strichfelder der Basis. Die Audiosuche verwendet generierte Schreibweise und Hauptaussprache; eine Neugenerierung verändert die Basiskarte nicht. Zeichenübungen setzen die generierte Schreibweise aus Schreibmustern zusammen, behalten Strichgruppen bei und ignorieren Leerzeichen. Aufnahmetests verlangen für jede aktivierte Regel einen pfadgebundenen Clip. Gespeicherte Formenkarten und Kompatibilitätsaliase werden nicht unterstützt.
 
 ## Commits
 

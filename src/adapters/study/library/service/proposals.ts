@@ -1,4 +1,6 @@
 import { findLayer, validateFields, validateReferences } from "../layers.js";
+import { validateEntryInput } from "./input.js";
+import { validateTransformationSource } from "../reuse/generated-transformations.js";
 import type {
     LibraryEntry,
     LibraryEntryInput,
@@ -11,6 +13,8 @@ export function validateUpdateProposal(
     schema: LibrarySchema,
     targets: ReadonlyMap<string, LibraryEntry>,
 ): void {
+    validateEntryInput(proposed);
+    validateTransformationSource(schema, proposed);
     if (
         proposed.schemaId !== current.schemaId ||
         proposed.layer !== current.layer

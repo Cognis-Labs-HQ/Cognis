@@ -312,6 +312,8 @@ export function headingCompositionReferences(detail, schemas) {
                 schema,
                 entry.referenceTransformation,
             );
+            if (entry.referenceTransformation !== undefined && !transformation)
+                throw new Error("invalid_reference_transformation");
             return transformation
                 ? { ...entry, label: transformation.node.value }
                 : entry;

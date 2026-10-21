@@ -1,4 +1,4 @@
-import { referencedTransformation } from "../reuse/transformations.js";
+import { generatedTransformationCard } from "../reuse/transformations.js";
 
 export function orderedReadingReferences(detail, schemas) {
     return (detail.entry.references ?? [])
@@ -17,23 +17,12 @@ export function orderedReadingReferences(detail, schemas) {
                 ({ id }) => id === entry.layer,
             )?.semanticRole;
             if (["definition", "meaning"].includes(role)) return [];
-            const transformation = referencedTransformation(
-                entry,
-                schema,
-                reference.transformation,
-            );
             return [
-                transformation
-                    ? {
-                          ...entry,
-                          label: transformation.node.value,
-                          fields: {
-                              ...entry.fields,
-                              pronunciation: transformation.node.pronunciation,
-                          },
-                          referenceTransformation: reference.transformation,
-                      }
-                    : entry,
+                generatedTransformationCard(
+                    entry,
+                    schema,
+                    reference.transformation,
+                ),
             ];
         });
 }

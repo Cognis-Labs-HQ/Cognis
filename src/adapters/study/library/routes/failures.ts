@@ -1,4 +1,9 @@
 const DOMAIN_CODES = new Set([
+    "generated_transformation_readonly",
+    "unresolved_transform_flag",
+    "transform_flag_required",
+    "invalid_transform_forms",
+    "invalid_transform_source",
     "definition_limit",
     "pronunciation_limit",
     "tag_limit",

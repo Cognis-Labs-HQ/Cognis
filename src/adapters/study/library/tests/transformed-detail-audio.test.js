@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 
@@ -28,6 +29,7 @@ test("selected verb, adverb and plural details request their transformed audio t
     );
     const context = vm.createContext({
         uiCtx,
+        generatedTransformationCard,
         escapeHtml,
         document: { documentElement: { lang: "en" } },
         parseLanguageCode: (code) => code,
@@ -77,10 +79,28 @@ test("selected verb, adverb and plural details request their transformed audio t
             layer: "words",
             language: "en",
             scope: "global",
-            tags: [],
+            tags: ["transform:fixture"],
             fields: { pronunciation: [base] },
             references: [],
         };
+        schema.transformSets = [
+            {
+                id: setId,
+                flag: "transform:fixture",
+                matchTags: ["transform:fixture"],
+                baseState: "base",
+                rules: [
+                    {
+                        id: "form",
+                        fromState: "base",
+                        toState: "form",
+                        removeSuffix: base,
+                        append: label,
+                        pronunciation: { removeSuffix: base, append: reading },
+                    },
+                ],
+            },
+        ];
         const result = await context.composeDetail(
             { entry, references: [] },
             [schema],
@@ -105,6 +125,6 @@ test("selected verb, adverb and plural details request their transformed audio t
             ),
         );
         assert.equal(observed.at(-1).label, label);
-        assert.equal(observed.at(-1).fields.pronunciation, reading);
+        assert.deepEqual(observed.at(-1).fields.pronunciation, [reading]);
     }
 });

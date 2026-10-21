@@ -63,7 +63,7 @@ test("one opt-in control represents every matching noun family for a shared tran
     const html = context.renderTransformationOptIns({
         language: "ja",
         transformSets: ["dog", "cat", "teacher"].map((family) => ({
-            optInTag: "plural",
+            flag: "plural",
             matchTags: ["noun", family],
             metadata: { labels: { en: "Collective Plural" } },
         })),

@@ -44,6 +44,7 @@ test("provider transform sets derive pathways without materialized cards", () =>
         transformSets: [
             {
                 id: "verb",
+                flag: "verb",
                 matchTags: ["verb"],
                 baseState: "base",
                 rules: [
@@ -87,6 +88,7 @@ test("provider-authored references resolve an exact transformation path", () => 
         transformSets: [
             {
                 id: "verb",
+                flag: "verb",
                 matchTags: ["verb"],
                 baseState: "base",
                 rules: [
@@ -193,6 +195,7 @@ test("transform sets ignore entries without every matching tag", () => {
     const schema = {
         transformSets: [
             {
+                flag: "verb",
                 matchTags: ["verb", "verb-group-a"],
                 baseState: "base",
                 rules: [],
@@ -211,6 +214,7 @@ test("transform pathways support branching chains with dynamic readings and defi
         transformSets: [
             {
                 id: "verb-group-b",
+                flag: "verb",
                 matchTags: ["verb", "verb-group-b"],
                 baseState: "base",
                 rules: [
@@ -436,8 +440,8 @@ test("optional plural families require card opt-in and preserve canonical senten
         transformSets: [
             {
                 id: "noun-dog",
+                flag: "plural",
                 matchTags: ["noun", "countable-dog"],
-                optInTag: "plural",
                 baseState: "singular",
                 rules: [
                     {

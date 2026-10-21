@@ -45,6 +45,7 @@ const schema = {
     transformSets: [
         {
             id: "verb",
+            flag: "verb",
             matchTags: ["verb"],
             baseState: "base",
             rules: [
@@ -323,6 +324,7 @@ test("spaced sentence titles preserve canonical word, punctuation, and transform
         transformSets: [
             {
                 id: "noun-number",
+                flag: "plural",
                 matchTags: ["plural"],
                 baseState: "singular",
                 rules: [
@@ -405,5 +407,28 @@ test("spaced sentence titles preserve canonical word, punctuation, and transform
             ),
         ),
         [],
+    );
+});
+
+test("explicit unresolved forms reject editing and reading instead of substituting roots", () => {
+    const broken = structuredClone(sentence);
+    broken.references[2].transformation.path = ["unknown"];
+    assert.throws(
+        () =>
+            orderedReadingReferences({ entry: broken, references: entries }, [
+                schema,
+            ]),
+        /invalid_reference_transformation/,
+    );
+    assert.throws(
+        () =>
+            restoreCompositionTokens(
+                broken,
+                entries,
+                schema.layers[2].cardConstructor,
+                new Set(["words", "particles"]),
+                schema,
+            ),
+        /invalid_reference_transformation/,
     );
 });

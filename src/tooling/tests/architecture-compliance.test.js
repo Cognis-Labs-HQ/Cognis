@@ -446,7 +446,8 @@ test("adapter reuse modules serve multiple component surfaces", () => {
                 const target = resolve(consumer, "..", specifier);
                 return (
                     target === filePath ||
-                    target.replace(/\.js$/, ".ts") === filePath
+                    target.replace(/\.js$/, ".ts") === filePath ||
+                    target.replace(/\.js$/, ".d.ts") === filePath
                 );
             });
         });

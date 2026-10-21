@@ -1,7 +1,7 @@
 import { resolveCompositeAudio } from "./composite-audio.js";
 import { runOperation } from "../reuse/operation.js";
 import { findLayer } from "../layers.js";
-import { transformedAudioEntry } from "./audio-input.js";
+import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import type { FlowApi } from "@cognis/core";
 import type { LibraryActor } from "../contracts.js";
 import type { LibrarySchema, LibraryReferenceInput } from "../types.js";
@@ -111,11 +111,10 @@ export async function readAuthorizedEntryAudio(
                 );
             },
             validate: () => {
-                entry = transformedAudioEntry(
+                entry = generatedTransformationCard(
                     entry,
                     dependencies.schema(entry.schemaId),
                     input.transformation,
-                    input.fieldId,
                 );
             },
             resolve: async () => {
@@ -166,7 +165,7 @@ export async function readAuthorizedEntryAudio(
                     }));
                 }
             },
-            ...(input.refresh
+            ...(input.refresh && input.transformation === undefined
                 ? {
                       persist: async () => {
                           if (!dependencies.store)

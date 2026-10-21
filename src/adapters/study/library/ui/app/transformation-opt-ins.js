@@ -4,14 +4,13 @@ import { localizedLabel } from "./presentation.js";
 export function renderTransformationOptIns(schema) {
     const groups = new Map();
     for (const set of schema?.transformSets ?? []) {
-        if (!set.optInTag) continue;
-        const group = groups.get(set.optInTag) ?? {
-            tag: set.optInTag,
+        const group = groups.get(set.flag) ?? {
+            tag: set.flag,
             metadata: set.metadata,
             matches: [],
         };
         group.matches.push(set.matchTags);
-        groups.set(set.optInTag, group);
+        groups.set(set.flag, group);
     }
     return `<div class="library-transform-opt-ins">${[...groups.values()].map((group) => `<label data-library-transform-opt-in hidden><input type="checkbox" class="choice-checkbox" data-transform-tag="${escapeHtml(group.tag)}" data-match-groups="${escapeHtml(JSON.stringify(group.matches))}"><span>${escapeHtml(localizedLabel(group.metadata, schema.language))}</span></label>`).join("")}</div>`;
 }

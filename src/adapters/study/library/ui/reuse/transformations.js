@@ -1,91 +1,101 @@
 function applySuffix(value, operation) {
-    if (!operation || !value.endsWith(operation.removeSuffix)) return value;
-    return `${value.slice(0, value.length - operation.removeSuffix.length)}${operation.append}`;
+    if (!operation) return value;
+    const selected = {
+        ...operation,
+        ...operation.suffixes?.find((suffix) =>
+            value.endsWith(suffix.removeSuffix),
+        ),
+    };
+    if (
+        !value.endsWith(selected.removeSuffix) ||
+        !value.startsWith(selected.removePrefix ?? "")
+    )
+        return null;
+    return `${selected.prepend ?? ""}${value.slice((selected.removePrefix ?? "").length, value.length - selected.removeSuffix.length)}${selected.append}`;
+}
+
+function effectiveRule(entry, rule) {
+    const form =
+        rule.forms && Object.hasOwn(rule.forms, entry.label)
+            ? rule.forms[entry.label]
+            : undefined;
+    if (!form) return rule;
+    const {
+        removeSuffix,
+        append,
+        prepend,
+        removePrefix,
+        suffixes,
+        ...metadata
+    } = rule;
+    return { ...metadata, ...form };
 }
 
 function eligibleTransformSets(entry, schema) {
     const tags = new Set(entry.tags ?? []);
     return (schema?.transformSets ?? []).filter(
         (set) =>
-            set.matchTags.every((tag) => tags.has(tag)) &&
-            (set.optInTag === undefined || tags.has(set.optInTag)),
+            typeof set.flag === "string" &&
+            tags.has(set.flag) &&
+            set.matchTags.every((tag) => tags.has(tag)),
     );
 }
 
-export function resolveTransformation(entry, schema, transformation) {
-    const set = eligibleTransformSets(entry, schema).find(
-        ({ id }) => id === transformation?.setId,
-    );
-    if (
-        !set ||
-        !Array.isArray(transformation?.path) ||
-        !transformation.path.length
-    )
-        return null;
-    let state = set.baseState;
-    let value = entry.label;
-    for (const ruleId of transformation.path) {
-        const rule = set.rules.find(
-            (candidate) =>
-                candidate.id === ruleId && candidate.fromState === state,
-        );
-        if (!rule || !value.endsWith(rule.removeSuffix)) return null;
-        value = applySuffix(value, rule);
-        state = rule.toState;
-    }
-    return { set, state, value };
+function baseNode(entry, set) {
+    const pronunciation =
+        (Array.isArray(entry.fields?.pronunciation)
+            ? entry.fields.pronunciation[0]
+            : entry.fields?.pronunciation) ?? entry.label;
+    if (typeof pronunciation !== "string")
+        throw new Error("invalid_transform_source");
+    return {
+        class: entry.class,
+        state: set.baseState,
+        value: entry.label,
+        pronunciation,
+        depth: 0,
+        path: [],
+        definitionRules: [],
+    };
+}
+
+function applyRule(entry, node, declared) {
+    if (declared.fromState !== node.state) return null;
+    const rule = effectiveRule(entry, declared);
+    const value = applySuffix(node.value, rule);
+    const pronunciation = applySuffix(node.pronunciation, rule.pronunciation);
+    if (value === null || pronunciation === null) return null;
+    return {
+        class: rule.resultClass ?? node.class,
+        state: rule.toState,
+        value,
+        pronunciation,
+        definition: rule.definition,
+        depth: node.depth + 1,
+        rule,
+        definitionRules: [...node.definitionRules, rule],
+        path: [...node.path, rule.id],
+    };
 }
 
 export function transformationPathways(entry, schema) {
-    return eligibleTransformSets(entry, schema).flatMap((set) => {
-        const nodes = [
-            {
-                state: set.baseState,
-                value: entry.label,
-                pronunciation:
-                    (Array.isArray(entry.fields?.pronunciation)
-                        ? entry.fields.pronunciation[0]
-                        : entry.fields?.pronunciation) ?? entry.label,
-                depth: 0,
-                path: [],
-            },
-        ];
+    return eligibleTransformSets(entry, schema).map((set) => {
+        const nodes = [baseNode(entry, set)];
         const seen = new Set([`${set.baseState}\u0000${entry.label}`]);
         for (let index = 0; index < nodes.length; index += 1) {
             const node = nodes[index];
-            for (const rule of set.rules) {
-                if (
-                    rule.fromState !== node.state ||
-                    !node.value.endsWith(rule.removeSuffix)
-                ) {
-                    continue;
-                }
-                const value = `${node.value.slice(
-                    0,
-                    node.value.length - rule.removeSuffix.length,
-                )}${rule.append}`;
-                const key = `${rule.toState}\u0000${value}`;
+            for (const declared of set.rules) {
+                const next = applyRule(entry, node, declared);
+                if (!next) continue;
+                const key = `${next.state}\u0000${next.value}`;
                 if (seen.has(key)) continue;
-                if (node.path.includes(rule.id))
+                if (node.path.includes(declared.id))
                     throw new Error("cyclic_transform_rules");
                 seen.add(key);
-                nodes.push({
-                    state: rule.toState,
-                    value,
-                    pronunciation: applySuffix(
-                        node.pronunciation,
-                        rule.pronunciation,
-                    ),
-                    definition: rule.definition,
-                    depth: node.depth + 1,
-                    rule,
-                    definitionRules: [...(node.definitionRules ?? []), rule],
-                    parent: index,
-                    path: [...node.path, rule.id],
-                });
+                nodes.push({ ...next, parent: index });
             }
         }
-        return [{ set, nodes }];
+        return { set, nodes };
     });
 }
 
@@ -99,17 +109,51 @@ export function matchingTransformation(entry, schema, text) {
 }
 
 export function referencedTransformation(entry, schema, transformation) {
-    if (!transformation) return null;
-    return (
-        transformationPathways(entry, schema)
-            .filter(({ set }) => set.id === transformation.setId)
-            .flatMap(({ set, nodes }) => nodes.map((node) => ({ set, node })))
-            .find(
-                ({ node }) =>
-                    JSON.stringify(node.path) ===
-                    JSON.stringify(transformation.path),
-            ) ?? null
+    const set = eligibleTransformSets(entry, schema).find(
+        ({ id }) => id === transformation?.setId,
     );
+    if (
+        !set ||
+        !Array.isArray(transformation?.path) ||
+        !transformation.path.length ||
+        transformation.path.length > 8
+    )
+        return null;
+    let node = baseNode(entry, set);
+    for (const ruleId of transformation.path) {
+        const declared = set.rules.find((candidate) => candidate.id === ruleId);
+        if (!declared) return null;
+        node = applyRule(entry, node, declared);
+        if (!node) return null;
+    }
+    return { set, node };
+}
+
+export function generatedTransformationCard(entry, schema, transformation) {
+    if (transformation === undefined) return entry;
+    const resolved = referencedTransformation(entry, schema, transformation);
+    if (!resolved) throw new Error("invalid_reference_transformation");
+    const fields = {
+        ...entry.fields,
+        pronunciation: [resolved.node.pronunciation],
+    };
+    for (const field of schema.layers?.find(({ id }) => id === entry.layer)
+        ?.fields ?? []) {
+        if (["audio", "audioList", "strokePattern"].includes(field.type))
+            delete fields[field.id];
+    }
+    return {
+        ...entry,
+        label: resolved.node.value,
+        class: resolved.node.class,
+        fields,
+        referenceTransformation: {
+            setId: resolved.set.id,
+            path: resolved.node.path,
+        },
+        canEdit: false,
+        canDelete: false,
+    };
 }
 
 export function referenceMatchesTransformation(reference, transformation) {
@@ -178,11 +222,11 @@ export function transformedDefinition(baseDefinition, node, language) {
             suffix ? -suffix.length : undefined,
         );
         if (!transform.template) return definition;
-        return localized(transform.template)
-            .replace(/\{\{\s*definition\s*\}\}/giu, definition)
-            .replace(/\{\{\s*stem\s*\}\}/giu, stem)
-            .replace(/\{\{\s*prefix\s*\}\}/giu, prefix)
-            .replace(/\{\{\s*suffix\s*\}\}/giu, suffix);
+        const values = { definition, stem, prefix, suffix };
+        return localized(transform.template).replace(
+            /\{\{\s*(definition|stem|prefix|suffix)\s*\}\}/giu,
+            (_match, key) => values[key.toLowerCase()],
+        );
     }, baseDefinition);
 }
 

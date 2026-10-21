@@ -140,6 +140,7 @@ export async function openEntryPopup(
         const displayedEntry = transformedDetailEntry(
             detail.entry,
             selectedTransformation,
+            schema,
         );
         const strokePattern = resolveDraw(displayedEntry, layer, {
             entries,

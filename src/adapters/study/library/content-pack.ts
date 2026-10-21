@@ -4,7 +4,8 @@ import {
     CONTENT_RECORD_ID_PATTERN,
 } from "./identifiers.js";
 import { createHash } from "node:crypto";
-import { validateRequiredTransformationCards } from "./reuse/required-transformations.js";
+import { validateGeneratedTransformations } from "./reuse/generated-transformations.js";
+import { generatedTransformationCard } from "./ui/reuse/transformations.js";
 import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -206,7 +207,7 @@ export async function inspectContentPack(
         digest,
         assetsRoot,
     );
-    validateRequiredTransformationCards(schema, records);
+    validateGeneratedTransformations(schema, records);
     return {
         root,
         manifest,
@@ -439,7 +440,17 @@ async function validateContentRecords(
                     ({ reference }, index) => reference.position !== index,
                 ) ||
                 normalizedSequenceText(
-                    constituents.map(({ target }) => target!.label).join(""),
+                    constituents
+                        .map(({ reference, target }) =>
+                            reference.transformation
+                                ? generatedTransformationCard(
+                                      target!,
+                                      schema,
+                                      reference.transformation,
+                                  ).label
+                                : target!.label,
+                        )
+                        .join(""),
                 ) !== normalizedSequenceText(record.label)
             ) {
                 throw new Error("ordered_sequence_content_unresolved");

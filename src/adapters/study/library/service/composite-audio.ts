@@ -6,7 +6,7 @@ import type {
 } from "../types.js";
 import type { LibraryAudioCache } from "../audio-cache.js";
 import { composeRecording, type AudioRecording } from "./recording.js";
-import { transformedAudioEntry } from "./audio-input.js";
+import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 
 export function audioReferences(
     entry: LibraryEntry,
@@ -132,7 +132,11 @@ export async function resolveCompositeAudio(
             );
             if (!targetLayer) throw new Error("audio_not_found");
             await visit(
-                transformedAudioEntry(target, schema, reference.transformation),
+                generatedTransformationCard(
+                    target,
+                    schema,
+                    reference.transformation,
+                ),
                 targetLayer,
                 visited,
                 currentLayer.semanticRole === "orderedLexicalSequence"
@@ -156,7 +160,11 @@ export async function resolveCompositeAudio(
         );
         if (!targetLayer) throw new Error("audio_not_found");
         await visit(
-            transformedAudioEntry(target, schema, reference.transformation),
+            generatedTransformationCard(
+                target,
+                schema,
+                reference.transformation,
+            ),
             targetLayer,
             new Set([entry.id]),
             wordGap,

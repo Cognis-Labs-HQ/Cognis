@@ -26,6 +26,7 @@ test("new dictionary verbs enter the transformation selector before placement", 
         transformSets: [
             {
                 id: "ichidan",
+                flag: "verb",
                 matchTags: ["verb", "ichidan"],
                 baseState: "base",
                 rules: [

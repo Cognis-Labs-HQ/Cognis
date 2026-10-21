@@ -30,38 +30,38 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Adapter
 
-| Komponente            | Pfad                                | Version   |
-| --------------------- | ----------------------------------- | --------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.30`  |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.25`  |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.23`  |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.30`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.55`  |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`  |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23`  |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.37`  |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.26`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.25`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27`  |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.24`  |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.38`  |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.22`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.14`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.23`  |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.35`  |
-| Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
-| User Share            | `src/adapters/share/user/`          | `1.1.20`  |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.30` |
-| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
-| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.10`  |
-| Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`   |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.4`   |
-| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`   |
-| File Logging          | `src/adapters/logging/file/`        | `1.1.5`   |
+| Komponente            | Pfad                                | Version  |
+| --------------------- | ----------------------------------- | -------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.36` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.30` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.55` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.37` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.26` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.25` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.38` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `2.0.14` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.23` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.37` |
+| User Share            | `src/adapters/share/user/`          | `1.1.20` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`  |
+| Library (Study)       | `src/adapters/study/library/`       | `3.0.0`  |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`  |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.10` |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.4`  |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
 ## Gateways
 
@@ -77,7 +77,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/`  | `1.1.39`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.2.6`   |
+| Study                 | `src/gateways/study/`         | `2.2.7`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.115` |
 
 ## Kernverträge

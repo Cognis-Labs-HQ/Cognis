@@ -207,6 +207,7 @@ export async function composeDetail(
               entry: transformedDetailEntry(
                   detail.entry,
                   options.transformation,
+                  schemas.find((schema) => schema.id === detail.entry.schemaId),
               ),
               usedBy: dependantsMatchingTransformation(
                   usedBy,

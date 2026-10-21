@@ -3,7 +3,10 @@ import { resolveLabelComposition } from "./composition-links.js";
 import { openTransformationTreePopup } from "./transformation-popup.js";
 import { sourceTransformation } from "./transformation-popup.js";
 import { withParentAttribution } from "./popup-title.js";
-import { referencedTransformation } from "../reuse/transformations.js";
+import {
+    referencedTransformation,
+    generatedTransformationCard,
+} from "../reuse/transformations.js";
 
 export function transformedParentAttribution(
     items,
@@ -20,26 +23,19 @@ export function resolveDetailTransformation(
     descriptor,
     sourceLabel,
 ) {
-    return (
-        referencedTransformation(entry, schema, descriptor) ??
-        sourceTransformation(entry, schema, sourceLabel)
-    );
+    if (descriptor === undefined)
+        return sourceTransformation(entry, schema, sourceLabel);
+    const selected = referencedTransformation(entry, schema, descriptor);
+    if (!selected) throw new Error("invalid_reference_transformation");
+    return selected;
 }
 
-export function transformedDetailEntry(entry, transformation) {
+export function transformedDetailEntry(entry, transformation, schema) {
     if (!transformation) return entry;
-    return {
-        ...entry,
-        label: transformation.node.value,
-        referenceTransformation: {
-            setId: transformation.set.id,
-            path: transformation.node.path,
-        },
-        fields: {
-            ...entry.fields,
-            pronunciation: transformation.node.pronunciation,
-        },
-    };
+    return generatedTransformationCard(entry, schema, {
+        setId: transformation.set.id,
+        path: transformation.node.path,
+    });
 }
 
 export function selectDetailTransformation(event, context) {

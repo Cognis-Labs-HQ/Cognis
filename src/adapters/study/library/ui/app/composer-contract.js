@@ -187,6 +187,8 @@ export function derivedPronunciation(
                 schema,
                 reference.transformation,
             );
+            if (reference.transformation !== undefined && !transformation)
+                throw new Error("invalid_reference_transformation");
             return [
                 transformation?.node.pronunciation ??
                     derivedPronunciation(candidate, entries, schema, path),

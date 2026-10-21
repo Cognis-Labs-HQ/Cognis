@@ -39,6 +39,14 @@ test("shared drawing patterns compose ordered writing units without changing pro
     assert.equal(composite.columns, 3);
     assert.equal(composite.strokes.length, 3);
     assert.equal(pattern.strokes[0].points[0].x, 0.1);
+    const phrase = drawingPattern(
+        { ...entry, label: "ab a" },
+        schema.layers[1],
+        letters,
+        [schema],
+    );
+    assert.deepEqual(phrase.groups, [1, 1, 1]);
+    assert.equal(phrase.columns, 3);
     assert.deepEqual(
         drawingPattern(letters[0], atomic, letters, [schema]).groups,
         [1],

@@ -2,10 +2,12 @@ import { validateFields } from "../layers.js";
 import type { LibrarySchema, LibraryLayerSchema } from "../types.js";
 import { CONTENT_CLASS_PATTERN } from "../identifiers.js";
 import type { LibraryEntryInput, LibraryEntryFilters } from "../types.js";
+import { validateAuthoredTransformation } from "../reuse/generated-transformations.js";
 
 export function validateEntryInput(input: LibraryEntryInput): void {
     if (!input || typeof input !== "object" || Array.isArray(input))
         throw new Error("invalid_entry");
+    validateAuthoredTransformation(input);
     if (
         input.linkedEntries !== undefined &&
         !Array.isArray(input.linkedEntries)

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import {
     resolveLabelComposition,
     distinctPronunciationLabels,
@@ -241,10 +242,33 @@ test("transformed previews keep the selected heading and identify the base card 
             path: ["negative"],
         },
     };
+    verb.tags = ["transform:verb"];
+    schemas[0].transformSets = [
+        {
+            id: "verb",
+            flag: "transform:verb",
+            matchTags: ["transform:verb"],
+            baseState: "base",
+            rules: [
+                {
+                    id: "negative",
+                    fromState: "base",
+                    toState: "negative",
+                    removeSuffix: "く",
+                    append: "かなくて",
+                    pronunciation: {
+                        removeSuffix: "行く",
+                        append: "いかなくて",
+                    },
+                },
+            ],
+        },
+    ];
     const popups = [];
     const attributions = [];
     const context = {
         AbortController,
+        generatedTransformationCard,
         URL,
         resolveLabelComposition,
         headingCompositionReferences: () => [],

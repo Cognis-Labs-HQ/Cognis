@@ -73,6 +73,8 @@ export function restoreCompositionTokens(
             resolved && entry.label.startsWith(resolved.node.value, cursor)
                 ? resolved
                 : null;
+        if (referenceItem?.transformation !== undefined && !resolved)
+            throw new Error("invalid_reference_transformation");
         if (
             reference &&
             (entry.label.startsWith(reference.label, cursor) || transformation)

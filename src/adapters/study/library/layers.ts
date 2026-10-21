@@ -1,3 +1,4 @@
+import { validateTransformSets } from "./layers/transformations.js";
 import { validateReferenceTransformation } from "./layers/reference-transformation.js";
 import {
     CONTENT_CLASS_PATTERN,
@@ -546,94 +547,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 throw new Error("display_definition_relationship_required");
         }
     }
-    const transformSetIds = new Set<string>();
-    for (const set of schema.transformSets ?? []) {
-        assertIdentifier(set.id, "invalid_transform_set_id");
-        if (transformSetIds.has(set.id))
-            throw new Error("duplicate_transform_set");
-        transformSetIds.add(set.id);
-        validateMetadata(set.metadata, "transform_set_metadata_required");
-        if (set.optInTag !== undefined)
-            assertIdentifier(set.optInTag, "invalid_transform_opt_in_tag");
-        if (
-            !set.baseState.trim() ||
-            !Array.isArray(set.matchTags) ||
-            !set.matchTags.length ||
-            !Array.isArray(set.rules) ||
-            !set.rules.length
-        )
-            throw new Error("invalid_transform_set");
-        const ruleIds = new Set<string>();
-        const transitions = new Set<string>();
-        for (const rule of set.rules) {
-            assertIdentifier(rule.id, "invalid_transform_rule_id");
-            if (ruleIds.has(rule.id))
-                throw new Error("duplicate_transform_rule");
-            ruleIds.add(rule.id);
-            validateMetadata(rule.metadata, "transform_rule_metadata_required");
-            if (!rule.fromState.trim() || !rule.toState.trim())
-                throw new Error("invalid_transform_rule");
-            const transition = `${rule.fromState}\u0000${rule.toState}\u0000${rule.removeSuffix}`;
-            if (
-                transitions.has(transition) ||
-                (rule.removeSuffix === "" && rule.append === "")
-            )
-                throw new Error("invalid_transform_rule");
-            if (
-                rule.pronunciation &&
-                (typeof rule.pronunciation.removeSuffix !== "string" ||
-                    typeof rule.pronunciation.append !== "string")
-            )
-                throw new Error("invalid_transform_pronunciation");
-            if (rule.definition)
-                validateMetadata(
-                    rule.definition,
-                    "transform_definition_metadata_required",
-                );
-            const definitionTransform = rule.definitionTransform;
-            for (const value of [
-                definitionTransform?.matchPrefix,
-                definitionTransform?.matchSuffix,
-                definitionTransform?.template,
-            ]) {
-                if (typeof value === "string" && !value)
-                    throw new Error("invalid_transform_definition");
-                if (value && typeof value !== "string")
-                    validateMetadata(value, "invalid_transform_definition");
-            }
-            for (const replacement of definitionTransform?.replacements ?? []) {
-                for (const value of [
-                    replacement.match,
-                    replacement.replacement,
-                ]) {
-                    if (typeof value === "string" && !value)
-                        throw new Error("invalid_transform_definition");
-                    if (value && typeof value !== "string")
-                        validateMetadata(value, "invalid_transform_definition");
-                }
-            }
-            if (
-                definitionTransform &&
-                !definitionTransform.template &&
-                !definitionTransform.replacements?.length
-            )
-                throw new Error("invalid_transform_definition");
-            transitions.add(transition);
-        }
-        if (
-            set.requiredCardStates !== undefined &&
-            (!Array.isArray(set.requiredCardStates) ||
-                !set.requiredCardStates.length ||
-                new Set(set.requiredCardStates).size !==
-                    set.requiredCardStates.length ||
-                set.requiredCardStates.some(
-                    (state) =>
-                        state === set.baseState ||
-                        !set.rules.some((rule) => rule.toState === state),
-                ))
-        )
-            throw new Error("invalid_required_transform_states");
-    }
+    validateTransformSets(schema, { assertIdentifier, validateMetadata });
     return structuredClone({
         ...schema,
         language: canonicalizeLanguageTag(schema.language),

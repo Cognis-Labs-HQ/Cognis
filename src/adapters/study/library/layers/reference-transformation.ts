@@ -3,7 +3,7 @@ import type {
     LibraryReferenceInput,
     LibraryEntry,
 } from "../types.js";
-import { resolveTransformation } from "../ui/reuse/transformations.js";
+import { referencedTransformation } from "../ui/reuse/transformations.js";
 
 export function validateReferenceTransformation(
     schema: LibrarySchema,
@@ -13,7 +13,7 @@ export function validateReferenceTransformation(
     if (!reference.transformation) return;
     if (
         !reference.transformation.path.length ||
-        !resolveTransformation(target, schema, reference.transformation)
+        !referencedTransformation(target, schema, reference.transformation)
     )
         throw new Error("invalid_reference_transformation");
 }

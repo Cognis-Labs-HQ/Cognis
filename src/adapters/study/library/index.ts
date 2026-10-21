@@ -222,6 +222,7 @@ export async function bootstrapStudyAdapter(
         );
     if (!systemCtx?.hasCapability("study:library:provider"))
         systemCtx?.contributePublicCapability("study:library:provider", {
+            transformationModel: "generated",
             inspectContentPack: service.inspectContentPack.bind(service),
             ingestContentPack: service.ingestContentPack.bind(service),
             deleteContentPack: service.deleteContentPack.bind(service),

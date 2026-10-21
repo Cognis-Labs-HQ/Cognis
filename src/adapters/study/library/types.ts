@@ -174,25 +174,48 @@ export interface LibraryLayerView {
     layout: "cards" | "transformTree";
 }
 
+export interface LibraryTransformText {
+    removeSuffix: string;
+    append: string;
+    prepend?: string;
+    removePrefix?: string;
+    suffixes?: readonly LibraryTransformText[];
+}
+
 export interface LibraryTransformSet {
     id: string;
     metadata: LibraryMetadata;
     matchTags: readonly string[];
-    /** Explicit card tag required to enable this optional word-form family. */
-    optInTag?: string;
-    /** Materialized cards required for each applicable source card and state. */
-    requiredCardStates?: readonly string[];
+    /** Exact source-card tag enabling this family. */
+    flag: string;
     baseState: string;
     rules: readonly {
         id: string;
         metadata: LibraryMetadata;
         fromState: string;
         toState: string;
+        /** Optional grammatical class of the generated view. */
+        resultClass?: string;
         removeSuffix: string;
         append: string;
+        prepend?: string;
+        removePrefix?: string;
+        suffixes?: readonly LibraryTransformText[];
+        forms?: Readonly<
+            Record<
+                string,
+                LibraryTransformText & {
+                    pronunciation?: LibraryTransformText;
+                    definitionTransform?: LibraryTransformSet["rules"][number]["definitionTransform"];
+                }
+            >
+        >;
         pronunciation?: {
             removeSuffix: string;
             append: string;
+            prepend?: string;
+            removePrefix?: string;
+            suffixes?: readonly LibraryTransformText[];
         };
         definitionTransform?: {
             /** Optional localized boundary removed from the definition before templating. */
@@ -312,6 +335,8 @@ export interface LibraryEntryInput {
 }
 
 export interface LibraryEntry extends LibraryEntryInput {
+    /** Read-only generated view; identity remains the canonical base entry. */
+    referenceTransformation?: LibraryReferenceInput["transformation"];
     id: string;
     sourceRecordId?: string;
     displayId?: number;

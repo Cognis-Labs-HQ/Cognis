@@ -8,8 +8,8 @@ test("server rejects plural references until the base card opts into the family"
         transformSets: [
             {
                 id: "noun",
+                flag: "plural",
                 matchTags: ["countable"],
-                optInTag: "plural",
                 baseState: "base",
                 rules: [
                     {

@@ -80,6 +80,7 @@ test("providers declare sentence carousels, views, and transform rules", () => {
             {
                 id: "verbs",
                 metadata: { labels: { en: "Verbs" } },
+                flag: "verb",
                 matchTags: ["verb"],
                 baseState: "base",
                 rules: [
@@ -156,6 +157,7 @@ test("references validate provider-declared transformation paths", () => {
             {
                 id: "verbs",
                 metadata: { labels: { en: "Verbs" } },
+                flag: "verb",
                 matchTags: ["verb"],
                 baseState: "base",
                 rules: [
