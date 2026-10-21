@@ -107,6 +107,8 @@ Bei einem installierten Modul löst die Katalogaktualisierung zuerst den install
 
 Module, die Konfiguration oder Inhalte außerhalb ihres Checkouts speichern, müssen `uninstallModule(ctx, { deleteContent })` aus dem deklarierten Bootstrap-Einstiegspunkt exportieren. Der Hook entfernt moduleigene Datensätze und Dateien nur, wenn `deleteContent` wahr ist. Cognis ruft ihn auf, während Fähigkeiten über `ctx.getCapability` verfügbar sind. Nach Erfolg löscht Cognis die gespeicherte Modulkonfiguration und den Checkout; bei einem Fehler bleiben beide für einen erneuten Versuch erhalten.
 
+Deinstallations-Hooks lösen aktuelle öffentliche Anbieterfunktionen über dieselbe Grenze wie Bootstrap auf. Vom Routenkontext bereitgestellte Funktionen haben Vorrang; private Systemfunktionen bleiben verborgen. Anbieter für die Datenlöschung müssen während der Deinstallation des abhängigen Moduls aktiviert bleiben.
+
 ### Eigentum am UI-Bereich
 
 Cognis besitzt die Dashboard-Oberfläche und jede von einer Host-Fähigkeit ausgegebene wiederverwendbare Komponente, einschließlich der strukturellen Avatar-Klassen `profile-capability-*`. Ein Modul besitzt nur Nachfahren, die es innerhalb des an `mount()` übergebenen Inhaltswurzelelements rendert. Jeder Modulselektor muss an einer modulnamensräumigen Klasse oder ID enden; ein Host-Themenselektor darf nur als Vorfahr dieses moduleigenen Ziels erscheinen. Module dürfen eigene Layoutklassen an Host-Renderer übergeben, aber keine Host-Stylesheets kopieren, Host-Fähigkeitsklassen neu definieren, Shell-Elemente auswählen oder `document.body` beziehungsweise `document.head` verändern. Anwendungsweites Verhalten gehört in deklarierte `uiCtx`-Fähigkeiten oder Flows mit entfernbaren Hooks.

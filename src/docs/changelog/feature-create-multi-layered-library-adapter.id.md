@@ -176,6 +176,10 @@ Aturan mengubah ejaan dan pelafalan melalui penghapusan dan penambahan akhiran, 
 
 Detail, validasi kalimat, dan audio menggunakan resolver yang sama. Tampilan turunan mempertahankan gambar referensi tetapi menghapus bidang audio dan goresan dasar. Pencarian audio menggunakan ejaan turunan dan pelafalan utama; regenerasinya tidak mengubah kartu dasar. Latihan menulis menyusun pola karakter menurut ejaan turunan, mempertahankan kelompok goresan, dan mengabaikan spasi. Pengujian rekaman mewajibkan klip berjalur untuk setiap aturan aktif. Representasi kartu bentuk tersimpan dan alias kompatibilitas tidak didukung.
 
+## Pulihkan penghapusan data modul
+
+Hook penghapusan kini menyelesaikan kapabilitas publik terkini melalui batas yang sama dengan saat modul dimulai, sehingga paket konten Jepang dan Inggris dapat dihapus setelah modul bahasa dinonaktifkan. Pengujian mencakup konten yang dipertahankan, kedua paket bahasa, kegagalan dan penggantian penyedia, serta isolasi kapabilitas privat.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

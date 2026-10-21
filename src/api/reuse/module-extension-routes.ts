@@ -107,6 +107,16 @@ export function createModuleExtensionRoutes(
         path.resolve(process.cwd(), "external-modules");
     const assuranceByModuleId = new Map<string, ModuleAssurance>();
 
+    function resolveHostCapability<T>(capabilityId: string): T | undefined {
+        const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
+        return (
+            options.routeContext.getCapability<T>(capabilityId) ??
+            (systemCtx?.isPublicCapability(capabilityId)
+                ? systemCtx.getCapability<T>(capabilityId)
+                : undefined)
+        );
+    }
+
     function logInvalidAccessPolicy(
         method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
         moduleId: string,
@@ -147,11 +157,7 @@ export function createModuleExtensionRoutes(
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
         function resolveCapability<T>(capabilityId: string): T | undefined {
-            const capability =
-                options.routeContext.getCapability<T>(capabilityId) ??
-                (systemCtx?.isPublicCapability(capabilityId)
-                    ? systemCtx.getCapability<T>(capabilityId)
-                    : undefined);
+            const capability = resolveHostCapability<T>(capabilityId);
             if (
                 capabilityId !== "auth:registerProvider" ||
                 typeof capability !== "function"
@@ -794,7 +800,7 @@ export function createModuleExtensionRoutes(
             {
                 moduleId,
                 moduleRoot,
-                getCapability: options.routeContext.getCapability,
+                getCapability: resolveHostCapability,
                 log,
             },
             uninstallOptions,

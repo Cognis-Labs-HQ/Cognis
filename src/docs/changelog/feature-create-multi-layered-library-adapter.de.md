@@ -176,6 +176,10 @@ Regeln verändern Schreibweise und Aussprache durch Entfernen und Anfügen von S
 
 Detailansichten, Satzprüfung und Audio nutzen denselben Resolver. Generierte Ansichten behalten Referenzbilder, entfernen jedoch die Audio- und Strichfelder der Basis. Die Audiosuche verwendet generierte Schreibweise und Hauptaussprache; eine Neugenerierung verändert die Basiskarte nicht. Zeichenübungen setzen die generierte Schreibweise aus Schreibmustern zusammen, behalten Strichgruppen bei und ignorieren Leerzeichen. Aufnahmetests verlangen für jede aktivierte Regel einen pfadgebundenen Clip. Gespeicherte Formenkarten und Kompatibilitätsaliase werden nicht unterstützt.
 
+## Moduldaten zuverlässig löschen
+
+Deinstallations-Hooks lösen aktuelle öffentliche Funktionen wie beim Modulstart auf. Damit lassen sich japanische und englische Inhaltspakete nach dem Deaktivieren des Sprachmoduls löschen. Tests prüfen beibehaltene Inhalte, beide Sprachpakete, Anbieterfehler und -wechsel sowie die Abschottung privater Funktionen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

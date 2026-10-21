@@ -176,6 +176,10 @@ Rules transform spelling and pronunciation with suffix removal, suffix addition,
 
 Detail views, sentence validation and audio use the same resolver. Generated views preserve reference images but clear base audio and stroke fields. Audio lookup uses the generated spelling and primary pronunciation; refreshing it does not modify the base card. Drawing composes the generated spelling from writing-unit patterns, preserving stroke groups and ignoring spaces. Provider recording tests require every enabled rule to have a path-bound clip. No materialized-card representation or compatibility aliases are supported.
 
+## Restore module data cleanup
+
+Uninstall hooks now resolve live public capabilities through the same boundary as module startup, allowing Japanese and English content-pack deletion after disabling the language module. Tests cover retained content, both language packs, provider failures and replacement, and private-capability isolation.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

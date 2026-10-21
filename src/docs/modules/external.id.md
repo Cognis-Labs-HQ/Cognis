@@ -107,6 +107,8 @@ Untuk modul terpasang, penyegaran katalog menyelesaikan cabang atau rilis yang t
 
 Modul yang menyimpan konfigurasi atau konten di luar checkout harus mengekspor `uninstallModule(ctx, { deleteContent })` dari entrypoint bootstrap yang dideklarasikan. Hook menghapus rekaman dan berkas milik modul hanya ketika `deleteContent` bernilai benar. Cognis memanggilnya saat kapabilitas masih tersedia melalui `ctx.getCapability`. Setelah berhasil, Cognis menghapus konfigurasi modul tersimpan dan checkout; jika gagal, keduanya tetap tersedia agar administrator dapat mencoba lagi.
 
+Hook penghapusan menyelesaikan kapabilitas penyedia publik terkini melalui batas yang sama dengan bootstrap. Kapabilitas dari konteks rute tetap diutamakan; kapabilitas sistem privat tidak diekspos. Penyedia yang diperlukan untuk menghapus data harus tetap aktif saat modul yang bergantung padanya dihapus.
+
 ### Kepemilikan viewport UI
 
 Cognis memiliki shell dasbor dan setiap komponen pakai ulang yang dihasilkan kapabilitas host, termasuk kelas avatar struktural `profile-capability-*`. Modul hanya memiliki turunan yang direndernya di dalam akar konten yang diteruskan ke `mount()`. Setiap selektor modul harus berakhir pada kelas atau ID dengan namespace modul; selektor tema host hanya boleh muncul sebagai leluhur target milik modul tersebut. Modul boleh meneruskan kelas tata letaknya sendiri ke perender host, tetapi tidak boleh menyalin stylesheet host, mendefinisikan ulang kelas kapabilitas host, memilih elemen shell, atau mengubah `document.body` maupun `document.head`. Perilaku seluruh aplikasi harus berada dalam kapabilitas atau flow `uiCtx` yang dideklarasikan dengan hook yang dapat dilepas.

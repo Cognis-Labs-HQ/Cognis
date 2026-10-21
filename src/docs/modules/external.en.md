@@ -107,6 +107,8 @@ For an installed module, catalog refresh resolves the installed branch or releas
 
 Modules that persist configuration or content outside their checkout must export `uninstallModule(ctx, { deleteContent })` from the declared bootstrap entrypoint. The hook removes module-owned records and files only when `deleteContent` is true. After the hook succeeds, Cognis clears the persisted module configuration and deletes the checkout; a failed hook leaves both intact so the administrator can retry. Cognis invokes the hook before deleting the checkout, while capabilities remain available through `ctx.getCapability`.
 
+Uninstall hooks resolve current public provider capabilities through the same boundary as bootstrap. Route-provided capabilities retain precedence; private system capabilities are not exposed. Providers needed for data removal must remain enabled while the dependent module is uninstalled.
+
 ### UI viewport ownership
 
 Cognis owns the dashboard shell and every reusable component emitted by a host capability, including the structural `profile-capability-*` avatar classes. A module owns only descendants it renders inside the content root passed to `mount()`. Every module selector must end at a module-namespaced class or ID; a host theme selector may appear only as an ancestor of that module-owned target. Modules may pass their own layout classes to host renderers, but must not copy host stylesheets, redefine host capability classes, select shell elements, or mutate `document.body` or `document.head`. Application-wide behavior belongs in declared `uiCtx` capabilities or flows with removable hooks.
