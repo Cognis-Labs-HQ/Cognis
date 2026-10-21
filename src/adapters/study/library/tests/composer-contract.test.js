@@ -8,8 +8,8 @@ const source = readFileSync(
 );
 const executableSource = source
     .replace(
-        'from "./transformations.js"',
-        `from "${new URL("../ui/app/transformations.js", import.meta.url).href}"`,
+        'from "../reuse/transformations.js"',
+        `from "${new URL("../ui/reuse/transformations.js", import.meta.url).href}"`,
     )
     .replace(
         'from "./reuse/readings.js"',

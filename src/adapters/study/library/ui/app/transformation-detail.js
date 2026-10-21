@@ -3,7 +3,7 @@ import { resolveLabelComposition } from "./composition-links.js";
 import { openTransformationTreePopup } from "./transformation-popup.js";
 import { sourceTransformation } from "./transformation-popup.js";
 import { withParentAttribution } from "./popup-title.js";
-import { referencedTransformation } from "./transformations.js";
+import { referencedTransformation } from "../reuse/transformations.js";
 
 export function transformedParentAttribution(
     items,

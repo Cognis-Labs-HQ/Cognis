@@ -7,7 +7,7 @@ import {
     matchingTransformation,
     transformedDefinitions,
     transformationPathways,
-} from "./transformations.js";
+} from "../reuse/transformations.js";
 import {
     resolveLabelComposition,
     distinctPronunciationLabels,

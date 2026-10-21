@@ -168,6 +168,10 @@ Pengujian penemuan Study menyalin modul adaptor statis dan menyimpan identitas s
 
 Pemilihan berulang kata kerja, kata keterangan, dan entri yang mendukung bentuk jamak membuka pemilih transformasi sebelum ditambahkan ke kalimat. Pembatalan mempertahankan susunan kalimat. Riwayat gantungan kunci dibatasi tanpa menghapus rahasia, brankas yang ada tetap dapat dibaca dalam batas mutlak untuk diringkas, dan kegagalan sinkronisasi latar belakang ditampilkan.
 
+## Wajibkan Kartu Turunan
+
+Kumpulan transformasi dapat mendeklarasikan larik `requiredCardStates` yang tidak kosong. Untuk setiap kartu sumber yang cocok, `inspectContentPack(root)` pada kapabilitas penyedia publik menurunkan keadaan tersebut memakai mesin aturan yang sama dengan peramban dan validasi referensi server. Setiap ejaan dan pelafalan utama turunan harus memiliki tepat satu kartu pada lapisan sumber, ditautkan ke sumber melalui referensi dengan ID kumpulan transformasi dan jalur aturan yang sesuai. Teks tampilan yang sama saja tidak memenuhi syarat. Keadaan yang tidak dapat dicapai, kartu yang hilang, turunan ganda, serta ejaan atau pelafalan yang salah menggagalkan pemeriksaan sebelum impor. Kartu biasa tidak berubah kecuali tag-nya memilih kumpulan dengan keadaan wajib. Kartu turunan tidak boleh mewarisi deklarasi pengaktifan sumber. Siklus yang terus berkembang dengan mengulang aturan ditolak secara eksplisit. Pemeriksaan memvalidasi konten yang ada dan tidak membuat kartu atau media.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

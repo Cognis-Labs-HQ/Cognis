@@ -583,3 +583,7 @@ The matching Explore grid preview is blurred and non-interactive while its chara
 ## Decode Notification Text Once
 
 Request notifications decode XML entities in one pass and interpolate account/request values once as literal data. Encoded entity text stays encoded at the next level. Empty or missing preferred-language strings use the English value; a missing English value fails explicitly. The four resource catalogs are cached for the notifier lifetime, and failed reads remain retryable.
+
+## Require Derived Cards
+
+A transformation set may declare a non-empty `requiredCardStates` array. For each eligible source card, public provider `inspectContentPack(root)` resolves those states using the same rule engine as the browser and server reference validation. Each derived spelling and primary pronunciation must have exactly one card in the source layer, linked to that source by a reference with the matching transformation set ID and rule path. Matching display text alone does not satisfy the requirement. Unreachable states, missing cards, duplicate derivations and incorrect spellings/readings fail inspection before ingestion. Ordinary cards remain unaffected unless their declared tags select a set with required states. Derived cards should not retain the source’s opt-in declaration. Expanding cycles that repeat a rule fail explicitly. The check validates existing content; it does not create cards or media.

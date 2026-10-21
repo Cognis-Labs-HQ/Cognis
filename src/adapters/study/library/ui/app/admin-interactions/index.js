@@ -53,7 +53,7 @@ import {
 
 export { inputForField } from "../field-input.js";
 import { inputForField, renderStrokePatternPreviews } from "../field-input.js";
-import { transformationPathways } from "../transformations.js";
+import { transformationPathways } from "../../reuse/transformations.js";
 
 import {
     editorBody,

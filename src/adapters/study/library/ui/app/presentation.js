@@ -5,7 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
 import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
 import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
-import { referencedTransformation } from "./transformations.js";
+import { referencedTransformation } from "../reuse/transformations.js";
 import { resolveReferenceTitleComposition } from "./composition-links.js";
 
 export function entryAttributes(entry) {

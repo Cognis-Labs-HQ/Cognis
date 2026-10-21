@@ -29,7 +29,7 @@ import { uniqueRelatedEntries } from "./related-entries.js";
 import {
     dependantsMatchingTransformation,
     transformationPathways,
-} from "./transformations.js";
+} from "../reuse/transformations.js";
 
 const DETAIL_FLOW = "study:library:composeEntryDetail";
 

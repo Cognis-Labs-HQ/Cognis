@@ -1,4 +1,4 @@
-import { referencedTransformation } from "./transformations.js";
+import { referencedTransformation } from "../reuse/transformations.js";
 
 export function orderedReadingReferences(detail, schemas) {
     return (detail.entry.references ?? [])

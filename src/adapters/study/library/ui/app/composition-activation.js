@@ -2,7 +2,7 @@ import {
     compositionTokenEntryId,
     transformationCompositionToken,
 } from "./composition-tokens.js";
-import { transformationPathways } from "./transformations.js";
+import { transformationPathways } from "../reuse/transformations.js";
 import { openTransformationPopup } from "./transformation-popup.js";
 import { entryDefinitions } from "./create-entry/definitions.js";
 

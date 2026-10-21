@@ -1,4 +1,4 @@
-import { referencedTransformation } from "../ui/app/transformations.js";
+import { referencedTransformation } from "../ui/reuse/transformations.js";
 import type {
     LibraryEntry,
     LibrarySchema,

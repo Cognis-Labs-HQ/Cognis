@@ -1,6 +1,6 @@
 import { pronunciationValues } from "./reuse/readings.js";
 import { layerForEntry } from "./presentation.js";
-import { referencedTransformation } from "./transformations.js";
+import { referencedTransformation } from "../reuse/transformations.js";
 
 export function resolveComposerContract(schema, layer, constructor) {
     const effectiveConstructor = constructor ?? {

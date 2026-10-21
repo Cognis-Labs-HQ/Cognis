@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import * as links from "../ui/app/composition-links.js";
-import { referencedTransformation } from "../ui/app/transformations.js";
+import { referencedTransformation } from "../ui/reuse/transformations.js";
 import {
     restoreCompositionTokens,
     compositionTokenEntryId,

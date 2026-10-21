@@ -1,4 +1,4 @@
-import { referencedTransformation } from "./transformations.js";
+import { referencedTransformation } from "../reuse/transformations.js";
 
 const LITERAL_PREFIX = "literal:";
 const TRANSFORMATION_PREFIX = "transformation:";

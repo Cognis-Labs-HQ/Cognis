@@ -7,6 +7,79 @@ import { fileURLToPath } from "node:url";
 import { contentEntryId, inspectContentPack } from "../content-pack.js";
 import { validateLibrarySchema } from "../layers.js";
 
+test("public content inspection enforces declared materialized transformation cards", async (context) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "required-transform-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
+    await cp(new URL("fixtures/external-pack", import.meta.url), root, {
+        recursive: true,
+    });
+    const schemaPath = path.join(root, "schema.json");
+    const schema = JSON.parse(await readFile(schemaPath, "utf8"));
+    schema.layers.find(
+        (layer: { id: string }) => layer.id === "characters",
+    ).relationships = [
+        {
+            id: "source",
+            targetLayer: "characters",
+            metadata: { labels: { en: "Source" } },
+            onDelete: "restrict",
+        },
+    ];
+    schema.transformSets = [
+        {
+            id: "plural",
+            metadata: { labels: { en: "Plural" } },
+            matchTags: ["transform:plural"],
+            baseState: "base",
+            requiredCardStates: ["plural"],
+            rules: [
+                {
+                    id: "plural",
+                    metadata: { labels: { en: "Plural" } },
+                    fromState: "base",
+                    toState: "plural",
+                    removeSuffix: "",
+                    append: "s",
+                    pronunciation: { removeSuffix: "", append: "s" },
+                },
+            ],
+        },
+    ];
+    await writeFile(schemaPath, JSON.stringify(schema));
+    const recordsPath = path.join(root, "content/characters/characters.json");
+    const [source] = JSON.parse(await readFile(recordsPath, "utf8"));
+    source.tags = ["transform:plural"];
+    await writeFile(recordsPath, JSON.stringify([source]));
+    await assert.rejects(
+        inspectContentPack(root),
+        /required_transform_card_count/,
+    );
+    const derived = {
+        ...source,
+        id: "synthetic:character:plural",
+        label: source.label + "s",
+        displayId: 2,
+        tags: [],
+        fields: { ...source.fields, pronunciation: ["los"] },
+        references: [
+            {
+                entryId: source.id,
+                relation: "source",
+                transformation: { setId: "plural", path: ["plural"] },
+            },
+        ],
+    };
+    await writeFile(recordsPath, JSON.stringify([source, derived]));
+    const plan = await inspectContentPack(root);
+    assert.ok(plan.records.some((record) => record.id === derived.id));
+    schema.transformSets[0].requiredCardStates = ["unknown"];
+    await writeFile(schemaPath, JSON.stringify(schema));
+    await assert.rejects(
+        inspectContentPack(root),
+        /invalid_required_transform_states/,
+    );
+});
+
 test("external-package contract fixture preserves validated contract metadata", async () => {
     const root = fileURLToPath(
         new URL("fixtures/external-pack", import.meta.url),

@@ -7,7 +7,7 @@ import {
     transformedDefinitions,
     referencedTransformation,
     transformationPathways,
-} from "../ui/app/transformations.js";
+} from "../ui/reuse/transformations.js";
 import {
     compositionTokenLabel,
     restoreCompositionTokens,

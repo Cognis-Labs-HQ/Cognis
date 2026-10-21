@@ -3,14 +3,41 @@ function applySuffix(value, operation) {
     return `${value.slice(0, value.length - operation.removeSuffix.length)}${operation.append}`;
 }
 
-export function transformationPathways(entry, schema) {
+function eligibleTransformSets(entry, schema) {
     const tags = new Set(entry.tags ?? []);
-    return (schema?.transformSets ?? []).flatMap((set) => {
-        if (
-            !set.matchTags.every((tag) => tags.has(tag)) ||
-            (set.optInTag !== undefined && !tags.has(set.optInTag))
-        )
-            return [];
+    return (schema?.transformSets ?? []).filter(
+        (set) =>
+            set.matchTags.every((tag) => tags.has(tag)) &&
+            (set.optInTag === undefined || tags.has(set.optInTag)),
+    );
+}
+
+export function resolveTransformation(entry, schema, transformation) {
+    const set = eligibleTransformSets(entry, schema).find(
+        ({ id }) => id === transformation?.setId,
+    );
+    if (
+        !set ||
+        !Array.isArray(transformation?.path) ||
+        !transformation.path.length
+    )
+        return null;
+    let state = set.baseState;
+    let value = entry.label;
+    for (const ruleId of transformation.path) {
+        const rule = set.rules.find(
+            (candidate) =>
+                candidate.id === ruleId && candidate.fromState === state,
+        );
+        if (!rule || !value.endsWith(rule.removeSuffix)) return null;
+        value = applySuffix(value, rule);
+        state = rule.toState;
+    }
+    return { set, state, value };
+}
+
+export function transformationPathways(entry, schema) {
+    return eligibleTransformSets(entry, schema).flatMap((set) => {
         const nodes = [
             {
                 state: set.baseState,
@@ -39,6 +66,8 @@ export function transformationPathways(entry, schema) {
                 )}${rule.append}`;
                 const key = `${rule.toState}\u0000${value}`;
                 if (seen.has(key)) continue;
+                if (node.path.includes(rule.id))
+                    throw new Error("cyclic_transform_rules");
                 seen.add(key);
                 nodes.push({
                     state: rule.toState,

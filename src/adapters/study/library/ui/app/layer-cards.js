@@ -7,7 +7,7 @@ import {
 import { renderLayerFilters } from "./filters.js";
 import { isDirectlyVisible, renderEntryCard } from "./cards.js";
 import { assignVariantPlacements } from "./variant-placement.js";
-import { transformationPathways } from "./transformations.js";
+import { transformationPathways } from "../reuse/transformations.js";
 import { renderTransformationTree } from "./transformation-popup.js";
 
 function meaningReferenceIds(entry, schema) {

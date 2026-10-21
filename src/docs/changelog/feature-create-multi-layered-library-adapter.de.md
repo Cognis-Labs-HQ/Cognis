@@ -168,6 +168,10 @@ Study-Erkennungstests kopieren statische Adaptermodule und speichern konfigurier
 
 Wiederholte Verben, Adverbien und Einträge mit Pluralformen öffnen vor dem Einfügen die Formauswahl. Abbrechen erhält die Satzkomposition. Schlüsselbundaktivitäten sind begrenzt, ohne Geheimnisse zu löschen; bestehende Tresore bleiben innerhalb der festen Grenze zur Kürzung lesbar. Fehler der Hintergrundsynchronisierung werden angezeigt.
 
+## Abgeleitete Karten verlangen
+
+Ein Formensatz kann ein nicht leeres Array `requiredCardStates` deklarieren. Für jede passende Ausgangskarte löst `inspectContentPack(root)` der öffentlichen Anbieterfähigkeit diese Zustände mit derselben Regelverarbeitung wie Browser und serverseitige Referenzprüfung auf. Jede abgeleitete Schreibweise und primäre Aussprache benötigt genau eine Karte in der Ebene der Ausgangskarte, verknüpft durch eine Referenz mit passender Formensatz-ID und passendem Regelpfad. Gleicher Anzeigetext allein genügt nicht. Unerreichbare Zustände, fehlende Karten, doppelte Ableitungen und falsche Schreibweisen oder Aussprachen lassen die Prüfung vor dem Import scheitern. Gewöhnliche Karten bleiben unverändert, solange ihre Tags keinen Satz mit Pflichtzuständen auswählen. Abgeleitete Karten dürfen die Aktivierungsdeklaration der Ausgangskarte nicht übernehmen. Wachsende Zyklen mit wiederholten Regeln scheitern ausdrücklich. Die Prüfung erzeugt weder Karten noch Medien.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

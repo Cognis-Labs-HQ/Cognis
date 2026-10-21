@@ -620,6 +620,19 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 throw new Error("invalid_transform_definition");
             transitions.add(transition);
         }
+        if (
+            set.requiredCardStates !== undefined &&
+            (!Array.isArray(set.requiredCardStates) ||
+                !set.requiredCardStates.length ||
+                new Set(set.requiredCardStates).size !==
+                    set.requiredCardStates.length ||
+                set.requiredCardStates.some(
+                    (state) =>
+                        state === set.baseState ||
+                        !set.rules.some((rule) => rule.toState === state),
+                ))
+        )
+            throw new Error("invalid_required_transform_states");
     }
     return structuredClone({
         ...schema,

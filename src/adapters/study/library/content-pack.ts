@@ -4,6 +4,7 @@ import {
     CONTENT_RECORD_ID_PATTERN,
 } from "./identifiers.js";
 import { createHash } from "node:crypto";
+import { validateRequiredTransformationCards } from "./reuse/required-transformations.js";
 import { readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import {
@@ -205,6 +206,7 @@ export async function inspectContentPack(
         digest,
         assetsRoot,
     );
+    validateRequiredTransformationCards(schema, records);
     return {
         root,
         manifest,

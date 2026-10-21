@@ -180,6 +180,8 @@ export interface LibraryTransformSet {
     matchTags: readonly string[];
     /** Explicit card tag required to enable this optional word-form family. */
     optInTag?: string;
+    /** Materialized cards required for each applicable source card and state. */
+    requiredCardStates?: readonly string[];
     baseState: string;
     rules: readonly {
         id: string;

@@ -168,6 +168,10 @@ Study discovery tests copy static adapter modules and put configurable identitie
 
 Repeated verb, adverb and plural-capable selections use the transformation picker before appending another sentence placement. Cancelling leaves the authored composition unchanged. Keyring activity is bounded without deleting secrets, existing vaults remain readable for compaction within the hard limit, and failed background sync is visible.
 
+## Require Derived Cards
+
+A transformation set may declare a non-empty `requiredCardStates` array. For each eligible source card, public provider `inspectContentPack(root)` resolves those states using the same rule engine as the browser and server reference validation. Each derived spelling and primary pronunciation must have exactly one card in the source layer, linked to that source by a reference with the matching transformation set ID and rule path. Matching display text alone does not satisfy the requirement. Unreachable states, missing cards, duplicate derivations and incorrect spellings/readings fail inspection before ingestion. Ordinary cards remain unaffected unless their declared tags select a set with required states. Derived cards should not retain the source’s opt-in declaration. Expanding cycles that repeat a rule fail explicitly. The check validates existing content; it does not create cards or media.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
-import { transformationPathways } from "../ui/app/transformations.js";
+import { transformationPathways } from "../ui/reuse/transformations.js";
 import {
     compositionTokenEntryId,
     transformationCompositionToken,

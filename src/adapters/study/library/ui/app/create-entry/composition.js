@@ -11,7 +11,7 @@ import {
     transformationCompositionToken,
     transformationTokenDetails,
 } from "../composition-tokens.js";
-import { transformationPathways } from "../transformations.js";
+import { transformationPathways } from "../../reuse/transformations.js";
 import { entryDefinition } from "./definitions.js";
 
 export function bindTextComposition(
