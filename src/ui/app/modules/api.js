@@ -1,7 +1,6 @@
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
 
-const MODULE_INSTALL_TIMEOUT_MS = 2 * 60 * 1000;
 const MODULE_INSTALL_POLL_MS = 500;
 
 async function data(response) {
@@ -174,12 +173,10 @@ export async function installModule(module, token, branch, wasEnabled) {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ module, token, branch, wasEnabled }),
-            timeoutMs: MODULE_INSTALL_TIMEOUT_MS,
             suppressConnectionRecoveryToast: true,
         }),
     );
-    const deadline = Date.now() + MODULE_INSTALL_TIMEOUT_MS;
-    while (Date.now() < deadline) {
+    while (true) {
         await new Promise((resolve) =>
             setTimeout(resolve, MODULE_INSTALL_POLL_MS),
         );
@@ -190,12 +187,6 @@ export async function installModule(module, token, branch, wasEnabled) {
         const result = await data(response);
         if (result.status === "succeeded") return result.data;
     }
-    const error = new Error("module_install_timeout");
-    error.code = "module_install_timeout";
-    if (new URL(module.cloneUrl).hostname === "github.com") {
-        error.code = "github_connection_timeout";
-    }
-    throw error;
 }
 
 export async function setModuleEnabled(

@@ -1,4 +1,3 @@
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
     mkdir,
@@ -9,18 +8,11 @@ import {
     writeFile,
 } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import type { ModuleManifest } from "../../../contracts/module-manifest.js";
 import { validateModuleRepository } from "../repository-validator.js";
-import { commandFailureText } from "../../reuse/command-failure-text.js";
+import { checkoutModuleRepository } from "./checkout.js";
 import { MarketplaceServiceBase } from "./base.js";
 
-const execFileAsync = promisify(execFile);
-const GIT_CLONE_ATTEMPTS = 3;
-const GIT_CLONE_TIMEOUT_MS = 30_000;
-const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
-const TRANSIENT_GIT_FAILURE =
-    /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
 const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
 const GITHUB_PAT_PERMISSION_DOCS =
     "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
@@ -620,13 +612,13 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
         }
         try {
-            await this.cloneRepository(
+            const commit = await checkoutModuleRepository({
                 cloneUrl,
-                selectedBranch,
-                selectedRef.commit,
-                temporary,
-                gitEnvironment,
-            );
+                commit: selectedRef.commit,
+                root: temporary,
+                environment: gitEnvironment,
+                log: this.log,
+            });
             const rawManifest = await readFile(
                 path.join(temporary, "manifest.json"),
                 "utf8",
@@ -658,16 +650,11 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             }
             await validateModuleRepository(temporary, manifest);
             await validateDependencies?.(manifest);
-            const { stdout: commit } = await execFileAsync(
-                "git",
-                ["-C", temporary, "rev-parse", "HEAD"],
-                { env: gitEnvironment },
-            );
             const provenance: ModuleInstallProvenance = {
                 sourceUuid: module.sourceUuid,
                 cloneUrl,
                 branch: selectedBranch,
-                commit: commit.trim(),
+                commit,
                 manifestSha256: createHash("sha256")
                     .update(rawManifest, "utf8")
                     .digest("hex"),
@@ -690,90 +677,6 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             await rm(temporary, { recursive: true, force: true });
             throw error;
         }
-    }
-
-    private async cloneRepository(
-        cloneUrl: string,
-        branch: string,
-        expectedCommit: string,
-        temporary: string,
-        environment: NodeJS.ProcessEnv,
-    ): Promise<void> {
-        if (!/^[a-f0-9]{7,64}$/i.test(expectedCommit)) {
-            throw new Error("invalid_module_commit");
-        }
-        let lastError: unknown;
-        for (let attempt = 1; attempt <= GIT_CLONE_ATTEMPTS; attempt += 1) {
-            await rm(temporary, { recursive: true, force: true });
-            try {
-                await execFileAsync(
-                    "git",
-                    [
-                        "-c",
-                        "http.version=HTTP/1.1",
-                        "clone",
-                        "--depth=1",
-                        "--branch",
-                        branch,
-                        "--",
-                        cloneUrl,
-                        temporary,
-                    ],
-                    { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
-                );
-                const { stdout: clonedCommit } = await execFileAsync(
-                    "git",
-                    ["-C", temporary, "rev-parse", "HEAD"],
-                    { env: environment },
-                );
-                if (clonedCommit.trim() !== expectedCommit) {
-                    await execFileAsync(
-                        "git",
-                        [
-                            "-C",
-                            temporary,
-                            "fetch",
-                            "--depth=1",
-                            "origin",
-                            expectedCommit,
-                        ],
-                        { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
-                    );
-                    await execFileAsync(
-                        "git",
-                        [
-                            "-C",
-                            temporary,
-                            "checkout",
-                            "--detach",
-                            expectedCommit,
-                        ],
-                        { env: environment },
-                    );
-                }
-                return;
-            } catch (error) {
-                lastError = error;
-                const output = commandFailureText(error);
-                if (
-                    attempt === GIT_CLONE_ATTEMPTS ||
-                    !TRANSIENT_GIT_FAILURE.test(output)
-                ) {
-                    if (
-                        new URL(cloneUrl).hostname === "github.com" &&
-                        /timed out|operation timed out/i.test(output)
-                    ) {
-                        (error as Error & { code?: string }).code =
-                            "github_connection_timeout";
-                    }
-                    throw error;
-                }
-                await new Promise((resolve) =>
-                    setTimeout(resolve, GIT_CLONE_RETRY_DELAYS_MS[attempt - 1]),
-                );
-            }
-        }
-        throw lastError;
     }
 
     async uninstall(uuid: string): Promise<void> {

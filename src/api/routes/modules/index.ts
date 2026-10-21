@@ -52,6 +52,7 @@ export class ModuleEnableValidationError extends Error {
 
 const PUBLIC_INSTALL_ERROR_CODES = new Set([
     "github_connection_timeout",
+    "module_install_timeout",
     "invalid_module_asset_convention",
     "invalid_module_asset_path",
     "invalid_module_branch",
@@ -571,9 +572,6 @@ export function createModuleRoutes(
                             accountId: claims.sub,
                             moduleUuid: requestedModule.uuid,
                             ...(code ? { code } : {}),
-                            ...(code === "github_connection_timeout"
-                                ? { knownCause: "container_network_mtu" }
-                                : {}),
                             error: internalMessage,
                         },
                     );

@@ -10,6 +10,8 @@ import {
     ModuleMarketplaceService,
 } from "../../index.js";
 
+import { checkoutModuleRepository } from "../../services/module-loader/marketplace/checkout.js";
+
 const source = {
     uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
     name: "Additional source",
@@ -538,18 +540,21 @@ test(
         await execFileAsync("git", ["commit", "-am", "newer release"], {
             cwd: repository,
         });
-        const service = new ModuleMarketplaceService(
-            path.join(root, "sources.json"),
-            path.join(root, "modules"),
-        );
-
-        await (service as any).cloneRepository(
-            repository,
-            "main",
-            olderCommit.trim(),
+        await checkoutModuleRepository({
+            cloneUrl: repository,
+            commit: olderCommit.trim(),
+            root: checkout,
+            environment: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+            log: () => undefined,
+        });
+        const { stdout: historySize } = await execFileAsync("git", [
+            "-C",
             checkout,
-            { ...process.env, GIT_TERMINAL_PROMPT: "0" },
-        );
+            "rev-list",
+            "--count",
+            "HEAD",
+        ]);
+        assert.equal(historySize.trim(), "1");
 
         assert.equal(
             JSON.parse(

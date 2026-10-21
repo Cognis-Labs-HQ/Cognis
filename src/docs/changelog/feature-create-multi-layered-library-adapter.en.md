@@ -180,6 +180,10 @@ Detail views, sentence validation and audio use the same resolver. Generated vie
 
 Uninstall hooks now resolve live public capabilities through the same boundary as module startup, allowing Japanese and English content-pack deletion after disabling the language module. Tests cover retained content, both language packs, provider failures and replacement, and private-capability isolation.
 
+## Install large modules reliably
+
+Module installation now fetches the exact catalog commit once, allows sustained large downloads, and detects stalled transfers. The browser waits for the server result instead of reporting a TLS failure after two minutes. Connection failures and installation timeouts have separate localized messages, and logs record transfer stages without assuming an MTU fault.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

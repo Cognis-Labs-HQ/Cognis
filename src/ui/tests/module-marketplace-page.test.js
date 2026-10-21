@@ -783,16 +783,10 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(marketplaceStyles, /settings-cog-dark\.svg/);
 });
 
-test("module marketplace defaults to all statuses and bounds installs", () => {
-    const apiSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/api.js"),
-        "utf8",
-    );
+test("module marketplace defaults to all statuses", () => {
     const filters = createModuleFilters();
     assert.equal(filters.view, "all");
     assert.equal(filters.categories.size, 0);
-    assert.match(apiSource, /MODULE_INSTALL_TIMEOUT_MS = 2 \* 60 \* 1000/);
-    assert.match(apiSource, /timeoutMs: MODULE_INSTALL_TIMEOUT_MS/);
 });
 
 test("module marketplace exposes releases and pending action feedback", () => {

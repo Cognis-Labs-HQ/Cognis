@@ -46,8 +46,8 @@
   <string name="ui.app.modules.refresh_complete">Sumber modul disegarkan.</string>
   <string name="ui.app.modules.update_complete">Modul diperbarui.</string>
   <string name="ui.app.modules.disable_before_update">Nonaktifkan modul sebelum memperbaruinya.</string>
-  <string name="ui.app.modules.install_timeout">Instalasi modul tidak selesai dalam dua menit.</string>
-  <string name="ui.app.modules.github_timeout_warning">GitHub tidak menyelesaikan koneksi TLS dari kontainer aplikasi. Periksa MTU jaringan host atau Docker, terutama saat menggunakan VPN atau terowongan, lalu coba lagi.</string>
+  <string name="ui.app.modules.install_timeout">Waktu instalasi modul habis. Unduhan mungkin terhenti atau koneksi terputus. Silakan coba lagi.</string>
+  <string name="ui.app.modules.github_timeout_warning">Koneksi aman ke GitHub tidak dapat dibuat. Periksa konektivitas dan pengaturan proksi. Jika menggunakan VPN atau terowongan, periksa juga MTU jaringan host atau Docker.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Bursa Modul</string>

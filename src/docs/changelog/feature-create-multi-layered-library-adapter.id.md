@@ -180,6 +180,10 @@ Detail, validasi kalimat, dan audio menggunakan resolver yang sama. Tampilan tur
 
 Hook penghapusan kini menyelesaikan kapabilitas publik terkini melalui batas yang sama dengan saat modul dimulai, sehingga paket konten Jepang dan Inggris dapat dihapus setelah modul bahasa dinonaktifkan. Pengujian mencakup konten yang dipertahankan, kedua paket bahasa, kegagalan dan penggantian penyedia, serta isolasi kapabilitas privat.
 
+## Instal modul besar dengan andal
+
+Instalasi modul kini mengambil commit katalog yang tepat sekali, mengizinkan unduhan besar yang tetap berjalan, dan mendeteksi transfer yang macet. Browser menunggu hasil server alih-alih melaporkan kegagalan TLS setelah dua menit. Kegagalan koneksi dan batas waktu instalasi memiliki pesan terlokalisasi terpisah, dan log mencatat tahap transfer tanpa menganggap MTU sebagai penyebabnya.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

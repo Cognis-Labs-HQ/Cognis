@@ -180,6 +180,10 @@ Detailansichten, Satzprüfung und Audio nutzen denselben Resolver. Generierte An
 
 Deinstallations-Hooks lösen aktuelle öffentliche Funktionen wie beim Modulstart auf. Damit lassen sich japanische und englische Inhaltspakete nach dem Deaktivieren des Sprachmoduls löschen. Tests prüfen beibehaltene Inhalte, beide Sprachpakete, Anbieterfehler und -wechsel sowie die Abschottung privater Funktionen.
 
+## Große Module zuverlässig installieren
+
+Die Modulinstallation lädt den exakten Katalog-Commit einmal, erlaubt längere laufende Downloads und erkennt blockierte Übertragungen. Der Browser wartet auf das Serverergebnis, statt nach zwei Minuten einen TLS-Fehler zu melden. Verbindungsfehler und Installationszeitlimits haben getrennte übersetzte Meldungen; Protokolle erfassen die Übertragungsphase, ohne einen MTU-Fehler vorauszusetzen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

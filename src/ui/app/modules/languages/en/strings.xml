@@ -46,8 +46,8 @@
   <string name="ui.app.modules.refresh_complete">Module sources refreshed.</string>
   <string name="ui.app.modules.update_complete">Module updated.</string>
   <string name="ui.app.modules.disable_before_update">Disable the module before updating it.</string>
-  <string name="ui.app.modules.install_timeout">Module installation did not complete within two minutes.</string>
-  <string name="ui.app.modules.github_timeout_warning">GitHub did not complete the TLS connection from the application container. Check the host or Docker network MTU, especially when using a VPN or tunnel, then try again.</string>
+  <string name="ui.app.modules.install_timeout">Module installation timed out. The download may be stalled or the connection interrupted. Please try again.</string>
+  <string name="ui.app.modules.github_timeout_warning">A secure connection to GitHub could not be established. Check connectivity and proxy settings. If using a VPN or tunnel, also check the host or Docker network MTU.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Module Marketplace</string>
