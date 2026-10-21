@@ -164,6 +164,10 @@ Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `ran
 
 Study-Erkennungstests kopieren statische Adaptermodule und speichern konfigurierbare Kennungen und Abhängigkeiten in JSON. Aus serialisierten Werten wird kein ausführbarer Quelltext erzeugt. Gemeinsame Einrichtung erhält die tatsächliche Erkennung und den Startablauf. Tests für Marktplatzgrafiken vergleichen geparste URL-Ursprünge und Pfade exakt, einschließlich privater GitHub-Anfragen.
 
+## Satzformen auswählen
+
+Wiederholte Verben, Adverbien und Einträge mit Pluralformen öffnen vor dem Einfügen die Formauswahl. Abbrechen erhält die Satzkomposition. Schlüsselbundaktivitäten sind begrenzt, ohne Geheimnisse zu löschen; bestehende Tresore bleiben innerhalb der festen Grenze zur Kürzung lesbar. Fehler der Hintergrundsynchronisierung werden angezeigt.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

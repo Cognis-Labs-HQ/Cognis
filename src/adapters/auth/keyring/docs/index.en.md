@@ -2,7 +2,7 @@
 
 Vault PUT requests use the API shared streaming JSON reader with the effective vault budget and 1 KiB of envelope space. The adapter retains its own policy, 413 error and serialized-vault validation; no second buffering implementation is maintained.
 
-The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET checks stored size before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
+The default vault budget is 2 MiB, with an absolute in-process limit of 8 MiB. The effective policy is returned to clients. PUT counts incoming bytes before buffering or JSON parsing and rejects oversized requests; GET enforces the hard read budget before parsing. Ciphertext envelopes use a base row plus bounded overflow rows, with atomic replacement and deletion and a single joined read. Each stored chunk is at most 60,000 UTF-8 bytes; the server still never decrypts secrets.
 
 ## Overview
 
@@ -63,3 +63,7 @@ Cancelling an attributed unlock request resolves every concurrent waiter as refu
 ## Destructive reset
 
 `DELETE /api/v1/auth/keyring` is the destructive reset contract. Before deleting the opaque vault, Authentication invokes every owner registered through `auth:registerKeyringDataOwner`, removing the account only from encrypted rooms and other objects whose access depends on keyring entries. The account instance, profile, follower relationships, and unrelated account-owned data remain unchanged. The locked Settings action uses this route, then replaces every keyring control with a “No Keyring Found” banner and a single Create action. Creation asks for password confirmation and an automatic lock timeout. The unlocked action remains a non-destructive removal of entries from the current vault.
+
+## Recover Activity Growth
+
+The encrypted vault retains at most 1,000 recent activity events within a 64 KiB history budget; secret values are never removed to meet that budget. Repeated background reads share pending persistence. Authenticated GET can return an existing vault up to the 8 MiB hard limit so the client can compact its history, even when the configured write limit is lower. PUT still enforces the configured limit. A failed background sync shows an error toast and retains the encrypted local copy.

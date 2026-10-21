@@ -63,3 +63,7 @@ Membatalkan permintaan buka kunci beratribusi menolak semua penunggu bersamaan d
 ## Reset destruktif
 
 `DELETE /api/v1/auth/keyring` adalah kontrak reset destruktif. Sebelum menghapus vault buram, Authentication memanggil setiap pemilik yang terdaftar melalui `auth:registerKeyringDataOwner`, hanya menghapus akun dari ruang terenkripsi dan objek lain yang aksesnya bergantung pada entri keyring. Instans akun, profil, hubungan pengikut, dan data akun yang tidak bergantung tetap tidak berubah. Tindakan Settings saat terkunci memakai rute ini, lalu mengganti semua kontrol keyring dengan banner “Keyring tidak ditemukan” dan satu tindakan Buat. Pembuatan meminta konfirmasi kata sandi serta batas waktu penguncian otomatis. Saat terbuka, tindakan tetap hanya menghapus entri dari vault saat ini.
+
+## Batasi Pertumbuhan Aktivitas
+
+Brankas terenkripsi menyimpan paling banyak 1.000 aktivitas terbaru dalam batas riwayat 64 KiB; nilai rahasia tidak pernah dihapus untuk memenuhi batas tersebut. Pembacaan berulang berbagi proses penyimpanan yang berjalan. GET terautentikasi dapat mengambil brankas yang ada hingga batas mutlak 8 MiB agar klien dapat meringkas riwayat meskipun batas penulisan lebih rendah. PUT tetap menerapkan batas yang dikonfigurasi. Kegagalan sinkronisasi latar belakang menampilkan notifikasi kesalahan dan mempertahankan salinan lokal terenkripsi.

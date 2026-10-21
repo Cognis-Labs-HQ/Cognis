@@ -164,6 +164,10 @@ Drawing guidance and Flashcard answer shuffling share the `randomIndex` helper. 
 
 Study discovery tests copy static adapter modules and put configurable identities and dependencies in JSON. They do not build executable source from serialized values. Shared setup preserves real discovery and bootstrap behavior. Marketplace artwork tests compare parsed URL origins and paths exactly, including private GitHub requests.
 
+## Keep Sentence Form Selection
+
+Repeated verb, adverb and plural-capable selections use the transformation picker before appending another sentence placement. Cancelling leaves the authored composition unchanged. Keyring activity is bounded without deleting secrets, existing vaults remain readable for compaction within the hard limit, and failed background sync is visible.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

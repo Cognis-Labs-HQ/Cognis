@@ -37,7 +37,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25`  |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.30`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.54`  |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.55`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23`  |
@@ -55,7 +55,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Link Share            | `src/adapters/share/link/`          | `1.1.37`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.20`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.4`   |
-| Library (Study)       | `src/adapters/study/library/`       | `2.28.28` |
+| Library (Study)       | `src/adapters/study/library/`       | `2.28.29` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`   |
 | Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.10`  |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`   |

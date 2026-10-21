@@ -63,3 +63,7 @@ Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartend
 ## Zerstörendes Zurücksetzen
 
 `DELETE /api/v1/auth/keyring` ist der Vertrag zum zerstörenden Zurücksetzen. Vor dem Löschen des undurchsichtigen Tresors ruft Authentication alle über `auth:registerKeyringDataOwner` registrierten Besitzer auf, entfernt das Konto ausschließlich aus verschlüsselten Räumen und anderen von Schlüsselbundeinträgen abhängigen Objekten. Kontoinstanz, Profil, Follower-Beziehungen und nicht abhängige Kontodaten bleiben unverändert. Die gesperrte Einstellungsaktion verwendet diese Route und ersetzt danach alle Schlüsselbundsteuerelemente durch den Hinweis „Kein Schlüsselbund gefunden“ mit einer einzigen Erstellen-Aktion. Bei der Erstellung werden Passwortbestätigung und automatische Sperrfrist abgefragt. Im entsperrten Zustand werden weiterhin nur die Einträge des aktuellen Tresors entfernt.
+
+## Aktivitätswachstum begrenzen
+
+Der verschlüsselte Tresor behält höchstens 1.000 aktuelle Aktivitäten innerhalb von 64 KiB. Geheimnisse werden dafür niemals entfernt. Wiederholte Lesezugriffe teilen einen laufenden Speichervorgang. Authentifizierte GET-Anfragen können bestehende Tresore bis zur festen Grenze von 8 MiB lesen, damit der Client den Verlauf kürzen kann, auch bei einem niedrigeren Schreiblimit. PUT erzwingt weiterhin das konfigurierte Limit. Fehler bei der Hintergrundsynchronisierung zeigen eine Fehlermeldung; die verschlüsselte lokale Kopie bleibt erhalten.

@@ -164,6 +164,10 @@ Panduan menggambar dan pengacakan jawaban kartu belajar menggunakan pembantu `ra
 
 Pengujian penemuan Study menyalin modul adaptor statis dan menyimpan identitas serta dependensi yang dapat dikonfigurasi dalam JSON. Pengujian tidak membangun sumber yang dapat dieksekusi dari nilai terserialisasi. Penyiapan bersama mempertahankan perilaku penemuan dan bootstrap sebenarnya. Pengujian gambar marketplace membandingkan asal dan jalur URL terurai secara tepat, termasuk permintaan GitHub privat.
 
+## Pilih Bentuk dalam Kalimat
+
+Pemilihan berulang kata kerja, kata keterangan, dan entri yang mendukung bentuk jamak membuka pemilih transformasi sebelum ditambahkan ke kalimat. Pembatalan mempertahankan susunan kalimat. Riwayat gantungan kunci dibatasi tanpa menghapus rahasia, brankas yang ada tetap dapat dibaca dalam batas mutlak untuk diringkas, dan kegagalan sinkronisasi latar belakang ditampilkan.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

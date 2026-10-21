@@ -9,7 +9,7 @@ import {
     compositionTokenLabel,
 } from "../ui/app/composition-tokens.js";
 
-function editor(value = "ab", hiddenSecond = false) {
+function editor(value = "ab", hiddenSecond = false, options = {}) {
     const source = readFileSync(
         new URL("../ui/app/pronunciation-editor.js", import.meta.url),
         "utf8",
@@ -55,7 +55,9 @@ function editor(value = "ab", hiddenSecond = false) {
     const form = {
         append() {},
         referenceGroups: {},
+        compositionOrder: [],
         elements: {
+            label: { value: "" },
             "field:pronunciation": field,
             "relationship:readings": select,
         },
@@ -86,6 +88,7 @@ function editor(value = "ab", hiddenSecond = false) {
     const layer = {
         semanticRole: "compoundWritingUnit",
         relationships: [
+            { id: "vocabulary", targetLayer: "vocabulary", ordered: true },
             {
                 id: "readings",
                 targetLayer: "characters",
@@ -143,6 +146,7 @@ function editor(value = "ab", hiddenSecond = false) {
         {
             pronunciationCarouselLayers: new Set(["characters"]),
             i18n: { t: (key) => key },
+            ...options,
         },
     );
     return {
@@ -166,9 +170,9 @@ function editor(value = "ab", hiddenSecond = false) {
         clearedCarousels,
         controller,
         select: (values) => carousel.onChange({ id: "readings", values }),
-        repeat: (value) =>
+        repeat: (value, id = "readings") =>
             carousel.onActivate({
-                id: "readings",
+                id,
                 selected: true,
                 item: { dataset: { carouselValue: value } },
             }),
@@ -304,4 +308,38 @@ test("pronunciation suggestions include hidden small writing units", () => {
         session.suggest("っ"),
         /data-library-carousel-suggestion="b"[^>]*>っ<\/button>/,
     );
+});
+
+test("repeated sentence selections await transformation choice before appending", async () => {
+    let finish;
+    let activation;
+    const session = editor("ab", false, {
+        inputCarouselIds: new Set(["vocabulary"]),
+        onActivate: (value) => {
+            activation = value;
+            return new Promise((resolve) => {
+                finish = resolve;
+            });
+        },
+    });
+    session.form.compositionOrder.push("verb-root");
+    const pending = session.repeat("verb-root", "vocabulary");
+    assert.equal(activation.selected, false);
+    assert.deepEqual(session.form.compositionOrder, ["verb-root"]);
+    finish({ value: "transformed-verb", label: "polite verb" });
+    assert.equal(await pending, false);
+    assert.deepEqual(session.form.compositionOrder, [
+        "verb-root",
+        "transformed-verb",
+    ]);
+});
+
+test("cancelling a repeated sentence transformation preserves composition", async () => {
+    const session = editor("ab", false, {
+        inputCarouselIds: new Set(["vocabulary"]),
+        onActivate: async () => false,
+    });
+    session.form.compositionOrder.push("verb-root");
+    assert.equal(await session.repeat("verb-root", "vocabulary"), false);
+    assert.deepEqual(session.form.compositionOrder, ["verb-root"]);
 });

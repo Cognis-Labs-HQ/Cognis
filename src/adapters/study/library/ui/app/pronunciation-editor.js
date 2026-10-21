@@ -242,8 +242,14 @@ export function mountEditableRelationshipCarousels(
                 activation.selected &&
                 (relationship?.ordered || relationship?.grouped)
             ) {
-                const value = activation.item.dataset.carouselValue;
                 const kind = kindForRelationshipId(activation.id);
+                const placement =
+                    kind === "input"
+                        ? await onActivate({ ...activation, selected: false })
+                        : undefined;
+                if (placement === false) return false;
+                const value =
+                    placement?.value ?? activation.item.dataset.carouselValue;
                 if (isMultiValueKind(kind)) {
                     const staged = stagedValues.get(activation.id) ?? [];
                     staged.push(value);

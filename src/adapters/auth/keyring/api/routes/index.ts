@@ -1,5 +1,5 @@
 import { readJson } from "../../../../../api/reuse/read-json.js";
-import { boundedVaultBytes } from "../../limits.js";
+import { boundedVaultBytes, MAX_VAULT_BYTES } from "../../limits.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { KeyringVaultStore } from "../../store.js";
 
@@ -54,7 +54,7 @@ export function createKeyringRoutes(input: {
         const maxVaultBytes = boundedVaultBytes(
             input.getPolicy?.().maxVaultBytes,
         );
-        const rejectSize = () => {
+        const rejectSize = (maxBytes = maxVaultBytes) => {
             input.log?.(
                 "warn",
                 "Keyring vault exceeds its bounded JSON budget.",
@@ -62,7 +62,7 @@ export function createKeyringRoutes(input: {
                     component: "auth-keyring-adapter",
                     operation: "vault_size",
                     accountId,
-                    maxVaultBytes,
+                    maxVaultBytes: maxBytes,
                 },
             );
             res.writeHead(413, { "content-type": "application/json" });
@@ -73,8 +73,8 @@ export function createKeyringRoutes(input: {
 
         if (req.method === "GET") {
             const stored = await input.store.get(accountId);
-            if (stored && Buffer.byteLength(stored, "utf8") > maxVaultBytes)
-                return rejectSize();
+            if (stored && Buffer.byteLength(stored, "utf8") > MAX_VAULT_BYTES)
+                return rejectSize(MAX_VAULT_BYTES);
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;
