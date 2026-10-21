@@ -219,6 +219,13 @@ function practiceHarness(filter, status = "due", options = {}) {
     let drawing;
     const context = vm.createContext({
         AbortController,
+        uiCtx: {
+            capabilities: {
+                get: () => ({
+                    titleComposition: () => options.titlePieces ?? [],
+                }),
+            },
+        },
         entryExploreUrl,
         document: { documentElement: { lang: "en" } },
         escapeHtml: String,
@@ -523,6 +530,48 @@ test("card heading actions confirm departure even with modifier keys and preserv
     assert.deepEqual(
         Array.from(harness.departures[0].options.state.studyEntryIds),
         ["one", "two"],
+    );
+    harness.dispose();
+});
+
+test("composed headings box each canonical item and preserve the selected transformation on departure", async () => {
+    const base = { schemaId: "ja", layer: "kanji" };
+    const transformation = { setId: "verb", path: ["past"] };
+    const titlePieces = [
+        { ...base, id: "person", label: "私" },
+        { ...base, id: "particle", label: "は" },
+        { label: " " },
+        {
+            ...base,
+            id: "verb",
+            label: "学んだ",
+            referenceTransformation: transformation,
+        },
+        { label: "。" },
+    ];
+    const harness = practiceHarness("due", "due", { titlePieces });
+    const heading = harness.target.innerHTML.split("study-practice-modes")[0];
+    for (const index of [0, 1, 3]) {
+        assert.ok(heading.includes(`data-practice-piece="${index}"`));
+        assert.ok(heading.includes(`data-entry-id="${titlePieces[index].id}"`));
+        assert.ok(heading.includes(`>${titlePieces[index].label}</button>`));
+    }
+    assert.equal((heading.match(/study-practice-piece"/g) ?? []).length, 3);
+    assert.ok(heading.includes("。</span>"));
+    await harness.click("[data-practice-link]", {
+        entryId: "person",
+        practicePiece: "0",
+    });
+    assert.deepEqual(harness.departures, []);
+    harness.decision("leave");
+    await harness.click("[data-practice-link]", {
+        entryId: "verb",
+        practicePiece: "3",
+    });
+    assert.equal(harness.departures[0].options.state.studyEntryId, "verb");
+    assert.deepEqual(
+        harness.departures[0].options.state.studyEntryTransformation,
+        transformation,
     );
     harness.dispose();
 });

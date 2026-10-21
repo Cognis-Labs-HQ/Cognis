@@ -217,13 +217,13 @@
     display: none;
 }
 
-.study-practice-heading [data-practice-link],
+.study-practice-heading [data-practice-link]:not(.study-practice-piece),
 .study-practice-heading [data-study-favourite],
 .study-practice-heading
-    :is([data-practice-link], [data-study-favourite]):is(
-        :hover,
-        :focus-visible
-    ) {
+    :is(
+        [data-practice-link]:not(.study-practice-piece),
+        [data-study-favourite]
+    ):is(:hover, :focus-visible) {
     background: transparent;
     border-color: transparent;
     box-shadow: none;
@@ -327,6 +327,18 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 0.75rem;
+}
+.study-practice-composition {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    white-space: pre-wrap;
+}
+.study-practice-piece {
+    font: inherit;
+    padding: 0.3rem 0.45rem;
+    border-radius: 0.45rem;
 }
 .study-practice-pronunciation {
     font-size: 1rem;

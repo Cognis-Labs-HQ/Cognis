@@ -184,6 +184,10 @@ Hook penghapusan kini menyelesaikan kapabilitas publik terkini melalui batas yan
 
 Instalasi modul kini mengambil commit katalog yang tepat sekali, mengizinkan unduhan besar yang tetap berjalan, dan mendeteksi transfer yang macet. Browser menunggu hasil server alih-alih melaporkan kegagalan TLS setelah dua menit. Kegagalan koneksi dan batas waktu instalasi memiliki pesan terlokalisasi terpisah, dan log mencatat tahap transfer tanpa menganggap MTU sebagai penyebabnya.
 
+## Pulihkan judul kartu tersusun
+
+Flashcards kini menampilkan unsur kanonis dalam judul tersusun sebagai kontrol berkotak terpisah yang dapat digunakan dengan papan ketik. Library menyediakan resolver judul yang sudah ada melalui kapabilitas UI yang mengikuti masa aktif penyedia, mempertahankan teks literal, urutan, dan transformasi terpilih. Explore membuka bentuk terpilih setelah konfirmasi keluar yang sudah ada; judul kartu tunggal dan tombol favorit mempertahankan tampilan menyatunya.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

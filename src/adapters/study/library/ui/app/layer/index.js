@@ -211,7 +211,10 @@ export async function mount(root, { signal } = {}) {
             i18n,
             languageCode,
             signal,
-            { navigationEntryIds: history.state?.studyEntryIds },
+            {
+                navigationEntryIds: history.state?.studyEntryIds,
+                transformation: history.state?.studyEntryTransformation,
+            },
         );
     }
 }

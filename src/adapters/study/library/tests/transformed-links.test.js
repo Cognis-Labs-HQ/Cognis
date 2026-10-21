@@ -334,22 +334,38 @@ test("transformed previews keep the selected heading and identify the base card 
         ) + "\nglobalThis.open = openEntryPopup;",
         context,
     );
-    await context.open(
-        {},
-        verb,
-        schemas,
-        [verb, ...entries],
-        {
-            t: (key) =>
-                key === "gateway.study.library_return_to_root"
-                    ? "Return to {{ verb }}"
-                    : key,
-        },
-        "ja",
-    );
+    const open = (options) =>
+        context.open(
+            {},
+            verb,
+            schemas,
+            [verb, ...entries],
+            {
+                t: (key) =>
+                    key === "gateway.study.library_return_to_root"
+                        ? "Return to {{ verb }}"
+                        : key,
+            },
+            "ja",
+            undefined,
+            options,
+        );
+    await open();
     assert.deepEqual(
         popups.map(({ title }) => title),
         ["行く", "行かなくて"],
     );
     assert.equal(attributions[0].id, verb.id);
+    const descriptor = { setId: "verb", path: ["negative"] };
+    context.referencedTransformation = (_entry, _schema, selected) => {
+        assert.equal(selected, descriptor);
+        return transformation;
+    };
+    popups.length = 0;
+    context.openPopup = async (options) => {
+        popups.push(options);
+        return "close";
+    };
+    await open({ transformation: descriptor });
+    assert.equal(popups[0].title, "行かなくて");
 });

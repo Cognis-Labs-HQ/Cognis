@@ -23,6 +23,9 @@ async function session(testContext, request) {
         new URL("../ui/provider.js", import.meta.url),
         {
             "/static/gateways/study/library-client.js": client,
+            "./app/presentation.js": {
+                headingCompositionReferences: (detail) => detail.composition,
+            },
         },
     );
     const providers = createProviderLifecycle({
@@ -36,6 +39,28 @@ async function session(testContext, request) {
     testContext.after(() => providers.reconcile([]));
     return { client, providers, scoped, provider };
 }
+
+test("Library presentation is registered and removed with its provider", async (testContext) => {
+    const { providers, scoped, provider } = await session(
+        testContext,
+        async () => ({ ok: true }),
+    );
+    const detail = { composition: [{ id: "word", label: "word" }] };
+    const presentation = uiCtx.capabilities.get("study:library:presentation");
+    assert.equal(presentation.titleComposition(detail, []), detail.composition);
+    await providers.reconcile([scoped]);
+    assert.equal(
+        uiCtx.capabilities.get("study:library:presentation"),
+        undefined,
+    );
+    await providers.reconcile([scoped, provider]);
+    assert.equal(
+        uiCtx.capabilities
+            .get("study:library:presentation")
+            .titleComposition(detail, []),
+        detail.composition,
+    );
+});
 
 test("Library creation runs adjustable stages, honors vetoes and reports transport failures", async (testContext) => {
     const calls = [];

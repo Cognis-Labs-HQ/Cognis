@@ -55,9 +55,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.4`    |
-| Library (Study)            | `src/adapters/study/library/`       | `3.0.0`    |
+| Library (Study)            | `src/adapters/study/library/`       | `3.1.0`    |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.2`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.10`   |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.11`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.4`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |

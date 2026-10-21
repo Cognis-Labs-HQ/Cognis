@@ -260,7 +260,10 @@ export async function bootstrapStudyAdapter(
     ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
     ctx.registerCapabilityProvider({
         scriptUrl: "/static/adapters/study/library/provider.js",
-        providesCapabilities: ["study:library:client"],
+        providesCapabilities: [
+            "study:library:client",
+            "study:library:presentation",
+        ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
     ctx.registerSpaRoute?.({

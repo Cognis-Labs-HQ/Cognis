@@ -184,6 +184,10 @@ Deinstallations-Hooks lösen aktuelle öffentliche Funktionen wie beim Modulstar
 
 Die Modulinstallation lädt den exakten Katalog-Commit einmal, erlaubt längere laufende Downloads und erkennt blockierte Übertragungen. Der Browser wartet auf das Serverergebnis, statt nach zwei Minuten einen TLS-Fehler zu melden. Verbindungsfehler und Installationszeitlimits haben getrennte übersetzte Meldungen; Protokolle erfassen die Übertragungsphase, ohne einen MTU-Fehler vorauszusetzen.
 
+## Zusammengesetzte Kartentitel
+
+Flashcards zeigt die kanonischen Bestandteile zusammengesetzter Titel als einzeln umrahmte, per Tastatur bedienbare Steuerelemente. Die Library stellt ihre bestehende Titelauflösung als an die Anbieterlebensdauer gebundene UI-Fähigkeit bereit und bewahrt wörtlichen Text, Reihenfolge und Transformationen. Explore öffnet nach der bestehenden Bestätigung die ausgewählte Form; einfache Kartentitel und Favoritenschaltflächen behalten ihr nahtloses Erscheinungsbild.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

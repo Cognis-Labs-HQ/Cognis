@@ -184,6 +184,10 @@ Uninstall hooks now resolve live public capabilities through the same boundary a
 
 Module installation now fetches the exact catalog commit once, allows sustained large downloads, and detects stalled transfers. The browser waits for the server result instead of reporting a TLS failure after two minutes. Connection failures and installation timeouts have separate localized messages, and logs record transfer stages without assuming an MTU fault.
 
+## Restore composed flashcard headings
+
+Flashcards now renders the canonical items of a composed heading as individually boxed, keyboard-accessible controls. The Library publishes its existing title resolver through a lifetime-scoped UI capability, preserving literal text, item order and selected transformations. Explore opens the selected form after the existing departure confirmation; single-card titles and favourite buttons retain their seamless appearance.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

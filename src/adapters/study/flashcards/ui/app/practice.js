@@ -10,12 +10,13 @@ import { renderFavourite } from "/static/gateways/study/reuse/favourites.js";
 import { flashcardValues, renderFlashcard } from "../reuse/flashcard.js";
 import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-function entryAction(entry, text, schemas) {
+function entryAction(entry, text, schemas, pieceIndex) {
     if (!text) return "";
     const url = entryExploreUrl(entry, schemas);
     return url
-        ? `<button type="button" class="study-entry-link btn-neutral" data-practice-link data-entry-id="${escapeHtml(entry.id)}">${escapeHtml(text)}</button>`
+        ? `<button type="button" class="study-entry-link btn-neutral${pieceIndex !== undefined ? " study-practice-piece" : ""}" data-practice-link data-entry-id="${escapeHtml(entry.id)}"${pieceIndex !== undefined ? ` data-practice-piece="${pieceIndex}"` : ""}>${escapeHtml(text)}</button>`
         : escapeHtml(text);
 }
 
@@ -42,6 +43,12 @@ export function mountPractice(
     signal.addEventListener("abort", () => controller.abort(), { once: true });
     const language = document.documentElement.lang;
     const values = flashcardValues(detail, schemas, language);
+    const presentation = uiCtx.capabilities.get("study:library:presentation");
+    if (!presentation) throw new Error("library_presentation_unavailable");
+    const titlePieces = presentation.titleComposition(detail, schemas);
+    const heading = titlePieces.length
+        ? `<span class="study-practice-composition">${titlePieces.map((piece, index) => (piece.id ? entryAction(piece, piece.label, schemas, index) : escapeHtml(piece.label))).join("")}</span>`
+        : entryAction(detail.entry, values.front, schemas);
     const primaryPronunciation =
         values.pronunciation.split(" · ").find(Boolean) ?? "";
     const showPronunciation =
@@ -68,6 +75,7 @@ export function mountPractice(
             state: {
                 studyEntryId: entry.id,
                 studyEntryIds: navigationEntryIds,
+                studyEntryTransformation: entry.referenceTransformation,
             },
         });
     };
@@ -116,7 +124,7 @@ export function mountPractice(
             entry_heading:
                 writing && pattern && !previewing
                     ? ""
-                    : `<div class="study-practice-prompt">${entryAction(detail.entry, values.front, schemas)}${showPronunciation ? `<span class="study-practice-pronunciation ${pronunciationClass(primaryPronunciation)}">${escapeHtml(primaryPronunciation)}</span>` : ""}</div>`,
+                    : `<div class="study-practice-prompt">${heading}${showPronunciation ? `<span class="study-practice-pronunciation ${pronunciationClass(primaryPronunciation)}">${escapeHtml(primaryPronunciation)}</span>` : ""}</div>`,
             writing_navigation: writing ? navigation : "",
             reading_navigation: writing ? "" : navigation,
             modes: writing ? "" : label(activeMode),
@@ -188,11 +196,12 @@ export function mountPractice(
             const link = event.target.closest("[data-practice-link]");
             if (link) {
                 event.preventDefault();
-                const entry = [
-                    detail.entry,
-                    ...detail.references,
-                    ...entries,
-                ].find((entry) => entry.id === link.dataset.entryId);
+                const entry =
+                    link.dataset.practicePiece !== undefined
+                        ? titlePieces[Number(link.dataset.practicePiece)]
+                        : [detail.entry, ...detail.references, ...entries].find(
+                              (entry) => entry.id === link.dataset.entryId,
+                          );
                 const url = entry && entryExploreUrl(entry, schemas);
                 if (!url) return;
                 await runDeckAction(

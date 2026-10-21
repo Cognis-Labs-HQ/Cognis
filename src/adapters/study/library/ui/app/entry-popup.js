@@ -45,7 +45,14 @@ export async function openEntryPopup(
     if (isMeaningLayer(layerForEntry(schemas, initialEntry))) return;
     let selectedEntry = initialEntry;
     let sourceDefinition = "";
-    let selectedTransformation = null;
+    let selectedTransformation =
+        options.transformation === undefined
+            ? null
+            : resolveDetailTransformation(
+                  initialEntry,
+                  schemas.find(({ id }) => id === initialEntry.schemaId),
+                  options.transformation,
+              );
     while (selectedEntry && !signal?.aborted) {
         const detail =
             options.detail?.entry.id === selectedEntry.id
