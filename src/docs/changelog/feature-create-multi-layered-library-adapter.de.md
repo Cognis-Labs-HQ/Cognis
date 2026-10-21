@@ -213,3 +213,4 @@ Deinstallations-Hooks lösen aktuelle öffentliche Funktionen wie beim Modulstar
 - [43d7b6f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/43d7b6f7eee4628e6fcca5b8c72e1ba49158c290)
 - [83f2805c](https://github.com/Cognis-Labs-HQ/Cognis/commit/83f2805c9a325388982ba9e6fb90c397cbe27ab1)
 - [d0698b48](https://github.com/Cognis-Labs-HQ/Cognis/commit/d0698b4841827ab1b31f559fe8054627f2bdb09d)
+- [efb6dab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/efb6dab89990bdff8b597eed1c71b6230d9c730a)
