@@ -203,3 +203,4 @@ A transformation set may declare a non-empty `requiredCardStates` array. For eac
 - [f90334ce](https://github.com/Cognis-Labs-HQ/Cognis/commit/f90334ced0dc442d6e0c1627704cd36984128910)
 - [52002ada](https://github.com/Cognis-Labs-HQ/Cognis/commit/52002ada74f6d3a6e80ee796e2348128434b524c)
 - [43d7b6f7](https://github.com/Cognis-Labs-HQ/Cognis/commit/43d7b6f7eee4628e6fcca5b8c72e1ba49158c290)
+- [83f2805c](https://github.com/Cognis-Labs-HQ/Cognis/commit/83f2805c9a325388982ba9e6fb90c397cbe27ab1)
