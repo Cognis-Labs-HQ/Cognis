@@ -223,3 +223,4 @@ Flashcards の複合見出しで、正規の各項目を個別の枠とキーボ
 - [d0698b48](https://github.com/Cognis-Labs-HQ/Cognis/commit/d0698b4841827ab1b31f559fe8054627f2bdb09d)
 - [efb6dab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/efb6dab89990bdff8b597eed1c71b6230d9c730a)
 - [00304cc2](https://github.com/Cognis-Labs-HQ/Cognis/commit/00304cc21874f59ce90b0c5ba830e174e9b62d88)
+- [8def0536](https://github.com/Cognis-Labs-HQ/Cognis/commit/8def053668ba80829faeaad2f98adde9e930a24f)
