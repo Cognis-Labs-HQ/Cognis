@@ -148,6 +148,22 @@ Deck membership, imported notes and learner schedules use Unicode-safe fragments
 
 The Library provider publishes `study:library:client` through its lifecycle-scoped ctx. Every gateway client operation runs `study:library:<clientFunction>` through `before`, `execute` and `after`. For example, extend `study:library:createLibraryEntry` at `before` to inspect or adjust `input.args` (the client function’s positional arguments), or throw to veto before the request. The `after` stage receives `data.result` and may adjust the returned value. Server authorization and validation still apply. Reads, dictionary resolution, imports, publishing requests and media mutations use the same boundary. Provider teardown aborts in-flight requests and removes capabilities, flows and hooks; stale handles reject. Re-enabling registers fresh actions.
 
+## Decode Notification Text Once
+
+Request notifications decode XML entities in one pass and interpolate account/request values once as literal data. Encoded entity text stays encoded at the next level. Empty or missing preferred-language strings use the English value; a missing English value fails explicitly. The four resource catalogs are cached for the notifier lifetime, and failed reads remain retryable.
+
+## Honor Study Authentication
+
+Study requires the Authentication gateway and its `auth:routeContext` capability before registering routes. Adapter administration, language discovery and drawing routes use the injected context, including custom guards. Missing authentication contracts fail bootstrap instead of selecting a default guard.
+
+## Uniform Practice Sampling
+
+Drawing guidance and Flashcard answer shuffling share the `randomIndex` helper. It uses Web Crypto with masked rejection sampling, supporting integer ranges from 1 through 2^32 without modulo bias. Single-position ranges need no entropy. The caller may inject an entropy source for deterministic testing; normal practice always uses Web Crypto.
+
+## Keep Test Fixtures as Data
+
+Study discovery tests copy static adapter modules and put configurable identities and dependencies in JSON. They do not build executable source from serialized values. Shared setup preserves real discovery and bootstrap behavior. Marketplace artwork tests compare parsed URL origins and paths exactly, including private GitHub requests.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

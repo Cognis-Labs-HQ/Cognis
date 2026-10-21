@@ -1,3 +1,6 @@
+import { loadTestModule } from "./reuse/modules.js";
+import { runOperation } from "../reuse/operation.js";
+import { requestMessages } from "../request-messages.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createLibraryFlow } from "./reuse/flows.js";
@@ -55,4 +58,86 @@ test("new requests notify all enabled administrators; decisions exclude the acto
         assert.match(metadata.localizedText.en.body, /actor/);
         assert.match(metadata.localizedText.en.body, /request/);
     }
+});
+
+test("request identifiers and actor text are interpolated once as data", async () => {
+    const deliveries: Array<{ body: string }> = [];
+    const actorId = "{{ request }} &amp;lt;admin&amp;gt;";
+    const notify = createRequestNotifier({
+        flow: createLibraryFlow(),
+        accounts: {
+            list: async () => [
+                { username: "recipient", enabled: true, role: "admin" },
+            ],
+        },
+        dispatch: async (input) => {
+            deliveries.push(input);
+        },
+    });
+    await notify({ id: "request", status: "pending" } as LibraryPushRequest, {
+        accountId: actorId,
+        role: "user",
+    });
+    assert.equal(deliveries.length, 1);
+    assert.ok(deliveries[0].body.includes(actorId));
+});
+
+test("notification catalogs coalesce reads and retry a failed resource load", async () => {
+    const reads: string[] = [];
+    const deliveries: unknown[] = [];
+    const errors: unknown[] = [];
+    let fail = true;
+    const { createRequestNotifier: createNotifier } = loadTestModule<
+        typeof import("../request-notifications.js")
+    >(
+        new URL("../request-notifications.ts", import.meta.url),
+        {
+            "node:fs/promises": {
+                readFile: async (url: URL) => {
+                    reads.push(url.pathname);
+                    if (fail) {
+                        fail = false;
+                        throw new Error("resource_unavailable");
+                    }
+                    return '<resources><string name="adapter.study.library.notification_pending_subject">Subject</string><string name="adapter.study.library.notification_pending_body">{{ account }}</string></resources>';
+                },
+            },
+            "./request-messages.js": { requestMessages },
+            "./reuse/operation.js": { runOperation },
+        },
+        { URL },
+    );
+    const notify = createNotifier({
+        flow: createLibraryFlow(),
+        accounts: {
+            list: async () => [
+                { username: "admin", enabled: true, role: "admin" },
+            ],
+        },
+        dispatch: async (input: unknown) => {
+            deliveries.push(input);
+        },
+        log: (_level: string, _message: string, metadata: unknown) => {
+            errors.push(metadata);
+        },
+    });
+    const request = { id: "request", status: "pending" } as LibraryPushRequest;
+    const actor = { accountId: "submitter", role: "user" as const };
+    await notify(request, actor);
+    assert.equal(errors.length, 1);
+    assert.equal(deliveries.length, 0);
+    await Promise.all([notify(request, actor), notify(request, actor)]);
+    assert.equal(
+        reads.length,
+        5,
+        "One failed read and one successful load for each of four locales",
+    );
+    assert.equal(deliveries.length, 2);
+    await notify(request, actor);
+    assert.equal(
+        reads.length,
+        5,
+        "Repeated delivery reuses the owner-scoped catalogs",
+    );
+    assert.equal(deliveries.length, 3);
 });

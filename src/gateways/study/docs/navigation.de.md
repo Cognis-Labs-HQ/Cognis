@@ -53,3 +53,11 @@ Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(c
 ## Erweiterbare Browseraktionen
 
 Library-Browserclients lösen `study:library:client` über ctx auf. Der Anbieter registriert `study:library:<clientFunction>` mit `before`, `execute` und `after` für Lesezugriffe, Wörterbuchaktionen, Anfragen, Importe und Medien. Erforderliche Routenfähigkeiten laden den Anbieter vor dem Einhängen. Erweiterungsargumente, Ablehnung und Lebenszyklus sind in der Dokumentation des Library-Adapters beschrieben.
+
+## Study-Authentifizierung beachten
+
+Study benötigt vor der Routenregistrierung das Authentication-Gateway und dessen Fähigkeit `auth:routeContext`. Adapterverwaltung, Sprachermittlung und Zeichenrouten verwenden den eingebundenen Kontext einschließlich eigener Zugriffswächter. Fehlt der Authentifizierungsvertrag, schlägt der Start fehl, statt einen Standardwächter auszuwählen.
+
+## Gleichmäßige Übungsauswahl
+
+Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `randomIndex`. Die Funktion nutzt Web Crypto mit maskierter Verwerfungsauswahl für ganzzahlige Bereiche von 1 bis 2^32 ohne Modulo-Verzerrung. Ein Bereich mit einer einzigen Position benötigt keine Entropie. Für deterministische Tests kann eine Entropiequelle übergeben werden; normale Übungen verwenden immer Web Crypto.

@@ -1,3 +1,4 @@
+import { randomIndex } from "../../../../gateways/study/ui/reuse/random.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
@@ -18,7 +19,7 @@ function loadModule(path, context) {
 
 const environment = vm.createContext({
     Date,
-    crypto: globalThis.crypto,
+    randomIndex,
     uiCtx,
     similarEntries,
     drawingPattern,

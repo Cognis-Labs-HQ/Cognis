@@ -148,6 +148,22 @@ Keanggotaan dek, catatan impor, dan jadwal pelajar menggunakan fragmen aman Unic
 
 Penyedia Library menerbitkan `study:library:client` melalui ctx yang dibatasi siklus hidupnya. Setiap operasi klien gateway menjalankan `study:library:<clientFunction>` melalui `before`, `execute`, dan `after`. Misalnya, perluas `study:library:createLibraryEntry` pada `before` untuk memeriksa atau mengubah `input.args` (argumen posisi fungsi klien), atau lempar galat untuk menolak sebelum permintaan. Tahap `after` menerima `data.result` dan dapat menyesuaikan nilai hasil. Otorisasi dan validasi server tetap berlaku. Pembacaan, resolusi kamus, impor, permintaan publikasi, dan perubahan media menggunakan batas yang sama. Pelepasan penyedia membatalkan permintaan aktif serta menghapus kapabilitas, alur, dan hook; pemanggilan lama ditolak. Pengaktifan ulang mendaftarkan aksi baru.
 
+## Dekode Notifikasi Sekali
+
+Notifikasi permintaan mendekode entitas XML dalam satu lintasan dan menyisipkan nilai akun serta permintaan sekali sebagai data literal. Teks entitas yang dikodekan tetap dikodekan pada tingkat berikutnya. Teks bahasa pilihan yang kosong atau tidak tersedia menggunakan nilai bahasa Inggris; nilai bahasa Inggris yang tidak tersedia menghasilkan galat eksplisit. Empat katalog sumber daya disimpan dalam cache selama masa hidup pemberi notifikasi, dan pembacaan yang gagal dapat dicoba kembali.
+
+## Patuhi Autentikasi Study
+
+Study memerlukan gateway Authentication dan kapabilitas `auth:routeContext` sebelum mendaftarkan rute. Administrasi adaptor, penemuan bahasa, dan rute menggambar menggunakan konteks yang disuntikkan, termasuk pemeriksaan akses khusus. Kontrak autentikasi yang tidak tersedia menggagalkan bootstrap alih-alih memilih pemeriksaan bawaan.
+
+## Pemilihan Latihan Merata
+
+Panduan menggambar dan pengacakan jawaban kartu belajar menggunakan pembantu `randomIndex` yang sama. Pembantu ini menggunakan Web Crypto dengan pengambilan sampel penolakan bermasker untuk rentang bilangan bulat dari 1 hingga 2^32 tanpa bias modulo. Rentang dengan satu posisi tidak membutuhkan entropi. Pemanggil dapat menyuntikkan sumber entropi untuk pengujian deterministik; latihan biasa selalu menggunakan Web Crypto.
+
+## Konfigurasi Uji Tetap Data
+
+Pengujian penemuan Study menyalin modul adaptor statis dan menyimpan identitas serta dependensi yang dapat dikonfigurasi dalam JSON. Pengujian tidak membangun sumber yang dapat dieksekusi dari nilai terserialisasi. Penyiapan bersama mempertahankan perilaku penemuan dan bootstrap sebenarnya. Pengujian gambar marketplace membandingkan asal dan jalur URL terurai secara tepat, termasuk permintaan GitHub privat.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

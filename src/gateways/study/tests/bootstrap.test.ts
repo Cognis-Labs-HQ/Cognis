@@ -1,14 +1,56 @@
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { writeAdapterFixture } from "./reuse/adapters.js";
+import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { EventEmitter } from "node:events";
-import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    createCtx,
+    hasMinRole,
+    type AccessRole,
+} from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { bootstrap } from "../bootstrap.js";
+
+const credentials = new Map<string, { sub: string; role: AccessRole }>();
+
+function issueCredential(sub: string, role: AccessRole): string {
+    const token = `test-session-${credentials.size}`;
+    credentials.set(token, { sub, role });
+    return token;
+}
+
+const cookieClaims = (request: IncomingMessage) =>
+    credentials.get(
+        request.headers.cookie?.match(/cognis_access_token=([^;]+)/)?.[1] ?? "",
+    ) ?? null;
+
+const routeContext = {
+    getCookieSession: cookieClaims,
+    requireAuth(
+        request: IncomingMessage,
+        response: ServerResponse,
+        minimum: AccessRole = "user",
+    ) {
+        const claims =
+            credentials.get(
+                request.headers.authorization?.replace(/^Bearer /, "") ?? "",
+            ) ?? cookieClaims(request);
+        if (claims && hasMinRole(claims.role, minimum)) return claims;
+        response.writeHead(claims ? 403 : 401, {
+            "content-type": "application/json",
+        });
+        response.end(
+            JSON.stringify({ error: claims ? "forbidden" : "unauthorized" }),
+        );
+        return null;
+    },
+};
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -74,8 +116,8 @@ async function dispatchRoute(
 ): Promise<boolean> {
     for (const routeEntry of routeRegistry.getEntries()) {
         const handled = await routeEntry.handler(
-            request as any,
-            response as any,
+            request as unknown as IncomingMessage,
+            response as unknown as ServerResponse,
             url,
         );
         if (handled) return true;
@@ -98,27 +140,14 @@ async function bootstrapStudyGateway(
     };
     capabilities.contribute("db:executor", dbExecutor);
     capabilities.contribute("system:ctx", systemCtx);
+    capabilities.contribute("auth:routeContext", routeContext);
     configure?.(capabilities);
 
     const adaptersRoot = await mkdtemp(path.join(tmpdir(), "study-bootstrap-"));
     const directory = path.join(adaptersRoot, "study");
     await mkdir(directory);
-    for (const id of ["library", "progress", "drawing", "classes"]) {
-        const adapterRoot = path.join(directory, id);
-        await mkdir(adapterRoot);
-        await writeFile(
-            path.join(adapterRoot, "package.json"),
-            JSON.stringify({ main: "index.mjs", version: "1.0.0" }),
-        );
-        await writeFile(
-            path.join(adapterRoot, "manifest.json"),
-            JSON.stringify({ uuid: id, publisher: "Test", requires: [] }),
-        );
-        await writeFile(
-            path.join(adapterRoot, "index.mjs"),
-            `export function createStudyAdapter() { return { adapterId: ${JSON.stringify(id)}, adapterName: ${JSON.stringify(id)}, getConfig: () => ({}), setConfig: (value) => value, isConfigured: () => true }; }`,
-        );
-    }
+    for (const id of ["library", "progress", "drawing", "classes"])
+        await writeAdapterFixture(directory, { id }, "configured");
     const uiRegistry = new UIRegistry();
     try {
         await bootstrap({
@@ -128,7 +157,7 @@ async function bootstrapStudyGateway(
             gatewayRegistry: new GatewayRegistry(),
             adaptersRoot,
             flow: systemCtx.flow,
-        } as any);
+        });
     } finally {
         await rm(adaptersRoot, { recursive: true, force: true });
     }
@@ -159,7 +188,7 @@ test("Study registers executable drawing progress routes when account preference
             routeRegistry,
             new RequestRecorder({
                 method: "GET",
-                cookieToken: issueAccessToken("learner", "user", 60),
+                cookieToken: issueCredential("learner", "user"),
             }),
             response,
             new URL("http://localhost/api/v1/study/drawing/card-a"),
@@ -225,7 +254,7 @@ test("direct Study requests redirect to unavailable when no language is valid", 
         routeRegistry,
         new RequestRecorder({
             method: "GET",
-            cookieToken: issueAccessToken("learner", "user", 60),
+            cookieToken: issueCredential("learner", "user"),
         }),
         response,
         new URL("http://localhost/study/hiragana"),
@@ -239,7 +268,7 @@ test("direct Study requests redirect to unavailable when no language is valid", 
 test("study registered languages reflect installed language capabilities", async () => {
     const { capabilities, routeRegistry, systemCtx } =
         await bootstrapStudyGateway();
-    const userToken = issueAccessToken("learner", "user", 60);
+    const userToken = issueCredential("learner", "user");
 
     const disabledResponse = new ResponseRecorder();
     const disabledHandled = await dispatchRoute(
@@ -303,7 +332,7 @@ test("study registered languages reflect installed language capabilities", async
 
 test("study child components come from installed language capabilities", async () => {
     const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
-    const userBearerToken = issueAccessToken("learner", "user", 60);
+    const userBearerToken = issueCredential("learner", "user");
 
     const disabledModulesResponse = new ResponseRecorder();
     const disabledModulesHandled = await dispatchRoute(
@@ -373,7 +402,7 @@ test("study child components come from installed language capabilities", async (
 
 test("study adapter routes announce controls and support disable toggles", async () => {
     const { routeRegistry } = await bootstrapStudyGateway();
-    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const adminToken = issueCredential("admin-user", "admin");
 
     const listResponse = new ResponseRecorder();
     const listHandled = await dispatchRoute(
@@ -511,7 +540,7 @@ test("the registered drawing endpoint records canonical results through the rest
         routeRegistry,
         new RequestRecorder({
             method: "POST",
-            cookieToken: issueAccessToken("learner", "user", 60),
+            cookieToken: issueCredential("learner", "user"),
             body: {
                 strokeCount: 4,
                 mistakes: 0,
@@ -547,7 +576,7 @@ test("drawing requests are unavailable when their Progress dependency is disable
         routeRegistry,
         new RequestRecorder({
             method: "POST",
-            bearerToken: issueAccessToken("admin", "admin", 60),
+            bearerToken: issueCredential("admin", "admin"),
         }),
         disabled,
         new URL(
@@ -560,7 +589,7 @@ test("drawing requests are unavailable when their Progress dependency is disable
         routeRegistry,
         new RequestRecorder({
             method: "POST",
-            cookieToken: issueAccessToken("learner", "user", 60),
+            cookieToken: issueCredential("learner", "user"),
             body: { strokeCount: 1, mistakes: 0 },
         }),
         response,
@@ -568,4 +597,47 @@ test("drawing requests are unavailable when their Progress dependency is disable
     );
     assert.equal(response.statusCode, 503);
     assert.equal(JSON.parse(response.payload).error, "adapter_disabled");
+});
+
+test("Study management routes honor the injected authentication context", async () => {
+    const guarded: Array<string | undefined> = [];
+    const { routeRegistry } = await bootstrapStudyGateway((capabilities) => {
+        capabilities.contribute("auth:routeContext", {
+            ...routeContext,
+            requireAuth(request: IncomingMessage, response: ServerResponse) {
+                guarded.push(request.method);
+                response.writeHead(401);
+                response.end(JSON.stringify({ error: "custom_guard" }));
+                return null;
+            },
+        });
+    });
+    for (const [method, pathname] of [
+        ["GET", "/api/v1/gateways/study/adapters"],
+        ["POST", "/api/v1/gateways/study/adapters/drawing/disable"],
+        ["GET", "/api/v1/study/registered-languages"],
+    ]) {
+        const response = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            new RequestRecorder({
+                method,
+                bearerToken: issueCredential("admin", "admin"),
+            }),
+            response,
+            new URL(`http://localhost${pathname}`),
+        );
+        assert.equal(response.statusCode, 401);
+        assert.equal(JSON.parse(response.payload).error, "custom_guard");
+    }
+    assert.deepEqual(guarded, ["GET", "POST", "GET"]);
+});
+
+test("Study fails before registering routes when its authentication contract is missing", async () => {
+    await assert.rejects(
+        bootstrapStudyGateway((capabilities) =>
+            capabilities.contribute("auth:routeContext", undefined),
+        ),
+        /auth_route_context_unavailable/,
+    );
 });

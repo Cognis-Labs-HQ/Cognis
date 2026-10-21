@@ -53,3 +53,11 @@ Pengguna papan tertanam dapat menyediakan `onNavigate(card)` setelah konfirmasi 
 ## Aksi Peramban yang Diperluas
 
 Klien Library di peramban memperoleh `study:library:client` melalui ctx. Penyedianya mendaftarkan `study:library:<clientFunction>` dengan tahap `before`, `execute`, dan `after` untuk pembacaan, kamus, permintaan, impor, dan media. Kapabilitas yang diwajibkan rute memuat penyedia sebelum halaman dipasang. Lihat dokumentasi adaptor Library untuk argumen ekstensi, penolakan, dan pelepasan.
+
+## Patuhi Autentikasi Study
+
+Study memerlukan gateway Authentication dan kapabilitas `auth:routeContext` sebelum mendaftarkan rute. Administrasi adaptor, penemuan bahasa, dan rute menggambar menggunakan konteks yang disuntikkan, termasuk pemeriksaan akses khusus. Kontrak autentikasi yang tidak tersedia menggagalkan bootstrap alih-alih memilih pemeriksaan bawaan.
+
+## Pemilihan Latihan Merata
+
+Panduan menggambar dan pengacakan jawaban kartu belajar menggunakan pembantu `randomIndex` yang sama. Pembantu ini menggunakan Web Crypto dengan pengambilan sampel penolakan bermasker untuk rentang bilangan bulat dari 1 hingga 2^32 tanpa bias modulo. Rentang dengan satu posisi tidak membutuhkan entropi. Pemanggil dapat menyuntikkan sumber entropi untuk pengujian deterministik; latihan biasa selalu menggunakan Web Crypto.

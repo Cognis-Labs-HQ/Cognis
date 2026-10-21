@@ -149,9 +149,11 @@ for (const privateRepository of [false, true]) {
         context.mock.method(globalThis, "fetch", async (input, init) => {
             const url = String(input);
             if (privateRepository) {
-                assert.match(
-                    url,
-                    /^https:\/\/api.github.com\/repos\/example\/notes\/contents\/assets\/banner.png/,
+                const endpoint = new URL(url);
+                assert.equal(endpoint.origin, "https://api.github.com");
+                assert.equal(
+                    endpoint.pathname,
+                    "/repos/example/notes/contents/assets/banner.png",
                 );
                 assert.equal(
                     new Headers(init?.headers).get("authorization"),

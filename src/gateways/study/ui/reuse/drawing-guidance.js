@@ -1,3 +1,5 @@
+import { randomIndex } from "./random.js";
+
 /**
  * Samples distinct hidden strokes anew for a drawing attempt.
  * Exports sampleHiddenStrokes(strokeCount, hiddenCount, random) returning a Set of indices.
@@ -16,8 +18,7 @@ export function sampleHiddenStrokes(
     const hidden = new Set();
     const count = Math.min(strokeCount, hiddenCount);
     for (let index = 0; index < count; index += 1) {
-        const value = random(new Uint32Array(1))[0];
-        const selected = index + (value % (available.length - index));
+        const selected = index + randomIndex(available.length - index, random);
         [available[index], available[selected]] = [
             available[selected],
             available[index],

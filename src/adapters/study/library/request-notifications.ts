@@ -1,3 +1,4 @@
+import { requestMessages } from "./request-messages.js";
 import type { FlowApi } from "@cognis/core";
 import { runOperation } from "./reuse/operation.js";
 import { readFile } from "node:fs/promises";
@@ -31,38 +32,30 @@ interface RequestNotificationPorts {
     ) => unknown;
 }
 
-async function messages(
-    locale: string,
-    status: string,
-): Promise<{ subject: string; body: string }> {
-    const xml = await readFile(
-        new URL(`./ui/languages/${locale}/strings.xml`, import.meta.url),
-        "utf8",
-    );
-    const get = (suffix: string) => {
-        const key = `adapter.study.library.notification_${status}_${suffix}`;
-        const value = xml.match(
-            new RegExp(
-                `<string name="${key.replaceAll(".", "\\.")}">([^<]+)</string>`,
-            ),
-        )?.[1];
-        if (!value) throw new Error("missing_request_translation");
-        return value
-            .replaceAll("&amp;", "&")
-            .replaceAll("&lt;", "<")
-            .replaceAll("&gt;", ">")
-            .replaceAll("&quot;", '"')
-            .replaceAll("&apos;", "'");
-    };
-    return { subject: get("subject"), body: get("body") };
-}
-
 export function createRequestNotifier({
     accounts,
     flow,
     dispatch,
     log,
 }: RequestNotificationPorts) {
+    const catalogs = new Map<string, Promise<string>>();
+    const catalog = (locale: string) => {
+        let pending = catalogs.get(locale);
+        if (!pending) {
+            pending = readFile(
+                new URL(
+                    `./ui/languages/${locale}/strings.xml`,
+                    import.meta.url,
+                ),
+                "utf8",
+            ).catch((error) => {
+                catalogs.delete(locale);
+                throw error;
+            });
+            catalogs.set(locale, pending);
+        }
+        return pending;
+    };
     return async (
         request: LibraryPushRequest,
         actor: LibraryActor,
@@ -74,26 +67,29 @@ export function createRequestNotifier({
                 { requestId: request.id, status: request.status },
                 {
                     deliver: async () => {
+                        const englishXml = await catalog("en");
                         const localizedText = Object.fromEntries(
                             await Promise.all(
                                 ["en", "de", "ja", "id"].map(async (locale) => {
-                                    const copy = await messages(
-                                        locale,
+                                    const copy = requestMessages(
+                                        await catalog(locale),
                                         request.status,
+                                        englishXml,
                                     );
                                     return [
                                         locale,
                                         {
                                             subject: copy.subject,
-                                            body: copy.body
-                                                .replaceAll(
-                                                    "{{ account }}",
-                                                    actor.accountId,
-                                                )
-                                                .replaceAll(
-                                                    "{{ request }}",
-                                                    request.id,
-                                                ),
+                                            body: copy.body.replace(
+                                                /\{\{ (account|request) \}\}/g,
+                                                (
+                                                    _token,
+                                                    key: "account" | "request",
+                                                ) =>
+                                                    key === "account"
+                                                        ? actor.accountId
+                                                        : request.id,
+                                            ),
                                         },
                                     ];
                                 }),

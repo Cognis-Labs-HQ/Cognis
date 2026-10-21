@@ -63,3 +63,7 @@ Schreibübungen verwenden nur die maskierte Überschrift des Zeichenfelds. SVG-P
 Eingebettete Verbraucher können nach der gemeinsamen Bestätigung `onNavigate(card)` bereitstellen. Flashcards verbucht damit den aktuellen Versuch über den Ablauf zum Verlassen und erhält den Stapelkontext vor dem Öffnen von Explore.
 
 Der Browser-Haupteinstieg ist `ui/app/index.js`; Aktionen, Darstellung, Sprache und Übungsmodule liegen daneben. Geteilte Stapel verwenden `ui/app/shared-deck.js`. Serverseitiges Stapelverhalten verwendet `service/index.ts` mit Routen-, Ablauf-, Speicher- und Ergebnismodulen im selben Dienstverzeichnis.
+
+## Gleichmäßige Übungsauswahl
+
+Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `randomIndex`. Die Funktion nutzt Web Crypto mit maskierter Verwerfungsauswahl für ganzzahlige Bereiche von 1 bis 2^32 ohne Modulo-Verzerrung. Ein Bereich mit einer einzigen Position benötigt keine Entropie. Für deterministische Tests kann eine Entropiequelle übergeben werden; normale Übungen verwenden immer Web Crypto.

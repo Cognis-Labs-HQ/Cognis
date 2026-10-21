@@ -1,46 +1,29 @@
+import { loadTestModule } from "./reuse/modules.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { mountProvider as mountScopedActions } from "../../../../ui/reuse/scoped-actions.js";
 import { createProviderLifecycle } from "../../../../ui/reuse/provider-lifecycle.js";
 
 async function session(testContext, request) {
-    const context = vm.createContext({
-        uiCtx,
-        apiFetch: request,
-        AbortSignal,
-        URL,
-        Blob,
-        URLSearchParams,
-    });
-    const source = readFileSync(
+    const client = loadTestModule(
         new URL(
             "../../../../gateways/study/ui/library-client.js",
             import.meta.url,
         ),
-        "utf8",
-    )
-        .replace(/^import .*;\n/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export const", "const");
-    vm.runInContext(source, context);
-    vm.runInContext(
-        "globalThis.client = { registerLibraryClient, ...Object.fromEntries(Object.keys(operations).map((name) => [name, eval(name)])) }",
-        context,
+        {
+            "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/api-client.js": { apiFetch: request },
+        },
+        { AbortSignal, URL, Blob, URLSearchParams },
     );
     const scoped = { scriptUrl: "/scoped.js" };
     const provider = { scriptUrl: "/library.js" };
-    // Use the real owner provider and the same scoped-actions contract as the browser host.
-    const owner = vm.createContext({
-        registerLibraryClient: context.client.registerLibraryClient,
-    });
-    vm.runInContext(
-        readFileSync(new URL("../ui/provider.js", import.meta.url), "utf8")
-            .replace(/^import .*;\n/gm, "")
-            .replace("export function", "function"),
-        owner,
+    const owner = loadTestModule(
+        new URL("../ui/provider.js", import.meta.url),
+        {
+            "/static/gateways/study/library-client.js": client,
+        },
     );
     const providers = createProviderLifecycle({
         uiCtx,
@@ -51,7 +34,7 @@ async function session(testContext, request) {
     });
     await providers.reconcile([scoped, provider]);
     testContext.after(() => providers.reconcile([]));
-    return { client: context.client, providers, scoped, provider };
+    return { client, providers, scoped, provider };
 }
 
 test("Library creation runs adjustable stages, honors vetoes and reports transport failures", async (testContext) => {

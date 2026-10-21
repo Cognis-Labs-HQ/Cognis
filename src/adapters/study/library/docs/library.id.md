@@ -566,3 +566,7 @@ Ketersediaan pustaka membaca kontribusi bahasa dari registri sistem aktif, bukan
 Pembaruan paket otoritatif mempertahankan entri penyedia yang dihilangkan jika masih dapat dijangkau dari kartu pengguna atau kartu penyedia yang disunting. Perlindungan mengikuti ketergantungan rekursif dan siklus; isi penyedia yang usang tanpa rujukan tersebut tetap dapat dipangkas.
 
 Pratinjau kartu yang sesuai di kisi Explore diburamkan dan tidak dapat digunakan selama karakternya terbuka di papan gambar. Penempatan berulang dan yang baru dirender mengikuti keadaan yang sama; mengganti karakter, menutup papan, atau meninggalkan halaman memulihkannya tanpa mengubah ukuran kartu.
+
+## Dekode Notifikasi Sekali
+
+Notifikasi permintaan mendekode entitas XML dalam satu lintasan dan menyisipkan nilai akun serta permintaan sekali sebagai data literal. Teks entitas yang dikodekan tetap dikodekan pada tingkat berikutnya. Teks bahasa pilihan yang kosong atau tidak tersedia menggunakan nilai bahasa Inggris; nilai bahasa Inggris yang tidak tersedia menghasilkan galat eksplisit. Empat katalog sumber daya disimpan dalam cache selama masa hidup pemberi notifikasi, dan pembacaan yang gagal dapat dicoba kembali.

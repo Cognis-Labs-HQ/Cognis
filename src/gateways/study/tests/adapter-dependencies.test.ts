@@ -1,6 +1,14 @@
+import { writeAdapterFixture } from "./reuse/adapters.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, writeFile, rm, mkdir, readFile } from "node:fs/promises";
+import {
+    mkdtemp,
+    writeFile,
+    rm,
+    mkdir,
+    readFile,
+    copyFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { CapabilityStore, GatewayRegistry, createCtx } from "@cognis/core";
@@ -61,30 +69,17 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
         { id: "a-consumer", uuid: "consumer", requires: ["base"] },
         { id: "z-base", uuid: "base", requires: [] },
     ];
-    for (const definition of definitions) {
-        const directory = path.join(root, definition.id);
-        await mkdir(directory);
-        await writeFile(
-            path.join(directory, "package.json"),
-            JSON.stringify({ main: "index.mjs", version: "1.0.0" }),
+    for (const definition of definitions)
+        await writeAdapterFixture(
+            root,
+            {
+                ...definition,
+                bootstrapRequires: definition.requires.length
+                    ? ["boot:z-base"]
+                    : [],
+            },
+            "dependent",
         );
-        await writeFile(
-            path.join(directory, "manifest.json"),
-            JSON.stringify({ ...definition, publisher: "Test" }),
-        );
-        await writeFile(
-            path.join(directory, "index.mjs"),
-            `
-            let ready = false;
-            export function createStudyAdapter() { return { adapterId: ${JSON.stringify(definition.id)}, adapterName: 'Test', isConfigured: () => ready }; }
-            export function bootstrapStudyAdapter(ctx) {
-                ${definition.requires.length ? "if (!ctx.capabilities.get('boot:z-base')) throw new Error('dependency_not_ready');" : ""}
-                ctx.capabilities.contribute(${JSON.stringify("boot:" + definition.id)}, true);
-                ready = true;
-            }
-        `,
-        );
-    }
     const gateway = new CoreStudyGateway();
     await gateway.discoverAdapters(root);
     const capabilities = new CapabilityStore();
@@ -98,6 +93,9 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
             registered.push(args);
         },
         registerStaticDir: (...args) => {
+            registered.push(args);
+        },
+        registerCapabilityProvider: (...args) => {
             registered.push(args);
         },
         registerNavbarPlugin: (...args) => {

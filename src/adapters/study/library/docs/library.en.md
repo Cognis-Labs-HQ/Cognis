@@ -579,3 +579,7 @@ Library availability resolves language contributions from the live system regist
 Authoritative pack updates retain omitted provider entries that are still reachable from user-authored cards or modified provider cards. This protection follows recursive dependencies and cycles; provider-only obsolete content can still be pruned.
 
 The matching Explore grid preview is blurred and non-interactive while its character is open in the drawing pad. Repeated and newly rendered placements follow the same state; changing character, closing the pad or leaving the page restores them without changing card geometry.
+
+## Decode Notification Text Once
+
+Request notifications decode XML entities in one pass and interpolate account/request values once as literal data. Encoded entity text stays encoded at the next level. Empty or missing preferred-language strings use the English value; a missing English value fails explicitly. The four resource catalogs are cached for the notifier lifetime, and failed reads remain retryable.

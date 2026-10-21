@@ -566,3 +566,7 @@ Die Bibliotheksverfügbarkeit liest Sprachbeiträge aus der aktuellen Systemregi
 Verbindliche Paketaktualisierungen erhalten ausgelassene Anbietereinträge, die von eigenen oder bearbeiteten Anbieterkarten weiterhin erreichbar sind. Der Schutz folgt rekursiven Abhängigkeiten und Zyklen; überholte Inhalte ohne solche Verweise können weiter entfernt werden.
 
 Die passende Kartenvorschau im Explore-Raster wird unscharf und nicht interaktiv, solange ihr Zeichen im Zeichenfeld geöffnet ist. Wiederholte und neu gerenderte Platzierungen folgen demselben Zustand; Zeichenwechsel, Schließen des Zeichenfelds oder Verlassen der Seite stellen sie ohne Größenänderung wieder her.
+
+## Benachrichtigungen einmal dekodieren
+
+Anfragebenachrichtigungen dekodieren XML-Entitäten in einem Durchlauf und setzen Konto- und Anfragewerte einmal als unveränderte Daten ein. Kodierte Entitätstexte bleiben auf der nächsten Ebene kodiert. Leere oder fehlende Texte der bevorzugten Sprache verwenden den englischen Wert; fehlt auch dieser, wird ein Fehler ausgelöst. Die vier Ressourcenkataloge werden für die Lebensdauer des Benachrichtigungsdienstes zwischengespeichert; fehlgeschlagene Lesezugriffe können erneut versucht werden.

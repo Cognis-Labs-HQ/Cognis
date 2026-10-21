@@ -27,6 +27,10 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 - Preserve blank lines between functions, methods and declaration groups. Never remove newlines, compress declarations, raise size thresholds or weaken tests to disguise a large file or PR. Split files by coherent responsibility.
 - Keep large markup in feature templates and styles in their owning stylesheet. Small reusable controls may render their own bounded markup.
 - Review the whole PR and adjacent functionality, not only the reported symptom. Keep changes proportional to the feature, and explain unavoidable generated data separately.
+- Trace callers, capability consumers and lifecycle hooks before deleting apparently obsolete code. Preserve active Study progress, XP, achievements, leaderboard and quota integrations. Keep DB driver changes out of feature fixes unless evidence demonstrates a driver defect.
+- Scope caches to their owning component, bound their keys, coalesce concurrent loads and evict failed promises so retries remain possible.
+- Decode entities and interpolate placeholders in a single pass each; inserted values remain opaque data. Use the existing localized catalog and explicit fallback policy rather than recursive replacement or hardcoded messages.
+- Reuse uniform cryptographic sampling for shuffles and selections. Reject out-of-range samples instead of reducing arbitrary random integers modulo the range.
 
 ### UI and Study feedback
 
@@ -43,6 +47,9 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 ### Verification and documentation
 
 - Test observable behavior through real registered flow execution and public-contract fakes. Source-only assertions are supplemental; they cannot prove a capability works. Never use silent no-op runners, unrelated tests or altered assertions to hide failures.
+- Keep executable test fixtures static and configurable values in data files. Load actual module exports through explicit dependency boundaries instead of generating executable source, rewriting exports or evaluating symbol names.
+- Read the linked review and search existing reuse before patching. Batch independent checks; rerun passed checks when relevant code changes or unresolved evidence warrants it. Compare type diagnostics against the same base revision to distinguish existing failures from regressions.
+- Distinguish source fixes, passing local regressions, completed security jobs and confirmed alert clearance. Do not claim a clean CodeQL result from an older run or job completion alone.
 - Check cold/direct navigation, repeated SPA mounts, disabled/uninstalled providers, admin/user permissions, pending/approved requests, transactional failures and dictionary/card duplication.
 - Keep versions, manifests, lockfiles, dependency ceilings and all four localized documents/changelogs synchronized. Document capabilities, constraints and lifecycle behavior accurately. Regenerate and verify provider package hashes after the final edits.
 - Avoid raw provider payloads in UI, unsafe error metadata and silent catches. Use appropriate user-facing errors and structured safe logs.
@@ -189,6 +196,8 @@ surface instead of duplicating gateway knowledge in core code.
 ### Route auth must be injected through route context
 
 Core API route factories and module extension routers must receive auth/request helpers through a route context assembled from `ctx` capabilities. Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.
+
+Pass that same injected context through nested route factories. Declare required auth dependencies in the owning manifest and fail before registering routes if the capability is missing. Test that an injected denying guard governs every exposed route family; a default guard must not silently bypass it.
 
 ### External module skeleton
 

@@ -53,3 +53,11 @@ Embedded consumers may supply `onNavigate(card)` after the shared heading confir
 ## Extensible Browser Actions
 
 Library browser clients resolve `study:library:client` through ctx. Its provider registers `study:library:<clientFunction>` with `before`, `execute` and `after` stages for reads, dictionary work, requests, imports and media. Required route capabilities load the provider before mounting. See the Library adapter documentation for extension arguments, vetoes and teardown behavior.
+
+## Honor Study Authentication
+
+Study requires the Authentication gateway and its `auth:routeContext` capability before registering routes. Adapter administration, language discovery and drawing routes use the injected context, including custom guards. Missing authentication contracts fail bootstrap instead of selecting a default guard.
+
+## Uniform Practice Sampling
+
+Drawing guidance and Flashcard answer shuffling share the `randomIndex` helper. It uses Web Crypto with masked rejection sampling, supporting integer ranges from 1 through 2^32 without modulo bias. Single-position ranges need no entropy. The caller may inject an entropy source for deterministic testing; normal practice always uses Web Crypto.

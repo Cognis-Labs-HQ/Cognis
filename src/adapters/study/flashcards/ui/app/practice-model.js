@@ -1,3 +1,4 @@
+import { randomIndex } from "/static/gateways/study/reuse/random.js";
 import { similarEntries } from "/static/gateways/study/reuse/similar-items.js";
 import { drawingPattern } from "/static/gateways/study/reuse/drawing-pattern.js";
 import { flashcardValues } from "../reuse/flashcard.js";
@@ -78,9 +79,7 @@ export function readingChoices(detail, entries, schemas, language) {
     }
     if (choices.length !== 4) return [];
     for (let index = choices.length - 1; index > 0; index--) {
-        const random = new Uint32Array(1);
-        crypto.getRandomValues(random);
-        const position = random[0] % (index + 1);
+        const position = randomIndex(index + 1);
         [choices[index], choices[position]] = [
             choices[position],
             choices[index],

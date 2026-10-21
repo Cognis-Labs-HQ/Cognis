@@ -10,10 +10,7 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import type { Ctx } from "@cognis/core";
 import { readJson } from "../../api/reuse/read-json.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
-import {
-    resolveRouteContext,
-    type RouteContext,
-} from "../../api/reuse/route-context.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import { StudyFavourites } from "./reuse/favourites.js";
@@ -43,9 +40,8 @@ function createStudyAdapterRoutes(
     gateway: CoreStudyGateway,
     gatewayRegistry: GatewayBootstrapContext["gatewayRegistry"],
     isLanguageEnabled: (languageCode: string) => Promise<boolean>,
-    routeContext?: RouteContext,
+    ctx: RouteContext,
 ) {
-    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
     const toggleAdapterRoutePattern = new RegExp(
         `^${base}/([^/]+)/(enable|disable)$`,
@@ -213,7 +209,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const routeHelpers = resolveRouteContext(routeContext);
+    if (!routeContext) throw new Error("auth_route_context_unavailable");
     const gateway = new CoreStudyGateway(
         (reference) =>
             ctx.gatewayRegistry
@@ -250,7 +246,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.routeRegistry.register(
             createDrawingRoutes(
                 new DrawingProgressStore(preferences),
-                routeHelpers,
+                routeContext,
                 ctx.flow,
                 ctx.log,
                 (actor, entryId, result) =>
@@ -289,7 +285,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const favourites = new StudyFavourites(preferences);
         ctx.capabilities.contribute("study:favourites", favourites);
         ctx.routeRegistry.register(
-            createFavouriteRoutes(favourites, routeHelpers, ctx.flow, ctx.log),
+            createFavouriteRoutes(favourites, routeContext, ctx.flow, ctx.log),
             "study",
         );
     }
@@ -562,7 +558,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         if (req.method !== "GET") return false;
         if (url.pathname !== "/study" && !url.pathname.startsWith("/study/"))
             return false;
-        if (!routeHelpers.getCookieSession(req)) {
+        if (!routeContext.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
@@ -578,7 +574,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             url.pathname !== "/study/settings"
         )
             return false;
-        routeHelpers.setPageSecurityHeaders(res);
+        routeContext.setPageSecurityHeaders(res);
         const html = await readFile(
             path.join(GATEWAY_ROOT, "ui", "study.html"),
             "utf8",
@@ -599,7 +595,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             req.method !== "GET"
         )
             return false;
-        const claims = routeHelpers.requireAuth(req, res);
+        const claims = routeContext.requireAuth(req, res);
         if (!claims) return true;
         syncLanguageCapabilities();
         const languages = gateway
@@ -628,6 +624,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             ctx.gatewayRegistry,
             isLanguageEnabled,
+            routeContext,
         ),
         "study",
     );

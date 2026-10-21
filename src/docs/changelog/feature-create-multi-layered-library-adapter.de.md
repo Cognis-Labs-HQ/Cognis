@@ -148,6 +148,22 @@ Deckzugehörigkeit, importierte Notizen und Lernpläne verwenden Unicode-sichere
 
 Der Library-Anbieter veröffentlicht `study:library:client` über seinen lebenszyklusgebundenen ctx. Jede Gateway-Clientoperation führt `study:library:<clientFunction>` mit `before`, `execute` und `after` aus. Eine Erweiterung von `study:library:createLibraryEntry` bei `before` kann `input.args` (die Positionsargumente der Clientfunktion) prüfen oder ändern beziehungsweise vor der Anfrage einen Fehler zum Ablehnen auslösen. `after` erhält `data.result` und kann den Rückgabewert anpassen. Serverseitige Berechtigungsprüfung und Validierung gelten weiterhin. Lesen, Wörterbuchauflösung, Import, Veröffentlichungsanfragen und Medienänderungen verwenden dieselbe Grenze. Beim Entfernen werden laufende Anfragen abgebrochen und Fähigkeiten, Abläufe und Hooks entfernt; veraltete Aufrufe werden abgewiesen. Erneutes Aktivieren registriert neue Aktionen.
 
+## Benachrichtigungen einmal dekodieren
+
+Anfragebenachrichtigungen dekodieren XML-Entitäten in einem Durchlauf und setzen Konto- und Anfragewerte einmal als unveränderte Daten ein. Kodierte Entitätstexte bleiben auf der nächsten Ebene kodiert. Leere oder fehlende Texte der bevorzugten Sprache verwenden den englischen Wert; fehlt auch dieser, wird ein Fehler ausgelöst. Die vier Ressourcenkataloge werden für die Lebensdauer des Benachrichtigungsdienstes zwischengespeichert; fehlgeschlagene Lesezugriffe können erneut versucht werden.
+
+## Study-Authentifizierung beachten
+
+Study benötigt vor der Routenregistrierung das Authentication-Gateway und dessen Fähigkeit `auth:routeContext`. Adapterverwaltung, Sprachermittlung und Zeichenrouten verwenden den eingebundenen Kontext einschließlich eigener Zugriffswächter. Fehlt der Authentifizierungsvertrag, schlägt der Start fehl, statt einen Standardwächter auszuwählen.
+
+## Gleichmäßige Übungsauswahl
+
+Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `randomIndex`. Die Funktion nutzt Web Crypto mit maskierter Verwerfungsauswahl für ganzzahlige Bereiche von 1 bis 2^32 ohne Modulo-Verzerrung. Ein Bereich mit einer einzigen Position benötigt keine Entropie. Für deterministische Tests kann eine Entropiequelle übergeben werden; normale Übungen verwenden immer Web Crypto.
+
+## Testkonfiguration bleibt Daten
+
+Study-Erkennungstests kopieren statische Adaptermodule und speichern konfigurierbare Kennungen und Abhängigkeiten in JSON. Aus serialisierten Werten wird kein ausführbarer Quelltext erzeugt. Gemeinsame Einrichtung erhält die tatsächliche Erkennung und den Startablauf. Tests für Marktplatzgrafiken vergleichen geparste URL-Ursprünge und Pfade exakt, einschließlich privater GitHub-Anfragen.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

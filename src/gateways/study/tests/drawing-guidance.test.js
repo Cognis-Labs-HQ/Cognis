@@ -7,7 +7,7 @@ test("the same hiding count selects fresh distinct stroke positions each attempt
     const next = sampleHiddenStrokes(6, 3, (values) => values.fill(2));
     assert.deepEqual([...first], [0, 1, 2]);
     assert.deepEqual([...next], [2, 3, 4]);
-    for (const hidden of [first, next]) {
+    for (const hidden of [first, next, sampleHiddenStrokes(6, 3)]) {
         assert.equal(hidden.size, 3);
         assert.ok([...hidden].every((index) => index >= 0 && index < 6));
     }
