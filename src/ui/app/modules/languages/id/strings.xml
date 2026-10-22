@@ -9,6 +9,9 @@
   <string name="ui.app.modules.change_release_channel">Ubah Kanal Rilis</string>
   <string name="ui.app.modules.changing_release_channel">Mengubah Kanal Rilis</string>
   <string name="ui.app.modules.installing">Memasang</string>
+  <string name="ui.app.modules.enabling">Mengaktifkan</string>
+  <string name="ui.app.modules.disabling">Menonaktifkan</string>
+  <string name="ui.app.modules.uninstalling">Menghapus instalasi</string>
   <string name="ui.app.modules.upgrading">Meningkatkan</string>
   <string name="ui.app.modules.downgrading">Menurunkan</string>
   <string name="ui.app.modules.upgrade_complete">Modul ditingkatkan.</string>

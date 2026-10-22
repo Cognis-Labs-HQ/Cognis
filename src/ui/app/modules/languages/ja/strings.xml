@@ -9,6 +9,9 @@
   <string name="ui.app.modules.change_release_channel">リリースチャンネルを変更</string>
   <string name="ui.app.modules.changing_release_channel">リリースチャンネルを変更中</string>
   <string name="ui.app.modules.installing">インストール中</string>
+  <string name="ui.app.modules.enabling">有効化中</string>
+  <string name="ui.app.modules.disabling">無効化中</string>
+  <string name="ui.app.modules.uninstalling">アンインストール中</string>
   <string name="ui.app.modules.upgrading">アップグレード中</string>
   <string name="ui.app.modules.downgrading">ダウングレード中</string>
   <string name="ui.app.modules.upgrade_complete">モジュールをアップグレードしました。</string>

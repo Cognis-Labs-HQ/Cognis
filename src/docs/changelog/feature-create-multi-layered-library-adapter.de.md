@@ -200,6 +200,10 @@ Jeder Eintrag in `tag_carousels` muss `excludeFromBrowse` deklarieren: `false` e
 
 Die öffentlichen Import-URLs des Study-Gateways wurden korrigiert und der gemeinsame Katalog der Definitionssprachen in das öffentliche Wiederverwendungsverzeichnis der Library verschoben. Ein Regressionstest lädt Provider und Seitenimporte über den echten statischen Router und prüft damit Pfade, deren Fehler bisher durch Bundling-Aliase verdeckt wurden.
 
+## Aktive Modulaktion anzeigen
+
+Modulschaltflächen zeigen während der jeweiligen Aktion „Wird aktiviert“, „Wird deaktiviert“ oder „Wird deinstalliert“ statt fälschlich „Wird installiert“. Die Beschriftungen für Upgrades und Downgrades bleiben erhalten.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

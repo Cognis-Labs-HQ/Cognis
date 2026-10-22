@@ -200,6 +200,10 @@ Setiap item `tag_carousels` wajib mendeklarasikan `excludeFromBrowse`: `false` m
 
 URL impor publik gateway Study diperbaiki dan katalog bahasa definisi bersama dipindahkan ke direktori penggunaan ulang publik Library. Uji regresi memuat penyedia dan graf impor halaman melalui router statis yang sebenarnya, mencakup jalur yang sebelumnya tertutupi alias bundling.
 
+## Tampilkan tindakan siklus hidup modul yang aktif
+
+Tombol modul menampilkan Mengaktifkan, Menonaktifkan, atau Menghapus instalasi selama tindakan tersebut berjalan, bukan Memasang yang keliru. Label peningkatan dan penurunan versi tetap dipertahankan.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

@@ -200,6 +200,10 @@ Every `tag_carousels` item must declare `excludeFromBrowse`: `false` keeps its v
 
 Corrected Study gateway public import URLs and placed the shared definition-language catalog inside the Library’s public reuse directory. A regression test loads providers and page import graphs through the real static router, covering paths that bundling aliases previously masked.
 
+## Show the active module lifecycle action
+
+Module buttons show Enabling, Disabling or Uninstalling while that action runs, instead of incorrectly showing Installing. Upgrade and downgrade labels are preserved.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

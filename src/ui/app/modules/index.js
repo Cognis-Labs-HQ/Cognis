@@ -198,12 +198,16 @@ function renderLifecycleButton(module, action, consequence) {
         action === "update"
             ? moduleChangeDirection(module, selectedBranch(module))
             : action;
+    const pendingLabelKey =
+        {
+            enable: "ui.app.modules.enabling",
+            disable: "ui.app.modules.disabling",
+            uninstall: "ui.app.modules.uninstalling",
+            upgrade: "ui.app.modules.upgrading",
+            downgrade: "ui.app.modules.downgrading",
+        }[updateDirection] ?? "ui.app.modules.installing";
     const labelKey = isPending
-        ? updateDirection === "upgrade"
-            ? "ui.app.modules.upgrading"
-            : updateDirection === "downgrade"
-              ? "ui.app.modules.downgrading"
-              : "ui.app.modules.installing"
+        ? pendingLabelKey
         : `ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`;
     return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(labelKey))}</button>`;
 }
