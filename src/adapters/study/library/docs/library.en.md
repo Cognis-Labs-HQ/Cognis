@@ -134,7 +134,7 @@ Detail views omit the `composite` class. Other content classes are reduced to th
 
 ## New-content tracking
 
-The Library stores viewed entry UUIDs per account. Provider updates preserve this state and notify enabled accounts only for newly introduced stable entry IDs, not for the pack's complete updated contents. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews and detail popups. Hovering a card or opening it through any Library relationship records it as viewed; the persisted state removes the pill after refresh.
+The Library stores viewed entry UUIDs per account. Provider updates preserve this state and notify enabled accounts only for newly introduced stable entry IDs, not for the pack's complete updated contents. Global entries introduced by provider pack ingestion or approved user and administrator contributions trigger a Study Library notification for enabled accounts. Entries absent from an account's viewed cache display a **New** pill in previews. Hovering a card or opening its details or editor, including through direct links and relationships, records it as viewed for that account. A successful write immediately removes matching preview markers and preserves the state across reloads.
 
 ## Contributions, visibility requests, and search
 
@@ -603,3 +603,13 @@ The Library UI provider publishes `study:library:presentation.titleComposition(d
 Layer `detail.tags` is an explicit allowlist of localized learner pills; internal tags remain stored for transformations and editing. Only tags marked `filterable` become tag filters. Field option labels are localized, and filters follow provider option order. Optional fields can declare `detail.autoSelectSingle: false` to keep the initial view unfiltered.
 
 A string field can declare `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }`. Values run from easiest to hardest. The field resolves through canonical referenced IDs, and selected transformation rule IDs contribute their declared ranks. An authored field value is a minimum grammar requirement. Sentences match exactly the hardest requirement: N5 + N4 matches N4, while N5-only and N3-containing sentences do not. Missing, ambiguous or inaccessible classifications remain unclassified when `requireAll` is true. Resolution is cached within each render, does not modify stored cards and refreshes with the referenced content.
+
+## Generic difficulty profiles
+
+Both Study modules use the canonical `difficulty_level` field. Their identical normalizer and contract tests read `data/library/difficulty.json`; labels, ordered options, source tag mappings, basic-layer defaults and transformation requirements are data. Japanese presents JLPT N5–N1; English uses its existing beginner/intermediate/advanced categories. Unknown values remain unclassified. The host ranks declared fields without language-specific rules or alternate field names.
+
+## Mark every opened card as viewed
+
+Opening a detail popup through a direct link, relationship or previous/next navigation records the canonical card for the authenticated user. Opening its editor follows the same path. Successful writes clear matching preview markers and local state; concurrent hover/open writes are coalesced, and failures remain retryable without blocking the detail view. Failed or cancelled opens do not mark unseen cards, and an opened detail never displays a stale New pill.
+
+Optional single-select fields include a localized **Not specified** choice. Editing an unclassified card therefore preserves its unknown difficulty instead of silently selecting the first level.

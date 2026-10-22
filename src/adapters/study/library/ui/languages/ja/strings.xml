@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="adapter.study.library.viewed_save_error">カードの閲覧済み状態を保存できませんでした。もう一度開くと再試行します。</string>
   <string name="gateway.study.library_search_placeholder">すべてのレイヤーを検索</string>
   <string name="gateway.study.library_search_clear">検索をクリア</string>
   <string name="gateway.study.library_create">カードを作成</string>

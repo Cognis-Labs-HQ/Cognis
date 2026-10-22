@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="adapter.study.library.viewed_save_error">Die Karte konnte nicht als angesehen gespeichert werden. Zum erneuten Versuch nochmals öffnen.</string>
   <string name="gateway.study.library_search_placeholder">Alle Ebenen durchsuchen</string>
   <string name="gateway.study.library_search_clear">Suche löschen</string>
   <string name="gateway.study.library_create">Karte erstellen</string>

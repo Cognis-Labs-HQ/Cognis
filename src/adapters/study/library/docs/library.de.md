@@ -114,7 +114,7 @@ Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kin
 
 ## Nachverfolgung neuer Inhalte
 
-Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Anbieteraktualisierungen behalten diesen Status bei und benachrichtigen aktivierte Konten nur über neu eingeführte stabile Eintrags-IDs, nicht über den gesamten aktualisierten Paketinhalt. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in Vorschau und Detailfenster einmalig **Neu**. Das Überfahren einer Karte oder ihr direktes beziehungsweise indirektes Öffnen markiert sie als angesehen; nach dem Aktualisieren verschwindet die Markierung dauerhaft.
+Die Bibliothek speichert die UUIDs angesehener Einträge pro Konto. Anbieteraktualisierungen behalten diesen Status bei und benachrichtigen aktivierte Konten nur über neu eingeführte stabile Eintrags-IDs, nicht über den gesamten aktualisierten Paketinhalt. Globale Einträge aus Anbieterpaketen oder genehmigten Beiträgen von Benutzern und Administratoren lösen für aktivierte Konten eine Bibliotheksbenachrichtigung aus. Einträge außerhalb des angesehenen Caches zeigen in der Vorschau **Neu**. Überfahren oder Öffnen der Details beziehungsweise des Editors, auch über Direktlinks und Beziehungen, speichert den Status für dieses Konto. Erfolgreiches Speichern entfernt passende Vorschaumarkierungen sofort und erhält den Status beim Neuladen.
 
 ## Beiträge, Sichtbarkeitsanfragen und Suche
 
@@ -590,3 +590,13 @@ Der Library-UI-Anbieter veröffentlicht `study:library:presentation.titleComposi
 `detail.tags` einer Ebene legt ausdrücklich fest, welche lokalisierten Tags als Lernmerkmale erscheinen; interne Tags bleiben für Transformationen und Bearbeitung gespeichert. Nur mit `filterable` markierte Tags werden Filter. Optionsbeschriftungen sind lokalisiert; Filter folgen der vom Anbieter festgelegten Reihenfolge. Optionale Felder können mit `detail.autoSelectSingle: false` ohne Anfangsauswahl starten.
 
 Ein Zeichenkettenfeld kann `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }` deklarieren. Die Werte reichen von leicht bis schwer. Die Auflösung nutzt kanonische Referenz-IDs; ausgewählte Transformationsregeln tragen ihre deklarierten Stufen bei. Ein gespeicherter Feldwert legt eine grammatische Mindestanforderung fest. Sätze entsprechen genau der höchsten Anforderung: N5 + N4 ergibt N4; reine N5-Sätze und Sätze mit N3-Inhalten passen nicht zu N4. Fehlende, mehrdeutige oder unzugängliche Einstufungen bleiben bei `requireAll` unklassifiziert. Die Auflösung wird pro Darstellung zwischengespeichert, verändert keine gespeicherten Karten und folgt Änderungen der referenzierten Inhalte.
+
+## Generische Schwierigkeitsprofile
+
+Beide Study-Module verwenden das kanonische Feld `difficulty_level`. Identische Normalisierung und Vertragstests lesen `data/library/difficulty.json`; Beschriftungen, geordnete Optionen, Quelltag-Zuordnungen, Grundstufen und Transformationsanforderungen sind Daten. Japanisch zeigt JLPT N5–N1, Englisch verwendet die bestehenden Kategorien Anfänger/Mittelstufe/Fortgeschritten. Unbekannte Werte bleiben unklassifiziert. Der Host ordnet deklarierte Felder ohne sprachspezifische Regeln oder alternative Feldnamen ein.
+
+## Jede geöffnete Karte als angesehen markieren
+
+Das Öffnen von Details über Direktlinks, Beziehungen oder Vor-/Zurück-Navigation speichert die kanonische Karte für den angemeldeten Benutzer als angesehen. Dasselbe gilt für den Editor. Erfolgreiche Schreibvorgänge entfernen passende Vorschaumarker und aktualisieren den lokalen Zustand; gleichzeitiges Überfahren und Öffnen teilt denselben Vorgang. Fehler bleiben wiederholbar, ohne Details zu blockieren. Fehlgeschlagene oder abgebrochene Öffnungen markieren keine ungesehenen Karten; geöffnete Details zeigen kein veraltetes Neu-Merkmal.
+
+Optionale Einzelauswahlfelder enthalten die lokalisierte Auswahl **Nicht angegeben**. Beim Bearbeiten einer nicht eingestuften Karte bleibt ihre unbekannte Schwierigkeit erhalten, statt stillschweigend die erste Stufe zu wählen.

@@ -88,7 +88,7 @@ export function bindLibraryInteractions(root, context) {
         render: renderEntries,
     });
     let suppressEntryClick = false;
-    const markViewed = bindViewedEntries(root, () => entries, signal);
+    const markViewed = bindViewedEntries(root, () => entries, signal, i18n);
     bindVariantInteractions(root, {
         signal,
         suppressNextClick: () => {
@@ -178,10 +178,6 @@ export function bindLibraryInteractions(root, context) {
                 ".library-transform-card:not(.library-transform-card--open)",
             );
             if (closedTransformCard) return;
-            const openedAsNew = entries.some(
-                ({ id, isNew }) =>
-                    id === control.dataset.libraryEntry && isNew === true,
-            );
             markViewed(control);
             if (suppressEntryClick) {
                 suppressEntryClick = false;
@@ -218,7 +214,6 @@ export function bindLibraryInteractions(root, context) {
                 {
                     readOnly,
                     showReferenceTree,
-                    showNew: openedAsNew,
                     onEntryUpdated: renderEntries,
                 },
             )

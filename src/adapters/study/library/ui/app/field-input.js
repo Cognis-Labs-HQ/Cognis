@@ -17,8 +17,13 @@ export function inputForField(field, value, language, i18n, audioEditor = "") {
         const prefix = field.input?.file?.prefix ?? `${language}/`;
         return `<section class="library-audio-field" data-library-audio-upload data-field-id="${escapeHtml(field.id)}" data-namespace="${escapeHtml(namespace)}" data-prefix="${escapeHtml(prefix)}"><label><span>${escapeHtml(label)} (${escapeHtml(i18n.t("gateway.study.library_optional"))})</span><input name="${escapeHtml(name)}" type="hidden" value="${escapeHtml(value ?? "")}"><input type="file" accept="audio/mpeg,audio/ogg,audio/wav,audio/webm,audio/mp4"></label><div class="library-audio-controls"><button type="button" class="btn-neutral" data-library-record-audio aria-pressed="false" aria-label="${escapeHtml(i18n.t("gateway.study.library_audio_record"))}"><span class="library-microphone-icon" aria-hidden="true"></span></button>${audioEditor}</div></section>`;
     }
-    if (control === "singleSelect" || control === "multiSelect")
-        return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
+    if (control === "singleSelect" || control === "multiSelect") {
+        const unspecified =
+            control === "singleSelect" && !field.required
+                ? `<option value=""${value === undefined || value === null || value === "" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.unspecified"))}</option>`
+                : "";
+        return `<label><span>${escapeHtml(label)}</span><select name="${escapeHtml(name)}"${control === "multiSelect" ? " multiple" : ""}${field.input?.immutable ? " disabled" : ""}${field.required ? " required" : ""}>${unspecified}${options.map((option) => `<option value="${escapeHtml(option.value)}"${(Array.isArray(value) ? value.includes(option.value) : value === option.value) ? " selected" : ""}>${escapeHtml(localizedLabel(option.metadata, language))}</option>`).join("")}</select></label>`;
+    }
     const valueKind = field.validation?.kind ?? field.type;
     if (valueKind === "boolean")
         return `<label class="library-admin-checkbox"><input name="${escapeHtml(name)}" type="checkbox" class="choice-checkbox"${value === true ? " checked" : ""}> <span>${escapeHtml(label)}</span></label>`;

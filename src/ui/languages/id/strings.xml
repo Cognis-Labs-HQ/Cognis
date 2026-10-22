@@ -1,4 +1,5 @@
 <resources>
+  <string name="ui.reuse.unspecified">Belum ditentukan</string>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.brand_name">Cognis</string>
   <string name="ui.reuse.login">Masuk</string>

@@ -1,4 +1,8 @@
 const DOMAIN_CODES = new Set([
+    "invalid_display_tag",
+    "display_tag_metadata_required",
+    "invalid_filter_single_selection",
+    "invalid_field_derivation",
     "generated_transformation_readonly",
     "unresolved_transform_flag",
     "transform_flag_required",

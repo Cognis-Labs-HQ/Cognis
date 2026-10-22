@@ -118,7 +118,7 @@ Tampilan detail menyembunyikan kelas `composite`. Kelas konten lainnya disederha
 
 ## Pelacakan konten baru
 
-Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Pembaruan penyedia mempertahankan status ini dan hanya memberi tahu akun aktif tentang ID entri stabil yang baru diperkenalkan, bukan seluruh isi paket yang diperbarui. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau dan popup detail. Mengarahkan penunjuk ke kartu atau membukanya secara langsung maupun melalui relasi akan menandainya sebagai telah dilihat; status tersimpan menghilangkan pil setelah halaman dimuat ulang.
+Pustaka menyimpan UUID entri yang telah dilihat untuk setiap akun. Pembaruan penyedia mempertahankan status ini dan hanya memberi tahu akun aktif tentang ID entri stabil yang baru diperkenalkan, bukan seluruh isi paket yang diperbarui. Entri global dari paket penyedia atau kontribusi pengguna dan administrator yang disetujui memicu notifikasi Pustaka bagi akun aktif. Entri yang belum ada dalam cache tampilan akun menampilkan pil **Baru** pada pratinjau. Hover atau membuka detail maupun editor, termasuk melalui tautan langsung dan relasi, mencatat status untuk akun tersebut. Penulisan berhasil langsung menghapus penanda pratinjau terkait dan mempertahankan status setelah pemuatan ulang.
 
 ## Kontribusi, permintaan visibilitas, dan pencarian
 
@@ -590,3 +590,13 @@ Penyedia UI Library menyediakan `study:library:presentation.titleComposition(det
 `detail.tags` pada lapisan menentukan daftar eksplisit pil pembelajaran terlokalisasi; tag internal tetap tersimpan untuk transformasi dan penyuntingan. Hanya tag dengan `filterable` yang menjadi filter. Label pilihan dilokalisasi dan filter mengikuti urutan pilihan penyedia. Bidang opsional dapat memakai `detail.autoSelectSingle: false` agar tampilan awal tidak difilter.
 
 Bidang string dapat mendeklarasikan `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }`. Nilai diurutkan dari termudah hingga tersulit. Resolusi memakai ID referensi kanonis dan peringkat aturan transformasi yang dipilih. Nilai bidang yang ditulis menetapkan persyaratan tata bahasa minimum. Kalimat cocok tepat dengan persyaratan tersulit: N5 + N4 cocok dengan N4, sedangkan kalimat hanya N5 atau yang mengandung N3 tidak cocok dengan N4. Klasifikasi yang hilang, ambigu, atau tidak dapat diakses tetap tidak terklasifikasi saat `requireAll` aktif. Hasil dicache per render, tidak mengubah kartu tersimpan, dan diperbarui mengikuti isi referensi.
+
+## Profil kesulitan generik
+
+Kedua modul Study memakai bidang kanonis `difficulty_level`. Normalisasi dan uji kontrak yang identik membaca `data/library/difficulty.json`; label, urutan pilihan, pemetaan tag sumber, nilai dasar, serta persyaratan transformasi merupakan data. Bahasa Jepang menampilkan JLPT N5–N1; bahasa Inggris memakai kategori pemula/menengah/lanjutan yang sudah ada. Nilai tidak dikenal tetap tidak terklasifikasi. Host memberi peringkat pada bidang yang dideklarasikan tanpa aturan khusus bahasa atau nama bidang alternatif.
+
+## Tandai setiap kartu yang dibuka sebagai dilihat
+
+Membuka detail melalui tautan langsung, relasi, atau navigasi sebelumnya/berikutnya mencatat kartu kanonis untuk pengguna yang terautentikasi. Editor memakai jalur yang sama. Penulisan berhasil menghapus penanda pratinjau terkait dan memperbarui status lokal; permintaan dari hover dan pembukaan bersamaan digabungkan. Kegagalan tetap dapat dicoba lagi tanpa memblokir detail. Pembukaan yang gagal atau dibatalkan tidak menandai kartu yang belum dilihat; detail terbuka tidak menampilkan pil Baru yang sudah usang.
+
+Kolom pilihan tunggal opsional menyertakan pilihan **Belum ditentukan** yang dilokalkan. Mengedit kartu tanpa klasifikasi tetap mempertahankan tingkat yang belum diketahui alih-alih otomatis memilih tingkat pertama.

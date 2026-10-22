@@ -287,6 +287,7 @@ export async function openLibraryEntryEditor({
     requestUpdate = false,
     persistDraft,
     onSaved = () => {},
+    onOpened = () => {},
 }) {
     const schema = schemas.find(({ id }) => id === entry.schemaId);
     const layer = schema?.layers.find(({ id }) => id === entry.layer);
@@ -667,6 +668,7 @@ export function bindAdminLibraryInteractions(
                           },
                       ],
                 onOpen: (overlay) => {
+                    onOpened();
                     const form = overlay.querySelector(
                         "[data-library-admin-editor]",
                     );

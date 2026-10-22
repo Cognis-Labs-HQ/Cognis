@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+  <string name="adapter.study.library.viewed_save_error">Gagal menyimpan kartu sebagai telah dilihat. Buka lagi untuk mencoba kembali.</string>
   <string name="gateway.study.library_search_placeholder">Cari semua lapisan</string>
   <string name="gateway.study.library_search_clear">Hapus pencarian</string>
   <string name="gateway.study.library_create">Buat kartu</string>

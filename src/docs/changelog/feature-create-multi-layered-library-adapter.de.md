@@ -210,6 +210,14 @@ Modulschaltflächen zeigen während der jeweiligen Aktion „Wird aktiviert“, 
 
 Ein Zeichenkettenfeld kann `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }` deklarieren. Die Werte reichen von leicht bis schwer. Die Auflösung nutzt kanonische Referenz-IDs; ausgewählte Transformationsregeln tragen ihre deklarierten Stufen bei. Ein gespeicherter Feldwert legt eine grammatische Mindestanforderung fest. Sätze entsprechen genau der höchsten Anforderung: N5 + N4 ergibt N4; reine N5-Sätze und Sätze mit N3-Inhalten passen nicht zu N4. Fehlende, mehrdeutige oder unzugängliche Einstufungen bleiben bei `requireAll` unklassifiziert. Die Auflösung wird pro Darstellung zwischengespeichert, verändert keine gespeicherten Karten und folgt Änderungen der referenzierten Inhalte.
 
+## Generische Schwierigkeitsprofile
+
+Beide Study-Module verwenden das kanonische Feld `difficulty_level`. Identische Normalisierung und Vertragstests lesen `data/library/difficulty.json`; Beschriftungen, geordnete Optionen, Quelltag-Zuordnungen, Grundstufen und Transformationsanforderungen sind Daten. Japanisch zeigt JLPT N5–N1, Englisch verwendet die bestehenden Kategorien Anfänger/Mittelstufe/Fortgeschritten. Unbekannte Werte bleiben unklassifiziert. Der Host ordnet deklarierte Felder ohne sprachspezifische Regeln oder alternative Feldnamen ein.
+
+## Jede geöffnete Karte als angesehen markieren
+
+Das Öffnen von Details über Direktlinks, Beziehungen oder Vor-/Zurück-Navigation speichert die kanonische Karte für den angemeldeten Benutzer als angesehen. Dasselbe gilt für den Editor. Erfolgreiche Schreibvorgänge entfernen passende Vorschaumarker und aktualisieren den lokalen Zustand; gleichzeitiges Überfahren und Öffnen teilt denselben Vorgang. Fehler bleiben wiederholbar, ohne Details zu blockieren. Fehlgeschlagene oder abgebrochene Öffnungen markieren keine ungesehenen Karten; geöffnete Details zeigen kein veraltetes Neu-Merkmal.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -250,3 +258,5 @@ Ein Zeichenkettenfeld kann `derivation: { kind: "rankedReferences", relationship
 - [95b8d963](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b8d963272d72bdf553e5da03be4b1ae7cc91e6)
 - [b20b903a](https://github.com/Cognis-Labs-HQ/Cognis/commit/b20b903a601346b5d23df2bde9620ccffdd41e50)
 - [9022b8fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/9022b8fe67d2c5cbcaaae8afb429b7bc426893e4)
+
+Optionale Einzelauswahlfelder enthalten die lokalisierte Auswahl **Nicht angegeben**. Beim Bearbeiten einer nicht eingestuften Karte bleibt ihre unbekannte Schwierigkeit erhalten, statt stillschweigend die erste Stufe zu wählen.

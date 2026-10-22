@@ -210,6 +210,14 @@ Layer `detail.tags` is an explicit allowlist of localized learner pills; interna
 
 A string field can declare `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }`. Values run from easiest to hardest. The field resolves through canonical referenced IDs, and selected transformation rule IDs contribute their declared ranks. An authored field value is a minimum grammar requirement. Sentences match exactly the hardest requirement: N5 + N4 matches N4, while N5-only and N3-containing sentences do not. Missing, ambiguous or inaccessible classifications remain unclassified when `requireAll` is true. Resolution is cached within each render, does not modify stored cards and refreshes with the referenced content.
 
+## Generic difficulty profiles
+
+Both Study modules use the canonical `difficulty_level` field. Their identical normalizer and contract tests read `data/library/difficulty.json`; labels, ordered options, source tag mappings, basic-layer defaults and transformation requirements are data. Japanese presents JLPT N5–N1; English uses its existing beginner/intermediate/advanced categories. Unknown values remain unclassified. The host ranks declared fields without language-specific rules or alternate field names.
+
+## Mark every opened card as viewed
+
+Opening a detail popup through a direct link, relationship or previous/next navigation records the canonical card for the authenticated user. Opening its editor follows the same path. Successful writes clear matching preview markers and local state; concurrent hover/open writes are coalesced, and failures remain retryable without blocking the detail view. Failed or cancelled opens do not mark unseen cards, and an opened detail never displays a stale New pill.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)
@@ -250,3 +258,5 @@ A string field can declare `derivation: { kind: "rankedReferences", relationship
 - [95b8d963](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b8d963272d72bdf553e5da03be4b1ae7cc91e6)
 - [b20b903a](https://github.com/Cognis-Labs-HQ/Cognis/commit/b20b903a601346b5d23df2bde9620ccffdd41e50)
 - [9022b8fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/9022b8fe67d2c5cbcaaae8afb429b7bc426893e4)
+
+Optional single-select fields include a localized **Not specified** choice. Editing an unclassified card therefore preserves its unknown difficulty instead of silently selecting the first level.

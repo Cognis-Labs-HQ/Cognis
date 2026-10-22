@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { libraryFailure } from "../routes/failures.js";
 import { validateLibrarySchema } from "../layers.js";
 import { mockLanguageSchema } from "./fixtures/mock-language.js";
 
@@ -76,5 +77,19 @@ test("classification schemas reject invalid ranks, foreign fields and unlocalize
             () => validateLibrarySchema(schema),
             /display_tag_metadata_required|invalid_field_derivation/,
         );
+    }
+});
+
+test("classification validation failures remain safe actionable client errors", () => {
+    for (const code of [
+        "invalid_display_tag",
+        "display_tag_metadata_required",
+        "invalid_filter_single_selection",
+        "invalid_field_derivation",
+    ]) {
+        assert.deepEqual(libraryFailure(new Error(`${code}:private details`)), {
+            code,
+            status: 400,
+        });
     }
 });

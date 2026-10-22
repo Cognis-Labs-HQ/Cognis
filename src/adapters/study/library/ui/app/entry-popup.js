@@ -1,3 +1,4 @@
+import { markEntryViewed } from "./viewed-entries.js";
 import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
@@ -58,6 +59,7 @@ export async function openEntryPopup(
             options.detail?.entry.id === selectedEntry.id
                 ? options.detail
                 : await fetchLibraryEntry(selectedEntry.id);
+        signal?.throwIfAborted();
         const layer = layerForEntry(schemas, detail.entry);
         const titleReferences = detailTitleReferences(
             detail,
@@ -85,6 +87,9 @@ export async function openEntryPopup(
                 requestUpdate: editMode === "request",
                 onSaved: handleSaved,
                 persistDraft: options.persistDraft,
+                onOpened: () => {
+                    void markEntryViewed(root, detail.entry, entries, i18n);
+                },
             });
             continue;
         }
@@ -106,10 +111,6 @@ export async function openEntryPopup(
             languageCode,
             { ...options, transformation: selectedTransformation },
         );
-        if (options.showNew) {
-            composed.body = `<div class="library-popup-new"><span class="library-new-pill">${i18n.t("gateway.study.library_new")}</span></div>${composed.body}`;
-            options.showNew = false;
-        }
         signal?.throwIfAborted();
         let titleDetailItems = popupTitleDetailItems(
             detail,
@@ -200,6 +201,7 @@ export async function openEntryPopup(
                 ...composed.actions,
             ],
             onOpen: (overlay, dismiss, popupApi) => {
+                void markEntryViewed(root, detail.entry, entries, i18n);
                 dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
                 bindEntryDetail(overlay, displayedEntry, {
