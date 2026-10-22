@@ -140,10 +140,15 @@ export function renderMetadataPills(entry, layer) {
     const pills = metadataValues(entry, layer);
     if (!pills.length) return "";
     return `<div class="library-metadata-pills">${pills
-        .map(
-            ({ value }) =>
-                `<span class="library-metadata-pill">${escapeHtml(value)}</span>`,
-        )
+        .map(({ field, value }) => {
+            const option = field.input?.options?.find(
+                (option) => option.value === value,
+            );
+            const label = option
+                ? localizedLabel(option.metadata, entry.language)
+                : value;
+            return `<span class="library-metadata-pill">${escapeHtml(label)}</span>`;
+        })
         .join("")}</div>`;
 }
 

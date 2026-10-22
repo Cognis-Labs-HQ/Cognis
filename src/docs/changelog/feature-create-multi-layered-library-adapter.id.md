@@ -204,6 +204,12 @@ URL impor publik gateway Study diperbaiki dan katalog bahasa definisi bersama di
 
 Tombol modul menampilkan Mengaktifkan, Menonaktifkan, atau Menghapus instalasi selama tindakan tersebut berjalan, bukan Memasang yang keliru. Label peningkatan dan penurunan versi tetap dipertahankan.
 
+## Klasifikasi pembelajaran terkurasi
+
+`detail.tags` pada lapisan menentukan daftar eksplisit pil pembelajaran terlokalisasi; tag internal tetap tersimpan untuk transformasi dan penyuntingan. Hanya tag dengan `filterable` yang menjadi filter. Label pilihan dilokalisasi dan filter mengikuti urutan pilihan penyedia. Bidang opsional dapat memakai `detail.autoSelectSingle: false` agar tampilan awal tidak difilter.
+
+Bidang string dapat mendeklarasikan `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }`. Nilai diurutkan dari termudah hingga tersulit. Resolusi memakai ID referensi kanonis dan peringkat aturan transformasi yang dipilih. Nilai bidang yang ditulis menetapkan persyaratan tata bahasa minimum. Kalimat cocok tepat dengan persyaratan tersulit: N5 + N4 cocok dengan N4, sedangkan kalimat hanya N5 atau yang mengandung N3 tidak cocok dengan N4. Klasifikasi yang hilang, ambigu, atau tidak dapat diakses tetap tidak terklasifikasi saat `requireAll` aktif. Hasil dicache per render, tidak mengubah kartu tersimpan, dan diperbarui mengikuti isi referensi.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

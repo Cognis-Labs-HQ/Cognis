@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "./reuse/modules.js";
+import { createClassificationResolver } from "../ui/reuse/classification.js";
 import { assignVariantPlacements } from "../ui/app/variant-placement.js";
 
 test("providers control carousel vocabulary visibility without excluding ordinary words", () => {
@@ -21,6 +22,7 @@ test("providers control carousel vocabulary visibility without excluding ordinar
                     `<button data-entry="${entry.id}">${entry.label}</button>`,
             },
             "./variant-placement.js": { assignVariantPlacements },
+            "../reuse/classification.js": { createClassificationResolver },
             "../reuse/transformations.js": { transformationPathways: () => [] },
             "./transformation-popup.js": { renderTransformationTree: () => "" },
         },

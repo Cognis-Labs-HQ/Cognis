@@ -103,7 +103,7 @@ test("unclassified vocabulary stays visible until a metadata filter is explicitl
         [false, false],
     );
 });
-test("word-type filters reflect visible selected-layer content rather than every configured view", () => {
+test("curated tag filters reflect visible selected-layer content", () => {
     const context = {
         escapeHtml: String,
         groupByToMap,
@@ -115,12 +115,13 @@ test("word-type filters reflect visible selected-layer content rather than every
     };
     vm.runInNewContext(source, context);
     const layer = {
-        views: [
-            {
-                layout: "transformTree",
-                includeTags: ["verb", "copula", "adjective"],
-            },
-        ],
+        detail: {
+            tags: ["verb", "copula", "adjective"].map((value) => ({
+                value,
+                metadata: { labels: { en: value } },
+                filterable: true,
+            })),
+        },
     };
     const html = context.renderLayerFilters(
         layer,

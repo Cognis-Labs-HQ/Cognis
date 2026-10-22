@@ -1,3 +1,4 @@
+import { createClassificationResolver } from "../reuse/classification.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     isMeaningLayer,
@@ -154,6 +155,8 @@ export function renderLayerCards(
 export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
     if (!schemas.length)
         return `<p>${escapeHtml(i18n.t("gateway.study.library_empty"))}</p>`;
+    const classifications = createClassificationResolver(schemas, entries);
+    entries = entries.map((entry) => classifications.project(entry));
     return schemas
         .map((schema, schemaIndex) => {
             const schemaLabel =

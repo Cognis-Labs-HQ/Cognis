@@ -7,6 +7,12 @@ import { fieldValues, filterFields, localizedLabel } from "./presentation.js";
 function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
     layerEntries = layerEntries.filter((entry) => !entry.hidden);
     const fieldFilters = filterFields(layer).flatMap((field) => {
+        const order = new Map(
+            (field.input?.options ?? []).map(({ value }, index) => [
+                value,
+                index,
+            ]),
+        );
         const values = [
             ...new Set(
                 layerEntries.flatMap((entry) =>
@@ -15,7 +21,11 @@ function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
                         .map(({ value }) => value),
                 ),
             ),
-        ].sort((left, right) => left.localeCompare(right));
+        ].sort(
+            (left, right) =>
+                (order.get(left) ?? Infinity) -
+                    (order.get(right) ?? Infinity) || left.localeCompare(right),
+        );
         return values.length
             ? [
                   {
@@ -25,31 +35,25 @@ function filterDescriptors(layer, layerEntries, contentLanguage, i18n) {
                           field.id,
                       values,
                       detail: field.detail,
+                      options: field.input?.options,
                   },
               ]
             : [];
     });
-    const transformTags = [
-        ...new Set(
-            (layer.views ?? [])
-                .filter(({ layout }) => layout === "transformTree")
-                .flatMap(({ includeTags }) => includeTags)
-                .filter((tag) =>
-                    layerEntries.some(
-                        (entry) =>
-                            !entry.hidden && (entry.tags ?? []).includes(tag),
-                    ),
-                ),
-        ),
-    ];
-    return transformTags.length
+    const tags = (layer.detail?.tags ?? []).filter(
+        ({ value, filterable }) =>
+            filterable &&
+            layerEntries.some((entry) => entry.tags?.includes(value)),
+    );
+    return tags.length
         ? [
               ...fieldFilters,
               {
                   id: "__tags",
-                  label: i18n.t("gateway.study.library_word_type"),
-                  values: transformTags,
-                  detail: { exclusive: false },
+                  label: i18n.t("gateway.study.library_tags"),
+                  values: tags.map(({ value }) => value),
+                  options: tags,
+                  detail: { exclusive: false, autoSelectSingle: false },
               },
           ]
         : fieldFilters;
@@ -87,16 +91,26 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
             const tags = groupFilters.flatMap((filter) =>
                 filter.values.map((value) => ({ filter, value })),
             );
+            const autoSelectSingle = groupFilters.every(
+                (filter) => filter.detail?.autoSelectSingle !== false,
+            );
             const selectedTag =
                 tags.find(({ value }) => value === defaultTag) ??
-                (required || (tags.length === 1 && groupId !== "__tags")
+                (required ||
+                (autoSelectSingle && tags.length === 1 && groupId !== "__tags")
                     ? tags[0]
                     : undefined);
             return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}" data-library-filter-required="${required}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${tags
                 .map((tag) => {
                     const { filter, value } = tag;
                     const selected = selectedTag === tag;
-                    return `<button class="library-filter-pill btn-neutral${selected ? " active" : ""}" type="button" data-library-filter="${escapeHtml(filter.id)}" data-library-filter-value="${escapeHtml(value)}" aria-pressed="${selected}" title="${escapeHtml(`${filter.label}: ${value}`)}">${escapeHtml(value)}</button>`;
+                    const option = filter.options?.find(
+                        (option) => option.value === value,
+                    );
+                    const label = option
+                        ? localizedLabel(option.metadata, contentLanguage)
+                        : value;
+                    return `<button class="library-filter-pill btn-neutral${selected ? " active" : ""}" type="button" data-library-filter="${escapeHtml(filter.id)}" data-library-filter-value="${escapeHtml(value)}" aria-pressed="${selected}" title="${escapeHtml(`${filter.label}: ${label}`)}">${escapeHtml(label)}</button>`;
                 })
                 .join("")}</div></fieldset>`;
         })

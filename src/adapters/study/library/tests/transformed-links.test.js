@@ -1,3 +1,7 @@
+import {
+    createClassificationResolver,
+    learnerTagMetadata,
+} from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -144,6 +148,8 @@ test("detail rendering merges canonical upward links with stored relationships",
         .replace(/\bexport /g, "");
     let flowDetail;
     const context = {
+        createClassificationResolver,
+        learnerTagMetadata,
         resolveCompositionDependants,
         filterImmediateDependants,
         deriveDetailPronunciation() {},

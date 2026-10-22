@@ -1,3 +1,7 @@
+import {
+    createClassificationResolver,
+    learnerTagMetadata,
+} from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -29,6 +33,8 @@ test("selected verb, adverb and plural details request their transformed audio t
     );
     const context = vm.createContext({
         uiCtx,
+        createClassificationResolver,
+        learnerTagMetadata,
         generatedTransformationCard,
         escapeHtml,
         document: { documentElement: { lang: "en" } },

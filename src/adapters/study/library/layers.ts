@@ -1,3 +1,4 @@
+import { validateClassifications } from "./classification-schema.js";
 import { validateTransformSets } from "./layers/transformations.js";
 import { validateReferenceTransformation } from "./layers/reference-transformation.js";
 import {
@@ -322,6 +323,7 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
             if (!CONTENT_CLASS_PATTERN.test(vein))
                 throw new Error("invalid_interest_vein");
         }
+        validateClassifications(layer, schema, validateMetadata);
         const viewIds = new Set<string>();
         for (const view of layer.views ?? []) {
             assertIdentifier(view.id, "invalid_layer_view_id");

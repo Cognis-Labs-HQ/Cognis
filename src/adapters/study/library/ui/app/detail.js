@@ -1,3 +1,7 @@
+import {
+    createClassificationResolver,
+    learnerTagMetadata,
+} from "../reuse/classification.js";
 import { renderReferenceImages } from "./reference-images.js";
 import { transformedDetailEntry } from "./transformation-detail.js";
 import { deriveDetailPronunciation } from "./composer-contract.js";
@@ -40,7 +44,12 @@ function relationTree(references, usedBy, i18n) {
 }
 
 function coreSections(detail, schemas, entries, i18n, options = {}) {
-    const { entry, references = [], usedBy = [] } = detail;
+    const { references = [], usedBy = [] } = detail;
+    const entry = createClassificationResolver(schemas, [
+        ...entries,
+        ...references,
+        detail.entry,
+    ]).project(detail.entry);
     const layer = layerForEntry(schemas, entry);
     const relatedWords = isWritingUnitLayer(layer)
         ? usedBy.filter(
@@ -124,17 +133,13 @@ function coreSections(detail, schemas, entries, i18n, options = {}) {
             }),
     );
     const layerLabel = localizedLabel(layer?.metadata, entry.language);
-    const providerIdentifiesVocabulary =
-        layer?.semanticRole === "lexicalUnit" &&
-        (entry.tags ?? []).some((tag) => tag.toLocaleLowerCase() === "vocab");
-    const classPill =
-        layerLabel && !providerIdentifiesVocabulary
-            ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
-            : "";
-    const tagPills = (entry.tags ?? [])
+    const classPill = layerLabel
+        ? `<span class="library-metadata-pill library-content-class-pill">${escapeHtml(layerLabel)}</span>`
+        : "";
+    const tagPills = learnerTagMetadata(entry, layer)
         .map(
-            (tag) =>
-                `<span class="library-metadata-pill">${escapeHtml(tag)}</span>`,
+            (metadata) =>
+                `<span class="library-metadata-pill">${escapeHtml(localizedLabel(metadata, entry.language))}</span>`,
         )
         .join("");
     const schema = schemas.find(({ id }) => id === entry.schemaId);

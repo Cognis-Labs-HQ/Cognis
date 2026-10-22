@@ -204,6 +204,12 @@ Corrected Study gateway public import URLs and placed the shared definition-lang
 
 Module buttons show Enabling, Disabling or Uninstalling while that action runs, instead of incorrectly showing Installing. Upgrade and downgrade labels are preserved.
 
+## Curated learner classifications
+
+Layer `detail.tags` is an explicit allowlist of localized learner pills; internal tags remain stored for transformations and editing. Only tags marked `filterable` become tag filters. Field option labels are localized, and filters follow provider option order. Optional fields can declare `detail.autoSelectSingle: false` to keep the initial view unfiltered.
+
+A string field can declare `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }`. Values run from easiest to hardest. The field resolves through canonical referenced IDs, and selected transformation rule IDs contribute their declared ranks. An authored field value is a minimum grammar requirement. Sentences match exactly the hardest requirement: N5 + N4 matches N4, while N5-only and N3-containing sentences do not. Missing, ambiguous or inaccessible classifications remain unclassified when `requireAll` is true. Resolution is cached within each render, does not modify stored cards and refreshes with the referenced content.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

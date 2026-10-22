@@ -204,6 +204,12 @@ Die öffentlichen Import-URLs des Study-Gateways wurden korrigiert und der gemei
 
 Modulschaltflächen zeigen während der jeweiligen Aktion „Wird aktiviert“, „Wird deaktiviert“ oder „Wird deinstalliert“ statt fälschlich „Wird installiert“. Die Beschriftungen für Upgrades und Downgrades bleiben erhalten.
 
+## Kuratierte Lernklassifikationen
+
+`detail.tags` einer Ebene legt ausdrücklich fest, welche lokalisierten Tags als Lernmerkmale erscheinen; interne Tags bleiben für Transformationen und Bearbeitung gespeichert. Nur mit `filterable` markierte Tags werden Filter. Optionsbeschriftungen sind lokalisiert; Filter folgen der vom Anbieter festgelegten Reihenfolge. Optionale Felder können mit `detail.autoSelectSingle: false` ohne Anfangsauswahl starten.
+
+Ein Zeichenkettenfeld kann `derivation: { kind: "rankedReferences", relationships, values, requireAll, transformationValues }` deklarieren. Die Werte reichen von leicht bis schwer. Die Auflösung nutzt kanonische Referenz-IDs; ausgewählte Transformationsregeln tragen ihre deklarierten Stufen bei. Ein gespeicherter Feldwert legt eine grammatische Mindestanforderung fest. Sätze entsprechen genau der höchsten Anforderung: N5 + N4 ergibt N4; reine N5-Sätze und Sätze mit N3-Inhalten passen nicht zu N4. Fehlende, mehrdeutige oder unzugängliche Einstufungen bleiben bei `requireAll` unklassifiziert. Die Auflösung wird pro Darstellung zwischengespeichert, verändert keine gespeicherten Karten und folgt Änderungen der referenzierten Inhalte.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

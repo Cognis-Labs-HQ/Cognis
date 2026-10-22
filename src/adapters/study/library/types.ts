@@ -51,6 +51,8 @@ export interface LibraryDetailHint {
     defaultTag?: string;
     /** Expose this field as a user-facing filter even when it is not a badge. */
     filterable?: boolean;
+    /** Permit an optional group to select its sole available value automatically. */
+    autoSelectSingle?: boolean;
     hidden?: boolean;
 }
 
@@ -72,6 +74,16 @@ export interface LibraryFieldSchema {
         | { kind: "boolean" }
         | { kind: "list"; items: "string" | "number" | "boolean" }
         | { kind: "localizedText" };
+    /** Rank by the hardest referenced value; authored values are a minimum. */
+    derivation?: {
+        kind: "rankedReferences";
+        relationships: readonly string[];
+        /** Values ordered from easiest to hardest. */
+        values: readonly string[];
+        requireAll: boolean;
+        /** Provider-ranked grammar keyed by transformation rule ID. */
+        transformationValues?: Readonly<Record<string, string>>;
+    };
     required?: boolean;
     /** Commit multiple carousel-composed values independently. */
     multi_value?: boolean;
@@ -260,7 +272,16 @@ export interface LibraryLayerSchema {
     cardConstructor?: LibraryCardConstructor;
     /** Provider-declared, tag-filtered learner views of this layer. */
     views?: readonly LibraryLayerView[];
-    detail?: { titleField?: string; fieldOrder?: readonly string[] };
+    detail?: {
+        titleField?: string;
+        fieldOrder?: readonly string[];
+        /** Explicit allowlist of localized learner-facing tag pills. */
+        tags?: readonly {
+            value: string;
+            metadata: LibraryMetadata;
+            filterable?: boolean;
+        }[];
+    };
     grid?: {
         rowSize: number;
         items: readonly (string | number | { blank: true } | null)[];
