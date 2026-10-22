@@ -242,3 +242,4 @@ Study ゲートウェイの公開インポート URL を修正し、共有の定
 - [8def0536](https://github.com/Cognis-Labs-HQ/Cognis/commit/8def053668ba80829faeaad2f98adde9e930a24f)
 - [aaa01bce](https://github.com/Cognis-Labs-HQ/Cognis/commit/aaa01bce537f12ef50b41e4064cd6157882d469f)
 - [95b8d963](https://github.com/Cognis-Labs-HQ/Cognis/commit/95b8d963272d72bdf553e5da03be4b1ae7cc91e6)
+- [b20b903a](https://github.com/Cognis-Labs-HQ/Cognis/commit/b20b903a601346b5d23df2bde9620ccffdd41e50)
