@@ -192,9 +192,13 @@ Flashcards kini menampilkan unsur kanonis dalam judul tersusun sebagai kontrol b
 
 Kuis membaca memakai normalisasi jawaban yang sama untuk pembuatan pilihan, petunjuk, dan penilaian. Variasi format tidak bersaing sebagai jawaban berbeda atau menyebabkan progres gagal; kumpulan pilihan berbeda yang lebih kecil tetap dapat dimainkan. Negasi, angka, dan tanda baca internal yang bermakna tetap dibedakan.
 
-## Tampilkan seluruh kosakata
+## Visibilitas carousel dikendalikan penyedia
 
-Kosakata tidak lagi mengecualikan kata yang dipakai dalam karusel penyusun atau mengaktifkan satu-satunya filter metadata opsional secara otomatis. Kata tanpa klasifikasi seperti ノート tetap terlihat bersama kata bertingkat, sementara pilihan filter yang disengaja tetap berfungsi.
+Setiap item `tag_carousels` wajib mendeklarasikan `excludeFromBrowse`: `false` mempertahankan kosakata terlihat dalam penjelajahan biasa; `true` mencadangkannya untuk composer. Keputusan penyedia ini terpisah dari kartu bantu pelafalan tersembunyi. Perilaku pemilihan filter metadata yang sudah ada tetap dipertahankan.
+
+## Pulihkan pemuatan langsung Study
+
+URL impor publik gateway Study diperbaiki dan katalog bahasa definisi bersama dipindahkan ke direktori penggunaan ulang publik Library. Uji regresi memuat penyedia dan graf impor halaman melalui router statis yang sebenarnya, mencakup jalur yang sebelumnya tertutupi alias bundling.
 
 ## Commit
 

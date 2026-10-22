@@ -13,7 +13,7 @@ import {
     createLibraryEntry,
     fetchLibraryEntry,
     localizeLibraryDefinition,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { DEFINITION_LANGUAGES } from "../definition-languages.js";
 
 export async function openDefinitionPopup({

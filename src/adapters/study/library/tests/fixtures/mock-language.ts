@@ -138,6 +138,7 @@ export const mockLanguageSchema: LibrarySchema = {
                         metadata: { labels: { en: "Sentence structure" } },
                         relationship: "words",
                         tag: "sentence-structure",
+                        excludeFromBrowse: false,
                     },
                 ],
             },

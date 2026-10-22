@@ -10,8 +10,8 @@ import {
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     createStudySubNavigationSlot,
-} from "/static/gateways/study/ui/sub-navigation.js";
-import { isAdminScope } from "/static/gateways/study/ui/language.js";
+} from "/static/gateways/study/sub-navigation.js";
+import { isAdminScope } from "/static/gateways/study/language.js";
 import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
 import { bindAdminLibraryInteractions } from "./admin-interactions/index.js";
 import { refreshLibraryFilterResults } from "./filters.js";

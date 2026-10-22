@@ -28,7 +28,7 @@ import {
     fetchLibraryLookupProviders,
     fetchLibraryLocations,
     requestLibraryPromotion,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import {
     bindLibraryEditorControls,
     editorBody,

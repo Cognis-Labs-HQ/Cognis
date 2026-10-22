@@ -192,9 +192,13 @@ Flashcards now renders the canonical items of a composed heading as individually
 
 Reading quizzes share answer normalization between choice generation, hints and grading. Formatting-only variants cannot compete as different answers or cause failed progress; smaller sets of distinct choices remain playable. Negation, numbers and meaningful internal punctuation stay distinct.
 
-## Show the complete vocabulary
+## Provider-controlled carousel visibility
 
-Vocabulary no longer excludes words used in composer carousels or automatically enables a sole optional metadata filter. Unclassified words such as ノート remain visible alongside leveled words, while deliberate filter selections continue to work.
+Every `tag_carousels` item must declare `excludeFromBrowse`: `false` keeps its visible vocabulary in ordinary browsing; `true` reserves it for the composer. This is an explicit provider decision, independent of hidden pronunciation helpers. Existing metadata filter selection behavior is preserved.
+
+## Restore direct Study loading
+
+Corrected Study gateway public import URLs and placed the shared definition-language catalog inside the Library’s public reuse directory. A regression test loads providers and page import graphs through the real static router, covering paths that bundling aliases previously masked.
 
 ## Commits
 

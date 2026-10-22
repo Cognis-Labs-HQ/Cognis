@@ -1,7 +1,7 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { reportClientError } from "/static/reuse/error-reporting.js";
-import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryAudioUrl } from "/static/gateways/study/library-client.js";
 import { renderAudio, loadLibraryAudio } from "./presentation.js";
 
 export function renderAudioEditor(entry, layer, field, i18n) {

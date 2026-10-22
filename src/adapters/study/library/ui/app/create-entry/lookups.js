@@ -4,7 +4,7 @@ import { separateLookupDefinitions } from "./lookup-definitions.js";
 import { resolveLookupReferences } from "./lookup-references.js";
 import { resolveLookupPrerequisites } from "./lookup-prerequisites.js";
 import { setGeneratedPronunciation } from "./pronunciation-draft.js";
-import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryLookupSuggestions } from "/static/gateways/study/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { renderStrokePatternPreviews } from "../field-input.js";
 import { createDefinition, linkDefinition } from "./definition-editor.js";

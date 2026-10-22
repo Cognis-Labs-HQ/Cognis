@@ -3,8 +3,8 @@ import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { groupByToMap } from "/static/reuse/group-by.js";
-import { fetchLibraryAudioUrl } from "/static/gateways/study/ui/library-client.js";
-import { parseLanguageCode } from "/static/gateways/study/ui/language.js";
+import { fetchLibraryAudioUrl } from "/static/gateways/study/library-client.js";
+import { parseLanguageCode } from "/static/gateways/study/language.js";
 import { referencedTransformation } from "../reuse/transformations.js";
 import { resolveReferenceTitleComposition } from "./composition-links.js";
 

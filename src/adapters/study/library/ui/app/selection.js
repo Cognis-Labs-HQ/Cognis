@@ -1,4 +1,4 @@
-import { planLibraryEntryDeletion } from "/static/gateways/study/ui/library-client.js";
+import { planLibraryEntryDeletion } from "/static/gateways/study/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";

@@ -128,6 +128,7 @@ test("providers declare sentence carousels, views, and transform rules", () => {
                             metadata: { labels: { en: "Transitions" } },
                             relationship: "letters",
                             tag: "sentence-transition",
+                            excludeFromBrowse: false,
                         },
                     ],
                     literal_carousels: [
@@ -142,6 +143,16 @@ test("providers declare sentence carousels, views, and transform rules", () => {
         ],
     };
     assert.deepEqual(validateLibrarySchema(schema), schema);
+    for (const value of [undefined, "false", 0]) {
+        const invalid = structuredClone(schema);
+        Object.assign(invalid.layers[1].cardConstructor!.tag_carousels![0], {
+            excludeFromBrowse: value,
+        });
+        assert.throws(
+            () => validateLibrarySchema(invalid),
+            /invalid_tag_carousel/,
+        );
+    }
     const invalid = structuredClone(schema);
     invalid.transformSets![0].rules[0].definitionTransform!.template = "";
     assert.throws(

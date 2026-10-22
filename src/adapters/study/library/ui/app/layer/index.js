@@ -1,6 +1,6 @@
 import { exploreLayers } from "/static/gateways/study/reuse/explore.js";
 import { openEntryPopup } from "../entry-popup.js";
-import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
@@ -11,7 +11,7 @@ import {
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     createStudySubNavigationSlot,
-} from "/static/gateways/study/ui/sub-navigation.js";
+} from "/static/gateways/study/sub-navigation.js";
 import { loadLibrary } from "../data.js";
 import { renderBrowser } from "../layer-cards.js";
 import { refreshLibraryFilterResults } from "../filters.js";
@@ -24,7 +24,7 @@ import {
 } from "../create-entry/index.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadLibraryRequests } from "../requests.js";
-import { fetchLibraryForms } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryForms } from "/static/gateways/study/library-client.js";
 import { canCreateLayerEntries } from "../editability.js";
 
 function requestedLayer() {

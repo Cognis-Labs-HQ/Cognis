@@ -19,7 +19,7 @@ import { reportClientError } from "/static/reuse/error-reporting.js";
 import {
     requestLibraryUpdate,
     updateLibraryEntry,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import {
     definitionText,
     layerForEntry,

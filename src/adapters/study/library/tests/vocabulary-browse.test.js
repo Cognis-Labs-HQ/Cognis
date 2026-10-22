@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "./reuse/modules.js";
 import { assignVariantPlacements } from "../ui/app/variant-placement.js";
 
-test("composer vocabulary remains browseable, with named views filtering only when requested", () => {
+test("providers control carousel vocabulary visibility without excluding ordinary words", () => {
     const { renderBrowser } = loadTestModule(
         new URL("../ui/app/layer-cards.js", import.meta.url),
         {
@@ -38,7 +38,10 @@ test("composer vocabulary remains browseable, with named views filtering only wh
             {
                 id: "sentences",
                 cardConstructor: {
-                    tag_carousels: [{ tag: "sentence-structure" }],
+                    tag_carousels: [
+                        { tag: "sentence-structure", excludeFromBrowse: false },
+                        { tag: "composer-only", excludeFromBrowse: true },
+                    ],
                 },
             },
         ],
@@ -47,14 +50,22 @@ test("composer vocabulary remains browseable, with named views filtering only wh
         { id: "notebook", label: "ノート", tags: ["noun"] },
         { id: "connector", label: "それでも", tags: ["sentence-structure"] },
         { id: "verb", label: "学ぶ", tags: ["verb"] },
+        {
+            id: "exclusive",
+            label: "Hidden from browsing",
+            tags: ["composer-only"],
+        },
+        { id: "reading", label: "Reading helper", hidden: true },
     ].map((entry) => ({ ...entry, schemaId: schema.id, layer: "words" }));
     const i18n = { t: (key) => key };
     const all = renderBrowser([schema], entries, i18n, {
         schemaId: schema.id,
         layerId: "words",
     });
-    for (const entry of entries)
+    for (const entry of entries.slice(0, 3))
         assert.ok(all.includes(`data-entry="${entry.id}"`));
+    assert.ok(!all.includes('data-entry="exclusive"'));
+    assert.ok(!all.includes('data-entry="reading"'));
     const view = renderBrowser([schema], entries, i18n, {
         schemaId: schema.id,
         layerId: "words",

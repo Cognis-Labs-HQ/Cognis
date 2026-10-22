@@ -7,7 +7,7 @@ import {
     moveLibraryEntryToPersonal,
     relocateLibraryEntry,
     withdrawLibraryPromotion,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {

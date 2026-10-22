@@ -1,4 +1,4 @@
-import { markLibraryEntriesViewed } from "/static/gateways/study/ui/library-client.js";
+import { markLibraryEntriesViewed } from "/static/gateways/study/library-client.js";
 
 export function bindViewedEntries(root, getEntries, signal) {
     const markViewed = (control) => {

@@ -8,7 +8,7 @@ import {
     fetchLibraryPushRequests,
     reviewLibraryPromotion,
     withdrawLibraryPromotion,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { renderScope } from "./presentation.js";
 
 export async function loadLibraryRequests(i18n) {

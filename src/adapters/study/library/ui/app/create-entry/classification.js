@@ -1,4 +1,4 @@
-import { fetchLibraryLookupSuggestions } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryLookupSuggestions } from "/static/gateways/study/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { reportClientError } from "/static/reuse/error-reporting.js";
 import { LIBRARY_COMPOSER_LIMITS } from "../composer-limits.js";

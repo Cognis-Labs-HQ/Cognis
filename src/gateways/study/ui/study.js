@@ -25,12 +25,12 @@ import {
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     renderStudySubNavigation,
-} from "/static/gateways/study/ui/sub-navigation.js";
+} from "/static/gateways/study/sub-navigation.js";
 import {
     resolveLanguageLabel,
     isStudentScope,
     buildLibraryUrl,
-} from "/static/gateways/study/ui/language.js";
+} from "/static/gateways/study/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 

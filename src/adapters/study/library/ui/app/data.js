@@ -4,7 +4,7 @@ import {
     fetchLibrarySchemas,
     fetchViewedLibraryEntryIds,
     fetchLibraryLocations,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 
 export async function loadLibrary(languageCode, i18n) {
     let schemas = [];

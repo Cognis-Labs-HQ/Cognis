@@ -1,5 +1,5 @@
 import { definitionTranslations } from "../reuse/definitions.js";
-import definitionLanguages from "../definition-languages.json" with { type: "json" };
+import definitionLanguages from "../ui/reuse/definition-languages.json" with { type: "json" };
 import { canonicalizeLanguageTag } from "../language.js";
 import { createHash } from "node:crypto";
 import type {

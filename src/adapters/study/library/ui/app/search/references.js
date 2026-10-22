@@ -1,7 +1,7 @@
 import {
     fetchLibraryEntries,
     fetchLibraryLocations,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 
 export async function loadDictionaryReferences(results, schemas) {
     const { readable } = await fetchLibraryLocations();

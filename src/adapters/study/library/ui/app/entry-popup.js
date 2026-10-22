@@ -1,6 +1,6 @@
 import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { fetchLibraryEntry } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
 import { composeDetail } from "./detail.js";
 import { isMeaningLayer, layerForEntry } from "./presentation.js";
 import {

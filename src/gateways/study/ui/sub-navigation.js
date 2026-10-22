@@ -11,12 +11,12 @@ import {
     buildLibraryUrl,
     isAdminScope,
     parseLanguageCode,
-} from "/static/gateways/study/ui/language.js";
+} from "/static/gateways/study/language.js";
 import {
     dictionarySearchContext,
     fetchLibrarySchemas,
     fetchSearchableDictionaryProviders,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 
 const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 

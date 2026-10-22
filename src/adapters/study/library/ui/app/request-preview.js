@@ -2,7 +2,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { renderEntryCard } from "./cards.js";
 import { layerForEntry } from "./presentation.js";
 import { openEntryPopup } from "./entry-popup.js";
-import { stageLibraryPromotion } from "/static/gateways/study/ui/library-client.js";
+import { stageLibraryPromotion } from "/static/gateways/study/library-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
 export function requestPreviewContext(request, entries, staged = true) {

@@ -10,7 +10,7 @@
  *
  * @example
  * ```js
- * import { resolveLanguageLabel, isAdminScope, buildLibraryUrl } from '/static/gateways/study/ui/language.js';
+ * import { resolveLanguageLabel, isAdminScope, buildLibraryUrl } from '/static/gateways/study/language.js';
  * const label = resolveLanguageLabel('ja', 'Japanese');
  * const url   = buildLibraryUrl();
  * ```

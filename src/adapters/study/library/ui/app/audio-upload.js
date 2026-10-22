@@ -1,5 +1,5 @@
 import { reportClientError } from "/static/reuse/error-reporting.js";
-import { uploadLibraryAudio } from "/static/gateways/study/ui/library-client.js";
+import { uploadLibraryAudio } from "/static/gateways/study/library-client.js";
 import { showToast } from "/static/reuse/toast.js";
 
 const LIMIT = 5 * 1024 * 1024;

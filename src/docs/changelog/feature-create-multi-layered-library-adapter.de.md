@@ -192,9 +192,13 @@ Flashcards zeigt die kanonischen Bestandteile zusammengesetzter Titel als einzel
 
 Lesequizze verwenden denselben Antwortvergleich für Auswahl, Hinweise und Bewertung. Reine Formatierungsvarianten werden nicht als unterschiedliche Antworten angeboten und verursachen keinen fehlgeschlagenen Fortschritt. Kleinere Mengen verschiedener Antworten bleiben spielbar. Verneinungen, Zahlen und bedeutungstragende innere Satzzeichen bleiben unterscheidbar.
 
-## Vollständigen Wortschatz anzeigen
+## Anbietergesteuerte Sichtbarkeit von Karussell-Einträgen
 
-Die Wortschatzansicht schließt keine Wörter aufgrund ihrer Verwendung in Composer-Karussells mehr aus und aktiviert einen einzelnen optionalen Metadatenfilter nicht automatisch. Wörter ohne Einstufung wie ノート bleiben neben eingestuften Wörtern sichtbar; bewusst gewählte Filter funktionieren weiterhin.
+Jeder Eintrag in `tag_carousels` muss `excludeFromBrowse` deklarieren: `false` erhält sichtbaren Wortschatz in der normalen Ansicht; `true` reserviert ihn für den Composer. Diese ausdrückliche Anbieterentscheidung ist unabhängig von ausgeblendeten Aussprachehilfen. Das bisherige Auswahlverhalten der Metadatenfilter bleibt erhalten.
+
+## Direktes Laden von Study wiederherstellen
+
+Die öffentlichen Import-URLs des Study-Gateways wurden korrigiert und der gemeinsame Katalog der Definitionssprachen in das öffentliche Wiederverwendungsverzeichnis der Library verschoben. Ein Regressionstest lädt Provider und Seitenimporte über den echten statischen Router und prüft damit Pfade, deren Fehler bisher durch Bundling-Aliase verdeckt wurden.
 
 ## Commits
 

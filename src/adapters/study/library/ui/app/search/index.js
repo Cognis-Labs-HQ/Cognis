@@ -9,12 +9,12 @@ import {
     bindStudySubNavigation,
     loadStudySubNavigationModel,
     createStudySubNavigationSlot,
-} from "/static/gateways/study/ui/sub-navigation.js";
+} from "/static/gateways/study/sub-navigation.js";
 import {
     dictionarySearchContext,
     fetchLibrarySchemas,
     searchLibraryDictionary,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { loadLibrary } from "../data.js";
 import { loadDictionaryReferences } from "./references.js";
 import { renderCardContents } from "../cards.js";

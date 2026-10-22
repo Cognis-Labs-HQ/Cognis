@@ -2,7 +2,7 @@ import { bindDrawingGridPreviews } from "./drawing-grid-preview.js";
 import { bindViewedEntries } from "./viewed-entries.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
-import { fetchLibraryLocations } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryLocations } from "/static/gateways/study/library-client.js";
 import { applyLibraryFilters } from "./filters.js";
 import { activateLibraryLayer, renderBrowser } from "./layer-cards.js";
 import { openEntryPopup } from "./entry-popup.js";

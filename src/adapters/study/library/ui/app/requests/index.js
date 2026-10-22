@@ -10,7 +10,7 @@ import {
     loadStudySubNavigationModel,
     readSelectedStudyLanguageCode,
     createStudySubNavigationSlot,
-} from "/static/gateways/study/ui/sub-navigation.js";
+} from "/static/gateways/study/sub-navigation.js";
 import {
     bindLibraryRequestReviews,
     loadLibraryRequests,
@@ -18,7 +18,7 @@ import {
     loadRequestProfiles,
 } from "../requests.js";
 import { loadLibrary } from "../data.js";
-import { fetchLibraryPushRequests } from "/static/gateways/study/ui/library-client.js";
+import { fetchLibraryPushRequests } from "/static/gateways/study/library-client.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({

@@ -8,7 +8,7 @@ import {
     fetchLibraryImageUrl,
     uploadLibraryImage,
     discardLibraryImage,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 
 export function renderReferenceImages(entry, layer) {
     return (layer?.fields ?? [])

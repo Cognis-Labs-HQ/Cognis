@@ -38,6 +38,7 @@ test("sentence structure uses the shared relationship carousel and its primary p
                 {
                     relationship: "words",
                     tag: "sentence-structure",
+                    excludeFromBrowse: false,
                     metadata: { labels: { en: "Sentence Structure" } },
                 },
             ],

@@ -13,7 +13,7 @@ const source = readFileSync(
     .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
     .replace(/\bexport /g, "");
 
-test("optional metadata filters start unselected even with one available value", () => {
+test("metadata filters preserve sole-value selection and required defaults", () => {
     const context = {
         escapeHtml: String,
         groupByToMap,
@@ -34,7 +34,18 @@ test("optional metadata filters start unselected even with one available value",
         { t: (key) => key },
         "ja",
     );
-    assert.match(html, /data-library-filter-value="N5" aria-pressed="false"/);
+    assert.match(html, /data-library-filter-value="N5" aria-pressed="true"/);
+    const multiple = context.renderLayerFilters(
+        { fields: [field] },
+        [
+            { fields: { level: "N5" } },
+            { fields: { level: "N4" } },
+            { fields: {} },
+        ],
+        { t: (key) => key },
+        "ja",
+    );
+    assert.doesNotMatch(multiple, /aria-pressed="true"/);
     field.detail = { required: true, exclusive: true, defaultTag: "N5" };
     const required = context.renderLayerFilters(
         { fields: [field] },

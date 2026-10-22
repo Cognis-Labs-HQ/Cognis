@@ -1,5 +1,5 @@
 import { showToast } from "/static/reuse/toast.js";
-import { deleteLibraryEntries } from "/static/gateways/study/ui/library-client.js";
+import { deleteLibraryEntries } from "/static/gateways/study/library-client.js";
 import {
     confirmEntryDeletion,
     deletionErrorKey,

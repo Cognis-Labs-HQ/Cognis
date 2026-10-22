@@ -151,6 +151,8 @@ export interface LibraryCardConstructor {
         metadata: LibraryMetadata;
         relationship: string;
         tag: string;
+        /** Explicit provider policy for ordinary layer browsing. */
+        excludeFromBrowse: boolean;
     }[];
     /** Repeatable provider-owned literals, such as sentence punctuation. */
     literal_carousels?: readonly {

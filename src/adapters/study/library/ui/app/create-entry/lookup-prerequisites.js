@@ -3,7 +3,7 @@ import {
     fetchLibraryEntry,
     fetchLibraryLookupSuggestions,
     fetchLibraryLookupProviders,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { appendHorizontalCarouselItem } from "/static/reuse/horizontal-carousel.js";
 import { findMatchingEntry } from "./entry-match.js";
 import { resolveLookupReferences } from "./lookup-references.js";

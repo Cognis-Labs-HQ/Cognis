@@ -427,7 +427,9 @@ export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
                 );
                 if (
                     !relationshipIds.has(carousel.relationship) ||
-                    !carousel.tag.trim()
+                    typeof carousel.tag !== "string" ||
+                    !carousel.tag.trim() ||
+                    typeof carousel.excludeFromBrowse !== "boolean"
                 )
                     throw new Error("invalid_tag_carousel");
             }

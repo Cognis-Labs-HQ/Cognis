@@ -179,14 +179,30 @@ export function renderBrowser(schemas, entries, i18n, requestedLayer = null) {
                     const view = layer.views?.find(
                         ({ id }) => id === requestedLayer?.viewId,
                     );
+                    const composerOnlyTags = new Set(
+                        schema.layers.flatMap((candidateLayer) =>
+                            (
+                                candidateLayer.cardConstructor?.tag_carousels ??
+                                []
+                            )
+                                .filter(
+                                    ({ excludeFromBrowse }) =>
+                                        excludeFromBrowse,
+                                )
+                                .map(({ tag }) => tag),
+                        ),
+                    );
                     const layerEntries = entries.filter(
                         (entry) =>
                             entry.schemaId === schema.id &&
                             entry.layer === layer.id &&
-                            (!view ||
-                                view.includeTags.some((tag) =>
-                                    (entry.tags ?? []).includes(tag),
-                                )),
+                            (view
+                                ? view.includeTags.some((tag) =>
+                                      (entry.tags ?? []).includes(tag),
+                                  )
+                                : !(entry.tags ?? []).some((tag) =>
+                                      composerOnlyTags.has(tag),
+                                  )),
                     );
                     const cards = renderLayerCards(
                         layer,

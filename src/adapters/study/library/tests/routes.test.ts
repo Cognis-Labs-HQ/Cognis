@@ -238,7 +238,7 @@ test("Library browser resolves labels from localized schema metadata", async () 
     assert.match(presentationSource, /parseLanguageCode\(language\)/);
     assert.match(
         presentationSource,
-        /import \{ parseLanguageCode \} from "\/static\/gateways\/study\/ui\/language\.js"/,
+        /import \{ parseLanguageCode \} from "\/static\/gateways\/study\/language\.js"/,
     );
 });
 

@@ -271,9 +271,11 @@ Fallback title composition follows the library hierarchy: sentences may link to 
 
 ## Sentence composition and transformations
 
-Providers mark sentence-ending or transition vocabulary with a stable tag such as `sentence-transition`, then declare a `tag_carousels` item on the sentence card constructor. Those entries are removed from the ordinary vocabulary view and appear in their own sentence-only carousel. `literal_carousels` supplies a one-line, read-only set of repeatable punctuation literals; providers should list the punctuation used by their language, such as `, . ? !` for English or `？！。、` for Japanese.
+Every `tag_carousels` item must declare `excludeFromBrowse`: `false` keeps its visible vocabulary in ordinary browsing; `true` reserves it for the composer. This is an explicit provider decision, independent of hidden pronunciation helpers. Existing metadata filter selection behavior is preserved.
 
-Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a layer `views` item using `layout: transformTree`. Entries claimed by such a view are removed from the ordinary vocabulary page and exposed through the separate provider-named page. Content packs must ship only the base lexical entry (for example `歩く`), never one card per inflection. A schema-level `transformSets` declaration supplies deterministic state transitions. Every rule identifies its source and target state and performs one suffix replacement with `removeSuffix` plus `append`; multiple rules can leave a state, and later rules can continue from generated states. `matchTags` selects the applicable base-form class, allowing providers to distinguish conjugation families with tags such as `godan-ku`.
+`literal_carousels` supplies a one-line, read-only set of repeatable punctuation literals; providers should list the punctuation used by their language, such as `, . ? !` for English or `？！。、` for Japanese.
+
+Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a layer `views` item using `layout: transformTree`. Named views filter entries only when explicitly selected; their tags do not remove lexical words from ordinary browsing. Content packs must ship only the base lexical entry (for example `歩く`), never one card per inflection. A schema-level `transformSets` declaration supplies deterministic state transitions. Every rule identifies its source and target state and performs one suffix replacement with `removeSuffix` plus `append`; multiple rules can leave a state, and later rules can continue from generated states. `matchTags` selects the applicable base-form class, allowing providers to distinguish conjugation families with tags such as `godan-ku`.
 
 ```json
 {
@@ -310,7 +312,7 @@ Providers tag base-form verbs and adverbs with `verb` or `adverb` and declare a 
 }
 ```
 
-Sentence transition tags are now excluded from the ordinary input carousel as well as the vocabulary page, so their filtered composer carousel is genuinely separate. Edit composers reconstruct repeatable punctuation tokens from the stored sentence label and ordered references. Transformation trees now expose actionable nodes: selecting a generated form updates the pathway preview, while the base card remains the canonical stored entry. Contract validation rejects duplicate punctuation literals, empty transform sets, duplicate state transitions, and no-op rules.
+Sentence transition tags select a dedicated composer carousel and are excluded from the ordinary input carousel. Their ordinary browse visibility follows the provider’s explicit `excludeFromBrowse` setting. Edit composers reconstruct repeatable punctuation tokens from the stored sentence label and ordered references. Transformation trees now expose actionable nodes: selecting a generated form updates the pathway preview, while the base card remains the canonical stored entry. Contract validation rejects duplicate punctuation literals, empty transform sets, duplicate state transitions, and no-op rules.
 
 Child-card branches now retain every fitted card position while deeper descendants open. Newly revealed descendants are measured in depth order and redirected only into visible, collision-free canvas slots, preventing ancestor jumps, card overlap, and connector crowding during natural tree navigation.
 
@@ -595,5 +597,3 @@ Detail views, sentence validation and audio use the same resolver. Generated vie
 The public provider contract declares `transformationModel: "generated"`; both language modules require it before registering providers. Every rule in an enabled family must resolve for that source. Rules may declare `resultClass` when a form changes grammatical class, such as an adjective becoming an adverb. Explicit invalid references fail rather than substituting the root.
 
 The Library UI provider publishes `study:library:presentation.titleComposition(detail, schemas)` for consumers that need canonical, ordered heading items. It resolves authored reference groups, literal text and selected transformations through the same logic as Library detail titles. The capability is removed when its provider is disabled. Flashcards requires this provider and renders each linked heading item as a themed button; departure to Explore retains the selected transformation.
-
-Vocabulary browsing includes visible lexical cards even when they are used in composer carousels. Optional metadata filters start unselected unless a default is explicitly declared, so cards without a JLPT level remain visible. Required writing-system filters and explicitly selected views still apply.

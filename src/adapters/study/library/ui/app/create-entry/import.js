@@ -5,7 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     importLibraryEntries,
     fetchLibraryLocations,
-} from "/static/gateways/study/ui/library-client.js";
+} from "/static/gateways/study/library-client.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
 export async function openLibraryImport(i18n) {
