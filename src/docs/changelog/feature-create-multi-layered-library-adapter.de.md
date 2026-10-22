@@ -232,3 +232,4 @@ Die Wortschatzansicht schließt keine Wörter aufgrund ihrer Verwendung in Compo
 - [efb6dab8](https://github.com/Cognis-Labs-HQ/Cognis/commit/efb6dab89990bdff8b597eed1c71b6230d9c730a)
 - [00304cc2](https://github.com/Cognis-Labs-HQ/Cognis/commit/00304cc21874f59ce90b0c5ba830e174e9b62d88)
 - [8def0536](https://github.com/Cognis-Labs-HQ/Cognis/commit/8def053668ba80829faeaad2f98adde9e930a24f)
+- [aaa01bce](https://github.com/Cognis-Labs-HQ/Cognis/commit/aaa01bce537f12ef50b41e4064cd6157882d469f)
