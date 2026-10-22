@@ -260,3 +260,5 @@ Study ゲートウェイの公開インポート URL を修正し、共有の定
 - [9022b8fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/9022b8fe67d2c5cbcaaae8afb429b7bc426893e4)
 
 任意の単一選択欄にはローカライズした **未設定** を用意します。未分類のカードを編集しても先頭の難易度を自動選択せず、不明な状態を維持します。
+
+実装参照: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
