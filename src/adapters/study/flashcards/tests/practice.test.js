@@ -8,6 +8,10 @@ import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { similarEntries } from "../../../../gateways/study/ui/reuse/similar-items.js";
 import { drawingPattern } from "../../../../gateways/study/ui/reuse/drawing-pattern.js";
 import { isCardDue } from "../ui/reuse/review.js";
+import {
+    readingAnswerKey,
+    isCorrectReadingChoice,
+} from "../ui/reuse/reading-answer.js";
 
 function loadModule(path, context) {
     const source = readFileSync(new URL(path, import.meta.url), "utf8")
@@ -24,6 +28,7 @@ const environment = vm.createContext({
     similarEntries,
     drawingPattern,
     isCardDue,
+    readingAnswerKey,
     escapeHtml: String,
 });
 loadModule("../../../../gateways/study/ui/reuse/pronunciation.js", environment);
@@ -234,6 +239,7 @@ function practiceHarness(filter, status = "due", options = {}) {
         renderFavourite: () => "",
         flashcardValues: environment.flashcardValues,
         renderFlashcard: environment.renderFlashcard,
+        isCorrectReadingChoice,
         pronunciationClass: environment.pronunciationClass,
         cardStatus: () => status,
         readingChoices: () =>
@@ -499,6 +505,69 @@ test("Reading submissions acknowledge the result in the view and animate the sub
         assert.equal(harness.toasts.length, 0);
         harness.dispose();
     }
+});
+
+test("punctuation-equivalent choices receive a successful grade before progress is submitted", async () => {
+    const answers = [];
+    const harness = practiceHarness("total", "new", {
+        choices: [
+            { text: "I am a student.", correct: true },
+            { text: "I am a student", correct: false },
+            { text: "I am not a student.", correct: false },
+        ],
+        onAnswer: (grade) => answers.push(grade),
+    });
+    const { control } = await harness.click("[data-reading-choice]", {
+        readingChoice: "1",
+    });
+    assert.deepEqual(answers, ["good"]);
+    assert.equal(control.dataset.readingResult, "correct");
+    assert.equal(
+        harness.nodes.get("[data-practice-feedback]").dataset.result,
+        "correct",
+    );
+    assert.equal(harness.nodes.get("[data-practice-answer]").hidden, true);
+    await harness.click("[data-practice-next]", {});
+    assert.deepEqual(harness.grades, ["good"]);
+    harness.dispose();
+});
+
+test("answer choices exclude punctuation equivalents and use the available distinct meanings", () => {
+    const schema = {
+        id: "sentences",
+        layers: [{ id: "sentences", semanticRole: "orderedLexicalSequence" }],
+    };
+    const entries = [
+        "I am a student.",
+        "I am a student",
+        "I am a student！",
+        " I AM  a student ",
+        "I go to school.",
+    ].map((definition, index) => ({
+        id: `sentence-${index}`,
+        schemaId: schema.id,
+        layer: "sentences",
+        label: `Sentence ${index}`,
+        fields: { definition },
+    }));
+    const detail = { entry: entries[0], references: [] };
+    const choices = environment.readingChoices(detail, entries, [schema], "en");
+    assert.equal(choices.length, 2);
+    assert.equal(choices.filter(({ correct }) => correct).length, 1);
+    assert.equal(choices.find(({ correct }) => correct).entryId, entries[0].id);
+    assert.equal(
+        choices.find(({ correct }) => !correct).entryId,
+        entries[4].id,
+    );
+    assert.equal(
+        new Set(choices.map(({ text }) => readingAnswerKey(text))).size,
+        choices.length,
+    );
+    assert.equal(
+        environment.readingChoices(detail, entries.slice(0, 4), [schema], "en")
+            .length,
+        0,
+    );
 });
 
 test("card heading actions confirm departure even with modifier keys and preserve deck navigation", async () => {

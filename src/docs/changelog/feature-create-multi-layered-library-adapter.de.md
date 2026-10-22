@@ -188,6 +188,14 @@ Die Modulinstallation lädt den exakten Katalog-Commit einmal, erlaubt längere 
 
 Flashcards zeigt die kanonischen Bestandteile zusammengesetzter Titel als einzeln umrahmte, per Tastatur bedienbare Steuerelemente. Die Library stellt ihre bestehende Titelauflösung als an die Anbieterlebensdauer gebundene UI-Fähigkeit bereit und bewahrt wörtlichen Text, Reihenfolge und Transformationen. Explore öffnet nach der bestehenden Bestätigung die ausgewählte Form; einfache Kartentitel und Favoritenschaltflächen behalten ihr nahtloses Erscheinungsbild.
 
+## Gleichwertige Antworten fair bewerten
+
+Lesequizze verwenden denselben Antwortvergleich für Auswahl, Hinweise und Bewertung. Reine Formatierungsvarianten werden nicht als unterschiedliche Antworten angeboten und verursachen keinen fehlgeschlagenen Fortschritt. Kleinere Mengen verschiedener Antworten bleiben spielbar. Verneinungen, Zahlen und bedeutungstragende innere Satzzeichen bleiben unterscheidbar.
+
+## Vollständigen Wortschatz anzeigen
+
+Die Wortschatzansicht schließt keine Wörter aufgrund ihrer Verwendung in Composer-Karussells mehr aus und aktiviert einen einzelnen optionalen Metadatenfilter nicht automatisch. Wörter ohne Einstufung wie ノート bleiben neben eingestuften Wörtern sichtbar; bewusst gewählte Filter funktionieren weiterhin.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

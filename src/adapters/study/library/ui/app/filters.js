@@ -89,9 +89,7 @@ export function renderLayerFilters(layer, layerEntries, i18n, contentLanguage) {
             );
             const selectedTag =
                 tags.find(({ value }) => value === defaultTag) ??
-                (required || (tags.length === 1 && groupId !== "__tags")
-                    ? tags[0]
-                    : undefined);
+                (required ? tags[0] : undefined);
             return `<fieldset class="library-filter-group" data-library-filter-group="${escapeHtml(groupId)}" data-library-filter-exclusive="${exclusive}" data-library-filter-required="${required}"><legend>${escapeHtml(groupLabel)}</legend><div class="library-filter-pills">${tags
                 .map((tag) => {
                     const { filter, value } = tag;

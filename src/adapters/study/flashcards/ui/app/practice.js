@@ -11,6 +11,7 @@ import { flashcardValues, renderFlashcard } from "../reuse/flashcard.js";
 import { readingChoices, writingPattern } from "./practice-model.js";
 import { runDeckAction } from "./actions.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isCorrectReadingChoice } from "../reuse/reading-answer.js";
 
 function entryAction(entry, text, schemas, pieceIndex) {
     if (!text) return "";
@@ -257,8 +258,8 @@ export function mountPractice(
                     "hint",
                     async () => {
                         if (grade || assisted || !choices.length) return;
-                        const index = choices.findIndex(
-                            (choice) => choice.correct,
+                        const index = choices.findIndex((choice) =>
+                            isCorrectReadingChoice(choice, choices),
                         );
                         if (index < 0) return;
                         assisted = true;
@@ -287,9 +288,13 @@ export function mountPractice(
                     "answer",
                     () => {
                         if (grade) return;
-                        const correct =
-                            choices[Number(choice.dataset.readingChoice)]
-                                .correct;
+                        const selected =
+                            choices[Number(choice.dataset.readingChoice)];
+                        if (!selected) return;
+                        const correct = isCorrectReadingChoice(
+                            selected,
+                            choices,
+                        );
                         grade = correct && !assisted ? "good" : "again";
                         const hint = target.querySelector(
                             "[data-reading-hint]",

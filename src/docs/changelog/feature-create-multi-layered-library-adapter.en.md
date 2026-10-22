@@ -188,6 +188,14 @@ Module installation now fetches the exact catalog commit once, allows sustained 
 
 Flashcards now renders the canonical items of a composed heading as individually boxed, keyboard-accessible controls. The Library publishes its existing title resolver through a lifetime-scoped UI capability, preserving literal text, item order and selected transformations. Explore opens the selected form after the existing departure confirmation; single-card titles and favourite buttons retain their seamless appearance.
 
+## Grade punctuation-equivalent answers fairly
+
+Reading quizzes share answer normalization between choice generation, hints and grading. Formatting-only variants cannot compete as different answers or cause failed progress; smaller sets of distinct choices remain playable. Negation, numbers and meaningful internal punctuation stay distinct.
+
+## Show the complete vocabulary
+
+Vocabulary no longer excludes words used in composer carousels or automatically enables a sole optional metadata filter. Unclassified words such as ノート remain visible alongside leveled words, while deliberate filter selections continue to work.
+
 ## Commits
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

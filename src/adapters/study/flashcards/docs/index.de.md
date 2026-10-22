@@ -67,3 +67,5 @@ Der Browser-Haupteinstieg ist `ui/app/index.js`; Aktionen, Darstellung, Sprache 
 ## Gleichmäßige Übungsauswahl
 
 Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `randomIndex`. Die Funktion nutzt Web Crypto mit maskierter Verwerfungsauswahl für ganzzahlige Bereiche von 1 bis 2^32 ohne Modulo-Verzerrung. Ein Bereich mit einer einzigen Position benötigt keine Entropie. Für deterministische Tests kann eine Entropiequelle übergeben werden; normale Übungen verwenden immer Web Crypto.
+
+Beim Lesen wird derselbe Inhaltsvergleich für Ablenkungsantworten, Hinweise und Bewertung verwendet. Satzschlusszeichen, Großschreibung, kompatible Unicode-Formen und mehrfache Leerzeichen unterscheiden Antworten nicht. Innere Satzzeichen, Zahlen, Akzente und andere Wörter bleiben bedeutungstragend. Gleichwertige Bedeutungen werden nicht als konkurrierende Optionen angeboten; bei Verfügbarkeit nutzt ein Quiz zwei bis vier verschiedene Antworten. Richtige gleichwertige Eingaben erhalten vor der Fortschrittsübermittlung die übliche Erfolgsbewertung.

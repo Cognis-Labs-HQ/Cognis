@@ -188,6 +188,14 @@ Instalasi modul kini mengambil commit katalog yang tepat sekali, mengizinkan und
 
 Flashcards kini menampilkan unsur kanonis dalam judul tersusun sebagai kontrol berkotak terpisah yang dapat digunakan dengan papan ketik. Library menyediakan resolver judul yang sudah ada melalui kapabilitas UI yang mengikuti masa aktif penyedia, mempertahankan teks literal, urutan, dan transformasi terpilih. Explore membuka bentuk terpilih setelah konfirmasi keluar yang sudah ada; judul kartu tunggal dan tombol favorit mempertahankan tampilan menyatunya.
 
+## Nilai jawaban setara dengan adil
+
+Kuis membaca memakai normalisasi jawaban yang sama untuk pembuatan pilihan, petunjuk, dan penilaian. Variasi format tidak bersaing sebagai jawaban berbeda atau menyebabkan progres gagal; kumpulan pilihan berbeda yang lebih kecil tetap dapat dimainkan. Negasi, angka, dan tanda baca internal yang bermakna tetap dibedakan.
+
+## Tampilkan seluruh kosakata
+
+Kosakata tidak lagi mengecualikan kata yang dipakai dalam karusel penyusun atau mengaktifkan satu-satunya filter metadata opsional secara otomatis. Kata tanpa klasifikasi seperti ノート tetap terlihat bersama kata bertingkat, sementara pilihan filter yang disengaja tetap berfungsi.
+
 ## Commit
 
 - [2db6fd1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2db6fd1a147194de35f45b07090d0b5356206933)

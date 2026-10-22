@@ -3,6 +3,7 @@ import { similarEntries } from "/static/gateways/study/reuse/similar-items.js";
 import { drawingPattern } from "/static/gateways/study/reuse/drawing-pattern.js";
 import { flashcardValues } from "../reuse/flashcard.js";
 import { isCardDue } from "../reuse/review.js";
+import { readingAnswerKey } from "../reuse/reading-answer.js";
 
 export function cardStatus(progress, id, now = Date.now()) {
     if (!progress?.[id]) return "new";
@@ -43,7 +44,7 @@ export function readingChoices(detail, entries, schemas, language) {
             .trim();
     };
     const correct = answerFor(detail.entry);
-    if (!correct) return [];
+    if (!readingAnswerKey(correct)) return [];
     const choices = [
         {
             entry: detail.entry,
@@ -52,9 +53,7 @@ export function readingChoices(detail, entries, schemas, language) {
             correct: true,
         },
     ];
-    const normalized = (value) =>
-        value.normalize("NFKC").toLocaleLowerCase().trim();
-    const seen = new Set([normalized(correct)]);
+    const seen = new Set([readingAnswerKey(correct)]);
     const candidates = [
         ...new Map(
             [
@@ -72,12 +71,13 @@ export function readingChoices(detail, entries, schemas, language) {
     ];
     for (const entry of candidates) {
         const text = answerFor(entry);
-        if (!text || seen.has(normalized(text))) continue;
-        seen.add(normalized(text));
+        const key = readingAnswerKey(text);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
         choices.push({ entry, entryId: entry.id, text, correct: false });
         if (choices.length === 4) break;
     }
-    if (choices.length !== 4) return [];
+    if (choices.length < 2) return [];
     for (let index = choices.length - 1; index > 0; index--) {
         const position = randomIndex(index + 1);
         [choices[index], choices[position]] = [
