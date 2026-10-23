@@ -313,3 +313,55 @@ test("user availability capability resolves calendar-aware status", async () => 
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("registered availability URLs reach the adapter and return status without 404s", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        let requester = "viewer";
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("db:executor", executor);
+        capabilities.contribute("auth:routeContext", {
+            getAuthClaims: () => ({ sub: requester, role: "user" }),
+            requireAuth: () => ({ sub: requester, role: "user" }),
+        });
+        const { ctx, routeRegistry } = makeAdapterCtx({ capabilities });
+        await bootstrapSocialAdapter(ctx);
+        const store = capabilities.get<{
+            createProfile(accountId: string, handle: string): Promise<unknown>;
+        }>("social:profileStore");
+        await store!.createProfile("owner", "firehawk");
+        const dispatch = async () => {
+            let status = 0;
+            let payload = "";
+            const response = {
+                writeHead(value: number) {
+                    status = value;
+                },
+                end(value: string) {
+                    payload = value;
+                },
+            } as any;
+            for (const handler of routeRegistry.getHandlers()) {
+                if (
+                    await handler(
+                        { method: "GET" } as any,
+                        response,
+                        new URL(
+                            "http://localhost/api/v1/social/availability/firehawk",
+                        ),
+                    )
+                )
+                    break;
+            }
+            assert.equal(status, 200);
+            return JSON.parse(payload);
+        };
+        assert.deepEqual(await dispatch(), {
+            data: { handle: "firehawk", status: "unknown" },
+        });
+        requester = "owner";
+        assert.equal((await dispatch()).data.status, "free");
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});

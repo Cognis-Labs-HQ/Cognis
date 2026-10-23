@@ -16,7 +16,7 @@ const testFiles = (
 
 const child = spawn(
     process.execPath,
-    ["--import", "tsx", "--test", ...testFiles],
+    ["--experimental-vm-modules", "--import", "tsx", "--test", ...testFiles],
     { cwd: process.cwd(), stdio: "inherit" },
 );
 process.exitCode = await new Promise<number>((resolve, reject) => {

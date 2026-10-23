@@ -9,6 +9,9 @@
   <string name="ui.app.modules.change_release_channel">Veröffentlichungskanal wechseln</string>
   <string name="ui.app.modules.changing_release_channel">Veröffentlichungskanal wird gewechselt</string>
   <string name="ui.app.modules.installing">Wird installiert</string>
+  <string name="ui.app.modules.enabling">Wird aktiviert</string>
+  <string name="ui.app.modules.disabling">Wird deaktiviert</string>
+  <string name="ui.app.modules.uninstalling">Wird deinstalliert</string>
   <string name="ui.app.modules.upgrading">Wird aktualisiert</string>
   <string name="ui.app.modules.downgrading">Wird herabgestuft</string>
   <string name="ui.app.modules.upgrade_complete">Modul aktualisiert.</string>
@@ -46,8 +49,8 @@
   <string name="ui.app.modules.refresh_complete">Modulquellen aktualisiert.</string>
   <string name="ui.app.modules.update_complete">Modul aktualisiert.</string>
   <string name="ui.app.modules.disable_before_update">Deaktivieren Sie das Modul vor der Aktualisierung.</string>
-  <string name="ui.app.modules.install_timeout">Die Modulinstallation wurde nicht innerhalb von zwei Minuten abgeschlossen.</string>
-  <string name="ui.app.modules.github_timeout_warning">GitHub konnte die TLS-Verbindung aus dem Anwendungscontainer nicht abschließen. Prüfen Sie die MTU des Host- oder Docker-Netzwerks, insbesondere bei Verwendung eines VPN oder Tunnels, und versuchen Sie es erneut.</string>
+  <string name="ui.app.modules.install_timeout">Die Modulinstallation hat das Zeitlimit überschritten. Der Download hängt möglicherweise oder die Verbindung wurde unterbrochen. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.app.modules.github_timeout_warning">Es konnte keine sichere Verbindung zu GitHub hergestellt werden. Prüfen Sie die Verbindung und die Proxy-Einstellungen. Prüfen Sie bei einem VPN oder Tunnel auch die MTU des Host- oder Docker-Netzwerks.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>

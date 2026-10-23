@@ -1,5 +1,9 @@
 # Adapter Keyring Pengguna
 
+PUT brankas memakai pembaca aliran JSON bersama milik API dengan anggaran brankas efektif dan tambahan 1 KiB untuk amplop. Kebijakan, galat 413, dan validasi data terserialisasi tetap dimiliki adaptor; tidak ada implementasi penyanggaan kedua.
+
+Batas bawaan brankas adalah 2 MiB dengan batas mutlak pemrosesan 8 MiB. Kebijakan efektif dikembalikan kepada klien. PUT menghitung byte masuk sebelum penyanggaan atau penguraian JSON dan menolak permintaan terlalu besar; GET memeriksa ukuran tersimpan sebelum penguraian. Amplop terenkripsi menggunakan baris utama serta baris lanjutan terbatas, dengan penggantian dan penghapusan atomik serta satu pembacaan gabungan. Tiap bagian tersimpan paling besar 60.000 byte UTF-8; server tetap tidak mendekripsi rahasia.
+
 ## Ringkasan
 
 Adapter Keyring Pengguna menyimpan brankas buram yang dienkripsi di peramban untuk akun terautentikasi. Adapter Autentikasi ini wajib agar kata sandi, kunci enkripsi, dan rahasia khusus pengguna tersedia melalui satu kapabilitas stabil tanpa bergantung pada penyedia masuk.
@@ -20,7 +24,7 @@ Tidak bertanggung jawab atas: autentikasi pengguna, penurunan kunci, atau penafs
 
 ## Konfigurasi
 
-Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat.
+Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat. Kapasitas bawaan brankas terenkripsi adalah 2 MiB.
 
 ## Rute API
 
@@ -59,3 +63,7 @@ Membatalkan permintaan buka kunci beratribusi menolak semua penunggu bersamaan d
 ## Reset destruktif
 
 `DELETE /api/v1/auth/keyring` adalah kontrak reset destruktif. Sebelum menghapus vault buram, Authentication memanggil setiap pemilik yang terdaftar melalui `auth:registerKeyringDataOwner`, hanya menghapus akun dari ruang terenkripsi dan objek lain yang aksesnya bergantung pada entri keyring. Instans akun, profil, hubungan pengikut, dan data akun yang tidak bergantung tetap tidak berubah. Tindakan Settings saat terkunci memakai rute ini, lalu mengganti semua kontrol keyring dengan banner “Keyring tidak ditemukan” dan satu tindakan Buat. Pembuatan meminta konfirmasi kata sandi serta batas waktu penguncian otomatis. Saat terbuka, tindakan tetap hanya menghapus entri dari vault saat ini.
+
+## Batasi Pertumbuhan Aktivitas
+
+Brankas terenkripsi menyimpan paling banyak 1.000 aktivitas terbaru dalam batas riwayat 64 KiB; nilai rahasia tidak pernah dihapus untuk memenuhi batas tersebut. Pembacaan berulang berbagi proses penyimpanan yang berjalan. GET terautentikasi dapat mengambil brankas yang ada hingga batas mutlak 8 MiB agar klien dapat meringkas riwayat meskipun batas penulisan lebih rendah. PUT tetap menerapkan batas yang dikonfigurasi. Kegagalan sinkronisasi latar belakang menampilkan notifikasi kesalahan dan mempertahankan salinan lokal terenkripsi.

@@ -19,6 +19,10 @@
 export function replaceMountScope(currentController, externalSignal) {
     currentController?.abort();
     const nextController = new AbortController();
+    if (externalSignal?.aborted) {
+        nextController.abort();
+        return nextController;
+    }
     const abortNext = () => nextController.abort();
     externalSignal?.addEventListener("abort", abortNext, { once: true });
     nextController.signal.addEventListener(

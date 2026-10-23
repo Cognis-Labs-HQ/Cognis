@@ -9,6 +9,9 @@
   <string name="ui.app.modules.change_release_channel">Change Release Channel</string>
   <string name="ui.app.modules.changing_release_channel">Changing Release Channel</string>
   <string name="ui.app.modules.installing">Installing</string>
+  <string name="ui.app.modules.enabling">Enabling</string>
+  <string name="ui.app.modules.disabling">Disabling</string>
+  <string name="ui.app.modules.uninstalling">Uninstalling</string>
   <string name="ui.app.modules.upgrading">Upgrading</string>
   <string name="ui.app.modules.downgrading">Downgrading</string>
   <string name="ui.app.modules.upgrade_complete">Module upgraded.</string>
@@ -46,8 +49,8 @@
   <string name="ui.app.modules.refresh_complete">Module sources refreshed.</string>
   <string name="ui.app.modules.update_complete">Module updated.</string>
   <string name="ui.app.modules.disable_before_update">Disable the module before updating it.</string>
-  <string name="ui.app.modules.install_timeout">Module installation did not complete within two minutes.</string>
-  <string name="ui.app.modules.github_timeout_warning">GitHub did not complete the TLS connection from the application container. Check the host or Docker network MTU, especially when using a VPN or tunnel, then try again.</string>
+  <string name="ui.app.modules.install_timeout">Module installation timed out. The download may be stalled or the connection interrupted. Please try again.</string>
+  <string name="ui.app.modules.github_timeout_warning">A secure connection to GitHub could not be established. Check connectivity and proxy settings. If using a VPN or tunnel, also check the host or Docker network MTU.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Module Marketplace</string>

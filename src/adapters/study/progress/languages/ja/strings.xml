@@ -1,0 +1,6 @@
+<resources>
+  <string name="adapter.study.progress.name">学習進捗</string>
+  <string name="adapter.study.progress.description">不変の学習履歴と再構築可能な進捗</string>
+  <string name="adapter.study.progress.independent_title">自力で練習</string>
+  <string name="adapter.study.progress.independent_description">助けを使わずに練習を正解で完了する。</string>
+</resources>

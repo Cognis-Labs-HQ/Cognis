@@ -1,0 +1,23 @@
+[
+    {
+        "id": "synthetic:word:lo",
+        "label": "◇",
+        "class": "lexical:noun",
+        "tags": ["fixture"],
+        "fields": {
+            "examples": ["audio/lo.mp3"],
+            "illustrations": ["strokes/lo.svg"]
+        },
+        "references": [
+            {
+                "entryId": "synthetic:character:lo",
+                "relation": "spelling",
+                "position": 0
+            },
+            {
+                "entryId": "synthetic:definition:greeting",
+                "relation": "definitions"
+            }
+        ]
+    }
+]

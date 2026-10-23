@@ -1,3 +1,8 @@
+import { versionModuleUiAssets } from "./module-ui-assets.js";
+import {
+    disposeModuleResources,
+    removeModuleRoutes,
+} from "./module-resource-disposal.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     BootstrapLog,
@@ -6,6 +11,7 @@ import type {
     ModuleRuntimeGateway,
     RoleAccessPolicy,
     FlowApi,
+    ModuleNamespacePolicy,
 } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
@@ -15,6 +21,9 @@ import type { UIRegistry } from "../../api/reuse/ui-registry.js";
 import type {
     ModuleApiRouter,
     ModuleRouteOptions,
+    ModuleBootstrapCtx,
+    ModuleBootstrapPlugin,
+    ModuleDisabledApiPlugin,
 } from "./module-extension-contracts.js";
 import {
     assertModuleOwnedCtxRegistration,
@@ -39,141 +48,15 @@ interface RouteHandler {
     ) => Promise<void> | void;
 }
 
-interface ModuleUiRegistrationContext {
-    moduleId: string;
-    moduleUuid: string;
-    moduleRoot: string;
-    registerNavbarPlugin(
-        plugin:
-            | {
-                  scriptUrl: string;
-                  access?: RoleAccessPolicy;
-                  providesCapabilities?: string[];
-              }
-            | string,
-    ): void;
-    registerCapabilityProvider(provider: {
-        scriptUrl: string;
-        providesCapabilities: string[];
-    }): void;
-    registerSpaRoute(route: {
-        id: string;
-        pattern: string;
-        base: string;
-        scriptUrl: string;
-        stylesheets?: string[];
-        access?: RoleAccessPolicy;
-        public?: boolean;
-        requiredCapabilities?: string[];
-        componentPage?: {
-            labelKey: string;
-            descriptionKey: string;
-            modes: Array<"overlay" | "fullscreen" | "pip">;
-        };
-    }): void;
-    registerAuthFooterPlugin(plugin: { scriptUrl: string }): void;
-    registerSettingsSection(section: {
-        id: string;
-        label: string;
-        scriptUrl: string;
-        access?: RoleAccessPolicy;
-        stringsBaseUrl?: string;
-    }): void;
-    registerPageExtension(
-        pageId: string,
-        element: {
-            id: string;
-            label: string;
-            scriptUrl: string;
-            access?: RoleAccessPolicy;
-        },
-    ): void;
-    registerAdminSection(section: {
-        id: string;
-        label: string;
-        scriptUrl: string;
-        access?: RoleAccessPolicy;
-        stringsBaseUrl?: string;
-    }): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
-    registerAuthTypingMessage(message: {
-        id: string;
-        textKey: string;
-        access?: RoleAccessPolicy;
-    }): void;
-}
-
-interface ModuleApiRegistrationContext {
-    moduleId: string;
-    moduleRoot: string;
-    getCapability<T>(capabilityId: string): T | undefined;
-    capabilities: {
-        contribute(key: string, value: unknown): void;
-        get<T>(key: string): T | undefined;
-        has(key: string): boolean;
-        require<T>(key: string): T;
-    };
-    log?: BootstrapLog;
-}
-interface ModuleBootstrapCtx
-    extends ModuleUiRegistrationContext, ModuleApiRegistrationContext {
-    flow: FlowApi;
-    registerApiGet(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPost(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPut(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiPatch(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    registerApiDelete(
-        routePath: string,
-        handler: RouteHandler["handler"],
-        options?: ModuleRouteOptions,
-    ): void;
-    router: ModuleApiRouter;
-    contributeCapability(key: string, value: unknown): void;
-    contributePublicCapability(key: string, value: unknown): void;
-    registerFlow(flow: FlowRegistration): void;
-    getModuleAssurance(moduleId: string): Promise<ModuleAssurance | null>;
-}
-
-interface ModuleBootstrapPlugin {
-    bootstrapModule?: (
-        ctx: ModuleBootstrapCtx,
-    ) =>
-        | Promise<void | (() => void | Promise<void>)>
-        | void
-        | (() => void | Promise<void>);
-    teardownModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
-    uninstallModule?: (
-        ctx: Pick<
-            ModuleBootstrapCtx,
-            "moduleId" | "moduleRoot" | "getCapability" | "log"
-        >,
-        options: { deleteContent: boolean },
-    ) => Promise<void> | void;
-}
-interface ModuleDisabledApiPlugin {
-    registerDisabledApiRoutes?: (
-        ctx: ModuleBootstrapCtx,
-    ) => Promise<void> | void;
+interface ModuleContributions {
+    hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
+    capabilities: string[];
+    flows: string[];
 }
 
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
+    authorizeModuleNamespace?: ModuleNamespacePolicy;
     routeContext: RouteContext;
     bootstrapTimeoutMs?: number;
     onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
@@ -199,7 +82,9 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
-    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 10_000;
+    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 120_000;
+    let refreshQueue = Promise.resolve();
+    const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];
     if (!options?.routeContext) {
         throw new Error(
@@ -216,6 +101,7 @@ export function createModuleExtensionRoutes(
             hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
             capabilities: string[];
             flows: string[];
+            disposers: Array<() => void | Promise<void>>;
         }
     >();
     const externalModulesRoot =
@@ -223,9 +109,16 @@ export function createModuleExtensionRoutes(
         path.resolve(process.cwd(), "external-modules");
     const assuranceByModuleId = new Map<string, ModuleAssurance>();
 
-    /**
-     * Writes a standardized warning when a module declares an invalid access policy.
-     */
+    function resolveHostCapability<T>(capabilityId: string): T | undefined {
+        const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
+        return (
+            options.routeContext.getCapability<T>(capabilityId) ??
+            (systemCtx?.isPublicCapability(capabilityId)
+                ? systemCtx.getCapability<T>(capabilityId)
+                : undefined)
+        );
+    }
+
     function logInvalidAccessPolicy(
         method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
         moduleId: string,
@@ -250,6 +143,7 @@ export function createModuleExtensionRoutes(
             id: string;
             uuid: string;
             requiresCapabilities?: string[];
+            version: string;
         },
         moduleRoot: string,
         nextHandlers: RouteHandler[],
@@ -258,14 +152,14 @@ export function createModuleExtensionRoutes(
             hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
             capabilities: string[];
             flows: string[];
+            disposers: Array<() => void | Promise<void>>;
         },
         moduleEnabled: boolean,
         privilege: ModulePrivilege,
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
         function resolveCapability<T>(capabilityId: string): T | undefined {
-            const capability =
-                options.routeContext.getCapability<T>(capabilityId);
+            const capability = resolveHostCapability<T>(capabilityId);
             if (
                 capabilityId !== "auth:registerProvider" ||
                 typeof capability !== "function"
@@ -302,14 +196,18 @@ export function createModuleExtensionRoutes(
             routeOptions?: ModuleRouteOptions,
         ) {
             requireActiveBootstrap();
-            assertModuleOwnedRoute(routePath, moduleId, privilege);
+            assertModuleOwnedRoute(
+                routePath,
+                moduleId,
+                privilege,
+                options?.authorizeModuleNamespace,
+            );
             const protectedPrefixes = [
                 "/api/v1/system",
                 "/api/v1/auth",
                 "/api/v1/users",
                 "/public",
                 "/ui",
-                ...(options?.getProtectedRoutePrefixes?.() ?? []),
             ];
             if (
                 protectedPrefixes.some(
@@ -322,6 +220,21 @@ export function createModuleExtensionRoutes(
                     `Module ${moduleId} attempts to register protected route: ${routePath}`,
                 );
             }
+            if (
+                (options?.getProtectedRoutePrefixes?.() ?? []).some(
+                    (prefix) =>
+                        routePath === prefix ||
+                        routePath.startsWith(`${prefix}/`),
+                ) &&
+                options?.authorizeModuleNamespace?.({
+                    moduleId,
+                    kind: "apiRoute",
+                    id: routePath,
+                }) !== true
+            )
+                throw new Error(
+                    `Module ${moduleId} attempts to register protected route: ${routePath}`,
+                );
             if (
                 nextHandlers.some(
                     (entry) =>
@@ -398,7 +311,9 @@ export function createModuleExtensionRoutes(
             run: baseFlow.run.bind(baseFlow),
             extend(flowId, stageId, hook, handler) {
                 requireActiveBootstrap();
-                if (!moduleEnabled) return false;
+                if (!moduleEnabled && !scope.flows.includes(flowId)) {
+                    throw new Error("module_disabled_flow_not_owned");
+                }
                 if (PRIVILEGED_FLOW_IDS.has(flowId) && !privilege.requested) {
                     throw new Error("module_privileged_access_required");
                 }
@@ -429,7 +344,12 @@ export function createModuleExtensionRoutes(
                 contribute(key, value) {
                     requireActiveBootstrap();
                     if (!moduleEnabled) return;
-                    assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                    assertModuleOwnedCtxRegistration(
+                        key,
+                        moduleId,
+                        privilege,
+                        options?.authorizeModuleNamespace,
+                    );
                     if (systemCtx?.hasCapability(key)) {
                         throw new Error("module_capability_conflict");
                     }
@@ -442,17 +362,12 @@ export function createModuleExtensionRoutes(
                 },
                 has(key) {
                     if (key === "system:ctx") return false;
-                    return systemCtx?.hasCapability(key) ?? false;
+                    return resolveCapability(key) !== undefined;
                 },
                 require(key) {
                     if (key === "system:ctx") {
                         throw new Error(
                             'Required capability "system:ctx" is not available.',
-                        );
-                    }
-                    if (!systemCtx) {
-                        throw new Error(
-                            `Required capability "${key}" is not available.`,
                         );
                     }
                     const capability = resolveCapability(key);
@@ -467,7 +382,12 @@ export function createModuleExtensionRoutes(
             contributeCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
-                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                assertModuleOwnedCtxRegistration(
+                    key,
+                    moduleId,
+                    privilege,
+                    options?.authorizeModuleNamespace,
+                );
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -477,7 +397,12 @@ export function createModuleExtensionRoutes(
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
-                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                assertModuleOwnedCtxRegistration(
+                    key,
+                    moduleId,
+                    privilege,
+                    options?.authorizeModuleNamespace,
+                );
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -486,11 +411,13 @@ export function createModuleExtensionRoutes(
             },
             registerFlow(flowRegistration) {
                 requireActiveBootstrap();
-                if (!moduleEnabled) return;
                 assertModuleOwnedCtxRegistration(
                     flowRegistration.id,
                     moduleId,
-                    privilege,
+                    moduleEnabled
+                        ? privilege
+                        : { requested: false, trustedSource: false },
+                    options?.authorizeModuleNamespace,
                 );
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
@@ -510,6 +437,12 @@ export function createModuleExtensionRoutes(
                 );
                 assuranceByModuleId.set(targetModuleId, assurance);
                 return { ...assurance };
+            },
+            registerDisposer(dispose) {
+                requireActiveBootstrap();
+                if (typeof dispose !== "function")
+                    throw new TypeError("module_disposer_required");
+                scope.disposers.push(dispose);
             },
             getCapability(capabilityId) {
                 if (capabilityId === "system:ctx") return undefined;
@@ -539,7 +472,11 @@ export function createModuleExtensionRoutes(
                         ? { scriptUrl: pluginDef }
                         : pluginDef;
                 options?.uiRegistry?.registerNavbarPlugin({
-                    scriptUrl: pluginConfig.scriptUrl,
+                    scriptUrl: versionModuleUiAssets(
+                        pluginConfig.scriptUrl,
+                        moduleId,
+                        manifest.version,
+                    ),
                     access: pluginConfig.access,
                     providesCapabilities: pluginConfig.providesCapabilities,
                     ownerId: moduleId,
@@ -550,7 +487,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerCapabilityProvider({
-                    ...provider,
+                    ...versionModuleUiAssets(
+                        provider,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -559,7 +500,7 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSpaRoute({
-                    ...route,
+                    ...versionModuleUiAssets(route, moduleId, manifest.version),
                     requiredCapabilities:
                         route.requiredCapabilities ??
                         manifest.requiresCapabilities?.filter((capability) =>
@@ -576,7 +517,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAuthFooterPlugin({
-                    ...plugin,
+                    ...versionModuleUiAssets(
+                        plugin,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -585,7 +530,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerSettingsSection({
-                    ...section,
+                    ...versionModuleUiAssets(
+                        section,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -594,7 +543,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerPageExtension(pageId, {
-                    ...element,
+                    ...versionModuleUiAssets(
+                        element,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -603,7 +556,11 @@ export function createModuleExtensionRoutes(
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 options?.uiRegistry?.registerAdminSection({
-                    ...section,
+                    ...versionModuleUiAssets(
+                        section,
+                        moduleId,
+                        manifest.version,
+                    ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -637,20 +594,9 @@ export function createModuleExtensionRoutes(
 
     function resolveModuleEntrypointPath(
         moduleRoot: string,
-        entrypoints: { bootstrap?: string } | undefined,
+        entrypoint: string | undefined,
     ): string | null {
-        return entrypoints?.bootstrap
-            ? path.join(moduleRoot, entrypoints.bootstrap)
-            : null;
-    }
-
-    function resolveDisabledApiEntrypointPath(
-        moduleRoot: string,
-        entrypoints: { disabledApi?: string } | undefined,
-    ): string | null {
-        return entrypoints?.disabledApi
-            ? path.join(moduleRoot, entrypoints.disabledApi)
-            : null;
+        return entrypoint ? path.join(moduleRoot, entrypoint) : null;
     }
 
     async function bootstrapWithTimeout(
@@ -678,46 +624,44 @@ export function createModuleExtensionRoutes(
         }
     }
 
+    function removeOwnedContributions(
+        moduleId: string,
+        scope: ModuleContributions,
+    ) {
+        const systemCtx =
+            options!.routeContext.getCapability<Ctx>("system:ctx");
+        for (const hook of scope.hooks)
+            systemCtx?.removeFlowStageHook(
+                hook.flowId,
+                hook.stageId,
+                hook.hookId,
+            );
+        for (const capability of scope.capabilities)
+            systemCtx?.removeCapability(capability);
+        for (const flowId of scope.flows) systemCtx?.unregisterFlow(flowId);
+        options?.uiRegistry?.unregisterModuleContributions(moduleId);
+    }
+
     async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
+        await Promise.allSettled([...activeRequests]);
         for (const [moduleId, loaded] of loadedModules) {
-            for (const teardown of [
-                loaded.dispose,
-                loaded.plugin.teardownModule
-                    ? () => loaded.plugin.teardownModule?.(loaded.ctx)
-                    : undefined,
-            ]) {
-                try {
-                    await teardown?.();
-                } catch (error) {
-                    log?.("error", "Module teardown hook failed.", {
-                        component: "module-extension-routes",
-                        moduleId,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    });
-                }
-            }
-            const systemCtx =
-                options.routeContext.getCapability<Ctx>("system:ctx");
-            for (const hook of loaded.hooks) {
-                systemCtx?.removeFlowStageHook(
-                    hook.flowId,
-                    hook.stageId,
-                    hook.hookId,
-                );
-            }
-            for (const capability of loaded.capabilities) {
-                systemCtx?.removeCapability(capability);
-            }
-            for (const flowId of loaded.flows)
-                systemCtx?.unregisterFlow(flowId);
-            options?.uiRegistry?.unregisterModuleContributions(moduleId);
+            await disposeModuleResources(
+                [
+                    loaded.plugin.teardownModule
+                        ? () => loaded.plugin.teardownModule?.(loaded.ctx)
+                        : undefined,
+                    loaded.dispose,
+                    ...loaded.disposers,
+                ],
+                moduleId,
+                log,
+            );
+            removeOwnedContributions(moduleId, loaded);
         }
         loadedModules.clear();
         assuranceByModuleId.clear();
         const nextHandlers: RouteHandler[] = [];
+        let refreshFailure: unknown;
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
@@ -770,6 +714,7 @@ export function createModuleExtensionRoutes(
                 hooks: [],
                 capabilities: [],
                 flows: [],
+                disposers: [],
             };
             const moduleCtx = createModuleCtx(
                 manifest,
@@ -781,11 +726,11 @@ export function createModuleExtensionRoutes(
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
-                manifest.entrypoints,
+                manifest.entrypoints?.bootstrap,
             );
-            const disabledApiEntrypoint = resolveDisabledApiEntrypointPath(
+            const disabledApiEntrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
-                manifest.entrypoints,
+                manifest.entrypoints?.disabledApi,
             );
             if (!moduleEnabled) {
                 if (!disabledApiEntrypoint) continue;
@@ -801,6 +746,14 @@ export function createModuleExtensionRoutes(
                         ...scope,
                     });
                 } catch (error) {
+                    scope.active = false;
+                    await disposeModuleResources(
+                        scope.disposers,
+                        manifest.id,
+                        log,
+                    );
+                    removeOwnedContributions(manifest.id, scope);
+                    removeModuleRoutes(nextHandlers, manifest.id);
                     log?.("error", "Disabled module API registration failed.", {
                         component: "module-extension-routes",
                         moduleId: manifest.id,
@@ -809,7 +762,7 @@ export function createModuleExtensionRoutes(
                                 ? error.message
                                 : String(error),
                     });
-                    if (refreshOptions?.throwOnFailure) throw error;
+                    refreshFailure ??= error;
                 }
                 continue;
             }
@@ -834,29 +787,17 @@ export function createModuleExtensionRoutes(
                     dispose: typeof result === "function" ? result : undefined,
                     ...scope,
                 });
+                log?.("info", "Module runtime contributions registered.", {
+                    component: "module-extension-routes",
+                    operation: "refresh_module_runtime",
+                    moduleId: manifest.id,
+                    capabilities: [...scope.capabilities],
+                });
             } catch (error) {
                 scope.active = false;
-                const systemCtx =
-                    options.routeContext.getCapability<Ctx>("system:ctx");
-                for (const hook of scope.hooks) {
-                    systemCtx?.removeFlowStageHook(
-                        hook.flowId,
-                        hook.stageId,
-                        hook.hookId,
-                    );
-                }
-                for (const capability of scope.capabilities) {
-                    systemCtx?.removeCapability(capability);
-                }
-                for (const flowId of scope.flows) {
-                    systemCtx?.unregisterFlow(flowId);
-                }
-                options?.uiRegistry?.unregisterModuleContributions(manifest.id);
-                for (let index = nextHandlers.length - 1; index >= 0; index--) {
-                    if (nextHandlers[index].moduleId === manifest.id) {
-                        nextHandlers.splice(index, 1);
-                    }
-                }
+                await disposeModuleResources(scope.disposers, manifest.id, log);
+                removeOwnedContributions(manifest.id, scope);
+                removeModuleRoutes(nextHandlers, manifest.id);
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,
@@ -865,11 +806,13 @@ export function createModuleExtensionRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 await options.onBootstrapFailed?.(manifest.id);
-                if (refreshOptions?.throwOnFailure) throw error;
+                refreshFailure ??= error;
             }
         }
 
         handlers = nextHandlers;
+        if (refreshOptions?.throwOnFailure && refreshFailure)
+            throw refreshFailure;
     }
 
     async function uninstall(
@@ -883,7 +826,7 @@ export function createModuleExtensionRoutes(
         const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
         const entrypoint = resolveModuleEntrypointPath(
             moduleRoot,
-            manifest.entrypoints,
+            manifest.entrypoints?.bootstrap,
         );
         if (!entrypoint) return false;
         const plugin = (await import(
@@ -894,7 +837,7 @@ export function createModuleExtensionRoutes(
             {
                 moduleId,
                 moduleRoot,
-                getCapability: options.routeContext.getCapability,
+                getCapability: resolveHostCapability,
                 log,
             },
             uninstallOptions,
@@ -902,47 +845,70 @@ export function createModuleExtensionRoutes(
         return true;
     }
 
+    async function handle(
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> {
+        const method = (req.method || "GET").toUpperCase();
+        const match = handlers.find(
+            (entry) =>
+                entry.method === method && entry.routePath === url.pathname,
+        );
+        if (!match) return false;
+        if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "module_disabled",
+                        message: "Module disabled",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (match.invalidAccessPolicy) {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "forbidden",
+                        message:
+                            "Route denied due to invalid access policy configuration",
+                    },
+                }),
+            );
+            return true;
+        }
+        if (match.access) {
+            const claims = requireRoleAccess(req, res, match.access);
+            if (!claims) return true;
+        }
+        await match.handler(req, res);
+        return true;
+    }
+
     return {
         uninstall,
-        async handle(req, res, url) {
-            const method = (req.method || "GET").toUpperCase();
-            const match = handlers.find(
-                (entry) =>
-                    entry.method === method && entry.routePath === url.pathname,
-            );
-            if (!match) return false;
-            if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "module_disabled",
-                            message: "Module disabled",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (match.invalidAccessPolicy) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Route denied due to invalid access policy configuration",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (match.access) {
-                const claims = requireRoleAccess(req, res, match.access);
-                if (!claims) return true;
-            }
-            await match.handler(req, res);
-            return true;
+        handle(req, res, url) {
+            return refreshQueue.then(() => {
+                const pending = handle(req, res, url);
+                activeRequests.add(pending);
+                const remove = () => activeRequests.delete(pending);
+                void pending.then(remove, remove);
+                return pending;
+            });
         },
-        refresh,
+        refresh(refreshOptions) {
+            const pendingRefresh = refreshQueue.then(() =>
+                refresh(refreshOptions),
+            );
+            refreshQueue = pendingRefresh.then(
+                () => undefined,
+                () => undefined,
+            );
+            return pendingRefresh;
+        },
     };
 }

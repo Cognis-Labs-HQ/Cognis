@@ -194,16 +194,74 @@ test("availability visibility follows community, friends, and private relationsh
     assert.equal(JSON.parse((await readAsBob()).body).data.status, "idle");
 
     blocks.add("alice:bob");
-    assert.equal((await readAsBob()).status, 404);
+    assert.deepEqual(JSON.parse((await readAsBob()).body), {
+        data: { handle: "alice", status: "unknown" },
+    });
     blocks.clear();
 
     profiles.set("alice", { ...profiles.get("alice")!, visibility: "friends" });
-    assert.equal((await readAsBob()).status, 404);
+    assert.deepEqual(JSON.parse((await readAsBob()).body), {
+        data: { handle: "alice", status: "unknown" },
+    });
     follows.add("bob:alice");
     assert.equal((await readAsBob()).status, 200);
 
     profiles.set("alice", { ...profiles.get("alice")!, visibility: "private" });
-    assert.equal((await readAsBob()).status, 404);
+    assert.deepEqual(JSON.parse((await readAsBob()).body), {
+        data: { handle: "alice", status: "unknown" },
+    });
     follows.add("alice:bob");
     assert.equal((await readAsBob()).status, 200);
+});
+
+test("missing and restricted profiles return the same unknown availability without reading status", async () => {
+    let target: any = null;
+    const route = createAvailabilityRoutes(
+        {
+            getProfile: async () => target,
+            getProfileByHandle: async () => target,
+            isBlocked: async () => true,
+        } as any,
+        {
+            get: async () =>
+                assert.fail("Hidden availability cannot read preferences"),
+        } as any,
+        async () => assert.fail("Hidden availability cannot query a calendar"),
+        routeContext,
+    );
+    const read = async () => {
+        const captured = responseCapture();
+        await route(
+            request("GET", undefined, "bob"),
+            captured.response,
+            new URL("http://localhost/api/v1/social/availability/alice"),
+        );
+        assert.equal(captured.capture.status, 200);
+        return JSON.parse(captured.capture.body);
+    };
+    const missing = await read();
+    target = { ...profile, visibility: "community" };
+    assert.deepEqual(await read(), missing);
+    assert.deepEqual(missing, { data: { handle: "alice", status: "unknown" } });
+});
+
+test("availability authenticates before resolving a requested profile", async () => {
+    const route = createAvailabilityRoutes(
+        {
+            getProfileByHandle: async () =>
+                assert.fail("Unauthenticated lookup"),
+        } as any,
+        new VolatileUserPreferenceStore(),
+        async () => null,
+        { requireAuth: () => null } as any,
+    );
+    const captured = responseCapture();
+    assert.equal(
+        await route(
+            request("GET"),
+            captured.response,
+            new URL("http://localhost/api/v1/social/availability/alice"),
+        ),
+        true,
+    );
 });

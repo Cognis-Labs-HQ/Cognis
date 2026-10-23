@@ -1,4 +1,5 @@
-import { readJson } from "../../../../../gateways/shared.js";
+import { readJson } from "../../../../../api/reuse/read-json.js";
+import { boundedVaultBytes, MAX_VAULT_BYTES } from "../../limits.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { KeyringVaultStore } from "../../store.js";
 
@@ -15,8 +16,6 @@ export type KeyringRouteHandler = (
     res: ServerResponse,
     url: URL,
 ) => Promise<boolean>;
-
-const DEFAULT_MAX_VAULT_BYTES = 2 * 1024 * 1024;
 
 function validVault(value: unknown): value is Record<string, unknown> {
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -52,14 +51,40 @@ export function createKeyringRoutes(input: {
         const claims = input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub.trim().toLowerCase();
+        const maxVaultBytes = boundedVaultBytes(
+            input.getPolicy?.().maxVaultBytes,
+        );
+        const rejectSize = (maxBytes = maxVaultBytes) => {
+            input.log?.(
+                "warn",
+                "Keyring vault exceeds its bounded JSON budget.",
+                {
+                    component: "auth-keyring-adapter",
+                    operation: "vault_size",
+                    accountId,
+                    maxVaultBytes: maxBytes,
+                },
+            );
+            res.writeHead(413, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "keyring_too_large" } }));
+            return true;
+        };
         const accountInstanceId = await input.getAccountInstanceId(accountId);
 
         if (req.method === "GET") {
             const stored = await input.store.get(accountId);
+            if (stored && Buffer.byteLength(stored, "utf8") > MAX_VAULT_BYTES)
+                return rejectSize(MAX_VAULT_BYTES);
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;
-            } catch {
+            } catch (error) {
+                input.log?.("error", "Stored keyring vault is invalid.", {
+                    component: "auth-keyring-adapter",
+                    operation: "read_vault",
+                    accountId,
+                    errorName: error instanceof Error ? error.name : "Unknown",
+                });
                 vault = null;
             }
             if (vault?.accountInstanceId !== accountInstanceId) {
@@ -79,7 +104,7 @@ export function createKeyringRoutes(input: {
                     data: {
                         vault,
                         accountInstanceId,
-                        policy: input.getPolicy?.(),
+                        policy: { ...input.getPolicy?.(), maxVaultBytes },
                     },
                 }),
             );
@@ -87,8 +112,30 @@ export function createKeyringRoutes(input: {
         }
 
         if (req.method === "PUT") {
-            const body = await readJson(req);
-            if (!validVault(body.vault)) {
+            let body: Record<string, unknown>;
+            try {
+                body = await readJson(req, { maxBytes: maxVaultBytes + 1024 });
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "request_body_too_large"
+                )
+                    return rejectSize();
+                input.log?.("warn", "Invalid keyring request JSON.", {
+                    component: "auth-keyring-adapter",
+                    operation: "write_vault",
+                    accountId,
+                    errorName: error instanceof Error ? error.name : "Unknown",
+                });
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "invalid_keyring_vault" },
+                    }),
+                );
+                return true;
+            }
+            if (!body || !validVault(body.vault)) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -107,8 +154,6 @@ export function createKeyringRoutes(input: {
                 return true;
             }
             const serialized = JSON.stringify(body.vault);
-            const maxVaultBytes =
-                input.getPolicy?.().maxVaultBytes ?? DEFAULT_MAX_VAULT_BYTES;
             if (Buffer.byteLength(serialized, "utf8") > maxVaultBytes) {
                 res.writeHead(413, { "content-type": "application/json" });
                 res.end(

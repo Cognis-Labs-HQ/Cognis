@@ -240,3 +240,46 @@ test("gateway bootstrap initializes declared dependencies first", async () => {
         "logging",
     ]);
 });
+
+test("module namespace delegation belongs to active registered gateway owners", () => {
+    const registry = new GatewayRegistry();
+    const request = {
+        moduleId: "notes-addon",
+        kind: "apiRoute" as const,
+        id: "/api/v1/notes/addons/example",
+    };
+    assert.equal(registry.allowsModuleNamespace(request), false);
+    assert.throws(
+        () => registry.registerModuleNamespacePolicy("notes", () => true),
+        /gateway_not_registered/,
+    );
+    registry.register({ id: "notes", name: "Notes", version: "1.0.0" });
+    const first = registry.registerModuleNamespacePolicy(
+        "notes",
+        ({ moduleId, kind, id }) =>
+            moduleId === "notes-addon" &&
+            kind === "apiRoute" &&
+            id.startsWith("/api/v1/notes/addons/"),
+    );
+    assert.equal(registry.allowsModuleNamespace(request), true);
+    assert.equal(registry.allowsModuleNamespace(request, "meetings"), false);
+    assert.equal(
+        registry.allowsModuleNamespace({
+            ...request,
+            id: "/api/v1/auth/login",
+        }),
+        false,
+    );
+    registry.disable("notes");
+    assert.equal(registry.allowsModuleNamespace(request), false);
+    registry.enable("notes");
+    assert.equal(registry.allowsModuleNamespace(request), true);
+    const replacement = registry.registerModuleNamespacePolicy(
+        "notes",
+        () => true,
+    );
+    first();
+    assert.equal(registry.allowsModuleNamespace(request), true);
+    replacement();
+    assert.equal(registry.allowsModuleNamespace(request), false);
+});

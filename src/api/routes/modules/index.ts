@@ -52,6 +52,7 @@ export class ModuleEnableValidationError extends Error {
 
 const PUBLIC_INSTALL_ERROR_CODES = new Set([
     "github_connection_timeout",
+    "module_install_timeout",
     "invalid_module_asset_convention",
     "invalid_module_asset_path",
     "invalid_module_branch",
@@ -470,15 +471,31 @@ export function createModuleRoutes(
                 sendRestartRequired(res);
                 return true;
             }
-            const installedModule = (await moduleService.list()).find(
+            const installedModules = await moduleService.list();
+            const installedModule = installedModules.find(
                 (entry) => entry.uuid === requestedModule.uuid,
             );
-            const collidingModule = (await moduleService.list()).find(
+            const collidingModule = installedModules.find(
                 (entry) =>
                     entry.id === (body.module as { id?: string }).id &&
                     entry.uuid !== requestedModule.uuid,
             );
             if (collidingModule) {
+                const conflict = {
+                    moduleId: collidingModule.id,
+                    installedModuleUuid: collidingModule.uuid,
+                    requestedModuleUuid: requestedModule.uuid,
+                };
+                hooks?.log?.(
+                    "error",
+                    "Module installation rejected due to an ID conflict.",
+                    {
+                        ...logMeta,
+                        operation: "install_module",
+                        accountId: claims.sub,
+                        ...conflict,
+                    },
+                );
                 res.writeHead(409, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -486,6 +503,7 @@ export function createModuleRoutes(
                             code: "module_id_conflict",
                             message:
                                 "A different module already uses this module ID.",
+                            conflict,
                         },
                     }),
                 );
@@ -554,9 +572,6 @@ export function createModuleRoutes(
                             accountId: claims.sub,
                             moduleUuid: requestedModule.uuid,
                             ...(code ? { code } : {}),
-                            ...(code === "github_connection_timeout"
-                                ? { knownCause: "container_network_mtu" }
-                                : {}),
                             error: internalMessage,
                         },
                     );

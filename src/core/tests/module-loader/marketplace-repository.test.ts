@@ -8,6 +8,20 @@ import type { ModuleSource } from "../../services/module-loader/marketplace/inde
 import type { ModuleManifest } from "../../contracts/module-manifest.js";
 
 class TestMarketplaceRepository extends MarketplaceRepository {
+    cacheAsset(
+        source: ModuleSource,
+        assetPath: string,
+        headers: Record<string, string> = {},
+    ): Promise<string | undefined> {
+        return this.cacheRepositoryAsset(
+            source,
+            "example/notes",
+            "feature/artwork",
+            assetPath,
+            headers,
+        );
+    }
+
     parse(raw: string): ModuleManifest {
         return this.parseManifest(raw);
     }
@@ -18,7 +32,7 @@ class TestMarketplaceRepository extends MarketplaceRepository {
         reference: string,
         assetPath: string,
     ): Promise<string | undefined> {
-        return this.cacheRepositoryStringAsset(
+        return this.cacheRepositoryAsset(
             source,
             projectPath,
             reference,
@@ -117,3 +131,107 @@ test("public GitHub strings use the raw content endpoint", async () => {
         await rm(root, { recursive: true, force: true });
     }
 });
+
+const githubSource: ModuleSource = {
+    uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
+    name: "Modules",
+    provider: "github",
+    namespace: "example",
+    baseUrl: "https://api.github.com",
+};
+
+for (const privateRepository of [false, true]) {
+    test(`large GitHub artwork is cached from raw bytes (private: ${privateRepository})`, async (context) => {
+        const root = await mkdtemp(path.join(os.tmpdir(), "cognis-artwork-"));
+        context.after(() => rm(root, { recursive: true, force: true }));
+        const repository = new TestMarketplaceRepository("sources.json", root);
+        const body = Buffer.alloc(1300000, 42);
+        context.mock.method(globalThis, "fetch", async (input, init) => {
+            const url = String(input);
+            if (privateRepository) {
+                const endpoint = new URL(url);
+                assert.equal(endpoint.origin, "https://api.github.com");
+                assert.equal(
+                    endpoint.pathname,
+                    "/repos/example/notes/contents/assets/banner.png",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("authorization"),
+                    "Bearer test-token",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("accept"),
+                    "application/vnd.github.raw+json",
+                );
+            } else {
+                assert.equal(
+                    url,
+                    "https://raw.githubusercontent.com/example/notes/feature%2Fartwork/assets/banner.png",
+                );
+                assert.equal(
+                    new Headers(init?.headers).get("authorization"),
+                    null,
+                );
+            }
+            return new Response(body, {
+                headers: { "content-type": "application/octet-stream" },
+            });
+        });
+        const assetId = await repository.cacheAsset(
+            { ...githubSource, scanPrivateRepos: privateRepository },
+            "assets/banner.png",
+            {
+                Authorization: "Bearer test-token",
+                accept: "application/vnd.github+json",
+            },
+        );
+        assert.match(assetId ?? "", /^[a-f0-9]{64}$/);
+        assert.deepEqual(
+            await readFile(path.join(root, ".cache/assets", assetId!)),
+            body,
+        );
+        assert.deepEqual(
+            JSON.parse(
+                await readFile(
+                    path.join(root, ".cache/assets", `${assetId}.json`),
+                    "utf8",
+                ),
+            ),
+            { contentType: "image/png" },
+        );
+    });
+}
+
+for (const failure of ["http", "empty", "size", "network"] as const) {
+    test(`asset retrieval reports ${failure} failures without caching invalid content`, async (context) => {
+        const logs: Array<Record<string, unknown>> = [];
+        const repository = new TestMarketplaceRepository(
+            "sources.json",
+            "/unused",
+            (_level, _message, metadata) => logs.push(metadata ?? {}),
+        );
+        context.mock.method(globalThis, "fetch", async () => {
+            if (failure === "network") throw new Error("network_unreachable");
+            if (failure === "http") return new Response("", { status: 404 });
+            if (failure === "size")
+                return new Response(Buffer.alloc(10 * 1024 * 1024 + 1));
+            return new Response("");
+        });
+        assert.equal(
+            await repository.cacheAsset(githubSource, "assets/banner.png"),
+            undefined,
+        );
+        assert.equal(logs.length, 1);
+        assert.equal(logs[0].assetPath, "assets/banner.png");
+        assert.equal(
+            logs[0].reason,
+            {
+                http: "asset_http_error",
+                empty: "asset_empty",
+                size: "asset_too_large",
+                network: "network_unreachable",
+            }[failure],
+        );
+        if (failure === "http") assert.equal(logs[0].status, 404);
+    });
+}

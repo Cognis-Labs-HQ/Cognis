@@ -4,7 +4,8 @@
  * - createI18n(options)              — loads locale strings for the user's preferred language(s)
  *                                      and returns a `{ t(key) }` resolver.
  *                                      Pass `componentStringBaseUrls` to merge additional per-component
- *                                      strings alongside the core locale file.
+ *                                      strings alongside the core locale file. Missing or empty
+ *                                      locale values fall back to English XML; unresolved keys throw.
  * - extendI18n(baseI18n, stringsBaseUrl) — returns a new resolver with core strings from
  *                                          `baseI18n` merged with component strings from `stringsBaseUrl`.
  * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
@@ -248,72 +249,92 @@ function parseStringsXml(xmlText) {
     return map;
 }
 
+async function readTranslationBundle(path) {
+    const response = await fetchStrings(path);
+    if (!response.ok) {
+        throw Object.assign(new Error("translation_bundle_unavailable"), {
+            status: response.status,
+        });
+    }
+    return parseStringsXml(await response.text());
+}
+
 async function loadLocaleStrings(locale) {
     const normalized = normalizeLocale(locale);
     if (cache.has(normalized)) return cache.get(normalized);
 
-    const response = await fetchStrings(
+    const parsed = await readTranslationBundle(
         `${STRINGS_BASE_PATH}/${normalized}/strings.xml`,
     );
-    if (!response.ok) {
-        const error = new Error(
-            `Unable to load strings for locale: ${normalized}`,
-        );
-        error.status = response.status;
-        throw error;
-    }
-    const parsed = parseStringsXml(await response.text());
     cache.set(normalized, parsed);
     return parsed;
 }
 
-async function loadModuleStrings(activeLocale, moduleIds) {
-    const collected = new Map();
-    if (!Array.isArray(moduleIds) || !moduleIds.length) return collected;
-
-    await Promise.all(
-        moduleIds.map(async (moduleId) => {
+async function loadLocalizedStrings(activeLocale, pathForLocale) {
+    const locales = [...new Set([DEFAULT_LOCALE, activeLocale])];
+    const bundles = await Promise.all(
+        locales.map(async (locale) => {
+            const path = pathForLocale(locale);
             try {
-                const response = await fetchStrings(
-                    `/modules/${encodeURIComponent(moduleId)}/strings/${activeLocale}.xml`,
-                );
-                if (!response.ok) return;
-                const parsed = parseStringsXml(await response.text());
-                parsed.forEach((value, key) => {
-                    if (!key.startsWith(`module.${moduleId}.`)) return;
-                    collected.set(key, value);
+                return await readTranslationBundle(path);
+            } catch (error) {
+                console.error("[i18n] translation_bundle_load_failed", {
+                    component: "core",
+                    operation: "loadTranslationBundle",
+                    locale,
+                    path,
+                    status: error?.status,
+                    errorName: error?.name,
                 });
-            } catch {}
+                return new Map();
+            }
         }),
     );
-
+    const collected = new Map();
+    for (const bundle of bundles) {
+        for (const [key, value] of bundle) {
+            if (value.trim()) collected.set(key, value);
+        }
+    }
     return collected;
 }
 
-async function loadComponentStrings(activeLocale, baseUrls) {
-    const collected = new Map();
-    if (!Array.isArray(baseUrls) || !baseUrls.length) return collected;
-
-    await Promise.all(
-        baseUrls.map(async (baseUrl) => {
-            try {
-                let response = await fetchStrings(
-                    `${baseUrl}/${activeLocale}/strings.xml`,
-                );
-                if (!response.ok && activeLocale !== DEFAULT_LOCALE) {
-                    response = await fetchStrings(
-                        `${baseUrl}/${DEFAULT_LOCALE}/strings.xml`,
-                    );
-                }
-                if (!response.ok) return;
-                parseStringsXml(await response.text()).forEach((value, key) => {
-                    collected.set(key, value);
-                });
-            } catch {}
+async function loadModuleStrings(activeLocale, moduleIds) {
+    if (!Array.isArray(moduleIds)) return new Map();
+    const bundles = await Promise.all(
+        moduleIds.map(async (moduleId) => {
+            const strings = await loadLocalizedStrings(
+                activeLocale,
+                (locale) =>
+                    `/modules/${encodeURIComponent(moduleId)}/strings/${locale}.xml`,
+            );
+            return [...strings].filter(([key]) =>
+                key.startsWith(`module.${moduleId}.`),
+            );
         }),
     );
+    return new Map(bundles.flat());
+}
 
-    return collected;
+async function loadComponentStrings(activeLocale, baseUrls) {
+    if (!Array.isArray(baseUrls)) return new Map();
+    const bundles = await Promise.all(
+        baseUrls.map((baseUrl) =>
+            loadLocalizedStrings(
+                activeLocale,
+                (locale) => `${baseUrl}/${locale}/strings.xml`,
+            ),
+        ),
+    );
+    return new Map(bundles.flatMap((bundle) => [...bundle]));
+}
+
+function requireTranslation(value, key) {
+    if (typeof value === "string" && value.trim()) return value;
+    throw Object.assign(new Error(`missing_translation:${key}`), {
+        code: "missing_translation",
+        key,
+    });
 }
 
 export async function createI18n(options = {}) {
@@ -335,15 +356,26 @@ export async function createI18n(options = {}) {
     let activeLocale = DEFAULT_LOCALE;
     let strings = new Map();
 
-    for (const locale of normalizedPriority) {
+    const resolutionLocales = [
+        ...new Set([...normalizedPriority, DEFAULT_LOCALE]),
+    ];
+    for (const locale of resolutionLocales) {
         try {
             const part = await loadLocaleStrings(locale);
             loadedLocales.add(locale);
             if (loadedLocales.size === 1) activeLocale = locale;
             part.forEach((value, key) => {
-                if (!strings.has(key)) strings.set(key, value);
+                if (!strings.get(key)?.trim() && value.trim())
+                    strings.set(key, value);
             });
         } catch (error) {
+            console.error("[i18n] translation_bundle_load_failed", {
+                component: "core",
+                operation: "loadCoreTranslationBundle",
+                locale,
+                status: error?.status,
+                errorName: error?.name,
+            });
             if (error?.status === 404) unsupportedLocales.add(locale);
         }
     }
@@ -379,7 +411,7 @@ export async function createI18n(options = {}) {
         locale: activeLocale,
         t(key) {
             const value = strings.get(key);
-            return typeof value === "string" && value.trim() ? value : "";
+            return requireTranslation(value, key);
         },
     };
 }
@@ -419,15 +451,14 @@ export function applyStaticTranslations(i18n, root = document) {
  * component-specific strings loaded from `stringsBaseUrl` taking precedence.
  * Component strings are kept in a separate map; base strings are accessed via
  * `baseI18n.t()` at lookup time. Falls back to the English file when the
- * locale-specific component file is missing.
+ * preferred-locale key is absent or empty. Missing English fallback keys throw
+ * `missing_translation:<key>`; extending a resolver does not change language preferences.
  *
  * @param {{ locale: string, t: Function }} baseI18n
  * @param {string|string[]|null|undefined} stringsBaseUrl - Base URL or URLs for component strings
  * @returns {Promise<{ locale: string, t: Function }>}
  */
 export async function extendI18n(baseI18n, stringsBaseUrl) {
-    if (!stringsBaseUrl) return baseI18n;
-
     const baseUrls = Array.isArray(stringsBaseUrl)
         ? stringsBaseUrl.filter(
               (entry) => typeof entry === "string" && entry.length > 0,
@@ -435,17 +466,14 @@ export async function extendI18n(baseI18n, stringsBaseUrl) {
         : typeof stringsBaseUrl === "string" && stringsBaseUrl.length > 0
           ? [stringsBaseUrl]
           : [];
-    if (baseUrls.length === 0) return baseI18n;
     const extra = await loadComponentStrings(baseI18n.locale, baseUrls);
-    const merged = new Map();
-
-    extra.forEach((value, key) => merged.set(key, value));
-
     return {
         locale: baseI18n.locale,
         t(key) {
-            if (merged.has(key)) return merged.get(key);
-            return baseI18n.t(key);
+            return requireTranslation(
+                extra.has(key) ? extra.get(key) : baseI18n.t(key),
+                key,
+            );
         },
     };
 }

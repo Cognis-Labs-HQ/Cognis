@@ -1,5 +1,9 @@
 # Benutzerschlüsselbund-Adapter
 
+PUT-Anfragen für Tresore verwenden den gemeinsamen JSON-Datenstromleser der API mit dem wirksamen Tresorbudget und 1 KiB zusätzlichem Platz für den Umschlag. Richtlinie, 413-Fehler und Prüfung der serialisierten Daten bleiben im Adapter; eine zweite Pufferimplementierung entfällt.
+
+Die Standardgrenze für Tresore beträgt 2 MiB, die absolute Verarbeitungsgrenze 8 MiB. Die wirksame Richtlinie wird an Clients zurückgegeben. PUT zählt eingehende Bytes vor dem Puffern oder Parsen und weist übergroße Anfragen zurück; GET prüft die gespeicherte Größe vor dem Parsen. Verschlüsselte Umschläge verwenden eine Basiszeile und begrenzte Folgezeilen mit atomarem Ersetzen und Löschen sowie einer gemeinsamen Leseabfrage. Jeder Abschnitt umfasst höchstens 60.000 UTF-8-Bytes; der Server entschlüsselt weiterhin keine Geheimnisse.
+
 ## Überblick
 
 Der Benutzerschlüsselbund-Adapter speichert undurchsichtige, im Browser verschlüsselte Tresore für authentifizierte Konten. Er ist ein erforderlicher Authentifizierungsadapter, damit Passwörter, Verschlüsselungsschlüssel und andere benutzerspezifische Geheimnisse unabhängig vom aktiven Anmeldeanbieter über eine stabile Fähigkeit verfügbar sind.
@@ -20,7 +24,7 @@ Nicht verantwortlich für: Benutzeranmeldung, Schlüsselableitung oder Interpret
 
 ## Konfiguration
 
-Der erforderliche Adapter verwendet den aktiven `db:executor`. Administratoren konfigurieren die maximale Größe des verschlüsselten Tresors in MiB und die Iterationszahl der Passwortableitung über die Adaptereinstellungen. Bestehende Tresore behalten ihre gespeicherte Ableitungszahl; der konfigurierte Wert gilt beim Erstellen eines Tresors.
+Der erforderliche Adapter verwendet den aktiven `db:executor`. Administratoren konfigurieren die maximale Größe des verschlüsselten Tresors in MiB und die Iterationszahl der Passwortableitung über die Adaptereinstellungen. Bestehende Tresore behalten ihre gespeicherte Ableitungszahl; der konfigurierte Wert gilt beim Erstellen eines Tresors. Die Standardkapazität des verschlüsselten Tresors beträgt 2 MiB.
 
 ## API-Routen
 
@@ -59,3 +63,7 @@ Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartend
 ## Zerstörendes Zurücksetzen
 
 `DELETE /api/v1/auth/keyring` ist der Vertrag zum zerstörenden Zurücksetzen. Vor dem Löschen des undurchsichtigen Tresors ruft Authentication alle über `auth:registerKeyringDataOwner` registrierten Besitzer auf, entfernt das Konto ausschließlich aus verschlüsselten Räumen und anderen von Schlüsselbundeinträgen abhängigen Objekten. Kontoinstanz, Profil, Follower-Beziehungen und nicht abhängige Kontodaten bleiben unverändert. Die gesperrte Einstellungsaktion verwendet diese Route und ersetzt danach alle Schlüsselbundsteuerelemente durch den Hinweis „Kein Schlüsselbund gefunden“ mit einer einzigen Erstellen-Aktion. Bei der Erstellung werden Passwortbestätigung und automatische Sperrfrist abgefragt. Im entsperrten Zustand werden weiterhin nur die Einträge des aktuellen Tresors entfernt.
+
+## Aktivitätswachstum begrenzen
+
+Der verschlüsselte Tresor behält höchstens 1.000 aktuelle Aktivitäten innerhalb von 64 KiB. Geheimnisse werden dafür niemals entfernt. Wiederholte Lesezugriffe teilen einen laufenden Speichervorgang. Authentifizierte GET-Anfragen können bestehende Tresore bis zur festen Grenze von 8 MiB lesen, damit der Client den Verlauf kürzen kann, auch bei einem niedrigeren Schreiblimit. PUT erzwingt weiterhin das konfigurierte Limit. Fehler bei der Hintergrundsynchronisierung zeigen eine Fehlermeldung; die verschlüsselte lokale Kopie bleibt erhalten.

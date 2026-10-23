@@ -1,3 +1,4 @@
+import { boundedVaultBytes, DEFAULT_MAX_VAULT_BYTES } from "./limits.js";
 import type { CapabilityStore } from "../../../gateways/shared.js";
 import path from "node:path";
 import {
@@ -14,7 +15,7 @@ import type { FlowApi } from "@cognis/core";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
-const DEFAULT_MAX_VAULT_MIB = 2;
+const DEFAULT_MAX_VAULT_MIB = DEFAULT_MAX_VAULT_BYTES / (1024 * 1024);
 const DEFAULT_DERIVATION_ITERATIONS = 310_000;
 const keyringConfig = {
     maxVaultMiB: DEFAULT_MAX_VAULT_MIB,
@@ -30,7 +31,9 @@ function positiveNumber(value: unknown, fallback: number): number {
 
 function getKeyringPolicy() {
     return {
-        maxVaultBytes: Math.floor(keyringConfig.maxVaultMiB * 1024 * 1024),
+        maxVaultBytes: boundedVaultBytes(
+            keyringConfig.maxVaultMiB * 1024 * 1024,
+        ),
         derivationIterations: Math.floor(keyringConfig.derivationIterations),
     };
 }

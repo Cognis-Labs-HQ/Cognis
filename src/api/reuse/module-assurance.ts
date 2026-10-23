@@ -1,3 +1,4 @@
+import type { ModuleNamespacePolicy } from "@cognis/core";
 import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -60,12 +61,15 @@ export function assertModuleOwnedRoute(
     routePath: string,
     moduleId: string,
     privilege: ModulePrivilege,
+    authorizeNamespace?: ModuleNamespacePolicy,
 ): void {
     const ownedPrefix = `/api/v1/modules/${moduleId}`;
     if (
         !privilege.requested &&
         routePath !== ownedPrefix &&
-        !routePath.startsWith(`${ownedPrefix}/`)
+        !routePath.startsWith(`${ownedPrefix}/`) &&
+        authorizeNamespace?.({ moduleId, kind: "apiRoute", id: routePath }) !==
+            true
     ) {
         throw new Error("module_privileged_access_required");
     }
@@ -75,8 +79,17 @@ export function assertModuleOwnedCtxRegistration(
     registrationId: string,
     moduleId: string,
     privilege: ModulePrivilege,
+    authorizeNamespace?: ModuleNamespacePolicy,
 ): void {
-    if (!privilege.requested && !registrationId.startsWith(`${moduleId}:`)) {
+    if (
+        !privilege.requested &&
+        !registrationId.startsWith(`${moduleId}:`) &&
+        authorizeNamespace?.({
+            moduleId,
+            kind: "ctxRegistration",
+            id: registrationId,
+        }) !== true
+    ) {
         throw new Error("module_privileged_access_required");
     }
 }

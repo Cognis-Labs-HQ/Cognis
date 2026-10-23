@@ -47,7 +47,7 @@ test("messages asset registrations do not use query-string versioning", () => {
 
 test("meeting-linked chat reuse does not rename existing group chats", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        resolve(ROOT, "src/adapters/social/messages/group-chat-resolution.ts"),
         "utf8",
     );
 
@@ -57,13 +57,10 @@ test("meeting-linked chat reuse does not rename existing group chats", () => {
 
 test("meeting-linked chats record every resolved participant joining", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        resolve(ROOT, "src/adapters/social/messages/group-chat-resolution.ts"),
         "utf8",
     );
-    const groupChatCapability =
-        source.match(
-            /social:messages:resolveGroupChatUrl[\s\S]*?social:messages:uiResources/,
-        )?.[0] ?? "";
+    const groupChatCapability = source;
 
     assert.match(groupChatCapability, /for \(const accountId of accountIds\)/);
     assert.match(groupChatCapability, /membership\.add\(\{/);

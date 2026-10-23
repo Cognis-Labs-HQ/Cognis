@@ -71,7 +71,7 @@
     background: currentColor;
     content: "";
     mask: center / contain no-repeat
-        url("../../public/assets/reuse/icons/toolbar-close.svg");
+        url("/static/assets/reuse/icons/toolbar-close.svg");
 }
 
 .floating-window-resize-handle {

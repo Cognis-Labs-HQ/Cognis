@@ -12,6 +12,8 @@
  *     reuse modules) with a network-first strategy so clients always execute
  *     the latest code after a deployment; the cached copy is only used when
  *     the network is unavailable;
+ *   - fetches external module assets from the network without caching, because
+ *     modules update independently of the host release;
  *   - never intercepts /api/* requests — those always go to the network so the
  *     user sees an authentic failure rather than stale data.
  *
@@ -19,7 +21,7 @@
  * asset list so existing clients pick up the new worker on next visit.
  */
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5";
 const SHELL_CACHE = `cognis-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `cognis-assets-${CACHE_VERSION}`;
 const APP_CACHE = `cognis-app-${CACHE_VERSION}`;
@@ -157,6 +159,11 @@ self.addEventListener("fetch", (event) => {
     if (url.origin !== self.location.origin) return;
 
     if (url.pathname.startsWith("/api/")) return;
+
+    if (url.pathname.startsWith("/static/modules/")) {
+        event.respondWith(fetch(request, { cache: "no-store" }));
+        return;
+    }
 
     if (isNavigationRequest(request)) {
         event.respondWith(networkFirstShell(request));

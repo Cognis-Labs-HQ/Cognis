@@ -1,3 +1,4 @@
+import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { AccountInstanceStore } from "../account-instance-store.js";
@@ -211,8 +212,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "auth:registerKeyringDataOwner",
         (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            if (keyringDataOwners.has(ownerId))
+                throw new Error("keyring_data_owner_conflict");
             keyringDataOwners.set(ownerId, purge);
+            return () => {
+                if (keyringDataOwners.get(ownerId) === purge)
+                    keyringDataOwners.delete(ownerId);
+            };
         },
+    );
+    const systemCtx = ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
+    systemCtx?.contributePublicCapability(
+        "auth:registerKeyringDataOwner",
+        ctx.capabilities.get("auth:registerKeyringDataOwner"),
     );
     ctx.capabilities.contribute(
         "auth:purgeKeyringDependentData",

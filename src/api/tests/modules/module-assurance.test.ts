@@ -65,6 +65,53 @@ test("privileged modules may request host namespace integrations", () => {
     );
 });
 
+test("module namespace integration requires an explicit host-owner grant", () => {
+    const grant = ({
+        moduleId,
+        kind,
+        id,
+    }: import("@cognis/core").ModuleNamespaceRequest) =>
+        moduleId === "notes-addon" &&
+        (kind === "apiRoute"
+            ? id === "/api/v1/notes/addon"
+            : id === "notes:addon");
+    assert.throws(
+        () =>
+            assertModuleOwnedRoute(
+                "/api/v1/notes/addon",
+                "notes-addon",
+                unprivileged,
+            ),
+        /module_privileged_access_required/,
+    );
+    assert.doesNotThrow(() =>
+        assertModuleOwnedRoute(
+            "/api/v1/notes/addon",
+            "notes-addon",
+            unprivileged,
+            grant,
+        ),
+    );
+    assert.doesNotThrow(() =>
+        assertModuleOwnedCtxRegistration(
+            "notes:addon",
+            "notes-addon",
+            unprivileged,
+            grant,
+        ),
+    );
+    assert.throws(
+        () =>
+            assertModuleOwnedCtxRegistration(
+                "notes:other",
+                "notes-addon",
+                unprivileged,
+                grant,
+            ),
+        /module_privileged_access_required/,
+    );
+});
+
 test("module assurance does not verify an incomplete runtime inventory", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-assurance-"));
     try {

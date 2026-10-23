@@ -101,6 +101,20 @@ test("dashboard keeps shared control styles across SPA navigations", () => {
     assert.match(layoutSource, /ensurePersistentStylesheet\(SEARCH_BAR_CSS\)/);
 });
 
+test("sub-navigation collapse uses header-height hysteresis", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /currentlyPrioritized/);
+    assert.match(layoutSource, /primaryNavigationHeight \+ 12/);
+    assert.match(
+        layoutSource,
+        /currentlyPrioritized[\s\S]*window\.scrollY > 12/,
+    );
+});
+
 test("global search toggle uses theme-specific SVG assets", () => {
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
@@ -267,8 +281,6 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
         "core.changelogs",
         "core.license",
         "core.error",
-        "gateway.study",
-        "gateway.study.child",
     ]) {
         assert.match(
             routerSource,
@@ -278,6 +290,12 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
     assert.match(routerSource, /ownerUuid: CORE_COMPONENT_UUID/);
     assert.match(routerSource, /componentPage: componentPage/);
     assert.match(routerSource, /installComponentPageBroker\(\{/);
+    const studyBootstrapSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/bootstrap.ts"),
+        "utf8",
+    );
+    assert.match(studyBootstrapSource, /id: "gateway\.study"/);
+    assert.match(studyBootstrapSource, /id: "gateway\.study\.child"/);
 });
 
 test("profile dropdown opens on hover or click and closes only on click away", () => {

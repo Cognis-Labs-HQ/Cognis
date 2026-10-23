@@ -56,6 +56,12 @@ export interface ModuleManifest {
             /** Prevents enablement until the module-owned config supplies a value. */
             required?: boolean;
         }>;
+        configActions?: Array<{
+            id: string;
+            labelKey: string;
+            result: "options" | "audio";
+            fieldKey?: string;
+        }>;
         stringsBaseUrl?: string;
         /** Localized next steps shown after the module is enabled. */
         activationGuidance?: {

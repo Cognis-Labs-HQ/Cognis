@@ -16,6 +16,23 @@ const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
     owner: 5,
 };
 
+/** Neutral, immutable identity advertised by an external language package. */
+export interface LanguagePackageDescriptor {
+    readonly id: string;
+    readonly publisher: string;
+    readonly namespace: string;
+    readonly version: string;
+    readonly contentRevision: string;
+    readonly license: {
+        readonly id: string;
+        readonly url?: string;
+        readonly attribution?: string;
+    };
+    readonly schema: string;
+    readonly content: string;
+    readonly assets?: string;
+}
+
 /**
  * A single study activity or tool for a language, registered by its parent
  * language module. The UI builds a sub-navigation menu from these descriptors.
@@ -50,6 +67,8 @@ export interface LanguageModule {
     readonly languageFlag: string;
     /** Semver version of this module. */
     readonly version: string;
+    /** Immutable package identity when the module installs declarative data. */
+    readonly package?: LanguagePackageDescriptor;
     listChildComponents(): LanguageChildComponent[];
 }
 
@@ -85,9 +104,11 @@ export interface LanguageModuleBootstrapCtx {
 export interface StudyAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
+    readonly uuid?: string;
     readonly version?: string;
     readonly publisher?: string;
     readonly requires?: string[];
+    readonly requiresCapabilities?: string[];
     /**
      * Returns adapter-specific config fields only. The gateway reserves the
      * `enabled` key for Administration runtime toggle state and injects it when
@@ -106,11 +127,13 @@ export interface StudyAdapter {
 
 export interface StudyAdapterInfo {
     id: string;
+    uuid?: string;
     name: string;
     version?: string;
     publisher?: string;
     active: boolean;
     requires?: string[];
+    requiresCapabilities?: string[];
 }
 
 /**
@@ -139,12 +162,19 @@ export interface StudyAdapterBootstrapCtx {
         absoluteDir: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
+    registerCapabilityProvider(provider: {
+        scriptUrl: string;
+        providesCapabilities: string[];
+        isEnabled?: () => boolean;
+    }): void;
     registerSpaRoute?(route: {
         id: string;
         pattern: string;
         base: string;
         scriptUrl: string;
         stylesheets?: string[];
+        requiredCapabilities?: string[];
+        navigationLabels?: Record<string, string>;
         isEnabled?: () => boolean;
     }): void;
     registerPageExtension(
@@ -157,6 +187,7 @@ export interface StudyAdapterBootstrapCtx {
         },
     ): void;
     isAdapterEnabled(adapterId?: string): boolean;
+    onAvailabilityChange(listener: (enabled: boolean) => void): () => void;
     log?(
         level: string,
         message: string,
@@ -164,14 +195,44 @@ export interface StudyAdapterBootstrapCtx {
     ): void | Promise<void>;
 }
 
+/** Caller-neutral access check supplied by the Classes adapter. */
+export interface StudyClassAccessCapability {
+    canRead(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
+    canWrite(
+        classId: string,
+        accountId: string,
+        role: AccessRole,
+    ): Promise<boolean>;
+    listReadable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
+    listWritable?(
+        accountId: string,
+        role: AccessRole,
+        language?: string,
+    ): Promise<string[]>;
+}
+
 type StudyBootstrapBaseCtx = Omit<
     StudyAdapterBootstrapCtx,
-    "adapterId" | "adapterRoot" | "isAdapterEnabled"
+    "adapterId" | "adapterRoot" | "isAdapterEnabled" | "onAvailabilityChange"
 >;
 
 export class CoreStudyGateway {
     private readonly registeredAdapters = new Map<string, StudyAdapter>();
     private readonly disabledAdapters = new Set<string>();
+    private readonly availabilityListeners = new Set<{
+        adapterId: string;
+        enabled: boolean;
+        listener: (enabled: boolean) => void;
+    }>();
+
     private readonly registeredLanguageModules = new Map<
         string,
         {
@@ -181,6 +242,24 @@ export class CoreStudyGateway {
         }
     >();
     private readonly languageModuleAvailability = new Map<string, boolean>();
+
+    constructor(
+        private readonly dependencyEnabled: (
+            reference: string,
+        ) => boolean = () => false,
+        private readonly capabilityAvailable: (
+            reference: string,
+        ) => boolean = () => false,
+    ) {}
+
+    private refreshAdapterAvailability(): void {
+        for (const state of this.availabilityListeners) {
+            const enabled = this.isAdapterEnabled(state.adapterId);
+            if (enabled === state.enabled) continue;
+            state.listener(enabled);
+            state.enabled = enabled;
+        }
+    }
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
@@ -283,21 +362,41 @@ export class CoreStudyGateway {
             name: adapter.adapterName,
             ...(adapter.version ? { version: adapter.version } : {}),
             ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
-            active:
-                !this.disabledAdapters.has(adapter.adapterId) &&
-                (typeof adapter.isConfigured === "function"
-                    ? adapter.isConfigured()
-                    : true),
+            active: this.isAdapterEnabled(adapter.adapterId),
+            ...(adapter.uuid ? { uuid: adapter.uuid } : {}),
+            ...(adapter.requires?.length
+                ? { requires: [...adapter.requires] }
+                : {}),
+            ...(adapter.requiresCapabilities?.length
+                ? { requiresCapabilities: [...adapter.requiresCapabilities] }
+                : {}),
         }));
     }
 
-    isAdapterEnabled(adapterId: string): boolean {
+    isAdapterEnabled(adapterId: string, visited = new Set<string>()): boolean {
         const adapter = this.registeredAdapters.get(adapterId);
-        if (!adapter || this.disabledAdapters.has(adapterId)) return false;
-        if (typeof adapter.isConfigured === "function") {
-            return adapter.isConfigured();
-        }
-        return true;
+        if (
+            !adapter ||
+            this.disabledAdapters.has(adapterId) ||
+            visited.has(adapterId)
+        )
+            return false;
+        if (adapter.isConfigured && !adapter.isConfigured()) return false;
+        if (
+            !(adapter.requiresCapabilities ?? []).every(
+                this.capabilityAvailable,
+            )
+        )
+            return false;
+        visited.add(adapterId);
+        return (adapter.requires ?? []).every((reference) => {
+            const dependency = [...this.registeredAdapters.values()].find(
+                ({ uuid }) => uuid === reference,
+            );
+            return dependency
+                ? this.isAdapterEnabled(dependency.adapterId, new Set(visited))
+                : this.dependencyEnabled(reference);
+        });
     }
 
     getAdapter(adapterId: string): StudyAdapter | undefined {
@@ -324,6 +423,7 @@ export class CoreStudyGateway {
             this.disabledAdapters.delete(adapterId);
         }
         await Promise.resolve(adapter.setConfig(adapterConfig));
+        this.refreshAdapterAvailability();
     }
 
     /**
@@ -338,6 +438,7 @@ export class CoreStudyGateway {
             throw new Error("not_found");
         }
         this.disabledAdapters.delete(adapterId);
+        this.refreshAdapterAvailability();
     }
 
     /**
@@ -352,6 +453,7 @@ export class CoreStudyGateway {
             throw new Error("not_found");
         }
         this.disabledAdapters.add(adapterId);
+        this.refreshAdapterAvailability();
     }
 
     async discoverAdapters(adaptersRoot: string): Promise<void> {
@@ -378,6 +480,9 @@ export class CoreStudyGateway {
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         publisher?: string;
+                        uuid: string;
+                        requires?: string[];
+                        requiresCapabilities?: string[];
                     };
                     const entryPath = path.resolve(
                         adaptersRoot,
@@ -397,7 +502,15 @@ export class CoreStudyGateway {
                                 publisher: manifest.publisher,
                             });
                         }
-                        if (adapter) this.registerAdapter(adapter);
+                        if (adapter) {
+                            Object.assign(adapter, {
+                                uuid: manifest.uuid,
+                                requires: manifest.requires ?? [],
+                                requiresCapabilities:
+                                    manifest.requiresCapabilities ?? [],
+                            });
+                            this.registerAdapter(adapter);
+                        }
                     }
                 } catch {
                     // Adapter could not be loaded — skip silently.
@@ -417,62 +530,99 @@ export class CoreStudyGateway {
             return;
         }
 
-        await Promise.all(
-            entries.sort().map(async (entry) => {
-                const pkgPath = path.join(adaptersRoot, entry, "package.json");
+        const ordered: string[] = [];
+        const visit = (entry: string, chain = new Set<string>()) => {
+            if (ordered.includes(entry)) return;
+            if (chain.has(entry))
+                throw new Error("study_adapter_dependency_cycle");
+            const adapter = this.registeredAdapters.get(entry);
+            if (!adapter) return;
+            chain.add(entry);
+            for (const reference of adapter.requires ?? []) {
+                const dependency = [...this.registeredAdapters.values()].find(
+                    ({ uuid }) => uuid === reference,
+                );
+                if (dependency) visit(dependency.adapterId, new Set(chain));
+            }
+            ordered.push(entry);
+        };
+        for (const entry of entries.sort()) visit(entry);
+        for (const entry of ordered) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
-                let mod: Record<string, unknown>;
-                try {
-                    const raw = await readFile(pkgPath, "utf8");
-                    const pkg = JSON.parse(raw) as { main?: string };
-                    if (!pkg.main) return;
-                    const entryPath = path.resolve(
-                        adaptersRoot,
-                        entry,
-                        pkg.main,
-                    );
-                    mod = await import(entryPath);
-                } catch {
-                    return;
-                }
-
-                if (typeof mod.bootstrapStudyAdapter !== "function") return;
-
-                const bootstrapFn = mod.bootstrapStudyAdapter as (
-                    ctx: StudyAdapterBootstrapCtx,
-                ) => Promise<void> | void;
-
-                const adapterCtx: StudyAdapterBootstrapCtx = {
-                    ...baseCtx,
-                    adapterId: entry,
-                    adapterRoot: path.join(adaptersRoot, entry),
-                    isAdapterEnabled: (adapterId = entry) =>
-                        this.isAdapterEnabled(adapterId),
-                    registerRoute: (handler, gatewayId) => {
-                        baseCtx.registerRoute(async (req, res, url) => {
-                            if (!this.isAdapterEnabled(entry)) return false;
-                            return handler(req, res, url);
-                        }, gatewayId);
+            let mod: Record<string, unknown>;
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                mod = await import(entryPath);
+            } catch (error) {
+                baseCtx.log?.(
+                    "error",
+                    "Study adapter entrypoint could not be loaded.",
+                    {
+                        component: "study-gateway",
+                        adapter: entry,
+                        errorName:
+                            error instanceof Error ? error.name : "Unknown",
                     },
-                };
+                );
+                continue;
+            }
 
-                try {
-                    await bootstrapFn(adapterCtx);
-                } catch (err) {
-                    baseCtx.log?.(
-                        "error",
-                        `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
-                        {
-                            component: "study-gateway",
-                            adapter: entry,
-                            error:
-                                err instanceof Error
-                                    ? err.message
-                                    : String(err),
-                        },
-                    );
+            if (typeof mod.bootstrapStudyAdapter !== "function") continue;
+
+            const bootstrapFn = mod.bootstrapStudyAdapter as (
+                ctx: StudyAdapterBootstrapCtx,
+            ) => Promise<void> | void;
+
+            const adapterCtx: StudyAdapterBootstrapCtx = {
+                ...baseCtx,
+                adapterId: entry,
+                adapterRoot: path.join(adaptersRoot, entry),
+                onAvailabilityChange: (listener) => {
+                    const state = {
+                        adapterId: entry,
+                        enabled: this.isAdapterEnabled(entry),
+                        listener,
+                    };
+                    listener(state.enabled);
+                    this.availabilityListeners.add(state);
+                    return () => {
+                        this.availabilityListeners.delete(state);
+                    };
+                },
+                isAdapterEnabled: (adapterId = entry) =>
+                    this.isAdapterEnabled(adapterId),
+                registerRoute: (handler, gatewayId) => {
+                    baseCtx.registerRoute(async (req, res, url) => {
+                        if (!this.isAdapterEnabled(entry)) return false;
+                        return handler(req, res, url);
+                    }, gatewayId);
+                },
+            };
+
+            try {
+                await bootstrapFn(adapterCtx);
+                this.refreshAdapterAvailability();
+            } catch (err) {
+                this.disabledAdapters.add(entry);
+                this.refreshAdapterAvailability();
+                for (const state of this.availabilityListeners) {
+                    if (state.adapterId === entry)
+                        this.availabilityListeners.delete(state);
                 }
-            }),
-        );
+                baseCtx.log?.(
+                    "error",
+                    `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
+                    {
+                        component: "study-gateway",
+                        adapter: entry,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
+            }
+        }
     }
 }

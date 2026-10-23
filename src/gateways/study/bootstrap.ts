@@ -1,3 +1,7 @@
+import { authorizeLanguageModuleNamespace } from "./module-namespaces.js";
+import { createHash } from "node:crypto";
+import { recordStudyResult } from "./progress.js";
+import { StudyAudio } from "./audio.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,12 +11,17 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import type { Ctx } from "@cognis/core";
 import { readJson } from "../../api/reuse/read-json.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
-import {
-    resolveRouteContext,
-    type RouteContext,
-} from "../../api/reuse/route-context.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
+import { StudyFavourites } from "./reuse/favourites.js";
+import { createFavouriteRoutes } from "./reuse/favourite-routes.js";
+import {
+    DRAWING_PROGRESS_FLOWS,
+    DrawingProgressStore,
+} from "./drawing/progress.js";
+import { createDrawingRoutes } from "./drawing/routes/index.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 export type {
@@ -32,9 +41,8 @@ function createStudyAdapterRoutes(
     gateway: CoreStudyGateway,
     gatewayRegistry: GatewayBootstrapContext["gatewayRegistry"],
     isLanguageEnabled: (languageCode: string) => Promise<boolean>,
-    routeContext?: RouteContext,
+    ctx: RouteContext,
 ) {
-    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
     const toggleAdapterRoutePattern = new RegExp(
         `^${base}/([^/]+)/(enable|disable)$`,
@@ -202,14 +210,164 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const routeHelpers = resolveRouteContext(routeContext);
-    const gateway = new CoreStudyGateway();
+    if (!routeContext) throw new Error("auth_route_context_unavailable");
+    const gateway = new CoreStudyGateway(
+        (reference) =>
+            ctx.gatewayRegistry
+                .list()
+                .some(
+                    (dependency) =>
+                        dependency.uuid === reference &&
+                        dependency.status === "active",
+                ),
+        (reference) => ctx.capabilities.has(reference),
+    );
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (!systemCtx)
+        throw new Error("Study requires the platform ctx capability.");
+    if (!systemCtx.hasFlow("study:audio:fetch"))
+        systemCtx?.registerFlow({
+            id: "study:audio:fetch",
+            stages: ["validate", "fetch"],
+        });
+    const audio = new StudyAudio(ctx.flow, ctx.log);
+    ctx.capabilities.contribute("study:audio", audio);
+    systemCtx.contributePublicCapability("study:audio:provider", {
+        registerProvider: audio.registerProvider.bind(audio),
+        registerLanguage: audio.registerLanguage.bind(audio),
+    });
+    const preferences =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    if (preferences) {
+        for (const contract of DRAWING_PROGRESS_FLOWS) {
+            if (!systemCtx.hasFlow(contract.id))
+                systemCtx.registerFlow(contract);
+        }
+        ctx.routeRegistry.register(
+            createDrawingRoutes(
+                new DrawingProgressStore(preferences),
+                routeContext,
+                ctx.flow,
+                ctx.log,
+                (actor, entryId, result) =>
+                    recordStudyResult(ctx.capabilities, actor, {
+                        accountId: actor.accountId,
+                        entryId,
+                        activity: "drawing",
+                        eventId: result.attempt
+                            ? "drawing-" +
+                              createHash("sha256")
+                                  .update(
+                                      JSON.stringify([
+                                          actor.accountId,
+                                          entryId,
+                                          result.attempt.id,
+                                      ]),
+                                  )
+                                  .digest("hex")
+                            : undefined,
+                        occurredAt: result.attempt?.occurredAt,
+                        correct: result.result !== "incorrect",
+                        assisted: result.assisted,
+                        mistakes: result.mistakes,
+                    }),
+                () =>
+                    gateway.isAdapterEnabled("library") &&
+                    gateway.isAdapterEnabled("progress"),
+            ),
+            "study",
+        );
+        if (!systemCtx?.hasFlow("study:favourites:save"))
+            systemCtx?.registerFlow({
+                id: "study:favourites:save",
+                stages: ["authorize", "validate", "persist"],
+            });
+        const favourites = new StudyFavourites(preferences);
+        ctx.capabilities.contribute("study:favourites", favourites);
+        ctx.routeRegistry.register(
+            createFavouriteRoutes(favourites, routeContext, ctx.flow, ctx.log),
+            "study",
+        );
+    }
+    for (const flow of [
+        {
+            id: "study:library:import",
+            stages: ["authorize", "validate", "persist"],
+        },
+        {
+            id: "study:library:create",
+            stages: ["normalize", "resolve", "validate", "persist"],
+        },
+        {
+            id: "study:library:update",
+            stages: ["authorize", "validate", "persist", "audit"],
+        },
+        {
+            id: "study:library:resolve",
+            stages: ["normalize", "propose", "rank"],
+        },
+        {
+            id: "study:library:search",
+            stages: ["authorize", "validate", "search", "audit"],
+        },
+        { id: "study:library:notifyRequest", stages: ["deliver"] },
+        { id: "study:library:notifyContent", stages: ["deliver"] },
+        { id: "study:library:stageRequest", stages: ["authorize", "persist"] },
+        {
+            id: "study:library:uploadImage",
+            stages: ["authorize", "validate", "persist"],
+        },
+        { id: "study:library:readImage", stages: ["authorize"] },
+        { id: "study:library:discardImage", stages: ["authorize", "discard"] },
+        {
+            id: "study:library:uploadAudio",
+            stages: ["authorize", "validate", "persist"],
+        },
+        {
+            id: "study:library:regenerateAudio",
+            stages: ["authorize", "validate", "resolve", "persist"],
+        },
+        {
+            id: "study:library:audio",
+            stages: ["authorize", "validate", "resolve"],
+        },
+        {
+            id: "study:library:lookup",
+            stages: ["discover", "lookup", "rank"],
+        },
+        {
+            id: "study:library:ingest",
+            stages: ["inspect", "validate", "stage", "persist", "audit"],
+        },
+        {
+            id: "study:library:merge",
+            stages: ["authorize", "validate", "merge", "audit"],
+        },
+        {
+            id: "study:library:move",
+            stages: ["authorize", "validate", "move", "audit"],
+        },
+        {
+            id: "study:library:delete",
+            stages: ["authorize", "validate", "delete", "audit"],
+        },
+    ]) {
+        if (!systemCtx?.hasFlow(flow.id)) {
+            systemCtx?.registerFlow({
+                ...flow,
+                description:
+                    "Orchestrates provider-neutral Study Library operations.",
+            });
+        }
+    }
 
+    const languageModuleStates = new Map<string, boolean>();
     const syncLanguageCapabilities = (): void => {
         const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
         const capabilityIds =
             systemCtx?.listCapabilities() ?? ctx.capabilities.list();
+        const activeModuleIds = new Set<string>();
         for (const capabilityId of capabilityIds.filter((id) =>
             /^study:language:[^:]+$/.test(id),
         )) {
@@ -235,6 +393,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!languageCode) continue;
             const moduleId =
                 descriptor?.moduleId ?? `study-language-${languageCode}`;
+            activeModuleIds.add(moduleId);
             gateway.registerLanguageModule(
                 {
                     languageCode,
@@ -260,7 +419,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
                 { moduleId },
             );
-            gateway.setLanguageModuleEnabled(moduleId, true);
+            gateway.setLanguageModuleEnabled(
+                moduleId,
+                languageModuleStates.get(moduleId) !== false,
+            );
+        }
+        for (const registered of gateway.listRegisteredLanguageModules()) {
+            if (
+                registered.moduleClass !== "core" &&
+                !activeModuleIds.has(registered.moduleId)
+            )
+                gateway.setLanguageModuleEnabled(registered.moduleId, false);
         }
     };
 
@@ -275,6 +444,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         moduleId: string,
         enabled: boolean,
     ): void => {
+        languageModuleStates.set(moduleId, enabled);
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
     /**
@@ -300,10 +470,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         if (!languageModule) return false;
         return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
+    const isStudyEnabled = () =>
+        ctx.gatewayRegistry.get("study")?.status !== "disabled";
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/study/flow-contracts.js",
+        providesCapabilities: ["study:library:detailFlow", "study:subPages"],
+        isEnabled: isStudyEnabled,
+    });
 
     await gateway.bootstrapAdapters(adaptersRoot, {
         ...uiHooks,
+        registerCapabilityProvider: (provider) =>
+            ctx.uiRegistry?.registerCapabilityProvider({
+                ...provider,
+                isEnabled: () =>
+                    isStudyEnabled() &&
+                    (!provider.isEnabled || provider.isEnabled()),
+            }),
         gateway,
         capabilities: ctx.capabilities,
         gatewayRegistry: ctx.gatewayRegistry,
@@ -335,6 +519,38 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    const studyStylesheets = [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/gateways/study/study.css",
+    ];
+    const isStudyAvailable = (): boolean => {
+        syncLanguageCapabilities();
+        return (
+            ctx.gatewayRegistry.get("study")?.status !== "disabled" &&
+            gateway
+                .listRegisteredLanguageModules()
+                .some((language) => language.enabled)
+        );
+    };
+    ctx.uiRegistry?.registerSpaRoute({
+        id: "gateway.study",
+        pattern: "^/study(?:/welcome|/settings)?$",
+        base: "/study",
+        scriptUrl: "/static/gateways/study/study.js",
+        stylesheets: studyStylesheets,
+        requiredCapabilities: ["study:subPages"],
+        isEnabled: isStudyAvailable,
+    });
+    ctx.uiRegistry?.registerSpaRoute({
+        id: "gateway.study.child",
+        pattern: "^/study/(?!welcome$|settings$)[^/]+$",
+        base: "/study",
+        scriptUrl: "/static/gateways/study/route.js",
+        stylesheets: studyStylesheets,
+        requiredCapabilities: ["study:subPages"],
+        isEnabled: isStudyAvailable,
+    });
 
     const serveStudyHtml = async (
         req: IncomingMessage,
@@ -342,18 +558,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         url: URL,
     ): Promise<boolean> => {
         if (req.method !== "GET") return false;
+        if (url.pathname !== "/study" && !url.pathname.startsWith("/study/"))
+            return false;
+        if (!routeContext.getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        if (!isStudyAvailable()) {
+            res.writeHead(302, { location: "/error?code=503" });
+            res.end();
+            return true;
+        }
         if (
             url.pathname !== "/study" &&
             url.pathname !== "/study/welcome" &&
             url.pathname !== "/study/settings"
         )
             return false;
-        if (!routeHelpers.getCookieSession(req)) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
-            return true;
-        }
-        routeHelpers.setPageSecurityHeaders(res);
+        routeContext.setPageSecurityHeaders(res);
         const html = await readFile(
             path.join(GATEWAY_ROOT, "ui", "study.html"),
             "utf8",
@@ -374,7 +597,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             req.method !== "GET"
         )
             return false;
-        const claims = routeHelpers.requireAuth(req, res);
+        const claims = routeContext.requireAuth(req, res);
         if (!claims) return true;
         syncLanguageCapabilities();
         const languages = gateway
@@ -403,6 +626,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             ctx.gatewayRegistry,
             isLanguageEnabled,
+            routeContext,
         ),
         "study",
     );
@@ -417,6 +641,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
+
+    ctx.gatewayRegistry.registerModuleNamespacePolicy(
+        "study",
+        authorizeLanguageModuleNamespace,
+    );
 
     ctx.log?.("info", "Study gateway: initialized.", {
         component: "study-gateway",

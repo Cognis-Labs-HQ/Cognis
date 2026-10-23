@@ -1,4 +1,5 @@
 <resources>
+  <string name="ui.reuse.unspecified">Nicht angegeben</string>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.brand_name">Cognis</string>
   <string name="ui.reuse.login">Anmelden</string>
@@ -309,8 +310,11 @@
   <string name="ui.reuse.elements">Elemente</string>
   <string name="ui.reuse.all_elements_visible">Alle Elemente sind sichtbar.</string>
   <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
+  <string name="ui.reuse.image_preview">Bildvorschau</string>
+  <string name="ui.reuse.image_preview_failed">Die Bildvorschau konnte nicht geöffnet werden.</string>
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
+  <string name="ui.reuse.delete">Löschen</string>
   <string name="ui.reuse.return_to_dashboard">Zum Dashboard zurückkehren</string>
 
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>
@@ -595,4 +599,22 @@
   <string name="ui.reuse.name">Name</string>
   <string name="ui.reuse.uninstall">Deinstallieren</string>
   <string name="ui.reuse.toggle_secret_visibility">Sichtbarkeit des Geheimnisses umschalten</string>
+  <string name="ui.reuse.lookup">Nachschlagen</string>
+  <string name="ui.reuse.continue">Weiter</string>
+  <string name="ui.reuse.import">Importieren</string>
+  <string name="ui.reuse.export">Exportieren</string>
+  <string name="ui.reuse.file">Datei</string>
+  <string name="ui.reuse.search">Suchen</string>
+  <string name="ui.reuse.favourite">Favorit</string>
+  <string name="ui.reuse.favourites_only">Nur Favoriten anzeigen</string>
+  <string name="ui.reuse.sort">Sortieren</string>
+  <string name="ui.reuse.sort_default">Anbieterreihenfolge</string>
+  <string name="ui.reuse.sort_az">A–Z</string>
+  <string name="ui.reuse.sort_za">Z–A</string>
+  <string name="ui.reuse.sort_newest">Neueste zuerst</string>
+  <string name="ui.reuse.sort_oldest">Älteste zuerst</string>
+    <string name="ui.reuse.image_unavailable">Bild nicht verfügbar</string>
+    <string name="ui.app.modules.config_action_failed">Die Konfigurationsaktion ist fehlgeschlagen. Einstellungen prüfen oder eine Stimmen-ID manuell eingeben.</string>
+    <string name="ui.reuse.home">Startseite</string>
+    <string name="ui.reuse.try_again">Erneut versuchen</string>
 </resources>

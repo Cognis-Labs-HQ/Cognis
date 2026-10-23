@@ -250,7 +250,10 @@ test("mountWhenDirect pagehide listener marks the page as loading", async () => 
     };
     global.window = {
         addEventListener(eventName, listener) {
-            listeners.set(eventName, listener);
+            listeners.set(eventName, [
+                ...(listeners.get(eventName) ?? []),
+                listener,
+            ]);
         },
     };
     globalThis.__spaRouter = false;
@@ -258,9 +261,13 @@ test("mountWhenDirect pagehide listener marks the page as loading", async () => 
     try {
         await mountWhenDirect(async () => {});
         assert.equal(listeners.has("beforeunload"), false);
-        assert.equal(typeof listeners.get("pagehide"), "function");
+        assert.ok(
+            listeners
+                .get("pagehide")
+                .every((listener) => typeof listener === "function"),
+        );
         body.dataset.pageReady = "true";
-        listeners.get("pagehide")?.();
+        for (const listener of listeners.get("pagehide") ?? []) listener();
         assert.equal(body.dataset.pageReady, "false");
         assert.equal(body.attributes["aria-busy"], "true");
     } finally {
@@ -268,4 +275,79 @@ test("mountWhenDirect pagehide listener marks the page as loading", async () => 
         global.window = originalWindow;
         globalThis.__spaRouter = originalRouterFlag;
     }
+});
+
+for (const event of ["cognis:route-will-change", "pagehide"]) {
+    test(`direct mount receives the host lifecycle signal and releases on ${event}`, async (context) => {
+        const previous = {
+            document: globalThis.document,
+            window: globalThis.window,
+            router: globalThis.__spaRouter,
+        };
+        context.after(() => {
+            globalThis.document = previous.document;
+            globalThis.window = previous.window;
+            globalThis.__spaRouter = previous.router;
+        });
+        const target = new EventTarget();
+        target.location = { pathname: "/direct", search: "", hash: "" };
+        globalThis.window = target;
+        const root = {};
+        globalThis.document = {
+            body: createMockBody(),
+            createElement: createMockElement,
+            querySelector: () => root,
+        };
+        globalThis.__spaRouter = false;
+        let signal;
+        let disposed = 0;
+        await mountWhenDirect(async (receivedRoot, options) => {
+            assert.equal(receivedRoot, root);
+            signal = options.signal;
+            signal.addEventListener("abort", () => disposed++, { once: true });
+        });
+        assert.equal(signal.aborted, false);
+        target.dispatchEvent(
+            new Event("cognis:route-before-navigate", { cancelable: true }),
+        );
+        assert.equal(signal.aborted, false);
+        target.dispatchEvent(new Event(event));
+        target.dispatchEvent(new Event(event));
+        assert.equal(signal.aborted, true);
+        assert.equal(disposed, 1);
+    });
+}
+
+test("leaving a pending direct mount releases its loading token immediately", async (context) => {
+    const previous = {
+        document: globalThis.document,
+        window: globalThis.window,
+        router: globalThis.__spaRouter,
+    };
+    context.after(() => {
+        globalThis.document = previous.document;
+        globalThis.window = previous.window;
+        globalThis.__spaRouter = previous.router;
+    });
+    const target = new EventTarget();
+    target.location = { pathname: "/pending", search: "", hash: "" };
+    globalThis.window = target;
+    const body = createMockBody();
+    globalThis.document = {
+        body,
+        createElement: createMockElement,
+        querySelector: () => ({}),
+    };
+    globalThis.__spaRouter = false;
+    let release;
+    const pending = new Promise((resolve) => {
+        release = resolve;
+    });
+    const mounting = mountWhenDirect(async () => pending);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(body.dataset.pageReady, "false");
+    target.dispatchEvent(new Event("cognis:route-will-change"));
+    assert.equal(body.dataset.pageReady, "true");
+    release();
+    await mounting;
 });

@@ -259,3 +259,13 @@
 **Deferred scope:** The design plan suggested an admin-only panel (likely under Administration) listing every registered namespace with its default quota, editable by admins, reusing `createPageComposer` contribution patterns.
 
 **Reason deferred:** `src/ui/app/administration/index.js` is already at 990 lines (the repository's own 1000-line file-size ceiling), and adding a full namespace-defaults panel would either push it over that limit or require a larger restructuring (splitting the file into a subdirectory with focused sibling modules) that is out of proportion to this task's core requirement (namespace/ACL/quota enforcement + the one real existing consumer's migration). The backend admin routes (`GET/PUT /api/v1/files/admin/namespace-defaults[...]`, `PUT /api/v1/files/admin/global-default`) are fully implemented and tested; only the UI panel is deferred. The higher-value, directly-tied-to-existing-UI per-user "Storage Quotas" popup (in `src/ui/app/users/index.js`) was implemented instead. A follow-up task should split `administration/index.js` per the file-size convention and add the namespace-defaults panel as a new contributed section.
+
+## Historical Study Commit References
+
+GitHub cannot resolve the following abbreviated implementation hashes previously listed in PR #226's changelogs (the repository object query returned null; the commit API confirms an unavailable reference). They are retained here for recovery from an original checkout or review archive. The current changelogs use resolvable full commit IDs; do not invent replacements for unavailable objects.
+
+`004b39e5`, `0287eb84`, `039dc5c1`, `05838355`, `109f583e`, `11bec51d`, `125495f3`, `17702138`, `20a83b7e`, `21e3d8ae`, `23587bd7`, `2802b0c7`, `344ccb5b`, `365d5444`, `3d525fb3`, `3e48b191`, `3f72cfb6`, `40da0c7a`, `47821a9b`, `501b4459`, `54242971`, `5c5cb3d4`, `5cd8e7ff`, `5f8b129c`, `617a2161`, `641d87a`, `64d1ac04`, `64d53397`, `65340e2d`, `698a4624`, `6d0dd4d8`, `6d6e4e53`, `71c842e2`, `7841f27`, `79e872ea`, `7b93c7dc`, `82df83ce`, `84bedc67`, `85eee85f`, `87f30e20`, `8b08718f`, `8d4c4129`, `8f63ef4a`, `9aedc46`, `9c374e3f`, `a0016fcd`, `a0af7d1a`, `a6b16d13`, `aef137a4`, `b00c41df`, `b17ebe21`, `b6dfb282`, `b996336d`, `bbed779`, `bcb4e781`, `bdd1961e`, `c8893689`, `c8c8deb9`, `d16a50d5`, `d3ba08ef`, `e397588c`, `e4f2d16d`, `e60aee76`, `e894f166`, `ea24056d`, `efd006d2`, `f2afaa13`, `f405a3e`, `fb046ce2`, `fd2d93e`.
+
+## Study: Reliability and Isolation
+
+Keep drawing attempt receipts and dictionary-result caches bounded without losing retry identities. The broader TypeScript coverage gap remains tracked in #520. Exercise supported database providers whenever persistence changes.

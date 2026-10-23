@@ -68,6 +68,7 @@ test("side menu scrolls section targets to their heading", () => {
             clickHandler = handler;
         },
         classList: { toggle: () => undefined },
+        setAttribute: () => undefined,
         removeAttribute: () => undefined,
     };
     const root = {
@@ -99,4 +100,44 @@ test("side menu scrolls section targets to their heading", () => {
     menu.mount(root);
     clickHandler();
     assert.deepEqual(scrollOptions, { behavior: "smooth", block: "start" });
+});
+
+test("side menu moves its active state when an item is selected", () => {
+    globalThis.localStorage = {
+        getItem: () => null,
+        setItem: () => undefined,
+    };
+    let clickHandler;
+    let active = false;
+    const button = {
+        dataset: { sideMenuItem: "definitions" },
+        addEventListener: (_eventName, handler) => {
+            clickHandler = handler;
+        },
+        classList: {
+            toggle: (_name, enabled) => {
+                active = enabled;
+            },
+        },
+        setAttribute: () => undefined,
+        removeAttribute: () => undefined,
+    };
+    const root = {
+        querySelectorAll: (selector) =>
+            selector === "[data-side-menu-item]" ? [button] : [],
+    };
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "library",
+                label: "Library",
+                items: [{ id: "definitions", label: "Definitions" }],
+            },
+        ],
+        storageKeyPrefix: "library-menu",
+    });
+
+    menu.mount(root);
+    clickHandler();
+    assert.equal(active, true);
 });

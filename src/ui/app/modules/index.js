@@ -1,3 +1,4 @@
+import { formatModuleTag } from "./filters.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import {
@@ -139,7 +140,7 @@ function renderCard(module) {
     const presentation = module.localizedPresentation ?? module;
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
-        ? `<img class="module-store-avatar module-picture" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`
+        ? `<img class="module-store-avatar module-picture" src="${escapeHtml(avatarUrl)}" data-resource-id="${escapeHtml(module.uuid)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`
         : `<img class="module-store-avatar module-picture" src="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`;
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
@@ -197,12 +198,16 @@ function renderLifecycleButton(module, action, consequence) {
         action === "update"
             ? moduleChangeDirection(module, selectedBranch(module))
             : action;
+    const pendingLabelKey =
+        {
+            enable: "ui.app.modules.enabling",
+            disable: "ui.app.modules.disabling",
+            uninstall: "ui.app.modules.uninstalling",
+            upgrade: "ui.app.modules.upgrading",
+            downgrade: "ui.app.modules.downgrading",
+        }[updateDirection] ?? "ui.app.modules.installing";
     const labelKey = isPending
-        ? updateDirection === "upgrade"
-            ? "ui.app.modules.upgrading"
-            : updateDirection === "downgrade"
-              ? "ui.app.modules.downgrading"
-              : "ui.app.modules.installing"
+        ? pendingLabelKey
         : `ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`;
     return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(labelKey))}</button>`;
 }
@@ -263,29 +268,14 @@ function renderModuleDetails(module) {
         advanced || settings
             ? `<div class="module-detail-header-actions">${advanced}${settings}</div>`
             : "";
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2>${renderRepositoryLink(module)}<p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" data-resource-id="${escapeHtml(module.uuid)}" data-resource-fallback-text="${escapeHtml(i18n.t("ui.reuse.image_unavailable"))}" data-resource-fallback-class="module-detail-banner module-image-unavailable" alt="">` : `<div class="module-detail-banner module-image-unavailable">${escapeHtml(i18n.t("ui.reuse.image_unavailable"))}</div>`}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2>${renderRepositoryLink(module)}<p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
 }
 
 function renderDetailActions(module) {
     return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}`;
 }
 
-function formatTag(tag) {
-    for (const module of modules) {
-        for (const field of ["categories", "tags"]) {
-            const index = (module[field] ?? []).indexOf(tag);
-            const localized = module.localizedPresentation?.[field]?.[index];
-            if (localized && localized !== tag) return localized;
-        }
-    }
-    const localized = i18n.t(tag);
-    if (localized !== tag) return localized;
-    return String(tag)
-        .split(/[-_\s]+/)
-        .filter(Boolean)
-        .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
-        .join(" ");
-}
+const formatTag = (tag) => formatModuleTag(tag, modules, i18n);
 
 function renderSidebar(categories) {
     return renderModuleFilters(categories, filters, {
@@ -552,9 +542,15 @@ async function loadKnownModules(
                 name: known.name,
                 summary: known.summary,
                 description: known.description,
+                categories: known.categories,
+                tags: known.tags,
                 assets: known.assets,
             };
-            Object.assign(known, installedModule, { installed: true });
+            const catalogUi = known.ui;
+            Object.assign(known, installedModule, {
+                installed: true,
+                catalogPresentation: { ...catalogPresentation, ui: catalogUi },
+            });
             Object.assign(known, catalogPresentation);
         } else {
             modules.push(installedModule);
@@ -617,6 +613,7 @@ async function discoverConfiguredSources(
             if (known) {
                 const status = known.status;
                 Object.assign(known, module);
+                delete known.catalogPresentation;
                 if (status) known.status = status;
             } else if (!knownUuids.has(module.uuid)) {
                 modules.push(module);
@@ -840,6 +837,9 @@ function bindInteractions(root, signal) {
                         action,
                         moduleId: module.id,
                         moduleUuid: module.uuid,
+                        code: error.code,
+                        status: error.status,
+                        conflict: error.conflict,
                         error,
                     });
                     const dependencyMessage =

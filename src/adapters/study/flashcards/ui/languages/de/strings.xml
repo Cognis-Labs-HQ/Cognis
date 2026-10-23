@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="adapter.study.flashcards.page_title">Lernkarten</string>
+  <string name="adapter.study.flashcards.deck_edit">Kartensatz bearbeiten</string>
+  <string name="adapter.study.flashcards.deck_create">Kartensatz erstellen</string>
+  <string name="adapter.study.flashcards.deck_layer">Kartenebene</string>
+  <string name="adapter.study.flashcards.deck_saved">Kartensatz gespeichert.</string>
+  <string name="adapter.study.flashcards.deck_deleted">Kartensatz gelöscht.</string>
+  <string name="adapter.study.flashcards.deck_save_error">Der Kartensatz konnte nicht gespeichert werden. Prüfen Sie die gewählten Karten und das Notizformat.</string>
+  <string name="adapter.study.flashcards.deck_load_error">Kartensatz oder Bibliothekskarten konnten nicht geladen werden.</string>
+  <string name="adapter.study.flashcards.deck_empty">Keine Lernkartendecks gefunden</string>
+  <string name="adapter.study.flashcards.deck_finished">Gut gemacht! Du hast diesen Stapel abgeschlossen.</string>
+  <string name="adapter.study.flashcards.deck_review_error">Diese Wiederholung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.</string>
+  <string name="adapter.study.flashcards.deck_unavailable">{{ count }} Karte(n) sind nicht mehr verfügbar und wurden übersprungen.</string>
+  <string name="adapter.study.flashcards.page_subtitle">Sichtbare Lernkartendecks durchsuchen</string>
+  <string name="adapter.study.flashcards.deck_import">Deck importieren</string>
+  <string name="adapter.study.flashcards.deck_cards">Karten</string>
+  <string name="adapter.study.flashcards.deck_starter">Starterstapel</string>
+  <string name="adapter.study.flashcards.deck_yours">Dein Stapel</string>
+  <string name="adapter.study.flashcards.deck_shared">Geteilter Stapel</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} neu oder fällig</string>
+  <string name="adapter.study.flashcards.deck_search">Stapel suchen</string>
+  <string name="adapter.study.flashcards.practice_total">Gesamt</string>
+  <string name="adapter.study.flashcards.practice_due">Fällig</string>
+  <string name="adapter.study.flashcards.practice_new">Neu</string>
+  <string name="adapter.study.flashcards.practice_writing">Schreiben</string>
+  <string name="adapter.study.flashcards.practice_reading">Lesen</string>
+  <string name="adapter.study.flashcards.practice_next">Nächste Karte</string>
+  <string name="adapter.study.flashcards.practice_unavailable">Für diese Karte ist keine Übung verfügbar.</string>
+  <string name="adapter.study.flashcards.practice_leave">Übung verlassen?</string>
+  <string name="adapter.study.flashcards.practice_leave_body">Diese Karte in Erkunden öffnen und die aktuelle Übung verlassen?</string>
+  <string name="adapter.study.flashcards.practice_show_answer">Antwort zeigen</string>
+  <string name="adapter.study.flashcards.practice_previous">Vorherige Karte</string>
+  <string name="adapter.study.flashcards.practice_reveal">Zeichen anzeigen</string>
+  <string name="adapter.study.flashcards.practice_choose_mode">Lesen oder Schreiben wählen</string>
+  <string name="adapter.study.flashcards.practice_correct">Richtige Lesung.</string>
+  <string name="adapter.study.flashcards.practice_incorrect">Falsche Lesung. Sieh dir die Antwort an und versuche es bei der nächsten Wiederholung erneut.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Ein Moduswechsel startet diese Sitzung neu und verwirft die aktuelle Position und Antworten. Bereits übermittelte Bewertungen bleiben gespeichert.</string>
+  <string name="adapter.study.flashcards.practice_hint">Richtige Antwort zeigen</string>
+  <string name="adapter.study.flashcards.practice_hint_answer">Richtige Antwort: {{ answer }}</string>
+</resources>

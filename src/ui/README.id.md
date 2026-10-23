@@ -82,3 +82,5 @@ Semua kode yang dikomit di `src/ui/app` dan `src/ui/layouts` harus lulus kedua p
 ## Penyuntingan preferensi lanjutan
 
 Panel Lanjutan → Preferensi menampilkan dokumen preferensi antarmuka lengkap sebagai JSON setelah konfirmasi keamanan satu kali yang disimpan di profil pengguna pada server. Perubahan yang valid disimpan dan diterapkan melalui sistem preferensi biasa. Data pengakuan catatan rilis disimpan secara terpisah agar tidak memenuhi dokumen ini.
+
+Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaruhi filter latar dan blok pembatas ruang kerja. Papan gambar tetap dibatasi area halaman yang terlihat dan mempertahankan posisi hasil seretan saat menggulir.

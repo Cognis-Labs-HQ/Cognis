@@ -33,6 +33,11 @@ export function reconcileAuthFooterLinks(providerId, descriptors) {
         const label = String(descriptor.label ?? "").trim();
         const labelKey = String(descriptor.labelKey ?? "").trim();
         const side = descriptor.side ?? "left";
+        if (
+            descriptor.target &&
+            !["_blank", "_self"].includes(descriptor.target)
+        )
+            throw new Error("invalid_auth_footer_link_target");
         if (!id || !href || (!label && !labelKey)) {
             throw new Error("invalid_auth_footer_link");
         }
@@ -46,6 +51,7 @@ export function reconcileAuthFooterLinks(providerId, descriptors) {
             labelKey,
             side,
             contexts: ["authentication"],
+            ...(descriptor.target ? { target: descriptor.target } : {}),
         };
     });
     if (
@@ -53,6 +59,13 @@ export function reconcileAuthFooterLinks(providerId, descriptors) {
         normalizedDescriptors.length
     ) {
         throw new Error("duplicate_auth_footer_link_id");
+    }
+    for (const link of footerLinks.list()) {
+        if (
+            link.id.startsWith(`${normalizedProviderId}:`) &&
+            link.contexts.includes("authentication")
+        )
+            footerLinks.remove(link.id);
     }
     providerLinkDisposers
         .get(normalizedProviderId)

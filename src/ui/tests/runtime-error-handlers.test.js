@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -11,12 +12,6 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { installRuntimeErrorHandlers };\n";
 
     const listeners = new Map();
     const openPopupCalls = [];
@@ -29,6 +24,7 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     }
     const context = {
         console,
+        uiCtx: { capabilities: { get: () => () => {} } },
         Date,
         HTMLImageElement: TestImageElement,
         applyTheme() {},
@@ -76,6 +72,9 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         },
         document: {
             referrer: "",
+            createElement() {
+                return {};
+            },
             querySelector() {
                 return {};
             },
@@ -83,9 +82,20 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     context.__testExports.installRuntimeErrorHandlers();
     const errorHandler = listeners.get("error");
@@ -110,6 +120,22 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     errorHandler({ target: brokenModuleImage });
     await Promise.resolve();
     assert.equal(brokenModuleImage.src, "/fallback.svg");
+    assert.equal(openPopupCalls.length, 0);
+
+    const brokenBanner = new TestImageElement();
+    brokenBanner.dataset.resourceFallbackText = "Image Not Available";
+    brokenBanner.dataset.resourceFallbackClass =
+        "module-detail-banner module-image-unavailable";
+    let placeholder;
+    brokenBanner.replaceWith = (element) => {
+        placeholder = element;
+    };
+    errorHandler({ target: brokenBanner });
+    assert.equal(placeholder.textContent, "Image Not Available");
+    assert.equal(
+        placeholder.className,
+        brokenBanner.dataset.resourceFallbackClass,
+    );
     assert.equal(openPopupCalls.length, 0);
 
     errorHandler({ target: brokenModuleImage });

@@ -154,11 +154,13 @@ export function createUnsavedChangesBar(
 /**
  * CSS selector for user-editable data fields.
  *
- * Hidden and action-style inputs are excluded because they do not represent
+ * Hidden inputs can opt in with data-form-dirty-track for custom editor state.
+ * Other hidden and action-style inputs are excluded because they do not represent
  * direct popup content edits and would otherwise create false-positive dirty
  * states during close-protection checks.
  */
 const TRACKED_FIELD_SELECTOR = [
+    "input[data-form-dirty-track]",
     'input:not([type="hidden"]):not([type="submit"]):not([type="reset"]):not([type="button"]):not([type="image"])',
     "textarea",
     "select",

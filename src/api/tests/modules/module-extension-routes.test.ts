@@ -5,7 +5,14 @@ import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createCtx } from "@cognis/core";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+    mkdtemp,
+    mkdir,
+    readFile,
+    rm,
+    writeFile,
+    copyFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -337,6 +344,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             listManifests: async () => [
                 {
                     id: "owned-module",
+                    version: "1.0.0",
                     uuid: moduleUuid,
                     entrypoints: {
                         bootstrap: "./bootstrap.js",
@@ -375,7 +383,8 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
             })),
             [
                 {
-                    scriptUrl: "/static/modules/owned-module/whiteboard.js",
+                    scriptUrl:
+                        "/static/modules/owned-module/whiteboard.js?revision=1.0.0",
                     providesCapabilities: ["whiteboard:uiGateway"],
                 },
             ],
@@ -485,11 +494,13 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         message: string;
         meta?: Record<string, unknown>;
     }> = [];
+    let moduleVersion = "1.0.0";
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
                 {
                     id: "meetings",
+                    version: moduleVersion,
                     uuid: moduleUuid,
                     requiresCapabilities: [
                         "ui:profileAvatarRenderer",
@@ -526,7 +537,8 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                     providesCapabilities: ["ui:profileAvatarRenderer"],
                 },
                 {
-                    scriptUrl: "/static/modules/meetings/navbar.js",
+                    scriptUrl:
+                        "/static/modules/meetings/navbar.js?revision=1.0.0",
                     providesCapabilities: ["voip:startCall"],
                 },
                 {
@@ -572,6 +584,100 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             true,
         );
         assert.equal(status, 204);
+        assert.equal(
+            uiRegistry.listSpaRoutes()[0].scriptUrl,
+            "/static/modules/meetings/app.js?revision=1.0.0",
+        );
+        moduleVersion = "1.0.1";
+        await extensions.refresh();
+        assert.equal(
+            uiRegistry.listSpaRoutes()[0].scriptUrl,
+            "/static/modules/meetings/app.js?revision=1.0.1",
+        );
+    } finally {
+        if (previousExternalModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT =
+                previousExternalModulesRoot;
+        }
+        await rm(externalModulesRoot, { recursive: true, force: true });
+    }
+});
+
+test("study language modules register their canonical capability and API space", async () => {
+    const externalModulesRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-study-language-"),
+    );
+    const moduleUuid = "e905927f-b133-572a-92ce-2ea8645e5ceb";
+    const moduleRoot = path.join(externalModulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export async function bootstrapModule(ctx) {
+            ctx.contributePublicCapability("study:language:ja", { languageCode: "ja" });
+            ctx.contributePublicCapability("study:language:ja:library", { snapshot: () => ({}) });
+            ctx.router.get("/api/v1/study/languages/ja/library/snapshot", (_req, res) => { res.writeHead(200); res.end(); });
+            ctx.flow.extend("bootstrap-platform", "register-flows", { id: "study-language-ja:register-language" }, () => ({ languageCode: "ja" }));
+        }`,
+    );
+    const previousExternalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = externalModulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    systemCtx.registerFlow({
+        id: "bootstrap-platform",
+        stages: ["register-flows"],
+    });
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "study-language-ja",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            authorizeModuleNamespace: ({ moduleId, kind, id }) =>
+                moduleId === "study-language-ja" &&
+                (kind === "apiRoute"
+                    ? id.startsWith("/api/v1/study/languages/ja/")
+                    : id === "study:language:ja" ||
+                      id.startsWith("study:language:ja:")),
+            getProtectedRoutePrefixes: () => ["/api/v1/study"],
+            routeContext: createDefaultRouteContext({
+                getCapability: systemCtx.getCapability.bind(systemCtx),
+                flow: systemCtx.flow,
+            }),
+        },
+    );
+    try {
+        await extensions.refresh({ throwOnFailure: true });
+        assert.deepEqual(systemCtx.getCapability("study:language:ja"), {
+            languageCode: "ja",
+        });
+        let status = 0;
+        assert.equal(
+            await extensions.handle(
+                { method: "GET" } as any,
+                {
+                    writeHead(code: number) {
+                        status = code;
+                    },
+                    end() {},
+                } as any,
+                new URL(
+                    "http://localhost/api/v1/study/languages/ja/library/snapshot",
+                ),
+            ),
+            true,
+        );
+        assert.equal(status, 200);
     } finally {
         if (previousExternalModulesRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
@@ -647,4 +753,48 @@ test("unprivileged modules cooperate through provider-owned capabilities", async
         }
         await rm(modulesRoot, { recursive: true, force: true });
     }
+});
+
+test("namespace grants cannot replace reserved authentication routes", async (context) => {
+    const root = await mkdtemp(
+        path.join(tmpdir(), "cognis-protected-delegation-"),
+    );
+    const previous = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    context.after(async () => {
+        if (previous === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previous;
+        await rm(root, { recursive: true, force: true });
+    });
+    const uuid = "d49288a3-106e-43d8-a5a4-cd7a142a6fc7";
+    await mkdir(path.join(root, uuid));
+    await copyFile(
+        new URL(
+            "./fixtures/delegated-protected/bootstrap.mjs",
+            import.meta.url,
+        ),
+        path.join(root, uuid, "bootstrap.mjs"),
+    );
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = root;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "delegated",
+                    uuid,
+                    entrypoints: { bootstrap: "./bootstrap.mjs" },
+                },
+            ],
+        } as never,
+        () => true,
+        undefined,
+        {
+            authorizeModuleNamespace: () => true,
+            routeContext: createDefaultRouteContext(),
+        },
+    );
+    await assert.rejects(
+        extensions.refresh({ throwOnFailure: true }),
+        /protected route/,
+    );
 });

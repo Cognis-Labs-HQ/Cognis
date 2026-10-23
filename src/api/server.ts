@@ -1,3 +1,4 @@
+import { isModuleCapabilityAvailable } from "./reuse/module-capability-availability.js";
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
 import { readFile, readdir } from "node:fs/promises";
@@ -394,6 +395,13 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            authorizeModuleNamespace: (request) =>
+                deps.gatewayRegistry?.allowsModuleNamespace(
+                    request,
+                    request.kind === "apiRoute"
+                        ? deps.routeRegistry?.findOwner(request.id)?.gatewayId
+                        : undefined,
+                ) === true,
             getProtectedRoutePrefixes: () =>
                 deps.routeRegistry?.getClaimedPrefixes() ?? [],
             onBootstrapFailed: async (moduleId) => {
@@ -424,9 +432,11 @@ export function buildServer(deps: ApiDependencies) {
             moduleId,
             manifest?.requiresCapabilities ?? [],
             (capabilityId) =>
-                routeContext.getCapability(capabilityId) !== undefined ||
-                (deps.uiRegistry?.hasActiveCapabilityProvider(capabilityId) ??
-                    false),
+                isModuleCapabilityAvailable(
+                    capabilityId,
+                    routeContext,
+                    deps.uiRegistry,
+                ),
         );
         await (
             deps.runModuleTests ?? moduleTestService.run.bind(moduleTestService)

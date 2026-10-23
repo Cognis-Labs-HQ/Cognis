@@ -129,6 +129,18 @@ test("ui static route serves templates and assets from public folder", async () 
     );
     assert.equal(assetRes.status, 200);
     assert.equal(assetRes.headers["content-type"], "image/png");
+    const closeIconRes = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        closeIconRes.res as any,
+        new URL("http://localhost/static/assets/reuse/icons/toolbar-close.svg"),
+    );
+    assert.equal(closeIconRes.status, 200);
+    assert.equal(
+        closeIconRes.headers["content-type"],
+        "image/svg+xml; charset=utf-8",
+    );
+    assert.match(closeIconRes.body, /<svg/);
 });
 
 test("ui routes serve public assets directly from /assets", async () => {

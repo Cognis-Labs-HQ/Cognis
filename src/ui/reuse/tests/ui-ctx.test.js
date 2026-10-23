@@ -1,6 +1,6 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
@@ -8,31 +8,25 @@ import vm from "node:vm";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 function loadUiCtxForTests() {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/ui-ctx.js"),
-        "utf8",
-    );
-    const testableSource = source
-        .replace(/^import .*;\n/gm, "")
-        .replace(/\bexport\s+/g, "");
-
     const context = {
         console,
         BROWSER_FLOW_CONTRACTS: {},
         createReuseResources: () => Object.freeze({}),
-        __testExports: {},
+        createSubPageRegistry: () => Object.freeze({}),
     };
-    vm.runInNewContext(
-        testableSource +
-            "\nglobalThis.__testExports = { createFlowEngine, uiCtx };\n",
+    return loadTestModule(
+        new URL("../ui-ctx.js", import.meta.url),
+        {
+            "./flow-contracts.js": context,
+            "./resources.js": context,
+            "./sub-page-registry.js": context,
+        },
         context,
     );
-    return context.__testExports;
 }
 
-test("createFlowEngine — registerFlow and flowExists", () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — registerFlow and flowExists", () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     assert.equal(engine.flowExists("my-flow"), false);
     engine.registerFlow("my-flow", ["stage-a", "stage-b"]);
     assert.equal(engine.flowExists("my-flow"), true);
@@ -45,9 +39,8 @@ test("uiCtx initializes built-in flows before hook modules can extend them", asy
     assert.equal(typeof uiCtx.capabilities.get("ui:reuse"), "object");
 });
 
-test("createFlowEngine — registering the same flow twice throws", () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — registering the same flow twice throws", () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("dup-flow", ["s1"]);
     assert.throws(
         () => engine.registerFlow("dup-flow", ["s1"]),
@@ -55,9 +48,8 @@ test("createFlowEngine — registering the same flow twice throws", () => {
     );
 });
 
-test("createFlowEngine — runFlow executes hooks in stage order", async () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — runFlow executes hooks in stage order", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("ordered-flow", ["alpha", "beta"]);
 
     const calls = [];
@@ -85,9 +77,8 @@ test("createFlowEngine — runFlow executes hooks in stage order", async () => {
     ]);
 });
 
-test("createFlowEngine — stageCtx.data is shared across hooks within the same run", async () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — stageCtx.data is shared across hooks within the same run", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("data-flow", ["write", "read"]);
 
     engine.extendFlow(
@@ -113,18 +104,16 @@ test("createFlowEngine — stageCtx.data is shared across hooks within the same 
     ]);
 });
 
-test("createFlowEngine — runFlow on an unknown flow throws", async () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — runFlow on an unknown flow throws", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     await assert.rejects(
         () => engine.runFlow("ghost-flow", {}),
         /not registered/i,
     );
 });
 
-test("createFlowEngine — extendFlow on an unknown flow throws", () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — extendFlow on an unknown flow throws", () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     assert.throws(
         () =>
             engine.extendFlow("ghost-flow", "s1", { id: "h1" }, async () => {}),
@@ -132,9 +121,8 @@ test("createFlowEngine — extendFlow on an unknown flow throws", () => {
     );
 });
 
-test("createFlowEngine — extendFlow on an unknown stage throws", () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — extendFlow on an unknown stage throws", () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("stage-flow", ["real-stage"]);
     assert.throws(
         () =>
@@ -148,9 +136,8 @@ test("createFlowEngine — extendFlow on an unknown stage throws", () => {
     );
 });
 
-test("createFlowEngine — multiple hooks in one stage accumulate results", async () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — multiple hooks in one stage accumulate results", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("multi-flow", ["stage"]);
 
     engine.extendFlow("multi-flow", "stage", { id: "hook-1" }, async () => ({
@@ -167,9 +154,8 @@ test("createFlowEngine — multiple hooks in one stage accumulate results", asyn
     ]);
 });
 
-test("createFlowEngine — stageCtx.input is the original flow input", async () => {
-    const { createFlowEngine } = loadUiCtxForTests();
-    const engine = createFlowEngine();
+test("uiCtx — stageCtx.input is the original flow input", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
     engine.registerFlow("input-flow", ["check"]);
 
     let received = null;
@@ -184,4 +170,29 @@ test("createFlowEngine — stageCtx.input is the original flow input", async () 
 
     await engine.runFlow("input-flow", { userId: "alice" });
     assert.deepEqual(received, { userId: "alice" });
+});
+
+test("uiCtx — registered hooks can be removed", async () => {
+    const { uiCtx: engine } = loadUiCtxForTests();
+    engine.registerFlow("removable-flow", ["compose"]);
+    engine.extendFlow(
+        "removable-flow",
+        "compose",
+        { id: "provider:compose" },
+        async () => "included",
+    );
+
+    assert.equal(
+        engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
+        true,
+    );
+    const result = await engine.runFlow("removable-flow", {});
+    assert.deepEqual(
+        JSON.parse(JSON.stringify(result.stageResults.compose)),
+        [],
+    );
+    assert.equal(
+        engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
+        false,
+    );
 });

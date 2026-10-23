@@ -1,0 +1,597 @@
+export type LibraryScope = "global" | "class" | "user";
+
+export type LocalizedText = Readonly<Record<string, string>>;
+
+export type LibraryMetadataValue =
+    | string
+    | number
+    | boolean
+    | null
+    | readonly LibraryMetadataValue[]
+    | { readonly [key: string]: LibraryMetadataValue };
+
+/** Localized presentation plus provider metadata that survives contract round trips. */
+export interface LibraryMetadata {
+    labels: LocalizedText;
+    descriptions?: LocalizedText;
+    [key: string]: LibraryMetadataValue | LocalizedText | undefined;
+}
+
+export const STRING_LOCALIZATION_CAPABILITY = "localization:translateString";
+
+export interface StringLocalizationCapability {
+    translate(request: {
+        stringKey: string;
+        sourceText: string;
+        sourceLanguage: string;
+        targetLanguage: string;
+    }): Promise<string | null>;
+}
+
+export type LibrarySemanticRole =
+    | "atomicWritingUnit"
+    | "compoundWritingUnit"
+    | "lexicalUnit"
+    | "orderedLexicalSequence"
+    | "passage"
+    | "definition"
+    | "meaning"
+    | "particle"
+    | "practicePrompt";
+
+export interface LibraryDetailHint {
+    renderer: "text" | "number" | "boolean" | "badge" | "media" | "stroke";
+    order?: number;
+    group?: string;
+    /** When true, selecting a filter in this group clears its other filters. */
+    exclusive?: boolean;
+    /** When true, the filter group must retain at least one selected tag. */
+    required?: boolean;
+    /** A tag value that the module requests be selected initially. */
+    defaultTag?: string;
+    /** Expose this field as a user-facing filter even when it is not a badge. */
+    filterable?: boolean;
+    /** Permit an optional group to select its sole available value automatically. */
+    autoSelectSingle?: boolean;
+    hidden?: boolean;
+}
+
+export interface LibraryFieldSchema {
+    id: string;
+    /** Runtime availability contributed by Study audio providers. */
+    audioLookupAvailable?: boolean;
+    metadata: LibraryMetadata;
+    /** Built-ins are validated directly; extension types require a declarative validator. */
+    type: string;
+    validation?:
+        | { kind: "string"; pattern?: string }
+        | {
+              kind: "number";
+              integer?: boolean;
+              minimum?: number;
+              maximum?: number;
+          }
+        | { kind: "boolean" }
+        | { kind: "list"; items: "string" | "number" | "boolean" }
+        | { kind: "localizedText" };
+    /** Rank by the hardest referenced value; authored values are a minimum. */
+    derivation?: {
+        kind: "rankedReferences";
+        relationships: readonly string[];
+        /** Values ordered from easiest to hardest. */
+        values: readonly string[];
+        requireAll: boolean;
+        /** Provider-ranked grammar keyed by transformation rule ID. */
+        transformationValues?: Readonly<Record<string, string>>;
+    };
+    required?: boolean;
+    /** Commit multiple carousel-composed values independently. */
+    multi_value?: boolean;
+    /** Provider-owned editing and linking semantics. Labels remain in metadata. */
+    input?: {
+        control:
+            | "freeText"
+            | "tagList"
+            | "singleSelect"
+            | "multiSelect"
+            | "checkbox"
+            | "number"
+            | "localizedText"
+            | "audioFile"
+            | "imageFiles";
+        options?: readonly {
+            value: string;
+            metadata: LibraryMetadata;
+        }[];
+        immutable?: boolean;
+        /** Relationships whose ordered targets make values in this field deep-linkable. */
+        linkRelationships?: readonly string[];
+        /** File namespace and language-relative prefix used by audioFile controls. */
+        file?: { namespace: string; prefix?: string };
+    };
+    detail?: LibraryDetailHint;
+}
+
+/** Normalized pen coordinates and timing for deterministic writing practice. */
+export interface LibraryStrokePattern {
+    coordinateSystem: "normalized";
+    strokes: readonly {
+        points: readonly {
+            x: number;
+            y: number;
+            /** Milliseconds from the beginning of this stroke. */
+            time: number;
+            pressure?: number;
+        }[];
+    }[];
+    /** Minimum percentage accepted by a practice renderer. */
+    tolerance?: number;
+}
+
+export interface LibraryRelationshipSchema {
+    id: string;
+    targetLayer: string;
+    metadata: LibraryMetadata;
+    minimum?: number;
+    maximum?: number;
+    ordered?: boolean;
+    requiredTarget?: boolean;
+    onDelete: "restrict" | "detach" | "cascade";
+    resolverRole?: "grapheme" | "token" | "longestMatch" | "explicit";
+    presentationRole?: "composition" | "alternateSpelling" | "pronunciation";
+    /** Preserve references as distinct ordered values instead of one flat edge list. */
+    grouped?: boolean;
+    variant?: boolean;
+    /** Unfold this relationship as a spatial parent/child card hierarchy. */
+    child?: boolean;
+}
+
+export interface LibraryCardConstructor {
+    /** Localized label for the card's primary label control. */
+    label: LibraryMetadata;
+    /** Field IDs to render, in form order. Omitted fields receive defaults only. */
+    fields?: readonly string[];
+    /** Relationship IDs to render, in form order. */
+    relationships?: readonly string[];
+    /** Target layer IDs rendered as carousels beneath the primary input composer. */
+    input_carousels: readonly string[];
+    /** Target layer IDs rendered inside the staged pronunciation composer. */
+    pronunciation_carousels: readonly string[];
+    /** Entry carousels filtered by provider-owned tags, such as sentence transitions. */
+    tag_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        relationship: string;
+        tag: string;
+        /** Explicit provider policy for ordinary layer browsing. */
+        excludeFromBrowse: boolean;
+    }[];
+    /** Repeatable provider-owned literals, such as sentence punctuation. */
+    literal_carousels?: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        values: readonly string[];
+    }[];
+    /** Initial provider-owned field values for a new card. */
+    defaults?: Record<string, unknown>;
+    /** Expose Cognis' preview-definition switch for this layer. */
+    allowAlwaysShowDefinition?: boolean;
+    /** Expose Cognis' hidden-card switch for this layer. */
+    allowHidden?: boolean;
+}
+
+export interface LibraryLayerView {
+    id: string;
+    metadata: LibraryMetadata;
+    /** Include entries matching any of these provider-owned tags. */
+    includeTags: readonly string[];
+    layout: "cards" | "transformTree";
+}
+
+export interface LibraryTransformText {
+    removeSuffix: string;
+    append: string;
+    prepend?: string;
+    removePrefix?: string;
+    suffixes?: readonly LibraryTransformText[];
+}
+
+export interface LibraryTransformSet {
+    id: string;
+    metadata: LibraryMetadata;
+    matchTags: readonly string[];
+    /** Exact source-card tag enabling this family. */
+    flag: string;
+    baseState: string;
+    rules: readonly {
+        id: string;
+        metadata: LibraryMetadata;
+        fromState: string;
+        toState: string;
+        /** Optional grammatical class of the generated view. */
+        resultClass?: string;
+        removeSuffix: string;
+        append: string;
+        prepend?: string;
+        removePrefix?: string;
+        suffixes?: readonly LibraryTransformText[];
+        forms?: Readonly<
+            Record<
+                string,
+                LibraryTransformText & {
+                    pronunciation?: LibraryTransformText;
+                    definitionTransform?: LibraryTransformSet["rules"][number]["definitionTransform"];
+                }
+            >
+        >;
+        pronunciation?: {
+            removeSuffix: string;
+            append: string;
+            prepend?: string;
+            removePrefix?: string;
+            suffixes?: readonly LibraryTransformText[];
+        };
+        definitionTransform?: {
+            /** Optional localized boundary removed from the definition before templating. */
+            matchPrefix?: LibraryMetadata | string;
+            /** Optional localized boundary removed from the definition before templating. */
+            matchSuffix?: LibraryMetadata | string;
+            /** Ordered localized substitutions applied before the fallback template. */
+            replacements?: readonly {
+                match: LibraryMetadata | string;
+                replacement: LibraryMetadata | string;
+            }[];
+            /** Localized fallback supporting definition, stem, prefix, and suffix slots. */
+            template?: LibraryMetadata | string;
+        };
+        definition?: LibraryMetadata;
+    }[];
+}
+
+export interface LibraryLayerSchema {
+    /** Provider-owned URL segment for learner exploration; defaults to id. */
+    navigationSlug?: string;
+    id: string;
+    metadata: LibraryMetadata;
+    semanticRole?: LibrarySemanticRole;
+    /** Prefer the localized definition referenced by each entry as its display text. */
+    displayDefinition?: boolean;
+    /** Render entry cards using only their primary display content. */
+    minimal?: boolean;
+    /** Suppress lookup providers that advertise dictionary capability. */
+    dictionary_lookup?: boolean;
+    definitionLocalization?: {
+        /** Module-owned prefix used to generate a stable key for each definition. */
+        stringKeyPrefix: string;
+        stringKeyField: string;
+        translationsField: string;
+    };
+    fields?: readonly LibraryFieldSchema[];
+    relationships?: readonly LibraryRelationshipSchema[];
+    /** Provider-owned specification for composing new cards in this layer. */
+    cardConstructor?: LibraryCardConstructor;
+    /** Provider-declared, tag-filtered learner views of this layer. */
+    views?: readonly LibraryLayerView[];
+    detail?: {
+        titleField?: string;
+        fieldOrder?: readonly string[];
+        /** Explicit allowlist of localized learner-facing tag pills. */
+        tags?: readonly {
+            value: string;
+            metadata: LibraryMetadata;
+            filterable?: boolean;
+        }[];
+    };
+    grid?: {
+        rowSize: number;
+        items: readonly (string | number | { blank: true } | null)[];
+    };
+    activityCompatibility?: readonly string[];
+    interestVeins?: readonly string[];
+    strokeAsset?: {
+        field: string;
+        format: "svg" | "json";
+        coordinateSystem?: string;
+    };
+}
+
+export interface LibrarySchema {
+    id: string;
+    version: number;
+    namespace: string;
+    language: string;
+    metadata: LibraryMetadata;
+    layers: readonly LibraryLayerSchema[];
+    /** Declarative transformations applied to base-form entries at presentation time. */
+    transformSets?: readonly LibraryTransformSet[];
+}
+
+export interface LibraryReferenceInput {
+    entryId: string;
+    relation: string;
+    position?: number;
+    /** Provider-declared presentation transform for this reference target. */
+    transformation?: {
+        setId: string;
+        path: string[];
+    };
+}
+
+export type LibraryReferenceGroups = Record<string, LibraryReferenceInput[][]>;
+
+export interface LibraryEntryFilters {
+    schemaId?: string;
+    layer?: string;
+    entryIds?: readonly string[];
+    sourceRecordIds?: readonly string[];
+}
+
+export interface LibraryLinkedEntryInput {
+    key: string;
+    entry: LibraryEntryInput;
+}
+
+export interface LibraryEntryInput {
+    schemaId: string;
+    schemaVersion?: number;
+    layer: string;
+    label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
+    /** Searchable, user-authored classification labels such as proficiency levels. */
+    tags?: string[];
+    /** Whether provider-owned content may be modified through Library editors. */
+    editable?: boolean;
+    /** Exclude the entry and its descendants from direct browsing while retaining references. */
+    hidden?: boolean;
+    /** Keep the primary localized definition visible in card previews. */
+    alwaysShowDefinition?: boolean;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    /** Relationship-keyed ordered groups aligned with multi-value fields. */
+    referenceGroups?: LibraryReferenceGroups;
+    /** Languages requested by a definition form; used by an optional localization provider. */
+    definitionLanguages?: string[];
+    /** Explicit confirmation after the API reports matching global content. */
+    allowConflict?: boolean;
+    linkedEntries?: LibraryLinkedEntryInput[];
+}
+
+export interface LibraryEntry extends LibraryEntryInput {
+    /** Read-only generated view; identity remains the canonical base entry. */
+    referenceTransformation?: LibraryReferenceInput["transformation"];
+    id: string;
+    sourceRecordId?: string;
+    displayId?: number;
+    schemaVersion: number;
+    language: string;
+    scope: LibraryScope;
+    scopeId: string;
+    createdBy: string;
+    /** Server-managed ownership retained after staged administrator edits. */
+    owners?: string[];
+    createdAt: string;
+    updatedAt: string;
+    /** Relocated cards retain their identity and are excluded from new-content indicators. */
+    relocatedAt?: string;
+    /** Provider-owned content cannot be moved or deleted by users. */
+    protected: boolean;
+    /** Request-scoped permission hint; never persisted. */
+    canDelete?: boolean;
+    /** Request-scoped permission for administrator speech regeneration. */
+    canRegenerateAudio?: boolean;
+    /** Request-scoped user-facing edit permission; never persisted. */
+    canEdit?: boolean;
+    /** Whether a permitted edit must be reviewed before application. */
+    editRequiresReview?: boolean;
+}
+
+export interface LibraryLocation {
+    scope: LibraryScope;
+    scopeId?: string;
+}
+
+export interface LibraryResolutionProposal {
+    relationship: string;
+    references: LibraryReferenceInput[];
+    unresolved: string[];
+    resolver: string;
+    deterministic: boolean;
+}
+
+export interface LibraryLookupDefinition {
+    translations: Record<string, string>;
+    provenance?: string;
+}
+
+export interface LibraryDefinitionLocalizationRequest {
+    translations: Record<string, string>;
+    languages: readonly string[];
+}
+
+export interface LibraryLookupPrerequisite {
+    key: string;
+    layer: string;
+    label: string;
+}
+
+export interface LibraryLookupSuggestion {
+    provider: string;
+    class?: string;
+    tags?: string[];
+    definitions?: LibraryLookupDefinition[];
+    sourceUrl?: string;
+    label?: string;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
+    provenance: string;
+    confidence: number;
+    linkedEntries?: LibraryLinkedEntryInput[];
+    /** Composer-only downstream lookup targets; aliases resolve to existing or created scoped cards. */
+    prerequisites?: LibraryLookupPrerequisite[];
+}
+
+export interface LibraryLookupProposal {
+    provider?: string;
+    class?: string;
+    tags?: string[];
+    definitions?: LibraryLookupDefinition[];
+    sourceUrl?: string;
+    label?: string;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
+    provenance?: string;
+    confidence?: number;
+    prerequisites?: LibraryLookupPrerequisite[];
+}
+
+export interface LibraryLookupProvider {
+    id: string;
+    metadata: LibraryMetadata;
+    /** Field IDs this provider can populate, used to place focused lookup actions. */
+    fields?: readonly string[];
+    capabilities?: readonly ("dictionary" | "strokePattern")[];
+    /** Expose this dictionary in the Study navigation search. */
+    searchable?: boolean;
+    /** Invalidate persisted results when provider mappings or datasets change. */
+    cacheRevision?: string;
+    supports(schema: LibrarySchema, layer: LibraryLayerSchema): boolean;
+    lookup(input: {
+        schema: LibrarySchema;
+        layer: LibraryLayerSchema;
+        label: string;
+        refresh?: boolean;
+    }): Promise<LibraryLookupProposal[]>;
+}
+
+export interface LibraryFormContribution {
+    id: string;
+    schemaId: string;
+    layerId: string;
+    /** Complete provider-owned creation form specification for the layer. */
+    cardConstructor?: LibraryCardConstructor;
+    /** Provider-defined field-control overrides keyed by existing field IDs. */
+    fields?: readonly LibraryFieldSchema[];
+}
+
+export interface LibraryPushRequest {
+    id: string;
+    sourceEntryId: string;
+    destination: LibraryLocation;
+    requestedBy: string;
+    status: "pending" | "approved" | "rejected" | "withdrawn";
+    kind?: "promotion" | "update" | "merge";
+    proposedEntry?: LibraryEntryInput;
+    /** Included only in authorized review listings. */
+    source?: LibraryEntry;
+    sourceSnapshot?: LibraryEntry;
+    /** Original downstream context for authorized request previews. */
+    sourceContext?: LibraryEntry[];
+    /** Request-scoped action hints; never persisted. */
+    canReview?: boolean;
+    canStage?: boolean;
+    canWithdraw?: boolean;
+    requestedAt?: string;
+    reviewedAt?: string;
+    reviewedBy?: string;
+    /** Administrators who changed the staged proposal. */
+    modifiedBy?: string[];
+}
+
+export interface LibraryContentPackManifest {
+    id: string;
+    publisher: string;
+    version: string;
+    contentRevision: string;
+    namespace: string;
+    schema: string;
+    content: string;
+    assets?: string;
+    /** Remove records from prior pack versions when they are absent from this version. */
+    pruneOmittedRecords?: boolean;
+    /** Protect every record in this provider pack from deletion and scope changes. */
+    protected?: boolean;
+    /** Validated provider metadata retained in installation receipts and plans. */
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
+    license: {
+        id: string;
+        url?: string;
+        attribution?: string;
+    };
+}
+
+export interface LibraryContentRecord {
+    id: string;
+    /** Optional module-owned numeric position identifier used by a layer grid. */
+    displayId?: number;
+    /** Exclude the record and its descendants from direct Library browsing. */
+    hidden?: boolean;
+    alwaysShowDefinition?: boolean;
+    label: string;
+    /** Provider-neutral lexical/content classification, such as noun or verb. */
+    class?: string;
+    /** Searchable provider classifications used by declared layer views and carousels. */
+    tags?: string[];
+    /** Prevent UI and API modification while keeping the record visible. */
+    editable?: boolean;
+    fields?: Record<string, unknown>;
+    references?: LibraryReferenceInput[];
+    referenceGroups?: LibraryReferenceGroups;
+}
+
+export interface LibraryContentPackPlan {
+    root: string;
+    manifest: LibraryContentPackManifest;
+    schema: LibrarySchema;
+    digest: string;
+    records: Array<LibraryContentRecord & { layer: string }>;
+    assets: Array<{
+        path: string;
+        mediaType:
+            | "image/svg+xml"
+            | "image/png"
+            | "image/jpeg"
+            | "image/webp"
+            | "image/gif"
+            | "application/json"
+            | "audio/mpeg"
+            | "audio/ogg"
+            | "audio/wav"
+            | "audio/webm"
+            | "audio/mp4";
+        data: string;
+    }>;
+}
+
+export interface LibraryAsset {
+    mediaType:
+        | "image/svg+xml"
+        | "image/png"
+        | "image/jpeg"
+        | "image/webp"
+        | "image/gif"
+        | "application/json"
+        | "audio/mpeg"
+        | "audio/ogg"
+        | "audio/wav"
+        | "audio/webm"
+        | "audio/mp4";
+    data: Buffer;
+}
+
+export interface LibraryContentPackReceipt {
+    packId: string;
+    publisher: string;
+    version: string;
+    contentRevision: string;
+    schemaId: string;
+    schemaVersion: number;
+    digest: string;
+    recordCount: number;
+    newRecordCount: number;
+    relationshipCount: number;
+    metadata?: Readonly<Record<string, LibraryMetadataValue>>;
+    unchanged: boolean;
+}

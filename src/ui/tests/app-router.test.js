@@ -179,6 +179,18 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
+test("router carries caller-owned state across guarded navigation", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(source, /navigateTo\(path, \{ bypassGuard: true, state \}\)/);
+    assert.match(
+        source,
+        /history\.pushState\([\s\S]*\.\.\.state,[\s\S]*routerPage: path/,
+    );
+});
+
 test("router protects and restores cancelled history traversal", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

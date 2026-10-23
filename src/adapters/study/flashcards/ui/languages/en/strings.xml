@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="adapter.study.flashcards.page_title">Flashcards</string>
+  <string name="adapter.study.flashcards.deck_edit">Edit Deck</string>
+  <string name="adapter.study.flashcards.deck_create">Create Deck</string>
+  <string name="adapter.study.flashcards.deck_layer">Card Layer</string>
+  <string name="adapter.study.flashcards.deck_saved">Deck saved.</string>
+  <string name="adapter.study.flashcards.deck_deleted">Deck deleted.</string>
+  <string name="adapter.study.flashcards.deck_save_error">Could not save the deck. Check the selected cards and imported note format.</string>
+  <string name="adapter.study.flashcards.deck_load_error">Could not load the deck or library cards.</string>
+  <string name="adapter.study.flashcards.deck_empty">No flashcard decks found</string>
+  <string name="adapter.study.flashcards.deck_finished">Well done! You have completed this deck.</string>
+  <string name="adapter.study.flashcards.deck_review_error">Could not save this review. Please try again.</string>
+  <string name="adapter.study.flashcards.deck_unavailable">{{ count }} card(s) are no longer available and were skipped.</string>
+  <string name="adapter.study.flashcards.page_subtitle">Browse Your Visible Flashcard Decks</string>
+  <string name="adapter.study.flashcards.deck_import">Import Deck</string>
+  <string name="adapter.study.flashcards.deck_cards">Cards</string>
+  <string name="adapter.study.flashcards.deck_starter">Starter Deck</string>
+  <string name="adapter.study.flashcards.deck_yours">Your Deck</string>
+  <string name="adapter.study.flashcards.deck_shared">Shared Deck</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} New or Due</string>
+  <string name="adapter.study.flashcards.deck_search">Search Decks</string>
+  <string name="adapter.study.flashcards.practice_total">Total</string>
+  <string name="adapter.study.flashcards.practice_due">Due</string>
+  <string name="adapter.study.flashcards.practice_new">New</string>
+  <string name="adapter.study.flashcards.practice_writing">Writing</string>
+  <string name="adapter.study.flashcards.practice_reading">Reading</string>
+  <string name="adapter.study.flashcards.practice_next">Next Card</string>
+  <string name="adapter.study.flashcards.practice_unavailable">No practice is available for this card.</string>
+  <string name="adapter.study.flashcards.practice_leave">Leave Practice?</string>
+  <string name="adapter.study.flashcards.practice_leave_body">Open this card in Explore and leave the current practice session?</string>
+  <string name="adapter.study.flashcards.practice_show_answer">Show Answer</string>
+  <string name="adapter.study.flashcards.practice_previous">Previous card</string>
+  <string name="adapter.study.flashcards.practice_reveal">Show character</string>
+  <string name="adapter.study.flashcards.practice_choose_mode">Choose Reading or Writing</string>
+  <string name="adapter.study.flashcards.practice_correct">Correct reading.</string>
+  <string name="adapter.study.flashcards.practice_incorrect">Incorrect reading. Review the answer and try again on your next review.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Changing the practice mode will restart this session and discard its current position and answers. Reviews already submitted remain saved.</string>
+  <string name="adapter.study.flashcards.practice_hint">Show Correct Answer</string>
+  <string name="adapter.study.flashcards.practice_hint_answer">Correct answer: {{ answer }}</string>
+</resources>

@@ -1,3 +1,4 @@
+import type { EngagementStore } from "@cognis/core";
 import { buildServer, discoverModuleSourcesOnStartup } from "./server.js";
 import type {
     ModuleManifest,
@@ -7,6 +8,9 @@ import type {
 } from "@cognis/core";
 import {
     createCtx,
+    registerEngagementCapabilities,
+    createProbeCache,
+    CORE_CACHE_CAPABILITY,
     GatewayService,
     GatewayRegistry,
     CapabilityStore,
@@ -232,12 +236,20 @@ const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/navbar-contributions.js",
+    providesCapabilities: ["ui:navbarLinks"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/feedback-capabilities.js",
     providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/resource-loader.js",
     providesCapabilities: ["ui:resourceLoader"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/scoped-actions.js",
+    providesCapabilities: ["ui:scopedActions"],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
@@ -250,6 +262,14 @@ uiRegistry.registerCapabilityProvider({
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/pagination.js",
     providesCapabilities: ["ui:pagination"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/page-overlay.js",
+    providesCapabilities: ["ui:pageOverlay"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/image-preview.js",
+    providesCapabilities: ["ui:imagePreview"],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/side-menu.js",
@@ -276,6 +296,22 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+const {
+    scoring: scoringEngine,
+    achievements: achievementRegistry,
+    ledger: engagementLedger,
+} = registerEngagementCapabilities(systemCtx, () =>
+    capabilities.require<EngagementStore>("engagement:store"),
+);
+capabilities.contribute("engagement:ledger", engagementLedger);
+capabilities.contribute("engagement:scoring", scoringEngine);
+capabilities.contribute("engagement:achievements", achievementRegistry);
+capabilities.contribute(
+    "engagement:recordActivity",
+    systemCtx.requireCapability("engagement:recordActivity"),
+);
+
+capabilities.contribute(CORE_CACHE_CAPABILITY, createProbeCache);
 capabilities.contribute(PASSPHRASE_CAPABILITY, generatePassphrase);
 systemCtx.contributeCapability(PASSPHRASE_CAPABILITY, generatePassphrase);
 const shutdownHandlers = new Set<() => Promise<void>>();

@@ -8,7 +8,8 @@ import type { UserPreferenceStore } from "../../../../../api/reuse/preference-st
 import type { ProfileStore } from "../../store-contract.js";
 
 export type AvailabilityStatus = "free" | "busy" | "tentative";
-export type EffectiveAvailabilityStatus = AvailabilityStatus | "idle";
+export type EffectiveAvailabilityStatus =
+    AvailabilityStatus | "idle" | "unknown";
 export interface CalendarAvailability {
     status: AvailabilityStatus;
     effectiveSince: string;
@@ -185,18 +186,17 @@ export function createAvailabilityRoutes(
         const profile = requestedHandle
             ? await profileStore.getProfileByHandle(requestedHandle)
             : await profileStore.getProfile(claims.sub);
-        if (!profile) {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: { code: "not_found" } }));
-            return true;
-        }
-
         if (req.method === "GET") {
             if (
+                !profile ||
                 !(await canViewAvailability(claims.sub, profile, profileStore))
             ) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "not_found" } }));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: { handle: requestedHandle, status: "unknown" },
+                    }),
+                );
                 return true;
             }
             const calendarAvailability = await resolveCalendarStatus(
@@ -226,6 +226,12 @@ export function createAvailabilityRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        if (!profile) {
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "not_found" } }));
             return true;
         }
 

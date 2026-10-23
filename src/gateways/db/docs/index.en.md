@@ -1,5 +1,7 @@
 # Database Gateway
 
+Reward snapshots retain participant revision checks and use a base fragment plus engagement_participant_parts. A commit checks and advances the revision and replaces all fragments in one transaction. Reads join the base and ordered fragments in one statement so revisions and payloads cannot come from different commits. Each fragment is at most 60,000 UTF-8 bytes. Failure rolls back the revision and bytes; conflicting writers receive engagement_state_conflict. Tests enforce the physical text budget rather than accepting unbounded strings.
+
 ## Overview
 
 The Database Gateway is the single point of access for all database operations in Cognis. It provides a uniform executor interface that hides the differences between PostgreSQL and MariaDB so that the rest of the application never needs to know which database is running. The gateway reads `DB_TYPE` from the environment, creates the appropriate executor, initialises the schema, and contributes the executor and dialect helpers to the capability store.
@@ -87,3 +89,9 @@ Administration marks only the adapter selected by `DB_TYPE` as active. Every dat
 | -------------- | ------------ | --------------------------------------------------------- |
 | `DB_TYPE`      | `postgresql` | Database backend: `postgresql` or `mariadb`               |
 | `DATABASE_URL` | —            | Connection string; required for `postgresql` or `mariadb` |
+
+## Durable Practice Rewards
+
+The Database gateway provides `engagement:store` for participant reward receipts, booster redemptions and invalidations. Structured commands enforce atomic revision checks so concurrent writers cannot silently overwrite another worker’s rewards. The core engine receives this storage through ctx rather than importing database implementations.
+
+Schema initialization creates declared tables and adds missing columns and indexes. It does not replace existing primary or unique keys. The structured storage contract does not express large text fields: MariaDB TEXT is limited to 65,535 bytes, and multibyte composite keys are subject to InnoDB’s key-size limit. Study payload sizes and schema changes must be assessed against those provider limits.

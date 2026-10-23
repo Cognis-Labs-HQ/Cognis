@@ -18,3 +18,12 @@ test("replaceMountScope links the replacement to the router signal", () => {
 
     assert.equal(next.signal.aborted, true);
 });
+
+test("replaceMountScope preserves cancellation that happened before mounting", () => {
+    const router = new AbortController();
+    router.abort();
+    const previous = new AbortController();
+    const next = replaceMountScope(previous, router.signal);
+    assert.equal(previous.signal.aborted, true);
+    assert.equal(next.signal.aborted, true);
+});

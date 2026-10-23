@@ -18,22 +18,21 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import {
-    navigateTo,
-    invalidateStudyChildComponentCache,
-} from "/static/reuse/app-router.js";
-import { clearStudySubNavCache } from "/static/gateways/study/ui/sub-navigation.js";
+    bindStudySubNavigation,
+    clearStudySubNavCache,
+    loadStudySubNavigationModel,
+    readSelectedStudyLanguageCode,
+    renderStudySubNavigation,
+} from "/static/gateways/study/sub-navigation.js";
 import {
     resolveLanguageLabel,
-    isAdminScope,
+    isStudentScope,
     buildLibraryUrl,
-} from "/static/gateways/study/ui/language.js";
+} from "/static/gateways/study/language.js";
 import { openPopup } from "/static/reuse/popup.js";
-
-const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-  <circle cx="12" cy="12" r="3"/>
-  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-</svg>`;
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 function toLanguageRecord(rawLanguage) {
     const languageCode = String(rawLanguage?.code ?? "").trim();
@@ -52,9 +51,10 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
-    applyDocumentTitle(i18n, "gateway.study.page_title");
+    applyDocumentTitle(i18n, "ui.reuse.study");
 
     const currentPath = window.location.pathname;
+    const requestedLanguageCode = readSelectedStudyLanguageCode();
     const isWelcomePath = currentPath === "/study/welcome";
     const isSettingsPath = currentPath === "/study/settings";
 
@@ -75,11 +75,22 @@ export async function mount(root, { signal } = {}) {
                   .filter(Boolean)
             : [];
 
-    const learningLanguages =
+    if (registeredLanguages.length === 0) {
+        await navigateTo("/error?code=503");
+        return;
+    }
+
+    const storedLearningLanguages =
         prefsResult.status === "fulfilled" &&
         Array.isArray(prefsResult.value?.data?.learningLanguages)
             ? [...new Set(prefsResult.value.data.learningLanguages)]
             : [];
+    const registeredLanguageCodes = new Set(
+        registeredLanguages.map(({ code }) => code),
+    );
+    const learningLanguages = storedLearningLanguages.filter((languageCode) =>
+        registeredLanguageCodes.has(languageCode),
+    );
 
     if (isWelcomePath) {
         if (learningLanguages.length > 0) {
@@ -99,6 +110,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         registeredLanguages,
         learningLanguages,
+        requestedLanguageCode,
         isSettingsPath,
         signal,
     });
@@ -163,7 +175,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         elements: [
             {
                 id: "study-welcome",
-                label: i18n.t("gateway.study.page_title"),
+                label: i18n.t("ui.reuse.study"),
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: renderWelcomeContent,
@@ -173,7 +185,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         preferenceKey: "study-welcome-layout",
         i18n,
         pageContext: {
-            title: i18n.t("gateway.study.page_title"),
+            title: i18n.t("ui.reuse.study"),
             subtitle: i18n.t("gateway.study.page_subtitle"),
         },
         toolbar: [],
@@ -217,7 +229,6 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                     );
                     if (!response.ok) throw new Error("save_failed");
                     clearStudySubNavCache();
-                    invalidateStudyChildComponentCache();
                     navigateTo("/study");
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
@@ -231,59 +242,39 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
 
 async function mountHub(
     root,
-    { i18n, registeredLanguages, learningLanguages, isSettingsPath },
+    {
+        i18n,
+        registeredLanguages,
+        learningLanguages,
+        requestedLanguageCode,
+        isSettingsPath,
+        signal,
+    },
 ) {
-    const selectedLanguageCode = learningLanguages[0];
+    const selectedLanguageCode = learningLanguages.includes(
+        requestedLanguageCode,
+    )
+        ? requestedLanguageCode
+        : learningLanguages[0];
+    const navigationModel = await loadStudySubNavigationModel({
+        fallbackLanguageCode: selectedLanguageCode,
+    });
 
-    const languageModulesMap = new Map();
-    const discoveredLanguageCodes = new Set();
-
-    async function loadModulesForLanguage(languageCode) {
-        try {
-            const response = await apiFetch(
-                `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-            );
-            if (!response.ok) {
-                languageModulesMap.set(languageCode, []);
-                return;
-            }
-            const payload = await response.json();
-            const childComponents = Array.isArray(payload?.data)
-                ? payload.data
-                : [];
-            languageModulesMap.set(languageCode, childComponents);
-            discoveredLanguageCodes.add(languageCode);
-        } catch {
-            languageModulesMap.set(languageCode, []);
-        }
-    }
-
-    await Promise.allSettled(
-        learningLanguages.map((languageCode) =>
-            loadModulesForLanguage(languageCode),
-        ),
-    );
+    const subPages = uiCtx.capabilities.get("study:subPages");
+    if (!subPages) throw new Error("Study sub-page provider unavailable.");
+    const subPageModel = await subPages.load("study", {
+        selectedGroupId: selectedLanguageCode,
+        groupIds: learningLanguages,
+    });
+    const languageModulesMap = subPageModel.pagesByGroup;
 
     const languageByCode = new Map();
     for (const language of registeredLanguages) {
         languageByCode.set(language.code, language);
     }
-    for (const languageCode of discoveredLanguageCodes) {
-        if (!languageByCode.has(languageCode)) {
-            languageByCode.set(languageCode, {
-                code: languageCode,
-                flag: "",
-                name: resolveLanguageLabel(languageCode),
-            });
-        }
-    }
-
     const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
         a.name.localeCompare(b.name),
     );
-
-    const selectedLanguageModules =
-        languageModulesMap.get(selectedLanguageCode) ?? [];
 
     function getLanguage(languageCode) {
         return (
@@ -296,6 +287,16 @@ async function mountHub(
     }
 
     function buildHubUrl(languageCode) {
+        const rememberedPageUrl = [
+            history.state?.studyLastPageUrl,
+            history.state?.previousRouterPage,
+        ].find(
+            (path) =>
+                typeof path === "string" &&
+                path.startsWith("/study/") &&
+                !["/study/settings", "/study/welcome"].includes(path),
+        );
+        if (rememberedPageUrl) return rememberedPageUrl;
         const modules = languageModulesMap.get(languageCode) ?? [];
         const firstModulePageUrl = modules
             .map((component) => String(component?.pageUrl ?? "").trim())
@@ -308,90 +309,35 @@ async function mountHub(
     }
 
     function renderSubNavigation() {
-        const hasLibraryModule = selectedLanguageModules.some(
-            (component) => String(component?.id ?? "").trim() === "library",
-        );
-        const moduleLinks = selectedLanguageModules
-            .map((component) => {
-                const pageUrl = String(component.pageUrl ?? "").trim();
-                if (!pageUrl) return "";
-                const activeClass =
-                    window.location.pathname === pageUrl ? " active" : "";
-                return `
-                    <li>
-                        <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                            ${escapeHtml(String(component.label ?? pageUrl))}
-                        </a>
-                    </li>
-                `;
-            })
-            .join("");
-        const libraryLink =
-            isAdminScope() && !hasLibraryModule
-                ? `
-                <li>
-                    <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                        ${escapeHtml(i18n.t("gateway.study.library_label"))}
-                    </a>
-                </li>
-            `
-                : "";
-
-        const activeLanguageLinks = learningLanguages
-            .map((languageCode) => {
-                const language = getLanguage(languageCode);
-                const href = buildHubUrl(languageCode);
-                const activeClass =
-                    languageCode === selectedLanguageCode ? " active" : "";
-                return `
-                    <li>
-                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
-                            ${escapeHtml(language.flag)}
-                            <span>${escapeHtml(language.name)}</span>
-                        </a>
-                    </li>
-                `;
-            })
-            .join("");
-
-        const settingsActiveClass = isSettingsPath ? " active" : "";
-        const settingsUrl = buildSettingsUrl();
-
-        return `
-            <div class="study-page-subnav">
-                <ul class="page-subnav-list study-subnav-modules">
-                    ${moduleLinks}${libraryLink}
-                </ul>
-                <ul class="page-subnav-list study-subnav-language-options">
-                    ${activeLanguageLinks}
-                </ul>
-                <a
-                    class="study-subnav-settings-link${settingsActiveClass}"
-                    href="${escapeHtml(settingsUrl)}"
-                    data-search-category="Pages"
-                    data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                    data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
-                    aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                    title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                >
-                    ${SETTINGS_GEAR_SVG}
-                </a>
-            </div>
-        `;
+        return renderStudySubNavigation({
+            model: navigationModel,
+            currentPath: window.location.pathname,
+            i18n,
+        });
     }
 
     function renderDashboardContent() {
         const cards = learningLanguages
             .map((languageCode) => {
                 const language = getLanguage(languageCode);
-                const modules = languageModulesMap.get(languageCode) ?? [];
+                const executableModules =
+                    languageModulesMap.get(languageCode) ?? [];
+                const modules =
+                    executableModules.length === 0 && isStudentScope()
+                        ? [
+                              {
+                                  label: i18n.t("gateway.study.library_label"),
+                                  pageUrl: buildLibraryUrl(languageCode),
+                              },
+                          ]
+                        : executableModules;
                 const moduleList =
                     modules.length === 0
                         ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("gateway.study.no_modules"))}</span>`
                         : modules
                               .map(
                                   (component) => `
-                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
+                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("ui.reuse.study"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("ui.reuse.study"), language.name, component.label].filter(Boolean).join(" "))}">
                                         ${escapeHtml(component.label)}
                                     </a>
                                 `,
@@ -472,7 +418,7 @@ async function mountHub(
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.language"))}</th>
                                     <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
                                 </tr>
                             </thead>
@@ -485,7 +431,7 @@ async function mountHub(
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.language"))}</th>
                                     <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
                                 </tr>
                             </thead>
@@ -504,14 +450,12 @@ async function mountHub(
             const languageName = language.name || languageCode;
             items.push({
                 id: `study-language:${languageCode}`,
-                label: [i18n.t("gateway.study.page_title"), languageName].join(
-                    " / ",
-                ),
-                description: i18n.t("gateway.study.page_title"),
+                label: [i18n.t("ui.reuse.study"), languageName].join(" / "),
+                description: i18n.t("ui.reuse.study"),
                 url: buildHubUrl(languageCode),
                 resultClass: "page",
                 searchText: [
-                    i18n.t("gateway.study.page_title"),
+                    i18n.t("ui.reuse.study"),
                     languageName,
                     languageCode,
                 ]
@@ -525,19 +469,16 @@ async function mountHub(
                 if (!pageUrl || !label) continue;
                 items.push({
                     id: `study-module:${languageCode}:${component?.id ?? label}`,
-                    label: [
-                        i18n.t("gateway.study.page_title"),
-                        languageName,
-                        label,
-                    ].join(" / "),
-                    description: [
-                        i18n.t("gateway.study.page_title"),
-                        languageName,
-                    ].join(" / "),
+                    label: [i18n.t("ui.reuse.study"), languageName, label].join(
+                        " / ",
+                    ),
+                    description: [i18n.t("ui.reuse.study"), languageName].join(
+                        " / ",
+                    ),
                     url: pageUrl,
                     resultClass: "page",
                     searchText: [
-                        i18n.t("gateway.study.page_title"),
+                        i18n.t("ui.reuse.study"),
                         languageName,
                         label,
                         component?.id,
@@ -550,14 +491,14 @@ async function mountHub(
         items.push({
             id: "study-settings",
             label: [
-                i18n.t("gateway.study.page_title"),
+                i18n.t("ui.reuse.study"),
                 i18n.t("gateway.study.language_settings"),
             ].join(" / "),
-            description: i18n.t("gateway.study.page_title"),
+            description: i18n.t("ui.reuse.study"),
             url: buildSettingsUrl(),
             resultClass: "setting",
             searchText: [
-                i18n.t("gateway.study.page_title"),
+                i18n.t("ui.reuse.study"),
                 i18n.t("gateway.study.language_settings"),
             ].join(" "),
         });
@@ -577,7 +518,7 @@ async function mountHub(
           }
         : {
               id: "study-hub",
-              label: i18n.t("gateway.study.page_title"),
+              label: i18n.t("ui.reuse.study"),
               pinned: true,
               gridSize: { default: [12, 8], min: [4, 4], max: "full" },
               render: renderDashboardContent,
@@ -591,7 +532,7 @@ async function mountHub(
             : "study-hub-layout",
         i18n,
         pageContext: {
-            title: i18n.t("gateway.study.page_title"),
+            title: i18n.t("ui.reuse.study"),
             subtitle: isSettingsPath
                 ? i18n.t("gateway.study.settings_subtitle")
                 : i18n.t("gateway.study.page_subtitle"),
@@ -600,13 +541,14 @@ async function mountHub(
         subNavigation: [
             {
                 id: "study-subnav",
-                label: i18n.t("gateway.study.page_title"),
+                label: i18n.t("ui.reuse.study"),
                 render: renderSubNavigation,
             },
         ],
     });
 
     await composer.init();
+    bindStudySubNavigation(root, { signal, i18n });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {
@@ -662,7 +604,6 @@ async function mountHub(
                     );
                     if (!response.ok) throw new Error("save_failed");
                     clearStudySubNavCache();
-                    invalidateStudyChildComponentCache();
                     navigateTo(buildSettingsUrl());
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {

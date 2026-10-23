@@ -9,6 +9,9 @@
   <string name="ui.app.modules.change_release_channel">リリースチャンネルを変更</string>
   <string name="ui.app.modules.changing_release_channel">リリースチャンネルを変更中</string>
   <string name="ui.app.modules.installing">インストール中</string>
+  <string name="ui.app.modules.enabling">有効化中</string>
+  <string name="ui.app.modules.disabling">無効化中</string>
+  <string name="ui.app.modules.uninstalling">アンインストール中</string>
   <string name="ui.app.modules.upgrading">アップグレード中</string>
   <string name="ui.app.modules.downgrading">ダウングレード中</string>
   <string name="ui.app.modules.upgrade_complete">モジュールをアップグレードしました。</string>
@@ -46,8 +49,8 @@
   <string name="ui.app.modules.refresh_complete">モジュールソースを更新しました。</string>
   <string name="ui.app.modules.update_complete">モジュールを更新しました。</string>
   <string name="ui.app.modules.disable_before_update">更新する前にモジュールを無効にしてください。</string>
-  <string name="ui.app.modules.install_timeout">モジュールのインストールが2分以内に完了しませんでした。</string>
-  <string name="ui.app.modules.github_timeout_warning">アプリケーションコンテナから GitHub への TLS 接続が完了しませんでした。特に VPN またはトンネルを使用している場合は、ホストまたは Docker ネットワークの MTU を確認してから再試行してください。</string>
+  <string name="ui.app.modules.install_timeout">モジュールのインストールがタイムアウトしました。ダウンロードが停止したか、接続が中断された可能性があります。もう一度お試しください。</string>
+  <string name="ui.app.modules.github_timeout_warning">GitHub への安全な接続を確立できませんでした。接続状況とプロキシ設定を確認してください。VPN やトンネルを使用している場合は、ホストまたは Docker ネットワークの MTU も確認してください。</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">モジュールストア</string>

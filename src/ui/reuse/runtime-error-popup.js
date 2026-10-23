@@ -1,3 +1,4 @@
+import { uiCtx } from "./ui-ctx.js";
 /**
  * Global runtime error reporting popup for dashboard pages.
  *
@@ -175,6 +176,30 @@ function installConsoleCapture() {
 function buildResourceLoadError(event) {
     const eventTarget = event?.target;
     if (!eventTarget || eventTarget === window) return null;
+    if (
+        eventTarget instanceof HTMLImageElement &&
+        (eventTarget.dataset.resourceFallback ||
+            eventTarget.dataset.resourceFallbackText)
+    ) {
+        const log = uiCtx.capabilities.get("ui:log");
+        log?.("error", "Module image could not be decoded or loaded.", {
+            component: "module-marketplace",
+            operation: "displayImage",
+            reason: "image_load_failed",
+            moduleUuid: eventTarget.dataset.resourceId,
+            assetUrl: eventTarget.currentSrc || eventTarget.src,
+        });
+    }
+    if (
+        eventTarget instanceof HTMLImageElement &&
+        eventTarget.dataset.resourceFallbackText
+    ) {
+        const placeholder = document.createElement("div");
+        placeholder.className = eventTarget.dataset.resourceFallbackClass ?? "";
+        placeholder.textContent = eventTarget.dataset.resourceFallbackText;
+        eventTarget.replaceWith(placeholder);
+        return HANDLED_RESOURCE_FALLBACK;
+    }
     if (
         eventTarget instanceof HTMLImageElement &&
         eventTarget.dataset.resourceFallback

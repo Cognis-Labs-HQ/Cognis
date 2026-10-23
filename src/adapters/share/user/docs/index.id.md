@@ -7,3 +7,5 @@ Memberikan sumber daya langsung kepada pengguna Cognis melalui gateway Share. Ad
 ## Spesifikasi teknis
 
 Adaptor memvalidasi input penerima atau token khusus metode, mendelegasikan orkestrasi sumber daya bersama ke gateway Share, dan hanya aktif selama gateway pemilik serta siklus hidup adaptor diaktifkan.
+
+Pemanggil dapat menetapkan `allowedPermissions: ["read"]` pada dialog berbagi untuk menampilkan hanya izin yang diterapkan sumber daya. Pilihan pengguna dan perubahan mengikuti daftar tersebut. Pemilik sumber daya tetap harus menegakkan izin yang sama pada alur otorisasi.

@@ -22,6 +22,8 @@ export function createGatewayUiRegistryHooks(
             base: string;
             scriptUrl: string;
             stylesheets?: string[];
+            requiredCapabilities?: string[];
+            access?: import("@cognis/core").RoleAccessPolicy;
             isEnabled?: () => boolean;
         }): void {
             uiRegistry?.registerSpaRoute?.(route);
