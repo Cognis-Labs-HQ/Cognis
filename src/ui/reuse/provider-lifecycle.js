@@ -1,3 +1,33 @@
+/**
+ * Owns browser provider registration and cleanup across discovery catalogs.
+ *
+ * Public exports:
+ * - createProviderLifecycle(options) — reconciles provider imports, mounts and disposal.
+ *
+ * Host bundle downloads may overlap; imports and mounts retain catalog order.
+ *
+ * @example
+ * const lifecycle = createProviderLifecycle({ uiCtx });
+ * await lifecycle.reconcile(providers, 'capabilities');
+ * await lifecycle.reconcile([], 'capabilities');
+ *
+ * @param {object} options UI context and optional module importer.
+ * @returns {{ reconcile: (providers: object[], catalog?: string) => Promise<void> }}
+ */
+function preloadHostProviders(urls) {
+    if (typeof document === "undefined") return () => {};
+    const links = urls
+        .filter((url) => url.startsWith("/assets/") && !/[?#]/.test(url))
+        .map((url) => {
+            const link = document.createElement("link");
+            link.rel = "modulepreload";
+            link.href = url;
+            document.head.appendChild(link);
+            return link;
+        });
+    return () => links.forEach((link) => link.remove());
+}
+
 export function createProviderLifecycle({
     uiCtx,
     importProvider = (url) => import(url),
@@ -17,56 +47,63 @@ export function createProviderLifecycle({
             await release();
             active.delete(url);
         }
-        for (const [url] of desired) {
-            if (active.has(url)) continue;
-            const provider = await importProvider(url);
-            const removers = [];
-            const controller = new AbortController();
-            const release = async () => {
-                controller.abort();
-                for (const remove of removers.toReversed()) await remove();
-            };
-            const scopedCtx = {
-                ...uiCtx,
-                signal: controller.signal,
-                capabilities: {
-                    get: uiCtx.capabilities.get,
-                    contribute(id, value) {
-                        if (!uiCtx.capabilities.contribute(id, value))
-                            throw new Error(
-                                `UI provider capability conflict: ${id}`,
+        const releasePreloads = preloadHostProviders(
+            [...desired.keys()].filter((url) => !active.has(url)),
+        );
+        try {
+            for (const [url] of desired) {
+                if (active.has(url)) continue;
+                const provider = await importProvider(url);
+                const removers = [];
+                const controller = new AbortController();
+                const release = async () => {
+                    controller.abort();
+                    for (const remove of removers.toReversed()) await remove();
+                };
+                const scopedCtx = {
+                    ...uiCtx,
+                    signal: controller.signal,
+                    capabilities: {
+                        get: uiCtx.capabilities.get,
+                        contribute(id, value) {
+                            if (!uiCtx.capabilities.contribute(id, value))
+                                throw new Error(
+                                    `UI provider capability conflict: ${id}`,
+                                );
+                            removers.push(() =>
+                                uiCtx.capabilities.remove(id, value),
                             );
-                        removers.push(() =>
-                            uiCtx.capabilities.remove(id, value),
-                        );
-                        return true;
+                            return true;
+                        },
                     },
-                },
-                registerFlow(id, stages) {
-                    removers.push(uiCtx.registerFlow(id, stages));
-                },
-                extendFlow(flowId, stageId, hook, handler) {
-                    const registered = uiCtx.extendFlow(
-                        flowId,
-                        stageId,
-                        hook,
-                        handler,
-                    );
-                    if (registered)
-                        removers.push(() =>
-                            uiCtx.removeFlowHook(flowId, stageId, hook.id),
+                    registerFlow(id, stages) {
+                        removers.push(uiCtx.registerFlow(id, stages));
+                    },
+                    extendFlow(flowId, stageId, hook, handler) {
+                        const registered = uiCtx.extendFlow(
+                            flowId,
+                            stageId,
+                            hook,
+                            handler,
                         );
-                    return registered;
-                },
-            };
-            try {
-                const dispose = await provider.mountProvider?.(scopedCtx);
-                if (typeof dispose === "function") removers.push(dispose);
-                active.set(url, release);
-            } catch (error) {
-                await release();
-                throw error;
+                        if (registered)
+                            removers.push(() =>
+                                uiCtx.removeFlowHook(flowId, stageId, hook.id),
+                            );
+                        return registered;
+                    },
+                };
+                try {
+                    const dispose = await provider.mountProvider?.(scopedCtx);
+                    if (typeof dispose === "function") removers.push(dispose);
+                    active.set(url, release);
+                } catch (error) {
+                    await release();
+                    throw error;
+                }
             }
+        } finally {
+            releasePreloads();
         }
     }
 

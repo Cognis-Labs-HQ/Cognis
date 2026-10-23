@@ -166,7 +166,38 @@ export class UIRegistry {
     }
 
     resolveAssetUrl(assetUrl: string): string {
-        return this.assetManifest[assetUrl] ?? assetUrl;
+        const emittedUrl = this.assetManifest[assetUrl];
+        if (emittedUrl) return emittedUrl;
+
+        const gatewayAsset = assetUrl.match(
+            /^\/static\/gateways\/([^/]+)\/([^?#]+)$/,
+        );
+        const adapterAsset = assetUrl.match(
+            /^\/static\/adapters\/([^/]+)\/([^/]+)\/([^?#]+)$/,
+        );
+        const directory = gatewayAsset
+            ? this.getStaticDir(gatewayAsset[1])
+            : adapterAsset
+              ? this.getAdapterStaticDir(adapterAsset[1], adapterAsset[2])
+              : undefined;
+        const relativeAsset = gatewayAsset?.[2] ?? adapterAsset?.[3];
+        if (
+            !directory ||
+            !relativeAsset ||
+            path.isAbsolute(relativeAsset) ||
+            relativeAsset.split("/").includes("..")
+        ) {
+            return assetUrl;
+        }
+        const sourcePath = path
+            .relative(
+                path.resolve(process.cwd(), "src"),
+                path.resolve(directory, relativeAsset),
+            )
+            .split(path.sep)
+            .join("/");
+        if (!/^(?:gateways|adapters)\//.test(sourcePath)) return assetUrl;
+        return this.assetManifest[`/static/${sourcePath}`] ?? assetUrl;
     }
 
     listAssetManifest(): Record<string, string> {
