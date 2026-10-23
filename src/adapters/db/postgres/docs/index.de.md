@@ -34,3 +34,13 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                         |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |
+
+## Eindeutige Schlüssel
+
+PostgreSQL gleicht mit `ensureTable()` die Deklarationen `unique: true` und zusammengesetzte `uniqueKeys` sowohl für vorhandene als auch für neue Tabellen ab. Gültige, sofort wirksame, nicht partielle eindeutige Indizes werden anhand ihrer Schlüsselspalten erkannt; nur fehlende Indizes werden erstellt. Mehrere NULL-Werte bleiben erlaubt. Bestehende Primärschlüssel werden nicht ersetzt.
+
+Die Schemainitialisierung läuft in einer Transaktion mit einer Advisory-Sperre pro Tabelle, auch innerhalb einer bestehenden Executor-Transaktion. Doppelte Werte oder kollidierende Indexnamen führen zum Abbruch und zum Zurückrollen der Schemaänderungen. Datensätze werden weder gelöscht noch neu zugeordnet. Fehler werden an der Transaktionsgrenze protokolliert.
+
+Vor der erneuten Initialisierung betroffener Modulschemas muss der aktualisierte Host-Adapter bereitgestellt werden. Den Host neu starten oder das betroffene Modul deaktivieren und erneut aktivieren, um den Schemacache zu leeren. Die Datenbankrolle muss die Tabellen besitzen oder gleichwertige DDL-Rechte haben. Die Indexerstellung prüft vorhandene Daten und blockiert Schreibzugriffe; Wartungsfenster und ausreichendes Anweisungszeitlimit einplanen. Doppelte Nicht-NULL-Schlüssel vor einem erneuten Versuch prüfen und durch ein genehmigtes Wiederherstellungsverfahren bereinigen; keine Tabellen löschen oder Inhalte zurücksetzen.
+
+Für Adaptertests `COGNIS_TEST_POSTGRES_URL` auf eine entbehrliche PostgreSQL-Testdatenbank setzen. Der Integrationstest erstellt und entfernt ein eigenes zufälliges Schema und benötigt die entsprechende Berechtigung. Ohne diese Variable wird der Test ausdrücklich übersprungen.

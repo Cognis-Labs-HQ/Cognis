@@ -39,3 +39,13 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 | `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-client timeout in milliseconds (1,000–600,000)                       |
 | `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                          |
 | `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Optional statement timeout in milliseconds (1–3,600,000)                  |
+
+## Unique-key reconciliation
+
+PostgreSQL `ensureTable()` reconciles column `unique: true` and composite `uniqueKeys` declarations on existing tables as well as new tables. It recognizes valid, immediate, non-partial unique indexes by their key columns and creates only missing indexes. Nullable unique columns retain PostgreSQL’s default behavior: multiple NULL values are allowed. Existing primary keys are not replaced.
+
+Schema initialization runs in a transaction with a per-table advisory lock, including when called inside an existing executor transaction. Duplicate values or conflicting index names fail initialization and roll back schema changes; no records are deleted or reassigned. Failures are logged by the transaction boundary.
+
+Deploy the updated host adapter before reinitializing affected module schemas. Restart the host or disable and re-enable the affected module to clear its schema-initialization cache. The database role must own the affected tables (or have equivalent DDL rights). Unique-index creation scans existing data and blocks writes, so allow a maintenance window and sufficient statement timeout. Inspect duplicate non-NULL keys and resolve them through an approved data-recovery process before retrying; do not drop tables or reset content.
+
+Run the adapter tests with `COGNIS_TEST_POSTGRES_URL` pointing to a disposable PostgreSQL database. The integration test creates and removes its own random schema and requires schema-creation permission. Without this variable, that test explicitly skips.

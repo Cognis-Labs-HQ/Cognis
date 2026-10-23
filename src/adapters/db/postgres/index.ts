@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
@@ -181,6 +182,7 @@ class PostgresExecutor implements RawDbExecutor {
     constructor(
         private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
+        private readonly inTransaction = false,
     ) {}
 
     async execute(sql: string, params: unknown[] = []) {
@@ -224,6 +226,7 @@ class PostgresExecutor implements RawDbExecutor {
                 end: async () => undefined,
             },
             this.log,
+            true,
         );
         try {
             await client.query("BEGIN");
@@ -252,6 +255,19 @@ class PostgresExecutor implements RawDbExecutor {
     }
 
     async ensureTable(def: StructuredDbTableDef): Promise<void> {
+        if (!this.inTransaction) {
+            await this.transaction((executor) => executor.ensureTable(def));
+            return;
+        }
+        // Serialize schema initialization even before the table exists.
+        await this.execute(
+            "SELECT pg_advisory_xact_lock(hashtext(current_database() || ':' || current_schema()), hashtext($1))",
+            [def.name],
+        );
+        await this.reconcileTable(def);
+    }
+
+    private async reconcileTable(def: StructuredDbTableDef): Promise<void> {
         const pgType = (
             col: StructuredDbTableDef["columns"][number],
         ): string => {
@@ -363,12 +379,63 @@ class PostgresExecutor implements RawDbExecutor {
                 `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
+        await this.ensureUniqueKeys(def);
         for (const index of def.indexes ?? []) {
             const indexName =
                 index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
             await this.execute(
                 `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
             );
+        }
+    }
+
+    private async ensureUniqueKeys(def: StructuredDbTableDef): Promise<void> {
+        const declaredKeys = [
+            ...def.columns
+                .filter((column) => column.unique)
+                .map((column) => [column.name]),
+            ...(def.uniqueKeys ?? []),
+        ];
+        if (!declaredKeys.length) return;
+        const result = await this.execute(
+            `SELECT ARRAY(
+                SELECT pg_attribute.attname::text
+                FROM unnest(pg_index.indkey) WITH ORDINALITY AS index_columns(attnum, position)
+                JOIN pg_attribute ON pg_attribute.attrelid = pg_index.indrelid
+                    AND pg_attribute.attnum = index_columns.attnum
+                WHERE index_columns.position <= pg_index.indnkeyatts
+                ORDER BY pg_attribute.attname
+            ) AS columns
+            FROM pg_index
+            WHERE pg_index.indrelid = to_regclass($1)
+                AND pg_index.indisunique AND pg_index.indisvalid
+                AND pg_index.indisready AND pg_index.indimmediate
+                AND pg_index.indpred IS NULL AND pg_index.indexprs IS NULL`,
+            [def.name],
+        );
+        const existingKeys = new Set(
+            (result.rows ?? []).map((row) =>
+                JSON.stringify([...row.columns].sort()),
+            ),
+        );
+        for (const columns of declaredKeys) {
+            const key = JSON.stringify([...new Set(columns)].sort());
+            if (existingKeys.has(key)) continue;
+            const digest = createHash("sha256")
+                .update(JSON.stringify([def.name, key]))
+                .digest("hex")
+                .slice(0, 40);
+            // Do not ignore a colliding name: only a verified index satisfies the contract.
+            await this.execute(
+                `CREATE UNIQUE INDEX cognis_unique_${digest} ON ${def.name} (${columns.join(", ")})`,
+            );
+            existingKeys.add(key);
+            writeDbLog(this.log, "info", "PostgreSQL unique key reconciled.", {
+                component: "db",
+                provider: "postgresql",
+                table: def.name,
+                columns,
+            });
         }
     }
 }
