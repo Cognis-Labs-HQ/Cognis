@@ -85,7 +85,7 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [2, 2], min: [2, 2], max: [4, 4] },
             render: () => `
       <div class="dashboard-app-icon">
-        <img src="/static/assets/icons/cognis-icon.png" alt="${i18n.t("ui.shared.brand.name")}" class="dashboard-app-icon-img" />
+        <img src="/static/assets/icons/cognis-icon-192.png" alt="${i18n.t("ui.shared.brand.name")}" class="dashboard-app-icon-img" />
         <span class="dashboard-app-icon-name">${i18n.t("ui.shared.brand.name")}</span>
       </div>
     `,

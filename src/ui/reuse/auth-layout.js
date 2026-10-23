@@ -36,7 +36,7 @@ export function renderAuthBrandline(brandName, tagline, extraClass = "") {
     const classes = ["auth-brandline", extraClass].filter(Boolean).join(" ");
     return `
     <a class="${classes}" href="/">
-      <img src="/static/assets/icons/cognis-icon.png" alt="" class="auth-icon" />
+      <img src="/static/assets/icons/cognis-icon-192.png" alt="" class="auth-icon" />
       <div>
         <h1 class="auth-title">${escapeHtml(brandName)}</h1>
         <p class="auth-typing">${escapeHtml(tagline)}</p>
