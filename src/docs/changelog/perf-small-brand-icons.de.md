@@ -12,5 +12,5 @@ Bei der Installation speichert der Service Worker die vorhandenen kleinen und gr
 
 ## Commits
 
-- [c430f10894603ad0a04c384ea0def28f7684fcd1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c430f10894603ad0a04c384ea0def28f7684fcd1)
-- [fc989554e9d0c2660849063d94c5abfa2f06291a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc989554e9d0c2660849063d94c5abfa2f06291a)
+- [eaa76ae32f517fd4b2a52fd1c064aa19720dc9ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/eaa76ae32f517fd4b2a52fd1c064aa19720dc9ac)
+- [b1fd6cd8f41b6b03855eef1f87a21e98989e46b8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1fd6cd8f41b6b03855eef1f87a21e98989e46b8)
