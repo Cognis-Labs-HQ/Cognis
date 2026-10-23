@@ -18,7 +18,7 @@ Optimasi hanya diterima setelah protokol hosted yang sama menunjukkan tidak ada 
 
 ## Resolusi aset produksi
 
-Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang menjadi titik masuk wajib; impor statis biasa tetap menjadi dependensi dalam bundel. Build UI menerbitkan kontribusi JavaScript host yang dideklarasikan sebagai titik masuk meskipun titik masuk lain juga mengimpornya. Direktori statis gateway dan adapter yang terdaftar memetakan deskriptornya ke aset sumber hasil build yang sesuai, sehingga prefiks URL khusus dapat memakai bundel produksi.
+Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang menjadi titik masuk wajib; impor statis biasa tetap menjadi dependensi dalam bundel. Build UI menerbitkan kontribusi JavaScript host yang dideklarasikan sebagai titik masuk meskipun titik masuk lain juga mengimpornya. Direktori statis gateway dan adapter yang terdaftar memetakan deskriptornya ke aset sumber hasil build yang sesuai, sehingga prefiks URL khusus dapat memakai bundel produksi. Bagian pengaturan yang ditambahkan oleh alur konstruksi diresolusikan melalui manifes yang sama setelah pemeriksaan otorisasi dan visibilitas. Setiap permintaan memakai deskriptor terkini; sumber yang tidak dibundel dan sumber modul dengan revisi mempertahankan URL resminya.
 
 Resolusi memakai manifes build yang tersedia dan tidak menyimpan respons API dalam cache. Autentikasi dan penyaringan komponen aktif tetap dijalankan saat deskriptor diminta. Instalasi yang hanya memakai sumber, aset yang tidak dibangun, direktori eksternal, dan URL modul dengan revisi tetap memakai jalur pengiriman aslinya.
 

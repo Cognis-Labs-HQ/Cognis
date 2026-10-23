@@ -4,7 +4,7 @@
 
 ## Resolve Production Bundles
 
-Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The build includes literal host script references even when other entries import them. Registered gateway and adapter static directories resolve custom URL prefixes to their emitted bundles. API version advances to 0.6.22.
+Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The build includes literal host script references even when other entries import them. Registered gateway and adapter static directories resolve custom URL prefixes to their emitted bundles. API version advances to 0.6.22. Settings sections added by construction flows are resolved through the same manifest after authorization and visibility filtering. Each request uses the current descriptors; source-only and revision-qualified module resources keep their authoritative URLs.
 
 ## Overlap Host Downloads
 

@@ -4,7 +4,7 @@
 
 ## Resolusi Bundel Produksi
 
-Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang menjadi titik masuk wajib; impor statis biasa tetap menjadi dependensi dalam bundel. Build menyertakan referensi skrip host literal meskipun titik masuk lain mengimpornya. Direktori statis gateway dan adapter yang terdaftar memetakan prefiks URL khusus ke bundel hasil build. Versi API menjadi 0.6.22.
+Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang menjadi titik masuk wajib; impor statis biasa tetap menjadi dependensi dalam bundel. Build menyertakan referensi skrip host literal meskipun titik masuk lain mengimpornya. Direktori statis gateway dan adapter yang terdaftar memetakan prefiks URL khusus ke bundel hasil build. Versi API menjadi 0.6.22. Bagian pengaturan yang ditambahkan oleh alur konstruksi diresolusikan melalui manifes yang sama setelah pemeriksaan otorisasi dan visibilitas. Setiap permintaan memakai deskriptor terkini; sumber yang tidak dibundel dan sumber modul dengan revisi mempertahankan URL resminya.
 
 ## Tumpang Tindih Unduhan Host
 

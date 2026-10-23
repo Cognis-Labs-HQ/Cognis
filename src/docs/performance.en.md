@@ -18,7 +18,7 @@ An optimization is accepted only after the same hosted protocol shows no budget 
 
 ## Production asset resolution
 
-Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The UI build publishes declared host JavaScript contributions as entrypoints even when another entry also imports them. Registered gateway and adapter static directories resolve their descriptors to the matching built source asset, so custom URL prefixes can use the production bundles.
+Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The UI build publishes declared host JavaScript contributions as entrypoints even when another entry also imports them. Registered gateway and adapter static directories resolve their descriptors to the matching built source asset, so custom URL prefixes can use the production bundles. Settings sections added by construction flows are resolved through the same manifest after authorization and visibility filtering. Each request uses the current descriptors; source-only and revision-qualified module resources keep their authoritative URLs.
 
 Resolution uses the existing build manifest; it does not cache API responses. Authentication and enabled-component filtering still run when descriptors are requested. Source-only installations, assets absent from the build, external directories and revision-qualified module URLs retain their original delivery paths.
 

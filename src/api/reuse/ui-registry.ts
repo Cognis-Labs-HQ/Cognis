@@ -204,7 +204,8 @@ export class UIRegistry {
         return { ...this.assetManifest };
     }
 
-    private resolveDescriptor<T>(descriptor: T): T {
+    /** Resolves registered and flow-produced host assets without mutating descriptors. */
+    resolveDescriptor<T>(descriptor: T): T {
         if (Array.isArray(descriptor)) {
             return descriptor.map((value) =>
                 this.resolveDescriptor(value),

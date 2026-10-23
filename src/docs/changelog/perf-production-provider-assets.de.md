@@ -4,7 +4,7 @@
 
 ## Produktionsbündel auflösen
 
-Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden als Build-Einstiegspunkte erzwungen; gewöhnliche statische Importe bleiben gebündelte Abhängigkeiten. Der Build enthält wörtliche Host-Skriptverweise auch dann, wenn andere Einstiegspunkte sie importieren. Registrierte statische Gateway- und Adapterverzeichnisse lösen eigene URL-Präfixe zu ihren erzeugten Bündeln auf. Die API-Version steigt auf 0.6.22.
+Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden als Build-Einstiegspunkte erzwungen; gewöhnliche statische Importe bleiben gebündelte Abhängigkeiten. Der Build enthält wörtliche Host-Skriptverweise auch dann, wenn andere Einstiegspunkte sie importieren. Registrierte statische Gateway- und Adapterverzeichnisse lösen eigene URL-Präfixe zu ihren erzeugten Bündeln auf. Die API-Version steigt auf 0.6.22. Durch Konstruktionsabläufe ergänzte Einstellungsbereiche werden nach Autorisierung und Sichtbarkeitsprüfung über dasselbe Manifest aufgelöst. Jede Anfrage verwendet die aktuellen Deskriptoren; reine Quellressourcen und Modulressourcen mit Revisionsangaben behalten ihre maßgeblichen URLs.
 
 ## Host-Downloads überlappen
 
