@@ -270,3 +270,5 @@ Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaru
 Membuka dek lain langsung menampilkan kontennya; kembali dari Explore mempertahankan posisi latihan tersimpan.
 
 Referensi implementasi: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
+
+Pembacaan konteks pencarian kamus memakai `study:library:readSearchContext` dengan tahap otorisasi dan resolusi. Penulisan tetap memakai `study:library:searchContext` dengan validasi sebelum penyimpanan agar ekstensi alur dapat menyesuaikan masukan sebelum validasi layanan. Kedua operasi menolak identitas tautan berbagi. Penulisan berhenti pada 16 KiB dengan HTTP 413; JSON rusak mengembalikan HTTP 400 tanpa mengganti status tersimpan. Kegagalan tak terduga hanya menampilkan kode kesalahan stabil.

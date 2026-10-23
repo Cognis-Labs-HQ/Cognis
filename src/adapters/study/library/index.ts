@@ -234,10 +234,15 @@ export async function bootstrapStudyAdapter(
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");
     if (preferences && auth) {
+        if (!systemCtx?.hasFlow("study:library:readSearchContext"))
+            systemCtx?.registerFlow({
+                id: "study:library:readSearchContext",
+                stages: ["authorize", "resolve"],
+            });
         if (!systemCtx?.hasFlow("study:library:searchContext"))
             systemCtx?.registerFlow({
                 id: "study:library:searchContext",
-                stages: ["authorize", "persist"],
+                stages: ["authorize", "validate", "persist"],
             });
         ctx.registerRoute(
             createDictionarySearchContextRoutes(
