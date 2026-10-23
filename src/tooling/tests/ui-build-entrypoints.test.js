@@ -28,6 +28,11 @@ test("a directly registered provider remains a built entry when another entry im
         );
         const providerUrl =
             manifest["/static/adapters/example/sample/provider.js"];
+        assert.equal(
+            new Set(Object.values(manifest)).size,
+            2,
+            "the app and registered provider own the two entrypoints; ordinary imports stay bundled",
+        );
         assert.match(providerUrl, /^\/assets\/.+\.js$/);
         assert.equal(
             providerUrl,
@@ -46,6 +51,7 @@ test("a directly registered provider remains a built entry when another entry im
             provider.mountProvider,
             "built consumers share one provider implementation",
         );
+        assert.equal(app.helperValue, "bundled dependency");
         const contributions = [];
         provider.mountProvider({
             capabilities: { contribute: (...args) => contributions.push(args) },

@@ -4,15 +4,16 @@
  * Public exports:
  * - createProviderLifecycle(options) — reconciles provider imports, mounts and disposal.
  *
- * Host bundle downloads may overlap; imports and mounts retain catalog order.
+ * Critical catalogs may opt into overlapping host downloads. Other catalogs
+ * retain demand-driven downloads; imports and mounts always retain catalog order.
  *
  * @example
  * const lifecycle = createProviderLifecycle({ uiCtx });
- * await lifecycle.reconcile(providers, 'capabilities');
+ * await lifecycle.reconcile(providers, 'capabilities', { preload: true });
  * await lifecycle.reconcile([], 'capabilities');
  *
  * @param {object} options UI context and optional module importer.
- * @returns {{ reconcile: (providers: object[], catalog?: string) => Promise<void> }}
+ * @returns {{ reconcile: (providers: object[], catalog?: string, options?: {preload?: boolean}) => Promise<void> }}
  */
 function preloadHostProviders(urls) {
     if (typeof document === "undefined") return () => {};
@@ -36,7 +37,7 @@ export function createProviderLifecycle({
     const catalogs = new Map();
     let pending = Promise.resolve();
 
-    async function reconcile(providers) {
+    async function reconcile(providers, preload) {
         const desired = new Map(
             providers
                 .filter((provider) => provider?.scriptUrl)
@@ -48,7 +49,9 @@ export function createProviderLifecycle({
             active.delete(url);
         }
         const releasePreloads = preloadHostProviders(
-            [...desired.keys()].filter((url) => !active.has(url)),
+            preload
+                ? [...desired.keys()].filter((url) => !active.has(url))
+                : [],
         );
         try {
             for (const [url] of desired) {
@@ -108,10 +111,10 @@ export function createProviderLifecycle({
     }
 
     return {
-        reconcile(providers, catalog = "default") {
+        reconcile(providers, catalog = "default", { preload = false } = {}) {
             const next = pending.then(() => {
                 catalogs.set(catalog, providers);
-                return reconcile([...catalogs.values()].flat());
+                return reconcile([...catalogs.values()].flat(), preload);
             });
             pending = next.catch((error) => {
                 uiCtx.capabilities.get("ui:log")?.(

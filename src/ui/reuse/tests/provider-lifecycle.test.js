@@ -113,6 +113,39 @@ test("a stale flow disposer preserves a newer registration", () => {
     nextRelease();
 });
 
+test("background catalogs download on demand while retaining mount order", async (context) => {
+    const originalDocument = globalThis.document;
+    globalThis.document = {
+        createElement() {
+            assert.fail(
+                "background catalogs must not fan out preload requests",
+            );
+        },
+    };
+    context.after(() => {
+        globalThis.document = originalDocument;
+    });
+    const calls = [];
+    const lifecycle = createProviderLifecycle({
+        uiCtx,
+        async importProvider(url) {
+            calls.push(["import", url]);
+            return { mountProvider: () => calls.push(["mount", url]) };
+        },
+    });
+    await lifecycle.reconcile(
+        [{ scriptUrl: "/assets/first.js" }, { scriptUrl: "/assets/second.js" }],
+        "navbar",
+    );
+    assert.deepEqual(calls, [
+        ["import", "/assets/first.js"],
+        ["mount", "/assets/first.js"],
+        ["import", "/assets/second.js"],
+        ["mount", "/assets/second.js"],
+    ]);
+    await lifecycle.reconcile([], "navbar");
+});
+
 test("host provider fetches are preloaded while imports and mounts retain catalog order", async (context) => {
     const originalDocument = globalThis.document;
     const links = [];
@@ -160,7 +193,9 @@ test("host provider fetches are preloaded while imports and mounts retain catalo
         { scriptUrl: "/assets/revision-provider.js?revision=2" },
         { scriptUrl: "/static/gateways/example/provider.js" },
     ];
-    const pending = lifecycle.reconcile(providers);
+    const pending = lifecycle.reconcile(providers, "capabilities", {
+        preload: true,
+    });
     await new Promise((resolve) => setImmediate(resolve));
     assert.deepEqual(
         links.map((link) => [link.rel, link.href]),
@@ -179,7 +214,7 @@ test("host provider fetches are preloaded while imports and mounts retain catalo
     );
     assert.deepEqual(imported, mounted);
     assert.deepEqual(removed, ["/assets/first-A1.js", "/assets/second-B2.js"]);
-    await lifecycle.reconcile(providers);
+    await lifecycle.reconcile(providers, "capabilities", { preload: true });
     assert.equal(
         links.length,
         2,
@@ -219,12 +254,12 @@ test("failed host imports clean preload links and remain retryable", async (cont
     });
     const providers = [{ scriptUrl: "/assets/provider-A1.js" }];
     await assert.rejects(
-        lifecycle.reconcile(providers),
+        lifecycle.reconcile(providers, "capabilities", { preload: true }),
         /fixture_import_failed/,
     );
     assert.equal(removals, 1);
     failing = false;
-    await lifecycle.reconcile(providers);
+    await lifecycle.reconcile(providers, "capabilities", { preload: true });
     assert.equal(links, 2);
     assert.equal(removals, 2);
     await lifecycle.reconcile([]);

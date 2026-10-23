@@ -18,8 +18,8 @@ An optimization is accepted only after the same hosted protocol shows no budget 
 
 ## Production asset resolution
 
-The UI build publishes literal host JavaScript references as entrypoints even when another entry also imports them. Registered gateway and adapter static directories resolve their descriptors to the matching built source asset, so custom URL prefixes can use the production bundles.
+Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The UI build publishes declared host JavaScript contributions as entrypoints even when another entry also imports them. Registered gateway and adapter static directories resolve their descriptors to the matching built source asset, so custom URL prefixes can use the production bundles.
 
 Resolution uses the existing build manifest; it does not cache API responses. Authentication and enabled-component filtering still run when descriptors are requested. Source-only installations, assets absent from the build, external directories and revision-qualified module URLs retain their original delivery paths.
 
-After authenticated discovery, the provider loader preloads immutable host bundle URLs while preserving sequential imports and mounts. Preload links are removed after completion or failure. Active providers are not preloaded again; external module, source and revision-qualified URLs keep their existing import path.
+Only catalogs required before page mounting opt into preloading. Navbar catalogs retain demand-driven downloads so background discovery does not fan out requests during navigation. After authenticated discovery, the provider loader preloads immutable host bundle URLs while preserving sequential imports and mounts. Preload links are removed after completion or failure. Active providers are not preloaded again; external module, source and revision-qualified URLs keep their existing import path.
