@@ -15,7 +15,7 @@ test("runtime error popup renders branded header and supports previous-route fal
     );
 
     assert.match(source, /popup-error-report-brand/);
-    assert.match(source, /\/static\/assets\/icons\/cognis-icon\.png/);
+    assert.match(source, /\/static\/assets\/icons\/cognis-icon-192\.png/);
     assert.match(source, /navigateToPreviousRouteIfDifferent/);
     assert.match(source, /window\.history\.state\?\.previousRouterPage/);
     assert.match(source, /hasLoadedMainPageBoilerplate/);
