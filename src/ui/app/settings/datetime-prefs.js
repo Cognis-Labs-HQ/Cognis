@@ -72,7 +72,7 @@ export function initDateTimePrefs(
             zones = [...zones, selectedTimezone];
         }
 
-        return zones;
+        return [...new Set([...zones, "UTC"])];
     }
 
     function init() {
