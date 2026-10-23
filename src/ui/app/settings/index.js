@@ -146,9 +146,12 @@ const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
-    let loadedPrefs = await loadPrefs().catch(() => null);
-    const editorAcknowledgementAccepted =
-        await loadEditorAcknowledgement().catch(() => false);
+    let [loadedPrefs, editorAcknowledgementAccepted, authSetupRequired] =
+        await Promise.all([
+            loadPrefs().catch(() => null),
+            loadEditorAcknowledgement().catch(() => false),
+            loadAuthSetupRequirement(),
+        ]);
     const storedLanguagePriorityMode = readLanguagePriorityMode();
     const initialLanguagePriorityMode =
         loadedPrefs?.languagePriorityMode === "manual"
@@ -165,8 +168,6 @@ export async function mount(root, { signal } = {}) {
     let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
         ? loadedPrefs.languagePriority
         : readPreferredLanguages();
-    const i18n = await createI18n({ preferredLanguages: languagePriority });
-    const authSetupRequired = await loadAuthSetupRequirement();
     const setupRedirect = resolveSettingsSetupRedirect(
         window.location.pathname,
         window.location.hash,
@@ -176,6 +177,10 @@ export async function mount(root, { signal } = {}) {
         window.location.replace(setupRedirect);
         return;
     }
+    const [i18n, sectionDescriptors] = await Promise.all([
+        createI18n({ preferredLanguages: languagePriority }),
+        loadSettingsSections(),
+    ]);
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
     applyTimezoneToLocalStorage(
@@ -183,7 +188,6 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.detectedTimezone ?? null,
     );
     applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? "auto");
-    const sectionDescriptors = await loadSettingsSections();
     let settingsSearchSections = [];
 
     let savedMode = getStoredTheme();
