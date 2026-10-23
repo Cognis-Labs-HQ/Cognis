@@ -286,3 +286,5 @@ Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, In
 ## Batas pengujian perilaku
 
 Pengujian peramban memuat ekspor modul sebenarnya dengan pengganti dependensi eksplisit melalui perkakas bersama. Pemeriksaan editor, menggambar, dan alur menggunakan operasi publik, bukan mengekstrak fungsi privat. Flashcards langsung memakai modul tersendiri untuk editor dek.
+
+Implementasi: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

@@ -286,3 +286,5 @@ Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deuts
 ## Grenzen der Verhaltenstests
 
 Browsertests laden echte Modulexporte mit ausdrücklich vorgegebenen Abhängigkeiten über gemeinsame Testwerkzeuge. Editor-, Zeichen- und Ablaufprüfungen verwenden öffentliche Aktionen statt extrahierter privater Funktionen. Flashcards nutzt direkt ein eigenes Modul für den Stapel-Editor.
+
+Implementierung: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

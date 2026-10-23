@@ -286,3 +286,5 @@ Libraryの追加・削除通知はXMLカタログの英語、ドイツ語、イ�
 ## 動作テストの境界
 
 ブラウザーテストは共有テストツールで実際のモジュール公開関数を読み込み、依存関係を明示的に置き換えます。編集、描画、フローの検証は非公開関数の抽出ではなく公開操作を実行します。Flashcardsは専用のデッキ編集モジュールを直接使用します。
+
+実装: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

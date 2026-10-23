@@ -286,3 +286,5 @@ Library content and deletion announcements include English, German, Indonesian a
 ## Behavioral test boundaries
 
 Browser tests load actual module exports with explicit dependency fakes through shared tooling. Editor, drawing and flow checks exercise public operations rather than extracted private functions. The deck editor now has a dedicated owner module used directly by Flashcards.
+
+Implementation: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).
