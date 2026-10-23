@@ -11,3 +11,5 @@ Page favicons, shell branding, dashboard widgets, authentication and error surfa
 Service-worker installation precaches the existing small and large install icons without also fetching the oversized source artwork. The worker cache version advances so existing clients refresh the shell asset list. Private API handling and module revision behavior are unchanged. Route and worker-install regressions enforce image transfer budgets.
 
 ## Commits
+
+- [c430f10894603ad0a04c384ea0def28f7684fcd1](https://github.com/Cognis-Labs-HQ/Cognis/commit/c430f10894603ad0a04c384ea0def28f7684fcd1)
