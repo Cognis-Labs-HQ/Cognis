@@ -34,7 +34,7 @@ export function createPageOverlay({ signal, bottomInset = 0 }) {
         signal.removeEventListener("abort", destroy);
         element.remove();
     };
-    page.append(element);
+    document.body.append(element);
     for (const target of [page, footer, header]) {
         if (target) observer.observe(target);
     }

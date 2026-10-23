@@ -262,3 +262,9 @@ Membuka detail melalui tautan langsung, relasi, atau navigasi sebelumnya/berikut
 Kolom pilihan tunggal opsional menyertakan pilihan **Belum ditentukan** yang dilokalkan. Mengedit kartu tanpa klasifikasi tetap mempertahankan tingkat yang belum diketahui alih-alih otomatis memilih tingkat pertama.
 
 Referensi implementasi: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+
+Menu samping dek bergulir sendiri dalam tinggi halaman yang terlihat. Daftar dek panjang tidak memperpanjang halaman atau mendorong latihan ke bawah layar.
+
+Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaruhi filter latar dan blok pembatas ruang kerja. Papan gambar tetap dibatasi area halaman yang terlihat dan mempertahankan posisi hasil seretan saat menggulir.
+
+Membuka dek lain langsung menampilkan kontennya; kembali dari Explore mempertahankan posisi latihan tersimpan.

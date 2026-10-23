@@ -262,3 +262,9 @@ Opening a detail popup through a direct link, relationship or previous/next navi
 Optional single-select fields include a localized **Not specified** choice. Editing an unclassified card therefore preserves its unknown difficulty instead of silently selecting the first level.
 
 Implementation reference: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+
+The deck sidebar scrolls independently within the visible page height, keeping long deck lists from expanding the page or pushing practice below the fold.
+
+Page overlays mount at the document body to keep viewport positioning independent of workspace backdrop filters and containing blocks. The drawing pad remains bounded to the visible page and retains its dragged position while scrolling.
+
+Opening another deck brings its content into view immediately; returning from Explore preserves the saved practice position.

@@ -69,3 +69,7 @@ Titik masuk peramban utama adalah `ui/app/index.js`; modul tindakan, tampilan, b
 Panduan menggambar dan pengacakan jawaban kartu belajar menggunakan pembantu `randomIndex` yang sama. Pembantu ini menggunakan Web Crypto dengan pengambilan sampel penolakan bermasker untuk rentang bilangan bulat dari 1 hingga 2^32 tanpa bias modulo. Rentang dengan satu posisi tidak membutuhkan entropi. Pemanggil dapat menyuntikkan sumber entropi untuk pengujian deterministik; latihan biasa selalu menggunakan Web Crypto.
 
 Mode membaca memakai normalisasi isi jawaban yang sama untuk pemilihan pengecoh, petunjuk, dan penilaian. Tanda baca akhir kalimat, kapitalisasi, bentuk Unicode yang kompatibel, dan spasi berulang tidak membedakan jawaban. Tanda baca internal, angka, aksen, dan kata yang berbeda tetap bermakna. Makna setara tidak menjadi pilihan yang saling bersaing; kuis memakai dua hingga empat pilihan berbeda bila tersedia. Jawaban setara yang benar menerima nilai keberhasilan biasa sebelum progres dikirim.
+
+Menu samping dek bergulir sendiri dalam tinggi halaman yang terlihat. Daftar dek panjang tidak memperpanjang halaman atau mendorong latihan ke bawah layar.
+
+Membuka dek lain langsung menampilkan kontennya; kembali dari Explore mempertahankan posisi latihan tersimpan.

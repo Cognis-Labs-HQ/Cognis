@@ -37,12 +37,18 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         notes: [],
         progress: {},
     };
+    const scrolls = [];
     const nodes = new Map();
     const listeners = new Map();
     const root = {
         querySelector(selector) {
             if (!nodes.has(selector))
-                nodes.set(selector, { innerHTML: "", hidden: false });
+                nodes.set(selector, {
+                    innerHTML: "",
+                    hidden: false,
+                    scrollIntoView: (options) =>
+                        scrolls.push({ selector, ...options }),
+                });
             return nodes.get(selector);
         },
         querySelectorAll: () => [],
@@ -109,7 +115,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             getFloatingSlot: () => ({}),
             init: async () => {
                 assert.equal(options.toolbar[0].render(), "deck menu");
-                assert.equal(options.toolbarScrollable, false);
+                assert.equal(options.toolbarScrollable, true);
                 root.querySelector("[data-study-deck]").innerHTML =
                     "<section data-study-session></section>";
             },
@@ -178,6 +184,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         environment,
     );
     await environment.mountDeck(root);
+    assert.equal(scrolls.length, 1);
+    assert.equal(scrolls[0].selector, "[data-study-deck]");
+    assert.equal(scrolls[0].block, "start");
     assert.equal(mounts.at(-1).detail.entry.id, "one");
     assert.equal(mounts.at(-1).mode, "writing");
     await mounts.at(-1).onNext("good");
@@ -191,6 +200,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     history.state = savedHistory;
     location.pathname = "/study/ja/flashcards/first-words--deck-id";
     await environment.mountDeck(root);
+    assert.equal(scrolls.length, 1);
     assert.equal(menus.at(-1).activeId, deck.id);
     assert.equal(menus.at(-1).groups[0].collapsible, false);
     assert.equal(menus.at(-1).groups[0].items[0].id, "all");

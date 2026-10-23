@@ -69,3 +69,7 @@ The main browser entry is `ui/app/index.js`; its actions, markup, language and p
 Drawing guidance and Flashcard answer shuffling share the `randomIndex` helper. It uses Web Crypto with masked rejection sampling, supporting integer ranges from 1 through 2^32 without modulo bias. Single-position ranges need no entropy. The caller may inject an entropy source for deterministic testing; normal practice always uses Web Crypto.
 
 Reading compares answer content using one shared normalization for distractor selection, hints and grading. Terminal sentence punctuation, case, compatible Unicode forms and repeated whitespace do not distinguish answers. Internal punctuation, numbers, accents and different words remain meaningful. Equivalent meanings never become competing choices; quizzes use two to four distinct choices when available. Correct equivalent submissions receive the ordinary successful grade before progress is submitted.
+
+The deck sidebar scrolls independently within the visible page height, keeping long deck lists from expanding the page or pushing practice below the fold.
+
+Opening another deck brings its content into view immediately; returning from Explore preserves the saved practice position.

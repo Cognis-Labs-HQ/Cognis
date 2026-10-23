@@ -262,3 +262,9 @@ Das Öffnen von Details über Direktlinks, Beziehungen oder Vor-/Zurück-Navigat
 Optionale Einzelauswahlfelder enthalten die lokalisierte Auswahl **Nicht angegeben**. Beim Bearbeiten einer nicht eingestuften Karte bleibt ihre unbekannte Schwierigkeit erhalten, statt stillschweigend die erste Stufe zu wählen.
 
 Implementierungsnachweis: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+
+Die Stapelseitenleiste scrollt innerhalb der sichtbaren Seitenhöhe unabhängig. Lange Stapellisten verlängern die Seite nicht und schieben die Übung nicht nach unten.
+
+Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfilter und Begrenzungsblöcke des Arbeitsbereichs die Fensterposition nicht verschieben. Das Zeichenfeld bleibt auf den sichtbaren Seitenbereich begrenzt und behält beim Scrollen seine verschobene Position.
+
+Beim Öffnen eines anderen Stapels wird dessen Inhalt sofort sichtbar; die Rückkehr von Explore erhält die gespeicherte Übungsposition.

@@ -82,3 +82,5 @@ Jeder commitete Code in `src/ui/app` und `src/ui/layouts` muss beide Prüfungen 
 ## Erweiterte Einstellungsbearbeitung
 
 Unter Erweitert → Einstellungen kann nach einer einmaligen, im serverseitigen Benutzerprofil gespeicherten Sicherheitsbestätigung das vollständige Dokument der UI-Einstellungen als JSON bearbeitet werden. Gültige Änderungen werden über das normale Einstellungssystem gespeichert und angewendet. Bestätigungen von Versionshinweisen werden getrennt gespeichert, damit sie dieses Dokument nicht unübersichtlich machen.
+
+Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfilter und Begrenzungsblöcke des Arbeitsbereichs die Fensterposition nicht verschieben. Das Zeichenfeld bleibt auf den sichtbaren Seitenbereich begrenzt und behält beim Scrollen seine verschobene Position.

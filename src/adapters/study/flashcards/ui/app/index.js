@@ -544,6 +544,11 @@ export async function mount(root, { signal: routerSignal } = {}) {
         practiceSession = restored.session;
         renderDeck();
         nextCard();
+        if (!restoredSession)
+            root.querySelector("[data-study-deck]").scrollIntoView({
+                behavior: "instant",
+                block: "start",
+            });
     };
 
     const modePreference = await createPracticeModePreference({
@@ -619,7 +624,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 render: () => menu.render(),
             },
         ],
-        toolbarScrollable: false,
+        toolbarScrollable: true,
         floatingMenu: [modePreference],
         subNavigation: [createStudySubNavigationSlot(model, i18n)],
     });

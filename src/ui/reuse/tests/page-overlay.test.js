@@ -16,7 +16,9 @@ async function fixture(t) {
     const stylesLoaded = [];
     const page = {
         getBoundingClientRect: () => bounds,
-        append: (element) => overlays.add(element),
+        append: () => {
+            throw new Error("overlay_must_escape_containing_block");
+        },
     };
     const context = vm.createContext({
         AbortController,
@@ -28,6 +30,7 @@ async function fixture(t) {
             addEventListener: (...args) => events.addEventListener(...args),
         },
         document: {
+            body: { append: (element) => overlays.add(element) },
             querySelector: (selector) =>
                 ({
                     ".app-page__main": page,
