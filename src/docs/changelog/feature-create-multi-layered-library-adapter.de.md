@@ -268,3 +268,5 @@ Die Stapelseitenleiste scrollt innerhalb der sichtbaren Seitenhöhe unabhängig.
 Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfilter und Begrenzungsblöcke des Arbeitsbereichs die Fensterposition nicht verschieben. Das Zeichenfeld bleibt auf den sichtbaren Seitenbereich begrenzt und behält beim Scrollen seine verschobene Position.
 
 Beim Öffnen eines anderen Stapels wird dessen Inhalt sofort sichtbar; die Rückkehr von Explore erhält die gespeicherte Übungsposition.
+
+Implementierungsnachweis: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).

@@ -268,3 +268,5 @@ The deck sidebar scrolls independently within the visible page height, keeping l
 Page overlays mount at the document body to keep viewport positioning independent of workspace backdrop filters and containing blocks. The drawing pad remains bounded to the visible page and retains its dragged position while scrolling.
 
 Opening another deck brings its content into view immediately; returning from Explore preserves the saved practice position.
+
+Implementation reference: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
