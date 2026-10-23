@@ -274,3 +274,15 @@ Implementierungsnachweis: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://g
 Lesezugriffe auf den Wörterbuchsuchkontext verwenden `study:library:readSearchContext` mit Autorisierung und Auflösung. Schreibzugriffe behalten `study:library:searchContext` und prüfen Eingaben vor dem Speichern; Erweiterungen können sie vor der Dienstvalidierung anpassen. Beide Vorgänge weisen Identitäten geteilter Links zurück. Schreibzugriffe stoppen bei 16 KiB mit HTTP 413; fehlerhaftes JSON liefert HTTP 400 und ersetzt keinen gespeicherten Zustand. Unerwartete Fehler geben nur einen stabilen Fehlercode zurück.
 
 Implementierungsnachweis: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+
+## Komponentengrenzen und Laufzeit
+
+Die API delegiert Erweiterungsnamensräume über Richtlinien aktiver Gateways; Study besitzt die Regeln für Sprachnamensräume. Library entfernt seine öffentlichen Funktionen, wenn der Adapter oder seine Study-Abhängigkeiten deaktiviert sind, weist gespeicherte Funktionsreferenzen zurück und registriert sie beim Aktivieren erneut. Study-Adapter verwenden `onAvailabilityChange(listener)` für laufzeitgebundene Beiträge; ein fehlgeschlagener Start entfernt diese.
+
+## Benachrichtigungen und Speicherung
+
+Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deutsche, indonesische und japanische Texte aus XML-Katalogen, nutzen Englisch als Ersatz und durchlaufen `study:library:notifyContent`. Kartenbeschriftungen werden bei der Ersetzung nicht erneut interpretiert. Auch privilegierte Schreibvorgänge benötigen eine vorhandene Klasse. Leaderboard-Beobachtungen werden bei Speicherfehlern zurückgesetzt; der Saisonwechsel berechnet nach einem Neustart die endgültige Rangliste neu und stellt bei Speicherfehlern den Zustand wieder her. Verifizierte Administratoren können passende Integrationsbindungen ohne Raummitgliedschaft lösen.
+
+## Grenzen der Verhaltenstests
+
+Browsertests laden echte Modulexporte mit ausdrücklich vorgegebenen Abhängigkeiten über gemeinsame Testwerkzeuge. Editor-, Zeichen- und Ablaufprüfungen verwenden öffentliche Aktionen statt extrahierter privater Funktionen. Flashcards nutzt direkt ein eigenes Modul für den Stapel-Editor.

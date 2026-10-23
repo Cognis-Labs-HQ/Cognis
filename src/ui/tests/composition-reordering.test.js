@@ -1,13 +1,6 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
-const source = readFileSync(
-    new URL("../reuse/composition-input.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 test("pointer dragging reorders one placement and prevents text selection", () => {
     const listeners = {};
     const field = { dataset: { compositionKind: "input" } };
@@ -25,7 +18,14 @@ test("pointer dragging reorders one placement and prevents text selection", () =
         prevented = false,
         captured = false;
     const context = { document: { elementFromPoint: () => to } };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../reuse/composition-input.js", import.meta.url),
+            { "./escape-html.js": context },
+            context,
+        ),
+    );
     const root = {
         addEventListener: (name, listener) => {
             listeners[name] = listener;

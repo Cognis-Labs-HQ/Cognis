@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadTestModule } from "./reuse/modules.js";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 
 const { inputForField } = loadTestModule(

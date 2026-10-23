@@ -1,7 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 
 function fixture(lookup, entries = []) {
     const form = {
@@ -23,17 +23,21 @@ function fixture(lookup, entries = []) {
         reportClientError: () =>
             assert.fail("Unexpected classification failure"),
     });
-    vm.runInContext(
-        readFileSync(
+    Object.assign(
+        context,
+        loadTestModule(
             new URL(
                 "../ui/app/create-entry/classification.js",
                 import.meta.url,
             ),
-            "utf8",
-        )
-            .replace(/^import.*;\n/gm, "")
-            .replaceAll("export function", "function"),
-        context,
+            {
+                "/static/gateways/study/library-client.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/reuse/error-reporting.js": context,
+                "../composer-limits.js": context,
+            },
+            context,
+        ),
     );
     context.bindAutomaticClassification(
         form,

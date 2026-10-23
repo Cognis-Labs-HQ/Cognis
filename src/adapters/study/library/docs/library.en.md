@@ -615,3 +615,7 @@ Opening a detail popup through a direct link, relationship or previous/next navi
 Optional single-select fields include a localized **Not specified** choice. Editing an unclassified card therefore preserves its unknown difficulty instead of silently selecting the first level.
 
 Dictionary search-context reads use `study:library:readSearchContext` with authorize and resolve stages. Writes retain `study:library:searchContext` and add validation before persistence, allowing flow extensions to adjust input before service validation. Both operations reject shared-link principals. Writes stop at 16 KiB with HTTP 413; malformed JSON returns HTTP 400 and does not replace saved state. Unexpected failures expose only a stable error code.
+
+## Notification and persistence fixes
+
+Library content and deletion announcements include English, German, Indonesian and Japanese text from XML catalogs, use English fallback, and run through `study:library:notifyContent`. Card labels remain opaque during interpolation. Privileged class writes still require a real target class. Leaderboard observations roll back on failed persistence; season rollover rebuilds final standings after restart and restores state if saving fails. Verified administrators can release matching integration source bindings without room membership.

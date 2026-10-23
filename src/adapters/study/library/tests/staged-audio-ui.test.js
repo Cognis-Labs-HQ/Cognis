@@ -1,12 +1,7 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
-
-const source = (name) =>
-    readFileSync(new URL(`../ui/app/${name}.js`, import.meta.url), "utf8")
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/\bexport /g, "");
 
 test("uploaded and recorded drafts replace saved playback, survive late reads and release preview URLs", async () => {
     const revoked = [];
@@ -63,12 +58,12 @@ test("uploaded and recorded drafts replace saved playback, survive late reads an
                 resolveFetch = resolve;
             }),
     });
-    vm.runInContext(
-        source("audio-media-session") +
-            source("presentation") +
-            source("audio-editor"),
+    Object.assign(
         context,
+        loadLibraryUiModule("app/audio-media-session.js", context),
     );
+    Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
+    Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
     const controller = new AbortController();
     context.bindAudioEditor(
         form,
@@ -98,12 +93,12 @@ test("new cards without saved audio have a disabled speaker ready for staged pla
         document: { documentElement: { lang: "en" } },
         parseLanguageCode: String,
     });
-    vm.runInContext(
-        source("audio-media-session") +
-            source("presentation") +
-            source("audio-editor"),
+    Object.assign(
         context,
+        loadLibraryUiModule("app/audio-media-session.js", context),
     );
+    Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
+    Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
     const field = {
         id: "audio",
         type: "audio",
@@ -146,7 +141,7 @@ test("a regeneration started before a newer upload cannot replace that draft", a
                 resolveFetch = resolve;
             }),
     });
-    vm.runInContext(source("audio-editor"), context);
+    Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
     context.bindAudioEditor(
         form,
         { id: "card" },

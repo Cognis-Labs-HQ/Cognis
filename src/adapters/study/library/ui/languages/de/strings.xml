@@ -197,4 +197,8 @@
     <string name="gateway.study.library_audio_permission_wait">Warten auf Mikrofonberechtigung</string>
     <string name="gateway.study.library_audio_permission_denied">Der Mikrofonzugriff wurde verweigert. Erlaube den Zugriff im Browser und versuche es erneut.</string>
     <string name="gateway.study.library_audio_record_unavailable">Sprachaufnahmen sind nicht verfügbar. Verwende HTTPS oder localhost und einen Browser mit Audioaufnahme-Unterstützung.</string>
+  <string name="adapter.study.library.notification_content_subject">Neue Inhalte der Lernbibliothek</string>
+  <string name="adapter.study.library.notification_content_body">Neue Bibliotheksinhalte sind verfügbar ({{ count }}).</string>
+  <string name="adapter.study.library.notification_deletion_subject">Lernkarten entfernt</string>
+  <string name="adapter.study.library.notification_deletion_body">Diese Karten wurden entfernt, weil ihre geteilten Inhalte gelöscht oder verschoben wurden: {{ cards }}</string>
 </resources>

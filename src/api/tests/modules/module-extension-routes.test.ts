@@ -5,7 +5,14 @@ import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createCtx } from "@cognis/core";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+    mkdtemp,
+    mkdir,
+    readFile,
+    rm,
+    writeFile,
+    copyFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -636,6 +643,13 @@ test("study language modules register their canonical capability and API space",
         () => true,
         undefined,
         {
+            authorizeModuleNamespace: ({ moduleId, kind, id }) =>
+                moduleId === "study-language-ja" &&
+                (kind === "apiRoute"
+                    ? id.startsWith("/api/v1/study/languages/ja/")
+                    : id === "study:language:ja" ||
+                      id.startsWith("study:language:ja:")),
+            getProtectedRoutePrefixes: () => ["/api/v1/study"],
             routeContext: createDefaultRouteContext({
                 getCapability: systemCtx.getCapability.bind(systemCtx),
                 flow: systemCtx.flow,
@@ -739,4 +753,48 @@ test("unprivileged modules cooperate through provider-owned capabilities", async
         }
         await rm(modulesRoot, { recursive: true, force: true });
     }
+});
+
+test("namespace grants cannot replace reserved authentication routes", async (context) => {
+    const root = await mkdtemp(
+        path.join(tmpdir(), "cognis-protected-delegation-"),
+    );
+    const previous = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    context.after(async () => {
+        if (previous === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previous;
+        await rm(root, { recursive: true, force: true });
+    });
+    const uuid = "d49288a3-106e-43d8-a5a4-cd7a142a6fc7";
+    await mkdir(path.join(root, uuid));
+    await copyFile(
+        new URL(
+            "./fixtures/delegated-protected/bootstrap.mjs",
+            import.meta.url,
+        ),
+        path.join(root, uuid, "bootstrap.mjs"),
+    );
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = root;
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "delegated",
+                    uuid,
+                    entrypoints: { bootstrap: "./bootstrap.mjs" },
+                },
+            ],
+        } as never,
+        () => true,
+        undefined,
+        {
+            authorizeModuleNamespace: () => true,
+            routeContext: createDefaultRouteContext(),
+        },
+    );
+    await assert.rejects(
+        extensions.refresh({ throwOnFailure: true }),
+        /protected route/,
+    );
 });

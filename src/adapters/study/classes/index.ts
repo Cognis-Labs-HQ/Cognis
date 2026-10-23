@@ -314,9 +314,9 @@ export async function bootstrapStudyAdapter(
     ctx.capabilities.contribute("study:classes:access", {
         async canRead(classId: string, accountId: string, role: string) {
             if (!ctx.isAdapterEnabled()) return false;
-            if (role === "admin" || role === "owner") return true;
             const classRow = await store.getClassById(classId);
             if (!classRow) return false;
+            if (role === "admin" || role === "owner") return true;
             if (classRow.teacherAccountId === accountId) return true;
             const members = await store.getClassMembers(
                 classId,
@@ -330,9 +330,13 @@ export async function bootstrapStudyAdapter(
         },
         async canWrite(classId: string, accountId: string, role: string) {
             if (!ctx.isAdapterEnabled()) return false;
-            if (role === "admin" || role === "owner") return true;
             const classRow = await store.getClassById(classId);
-            return classRow?.teacherAccountId === accountId;
+            if (!classRow) return false;
+            return (
+                role === "admin" ||
+                role === "owner" ||
+                classRow.teacherAccountId === accountId
+            );
         },
         async listReadable(accountId: string, role: string) {
             if (!ctx.isAdapterEnabled()) return [];

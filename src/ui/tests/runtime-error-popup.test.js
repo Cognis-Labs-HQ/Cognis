@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
@@ -187,12 +188,6 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const openPopupCalls = [];
     const context = {
@@ -241,9 +236,20 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error('HTTP 503 while loading "/api/v1/users"'),
@@ -258,12 +264,6 @@ test("runtime error popup uses full navigation fallback after reload-origin fail
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const locationAssignCalls = [];
     let historyBackCalls = 0;
@@ -327,9 +327,20 @@ test("runtime error popup uses full navigation fallback after reload-origin fail
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Route mount failed"),
@@ -345,12 +356,6 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const locationAssignCalls = [];
     let historyBackCalls = 0;
@@ -415,9 +420,20 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Route mount failed"),
@@ -433,12 +449,6 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const locationAssignCalls = [];
     let historyBackCalls = 0;
@@ -494,9 +504,20 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Share button failed"),
@@ -507,39 +528,66 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
     assert.equal(historyBackCalls, 0);
 });
 
-test("runtime error popup caches main boilerplate lookup result", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
-        "utf8",
-    );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { hasLoadedMainPageBoilerplate };\n";
-
-    let querySelectorCalls = 0;
+test("runtime error popup caches main boilerplate lookup across recovery actions", async () => {
+    let queries = 0;
+    let backs = 0;
+    let now = 10000;
     const context = {
         console,
-        Date,
+        Date: { now: () => now },
+        Error,
+        applyTheme() {},
+        getStoredTheme: () => "light",
+        shouldSuppressConnectionRecoveryPopup: () => false,
+        createI18n: async () => ({ t: (key) => key }),
+        escapeHtml: String,
+        getCurrentRoutePath: () => "/broken",
+        normalizeSameOriginRoutePath: (value) => value,
+        openPopup: async () => "close",
         document: {
-            querySelector(selector) {
-                if (selector !== ".app-shell") return null;
-                querySelectorCalls += 1;
+            referrer: "",
+            querySelector: (selector) => {
+                assert.equal(selector, ".app-shell");
+                queries++;
                 return {};
             },
         },
+        window: {
+            location: {
+                href: "https://example.com/broken",
+                assign: () => assert.fail("shell navigation must use history"),
+            },
+            history: { state: {}, back: () => backs++ },
+            performance: { getEntriesByType: () => [{ type: "reload" }] },
+        },
     };
-    context.globalThis = context;
-
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
+    const module = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
+    await module.openRuntimeErrorPopup({
+        error: new Error("first"),
+        previousRoute: "/home",
+        contextKey: "ui.reuse.runtime_error_context_route_mount",
     });
-
-    assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
-    assert.equal(context.__testExports.hasLoadedMainPageBoilerplate(), true);
-    assert.equal(querySelectorCalls, 1);
+    now += 2000;
+    await module.openRuntimeErrorPopup({
+        error: new Error("second"),
+        previousRoute: "/home",
+        contextKey: "ui.reuse.runtime_error_context_route_mount",
+    });
+    assert.equal(queries, 1);
+    assert.equal(backs, 2);
 });
 
 test("runtime error popup copy action writes full crash detail text", async () => {
@@ -547,12 +595,6 @@ test("runtime error popup copy action writes full crash detail text", async () =
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const copiedValues = [];
     const context = {
@@ -629,9 +671,20 @@ test("runtime error popup copy action writes full crash detail text", async () =
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Route mount failed"),
@@ -657,12 +710,6 @@ test("runtime error popup copy action adds and removes copied class on success",
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const addedClasses = [];
     const removedClasses = [];
@@ -747,9 +794,20 @@ test("runtime error popup copy action adds and removes copied class on success",
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Boom"),
@@ -770,12 +828,6 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
-    const testableSource =
-        source
-            .replace(/^import[\s\S]*?from .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = { openRuntimeErrorPopup };\n";
 
     const timeouts = [];
     const context = {
@@ -841,9 +893,20 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "runtime-error-popup.js",
-    });
+    context.__testExports = loadTestModule(
+        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        {
+            "./ui-ctx.js": context,
+            "./popup.js": context,
+            "./api-client.js": context,
+            "./i18n.js": context,
+            "./escape-html.js": context,
+            "./clipboard.js": context,
+            "./theme-toggle.js": context,
+            "./route-path.js": context,
+        },
+        context,
+    );
 
     await context.__testExports.openRuntimeErrorPopup({
         error: new Error("Boom"),

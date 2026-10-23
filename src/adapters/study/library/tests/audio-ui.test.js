@@ -1,28 +1,18 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 
-const source = readFileSync(
-    new URL("../ui/app/presentation.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 const context = vm.createContext({
     escapeHtml: String,
     parseLanguageCode: (value) => value,
     document: { documentElement: { lang: "en" } },
 });
-vm.runInContext(
-    readFileSync(
-        new URL("../ui/app/audio-media-session.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/\bexport /g, "") + source,
+Object.assign(
     context,
+    loadLibraryUiModule("app/audio-media-session.js", context),
 );
+Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
 const audio = {
     id: "audio",
     type: "audio",

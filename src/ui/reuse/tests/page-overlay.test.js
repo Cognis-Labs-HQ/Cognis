@@ -1,7 +1,7 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { uiCtx } from "../ui-ctx.js";
 import { createProviderLifecycle } from "../provider-lifecycle.js";
 import { registerScopedUiActions } from "../scoped-actions.js";
@@ -59,13 +59,14 @@ async function fixture(t) {
             }
         },
     });
-    const source = readFileSync(
-        new URL("../page-overlay.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/\bexport /g, "");
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../page-overlay.js", import.meta.url),
+            { "./page-styles.js": context, "./scoped-actions.js": context },
+            context,
+        ),
+    );
     const lifecycle = createProviderLifecycle({
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),

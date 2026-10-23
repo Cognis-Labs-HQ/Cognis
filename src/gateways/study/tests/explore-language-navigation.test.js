@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
@@ -106,13 +107,25 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
             },
         },
     });
-    const source = readFileSync(
-        new URL("../ui/sub-navigation.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/export (async )?function/g, "$1function");
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/sub-navigation.js", import.meta.url),
+            {
+                "./reuse/explore.js": context,
+                "/static/reuse/mount-scope.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/reuse/form-builder.js": context,
+                "/static/reuse/api-client.js": context,
+                "/static/reuse/escape-html.js": context,
+                "/static/reuse/ui-ctx.js": context,
+                "/static/reuse/spa-route-registry.js": context,
+                "/static/gateways/study/language.js": context,
+                "/static/gateways/study/library-client.js": context,
+            },
+            context,
+        ),
+    );
     return context;
 }
 

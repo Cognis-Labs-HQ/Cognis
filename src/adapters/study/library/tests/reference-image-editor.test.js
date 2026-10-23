@@ -1,21 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
-
-const previewSource = readFileSync(
-    new URL("../../../../ui/reuse/image-preview.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/export (async )?function/g, "$1function");
-
-const source = readFileSync(
-    new URL("../ui/app/reference-images.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/export (async )?function/g, "$1function");
 
 function fixture(entry = { label: "dog", fields: {} }) {
     const listeners = {};
@@ -73,7 +59,35 @@ function fixture(entry = { label: "dog", fields: {} }) {
             return "blob:bundled";
         },
     };
-    vm.runInNewContext(previewSource + source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../../../../ui/reuse/image-preview.js", import.meta.url),
+            {
+                "./escape-html.js": context,
+                "./popup.js": context,
+                "./page-styles.js": context,
+                "./i18n.js": context,
+                "./ui-ctx.js": context,
+                "./scoped-actions.js": context,
+                "./toast.js": context,
+            },
+            context,
+        ),
+    );
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/reference-images.js", import.meta.url),
+            {
+                "/static/reuse/image-preview.js": context,
+                "/static/reuse/error-reporting.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+            },
+            context,
+        ),
+    );
     const controller = new AbortController();
     context.bindReferenceImageUploads(
         form,

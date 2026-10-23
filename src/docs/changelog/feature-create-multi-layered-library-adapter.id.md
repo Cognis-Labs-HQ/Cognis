@@ -274,3 +274,15 @@ Referensi implementasi: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://git
 Pembacaan konteks pencarian kamus memakai `study:library:readSearchContext` dengan tahap otorisasi dan resolusi. Penulisan tetap memakai `study:library:searchContext` dengan validasi sebelum penyimpanan agar ekstensi alur dapat menyesuaikan masukan sebelum validasi layanan. Kedua operasi menolak identitas tautan berbagi. Penulisan berhenti pada 16 KiB dengan HTTP 413; JSON rusak mengembalikan HTTP 400 tanpa mengganti status tersimpan. Kegagalan tak terduga hanya menampilkan kode kesalahan stabil.
 
 Referensi implementasi: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+
+## Isolasi dan siklus komponen
+
+API mendelegasikan ruang nama ekstensi melalui kebijakan milik gateway aktif; Study memiliki aturan ruang nama bahasa. Kapabilitas penyedia Library ditarik saat adaptor atau dependensi Study dinonaktifkan, menolak referensi fungsi yang disimpan, dan kembali saat diaktifkan. Bootstrap adaptor Study menyediakan `onAvailabilityChange(listener)` untuk kontribusi sesuai siklus hidup; kegagalan bootstrap menarik kontribusi tersebut.
+
+## Notifikasi dan penyimpanan
+
+Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, Indonesia, dan Jepang dari katalog XML, memakai bahasa Inggris sebagai cadangan, serta melalui `study:library:notifyContent`. Label kartu tidak ditafsirkan ulang saat substitusi. Penulisan kelas dengan hak istimewa tetap membutuhkan kelas tujuan yang ada. Observasi papan peringkat dibatalkan saat penyimpanan gagal; pergantian musim menghitung ulang hasil akhir setelah proses dimulai ulang dan memulihkan keadaan jika gagal disimpan. Administrator terverifikasi dapat melepas ikatan sumber integrasi yang cocok tanpa menjadi anggota ruang.
+
+## Batas pengujian perilaku
+
+Pengujian peramban memuat ekspor modul sebenarnya dengan pengganti dependensi eksplisit melalui perkakas bersama. Pemeriksaan editor, menggambar, dan alur menggunakan operasi publik, bukan mengekstrak fungsi privat. Flashcards langsung memakai modul tersendiri untuk editor dek.

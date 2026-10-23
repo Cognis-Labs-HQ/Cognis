@@ -1,6 +1,5 @@
-import { loadTestModule } from "./reuse/modules.js";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { runOperation } from "../reuse/operation.js";
-import { requestMessages } from "../request-messages.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createLibraryFlow } from "./reuse/flows.js";
@@ -87,10 +86,10 @@ test("notification catalogs coalesce reads and retry a failed resource load", as
     const deliveries: unknown[] = [];
     const errors: unknown[] = [];
     let fail = true;
-    const { createRequestNotifier: createNotifier } = loadTestModule<
-        typeof import("../request-notifications.js")
+    const { createNotificationMessages } = loadTestModule<
+        typeof import("../reuse/notification-messages.js")
     >(
-        new URL("../request-notifications.ts", import.meta.url),
+        new URL("../reuse/notification-messages.ts", import.meta.url),
         {
             "node:fs/promises": {
                 readFile: async (url: URL) => {
@@ -102,11 +101,15 @@ test("notification catalogs coalesce reads and retry a failed resource load", as
                     return '<resources><string name="adapter.study.library.notification_pending_subject">Subject</string><string name="adapter.study.library.notification_pending_body">{{ account }}</string></resources>';
                 },
             },
-            "./request-messages.js": { requestMessages },
-            "./reuse/operation.js": { runOperation },
         },
         { URL },
     );
+    const { createRequestNotifier: createNotifier } = loadTestModule<
+        typeof import("../request-notifications.js")
+    >(new URL("../request-notifications.ts", import.meta.url), {
+        "./reuse/notification-messages.js": { createNotificationMessages },
+        "./reuse/operation.js": { runOperation },
+    });
     const notify = createNotifier({
         flow: createLibraryFlow(),
         accounts: {

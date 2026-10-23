@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { orderedReadingReferences } from "../ui/app/reference-readings.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -49,12 +50,6 @@ test("compound reading links follow canonical character groups after unlinked an
     const { readFileSync } = await import("node:fs");
     const { default: vm } = await import("node:vm");
     const links = await import("../ui/app/composition-links.js");
-    const source = readFileSync(
-        new URL("../ui/app/popup-title.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
     const context = {
         ...links,
         orderedReadingReferences,
@@ -68,10 +63,19 @@ test("compound reading links follow canonical character groups after unlinked an
         visibleTitleDefinition: () => "",
         variantPlacement: () => null,
     };
-    vm.runInNewContext(
-        source + "\nglobalThis.detailItems = popupTitleDetailItems;",
+    context.detailItems = loadTestModule(
+        new URL("../ui/app/popup-title.js", import.meta.url),
+        {
+            "./reuse/readings.js": context,
+            "./presentation.js": context,
+            "./composition-links.js": context,
+            "./title-definition.js": context,
+            "./popup-spellings.js": context,
+            "./variant-placement.js": context,
+            "./reference-readings.js": context,
+        },
         context,
-    );
+    ).popupTitleDetailItems;
     const characters = ["a", "b"].map((label) => ({
         id: `character-${label}`,
         label,

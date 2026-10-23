@@ -1,17 +1,9 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { groupByToMap } from "../../../../ui/reuse/group-by.js";
 
 import { filterItems } from "../../../../ui/reuse/collection-view.js";
-
-const source = readFileSync(
-    new URL("../ui/app/filters.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 test("metadata filters preserve sole-value selection and required defaults", () => {
     const context = {
@@ -26,7 +18,7 @@ test("metadata filters preserve sole-value selection and required defaults", () 
                 .filter((field) => entry.fields?.[field.id])
                 .map((field) => ({ field, value: entry.fields[field.id] })),
     };
-    vm.runInNewContext(source, context);
+    Object.assign(context, loadLibraryUiModule("app/filters.js", context));
     const field = { id: "level", detail: { required: false } };
     const html = context.renderLayerFilters(
         { fields: [field] },
@@ -61,7 +53,7 @@ test("metadata filters preserve sole-value selection and required defaults", () 
 
 test("unclassified vocabulary stays visible until a metadata filter is explicitly selected", () => {
     const context = { groupByToMap, filterItems };
-    vm.runInNewContext(source, context);
+    Object.assign(context, loadLibraryUiModule("app/filters.js", context));
     const cards = [
         {
             textContent: "学校",
@@ -113,7 +105,7 @@ test("curated tag filters reflect visible selected-layer content", () => {
         localizedLabel: () => "",
         fieldValues: () => [],
     };
-    vm.runInNewContext(source, context);
+    Object.assign(context, loadLibraryUiModule("app/filters.js", context));
     const layer = {
         detail: {
             tags: ["verb", "copula", "adjective"].map((value) => ({
@@ -149,7 +141,7 @@ test("current-page quick search immediately combines text with the existing card
         createSearchMatchResolver: (query) => (value) =>
             value.toLowerCase().includes(query.toLowerCase()),
     };
-    vm.runInNewContext(source, context);
+    Object.assign(context, loadLibraryUiModule("app/filters.js", context));
     const cards = ["Dog", "Cat"].map((textContent) => ({
         textContent,
         dataset: { libraryFilterValues: "{}" },

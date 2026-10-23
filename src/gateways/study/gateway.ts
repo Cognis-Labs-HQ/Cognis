@@ -187,6 +187,7 @@ export interface StudyAdapterBootstrapCtx {
         },
     ): void;
     isAdapterEnabled(adapterId?: string): boolean;
+    onAvailabilityChange(listener: (enabled: boolean) => void): () => void;
     log?(
         level: string,
         message: string,
@@ -220,12 +221,18 @@ export interface StudyClassAccessCapability {
 
 type StudyBootstrapBaseCtx = Omit<
     StudyAdapterBootstrapCtx,
-    "adapterId" | "adapterRoot" | "isAdapterEnabled"
+    "adapterId" | "adapterRoot" | "isAdapterEnabled" | "onAvailabilityChange"
 >;
 
 export class CoreStudyGateway {
     private readonly registeredAdapters = new Map<string, StudyAdapter>();
     private readonly disabledAdapters = new Set<string>();
+    private readonly availabilityListeners = new Set<{
+        adapterId: string;
+        enabled: boolean;
+        listener: (enabled: boolean) => void;
+    }>();
+
     private readonly registeredLanguageModules = new Map<
         string,
         {
@@ -244,6 +251,15 @@ export class CoreStudyGateway {
             reference: string,
         ) => boolean = () => false,
     ) {}
+
+    private refreshAdapterAvailability(): void {
+        for (const state of this.availabilityListeners) {
+            const enabled = this.isAdapterEnabled(state.adapterId);
+            if (enabled === state.enabled) continue;
+            state.listener(enabled);
+            state.enabled = enabled;
+        }
+    }
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
@@ -407,6 +423,7 @@ export class CoreStudyGateway {
             this.disabledAdapters.delete(adapterId);
         }
         await Promise.resolve(adapter.setConfig(adapterConfig));
+        this.refreshAdapterAvailability();
     }
 
     /**
@@ -421,6 +438,7 @@ export class CoreStudyGateway {
             throw new Error("not_found");
         }
         this.disabledAdapters.delete(adapterId);
+        this.refreshAdapterAvailability();
     }
 
     /**
@@ -435,6 +453,7 @@ export class CoreStudyGateway {
             throw new Error("not_found");
         }
         this.disabledAdapters.add(adapterId);
+        this.refreshAdapterAvailability();
     }
 
     async discoverAdapters(adaptersRoot: string): Promise<void> {
@@ -562,6 +581,18 @@ export class CoreStudyGateway {
                 ...baseCtx,
                 adapterId: entry,
                 adapterRoot: path.join(adaptersRoot, entry),
+                onAvailabilityChange: (listener) => {
+                    const state = {
+                        adapterId: entry,
+                        enabled: this.isAdapterEnabled(entry),
+                        listener,
+                    };
+                    listener(state.enabled);
+                    this.availabilityListeners.add(state);
+                    return () => {
+                        this.availabilityListeners.delete(state);
+                    };
+                },
                 isAdapterEnabled: (adapterId = entry) =>
                     this.isAdapterEnabled(adapterId),
                 registerRoute: (handler, gatewayId) => {
@@ -574,7 +605,14 @@ export class CoreStudyGateway {
 
             try {
                 await bootstrapFn(adapterCtx);
+                this.refreshAdapterAvailability();
             } catch (err) {
+                this.disabledAdapters.add(entry);
+                this.refreshAdapterAvailability();
+                for (const state of this.availabilityListeners) {
+                    if (state.adapterId === entry)
+                        this.availabilityListeners.delete(state);
+                }
                 baseCtx.log?.(
                     "error",
                     `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,

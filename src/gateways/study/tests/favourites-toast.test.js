@@ -1,6 +1,6 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
 test("favourite success toasts follow persisted add/remove state", async () => {
@@ -18,14 +18,18 @@ test("favourite success toasts follow persisted add/remove state", async () => {
         },
         showToast: (message) => toasts.push(message),
     });
-    const source = readFileSync(
-        new URL("../ui/reuse/favourites.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import.*;$/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export async function", "async function");
-    vm.runInContext(source, ctx);
+    Object.assign(
+        ctx,
+        loadTestModule(
+            new URL("../ui/reuse/favourites.js", import.meta.url),
+            {
+                "/static/reuse/api-client.js": ctx,
+                "/static/reuse/escape-html.js": ctx,
+                "/static/reuse/toast.js": ctx,
+            },
+            ctx,
+        ),
+    );
     const controller = await ctx.loadFavourites();
     let handler;
     const button = {

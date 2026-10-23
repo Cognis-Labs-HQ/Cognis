@@ -1,21 +1,12 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../ui/app/visibility-actions.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 const selectionPolicy = {};
-vm.runInNewContext(
-    readFileSync(new URL("../ui/app/selection.js", import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, ""),
+Object.assign(
     selectionPolicy,
+    loadLibraryUiModule("app/selection.js", selectionPolicy),
 );
 
 test("private relocation confirms once and queues requests without changing shared cards", async () => {
@@ -44,7 +35,21 @@ test("private relocation confirms once and queues requests without changing shar
             toasts += 1;
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/visibility-actions.js", import.meta.url),
+            {
+                "./dependency-scope.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./selection.js": context,
+            },
+            context,
+        ),
+    );
     const actions = context.createLibraryVisibilityActions({
         root: { querySelectorAll: () => [] },
         getEntries: () => entries,

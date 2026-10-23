@@ -482,7 +482,20 @@ test("a failed leaderboard save does not poison future writes and retrying the o
         service.submitObservation(actor("alice"), observation),
         /database_unavailable/,
     );
+    assert.equal(
+        (
+            await service.queryStandings({
+                definitionId: "weekly",
+                viewerId: "alice",
+                seasonId: "s1",
+            })
+        ).total,
+        0,
+    );
     rejectObservation = false;
+    await service.setParticipation("bob", "weekly", { optedIn: true });
+    assert.equal(saved?.observations.length, 0);
+
     await service.submitObservation(actor("alice"), observation);
     assert.equal(saved?.observations.length, 1);
     assert.equal(errors.length, 1);
@@ -527,5 +540,77 @@ test("metadata saves propagate failure, roll back unpublished changes and remain
     assert.equal(
         await service.canAccessDefinition(actor("alice"), "weekly", "red"),
         true,
+    );
+});
+
+test("rollover rebuilds final rankings after restart and persists cohort changes atomically", async () => {
+    let saved: import("../store.js").LeaderboardState | undefined;
+    const original = new LeaderboardService(
+        progress,
+        () => true,
+        undefined,
+        undefined,
+        undefined,
+        async (state) => {
+            saved = state;
+        },
+    );
+    await original.registerDefinition({
+        ...definition,
+        criteria: [definition.criteria[0]],
+        promotion: { count: 1, targetCohortId: "upper" },
+        relegation: { count: 1, targetCohortId: "lower" },
+    });
+    for (const [participantId, evidence, value] of [
+        ["alice", "a", 90],
+        ["bob", "b", 60],
+    ] as const) {
+        await original.setParticipation(participantId, "weekly", {
+            optedIn: true,
+            alias: participantId,
+        });
+        await original.submitObservation(actor(participantId), {
+            id: participantId,
+            definitionId: "weekly",
+            participantId,
+            criterionId: "accuracy",
+            value,
+            observedAt: "2026-09-01T00:00:00.000Z",
+            evidenceEventIds: [evidence],
+            seasonId: "s1",
+        });
+    }
+    let fail = true;
+    const restarted = new LeaderboardService(
+        progress,
+        () => true,
+        undefined,
+        undefined,
+        undefined,
+        async (state) => {
+            if (fail) throw new Error("unavailable");
+            saved = state;
+        },
+    );
+    restarted.restoreState(saved!);
+    const next = {
+        id: "s2",
+        startsAt: "2026-09-08T00:00:00Z",
+        endsAt: "2026-09-15T00:00:00Z",
+    };
+    await assert.rejects(restarted.rollover("weekly", next), /unavailable/);
+    assert.equal(restarted.listDefinitions()[0].season?.id, "s1");
+    assert.equal(restarted.archivedResults("weekly").length, 0);
+    fail = false;
+    await restarted.rollover("weekly", next);
+    assert.deepEqual(
+        restarted
+            .archivedResults("weekly")[0]
+            .rows.map((row) => row.participant.alias),
+        ["alice", "bob"],
+    );
+    assert.deepEqual(
+        saved?.cohorts.map(([, cohort]) => cohort),
+        ["upper", "lower"],
     );
 });

@@ -1,17 +1,10 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import { LIBRARY_COMPOSER_LIMITS } from "../ui/app/composer-limits.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import { separateLookupDefinitions } from "../ui/app/create-entry/lookup-definitions.js";
 import { resolveLookupReferences } from "../ui/app/create-entry/lookup-references.js";
-
-const source = readFileSync(
-    new URL("../ui/app/create-entry/lookups.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 test("dictionary results directly import definitions, source fields, readings, groups, and classifications", async () => {
     const suggestions = [
@@ -121,7 +114,10 @@ test("dictionary results directly import definitions, source fields, readings, g
         renderStrokePatternPreviews() {},
         showToast: (...args) => toasts.push(args),
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookups.js", context),
+    );
     const schema = {
         id: "test",
         version: 1,
@@ -302,7 +298,10 @@ test("stroke-pattern lookup applies the pattern directly without dictionary prev
         },
         showToast() {},
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookups.js", context),
+    );
     const form = {
         elements: { "field:stroke_pattern": field },
         querySelector: () => input,
@@ -345,7 +344,10 @@ test("canceling replacement avoids the request and preserves existing values", a
         },
         showToast() {},
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookups.js", context),
+    );
     const form = {
         elements: {},
         querySelector: () => input,
@@ -378,7 +380,10 @@ test("failed and empty stroke lookups leave the lookup button available", async 
             },
             showToast() {},
         };
-        vm.runInNewContext(source, context);
+        Object.assign(
+            context,
+            loadLibraryUiModule("app/create-entry/lookups.js", context),
+        );
         const form = {
             elements: {},
             querySelector: () => ({ value: "教" }),
@@ -438,7 +443,10 @@ test("lookup populates the visible composition input when no authored spelling c
         renderStrokePatternPreviews() {},
         showToast() {},
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookups.js", context),
+    );
     context.bindLookupProviders(
         form,
         { fields: {} },
@@ -451,15 +459,6 @@ test("lookup populates the visible composition input when no authored spelling c
 });
 
 test("vocabulary lookup preserves text, token order, and selected spelling while importing supporting data", async () => {
-    const replacementSource = readFileSync(
-        new URL(
-            "../ui/app/create-entry/lookup-replacement.js",
-            import.meta.url,
-        ),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
     const input = {
         get value() {
             return "";
@@ -568,8 +567,14 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
         showToast() {},
     };
     vm.createContext(context);
-    vm.runInContext(replacementSource, context);
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookup-replacement.js", context),
+    );
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookups.js", context),
+    );
     const entries = [
         {
             id: "kanji-教",

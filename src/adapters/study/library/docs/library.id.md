@@ -602,3 +602,7 @@ Membuka detail melalui tautan langsung, relasi, atau navigasi sebelumnya/berikut
 Kolom pilihan tunggal opsional menyertakan pilihan **Belum ditentukan** yang dilokalkan. Mengedit kartu tanpa klasifikasi tetap mempertahankan tingkat yang belum diketahui alih-alih otomatis memilih tingkat pertama.
 
 Pembacaan konteks pencarian kamus memakai `study:library:readSearchContext` dengan tahap otorisasi dan resolusi. Penulisan tetap memakai `study:library:searchContext` dengan validasi sebelum penyimpanan agar ekstensi alur dapat menyesuaikan masukan sebelum validasi layanan. Kedua operasi menolak identitas tautan berbagi. Penulisan berhenti pada 16 KiB dengan HTTP 413; JSON rusak mengembalikan HTTP 400 tanpa mengganti status tersimpan. Kegagalan tak terduga hanya menampilkan kode kesalahan stabil.
+
+## Notifikasi dan penyimpanan
+
+Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, Indonesia, dan Jepang dari katalog XML, memakai bahasa Inggris sebagai cadangan, serta melalui `study:library:notifyContent`. Label kartu tidak ditafsirkan ulang saat substitusi. Penulisan kelas dengan hak istimewa tetap membutuhkan kelas tujuan yang ada. Observasi papan peringkat dibatalkan saat penyimpanan gagal; pergantian musim menghitung ulang hasil akhir setelah proses dimulai ulang dan memulihkan keadaan jika gagal disimpan. Administrator terverifikasi dapat melepas ikatan sumber integrasi yang cocok tanpa menjadi anggota ruang.

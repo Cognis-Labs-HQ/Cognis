@@ -41,7 +41,11 @@ export async function changeChatroomSource(
             { column: "account_id", value: input.actorAccountId },
         ],
     });
-    if (room.created_by !== input.actorAccountId && !membership.rows?.length)
+    if (
+        !(release && administrator) &&
+        room.created_by !== input.actorAccountId &&
+        !membership.rows?.length
+    )
         throw new Error("Chatroom source access denied.");
     await db.executeCommand({
         option: "UPDATE",

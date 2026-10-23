@@ -1,5 +1,6 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 
@@ -29,10 +30,6 @@ const card = (id, references = []) => ({
     canDelete: true,
 });
 const reference = (entryId, relation = "restrict") => ({ entryId, relation });
-const strip = (source) =>
-    source
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
 
 function scopeContext(result = "personal") {
     const popups = [];
@@ -43,24 +40,24 @@ function scopeContext(result = "personal") {
             return result;
         },
     };
-    vm.runInNewContext(
-        strip(
-            readFileSync(
-                new URL("../ui/app/dependency-scope.js", import.meta.url),
-                "utf8",
-            ),
-        ),
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/dependency-scope.js", import.meta.url),
+            {
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+            },
+            context,
+        ),
     );
     return { context, popups };
 }
 
 const selectionPolicy = {};
-vm.runInNewContext(
-    readFileSync(new URL("../ui/app/selection.js", import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, ""),
+Object.assign(
     selectionPolicy,
+    loadLibraryUiModule("app/selection.js", selectionPolicy),
 );
 
 test("deletion confirmation includes restricted and grouped dependants but leaves detached cards", async () => {
@@ -90,15 +87,7 @@ test("deletion confirmation includes restricted and grouped dependants but leave
             return "delete";
         },
     };
-    vm.runInNewContext(
-        strip(
-            readFileSync(
-                new URL("../ui/app/selection.js", import.meta.url),
-                "utf8",
-            ),
-        ),
-        context,
-    );
+    Object.assign(context, loadLibraryUiModule("app/selection.js", context));
     const root = {
         querySelectorAll: () => [{ dataset: { librarySelectEntry: "root" } }],
     };
@@ -198,14 +187,20 @@ test("publication assistance submits only valid leaf dependencies, including hid
             };
         },
     });
-    vm.runInNewContext(
-        strip(
-            readFileSync(
-                new URL("../ui/app/visibility-actions.js", import.meta.url),
-                "utf8",
-            ),
-        ),
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/visibility-actions.js", import.meta.url),
+            {
+                "./dependency-scope.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./selection.js": context,
+            },
+            context,
+        ),
     );
     const actions = context.createLibraryVisibilityActions({
         root: { querySelectorAll: () => [] },

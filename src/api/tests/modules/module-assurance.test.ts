@@ -65,36 +65,48 @@ test("privileged modules may request host namespace integrations", () => {
     );
 });
 
-test("study language modules own their canonical gateway namespace", () => {
-    assert.doesNotThrow(() =>
-        assertModuleOwnedRoute(
-            "/api/v1/study/languages/ja/library/words",
-            "study-language-ja",
-            unprivileged,
-        ),
-    );
-    assert.doesNotThrow(() =>
-        assertModuleOwnedCtxRegistration(
-            "study:language:ja:library",
-            "study-language-ja",
-            unprivileged,
-        ),
-    );
+test("module namespace integration requires an explicit host-owner grant", () => {
+    const grant = ({
+        moduleId,
+        kind,
+        id,
+    }: import("@cognis/core").ModuleNamespaceRequest) =>
+        moduleId === "notes-addon" &&
+        (kind === "apiRoute"
+            ? id === "/api/v1/notes/addon"
+            : id === "notes:addon");
     assert.throws(
         () =>
             assertModuleOwnedRoute(
-                "/api/v1/study/languages/en/library",
-                "study-language-ja",
+                "/api/v1/notes/addon",
+                "notes-addon",
                 unprivileged,
             ),
         /module_privileged_access_required/,
     );
+    assert.doesNotThrow(() =>
+        assertModuleOwnedRoute(
+            "/api/v1/notes/addon",
+            "notes-addon",
+            unprivileged,
+            grant,
+        ),
+    );
+    assert.doesNotThrow(() =>
+        assertModuleOwnedCtxRegistration(
+            "notes:addon",
+            "notes-addon",
+            unprivileged,
+            grant,
+        ),
+    );
     assert.throws(
         () =>
             assertModuleOwnedCtxRegistration(
-                "study:language:en",
-                "study-language-ja",
+                "notes:other",
+                "notes-addon",
                 unprivileged,
+                grant,
             ),
         /module_privileged_access_required/,
     );

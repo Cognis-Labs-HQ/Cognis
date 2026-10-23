@@ -1,13 +1,8 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
-
-function source(file) {
-    return readFileSync(new URL(file, import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
-}
 
 test("dictionary previews fetch selected references and pronunciation characters", async () => {
     const calls = [];
@@ -20,7 +15,14 @@ test("dictionary previews fetch selected references and pronunciation characters
             return [{ id: filters.layer }];
         },
     });
-    vm.runInContext(source("../ui/app/search/references.js"), context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/search/references.js", import.meta.url),
+            { "/static/gateways/study/library-client.js": context },
+            context,
+        ),
+    );
     const schema = {
         id: "test",
         layers: [
@@ -77,7 +79,7 @@ test("dictionary previews fetch selected references and pronunciation characters
 
 test("visible detail fields honor hidden metadata and detail presentation", () => {
     const context = vm.createContext({});
-    vm.runInContext(source("../ui/app/presentation.js"), context);
+    Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
     const fields = context.visibleDetailFields({
         fields: [
             { id: "meaning" },

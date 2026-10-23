@@ -1,14 +1,7 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 
-const source = readFileSync(
-    new URL("../ui/app/requests.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/export (async )?function/g, "$1function");
 test("approve, decline and withdraw each require a deliberate confirmation and cancellation preserves the request", async () => {
     for (const action of ["approved", "rejected", "withdraw"]) {
         let listener;
@@ -43,7 +36,7 @@ test("approve, decline and withdraw each require a deliberate confirmation and c
             },
             showToast() {},
         };
-        vm.runInNewContext(source, context);
+        Object.assign(context, loadLibraryUiModule("app/requests.js", context));
         context.bindLibraryRequestReviews(
             {
                 addEventListener: (_type, handler) => {

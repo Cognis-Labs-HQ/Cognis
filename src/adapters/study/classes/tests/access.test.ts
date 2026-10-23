@@ -20,7 +20,11 @@ test("registered class access uses current memberships and the class teacher wit
             commands.push(command.table);
             if (command.option !== "SELECT") return { rows: [] };
             const rows =
-                command.table === "study_classes"
+                command.table === "study_classes" &&
+                command.where?.some(
+                    (clause) =>
+                        clause.column === "id" && clause.value === "class",
+                )
                     ? [
                           {
                               id: "class",
@@ -73,6 +77,11 @@ test("registered class access uses current memberships and the class teacher wit
     assert.equal(await access.canRead("class", "outsider", "user"), false);
     assert.equal(await access.canWrite("class", "learner", "user"), false);
     assert.equal(await access.canWrite("class", "teacher", "teacher"), true);
+    for (const role of ["admin", "owner"]) {
+        assert.equal(await access.canWrite("missing", "admin", role), false);
+        assert.equal(await access.canRead("missing", "admin", role), false);
+        assert.equal(await access.canWrite("class", "admin", role), true);
+    }
     enrolled = false;
     assert.equal(await access.canRead("class", "learner", "user"), false);
     enabled = false;

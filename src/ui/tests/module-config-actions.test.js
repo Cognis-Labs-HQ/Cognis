@@ -1,14 +1,7 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
-
-const source = readFileSync(
-    new URL("../app/modules/preferences.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 async function popupFixture(runActions, request) {
     const inputs = new Map();
@@ -70,7 +63,23 @@ async function popupFixture(runActions, request) {
         },
     };
     vm.createContext(context);
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../app/modules/preferences.js", import.meta.url),
+            {
+                "../../reuse/toast.js": context,
+                "../../reuse/error-reporting.js": context,
+                "../../reuse/escape-html.js": context,
+                "../../reuse/popup.js": context,
+                "../../reuse/info-tooltip.js": context,
+                "../../reuse/form-builder.js": context,
+                "../../reuse/i18n.js": context,
+                "./api.js": context,
+            },
+            context,
+        ),
+    );
     await context.openModulePreferences(
         {
             id: "speech",

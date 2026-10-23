@@ -1,3 +1,4 @@
+import type { ModuleNamespacePolicy } from "@cognis/core";
 import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -20,14 +21,6 @@ export const PRIVILEGED_FLOW_IDS = new Set([
     "login",
     "startSsoLogin",
 ]);
-const STUDY_LANGUAGE_MODULE_PREFIX = "study-language-";
-const LANGUAGE_CODE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
-
-function studyLanguageCode(moduleId: string): string {
-    if (!moduleId.startsWith(STUDY_LANGUAGE_MODULE_PREFIX)) return "";
-    const languageCode = moduleId.slice(STUDY_LANGUAGE_MODULE_PREFIX.length);
-    return LANGUAGE_CODE_PATTERN.test(languageCode) ? languageCode : "";
-}
 const TRUSTED_PRIVILEGED_GITHUB_OWNER = "cognis-labs-hq";
 const RUNTIME_FILE_EXTENSIONS = new Set([
     ".cjs",
@@ -68,19 +61,15 @@ export function assertModuleOwnedRoute(
     routePath: string,
     moduleId: string,
     privilege: ModulePrivilege,
+    authorizeNamespace?: ModuleNamespacePolicy,
 ): void {
     const ownedPrefix = `/api/v1/modules/${moduleId}`;
-    const languageCode = studyLanguageCode(moduleId);
-    const languagePrefix = languageCode
-        ? `/api/v1/study/languages/${languageCode}`
-        : "";
     if (
         !privilege.requested &&
         routePath !== ownedPrefix &&
         !routePath.startsWith(`${ownedPrefix}/`) &&
-        (!languagePrefix ||
-            (routePath !== languagePrefix &&
-                !routePath.startsWith(`${languagePrefix}/`)))
+        authorizeNamespace?.({ moduleId, kind: "apiRoute", id: routePath }) !==
+            true
     ) {
         throw new Error("module_privileged_access_required");
     }
@@ -90,17 +79,16 @@ export function assertModuleOwnedCtxRegistration(
     registrationId: string,
     moduleId: string,
     privilege: ModulePrivilege,
+    authorizeNamespace?: ModuleNamespacePolicy,
 ): void {
-    const languageCode = studyLanguageCode(moduleId);
-    const languageCapability = languageCode
-        ? `study:language:${languageCode}`
-        : "";
     if (
         !privilege.requested &&
         !registrationId.startsWith(`${moduleId}:`) &&
-        (!languageCapability ||
-            (registrationId !== languageCapability &&
-                !registrationId.startsWith(`${languageCapability}:`)))
+        authorizeNamespace?.({
+            moduleId,
+            kind: "ctxRegistration",
+            id: registrationId,
+        }) !== true
     ) {
         throw new Error("module_privileged_access_required");
     }

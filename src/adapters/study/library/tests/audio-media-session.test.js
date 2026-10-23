@@ -1,14 +1,7 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
-
-const source = readFileSync(
-    new URL("../ui/app/audio-media-session.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 test("system media metadata names the playing card and layer, publishes Cognis artwork and owns controls until disposal", async () => {
     const handlers = new Map();
@@ -31,7 +24,10 @@ test("system media metadata names the playing card and layer, publishes Cognis a
             },
         }),
     });
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/audio-media-session.js", context),
+    );
     const controller = new AbortController();
     const audio = Object.assign(new EventTarget(), {
         isConnected: true,

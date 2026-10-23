@@ -1,4 +1,4 @@
-import { loadTestModule } from "./reuse/modules.js";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";

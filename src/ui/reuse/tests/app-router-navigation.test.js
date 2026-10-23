@@ -1,14 +1,7 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../app-router.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 function createRouter({ allowNavigation = true } = {}) {
     const listeners = new Map();
@@ -85,8 +78,20 @@ function createRouter({ allowNavigation = true } = {}) {
         recordRouteMount() {},
     };
     vm.createContext(sandbox);
-    vm.runInContext(
-        source + "\nglobalThis.router = { initRouter, navigateTo };",
+    sandbox.router = loadTestModule(
+        new URL("../app-router.js", import.meta.url),
+        {
+            "./page-styles.js": sandbox,
+            "./page-entry.js": sandbox,
+            "./route-path.js": sandbox,
+            "./spa-route-registry.js": sandbox,
+            "./runtime-error-popup.js": sandbox,
+            "./guest-blocked-popup.js": sandbox,
+            "./ui-ctx.js": sandbox,
+            "./component-page-broker.js": sandbox,
+            "./performance-telemetry.js": sandbox,
+            "./page-flow-catalog.js": sandbox,
+        },
         sandbox,
     );
     sandbox.router.initRouter(root);

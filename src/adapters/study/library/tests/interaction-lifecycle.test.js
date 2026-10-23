@@ -1,7 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 
 function fixture() {
@@ -23,14 +23,30 @@ function fixture() {
         updateSelectionActions: (...args) => updates.push(args),
         showToast: (...args) => toasts.push(args),
     });
-    vm.runInContext(
-        readFileSync(
-            new URL("../ui/app/interactions.js", import.meta.url),
-            "utf8",
-        )
-            .replace(/^import[\s\S]*?;\n/gm, "")
-            .replace("export function", "function"),
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/interactions.js", import.meta.url),
+            {
+                "./drawing-grid-preview.js": context,
+                "./viewed-entries.js": context,
+                "/static/reuse/mount-scope.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "./filters.js": context,
+                "./layer-cards.js": context,
+                "./entry-popup.js": context,
+                "./drawing.js": context,
+                "./selection.js": context,
+                "./variants.js": context,
+                "./visibility-actions.js": context,
+                "./transformation-interactions.js": context,
+                "./entry-collection.js": context,
+                "./deletion-actions.js": context,
+                "./browse-controls.js": context,
+            },
+            context,
+        ),
     );
     const root = Object.assign(new EventTarget(), {
         querySelector: () => null,

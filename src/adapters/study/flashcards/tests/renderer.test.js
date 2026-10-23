@@ -1,17 +1,19 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { pronunciationClass } from "../../../../gateways/study/ui/reuse/pronunciation.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 
 const context = { escapeHtml, pronunciationClass };
 vm.createContext(context);
-vm.runInContext(
-    readFileSync(new URL("../ui/reuse/flashcard.js", import.meta.url), "utf8")
-        .replace(/^import.*;$/gm, "")
-        .replaceAll("export function", "function"),
+Object.assign(
     context,
+    loadTestModule(
+        new URL("../ui/reuse/flashcard.js", import.meta.url),
+        { "/static/gateways/study/reuse/pronunciation.js": context },
+        context,
+    ),
 );
 const schemas = [
     {

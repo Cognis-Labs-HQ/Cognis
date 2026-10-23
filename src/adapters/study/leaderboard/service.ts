@@ -36,11 +36,6 @@ export class LeaderboardService implements LeaderboardCapability {
         { seasonId: string; rows: StandingRow[] }[]
     >();
     private snapshots = new Map<string, Map<string, number>>();
-    private completedStandings = new Map<string, StandingRow[]>();
-    private completedParticipants = new Map<
-        string,
-        { participantId: string; rank: number }[]
-    >();
     private persistence = Promise.resolve();
 
     constructor(
@@ -367,15 +362,18 @@ export class LeaderboardService implements LeaderboardCapability {
                     ? "participant_waiting_for_next_season"
                     : "late_join_denied",
             );
-        const existing = this.observations.get(observation.id);
-        if (existing) {
-            if (!isDeepStrictEqual(existing, normalized))
-                throw new Error("observation_id_conflict");
-            await this.persist();
-            return;
-        }
-        this.observations.set(observation.id, structuredClone(normalized));
-        await this.persist();
+        await this.persist(() => {
+            const existing = this.observations.get(observation.id);
+            if (existing) {
+                if (!isDeepStrictEqual(existing, normalized))
+                    throw new Error("observation_id_conflict");
+                return () => {};
+            }
+            this.observations.set(observation.id, structuredClone(normalized));
+            return () => {
+                this.observations.delete(observation.id);
+            };
+        });
         await this.log?.("info", "Submitted leaderboard observation.", {
             component: "study-leaderboard",
             operation: "submit_observation",
@@ -698,14 +696,6 @@ export class LeaderboardService implements LeaderboardCapability {
                 ]),
             ),
         );
-        this.completedStandings.set(snapshotKey, structuredClone(rows));
-        this.completedParticipants.set(
-            snapshotKey,
-            raw.map((item, index) => ({
-                participantId: item.participantId,
-                rank: rows[index].rank,
-            })),
-        );
         const offset = query.offset ?? 0;
         if (
             !Number.isInteger(offset) ||
@@ -794,59 +784,60 @@ export class LeaderboardService implements LeaderboardCapability {
         const definition = this.definitions.get(definitionId);
         if (!definition?.season || !definition.recurring)
             throw new Error("rollover_not_supported");
-        const snapshotKey = [definitionId, definition.season.id, "all"].join(
-            "\0",
-        );
-        const cohortRows = [...this.completedStandings.entries()]
-            .filter(([key]) =>
-                key.startsWith(`${definitionId}\0${definition.season!.id}\0`),
-            )
-            .flatMap(([, rows]) => rows);
-        const rows = structuredClone(
-            this.completedStandings.get(snapshotKey) ?? cohortRows,
-        );
-        const rankedParticipants = [...this.completedParticipants.entries()]
-            .filter(([key]) =>
-                key.startsWith(`${definitionId}\0${definition.season!.id}\0`),
-            )
-            .flatMap(([, participants]) => participants)
-            .sort((left, right) => left.rank - right.rank);
-        for (const item of rankedParticipants.slice(
-            0,
-            definition.promotion?.count ?? 0,
-        )) {
-            if (definition.promotion)
-                this.cohorts.set(
-                    this.key(item.participantId, definitionId),
-                    definition.promotion.targetCohortId,
-                );
-        }
-        for (const item of rankedParticipants.slice(
-            Math.max(
-                0,
-                rankedParticipants.length - (definition.relegation?.count ?? 0),
-            ),
-        )) {
-            if (definition.relegation)
-                this.cohorts.set(
-                    this.key(item.participantId, definitionId),
-                    definition.relegation.targetCohortId,
-                );
-        }
-        this.archives.set(definitionId, [
-            ...(this.archives.get(definitionId) ?? []),
-            { seasonId: definition.season.id, rows },
-        ]);
-        this.definitions.set(definitionId, {
-            ...definition,
-            season: nextSeason,
+        const season = definition.season;
+        const { rows } = await this.queryStandings({
+            definitionId,
+            viewerId: "",
+            seasonId: season.id,
+            now: season.endsAt,
         });
-        await this.persist();
+        const snapshotKey = [definitionId, season.id, "all"].join("\0");
+        const rankedParticipants = rows.length
+            ? Array.from(
+                  this.snapshots.get(snapshotKey) ?? [],
+                  ([participantId, rank]) => ({ participantId, rank }),
+              )
+            : [];
+        await this.persist(() => {
+            const previous = this.state();
+            for (const item of rankedParticipants.slice(
+                0,
+                definition.promotion?.count ?? 0,
+            )) {
+                if (definition.promotion)
+                    this.cohorts.set(
+                        this.key(item.participantId, definitionId),
+                        definition.promotion.targetCohortId,
+                    );
+            }
+            for (const item of rankedParticipants.slice(
+                Math.max(
+                    0,
+                    rankedParticipants.length -
+                        (definition.relegation?.count ?? 0),
+                ),
+            )) {
+                if (definition.relegation)
+                    this.cohorts.set(
+                        this.key(item.participantId, definitionId),
+                        definition.relegation.targetCohortId,
+                    );
+            }
+            this.archives.set(definitionId, [
+                ...(this.archives.get(definitionId) ?? []),
+                { seasonId: season.id, rows },
+            ]);
+            this.definitions.set(definitionId, {
+                ...definition,
+                season: nextSeason,
+            });
+            return () => this.restoreState(previous);
+        });
         await this.log?.("info", "Rolled over leaderboard season.", {
             component: "study-leaderboard",
             operation: "rollover",
             definitionId,
-            previousSeasonId: definition.season.id,
+            previousSeasonId: season.id,
             nextSeasonId: nextSeason.id,
         });
     }

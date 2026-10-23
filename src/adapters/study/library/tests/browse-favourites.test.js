@@ -1,5 +1,5 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -68,15 +68,26 @@ test("favourite children render independently of unfavourited ancestors, and pro
         ],
         schemas: [{ id: "test" }],
     });
-    const source = readFileSync(
-        new URL("../ui/app/browse-controls.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
-    await vm.runInContext(
-        source + "\nbindBrowseControls(root, entries, schemas, {})",
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/browse-controls.js", import.meta.url),
+            {
+                "/static/reuse/collection-view.js": context,
+                "./cards.js": context,
+                "./presentation.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/reuse/favourites.js": context,
+                "./filters.js": context,
+            },
+            context,
+        ),
+    );
+    await context.bindBrowseControls(
+        context.root,
+        context.entries,
+        context.schemas,
+        {},
     );
     assert.equal(grid.innerHTML, "<card>child</card>");
     only = false;
@@ -102,14 +113,20 @@ test("leaving a layer while favourites load prevents stale binding and misleadin
         },
         signal: controller.signal,
     });
-    const source = readFileSync(
-        new URL("../ui/app/browse-controls.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
-    await vm.runInContext(
-        source + "\nbindBrowseControls(root, [], [], {}, signal)",
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/browse-controls.js", import.meta.url),
+            {
+                "/static/reuse/collection-view.js": context,
+                "./cards.js": context,
+                "./presentation.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/reuse/favourites.js": context,
+                "./filters.js": context,
+            },
+            context,
+        ),
     );
+    await context.bindBrowseControls(context.root, [], [], {}, context.signal);
 });

@@ -1,14 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 
-const source = readFileSync(
-    new URL("../ui/app/deletion-actions.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 test("one confirmation and one API call cover repeated batch-delete clicks", async () => {
     let confirm;
     let confirmations = 0;
@@ -31,7 +24,18 @@ test("one confirmation and one API call cover repeated batch-delete clicks", asy
         showToast() {},
         deletionErrorKey: () => "error",
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/deletion-actions.js", import.meta.url),
+            {
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "./selection.js": context,
+            },
+            context,
+        ),
+    );
     const input = {
         root: { querySelector: () => button },
         entries: [{ id: "a" }, { id: "b" }],

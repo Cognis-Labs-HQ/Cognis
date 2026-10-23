@@ -197,4 +197,8 @@
     <string name="gateway.study.library_audio_permission_wait">Waiting for microphone permission</string>
     <string name="gateway.study.library_audio_permission_denied">Microphone access was denied. Allow microphone access in your browser, then try again.</string>
     <string name="gateway.study.library_audio_record_unavailable">Voice recording is unavailable. Use HTTPS or localhost and a browser that supports audio recording.</string>
+  <string name="adapter.study.library.notification_content_subject">New Study Library Content</string>
+  <string name="adapter.study.library.notification_content_body">New Library content is available ({{ count }}).</string>
+  <string name="adapter.study.library.notification_deletion_subject">Study Cards Removed</string>
+  <string name="adapter.study.library.notification_deletion_body">These cards were removed because their shared content was deleted or relocated: {{ cards }}</string>
 </resources>

@@ -1,20 +1,28 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
-function source(path) {
-    return readFileSync(new URL(path, import.meta.url), "utf8")
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/^export \{[^}]+\} from[^;]+;\n/gm, "")
-        .replace(/export (async )?function/g, "$1function");
-}
-
 function context(extra = {}) {
     const environment = vm.createContext(extra);
-    vm.runInContext(source("../ui/app/presentation.js"), environment);
-    vm.runInContext(source("../ui/app/composer-contract.js"), environment);
+    Object.assign(
+        environment,
+        loadLibraryUiModule("app/presentation.js", environment),
+    );
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/app/composer-contract.js", import.meta.url),
+            {
+                "./reuse/readings.js": environment,
+                "./presentation.js": environment,
+                "../reuse/transformations.js": environment,
+            },
+            environment,
+        ),
+    );
     return environment;
 }
 
@@ -92,9 +100,21 @@ test("manual composition resolves a complete small-kana sequence and activates e
             characters.find((entry) => entry.id === token)?.label,
     });
     environment.escapeHtml = escapeHtml;
-    vm.runInContext(
-        source("../ui/app/create-entry/composition.js"),
+    Object.assign(
         environment,
+        loadTestModule(
+            new URL("../ui/app/create-entry/composition.js", import.meta.url),
+            {
+                "../presentation.js": environment,
+                "./pronunciation-draft.js": environment,
+                "/static/reuse/escape-html.js": environment,
+                "../composer-contract.js": environment,
+                "../composition-tokens.js": environment,
+                "../../reuse/transformations.js": environment,
+                "./definitions.js": environment,
+            },
+            environment,
+        ),
     );
     environment.bindTextComposition(
         form,
@@ -143,17 +163,38 @@ test("character carousels retain hidden writing units as selectable references",
     });
     environment.escapeHtml = escapeHtml;
     environment.localizedLabel = () => "Characters";
-    vm.runInContext(
-        source("../ui/app/admin-interactions/editor-body.js"),
+    Object.assign(
         environment,
+        loadLibraryUiModule(
+            "app/admin-interactions/editor-body.js",
+            environment,
+        ),
     );
-    const html = environment.relationshipEditor(
-        { id: "spelling", targetLayer: "characters" },
-        { schemaId: "ja", label: "こっち", fields: {} },
+    environment.renderCompositionInput = () => "";
+    environment.pronunciationRelationshipsFor = () => [];
+    environment.canCreateLayerEntries = () => false;
+    environment.inputForField = () => "";
+    environment.createFormBuilder = (_i18n, options) => ({
+        render: () => options.trustedContentHtml,
+    });
+    environment.renderComposerExtras = () => "";
+    environment.renderTransformationOptIns = () => "";
+    environment.renderAudioEditor = () => "";
+    const wordLayer = {
+        id: "words",
+        relationships: [{ id: "spelling", targetLayer: "characters" }],
+        fields: [],
+    };
+    const { html } = environment.editorBody(
+        { schemaId: "ja", layer: "words", label: "こっち", fields: {} },
+        [{ ...schema, layers: [...schema.layers, wordLayer] }],
         characters,
-        schema,
-        "en",
-        { carousel: true },
+        { t: (key) => key },
+        "",
+        {
+            relationshipCarousels: true,
+            inputCarouselIds: new Set(["spelling"]),
+        },
     );
     assert.ok(rendered[0].items.some((item) => item.value === "small-tsu"));
     assert.match(html, /<option value="small-tsu">っ<\/option>/);

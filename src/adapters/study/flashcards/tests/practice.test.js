@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { randomIndex } from "../../../../gateways/study/ui/reuse/random.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -13,14 +14,6 @@ import {
     isCorrectReadingChoice,
 } from "../ui/reuse/reading-answer.js";
 
-function loadModule(path, context) {
-    const source = readFileSync(new URL(path, import.meta.url), "utf8")
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/export (async )?function/g, "$1function")
-        .replaceAll("export const", "const");
-    vm.runInContext(source, context);
-}
-
 const environment = vm.createContext({
     Date,
     randomIndex,
@@ -31,11 +24,59 @@ const environment = vm.createContext({
     readingAnswerKey,
     escapeHtml: String,
 });
-loadModule("../../../../gateways/study/ui/reuse/pronunciation.js", environment);
-loadModule("../ui/reuse/flashcard.js", environment);
-loadModule("../../../../gateways/study/ui/reuse/action-flows.js", environment);
-loadModule("../ui/app/actions.js", environment);
-loadModule("../ui/app/practice-model.js", environment);
+Object.assign(
+    environment,
+    loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/reuse/pronunciation.js",
+            import.meta.url,
+        ),
+        {},
+        environment,
+    ),
+);
+Object.assign(
+    environment,
+    loadTestModule(
+        new URL("../ui/reuse/flashcard.js", import.meta.url),
+        { "/static/gateways/study/reuse/pronunciation.js": environment },
+        environment,
+    ),
+);
+Object.assign(
+    environment,
+    loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/reuse/action-flows.js",
+            import.meta.url,
+        ),
+        { "/static/reuse/ui-ctx.js": environment },
+        environment,
+    ),
+);
+Object.assign(
+    environment,
+    loadTestModule(
+        new URL("../ui/app/actions.js", import.meta.url),
+        { "/static/gateways/study/reuse/action-flows.js": environment },
+        environment,
+    ),
+);
+Object.assign(
+    environment,
+    loadTestModule(
+        new URL("../ui/app/practice-model.js", import.meta.url),
+        {
+            "/static/gateways/study/reuse/random.js": environment,
+            "/static/gateways/study/reuse/similar-items.js": environment,
+            "/static/gateways/study/reuse/drawing-pattern.js": environment,
+            "../reuse/flashcard.js": environment,
+            "../reuse/review.js": environment,
+            "../reuse/reading-answer.js": environment,
+        },
+        environment,
+    ),
+);
 
 const cards = ["new", "overdue", "scheduled", "invalid"].map((id) => ({
     entry: { id },
@@ -67,7 +108,7 @@ test("practice summary partitions new, due, and done without counting new cards 
 });
 
 test("every supported browser deck action executes registered ctx stages and respects cancellation", async () => {
-    const actions = vm.runInContext("DECK_ACTIONS", environment);
+    const actions = environment.DECK_ACTIONS;
     for (const action of actions) {
         const stages = [];
         for (const stage of ["before", "after"])
@@ -77,19 +118,16 @@ test("every supported browser deck action executes registered ctx stages and res
                 { id: `test:${action}:${stage}` },
                 () => stages.push(stage),
             );
-        const result = await vm.runInContext("runDeckAction", environment)(
-            action,
-            () => {
-                stages.push("execute");
-                return 42;
-            },
-        );
+        const result = await environment.runDeckAction(action, () => {
+            stages.push("execute");
+            return 42;
+        });
         assert.equal(result, 42);
         assert.deepEqual(stages, ["before", "execute", "after"]);
         const controller = new AbortController();
         controller.abort();
         let calls = 0;
-        await vm.runInContext("runDeckAction", environment)(
+        await environment.runDeckAction(
             action,
             () => calls++,
             controller.signal,
@@ -102,9 +140,7 @@ test("every supported browser deck action executes registered ctx stages and res
                 `test:${action}:${stage}`,
             );
     }
-    await assert.rejects(
-        vm.runInContext("runDeckAction", environment)("unregistered", () => 1),
-    );
+    await assert.rejects(environment.runDeckAction("unregistered", () => 1));
 });
 
 test("reading choices resolve localized definitions by Library ID and reflect edited meanings", () => {
@@ -256,10 +292,32 @@ function practiceHarness(filter, status = "due", options = {}) {
         },
         openPopup: async () => decision,
         navigateTo: async (url, options) => departures.push({ url, options }),
-        runDeckAction: vm.runInContext("runDeckAction", environment),
+        runDeckAction: environment.runDeckAction,
         showToast: (message, options) => toasts.push({ message, ...options }),
     });
-    loadModule("../ui/app/practice.js", context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/practice.js", import.meta.url),
+            {
+                "/static/gateways/study/reuse/explore.js": context,
+                "/static/gateways/study/reuse/pronunciation.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/reuse/escape-html.js": context,
+                "/static/reuse/format-template.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/app-router.js": context,
+                "/static/gateways/study/reuse/drawing.js": context,
+                "/static/gateways/study/reuse/favourites.js": context,
+                "../reuse/flashcard.js": context,
+                "./practice-model.js": context,
+                "./actions.js": context,
+                "/static/reuse/ui-ctx.js": context,
+                "../reuse/reading-answer.js": context,
+            },
+            context,
+        ),
+    );
     const controller = new AbortController();
     const grades = [];
     const dispose = context.mountPractice(target, {

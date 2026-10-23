@@ -1,9 +1,9 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import {
     createClassificationResolver,
     learnerTagMetadata,
 } from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import { generatedTransformationCard } from "../ui/reuse/transformations.js";
@@ -40,12 +40,6 @@ const entries = ["行", "い", "か", "な", "く", "て", "ゆ", "っく", "り
 );
 
 function loadPresentation() {
-    const source = readFileSync(
-        new URL("../ui/app/transformation-popup.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
     const context = {
         resolveLabelComposition,
         distinctPronunciationLabels,
@@ -53,10 +47,20 @@ function loadPresentation() {
             `open-title-reference:${encodeURIComponent(JSON.stringify({ entryId: entry.id, transformation: entry.referenceTransformation }))}`,
         transformedDefinitions: (definitions) => definitions,
     };
-    vm.runInNewContext(
-        source + "\nglobalThis.present = transformedPopupPresentation;",
+    context.present = loadTestModule(
+        new URL("../ui/app/transformation-popup.js", import.meta.url),
+        {
+            "/static/gateways/study/reuse/pronunciation.js": context,
+            "./popup-title.js": context,
+            "/static/reuse/escape-html.js": context,
+            "/static/reuse/popup.js": context,
+            "./presentation.js": context,
+            "../reuse/transformations.js": context,
+            "./composition-links.js": context,
+            "./transformation-interactions.js": context,
+        },
         context,
-    );
+    ).transformedPopupPresentation;
     return context.present;
 }
 
@@ -87,18 +91,20 @@ test("verb transformations link their changed reading to canonical kana", () => 
 });
 
 test("transformed titles retain clickable canonical character components", () => {
-    const source = readFileSync(
-        new URL("../ui/app/popup-title.js", import.meta.url),
-        "utf8",
-    );
     const context = {};
-    vm.runInNewContext(
-        source
-            .slice(source.indexOf("export function popupTitleItems"))
-            .replaceAll("export ", "") +
-            "\nglobalThis.items = popupTitleItems;",
+    context.items = loadTestModule(
+        new URL("../ui/app/popup-title.js", import.meta.url),
+        {
+            "./reuse/readings.js": context,
+            "./presentation.js": context,
+            "./composition-links.js": context,
+            "./title-definition.js": context,
+            "./popup-spellings.js": context,
+            "./variant-placement.js": context,
+            "./reference-readings.js": context,
+        },
         context,
-    );
+    ).popupTitleItems;
     for (const title of ["行かなくて", "ゆっくり"]) {
         const references = resolveLabelComposition(
             title,
@@ -140,12 +146,6 @@ test("detail rendering merges canonical upward links with stored relationships",
     const character = entries.find(({ label }) => label === "っく");
     const adverb = { ...verb, id: "slowly", label: "ゆっくり" };
     const explicit = { ...verb, id: "explicit", label: "Explicit use" };
-    const source = readFileSync(
-        new URL("../ui/app/detail.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
     let flowDetail;
     const context = {
         createClassificationResolver,
@@ -185,10 +185,24 @@ test("detail rendering merges canonical upward links with stored relationships",
         relationSection: (title, entries) =>
             `${title}:${entries.map(({ id }) => id).join(",")}`,
     };
-    vm.runInNewContext(
-        source + "\nglobalThis.compose = composeDetail;",
+    context.compose = loadTestModule(
+        new URL("../ui/app/detail.js", import.meta.url),
+        {
+            "../reuse/classification.js": context,
+            "./reference-images.js": context,
+            "./transformation-detail.js": context,
+            "./composer-contract.js": context,
+            "/static/reuse/ui-ctx.js": context,
+            "/static/reuse/escape-html.js": context,
+            "./presentation.js": context,
+            "./composition-links.js": context,
+            "./definition-display.js": context,
+            "/static/gateways/study/reuse/similar-items.js": context,
+            "./related-entries.js": context,
+            "../reuse/transformations.js": context,
+        },
         context,
-    );
+    ).composeDetail;
     const indirect = {
         ...verb,
         id: "indirect",
@@ -317,29 +331,43 @@ test("transformed previews keep the selected heading and identify the base card 
             return ["variant", "close"][popups.length - 1];
         },
     };
-    const stripImports = (source) =>
-        source
-            .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-            .replace(/\bexport /g, "");
     vm.createContext(context);
-    vm.runInContext(
-        stripImports(
-            readFileSync(
-                new URL("../ui/app/transformation-detail.js", import.meta.url),
-                "utf8",
-            ),
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/transformation-detail.js", import.meta.url),
+            {
+                "./presentation.js": context,
+                "./composition-links.js": context,
+                "./transformation-popup.js": context,
+                "./popup-title.js": context,
+                "../reuse/transformations.js": context,
+            },
+            context,
         ),
-        context,
     );
-    vm.runInContext(
-        stripImports(
-            readFileSync(
-                new URL("../ui/app/entry-popup.js", import.meta.url),
-                "utf8",
-            ),
-        ) + "\nglobalThis.open = openEntryPopup;",
+    context.open = loadTestModule(
+        new URL("../ui/app/entry-popup.js", import.meta.url),
+        {
+            "./viewed-entries.js": context,
+            "./detail-layout.js": context,
+            "/static/reuse/popup.js": context,
+            "/static/gateways/study/library-client.js": context,
+            "./detail.js": context,
+            "./presentation.js": context,
+            "./popup-title.js": context,
+            "./popup-navigation.js": context,
+            "./title-definition.js": context,
+            "./admin-interactions/index.js": context,
+            "./editability.js": context,
+            "./transformation-popup.js": {
+                transformedPopupPresentation: context.transformPresentation,
+            },
+            "./transformation-detail.js": context,
+            "./drawing.js": context,
+        },
         context,
-    );
+    ).openEntryPopup;
     const open = (options) =>
         context.open(
             {},

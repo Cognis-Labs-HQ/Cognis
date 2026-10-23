@@ -1,15 +1,12 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import {
+    loadTestModule,
+    importTestModule,
+} from "../../../../tooling/reuse/test-module.ts";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
-
-function source(file) {
-    return readFileSync(new URL(file, import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "")
-        .replace("await mountWhenDirect(mount);", "");
-}
 
 const schema = {
     id: "test",
@@ -38,6 +35,7 @@ async function searchPage(lookup, selectedIndex) {
     };
     const context = vm.createContext({
         URLSearchParams,
+        parseLanguageCode: (value) => value,
         replaceMountScope,
         window: new EventTarget(),
         history: {
@@ -87,16 +85,68 @@ async function searchPage(lookup, selectedIndex) {
         bindStudySubNavigation() {},
         mountWhenDirect: async () => {},
     });
-    await vm.runInContext(
-        source("../../../../gateways/study/ui/sub-navigation.js")
-            .split("function createStudySubNavigationSlot")[1]
-            .split("function renderStudySubNavigation")[0]
-            .replace(/^/, "function createStudySubNavigationSlot") +
-            "\n" +
-            source("../ui/app/search/index.js") +
-            "\nmount(root)",
-        vm.createContext({ ...context, root }),
+    context.createStudySubNavigationSlot = () => ({ render: () => "" });
+    const search = await importTestModule(
+        new URL("../ui/app/search/index.js", import.meta.url),
+        {
+            "/static/reuse/mount-scope.js": {
+                replaceMountScope: context.replaceMountScope,
+            },
+            "/static/reuse/i18n.js": {
+                createI18n: context.createI18n,
+                applyDocumentTitle: context.applyDocumentTitle,
+            },
+            "/static/reuse/page-composer/index.js": {
+                createPageComposer: context.createPageComposer,
+            },
+            "/static/reuse/page-entry.js": {
+                mountWhenDirect: context.mountWhenDirect,
+            },
+            "/static/reuse/escape-html.js": { escapeHtml: context.escapeHtml },
+            "/static/reuse/toast.js": { showToast: context.showToast },
+            "/static/reuse/timestamp.js": {
+                formatDateTime: context.formatDateTime,
+            },
+            "/static/gateways/study/sub-navigation.js": {
+                bindStudySubNavigation: context.bindStudySubNavigation,
+                loadStudySubNavigationModel:
+                    context.loadStudySubNavigationModel,
+                createStudySubNavigationSlot:
+                    context.createStudySubNavigationSlot,
+            },
+            "/static/gateways/study/library-client.js": {
+                dictionarySearchContext: context.dictionarySearchContext,
+                fetchLibrarySchemas: context.fetchLibrarySchemas,
+                searchLibraryDictionary: context.searchLibraryDictionary,
+            },
+            "../data.js": { loadLibrary: context.loadLibrary },
+            "./references.js": {
+                loadDictionaryReferences: context.loadDictionaryReferences,
+            },
+            "../cards.js": { renderCardContents: context.renderCardContents },
+            "../presentation.js": {
+                renderDetailFields: context.renderDetailFields,
+                metadataValues: context.metadataValues,
+                layerForEntry: context.layerForEntry,
+                localizedTextValue: context.localizedTextValue,
+                relationSection: context.relationSection,
+                isMeaningLayer: context.isMeaningLayer,
+                visibleDetailFields: context.visibleDetailFields,
+            },
+            "../create-entry/lookup-references.js": {
+                resolveLookupReferences: context.resolveLookupReferences,
+            },
+            "../entry-popup.js": { openEntryPopup: context.openEntryPopup },
+            "../editability.js": {
+                canCreateLayerEntries: context.canCreateLayerEntries,
+            },
+            "../create-entry/index.js": {
+                openCreateEntryPopup: context.openCreateEntryPopup,
+            },
+        },
+        context,
     );
+    await search.mount(root);
     if (selectedIndex !== undefined)
         await click({
             target: {
@@ -151,7 +201,7 @@ test("My Requests shows every submitted status read-only while Pending exposes a
         renderScope: () => "",
         renderRequestPreview: () => "<div data-request-preview></div>",
     });
-    vm.runInContext(source("../ui/app/requests.js"), context);
+    Object.assign(context, loadLibraryUiModule("app/requests.js", context));
     const requests = ["pending", "approved", "rejected"].map((status) => ({
         id: status,
         status,
@@ -181,7 +231,7 @@ test("My Requests shows every submitted status read-only while Pending exposes a
 
 test("relocation directions disable conflicts and resume when a conflicting card is deselected", () => {
     const context = vm.createContext({});
-    vm.runInContext(source("../ui/app/selection.js"), context);
+    Object.assign(context, loadLibraryUiModule("app/selection.js", context));
     const personal = { id: "personal", scope: "user", canDelete: true };
     const shared = { id: "shared", scope: "global", canDelete: true };
     const conflict = context.relocationState([personal, shared], "class");
@@ -221,7 +271,7 @@ test("request headers show linked identities and decision time on the status pil
         renderScope: () => "",
         renderRequestPreview: () => "<div data-request-preview></div>",
     });
-    vm.runInContext(source("../ui/app/requests.js"), context);
+    Object.assign(context, loadLibraryUiModule("app/requests.js", context));
     const html = context.renderLibraryRequests(
         [
             {

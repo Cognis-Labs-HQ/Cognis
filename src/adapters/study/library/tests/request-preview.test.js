@@ -1,15 +1,8 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { popupEntryEditMode } from "../ui/app/editability.js";
 
-const source = readFileSync(
-    new URL("../ui/app/request-preview.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/export (async )?function/g, "$1function");
 test("request previews use the normal card renderer with staged fields and persist only the proposed root", async () => {
     const request = {
         id: "request",
@@ -50,7 +43,21 @@ test("request previews use the normal card renderer with staged fields and persi
         showToast() {},
         console,
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/request-preview.js", import.meta.url),
+            {
+                "/static/reuse/toast.js": context,
+                "./cards.js": context,
+                "./presentation.js": context,
+                "./entry-popup.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "/static/reuse/escape-html.js": context,
+            },
+            context,
+        ),
+    );
     const schemas = [{ id: "schema" }];
     const i18n = { t: (key) => key };
     context.renderRequestPreview(request, schemas, [], i18n, true);

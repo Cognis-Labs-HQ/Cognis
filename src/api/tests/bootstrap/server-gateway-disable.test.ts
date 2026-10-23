@@ -1,3 +1,4 @@
+import { isModuleCapabilityAvailable } from "../../reuse/module-capability-availability.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -16,7 +17,6 @@ import {
     resolveHardDependencyDisableOrder,
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
-    isModuleCapabilityAvailable,
     buildServer,
     discoverCoreComponentDependencies,
 } from "../../server.js";

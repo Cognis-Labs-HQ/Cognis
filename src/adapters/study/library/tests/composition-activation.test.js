@@ -1,19 +1,12 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { transformationPathways } from "../ui/reuse/transformations.js";
 import {
     compositionTokenEntryId,
     transformationCompositionToken,
 } from "../ui/app/composition-tokens.js";
 
-const source = readFileSync(
-    new URL("../ui/app/composition-activation.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 test("new dictionary verbs enter the transformation selector before placement", async () => {
     const entry = {
         id: "created-verb",
@@ -54,7 +47,19 @@ test("new dictionary verbs enter the transformation selector before placement", 
             });
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/composition-activation.js", import.meta.url),
+            {
+                "./composition-tokens.js": context,
+                "../reuse/transformations.js": context,
+                "./transformation-popup.js": context,
+                "./create-entry/definitions.js": context,
+            },
+            context,
+        ),
+    );
     const item = { dataset: { carouselValue: entry.id } };
     const pending = context.activateCompositionEntry(
         { item, selected: false },

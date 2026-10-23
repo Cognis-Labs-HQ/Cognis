@@ -1,3 +1,4 @@
+import { isModuleCapabilityAvailable } from "./reuse/module-capability-availability.js";
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
 import { readFile, readdir } from "node:fs/promises";
@@ -12,7 +13,6 @@ import {
     type BootstrapLog,
     type ModuleManifest,
     type ModuleRuntimeGateway,
-    type Ctx,
 } from "@cognis/core";
 import {
     createModuleRoutes,
@@ -330,21 +330,6 @@ export function assertModuleCapabilityDependencies(
     }
 }
 
-export function isModuleCapabilityAvailable(
-    capabilityId: string,
-    routeContext: RouteContext,
-    uiRegistry?: UIRegistry,
-): boolean {
-    if (routeContext.getCapability(capabilityId) !== undefined) return true;
-    const systemCtx = routeContext.getCapability<Ctx>("system:ctx");
-    if (
-        systemCtx?.isPublicCapability(capabilityId) &&
-        systemCtx.getCapability(capabilityId) !== undefined
-    )
-        return true;
-    return uiRegistry?.hasActiveCapabilityProvider(capabilityId) ?? false;
-}
-
 /**
  * Resolves a module's startup enabled state from highest to lowest priority:
  * core-module requirement, persisted runtime override, then manifest default.
@@ -410,6 +395,13 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            authorizeModuleNamespace: (request) =>
+                deps.gatewayRegistry?.allowsModuleNamespace(
+                    request,
+                    request.kind === "apiRoute"
+                        ? deps.routeRegistry?.findOwner(request.id)?.gatewayId
+                        : undefined,
+                ) === true,
             getProtectedRoutePrefixes: () =>
                 deps.routeRegistry?.getClaimedPrefixes() ?? [],
             onBootstrapFailed: async (moduleId) => {

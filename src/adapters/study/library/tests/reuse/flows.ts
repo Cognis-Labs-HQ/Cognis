@@ -5,6 +5,7 @@ export function createLibraryFlow(onRun?: (id: string) => void): FlowApi {
     const ctx = createCtx();
     for (const [name, stages] of Object.entries({
         notifyRequest: ["deliver"],
+        notifyContent: ["deliver"],
         uploadImage: ["authorize", "validate", "persist"],
         discardImage: ["authorize", "discard"],
         readImage: ["authorize"],

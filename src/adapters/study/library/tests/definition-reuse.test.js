@@ -1,16 +1,9 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import { DEFINITION_LANGUAGES } from "../ui/app/definition-languages.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
 import { findMatchingEntry } from "../ui/app/create-entry/entry-match.js";
 
-const source = readFileSync(
-    new URL("../ui/app/create-entry/definition-editor.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 const schema = {
     id: "ja",
     version: 88,
@@ -41,7 +34,10 @@ test("dictionary definitions reuse case-equivalent cards and immediately cache n
             return { ...input, id: "new", scope: "global" };
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/definition-editor.js", context),
+    );
     const create = (text) =>
         context.createDefinition({
             schema,

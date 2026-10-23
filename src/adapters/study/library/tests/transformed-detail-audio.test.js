@@ -1,23 +1,15 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import {
     createClassificationResolver,
     learnerTagMetadata,
 } from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
-
-function load(path, context) {
-    vm.runInContext(
-        readFileSync(new URL(path, import.meta.url), "utf8")
-            .replace(/^import[\s\S]*?;\n/gm, "")
-            .replace(/export (async )?function/g, "$1function"),
-        context,
-    );
-}
 
 test("selected verb, adverb and plural details request their transformed audio through the real detail flow", async () => {
     const flowId = "study:library:composeEntryDetail";
@@ -52,9 +44,42 @@ test("selected verb, adverb and plural details request their transformed audio t
             additionalDefinitions: [],
         }),
     });
-    load("../ui/app/presentation.js", context);
-    load("../ui/app/transformation-detail.js", context);
-    load("../ui/app/detail.js", context);
+    Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/transformation-detail.js", import.meta.url),
+            {
+                "./presentation.js": context,
+                "./composition-links.js": context,
+                "./transformation-popup.js": context,
+                "./popup-title.js": context,
+                "../reuse/transformations.js": context,
+            },
+            context,
+        ),
+    );
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/detail.js", import.meta.url),
+            {
+                "../reuse/classification.js": context,
+                "./reference-images.js": context,
+                "./transformation-detail.js": context,
+                "./composer-contract.js": context,
+                "/static/reuse/ui-ctx.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./presentation.js": context,
+                "./composition-links.js": context,
+                "./definition-display.js": context,
+                "/static/gateways/study/reuse/similar-items.js": context,
+                "./related-entries.js": context,
+                "../reuse/transformations.js": context,
+            },
+            context,
+        ),
+    );
     const schema = {
         id: "schema",
         language: "en",

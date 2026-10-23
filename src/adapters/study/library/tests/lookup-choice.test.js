@@ -1,15 +1,8 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
 import { groupLookupSuggestions } from "../ui/app/create-entry/lookup-matches.js";
 
-const source = readFileSync(
-    new URL("../ui/app/create-entry/lookup-choice.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 const suggestions = [
     {
         label: "年",
@@ -33,7 +26,19 @@ function chooser(openPopup) {
         renderCardContents: (entry) => `<strong>${entry.label}</strong>`,
         openPopup,
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/create-entry/lookup-choice.js", import.meta.url),
+            {
+                "./lookup-matches.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+                "../cards.js": context,
+            },
+            context,
+        ),
+    );
     return () =>
         context.chooseLookupSuggestion(
             suggestions,
@@ -53,7 +58,19 @@ test("same-composition matches combine alternate readings and meanings without a
             throw new Error("unexpected popup");
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/create-entry/lookup-choice.js", import.meta.url),
+            {
+                "./lookup-matches.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+                "../cards.js": context,
+            },
+            context,
+        ),
+    );
     const result = await context.chooseLookupSuggestion(
         suggestions.slice(0, 2),
         {},

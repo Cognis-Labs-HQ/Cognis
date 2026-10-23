@@ -86,3 +86,26 @@ test("unauthorized callers and malformed identities cannot bind a chatroom", asy
     );
     assert.equal(room.source_id, null);
 });
+
+test("verified administrators release only matching sources without room membership", async () => {
+    const { executor, room } = fixture();
+    await changeChatroomSource(executor, input);
+    const outsider = { ...input, actorAccountId: "administrator" };
+    await assert.rejects(
+        changeChatroomSource(executor, outsider, true),
+        /denied/,
+    );
+    await assert.rejects(
+        changeChatroomSource(executor, outsider, false, true),
+        /denied/,
+    );
+    await changeChatroomSource(
+        executor,
+        { ...outsider, sourceId: "other" },
+        true,
+        true,
+    );
+    assert.equal(room.source_id, "first");
+    await changeChatroomSource(executor, outsider, true, true);
+    assert.equal(room.source_id, null);
+});

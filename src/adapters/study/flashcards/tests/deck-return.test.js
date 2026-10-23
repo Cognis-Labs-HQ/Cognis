@@ -1,3 +1,7 @@
+import {
+    loadTestModule,
+    importTestModule,
+} from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -16,14 +20,6 @@ import {
     deckRouteKey,
 } from "../ui/app/language.js";
 import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
-
-function source(relative) {
-    return readFileSync(new URL(relative, import.meta.url), "utf8")
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replaceAll("export async function", "async function")
-        .replaceAll("export function", "function")
-        .replaceAll("export const", "const");
-}
 
 test("Back from Explore remounts the complete locked-mode deck at the saved card with working Previous and Next", async () => {
     const cards = ["one", "two", "three"].map((id) => ({
@@ -156,33 +152,150 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         mountWhenDirect: async () => {},
         showToast: () => assert.fail("Unexpected deck failure"),
     });
-    const navigationSource = source(
-        "../../../../gateways/study/ui/sub-navigation.js",
-    );
-    vm.runInContext(
-        navigationSource.slice(
-            navigationSource.indexOf("function createStudySubNavigationSlot"),
-            navigationSource.indexOf("function renderStudySubNavigation"),
+    environment.createStudySubNavigationSlot = loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/sub-navigation.js",
+            import.meta.url,
         ),
+        {
+            "./reuse/explore.js": environment,
+            "/static/reuse/mount-scope.js": environment,
+            "/static/reuse/toast.js": environment,
+            "/static/reuse/form-builder.js": environment,
+            "/static/reuse/api-client.js": environment,
+            "/static/reuse/escape-html.js": environment,
+            "/static/reuse/ui-ctx.js": environment,
+            "/static/reuse/spa-route-registry.js": environment,
+            "/static/gateways/study/language.js": environment,
+            "/static/gateways/study/library-client.js": environment,
+        },
         environment,
-    );
-    vm.runInContext(
-        source("../../../../gateways/study/ui/reuse/action-flows.js"),
+    ).createStudySubNavigationSlot;
+    Object.assign(
         environment,
-    );
-    vm.runInContext(source("../ui/app/actions.js"), environment);
-    await vm.runInContext(
-        `(async () => { ${source("../ui/app/index.js")}; globalThis.mountDeck = mount; })()`,
-        environment,
-    );
-    vm.runInContext(
-        source("../ui/app/markup.js").slice(
-            source("../ui/app/markup.js").indexOf(
-                "function renderDeckCompletion",
+        loadTestModule(
+            new URL(
+                "../../../../gateways/study/ui/reuse/action-flows.js",
+                import.meta.url,
             ),
+            { "/static/reuse/ui-ctx.js": environment },
+            environment,
         ),
-        environment,
     );
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/app/actions.js", import.meta.url),
+            { "/static/gateways/study/reuse/action-flows.js": environment },
+            environment,
+        ),
+    );
+    environment.renderDeckCompletion = loadTestModule(
+        new URL("../ui/app/markup.js", import.meta.url),
+        {
+            "../reuse/review.js": environment,
+            "/static/reuse/format-template.js": environment,
+            "/static/reuse/escape-html.js": environment,
+            "/static/gateways/study/reuse/favourites.js": environment,
+        },
+        environment,
+    ).renderDeckCompletion;
+    environment.mountDeck = (
+        await importTestModule(
+            new URL("../ui/app/index.js", import.meta.url),
+            {
+                "./deck-editor.js": { editDeck: environment.editDeck },
+                "/static/reuse/collection-view.js": {
+                    sortItems: environment.sortItems,
+                    filterItems: environment.filterItems,
+                },
+                "../reuse/practice-mode.js": {
+                    createPracticeModePreference:
+                        environment.createPracticeModePreference,
+                },
+                "./practice-session.js": {
+                    createPracticeSession: environment.createPracticeSession,
+                    resumePracticeSession: environment.resumePracticeSession,
+                },
+                "/static/gateways/study/reuse/explore.js": {
+                    languageFlashcardsUrl: environment.languageFlashcardsUrl,
+                },
+                "./language.js": {
+                    flashcardsRoute: environment.flashcardsRoute,
+                    deckMatchesLanguage: environment.deckMatchesLanguage,
+                    deckRouteKey: environment.deckRouteKey,
+                },
+                "./practice-model.js": {
+                    practiceSummary: environment.practiceSummary,
+                    practiceQueue: environment.practiceQueue,
+                    supportsDeckWriting: environment.supportsDeckWriting,
+                },
+                "./practice.js": { mountPractice: environment.mountPractice },
+                "./actions.js": { runDeckAction: environment.runDeckAction },
+                "./markup.js": {
+                    loadDeckTemplates: environment.loadDeckTemplates,
+                    renderDeckBrowser: environment.renderDeckBrowser,
+                    renderDeckDetail: environment.renderDeckDetail,
+                    renderDeckPreviews: environment.renderDeckPreviews,
+                    renderDeckCompletion: environment.renderDeckCompletion,
+                },
+                "/static/reuse/mount-scope.js": {
+                    replaceMountScope: environment.replaceMountScope,
+                },
+                "/static/gateways/study/reuse/favourites.js": {
+                    loadFavourites: environment.loadFavourites,
+                },
+                "/static/reuse/ui-ctx.js": { uiCtx: environment.uiCtx },
+                "/static/reuse/i18n.js": {
+                    createI18n: environment.createI18n,
+                    applyDocumentTitle: environment.applyDocumentTitle,
+                },
+                "/static/reuse/side-menu.js": {
+                    createSideMenu: environment.createSideMenu,
+                },
+                "/static/reuse/page-composer/index.js": {
+                    createPageComposer: environment.createPageComposer,
+                },
+                "/static/reuse/page-entry.js": {
+                    mountWhenDirect: environment.mountWhenDirect,
+                },
+                "/static/reuse/popup.js": { openPopup: environment.openPopup },
+                "/static/reuse/escape-html.js": {
+                    escapeHtml: environment.escapeHtml,
+                },
+                "/static/reuse/toast.js": { showToast: environment.showToast },
+                "/static/reuse/app-router.js": {
+                    navigateTo: environment.navigateTo,
+                },
+                "/static/gateways/study/sub-navigation.js": {
+                    loadStudySubNavigationModel:
+                        environment.loadStudySubNavigationModel,
+                    createStudySubNavigationSlot:
+                        environment.createStudySubNavigationSlot,
+                    bindStudySubNavigation: environment.bindStudySubNavigation,
+                    readSelectedStudyLanguageCode:
+                        environment.readSelectedStudyLanguageCode,
+                },
+                "/static/gateways/study/library-client.js": {
+                    fetchLibraryLocations: environment.fetchLibraryLocations,
+                    fetchLibrarySchemas: environment.fetchLibrarySchemas,
+                    fetchLibraryEntries: environment.fetchLibraryEntries,
+                },
+                "../decks-client.js": {
+                    fetchStudyDecks: environment.fetchStudyDecks,
+                    fetchStudyDeck: environment.fetchStudyDeck,
+                    deleteStudyDeck: environment.deleteStudyDeck,
+                    reviewStudyCard: environment.reviewStudyCard,
+                },
+                "../reuse/flashcard.js": {
+                    flashcardValues: environment.flashcardValues,
+                    noteDetails: environment.noteDetails,
+                },
+                "../anki.js": { exportAnkiNotes: environment.exportAnkiNotes },
+            },
+            environment,
+        )
+    ).mount;
     await environment.mountDeck(root);
     assert.equal(scrolls.length, 1);
     assert.equal(scrolls[0].selector, "[data-study-deck]");

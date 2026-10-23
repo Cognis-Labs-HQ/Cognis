@@ -1,14 +1,6 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../ui/app/create-entry/composition.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 test("vocabulary composition supplies the full lookup label without generating pronunciation", () => {
     const listeners = new Map();
@@ -56,7 +48,22 @@ test("vocabulary composition supplies the full lookup label without generating p
             generated += 1;
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/create-entry/composition.js", import.meta.url),
+            {
+                "../presentation.js": context,
+                "./pronunciation-draft.js": context,
+                "/static/reuse/escape-html.js": context,
+                "../composer-contract.js": context,
+                "../composition-tokens.js": context,
+                "../../reuse/transformations.js": context,
+                "./definitions.js": context,
+            },
+            context,
+        ),
+    );
     const controller = context.bindTextComposition(
         form,
         [{ id: "kanji", label: "教", layer: "kanji" }],

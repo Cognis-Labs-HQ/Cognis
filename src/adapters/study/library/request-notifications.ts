@@ -1,7 +1,6 @@
-import { requestMessages } from "./request-messages.js";
+import { createNotificationMessages } from "./reuse/notification-messages.js";
 import type { FlowApi } from "@cognis/core";
 import { runOperation } from "./reuse/operation.js";
-import { readFile } from "node:fs/promises";
 import type { LibraryPushRequest } from "./types.js";
 import type { LibraryActor } from "./contracts.js";
 
@@ -38,24 +37,7 @@ export function createRequestNotifier({
     dispatch,
     log,
 }: RequestNotificationPorts) {
-    const catalogs = new Map<string, Promise<string>>();
-    const catalog = (locale: string) => {
-        let pending = catalogs.get(locale);
-        if (!pending) {
-            pending = readFile(
-                new URL(
-                    `./ui/languages/${locale}/strings.xml`,
-                    import.meta.url,
-                ),
-                "utf8",
-            ).catch((error) => {
-                catalogs.delete(locale);
-                throw error;
-            });
-            catalogs.set(locale, pending);
-        }
-        return pending;
-    };
+    const messages = createNotificationMessages();
     return async (
         request: LibraryPushRequest,
         actor: LibraryActor,
@@ -67,34 +49,10 @@ export function createRequestNotifier({
                 { requestId: request.id, status: request.status },
                 {
                     deliver: async () => {
-                        const englishXml = await catalog("en");
-                        const localizedText = Object.fromEntries(
-                            await Promise.all(
-                                ["en", "de", "ja", "id"].map(async (locale) => {
-                                    const copy = requestMessages(
-                                        await catalog(locale),
-                                        request.status,
-                                        englishXml,
-                                    );
-                                    return [
-                                        locale,
-                                        {
-                                            subject: copy.subject,
-                                            body: copy.body.replace(
-                                                /\{\{ (account|request) \}\}/g,
-                                                (
-                                                    _token,
-                                                    key: "account" | "request",
-                                                ) =>
-                                                    key === "account"
-                                                        ? actor.accountId
-                                                        : request.id,
-                                            ),
-                                        },
-                                    ];
-                                }),
-                            ),
-                        );
+                        const localizedText = await messages(request.status, {
+                            account: actor.accountId,
+                            request: request.id,
+                        });
                         const recipients = (await accounts.list()).filter(
                             (account) =>
                                 account.enabled &&

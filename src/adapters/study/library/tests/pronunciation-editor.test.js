@@ -1,7 +1,8 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { pronunciationComponents } from "../ui/app/pronunciation-components.js";
 import { setGeneratedPronunciation } from "../ui/app/create-entry/pronunciation-draft.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import {
@@ -10,12 +11,6 @@ import {
 } from "../ui/app/composition-tokens.js";
 
 function editor(value = "ab", hiddenSecond = false, options = {}) {
-    const source = readFileSync(
-        new URL("../ui/app/pronunciation-editor.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
     const listeners = new Map();
     const clearedCarousels = [];
     const carousels = [
@@ -99,14 +94,9 @@ function editor(value = "ab", hiddenSecond = false, options = {}) {
         ],
     };
     const presentation = {};
-    vm.runInNewContext(
-        readFileSync(
-            new URL("../ui/app/presentation.js", import.meta.url),
-            "utf8",
-        )
-            .replace(/^import[\s\S]*?;\n/gm, "")
-            .replace(/export (async )?function/g, "$1function"),
+    Object.assign(
         presentation,
+        loadLibraryUiModule("app/presentation.js", presentation),
     );
     let carousel;
     const context = {
@@ -133,10 +123,21 @@ function editor(value = "ab", hiddenSecond = false, options = {}) {
         showToast() {},
         openPopup: async () => "cancel",
     };
-    vm.runInNewContext(
-        source + "\nglobalThis.mount = mountEditableRelationshipCarousels;",
+    context.mount = loadTestModule(
+        new URL("../ui/app/pronunciation-editor.js", import.meta.url),
+        {
+            "./presentation.js": context,
+            "./pronunciation-components.js": context,
+            "/static/reuse/horizontal-carousel.js": context,
+            "/static/reuse/escape-html.js": context,
+            "/static/reuse/popup.js": context,
+            "/static/reuse/toast.js": context,
+            "/static/reuse/composition-input.js": context,
+            "./composition-tokens.js": context,
+            "./composer-contract.js": context,
+        },
         context,
-    );
+    ).mountEditableRelationshipCarousels;
     const controller = context.mount(
         form,
         { addEventListener() {} },
@@ -212,12 +213,6 @@ test("generated pronunciation values redraw after the main composition changes",
 });
 
 test("lookup pronunciations update the visible control using the list field delimiter", () => {
-    const source = readFileSync(
-        new URL("../ui/app/create-entry/lookups.js", import.meta.url),
-        "utf8",
-    );
-    const start = source.indexOf("export function applyLookupFields(");
-    const end = source.indexOf("export function bindRawInput(", start);
     let redraws = 0;
     const control = {
         value: "",
@@ -227,16 +222,16 @@ test("lookup pronunciations update the visible control using the list field deli
             redraws += 1;
         },
     };
+
     const context = {
         Event,
         RadioNodeList: class {},
         renderStrokePatternPreviews() {},
     };
-    vm.runInNewContext(
-        source.slice(start, end).replace(/\bexport /g, "") +
-            "\nglobalThis.apply = applyLookupFields;",
+    context.apply = loadLibraryUiModule(
+        "app/create-entry/lookups.js",
         context,
-    );
+    ).applyLookupFields;
     const draft = { fields: {} };
     context.apply(
         { elements: { "field:pronunciation": control } },

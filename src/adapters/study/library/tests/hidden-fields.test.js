@@ -1,7 +1,8 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 
 test("hidden dictionary fields are absent from form markup and survive submission", () => {
     const field = {
@@ -11,14 +12,17 @@ test("hidden dictionary fields are absent from form markup and survive submissio
         input: { control: "freeText" },
     };
     const context = {};
-    vm.runInNewContext(
-        readFileSync(
-            new URL("../ui/app/field-input.js", import.meta.url),
-            "utf8",
-        )
-            .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-            .replace(/\bexport /g, ""),
+    Object.assign(
         context,
+        loadTestModule(
+            new URL("../ui/app/field-input.js", import.meta.url),
+            {
+                "./definition-languages.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./presentation.js": context,
+            },
+            context,
+        ),
     );
     assert.equal(
         context.inputForField(
@@ -29,18 +33,9 @@ test("hidden dictionary fields are absent from form markup and survive submissio
         ),
         "",
     );
-    const editor = readFileSync(
-        new URL("../ui/app/admin-interactions/editor-body.js", import.meta.url),
-        "utf8",
-    );
-    vm.runInNewContext(
-        editor
-            .slice(
-                editor.indexOf("export function readFields"),
-                editor.indexOf("export function readReferences"),
-            )
-            .replace("export ", ""),
+    Object.assign(
         context,
+        loadLibraryUiModule("app/admin-interactions/editor-body.js", context),
     );
     const entry = {
         fields: { dictionary_data: '{"sourceUrl":"https://jisho.org"}' },

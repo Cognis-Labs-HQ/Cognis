@@ -197,4 +197,8 @@
     <string name="gateway.study.library_audio_permission_wait">マイクの使用許可を待っています</string>
     <string name="gateway.study.library_audio_permission_denied">マイクへのアクセスが拒否されました。ブラウザーでマイクを許可してから、もう一度お試しください。</string>
     <string name="gateway.study.library_audio_record_unavailable">音声を録音できません。HTTPS または localhost に接続し、録音に対応したブラウザーをご利用ください。</string>
+  <string name="adapter.study.library.notification_content_subject">学習ライブラリの新しいコンテンツ</string>
+  <string name="adapter.study.library.notification_content_body">新しいライブラリコンテンツを利用できます（{{ count }}件）。</string>
+  <string name="adapter.study.library.notification_deletion_subject">学習カードの削除</string>
+  <string name="adapter.study.library.notification_deletion_body">共有コンテンツが削除または移動されたため、次のカードが削除されました：{{ cards }}</string>
 </resources>

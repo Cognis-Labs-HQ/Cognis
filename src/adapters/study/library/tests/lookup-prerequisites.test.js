@@ -1,16 +1,9 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { findMatchingEntry } from "../ui/app/create-entry/entry-match.js";
 import { resolveLookupReferences } from "../ui/app/create-entry/lookup-references.js";
 
-const source = readFileSync(
-    new URL("../ui/app/create-entry/lookup-prerequisites.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 const schema = {
     id: "ja",
     version: 1,
@@ -80,7 +73,13 @@ function session(overrides = {}) {
         },
         ...overrides,
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule(
+            "app/create-entry/lookup-prerequisites.js",
+            context,
+        ),
+    );
     const options = {
         providerId: "jisho",
         schema,
@@ -160,7 +159,13 @@ test("a concurrent global conflict reuses its canonical ID but cannot reuse a pr
 
 test("imported spelling references expire when the vocabulary input changes", () => {
     const context = {};
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule(
+            "app/create-entry/lookup-prerequisites.js",
+            context,
+        ),
+    );
     const imported = [{ entryId: "room", relation: "spelling", position: 0 }];
     const existing = [{ entryId: "meaning", relation: "definitions" }];
     const form = {
@@ -205,7 +210,13 @@ test("required Kanji stroke fields are completed through the registered auxiliar
             return { ...candidate, ...location, id: "room" };
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule(
+            "app/create-entry/lookup-prerequisites.js",
+            context,
+        ),
+    );
     await context.resolveLookupPrerequisites(input, {
         providerId: "jisho",
         schema: configured,

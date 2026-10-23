@@ -1,6 +1,6 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
 test("Escape clears selected cards and hides actions, respecting popup-consumed keys", () => {
@@ -10,14 +10,7 @@ test("Escape clears selected cards and hides actions, respecting popup-consumed 
             addEventListener: (name, handler) => handlers.set(name, handler),
         },
     });
-    const source = readFileSync(
-        new URL("../ui/app/selection.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?from [^;]+;\n/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export async function", "async function");
-    vm.runInContext(source, ctx);
+    Object.assign(ctx, loadLibraryUiModule("app/selection.js", ctx));
     let enabled = true;
     const selected = [{ checked: true }, { checked: true }];
     const actions = { hidden: false };

@@ -602,3 +602,7 @@ Das Öffnen von Details über Direktlinks, Beziehungen oder Vor-/Zurück-Navigat
 Optionale Einzelauswahlfelder enthalten die lokalisierte Auswahl **Nicht angegeben**. Beim Bearbeiten einer nicht eingestuften Karte bleibt ihre unbekannte Schwierigkeit erhalten, statt stillschweigend die erste Stufe zu wählen.
 
 Lesezugriffe auf den Wörterbuchsuchkontext verwenden `study:library:readSearchContext` mit Autorisierung und Auflösung. Schreibzugriffe behalten `study:library:searchContext` und prüfen Eingaben vor dem Speichern; Erweiterungen können sie vor der Dienstvalidierung anpassen. Beide Vorgänge weisen Identitäten geteilter Links zurück. Schreibzugriffe stoppen bei 16 KiB mit HTTP 413; fehlerhaftes JSON liefert HTTP 400 und ersetzt keinen gespeicherten Zustand. Unerwartete Fehler geben nur einen stabilen Fehlercode zurück.
+
+## Benachrichtigungen und Speicherung
+
+Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deutsche, indonesische und japanische Texte aus XML-Katalogen, nutzen Englisch als Ersatz und durchlaufen `study:library:notifyContent`. Kartenbeschriftungen werden bei der Ersetzung nicht erneut interpretiert. Auch privilegierte Schreibvorgänge benötigen eine vorhandene Klasse. Leaderboard-Beobachtungen werden bei Speicherfehlern zurückgesetzt; der Saisonwechsel berechnet nach einem Neustart die endgültige Rangliste neu und stellt bei Speicherfehlern den Zustand wieder her. Verifizierte Administratoren können passende Integrationsbindungen ohne Raummitgliedschaft lösen.

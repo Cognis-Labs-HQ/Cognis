@@ -315,8 +315,7 @@ test("Study Library separates admin data browsing from learner layer pages", () 
     );
 });
 test("Study Library creation is driven by language card constructors", () => {
-    assert.match(adapterSource, /study:library:provider/);
-    assert.match(adapterSource, /registerConstructor/);
+    assert.match(adapterSource, /registerLibraryCapabilities\(ctx, service\)/);
     assert.match(source, /layer\?\.cardConstructor/);
     assert.match(source, /effectiveConstructor\.fields/);
     assert.match(source, /effectiveConstructor\.relationships/);

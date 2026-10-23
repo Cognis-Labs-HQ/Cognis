@@ -112,6 +112,15 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
     assert.equal(gateway.isAdapterEnabled("a-consumer"), true);
     await gateway.disableAdapter("z-base");
     assert.equal(gateway.isAdapterEnabled("a-consumer"), false);
+    assert.equal(capabilities.get("active:a-consumer"), false);
+    assert.equal(capabilities.get("active:z-base"), false);
+    await gateway.enableAdapter("z-base");
+    assert.equal(capabilities.get("active:a-consumer"), true);
+    assert.equal(capabilities.get("active:z-base"), true);
+    await gateway.saveAdapterConfig("z-base", { enabled: false });
+    assert.equal(capabilities.get("active:a-consumer"), false);
+    await gateway.saveAdapterConfig("z-base", { enabled: true });
+    assert.equal(capabilities.get("active:a-consumer"), true);
 });
 
 test("shipped Study manifests express UUID dependencies for practice and reward mechanisms", async () => {

@@ -1,13 +1,6 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
-import vm from "node:vm";
-const source = readFileSync(
-    new URL("../reuse/horizontal-carousel.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import .*;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 test("shared-relationship carousel changes keep selections in both sentence structure and vocabulary", async () => {
     const listeners = new Map();
@@ -63,7 +56,14 @@ test("shared-relationship carousel changes keep selections in both sentence stru
     const context = {
         createAnchoredPopup: () => ({ hide() {}, destroy() {} }),
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../reuse/horizontal-carousel.js", import.meta.url),
+            { "./escape-html.js": context, "./popup.js": context },
+            context,
+        ),
+    );
     context.mountHorizontalCarousels(root, {
         onChange: ({ values }) => changes.push([...values]),
     });

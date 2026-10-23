@@ -1,5 +1,5 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import {
@@ -17,14 +17,19 @@ test("the open preview is blurred only while the pad holds its exact character a
     const environment = vm.createContext({
         uiCtx: { capabilities: { get: () => observeDrawingCard } },
     });
-    const source = readFileSync(
-        new URL("../ui/app/drawing.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export async function", "async function");
-    vm.runInContext(source, environment);
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/app/drawing.js", import.meta.url),
+            {
+                "./reuse/readings.js": environment,
+                "/static/reuse/ui-ctx.js": environment,
+                "/static/reuse/popup.js": environment,
+                "/static/gateways/study/reuse/drawing-pattern.js": environment,
+            },
+            environment,
+        ),
+    );
     const controller = new AbortController();
     environment.bindDrawingPreview(
         popupApi,
@@ -45,14 +50,19 @@ test("the open preview is blurred only while the pad holds its exact character a
 });
 
 test("Explore previews keep the deck order, including child cards, when opened through a flashcard link", () => {
-    const source = readFileSync(
-        new URL("../ui/app/popup-navigation.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replaceAll("export function", "function");
     const environment = vm.createContext({});
-    vm.runInContext(source, environment);
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/app/popup-navigation.js", import.meta.url),
+            {
+                "./presentation.js": environment,
+                "./cards.js": environment,
+                "./variant-placement.js": environment,
+            },
+            environment,
+        ),
+    );
     const entries = [
         { id: "other", layer: "kanji" },
         { id: "one", layer: "kana" },

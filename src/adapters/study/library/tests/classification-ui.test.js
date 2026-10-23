@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadTestModule } from "./reuse/modules.js";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { groupByToMap } from "../../../../ui/reuse/group-by.js";
 import { createClassificationResolver } from "../ui/reuse/classification.js";
 

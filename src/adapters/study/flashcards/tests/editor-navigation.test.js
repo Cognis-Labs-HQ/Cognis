@@ -1,6 +1,6 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -45,17 +45,20 @@ test("deck save closes the protected editor before navigating to the refreshed b
             return "save";
         },
     });
-    const source = readFileSync(
-        new URL("../ui/app/index.js", import.meta.url),
-        "utf8",
-    );
-    const editor = source.slice(
-        source.indexOf("async function editDeck"),
-        source.indexOf("let mountController"),
-    );
-    await vm.runInContext(
-        editor + "\neditDeck(null, [], [], { t: (key) => key })",
+    const { editDeck } = loadTestModule(
+        new URL("../ui/app/deck-editor.js", import.meta.url),
+        {
+            "/static/gateways/study/reuse/explore.js": context,
+            "/static/reuse/form-builder.js": context,
+            "/static/reuse/popup.js": context,
+            "/static/reuse/escape-html.js": context,
+            "/static/reuse/toast.js": context,
+            "/static/reuse/app-router.js": context,
+            "../decks-client.js": context,
+            "../anki.js": context,
+        },
         context,
     );
+    await editDeck(null, [], [], { t: (key) => key });
     assert.equal(navigations, 1);
 });

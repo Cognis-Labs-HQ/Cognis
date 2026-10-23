@@ -1,7 +1,7 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
 
@@ -43,13 +43,18 @@ async function fixture(
             };
         },
     });
-    const source = readFileSync(
-        new URL("../ui/navbar.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/\bexport /g, "");
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/navbar.js", import.meta.url),
+            {
+                "/static/reuse/api-client.js": context,
+                "/static/reuse/i18n.js": context,
+                "./search/index.js": context,
+            },
+            context,
+        ),
+    );
     const lifecycle = createProviderLifecycle({
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),

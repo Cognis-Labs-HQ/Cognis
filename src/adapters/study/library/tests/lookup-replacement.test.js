@@ -1,19 +1,14 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../ui/app/create-entry/lookup-replacement.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 test("replacement warning requires a value beyond the lookup query", async () => {
     let controls = [];
     const context = {};
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookup-replacement.js", context),
+    );
     const form = { querySelectorAll: () => controls };
     assert.equal(context.hasLookupValues(form), false);
     controls = [{ value: "きょう" }];
@@ -57,7 +52,10 @@ test("replacement clears fields, relationships, groups, and definition displays"
     };
     const draft = { fields: { pronunciation: ["old"] } };
     const context = { Event, CustomEvent };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/lookup-replacement.js", context),
+    );
     context.clearLookupValues(form, draft);
     assert.equal(controls[0].value, "");
     assert.equal(controls[1].options[0].selected, false);
@@ -78,7 +76,13 @@ test("warning uses the reusable popup and requires explicit replacement", async 
                 return action;
             },
         };
-        vm.runInNewContext(source, context);
+        Object.assign(
+            context,
+            loadLibraryUiModule(
+                "app/create-entry/lookup-replacement.js",
+                context,
+            ),
+        );
         assert.equal(
             await context.confirmLookupReplacement({ t: (key) => key }),
             action === "replace",

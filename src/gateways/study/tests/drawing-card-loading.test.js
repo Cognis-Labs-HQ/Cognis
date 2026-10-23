@@ -1,3 +1,7 @@
+import {
+    loadTestModule,
+    importTestModule,
+} from "../../../tooling/reuse/test-module.ts";
 import { entryExploreUrl } from "../ui/reuse/explore.js";
 import {
     setDrawingCard,
@@ -216,33 +220,77 @@ async function drawingSession({
             disconnect() {}
         },
     };
-    const headingSource = readFileSync(
-        new URL("../ui/reuse/drawing-heading.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import.*;\n/gm, "")
-        .replaceAll("export function", "function");
-    const source = readFileSync(
-        new URL("../ui/reuse/drawing.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export async function", "async function");
-    const actionSource = readFileSync(
-        new URL("../ui/reuse/action-flows.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replaceAll("export function", "function")
-        .replaceAll("export async function", "async function");
-    vm.runInNewContext(
-        actionSource + "; globalThis.createActionRunner = createActionRunner;",
+    Object.assign(
         environment,
+        loadTestModule(
+            new URL("../ui/reuse/drawing-heading.js", import.meta.url),
+            {
+                "/static/reuse/popup.js": environment,
+                "/static/reuse/ui-ctx.js": environment,
+                "./explore.js": environment,
+            },
+            environment,
+        ),
     );
-    await vm.runInNewContext(
-        `(async () => { ${headingSource}; ${source}; uiCtx.capabilities.contribute("study:drawing:open", openDrawingPad); uiCtx.capabilities.contribute("study:drawing:load", loadDrawingPad); })()`,
+    environment.createActionRunner = loadTestModule(
+        new URL("../ui/reuse/action-flows.js", import.meta.url),
+        { "/static/reuse/ui-ctx.js": environment },
         environment,
+    ).createActionRunner;
+    Object.assign(
+        environment,
+        await importTestModule(
+            new URL("../ui/reuse/drawing.js", import.meta.url),
+            {
+                "../library-client.js": {
+                    fetchLibrarySchemas: environment.fetchLibrarySchemas,
+                },
+                "./drawing-heading.js": {
+                    bindDrawingHeading: environment.bindDrawingHeading,
+                },
+                "./drawing-state.js": {
+                    setDrawingCard: environment.setDrawingCard,
+                },
+                "./pronunciation.js": {
+                    pronunciationClass: environment.pronunciationClass,
+                },
+                "/static/reuse/format-template.js": {
+                    formatTemplate: environment.formatTemplate,
+                },
+                "/static/reuse/escape-html.js": {
+                    escapeHtml: environment.escapeHtml,
+                },
+                "./action-flows.js": {
+                    createActionRunner: environment.createActionRunner,
+                },
+                "/static/reuse/toast.js": { showToast: environment.showToast },
+                "/static/reuse/ui-ctx.js": { uiCtx: environment.uiCtx },
+                "/static/reuse/i18n.js": { createI18n: environment.createI18n },
+                "./drawing-viewport.js": {
+                    drawingViewport: environment.drawingViewport,
+                },
+                "./drawing-layout.js": {
+                    compactDrawingPattern: environment.compactDrawingPattern,
+                },
+                "./drawing-guidance.js": {
+                    sampleHiddenStrokes: environment.sampleHiddenStrokes,
+                },
+                "../drawing-client.js": {
+                    fetchDrawingProgress: environment.fetchDrawingProgress,
+                    recordDrawingCompletion:
+                        environment.recordDrawingCompletion,
+                },
+            },
+            environment,
+        ),
+    );
+    environment.uiCtx.capabilities.contribute(
+        "study:drawing:open",
+        environment.openDrawingPad,
+    );
+    environment.uiCtx.capabilities.contribute(
+        "study:drawing:load",
+        environment.loadDrawingPad,
     );
     return {
         progress,

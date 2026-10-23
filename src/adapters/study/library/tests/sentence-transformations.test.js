@@ -1,6 +1,7 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { orderedReadingReferences } from "../ui/app/reference-readings.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import * as links from "../ui/app/composition-links.js";
@@ -112,12 +113,38 @@ const sentence = {
 };
 
 function load(relativePath, dependencies = {}) {
-    const source = readFileSync(new URL(relativePath, import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
-    const context = { ...dependencies };
-    vm.runInNewContext(source, context);
-    return context;
+    const imports = {
+        "../ui/app/composer-contract.js": {
+            "./reuse/readings.js": dependencies,
+            "./presentation.js": dependencies,
+            "../reuse/transformations.js": dependencies,
+        },
+        "../ui/app/presentation.js": {
+            "./audio-media-session.js": dependencies,
+            "/static/reuse/toast.js": dependencies,
+            "/static/reuse/ui-ctx.js": dependencies,
+            "/static/reuse/escape-html.js": dependencies,
+            "/static/reuse/group-by.js": dependencies,
+            "/static/gateways/study/library-client.js": dependencies,
+            "/static/gateways/study/language.js": dependencies,
+            "../reuse/transformations.js": dependencies,
+            "./composition-links.js": dependencies,
+        },
+        "../ui/app/popup-title.js": {
+            "./reuse/readings.js": dependencies,
+            "./presentation.js": dependencies,
+            "./composition-links.js": dependencies,
+            "./title-definition.js": dependencies,
+            "./popup-spellings.js": dependencies,
+            "./variant-placement.js": dependencies,
+            "./reference-readings.js": dependencies,
+        },
+    };
+    return loadTestModule(
+        new URL(relativePath, import.meta.url),
+        imports[relativePath],
+        dependencies,
+    );
 }
 
 test("sentence submission derives the selected transformed verb reading", () => {
@@ -198,16 +225,10 @@ test("sentence pronunciation links show the reading and open the selected verb f
 });
 
 test("ordered sentence references preserve repeated verbs with different transformations", () => {
-    const source = readFileSync(
-        new URL("../ui/app/admin-interactions/editor-body.js", import.meta.url),
-        "utf8",
-    );
-    const start = source.indexOf("export function readReferences(");
-    const end = source.indexOf("export function readReferenceGroups", start);
     const context = { compositionTokenEntryId, transformationTokenDetails };
-    vm.runInNewContext(
-        source.slice(start, end).replace(/\bexport /g, ""),
+    Object.assign(
         context,
+        loadLibraryUiModule("app/admin-interactions/editor-body.js", context),
     );
     const polite = referencedTransformation(verb, schema, descriptor);
     const negative = referencedTransformation(verb, schema, {
@@ -241,18 +262,70 @@ test("ordered sentence references preserve repeated verbs with different transfo
     );
 });
 
-test("editing retains transformed text when rebuilding the label from selected root cards", () => {
-    const source = readFileSync(
-        new URL("../ui/app/admin-interactions/index.js", import.meta.url),
-        "utf8",
+test("editing retains transformed text when rebuilding the label from selected root cards", async () => {
+    const context = {
+        AbortController,
+        structuredClone,
+        compositionTokenEntryId,
+        compositionTokenLabel,
+        resolveComposerContract: () => ({
+            layer: schema.layers[2],
+            constructor: {},
+            inputCarouselIds: new Set(["words", "particles"]),
+        }),
+        editorBody: () => ({ html: "", builder: { attach: () => ({}) } }),
+        renderComposerExtras: () => "",
+        pronunciationRelationshipsFor: () => [],
+        restoreCompositionTokens: () => form.compositionOrder,
+        bindDefinitionRemoval() {},
+        bindComposerExtras() {},
+        mountEditableRelationshipCarousels() {},
+        LIBRARY_COMPOSER_LIMITS: { tags: 12 },
+        bindTabbedFormValidation: () => ({}),
+        bindTransformationOptIns() {},
+        bindAudioUploads() {},
+        bindReferenceImageUploads() {},
+        bindAudioEditor() {},
+        renderStrokePatternPreviews() {},
+        openPopup: async (options) => {
+            options.onOpen({ querySelector: () => form });
+            return "cancel";
+        },
+    };
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/admin-interactions/index.js", import.meta.url),
+            {
+                "../reference-images.js": context,
+                "../audio-upload.js": context,
+                "../audio-editor.js": context,
+                "../transformation-opt-ins.js": context,
+                "../reuse/definition-actions.js": context,
+                "../composition-activation.js": context,
+                "/static/reuse/escape-html.js": context,
+                "/static/reuse/popup.js": context,
+                "/static/reuse/toast.js": context,
+                "/static/reuse/form-builder.js": context,
+                "/static/reuse/horizontal-carousel.js": context,
+                "/static/reuse/composition-input.js": context,
+                "/static/reuse/ui-ctx.js": context,
+                "/static/reuse/error-reporting.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "../presentation.js": context,
+                "../editability.js": context,
+                "../pronunciation-editor.js": context,
+                "../composer-contract.js": context,
+                "../composer-limits.js": context,
+                "../composer-extras.js": context,
+                "../composition-tokens.js": context,
+                "../field-input.js": context,
+                "../../reuse/transformations.js": context,
+                "./editor-body.js": context,
+            },
+            context,
+        ),
     );
-    const start = source.indexOf("function syncGeneratedCardLabel(");
-    const end = source.indexOf(
-        "async function createRelationshipDependency",
-        start,
-    );
-    const context = { compositionTokenEntryId, compositionTokenLabel };
-    vm.runInNewContext(source.slice(start, end), context);
     const polite = referencedTransformation(verb, schema, descriptor);
     const token = transformationCompositionToken(
         verb.id,
@@ -260,6 +333,9 @@ test("editing retains transformed text when rebuilding the label from selected r
         polite.node,
     );
     const form = {
+        querySelectorAll: () => [],
+        querySelector: () => null,
+        addEventListener() {},
         compositionOrder: [
             noun.id,
             particle.id,
@@ -276,11 +352,12 @@ test("editing retains transformed text when rebuilding the label from selected r
             },
         },
     };
-    context.syncGeneratedCardLabel(
-        form,
-        new Set(["words", "particles"]),
+    await context.openLibraryEntryEditor({
+        entry: sentence,
         entries,
-    );
+        schemas: [schema],
+        i18n: { t: (key) => key },
+    });
     assert.equal(form.elements.label.value, "水はあります！");
 });
 

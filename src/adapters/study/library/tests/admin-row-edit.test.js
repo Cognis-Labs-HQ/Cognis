@@ -1,13 +1,8 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { entryEditMode } from "../ui/app/editability.js";
-
-const source = readFileSync(
-    new URL("../ui/app/admin-interactions/index.js", import.meta.url),
-    "utf8",
-).split("export function bindAdminLibraryInteractions")[1];
 
 test("clicking a Library row opens the editor with Save for permitted cards and preserves readonly permissions", async () => {
     for (const canEdit of [true, false]) {
@@ -33,9 +28,42 @@ test("clicking a Library row opens the editor with Save for permitted cards and 
                 popups.push(options);
             },
         });
-        vm.runInContext(
-            "function bindAdminLibraryInteractions" + source,
+        Object.assign(
             context,
+            loadTestModule(
+                new URL(
+                    "../ui/app/admin-interactions/index.js",
+                    import.meta.url,
+                ),
+                {
+                    "../reference-images.js": context,
+                    "../audio-upload.js": context,
+                    "../audio-editor.js": context,
+                    "../transformation-opt-ins.js": context,
+                    "../reuse/definition-actions.js": context,
+                    "../composition-activation.js": context,
+                    "/static/reuse/escape-html.js": context,
+                    "/static/reuse/popup.js": context,
+                    "/static/reuse/toast.js": context,
+                    "/static/reuse/form-builder.js": context,
+                    "/static/reuse/horizontal-carousel.js": context,
+                    "/static/reuse/composition-input.js": context,
+                    "/static/reuse/ui-ctx.js": context,
+                    "/static/reuse/error-reporting.js": context,
+                    "/static/gateways/study/library-client.js": context,
+                    "../presentation.js": context,
+                    "../editability.js": context,
+                    "../pronunciation-editor.js": context,
+                    "../composer-contract.js": context,
+                    "../composer-limits.js": context,
+                    "../composer-extras.js": context,
+                    "../composition-tokens.js": context,
+                    "../field-input.js": context,
+                    "../../reuse/transformations.js": context,
+                    "./editor-body.js": context,
+                },
+                context,
+            ),
         );
         context.bindAdminLibraryInteractions(
             { addEventListener: (type, handler) => events.set(type, handler) },

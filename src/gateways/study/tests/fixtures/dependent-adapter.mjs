@@ -6,7 +6,12 @@ const { id, bootstrapRequires } = JSON.parse(
 let ready = false;
 
 export function createStudyAdapter() {
-    return { adapterId: id, adapterName: "Test", isConfigured: () => ready };
+    return {
+        adapterId: id,
+        adapterName: "Test",
+        isConfigured: () => ready,
+        setConfig() {},
+    };
 }
 
 export function bootstrapStudyAdapter(ctx) {
@@ -14,6 +19,9 @@ export function bootstrapStudyAdapter(ctx) {
         if (!ctx.capabilities.get(capability))
             throw new Error("dependency_not_ready");
     }
+    ctx.onAvailabilityChange((enabled) =>
+        ctx.capabilities.contribute(`active:${id}`, enabled),
+    );
     ctx.capabilities.contribute(`boot:${id}`, true);
     ready = true;
 }

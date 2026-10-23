@@ -1,14 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
 
-const source = readFileSync(
-    new URL("../ui/app/data.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 test("relocated cards stay ordinary across private/shared oscillation while genuinely new cards are marked", async () => {
     const entries = [
         { id: "fresh" },
@@ -26,7 +19,17 @@ test("relocated cards stay ordinary across private/shared oscillation while genu
             throw new Error("unexpected failure");
         },
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/data.js", import.meta.url),
+            {
+                "/static/reuse/toast.js": context,
+                "/static/gateways/study/library-client.js": context,
+            },
+            context,
+        ),
+    );
     for (const scope of ["global", "user", "global", "user", "global"]) {
         entries[2].scope = scope;
         const result = await context.loadLibrary("ja", { t: String });

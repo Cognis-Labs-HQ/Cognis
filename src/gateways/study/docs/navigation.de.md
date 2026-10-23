@@ -61,3 +61,7 @@ Study benötigt vor der Routenregistrierung das Authentication-Gateway und desse
 ## Gleichmäßige Übungsauswahl
 
 Zeichenhilfen und das Mischen von Karteikartenantworten verwenden gemeinsam `randomIndex`. Die Funktion nutzt Web Crypto mit maskierter Verwerfungsauswahl für ganzzahlige Bereiche von 1 bis 2^32 ohne Modulo-Verzerrung. Ein Bereich mit einer einzigen Position benötigt keine Entropie. Für deterministische Tests kann eine Entropiequelle übergeben werden; normale Übungen verwenden immer Web Crypto.
+
+## Komponentengrenzen und Laufzeit
+
+Die API delegiert Erweiterungsnamensräume über Richtlinien aktiver Gateways; Study besitzt die Regeln für Sprachnamensräume. Library entfernt seine öffentlichen Funktionen, wenn der Adapter oder seine Study-Abhängigkeiten deaktiviert sind, weist gespeicherte Funktionsreferenzen zurück und registriert sie beim Aktivieren erneut. Study-Adapter verwenden `onAvailabilityChange(listener)` für laufzeitgebundene Beiträge; ein fehlgeschlagener Start entfernt diese.

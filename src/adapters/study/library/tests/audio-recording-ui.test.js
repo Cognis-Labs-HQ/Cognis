@@ -1,14 +1,7 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../ui/app/audio-upload.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 function fixture({ getUserMedia, recorderAvailable = true } = {}) {
     let activeRecorder;
@@ -79,7 +72,18 @@ function fixture({ getUserMedia, recorderAvailable = true } = {}) {
     };
     if (!recorderAvailable) delete context.MediaRecorder;
     vm.createContext(context);
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/audio-upload.js", import.meta.url),
+            {
+                "/static/reuse/error-reporting.js": context,
+                "/static/gateways/study/library-client.js": context,
+                "/static/reuse/toast.js": context,
+            },
+            context,
+        ),
+    );
     const controller = new AbortController();
     context.bindAudioUploads(
         {

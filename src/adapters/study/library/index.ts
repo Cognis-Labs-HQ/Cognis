@@ -1,3 +1,5 @@
+import { createContentNotifiers } from "./content-notifications.js";
+import { registerLibraryCapabilities } from "./provider.js";
 import { languageAvailability } from "./service/availability.js";
 import { createNotificationDelivery } from "./notification-delivery.js";
 import { createRequestNotifier } from "./request-notifications.js";
@@ -22,10 +24,7 @@ import type {
 } from "@cognis/core";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLibraryRoutes } from "./routes/index.js";
-import {
-    LibraryService,
-    type LibraryProviderCapability,
-} from "./service/index.js";
+import { LibraryService } from "./service/index.js";
 import { LibraryStore } from "./store.js";
 import { LibraryAudioCache } from "./audio-cache.js";
 import {
@@ -115,6 +114,12 @@ export async function bootstrapStudyAdapter(
     )?.("study", "Study");
     const { dispatch: dispatchNotification, accounts: accountStore } =
         createNotificationDelivery(ctx);
+    const contentNotifiers = createContentNotifiers({
+        accounts: accountStore,
+        dispatch: dispatchNotification,
+        flow: ctx.flow,
+        log: ctx.log,
+    });
     const service = new LibraryService(
         store,
         ctx.capabilities.get<StudyClassAccessCapability>(
@@ -126,78 +131,9 @@ export async function bootstrapStudyAdapter(
             STRING_LOCALIZATION_CAPABILITY,
         ),
         audioCache,
-        async ({ entryCount, language }) => {
-            try {
-                const accounts = await accountStore.list();
-                await Promise.allSettled(
-                    accounts
-                        .filter(({ enabled }) => enabled)
-                        .map(({ username }) =>
-                            dispatchNotification({
-                                category: "study",
-                                recipientUsername: username,
-                                subject: "New Study Library content",
-                                body: `${entryCount} new ${language ? `${language} ` : ""}Library ${entryCount === 1 ? "entry is" : "entries are"} available.`,
-                                actionUrl: "/study/library",
-                            }),
-                        ),
-                );
-            } catch (error) {
-                await ctx.log?.(
-                    "error",
-                    "Could not notify accounts about new Study Library content.",
-                    {
-                        component: "study-library",
-                        operation: "notify-new-content",
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    },
-                );
-            }
-        },
+        contentNotifiers.newContent,
         ctx.capabilities.require<ProbeCacheFactory>(CORE_CACHE_CAPABILITY),
-        async (entries, actor) => {
-            const recipients = new Map<string, string[]>();
-            for (const entry of entries) {
-                const recipient =
-                    entry.scope === "user" ? entry.scopeId : entry.createdBy;
-                if (
-                    recipient === actor.accountId ||
-                    recipient.startsWith("content-pack:")
-                )
-                    continue;
-                const labels = recipients.get(recipient) ?? [];
-                labels.push(entry.label);
-                recipients.set(recipient, labels);
-            }
-            const results = await Promise.allSettled(
-                Array.from(recipients, ([recipientUsername, labels]) =>
-                    dispatchNotification({
-                        category: "study",
-                        recipientUsername,
-                        subject: "Study cards removed",
-                        body: `These cards were removed because their shared content was deleted or relocated: ${labels.join(" · ")}`,
-                        actionUrl: "/study/library",
-                    }),
-                ),
-            );
-            for (const result of results)
-                if (result.status === "rejected")
-                    await ctx.log?.(
-                        "error",
-                        "Could not notify affected Study card owner.",
-                        {
-                            component: "study-library",
-                            operation: "notify-deletion",
-                            errorName:
-                                result.reason instanceof Error
-                                    ? result.reason.name
-                                    : "Error",
-                        },
-                    );
-        },
+        contentNotifiers.deletedContent,
         ctx.capabilities.get<StudyAudioCapability>("study:audio"),
         imageStore,
         createRequestNotifier({
@@ -208,28 +144,8 @@ export async function bootstrapStudyAdapter(
         }),
         languageAvailability((id) => ctx.capabilities.get(id)),
     );
-    ctx.capabilities.contribute("study:library", service);
-    const registerConstructor = service.registerFormContribution.bind(service);
-    ctx.capabilities.contribute(
-        "study:library:registerFormContribution",
-        registerConstructor,
-    );
+    registerLibraryCapabilities(ctx, service);
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
-    if (!systemCtx?.hasCapability("study:library:registerConstructor"))
-        systemCtx?.contributePublicCapability(
-            "study:library:registerConstructor",
-            registerConstructor,
-        );
-    if (!systemCtx?.hasCapability("study:library:provider"))
-        systemCtx?.contributePublicCapability("study:library:provider", {
-            transformationModel: "generated",
-            inspectContentPack: service.inspectContentPack.bind(service),
-            ingestContentPack: service.ingestContentPack.bind(service),
-            deleteContentPack: service.deleteContentPack.bind(service),
-            registerConstructor,
-            registerLookupProvider:
-                service.registerLookupProvider.bind(service),
-        } satisfies LibraryProviderCapability);
     const preferences =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");

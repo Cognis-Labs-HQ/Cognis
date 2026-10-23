@@ -3,6 +3,17 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { FlowApi } from "../ctx/types.js";
 
+/** Host components may delegate only their own module integration namespaces. */
+export interface ModuleNamespaceRequest {
+    moduleId: string;
+    kind: "apiRoute" | "ctxRegistration";
+    id: string;
+}
+
+export type ModuleNamespacePolicy = (
+    request: ModuleNamespaceRequest,
+) => boolean;
+
 export interface GatewayManifest {
     id: string;
     uuid?: string;
@@ -33,6 +44,38 @@ export interface GatewayEntry extends GatewayManifest {
 
 export class GatewayRegistry {
     private readonly gateways = new Map<string, GatewayEntry>();
+    private readonly moduleNamespacePolicies = new Map<
+        string,
+        ModuleNamespacePolicy
+    >();
+
+    registerModuleNamespacePolicy(
+        gatewayId: string,
+        policy: ModuleNamespacePolicy,
+    ): () => void {
+        if (!this.gateways.has(gatewayId))
+            throw new Error("gateway_not_registered");
+        this.moduleNamespacePolicies.set(gatewayId, policy);
+        return () => {
+            if (this.moduleNamespacePolicies.get(gatewayId) === policy)
+                this.moduleNamespacePolicies.delete(gatewayId);
+        };
+    }
+
+    allowsModuleNamespace(
+        request: ModuleNamespaceRequest,
+        ownerGatewayId?: string,
+    ): boolean {
+        for (const [gatewayId, policy] of this.moduleNamespacePolicies) {
+            if (
+                (!ownerGatewayId || ownerGatewayId === gatewayId) &&
+                this.gateways.get(gatewayId)?.status === "active" &&
+                policy(request) === true
+            )
+                return true;
+        }
+        return false;
+    }
 
     register(manifest: GatewayManifest): void {
         this.gateways.set(manifest.id, { ...manifest, status: "active" });
@@ -88,6 +131,10 @@ export class CapabilityStore {
 
     contribute(key: string, value: unknown): void {
         this.store.set(key, value);
+    }
+
+    remove(key: string): boolean {
+        return this.store.delete(key);
     }
 
     has(key: string): boolean {

@@ -274,3 +274,15 @@ Implementation reference: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://g
 Dictionary search-context reads use `study:library:readSearchContext` with authorize and resolve stages. Writes retain `study:library:searchContext` and add validation before persistence, allowing flow extensions to adjust input before service validation. Both operations reject shared-link principals. Writes stop at 16 KiB with HTTP 413; malformed JSON returns HTTP 400 and does not replace saved state. Unexpected failures expose only a stable error code.
 
 Implementation reference: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+
+## Component isolation and lifecycle
+
+The API delegates extension namespaces through active gateway-owned policies; Study owns the language namespace rules. Library provider capabilities withdraw when the adapter or its Study dependencies are disabled, reject retained handles, and return when enabled. Study adapter bootstrap exposes `onAvailabilityChange(listener)` for lifecycle-bound contributions; failed bootstrap withdraws them.
+
+## Notification and persistence fixes
+
+Library content and deletion announcements include English, German, Indonesian and Japanese text from XML catalogs, use English fallback, and run through `study:library:notifyContent`. Card labels remain opaque during interpolation. Privileged class writes still require a real target class. Leaderboard observations roll back on failed persistence; season rollover rebuilds final standings after restart and restores state if saving fails. Verified administrators can release matching integration source bindings without room membership.
+
+## Behavioral test boundaries
+
+Browser tests load actual module exports with explicit dependency fakes through shared tooling. Editor, drawing and flow checks exercise public operations rather than extracted private functions. The deck editor now has a dedicated owner module used directly by Flashcards.

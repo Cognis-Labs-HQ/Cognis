@@ -1,18 +1,8 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
-
-function load(path, context) {
-    vm.runInContext(
-        readFileSync(new URL(path, import.meta.url), "utf8")
-            .replace(/^import[\s\S]*?;\n/gm, "")
-            .replace(/export (async )?function/g, "$1function")
-            .replaceAll("export const", "const"),
-        context,
-    );
-}
 
 test("the floating practice preference restores the saved mode, confirms session resets and persists only accepted changes", async () => {
     const saved = [];
@@ -37,9 +27,40 @@ test("the floating practice preference restores the saved mode, confirms session
         escapeHtml: String,
         showToast: () => assert.fail("Unexpected preference failure"),
     });
-    load("../../../../gateways/study/ui/reuse/action-flows.js", context);
-    load("../ui/app/actions.js", context);
-    load("../ui/reuse/practice-mode.js", context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL(
+                "../../../../gateways/study/ui/reuse/action-flows.js",
+                import.meta.url,
+            ),
+            { "/static/reuse/ui-ctx.js": context },
+            context,
+        ),
+    );
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/actions.js", import.meta.url),
+            { "/static/gateways/study/reuse/action-flows.js": context },
+            context,
+        ),
+    );
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/reuse/practice-mode.js", import.meta.url),
+            {
+                "/static/reuse/popup.js": context,
+                "/static/reuse/escape-html.js": context,
+                "/static/reuse/format-template.js": context,
+                "/static/reuse/ui-preferences.js": context,
+                "/static/reuse/toast.js": context,
+                "../app/actions.js": context,
+            },
+            context,
+        ),
+    );
     const controller = new AbortController();
     const preference = await context.createPracticeModePreference({
         i18n: { t: (key) => key },

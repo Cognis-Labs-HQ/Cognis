@@ -1,14 +1,7 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
-
-const source = readFileSync(
-    new URL("../ui/app/transformation-opt-ins.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import .*;$/gm, "")
-    .replaceAll("export function", "function");
 
 test("composer opt-ins follow family tags and preserve other classifications", () => {
     const control = {
@@ -36,7 +29,10 @@ test("composer opt-ins follow family tags and preserve other classifications", (
         },
     };
     const context = vm.createContext({});
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/transformation-opt-ins.js", context),
+    );
     context.bindTransformationOptIns(form, 10);
     assert.equal(label.hidden, false);
     assert.equal(control.checked, false);
@@ -59,7 +55,10 @@ test("one opt-in control represents every matching noun family for a shared tran
         escapeHtml: String,
         localizedLabel: (metadata) => metadata.labels.en,
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/transformation-opt-ins.js", context),
+    );
     const html = context.renderTransformationOptIns({
         language: "ja",
         transformSets: ["dog", "cat", "teacher"].map((family) => ({

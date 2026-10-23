@@ -1,14 +1,6 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
-import { readFileSync } from "node:fs";
-
-const source = readFileSync(
-    new URL("../ui/app/create-entry/definition-editor.js", import.meta.url),
-    "utf8",
-)
-    .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-    .replace(/\bexport /g, "");
 
 test("committed definitions edit through the existing editor with refreshed permissions", async () => {
     let listener;
@@ -17,6 +9,10 @@ test("committed definitions edit through the existing editor with refreshed perm
     let renders = 0;
     const context = {
         Event,
+        DEFINITION_LANGUAGES: [],
+        CSS: { escape: String },
+        escapeHtml: String,
+        renderDefinitionActions: () => "",
         bindDefinitionRemoval() {},
         fetchLibraryEntry: async () => ({
             entry: { id: "definition", canEdit: true },
@@ -28,22 +24,38 @@ test("committed definitions edit through the existing editor with refreshed perm
         },
         showToast() {},
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/definition-editor.js", context),
+    );
+    const entries = [{ id: "definition", label: "old" }];
     context.linkDefinition = () => {
         renders += 1;
     };
-    const entries = [{ id: "definition", label: "old" }];
+    const option = { value: "definition", selected: true };
     const form = {
+        elements: { "relationship:definitions": { options: [option] } },
+        querySelector: () => ({
+            querySelector: () => null,
+            insertAdjacentHTML: () => {
+                renders++;
+            },
+        }),
         addEventListener: (_kind, callback) => {
             listener = callback;
         },
         dispatchEvent() {},
     };
     context.bindCommittedDefinitionEditing(form, {
-        schema: { id: "ja" },
-        layer: {},
+        schema: {
+            id: "ja",
+            layers: [{ id: "definitions", semanticRole: "definition" }],
+        },
+        layer: {
+            relationships: [{ id: "definitions", targetLayer: "definitions" }],
+        },
         entries,
-        i18n: {},
+        i18n: { t: (key) => key },
     });
     const button = { dataset: { libraryEditDefinition: "definition" } };
     await listener({ target: { closest: () => button } });
@@ -65,7 +77,10 @@ test("definitions without edit permission are not written", async () => {
         },
         showToast() {},
     };
-    vm.runInNewContext(source, context);
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/create-entry/definition-editor.js", context),
+    );
     context.bindCommittedDefinitionEditing(
         {
             addEventListener: (_kind, callback) => {

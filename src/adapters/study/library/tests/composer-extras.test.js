@@ -1,21 +1,8 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import { literalCompositionToken } from "../ui/app/composition-tokens.js";
-
-const source = readFileSync(
-    new URL("../ui/app/composer-extras.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import .*;\n/gm, "")
-    .replace(/\bexport /g, "");
-const carouselSource = readFileSync(
-    new URL("../../../../ui/reuse/horizontal-carousel.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import .*;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 function extras() {
     const context = {
@@ -26,7 +13,31 @@ function extras() {
         document: { documentElement: { lang: "en" } },
         CustomEvent,
     };
-    vm.runInNewContext(carouselSource + "\n" + source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL(
+                "../../../../ui/reuse/horizontal-carousel.js",
+                import.meta.url,
+            ),
+            { "./escape-html.js": context, "./popup.js": context },
+            context,
+        ),
+    );
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/composer-extras.js", import.meta.url),
+            {
+                "/static/reuse/horizontal-carousel.js": context,
+                "./reuse/card-preview.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./presentation.js": context,
+                "./composition-tokens.js": context,
+            },
+            context,
+        ),
+    );
     return context;
 }
 

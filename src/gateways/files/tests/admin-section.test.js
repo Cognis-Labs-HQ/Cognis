@@ -1,15 +1,18 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import vm from "node:vm";
-const source = (
-    await readFile(new URL("../ui/client.js", import.meta.url), "utf8")
-)
-    .replace(/^import .*;\n/gm, "")
-    .replace(/export /g, "");
 const client = vm.createContext({ TextEncoder, Blob });
-vm.runInContext(source, client);
+Object.assign(
+    client,
+    loadTestModule(
+        new URL("../ui/client.js", import.meta.url),
+        { "/static/reuse/api-client.js": client },
+        client,
+    ),
+);
 const {
     loadNamespaceQuotaDefaults,
     updateGlobalQuotaDefault,
@@ -73,14 +76,6 @@ test("files gateway contributes its namespace quota administration section", asy
 });
 
 test("quota administration renders current defaults and saves the chosen namespace", async () => {
-    const sectionSource = (
-        await readFile(
-            new URL("../ui/admin-section.js", import.meta.url),
-            "utf8",
-        )
-    )
-        .replace(/^import[\s\S]*?;\n/gm, "")
-        .replace(/export /g, "");
     const recorder = apiRecorder({
         globalDefault: 1024,
         namespaces: [
@@ -94,7 +89,14 @@ test("quota administration renders current defaults and saves the chosen namespa
     });
     const toasts = [];
     const context = vm.createContext({ ...client, CSS: { escape: String } });
-    vm.runInContext(sectionSource, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/admin-section.js", import.meta.url),
+            { "./client.js": context },
+            context,
+        ),
+    );
     const section = context.createAdminSection({
         i18n: { t: (key) => key },
         apiFetch: recorder.apiFetch,

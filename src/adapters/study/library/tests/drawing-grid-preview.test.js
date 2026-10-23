@@ -1,5 +1,5 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -56,13 +56,14 @@ test("drawing conceals matching grid placements, including newly rendered previe
             }
         },
     });
-    const source = readFileSync(
-        new URL("../ui/app/drawing-grid-preview.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import.*\n/gm, "")
-        .replace("export function", "function");
-    vm.runInContext(source, environment);
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/app/drawing-grid-preview.js", import.meta.url),
+            { "/static/reuse/ui-ctx.js": environment },
+            environment,
+        ),
+    );
     const controller = new AbortController();
     environment.bindDrawingGridPreviews(
         { querySelectorAll: () => previews },

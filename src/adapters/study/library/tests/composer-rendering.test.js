@@ -1,19 +1,25 @@
+import { loadLibraryUiModule } from "./reuse/ui-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
-function source(path) {
-    return readFileSync(new URL(path, import.meta.url), "utf8")
-        .replace(/import[\s\S]*?from "[^"]+";\n/g, "")
-        .replace(/export \{[^}]+\} from "[^"]+";\n/g, "")
-        .replace(/\bexport /g, "");
-}
-
 test("stroke preview hides the lookup after retrieval and restores it when cleared", () => {
     const context = { escapeHtml: String };
     vm.createContext(context);
-    vm.runInContext(source("../ui/app/field-input.js"), context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../ui/app/field-input.js", import.meta.url),
+            {
+                "./definition-languages.js": context,
+                "/static/reuse/escape-html.js": context,
+                "./presentation.js": context,
+            },
+            context,
+        ),
+    );
     const button = { hidden: false };
     const canvas = { getContext: () => null };
     const section = {
@@ -56,11 +62,14 @@ test("definition editors render translations in Content and ordinary cards retai
         inputForField: () => "<fieldset>Translations</fieldset>",
     };
     vm.createContext(context);
-    vm.runInContext(source("../ui/app/audio-editor.js"), context);
-    vm.runInContext(source("../ui/app/transformation-opt-ins.js"), context);
-    vm.runInContext(
-        source("../ui/app/admin-interactions/editor-body.js"),
+    Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
+    Object.assign(
         context,
+        loadLibraryUiModule("app/transformation-opt-ins.js", context),
+    );
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/admin-interactions/editor-body.js", context),
     );
     for (const semanticRole of ["definition", "lexicalEntry"]) {
         const schema = {
@@ -107,11 +116,14 @@ test("vocabulary has one composed input and lookup precedes component carousels"
         }),
     };
     vm.createContext(context);
-    vm.runInContext(source("../ui/app/audio-editor.js"), context);
-    vm.runInContext(source("../ui/app/transformation-opt-ins.js"), context);
-    vm.runInContext(
-        source("../ui/app/admin-interactions/editor-body.js"),
+    Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
+    Object.assign(
         context,
+        loadLibraryUiModule("app/transformation-opt-ins.js", context),
+    );
+    Object.assign(
+        context,
+        loadLibraryUiModule("app/admin-interactions/editor-body.js", context),
     );
     const schema = {
         id: "ja",

@@ -1,16 +1,23 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { pronunciationClass } from "../../../../gateways/study/ui/reuse/pronunciation.js";
 
 const context = { pronunciationClass };
 vm.createContext(context);
-vm.runInContext(
-    readFileSync(new URL("../ui/app/detail-layout.js", import.meta.url), "utf8")
-        .replace(/^import.*;$/gm, "")
-        .replaceAll("export function", "function"),
+Object.assign(
     context,
+    loadTestModule(
+        new URL("../ui/app/detail-layout.js", import.meta.url),
+        {
+            "./reference-images.js": context,
+            "./drawing.js": context,
+            "./presentation.js": context,
+            "/static/gateways/study/reuse/pronunciation.js": context,
+        },
+        context,
+    ),
 );
 const { bindDetailLayout } = context;
 

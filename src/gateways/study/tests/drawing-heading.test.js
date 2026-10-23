@@ -1,5 +1,5 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
@@ -16,12 +16,6 @@ function headingSession(pathname, choice = "open", onNavigate) {
         removeAttribute: (name) => attributes.delete(name),
         setAttribute: (name, value) => attributes.set(name, value),
     };
-    const source = readFileSync(
-        new URL("../ui/reuse/drawing-heading.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import.*;\n/gm, "")
-        .replace("export function", "function");
     const environment = vm.createContext({
         window: { location: { pathname } },
         entryExploreUrl: () => "/study/explore/ja/kanji/character",
@@ -38,7 +32,18 @@ function headingSession(pathname, choice = "open", onNavigate) {
             return choice;
         },
     });
-    vm.runInContext(source, environment);
+    Object.assign(
+        environment,
+        loadTestModule(
+            new URL("../ui/reuse/drawing-heading.js", import.meta.url),
+            {
+                "/static/reuse/popup.js": environment,
+                "/static/reuse/ui-ctx.js": environment,
+                "./explore.js": environment,
+            },
+            environment,
+        ),
+    );
     let revealed = 0;
     environment.bindDrawingHeading(heading, {
         signal: new AbortController().signal,

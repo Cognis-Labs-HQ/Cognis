@@ -1,7 +1,6 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
 
 function clientFixture() {
     const requests = [];
@@ -18,15 +17,9 @@ function clientFixture() {
             return { ok: successful, json: async () => ({ data: saved }) };
         },
     };
-    const source = readFileSync(
+    environment.client = loadTestModule(
         new URL("../ui/drawing-client.js", import.meta.url),
-        "utf8",
-    )
-        .replace(/^import[^\n]*\n/, "")
-        .replaceAll("export ", "");
-    vm.runInNewContext(
-        source +
-            "; globalThis.client = { fetchDrawingProgress, recordDrawingCompletion };",
+        { "/static/reuse/api-client.js": environment },
         environment,
     );
     return {

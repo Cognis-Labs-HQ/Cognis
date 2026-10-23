@@ -1,18 +1,11 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { readFileSync } from "node:fs";
 import { uiCtx } from "../ui-ctx.js";
 import { createProviderLifecycle } from "../provider-lifecycle.js";
 import { registerScopedUiActions } from "../scoped-actions.js";
 import { escapeHtml } from "../escape-html.js";
-
-const source = readFileSync(
-    new URL("../image-preview.js", import.meta.url),
-    "utf8",
-)
-    .replace(/^import[\s\S]*?;\n/gm, "")
-    .replace(/\bexport /g, "");
 
 async function fixture(t) {
     let click;
@@ -93,7 +86,22 @@ async function fixture(t) {
             });
         },
     });
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../image-preview.js", import.meta.url),
+            {
+                "./escape-html.js": context,
+                "./popup.js": context,
+                "./page-styles.js": context,
+                "./i18n.js": context,
+                "./ui-ctx.js": context,
+                "./scoped-actions.js": context,
+                "./toast.js": context,
+            },
+            context,
+        ),
+    );
     const lifecycle = createProviderLifecycle({
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),
@@ -219,7 +227,22 @@ test("the preview provider waits for its shared stylesheet before publishing con
             return stylesheet;
         },
     });
-    vm.runInContext(source, context);
+    Object.assign(
+        context,
+        loadTestModule(
+            new URL("../image-preview.js", import.meta.url),
+            {
+                "./escape-html.js": context,
+                "./popup.js": context,
+                "./page-styles.js": context,
+                "./i18n.js": context,
+                "./ui-ctx.js": context,
+                "./scoped-actions.js": context,
+                "./toast.js": context,
+            },
+            context,
+        ),
+    );
     const lifecycle = createProviderLifecycle({
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),

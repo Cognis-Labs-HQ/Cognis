@@ -11,6 +11,7 @@ import type {
     ModuleRuntimeGateway,
     RoleAccessPolicy,
     FlowApi,
+    ModuleNamespacePolicy,
 } from "@cognis/core";
 import path from "node:path";
 import { stat } from "node:fs/promises";
@@ -55,6 +56,7 @@ interface ModuleContributions {
 
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
+    authorizeModuleNamespace?: ModuleNamespacePolicy;
     routeContext: RouteContext;
     bootstrapTimeoutMs?: number;
     onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
@@ -194,14 +196,18 @@ export function createModuleExtensionRoutes(
             routeOptions?: ModuleRouteOptions,
         ) {
             requireActiveBootstrap();
-            assertModuleOwnedRoute(routePath, moduleId, privilege);
+            assertModuleOwnedRoute(
+                routePath,
+                moduleId,
+                privilege,
+                options?.authorizeModuleNamespace,
+            );
             const protectedPrefixes = [
                 "/api/v1/system",
                 "/api/v1/auth",
                 "/api/v1/users",
                 "/public",
                 "/ui",
-                ...(options?.getProtectedRoutePrefixes?.() ?? []),
             ];
             if (
                 protectedPrefixes.some(
@@ -214,6 +220,21 @@ export function createModuleExtensionRoutes(
                     `Module ${moduleId} attempts to register protected route: ${routePath}`,
                 );
             }
+            if (
+                (options?.getProtectedRoutePrefixes?.() ?? []).some(
+                    (prefix) =>
+                        routePath === prefix ||
+                        routePath.startsWith(`${prefix}/`),
+                ) &&
+                options?.authorizeModuleNamespace?.({
+                    moduleId,
+                    kind: "apiRoute",
+                    id: routePath,
+                }) !== true
+            )
+                throw new Error(
+                    `Module ${moduleId} attempts to register protected route: ${routePath}`,
+                );
             if (
                 nextHandlers.some(
                     (entry) =>
@@ -323,7 +344,12 @@ export function createModuleExtensionRoutes(
                 contribute(key, value) {
                     requireActiveBootstrap();
                     if (!moduleEnabled) return;
-                    assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                    assertModuleOwnedCtxRegistration(
+                        key,
+                        moduleId,
+                        privilege,
+                        options?.authorizeModuleNamespace,
+                    );
                     if (systemCtx?.hasCapability(key)) {
                         throw new Error("module_capability_conflict");
                     }
@@ -356,7 +382,12 @@ export function createModuleExtensionRoutes(
             contributeCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
-                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                assertModuleOwnedCtxRegistration(
+                    key,
+                    moduleId,
+                    privilege,
+                    options?.authorizeModuleNamespace,
+                );
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -366,7 +397,12 @@ export function createModuleExtensionRoutes(
             contributePublicCapability(key, value) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
-                assertModuleOwnedCtxRegistration(key, moduleId, privilege);
+                assertModuleOwnedCtxRegistration(
+                    key,
+                    moduleId,
+                    privilege,
+                    options?.authorizeModuleNamespace,
+                );
                 if (systemCtx?.hasCapability(key)) {
                     throw new Error("module_capability_conflict");
                 }
@@ -381,6 +417,7 @@ export function createModuleExtensionRoutes(
                     moduleEnabled
                         ? privilege
                         : { requested: false, trustedSource: false },
+                    options?.authorizeModuleNamespace,
                 );
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);

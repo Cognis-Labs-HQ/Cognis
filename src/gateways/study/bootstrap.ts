@@ -1,3 +1,4 @@
+import { authorizeLanguageModuleNamespace } from "./module-namespaces.js";
 import { createHash } from "node:crypto";
 import { recordStudyResult } from "./progress.js";
 import { StudyAudio } from "./audio.js";
@@ -311,6 +312,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             stages: ["authorize", "validate", "search", "audit"],
         },
         { id: "study:library:notifyRequest", stages: ["deliver"] },
+        { id: "study:library:notifyContent", stages: ["deliver"] },
         { id: "study:library:stageRequest", stages: ["authorize", "persist"] },
         {
             id: "study:library:uploadImage",
@@ -639,6 +641,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
     });
+
+    ctx.gatewayRegistry.registerModuleNamespacePolicy(
+        "study",
+        authorizeLanguageModuleNamespace,
+    );
 
     ctx.log?.("info", "Study gateway: initialized.", {
         component: "study-gateway",

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requestMessages } from "../request-messages.js";
+import { notificationMessages } from "../reuse/notification-messages.js";
 
 const catalog = (subject: string, body: string) => `<resources>
 <string name="adapter.study.library.notification_pending_subject">${subject}</string>
@@ -12,7 +12,7 @@ test("request messages decode each XML entity once without interpreting the deco
         "&amp;lt;script&amp;gt;",
         "&amp;quot; &lt; &gt; &quot; &apos; &amp; &amp;amp;lt;",
     );
-    assert.deepEqual(requestMessages(xml, "pending"), {
+    assert.deepEqual(notificationMessages(xml, "pending"), {
         subject: "&lt;script&gt;",
         body: `&quot; < > " ' & &amp;lt;`,
     });
@@ -20,7 +20,7 @@ test("request messages decode each XML entity once without interpreting the deco
 
 test("request messages use nonempty English fallback and fail explicitly when it is absent", () => {
     assert.deepEqual(
-        requestMessages(
+        notificationMessages(
             catalog("", " "),
             "pending",
             catalog("Subject", "Body"),
@@ -28,11 +28,11 @@ test("request messages use nonempty English fallback and fail explicitly when it
         { subject: "Subject", body: "Body" },
     );
     assert.throws(
-        () => requestMessages(catalog("", ""), "pending"),
-        /missing_request_translation/,
+        () => notificationMessages(catalog("", ""), "pending"),
+        /missing_notification_translation/,
     );
     assert.throws(
-        () => requestMessages(catalog("Subject", "Body"), "approved"),
-        /missing_request_translation/,
+        () => notificationMessages(catalog("Subject", "Body"), "approved"),
+        /missing_notification_translation/,
     );
 });
