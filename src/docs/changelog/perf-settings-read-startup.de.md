@@ -11,3 +11,5 @@ Die Einstellungen laden Kontopräferenzen, Editorbestätigung und Einrichtungsst
 Gespeicherte Sprachpräferenzen gelten vor dem Laden der Sprachdaten. Erforderliche Einrichtungsweiterleitungen erfolgen vor Bereichsabfragen und Darstellung. Verhaltenstests führen die tatsächliche Initialisierung mit expliziten Abhängigkeitsverträgen aus und prüfen wiederholte Kontowechsel.
 
 ## Commits
+
+- [e3009a41720815529c21c9e7c041e4653c8f5df9](https://github.com/Cognis-Labs-HQ/Cognis/commit/e3009a41720815529c21c9e7c041e4653c8f5df9)
