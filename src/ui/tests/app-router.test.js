@@ -376,7 +376,7 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
     assert.match(
         src,
-        /beginPageLoading\(\{\s*resolveScope:/,
+        /beginPageLoading\(\)/,
         "app-router.js must show the shared loading overlay during navigation",
     );
     assert.match(

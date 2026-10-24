@@ -38,7 +38,8 @@
  * @returns {void}
  */
 
-import { preparePageStylesheets } from "./page-styles.js";
+import { isMountSignal } from "./mount-scope.js";
+import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
 import {
     beginPageLoading,
     ensureHostUiProviders,
@@ -295,6 +296,7 @@ function resolveRouterRoot() {
 }
 
 let _mountController = null;
+let _commitPage = null;
 let _navigationSequence = 0;
 let _initialized = false;
 let _historyIndex = 0;
@@ -338,6 +340,8 @@ async function loadRoute(path) {
         await ensureHostUiProviders();
         mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
+        if (signal.aborted || navigationSequence !== _navigationSequence)
+            return false;
         console.error("[router] route load error for", path, error);
         await openRuntimeErrorPopup({
             error,
@@ -393,47 +397,80 @@ async function loadRoute(path) {
         return loadRoute(enforcedPath);
     }
 
-    const finishPageLoading = beginPageLoading({
-        resolveScope: () => resolveRouterRoot()?.querySelector(".workspace"),
-    });
+    const finishPageLoading = beginPageLoading();
     signal.addEventListener("abort", finishPageLoading, { once: true });
+    let commitPageStylesheets = null;
+    let observer = null;
+    let commit = null;
     try {
-        window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
-        uiCtx.capabilities.get("page:actions")?.reset?.();
-        _currentBase = route.base;
-
         // Prepare the destination styles before calling mount() so CSS is
         // guaranteed present before the page touches the DOM.
         const stylesheetsReady = preparePageStylesheets(
             route.stylesheets ?? [],
+            { signal },
         );
 
-        const commitPageStylesheets = await stylesheetsReady;
+        commitPageStylesheets = await stylesheetsReady;
         // If another navigation started while loading, bail out.
-        if (signal.aborted) return false;
+        if (signal.aborted || !commitPageStylesheets) return false;
         try {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
-            commitPageStylesheets();
+            let committed = false;
+            commit = (root, mountSignal) => {
+                if (
+                    committed ||
+                    signal.aborted ||
+                    navigationSequence !== _navigationSequence ||
+                    root !== routeRoot
+                )
+                    return false;
+                if (mountSignal && !isMountSignal(mountSignal, signal))
+                    return false;
+                committed = true;
+                observer?.disconnect();
+                commitPageStylesheets();
+                _currentBase = route.base;
+                return true;
+            };
+            _commitPage = commit;
+            window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
+            uiCtx.capabilities.get("page:actions")?.reset?.();
+            if (typeof MutationObserver !== "undefined") {
+                observer = new MutationObserver(() => commit(routeRoot));
+                observer.observe(routeRoot, { childList: true });
+                const content = routeRoot.querySelector?.(".main-window");
+                if (content) observer.observe(content, { childList: true });
+            }
+            signal.addEventListener("abort", () => observer?.disconnect(), {
+                once: true,
+            });
             await mod.mount(routeRoot, {
                 signal,
                 shareContext: session?.shareContext ?? null,
             });
+            if (signal.aborted || navigationSequence !== _navigationSequence)
+                return false;
+            commit(routeRoot);
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
                 console.error("[router] mount() error for", path, error);
                 finishPageLoading();
+                observer?.disconnect();
+                if (_commitPage === commit) _commitPage = null;
+                commitPageStylesheets?.cancel();
                 await openRuntimeErrorPopup({
                     error,
                     contextKey: "ui.reuse.runtime_error_context_route_mount",
                     contextDetail: path,
                 });
             }
+            return false;
         }
         return true;
     } catch (error) {
-        if (_mountController?.signal?.aborted) {
+        if (signal.aborted) {
             return false;
         }
         console.error("[router] route load error for", path, error);
@@ -445,6 +482,9 @@ async function loadRoute(path) {
         });
         return false;
     } finally {
+        observer?.disconnect();
+        if (_commitPage === commit) _commitPage = null;
+        commitPageStylesheets?.cancel();
         signal.removeEventListener("abort", finishPageLoading);
         finishPageLoading();
     }
@@ -506,6 +546,11 @@ export function initRouter(root) {
     if (root) _root = root;
     if (_initialized) return;
     _initialized = true;
+    adoptPageStylesheets();
+    uiCtx.capabilities.contribute("navigation:commitPage", (root, signal) => {
+        if (signal) return _commitPage?.(root, signal) ?? false;
+        return false;
+    });
     installRuntimeErrorHandlers();
 
     _historyIndex = Number.isInteger(history.state?.routerIndex)

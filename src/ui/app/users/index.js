@@ -688,6 +688,7 @@ export async function mount(rootEl, { signal } = {}) {
         : "";
 
     composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         i18n,
         preferenceKey: "users-layout",

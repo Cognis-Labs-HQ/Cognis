@@ -163,15 +163,13 @@ test("navbar plugins mount after the shell and can recover pre-mount imports", (
     assert.match(share, /cognis:navbar-refresh/);
 });
 
-test("SPA route preparation retains every loaded stylesheet", () => {
-    const pageStyles = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-styles.js"),
+test("component windows hold their own signal-scoped stylesheet ownership", () => {
+    const broker = readFileSync(
+        resolve(ROOT, "src/ui/reuse/component-page-broker.js"),
         "utf8",
     );
     assert.match(
-        pageStyles,
-        /await Promise\.all\(hrefs\.map\(ensurePageStylesheet\)\)/,
+        broker,
+        /ensurePageStylesheet\(href, \{\s*signal: controller.signal/,
     );
-    assert.match(pageStyles, /return \(\) => \{\};/);
-    assert.doesNotMatch(pageStyles, /\.remove\(\)/);
 });

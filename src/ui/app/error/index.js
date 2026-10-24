@@ -115,6 +115,7 @@ export async function mount(root, { signal } = {}) {
           };
 
     const composer = createPageComposer(root, {
+        signal,
         ...sharedComposerOptions,
         ...authComposerOptions,
         elements: [
