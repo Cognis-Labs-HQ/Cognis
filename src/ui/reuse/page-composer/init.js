@@ -578,6 +578,7 @@ export function createPageComposer(
                 : undefined;
 
         await renderDashboardLayout(root, {
+            signal,
             i18n,
             pageContext: pageContextHtml,
             toolbar: toolbarHtml,
@@ -591,6 +592,7 @@ export function createPageComposer(
             requireAccountSession,
             enableAccountEnhancements,
         });
+        if (composerDestroyed) return;
         composerEditToggleButton = root.querySelector("#composer-edit-toggle");
         pageActions.mount(root, { signal });
         focusControl = createFocusControlCoordinator({
@@ -601,6 +603,7 @@ export function createPageComposer(
             signal,
         });
         await focusControl.mount();
+        if (composerDestroyed) return;
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
             const floatingToolbar = root.querySelector(".floating-toolbar");

@@ -679,6 +679,7 @@ export async function mount(root, { signal } = {}) {
     );
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         subPageNavigation: true,
         elements,
@@ -727,6 +728,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     await composer.init();
+    if (signal?.aborted) return;
 
     root.querySelector('[data-composer-scroll="advanced"]')?.addEventListener(
         "click",

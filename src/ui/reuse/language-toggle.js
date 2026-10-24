@@ -34,11 +34,16 @@ export function promoteLanguage(languages, selectedCode) {
     ];
 }
 
-export async function bindLanguageToggle({ i18n, navigateTo, showToast }) {
+export async function bindLanguageToggle({
+    i18n,
+    navigateTo,
+    showToast,
+    preferences: suppliedPreferences,
+}) {
     const toggle = document.querySelector("#language-toggle");
     if (!toggle) return;
 
-    const preferences = await loadUiPreferences();
+    const preferences = await (suppliedPreferences ?? loadUiPreferences());
     const preferredLanguages = Array.isArray(preferences?.languagePriority)
         ? preferences.languagePriority
         : readPreferredLanguages();

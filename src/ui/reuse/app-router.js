@@ -393,7 +393,10 @@ async function loadRoute(path) {
         return loadRoute(enforcedPath);
     }
 
-    const finishPageLoading = beginPageLoading();
+    const finishPageLoading = beginPageLoading({
+        resolveScope: () => resolveRouterRoot()?.querySelector(".workspace"),
+    });
+    signal.addEventListener("abort", finishPageLoading, { once: true });
     try {
         window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
         uiCtx.capabilities.get("page:actions")?.reset?.();
@@ -442,6 +445,7 @@ async function loadRoute(path) {
         });
         return false;
     } finally {
+        signal.removeEventListener("abort", finishPageLoading);
         finishPageLoading();
     }
 }

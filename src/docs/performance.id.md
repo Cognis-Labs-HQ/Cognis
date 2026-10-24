@@ -23,3 +23,11 @@ Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang
 Resolusi memakai manifes build yang tersedia dan tidak menyimpan respons API dalam cache. Autentikasi dan penyaringan komponen aktif tetap dijalankan saat deskriptor diminta. Instalasi yang hanya memakai sumber, aset yang tidak dibangun, direktori eksternal, dan URL modul dengan revisi tetap memakai jalur pengiriman aslinya.
 
 Hanya katalog yang diperlukan sebelum pemasangan halaman yang mengaktifkan pramuat. Katalog bilah navigasi tetap mengunduh sesuai kebutuhan agar penemuan latar belakang tidak memicu banyak permintaan bersamaan saat navigasi. Setelah penemuan terautentikasi, pemuat penyedia melakukan pramuat URL bundel host yang tidak berubah sambil mempertahankan urutan impor dan pemasangan. Tautan pramuat dihapus setelah selesai atau gagal. Penyedia aktif tidak dipramuat ulang; URL modul eksternal, sumber, dan URL dengan revisi tetap memakai jalur impor yang ada.
+
+## Navigasi Tetap Terlihat
+
+Pemuatan rute menutupi ruang kerja yang terdampak sementara bagian kepala dan navigasi tetap terlihat. Pemuatan dokumen langsung tetap memakai tampilan pemuatan seluruh halaman. Navigasi yang digantikan segera melepaskan token pemuatannya; konten tertunda dan galat tetap ditampilkan melalui tampilan pemuatan dan galat yang tersedia.
+
+Setiap penyusunan antarmuka mengambil preferensi terkini satu kali untuk kontrol tema dan bahasa serta menjadwalkan satu pembaruan avatar setelah penyedia siap. Elemen avatar yang tidak berubah dipertahankan. Hasil terlambat ditolak setelah akun, token, penyedia, atau pembaruan berubah. Tidak ada cache respons pribadi baru.
+
+Ukur awal navigasi, waktu indikator terlihat, dan kesiapan konten wajib secara terpisah, termasuk kunjungan berulang serta Kembali/Maju. Catat identitas dokumen, kerangka antarmuka, avatar, dan urutan permintaan. Pemasangan selesai atau widget awal yang kosong bukan bukti kesiapan konten. Pengukuran sintetis lokal tidak membuktikan kinerja layanan yang dihosting.

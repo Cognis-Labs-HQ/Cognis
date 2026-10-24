@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+    bindLanguageToggle,
     promoteLanguage,
     shouldShowLanguageToggle,
 } from "../language-toggle.js";
@@ -43,4 +44,25 @@ test("hidden page action buttons cannot retain an empty visual presence", async 
         layoutStyles,
         /\.page-action-dock\s*\{[\s\S]*?z-index:\s*1202;/,
     );
+});
+
+test("language binding consumes the current shell preferences without another read", async () => {
+    const previousDocument = globalThis.document;
+    const previousStorage = globalThis.localStorage;
+    const toggle = {};
+    globalThis.document = { querySelector: () => toggle };
+    globalThis.localStorage = {
+        getItem() {
+            throw new Error("unexpected separate preference read");
+        },
+    };
+    try {
+        await bindLanguageToggle({
+            preferences: Promise.resolve({ languagePriority: ["de"] }),
+        });
+        assert.equal(toggle.hidden, true);
+    } finally {
+        globalThis.document = previousDocument;
+        globalThis.localStorage = previousStorage;
+    }
 });

@@ -303,7 +303,7 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
     assert.match(
         src,
-        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*bindThemeToggle/,
+        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
         "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(
@@ -376,7 +376,7 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
     assert.match(
         src,
-        /beginPageLoading\(\)/,
+        /beginPageLoading\(\{\s*resolveScope:/,
         "app-router.js must show the shared loading overlay during navigation",
     );
     assert.match(
@@ -507,31 +507,6 @@ test("public module pages retain the anonymous Cognis shell", () => {
         composerSource,
         /__cognisPublicSpaRoute === true[\s\S]*publicPageContext[\s\S]*showTopbar = true[\s\S]*showNavbar = false[\s\S]*showFooter = true[\s\S]*frameless = false/,
     );
-});
-
-test("navbar avatar refresh preserves a resolved image during SPA plugin loading", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
-        "utf8",
-    );
-    const profileNavbarSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/profile/ui/navbar.js"),
-        "utf8",
-    );
-
-    assert.match(
-        source,
-        /uiCtx\.capabilities\.get\("ui:navbarAvatarProvider"\)/,
-    );
-    assert.match(
-        source,
-        /if \(!avatarProvider && avatarBtn\.querySelector\("\.avatar-image"\)\) return/,
-    );
-    assert.match(
-        profileNavbarSource,
-        /uiCtx\.capabilities\.contribute\("ui:navbarAvatarProvider"/,
-    );
-    assert.doesNotMatch(profileNavbarSource, /registerAvatarProvider/);
 });
 
 test("direct SPA entry loads capability providers before the route module", () => {

@@ -23,3 +23,11 @@ Only declared script URLs and direct navbar registrations are forced build entri
 Resolution uses the existing build manifest; it does not cache API responses. Authentication and enabled-component filtering still run when descriptors are requested. Source-only installations, assets absent from the build, external directories and revision-qualified module URLs retain their original delivery paths.
 
 Only catalogs required before page mounting opt into preloading. Navbar catalogs retain demand-driven downloads so background discovery does not fan out requests during navigation. After authenticated discovery, the provider loader preloads immutable host bundle URLs while preserving sequential imports and mounts. Preload links are removed after completion or failure. Active providers are not preloaded again; external module, source and revision-qualified URLs keep their existing import path.
+
+## Persistent Navigation
+
+Route loading covers the affected workspace while the retained header and navigation remain visible. Direct document loads retain the full-page loading surface. Superseded navigation releases its loading token immediately; pending content and runtime errors remain visible through their existing loading and error surfaces.
+
+Each shell composition requests current preferences once for theme and language controls and schedules one avatar refresh after provider readiness. Unchanged avatar nodes remain mounted. Late avatar results are rejected after account, token, provider or refresh changes. No private-response cache is introduced.
+
+Measure navigation intent, spinner visibility and required content readiness separately, including repeated routes and Back/Forward. Record document, shell and avatar identity and request waterfalls. A completed mount or an empty initial widget is not proof that required content is ready. Local synthetic measurements do not establish hosted performance.

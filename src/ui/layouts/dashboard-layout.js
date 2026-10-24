@@ -1,3 +1,5 @@
+import { updateNavbarAvatar } from "./navbar-avatar.js";
+export { updateNavbarAvatar } from "./navbar-avatar.js";
 import { apiFetch } from "../reuse/api-client.js";
 import { escapeHtml } from "../reuse/escape-html.js";
 import { loadTemplate } from "../reuse/template-loader.js";
@@ -187,13 +189,13 @@ function isNavigationLinkActive(currentPath, href) {
     );
 }
 
-async function bindThemeToggle({ usePreferenceApi = true } = {}) {
+async function bindThemeToggle({ usePreferenceApi = true, preferences } = {}) {
     if (!usePreferenceApi) {
         bindSharedThemeToggle();
         return;
     }
 
-    const prefs = await loadUiPreferences();
+    const prefs = await (preferences ?? loadUiPreferences());
     applyUiPreferences(prefs);
     applyTimezoneToLocalStorage(
         prefs?.timezone ?? null,
@@ -306,63 +308,6 @@ function bindTopbarActions() {
     });
 }
 
-/**
- * Refreshes the navbar avatar through the optional profile-owned CTX provider.
- * The existing image remains mounted while navbar plugins are still loading so
- * SPA page composition cannot temporarily erase a resolved profile avatar.
- */
-export async function updateNavbarAvatar() {
-    const avatarBtn = document.querySelector(".avatar-button");
-    const profileLink = document.querySelector("[data-profile-link]");
-    if (!avatarBtn) return;
-    const handle = localStorage.getItem("cognis_account") ?? "";
-
-    const availabilityIndicator = avatarBtn.querySelector(
-        ".availability-indicator",
-    );
-
-    let profileAvailable = false;
-    let avatarBlobUrl = null;
-    let avatarInitials = "?";
-    let avatarColor = null;
-    const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
-
-    if (!avatarProvider && avatarBtn.querySelector(".avatar-image")) return;
-
-    if (avatarProvider) {
-        try {
-            const result = await avatarProvider();
-            profileAvailable = result?.profileAvailable ?? false;
-            avatarBlobUrl = result?.avatarBlobUrl ?? null;
-            avatarInitials = result?.avatarInitials ?? avatarInitials;
-            avatarColor = result?.avatarColor ?? avatarColor;
-        } catch {
-            profileAvailable = false;
-        }
-    }
-
-    if (profileLink) {
-        profileLink.closest("li")?.toggleAttribute("hidden", !profileAvailable);
-    }
-
-    if (avatarBlobUrl) {
-        const img = document.createElement("img");
-        img.className = "avatar-image";
-        img.alt = "";
-        img.src = avatarBlobUrl;
-        avatarBtn.replaceChildren(img);
-        if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
-        return;
-    }
-
-    const initialsEl = document.createElement("span");
-    initialsEl.className = "avatar-initials";
-    initialsEl.textContent = avatarInitials;
-    if (avatarColor) initialsEl.style.background = avatarColor;
-    avatarBtn.replaceChildren(initialsEl);
-    if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
-}
-
 let releaseChangelogPopupChecked = false;
 
 export async function ensureNavbarPluginsLoaded() {
@@ -396,7 +341,13 @@ function scheduleDeferredLoginSetup(i18n) {
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     invalidateUiProviders();
     invalidateNavbarPlugins();
-    ensureNavbarPluginsLoaded().catch(() => {});
+    ensureNavbarPluginsLoaded()
+        .then(updateNavbarAvatar)
+        .catch((error) => {
+            console.error("[dashboard-layout]:navbar-plugins-refresh-failed", {
+                error,
+            });
+        });
 });
 
 function scheduleNavbarEnhancements() {
@@ -600,6 +551,7 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     const i18n = slots.i18n || (await createI18n());
     const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
+    if (slots.signal?.aborted) return;
 
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
@@ -699,12 +651,6 @@ export async function renderDashboardLayout(root, slots = {}) {
             (showTopbar || showNavbar) &&
             uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
-            updateNavbarAvatar().catch((error) => {
-                console.warn(
-                    "[dashboard-layout]:initial-navbar-avatar-render-failed",
-                    error,
-                );
-            });
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n);
             initSearchBar(i18n);
@@ -713,8 +659,9 @@ export async function renderDashboardLayout(root, slots = {}) {
         bindHeaderScrollState(root);
         if (!componentWindow) {
             initRouter(root);
-            bindThemeToggle({ usePreferenceApi });
-            bindLanguageToggle({ i18n, navigateTo, showToast });
+            const preferences = usePreferenceApi ? loadUiPreferences() : null;
+            bindThemeToggle({ usePreferenceApi, preferences });
+            bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
             bindSwitcherSettingsLinks(root);
         }
         return;
@@ -760,12 +707,6 @@ export async function renderDashboardLayout(root, slots = {}) {
         uiCtx.capabilities.get("session:isGuest")?.() !== true
     ) {
         bindTopbarActions();
-        updateNavbarAvatar().catch((error) => {
-            console.warn(
-                "[dashboard-layout]:initial-navbar-avatar-render-failed",
-                error,
-            );
-        });
         scheduleNavbarEnhancements();
         scheduleDeferredLoginSetup(i18n);
         applyActiveNavigation();
@@ -776,8 +717,9 @@ export async function renderDashboardLayout(root, slots = {}) {
     bindHeaderScrollState(root);
     if (!componentWindow) {
         initRouter(root);
-        bindThemeToggle({ usePreferenceApi });
-        bindLanguageToggle({ i18n, navigateTo, showToast });
+        const preferences = usePreferenceApi ? loadUiPreferences() : null;
+        bindThemeToggle({ usePreferenceApi, preferences });
+        bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
         bindSwitcherSettingsLinks(root);
     }
     registerServiceWorker();
