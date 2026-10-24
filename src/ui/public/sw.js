@@ -21,7 +21,7 @@
  * asset list so existing clients pick up the new worker on next visit.
  */
 
-const CACHE_VERSION = "v6";
+const CACHE_VERSION = "v7";
 const SHELL_CACHE = `cognis-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `cognis-assets-${CACHE_VERSION}`;
 const APP_CACHE = `cognis-app-${CACHE_VERSION}`;
@@ -29,6 +29,7 @@ const APP_CACHE = `cognis-app-${CACHE_VERSION}`;
 const SHELL_URLS = [
     "/dashboard",
     "/static/assets/icons/cognis-icon-192.png",
+    "/static/assets/icons/cognis-icon-384.png",
     "/static/assets/icons/cognis-icon-512.png",
     "/manifest.webmanifest",
 ];
