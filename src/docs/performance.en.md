@@ -26,7 +26,7 @@ Only catalogs required before page mounting opt into preloading. Navbar catalogs
 
 ## Persistent Navigation
 
-Route loading covers the affected workspace while the retained header and navigation remain visible. Direct document loads retain the full-page loading surface. Superseded navigation releases its loading token immediately; pending content and runtime errors remain visible through their existing loading and error surfaces.
+Route and document loading use the full-window shade. The loading message appears below the spinner with the same delayed reveal and remains available while accepted navigation prepares providers, imports its entry, validates the session and mounts content. Superseded navigation releases its token immediately. Completion and failures clear loading feedback through the existing error surfaces. Background translation reads do not change the selected language.
 
 Each shell composition requests current preferences once for theme and language controls and schedules one avatar refresh after provider readiness. Unchanged avatar nodes remain mounted. Late avatar results are rejected after account, token, provider or refresh changes. No private-response cache is introduced.
 

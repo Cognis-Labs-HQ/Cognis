@@ -24,9 +24,11 @@ function createPool(
             })) as PostgresPool["query"]),
         connect:
             options.connect ??
-            (async () => {
-                throw new Error("Unexpected pool connection");
-            }),
+            (async () =>
+                createClient(
+                    options.query ?? (async () => ({ rows: [], rowCount: 0 })),
+                    () => undefined,
+                )),
         end: options.end ?? (async () => undefined),
     };
 }
