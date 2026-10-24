@@ -11,3 +11,5 @@ Today, This Week, This Month and This Year show an active state when the selecte
 Month view aligns day-add controls and removes the box around the date number. Narrow layouts place the add control below the date to keep both usable.
 
 ## Commits
+
+- [8344a8cd792cd7cba95f8098231972de2276f159](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344a8cd792cd7cba95f8098231972de2276f159)

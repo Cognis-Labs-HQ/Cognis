@@ -11,3 +11,5 @@ Hari Ini, Minggu Ini, Bulan Ini, dan Tahun Ini ditandai aktif saat periode yang 
 Tampilan bulan meratakan tombol penambahan acara dan menghapus kotak di sekitar angka tanggal. Pada tata letak sempit, tombol ditempatkan di bawah tanggal agar keduanya mudah digunakan.
 
 ## Komit
+
+- [8344a8cd792cd7cba95f8098231972de2276f159](https://github.com/Cognis-Labs-HQ/Cognis/commit/8344a8cd792cd7cba95f8098231972de2276f159)
