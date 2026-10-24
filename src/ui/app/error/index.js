@@ -47,7 +47,7 @@ function buildErrorContent(i18n, errorCode, errorMessage, isAuthenticated) {
         ? ""
         : `
             <div class="error-brand">
-                <img src="/static/assets/icons/cognis-icon-192.png" alt="" aria-hidden="true" class="error-brand-icon" />
+                <img src="/static/assets/icons/cognis-icon-384.png" alt="" aria-hidden="true" class="error-brand-icon" />
                 <span class="error-brand-name">${escapeHtml(i18n.t("ui.shared.brand.name"))}</span>
             </div>
         `;

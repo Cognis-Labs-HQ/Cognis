@@ -193,6 +193,7 @@ if (manifest["/static/app/offline/index.js"]) {
         "/static/assets/reuse/clipboard.svg",
         "/static/assets/icons/cognis-logo.webp",
         "/static/assets/icons/cognis-icon-192.png",
+        "/static/assets/icons/cognis-icon-384.png",
         "/static/assets/icons/cognis-icon-512.png",
     ]);
     const visitedOutputs = new Set();

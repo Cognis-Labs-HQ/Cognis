@@ -1,5 +1,5 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v7";
+const CACHE_VERSION = "v8";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const SHELL_URL = "/static/pages/offline.html";
@@ -120,6 +120,7 @@ self.addEventListener("install", (event) => {
                 [
                     SHELL_URL,
                     "/static/assets/icons/cognis-icon-192.png",
+                    "/static/assets/icons/cognis-icon-384.png",
                     "/static/assets/icons/cognis-icon-512.png",
                     ...assets,
                 ].map(async (asset) => {
