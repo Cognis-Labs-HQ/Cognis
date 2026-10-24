@@ -73,3 +73,31 @@ test("separate loader module instances share provider ownership", async (context
         undefined,
     );
 });
+
+test("only the mount-critical capability catalog opts into host preloading", async (context) => {
+    const lifecycle = uiCtx.capabilities.get("ui:providerLifecycle");
+    const originalReconcile = lifecycle.reconcile;
+    const originalFetch = globalThis.fetch;
+    const originalStorage = globalThis.localStorage;
+    const catalogs = [];
+    context.after(() => {
+        lifecycle.reconcile = originalReconcile;
+        globalThis.fetch = originalFetch;
+        globalThis.localStorage = originalStorage;
+        invalidateUiProviders();
+        invalidateNavbarPlugins();
+    });
+    lifecycle.reconcile = (providers, catalog, options) => {
+        catalogs.push([catalog, options.preload]);
+        return originalReconcile(providers, catalog, options);
+    };
+    globalThis.localStorage = { getItem: () => "test-token" };
+    globalThis.fetch = async () => Response.json({ data: [] });
+    invalidateUiProviders();
+    invalidateNavbarPlugins();
+    await ensureNavbarPluginsLoaded();
+    assert.deepEqual(catalogs, [
+        ["/api/v1/ui/capability-providers", true],
+        ["/api/v1/ui/navbar-plugins", false],
+    ]);
+});

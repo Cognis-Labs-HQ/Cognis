@@ -31,7 +31,7 @@ let providersLoadPromise = null;
 let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
 
-async function importCatalog(endpoint) {
+async function importCatalog(endpoint, { preload = false } = {}) {
     const response = await apiFetch(endpoint);
     if (response.status === 401) {
         await providerLifecycle.reconcile([], endpoint);
@@ -44,7 +44,7 @@ async function importCatalog(endpoint) {
     }
     const payload = await response.json();
     const providers = Array.isArray(payload.data) ? payload.data : [];
-    await providerLifecycle.reconcile(providers, endpoint);
+    await providerLifecycle.reconcile(providers, endpoint, { preload });
     return true;
 }
 
@@ -63,6 +63,7 @@ export async function ensureUiProvidersLoaded({ force = false } = {}) {
     providersLoadPromise = (async () => {
         providersLoaded = await importCatalog(
             "/api/v1/ui/capability-providers",
+            { preload: true },
         );
     })().finally(() => {
         providersLoadPromise = null;

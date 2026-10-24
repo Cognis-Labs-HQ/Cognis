@@ -15,3 +15,11 @@ Führen Sie drei Lighthouse-Messungen einer gehosteten Version aus und bewahren 
 | SPA-Navigation |       10 |                  100 KiB | 1.500 ms |  250 ms |
 
 Eine Optimierung wird erst akzeptiert, wenn dasselbe gehostete Protokoll keine Budgetverschlechterung gegenüber dem gespeicherten Basiswert zeigt. Untersuchen Sie zuerst Datenbankabfragen, Nutzdaten, Cache-Richtlinien und Anwendungsarbeit. Führen Sie Redis nur ein, wenn diese Messungen einen dauerhaften cachebaren Engpass belegen, den In-Process- und Web-Caches nicht lösen können.
+
+## Produktionsressourcen
+
+Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden als Build-Einstiegspunkte erzwungen; gewöhnliche statische Importe bleiben gebündelte Abhängigkeiten. Der UI-Build veröffentlicht deklarierte JavaScript-Beiträge des Hosts als Einstiegspunkte, auch wenn ein anderer Einstiegspunkt sie importiert. Registrierte statische Verzeichnisse von Gateways und Adaptern lösen ihre Deskriptoren zur passenden gebauten Quelldatei auf. Dadurch verwenden auch eigene URL-Präfixe die Produktionsbündel. Durch Konstruktionsabläufe ergänzte Einstellungsbereiche werden nach Autorisierung und Sichtbarkeitsprüfung über dasselbe Manifest aufgelöst. Jede Anfrage verwendet die aktuellen Deskriptoren; reine Quellressourcen und Modulressourcen mit Revisionsangaben behalten ihre maßgeblichen URLs.
+
+Die Auflösung verwendet das vorhandene Build-Manifest und speichert keine API-Antworten zwischen. Authentifizierung und Filter für aktivierte Komponenten bleiben bei Deskriptoranfragen wirksam. Reine Quellinstallationen, nicht gebaute Ressourcen, externe Verzeichnisse und Modul-URLs mit Revisionsangaben behalten ihre ursprünglichen Auslieferungspfade.
+
+Nur vor dem Seitenaufbau benötigte Kataloge aktivieren das Vorladen. Navigationsleistenkataloge laden weiterhin nach Bedarf, damit ihre Erkennung bei der Navigation keine parallelen Hintergrundanfragen auslöst. Nach der authentifizierten Erkennung lädt der Provider-Lader unveränderliche Host-Bündel vorab, während Importe und Einbindungen weiterhin nacheinander erfolgen. Vorladelinks werden nach Abschluss oder Fehlern entfernt. Aktive Provider werden nicht erneut vorgeladen; externe Modul-, Quell- und revisionsbezogene URLs behalten ihren bisherigen Importpfad.
