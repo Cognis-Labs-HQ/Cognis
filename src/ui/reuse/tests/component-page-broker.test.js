@@ -127,16 +127,12 @@ test("component windows stay disposable across activation and SPA navigation", a
     let mountedComponentPage = null;
     let releasedMount = false;
     let routeLoadGate = null;
-    const entryModuleUrl = new URL("../page-entry.js", import.meta.url).href;
-    const directEntrySource = `
-        import { mountWhenDirect } from ${JSON.stringify(entryModuleUrl)};
-        export async function mount(root) {
-            globalThis.__componentPageMountRoots.push(root);
-            return () => globalThis.__componentPageDiscards++;
-        }
-        await mountWhenDirect(mount);
-    `;
-    const directEntryUrl = `data:text/javascript,${encodeURIComponent(directEntrySource)}`;
+    let routeStylesheets = [];
+    let routeLoadCount = 0;
+    const directEntryUrl = new URL(
+        "./fixtures/component-page-entry.js",
+        import.meta.url,
+    ).href;
     globalThis.__componentPageMountRoots = [];
     globalThis.__componentPageDiscards = 0;
     globalThis.__componentPageScroll = null;
@@ -158,7 +154,9 @@ test("component windows stay disposable across activation and SPA navigation", a
             return routeId === "core.dashboard"
                 ? {
                       id: routeId,
+                      stylesheets: routeStylesheets,
                       load: async () => {
+                          routeLoadCount += 1;
                           await routeLoadGate;
                           return {
                               mount: async (root, options) => {
@@ -467,6 +465,31 @@ test("component windows stay disposable across activation and SPA navigation", a
     window.dispatchEvent({ type: "cognis:route-will-change" });
     releaseRouteLoad();
     assert.equal(await racingSpawn, null);
+    assert.equal(componentStage.children.length, 0);
+
+    // A discarded window must finish its flow even when CSS never emits load/error.
+    const styleAppended = Promise.withResolvers();
+    const pendingStyleHead = new FakeElement();
+    pendingStyleHead.querySelectorAll = () => pendingStyleHead.children;
+    pendingStyleHead.appendChild = (link) => {
+        pendingStyleHead.append(link);
+        styleAppended.resolve();
+    };
+    document.head = pendingStyleHead;
+    routeStylesheets = ["/delayed-component.css"];
+    const loadedBeforeCancellation = routeLoadCount;
+    const cssNavigation = new AbortController();
+    const cssPendingSpawn = spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        signal: cssNavigation.signal,
+    });
+    await styleAppended.promise;
+    cssNavigation.abort();
+    assert.equal(await cssPendingSpawn, null);
+    assert.equal(routeLoadCount, loadedBeforeCancellation);
+    assert.equal(pendingStyleHead.children.length, 0);
     assert.equal(componentStage.children.length, 0);
 });
 

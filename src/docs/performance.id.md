@@ -26,7 +26,7 @@ Hanya katalog yang diperlukan sebelum pemasangan halaman yang mengaktifkan pramu
 
 ## Navigasi Tetap Terlihat
 
-Pemuatan rute menutupi ruang kerja yang terdampak sementara bagian kepala dan navigasi tetap terlihat. Pemuatan dokumen langsung tetap memakai tampilan pemuatan seluruh halaman. Navigasi yang digantikan segera melepaskan token pemuatannya; konten tertunda dan galat tetap ditampilkan melalui tampilan pemuatan dan galat yang tersedia.
+Pemuatan rute dan dokumen memakai lapisan seluruh jendela. Pesan pemuatan muncul di bawah indikator putar dengan penundaan tampilan yang sama, selama navigasi yang diterima menyiapkan penyedia, mengimpor halaman, memvalidasi sesi, dan memasang konten. Navigasi yang digantikan segera melepaskan tokennya. Penyelesaian dan kegagalan menghapus tampilan pemuatan melalui tampilan galat yang tersedia. Pembacaan terjemahan di latar belakang tidak mengubah bahasa yang dipilih.
 
 Setiap penyusunan antarmuka mengambil preferensi terkini satu kali untuk kontrol tema dan bahasa serta menjadwalkan satu pembaruan avatar setelah penyedia siap. Elemen avatar yang tidak berubah dipertahankan. Hasil terlambat ditolak setelah akun, token, penyedia, atau pembaruan berubah. Tidak ada cache respons pribadi baru.
 
