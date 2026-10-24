@@ -19,3 +19,7 @@ Calendar folgt dem bewährten Lebenszyklus für Meeting-Freigaben: Share entfern
 ## Verfügbarkeitsstatus
 
 Kalendertermine aktualisieren die Verfügbarkeit eines Benutzers, wenn sie beginnen oder im aktuellen Zeitraum erstellt werden. Ein danach manuell gewählter Status hat Vorrang, bis ein weiterer Termin beginnt. Benutzer können kalendergesteuerte Statusaktualisierungen unter Benutzereinstellungen → Allgemein deaktivieren.
+
+## Alte Kalenderaufrufe stoppen
+
+Beim Verlassen des Kalenders wird überholte Initialisierung vor Änderungen an Seite oder URL beendet. Das Routensignal erreicht den Seitenaufbau; verspätete Kalender-, Ereignis- und Einladungsantworten können eine bereits ersetzte Zielseite nicht erneut aufbauen. Abgebrochene Initialisierung zeigt keine verspätete Fehlermeldung und startet den Verfügbarkeitstimer nicht erneut.

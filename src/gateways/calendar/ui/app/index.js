@@ -18,6 +18,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
     });
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "gateway.calendar.page_title");
 
     if (shareContext?.guestAccessToken) {
@@ -123,6 +124,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     }
 
     async function reloadState() {
+        if (signal?.aborted) return;
         if (shareContext?.payload?.calendar) {
             const sharedCalendar = {
                 ...shareContext.payload.calendar,
@@ -142,6 +144,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
             return;
         }
         const calendarState = await calendarUi.fetchCalendarState();
+        if (signal?.aborted) return;
         calendarUi.setEventStatusOptions(
             calendarState.meta.availabilityStatuses,
         );
@@ -158,6 +161,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 }),
             ]),
         );
+        if (signal?.aborted) return;
         calendars = calendars.map((calendar, index) => ({
             ...calendar,
             secretsUnavailable:
@@ -176,6 +180,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
             console.warn("Failed to load pending invitations:", err);
             pendingInvitations = [];
         }
+        if (signal?.aborted) return;
         scheduleAvailabilityBoundaryRefresh();
     }
 
@@ -196,8 +201,11 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     try {
         await reloadState();
     } catch {
+        if (signal?.aborted) return;
         showToast(i18n.t("gateway.calendar.load_failed"), "error");
     }
+
+    if (signal?.aborted) return;
 
     function allCalendarEvents() {
         const calendarById = new Map(
@@ -220,6 +228,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     }
 
     function scheduleAvailabilityBoundaryRefresh() {
+        if (signal?.aborted) return;
         window.clearTimeout(availabilityBoundaryTimer);
         const now = Date.now();
         const nextBoundary = allCalendarEvents()
@@ -468,6 +477,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     );
 
     composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         requireAccountSession: !shareContext,
         elements: [
@@ -795,6 +805,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     }
 
     await composer.init();
+    if (signal?.aborted) return;
     syncRouteSelection();
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);
