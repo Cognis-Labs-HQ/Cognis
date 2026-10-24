@@ -137,7 +137,7 @@ test("service worker installation retains install icons within its precache imag
                 if (url === "/static/offline-manifest.json")
                     return Response.json([]);
                 if (url === "/api/v1/ui/offline-routes")
-                    return Response.json({ data: [] });
+                    return Response.json({ data: [], offlineGuards: [] });
                 if (url.startsWith("/static/assets/"))
                     images.set(url, await imageBytes(route, url));
                 return new Response("public asset");

@@ -1,3 +1,5 @@
+import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
+import * as offlineDelivery from "../../../ui/reuse/offline-delivery.js";
 import * as offlineReadCache from "../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
@@ -8,6 +10,7 @@ test("favourite success toasts follow persisted add/remove state", async () => {
     let saved = [];
     const toasts = [];
     const ctx = vm.createContext({
+        crypto,
         apiFetch: async (_url, options) => {
             if (options?.method === "PUT") {
                 const item = JSON.parse(options.body);
@@ -24,6 +27,8 @@ test("favourite success toasts follow persisted add/remove state", async () => {
         loadTestModule(
             new URL("../ui/reuse/favourites.js", import.meta.url),
             {
+                "/static/reuse/offline-delivery.js": offlineDelivery,
+                "/static/reuse/ui-ctx.js": { uiCtx },
                 "/static/reuse/offline-read-cache.js": offlineReadCache,
                 "/static/reuse/api-client.js": ctx,
                 "/static/reuse/escape-html.js": ctx,

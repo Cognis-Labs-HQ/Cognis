@@ -1,3 +1,5 @@
+import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
+import * as offlineDelivery from "../../../../ui/reuse/offline-delivery.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
@@ -12,6 +14,7 @@ function clientFixture() {
     });
     const saved = { completed: true, hiddenStrokeCount: 1 };
     const environment = {
+        crypto,
         apiFetch: async (path, options = {}) => {
             requests.push({ path, options });
             if (options.method === "POST") await pending;
@@ -21,6 +24,8 @@ function clientFixture() {
     environment.client = loadTestModule(
         new URL("../../ui/drawing-client.js", import.meta.url),
         {
+            "/static/reuse/offline-delivery.js": offlineDelivery,
+            "/static/reuse/ui-ctx.js": { uiCtx },
             "/static/reuse/offline-state.js": offlineState,
             "/static/reuse/api-client.js": environment,
         },

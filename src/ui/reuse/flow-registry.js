@@ -11,7 +11,7 @@
  *   Validates the stored browser session and produces a normalised session
  *   descriptor used by page-entry and the SPA router.
  *   Stages: validate-stored-token → apply-alternate-auth →
- *           enforce-setup-requirements → resolve-session
+ *           enforce-setup-requirements → resolve-session → afterSession
  *
  * `navigate-to` (owner: ui)
  *   Drives a full SPA navigation: route resolution, auth enforcement, asset

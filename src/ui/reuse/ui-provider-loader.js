@@ -1,3 +1,4 @@
+import { offlinePolicy } from "./offline-policy.js";
 /**
  * Loads every active host browser capability provider before dependent UI mounts.
  *
@@ -44,6 +45,12 @@ async function importCatalog(endpoint, { preload = false } = {}) {
     }
     const payload = await response.json();
     const providers = Array.isArray(payload.data) ? payload.data : [];
+    if (endpoint === "/api/v1/ui/capability-providers")
+        offlinePolicy.configure(
+            providers
+                .map((provider) => provider.offlineAccessGuard)
+                .filter(Boolean),
+        );
     await providerLifecycle.reconcile(providers, endpoint, { preload });
     return true;
 }

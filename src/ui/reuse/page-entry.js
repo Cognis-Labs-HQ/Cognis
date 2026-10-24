@@ -351,6 +351,16 @@ export async function mountWhenDirect(
         const mountWithProviders = async (mountRoot) => {
             await ensureHostUiProviders();
             if (controller.signal.aborted) return;
+            if (
+                uiCtx.capabilities.get("offline:state")?.isOffline() &&
+                uiCtx.capabilities.get("offline:accessPolicy")?.allows() !==
+                    true
+            ) {
+                window.dispatchEvent(
+                    new CustomEvent("cognis:offline-policy-changed"),
+                );
+                return;
+            }
             return mount(mountRoot, { signal: controller.signal });
         };
         if (

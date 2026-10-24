@@ -66,6 +66,17 @@ test("the anonymous offline catalog contains only enabled explicit public opt-in
         base: "/disabled",
         isEnabled: () => false,
     });
+    registry.registerCapabilityProvider({
+        scriptUrl: "/static/legal.js",
+        providesCapabilities: ["legal:consent"],
+        offlineAccessGuard: "terms-of-service",
+    });
+    registry.registerCapabilityProvider({
+        scriptUrl: "/static/disabled-legal.js",
+        providesCapabilities: ["disabled:consent"],
+        offlineAccessGuard: "disabled",
+        isEnabled: () => false,
+    });
     const response = createResponseRecorder();
     await createUiRoutes(undefined, registry)(
         { method: "GET", headers: {} } as import("node:http").IncomingMessage,
@@ -74,6 +85,9 @@ test("the anonymous offline catalog contains only enabled explicit public opt-in
     );
     assert.equal(response.status, 200);
     assert.equal(response.headers["cache-control"], "no-store");
+    assert.deepEqual(JSON.parse(response.body).offlineGuards, [
+        "terms-of-service",
+    ]);
     const routes = JSON.parse(response.body).data;
     assert.deepEqual(
         routes.map((route: { id: string }) => route.id),

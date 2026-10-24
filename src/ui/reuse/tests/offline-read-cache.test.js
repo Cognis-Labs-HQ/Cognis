@@ -13,6 +13,7 @@ function fixture(options = {}) {
     const module = loadTestModule(
         new URL("../offline-read-cache.js", import.meta.url),
         {
+            "./offline-policy.js": { offlinePolicy: { allows: () => true } },
             "./offline-state.js": {
                 isOffline: () => offline && enabled,
                 offlineEnabled: () => enabled,

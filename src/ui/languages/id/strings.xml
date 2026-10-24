@@ -620,4 +620,9 @@
     <string name="ui.reuse.offline_page_unavailable">Halaman ini tidak tersedia secara offline. Sambungkan kembali untuk melanjutkan.</string>
     <string name="ui.app.settings.offline_enabled">Mode Offline</string>
     <string name="ui.app.settings.offline_enabled_hint">Halaman tersimpan yang didukung dan konten Study ringan tetap tersedia saat koneksi terputus. Audio, permintaan kamus, dan penyimpanan memerlukan koneksi. Nonaktifkan untuk mempertahankan pesan kesalahan koneksi.</string>
+    <string name="ui.reuse.offline_access_required">Akses Offline Perlu Peninjauan</string>
+    <string name="ui.reuse.offline_access_required_body">Sambungkan kembali untuk meninjau dan menyetujui dokumen wajib terbaru sebelum memakai mode offline.</string>
+    <string name="ui.reuse.retry">Coba lagi</string>
+    <string name="ui.reuse.offline_changes_queued">Perubahan Diantrekan untuk Koneksi Berikutnya</string>
+    <string name="ui.reuse.offline_sync_rejected">Sebagian aktivitas antrean tidak dapat diterapkan.</string>
 </resources>

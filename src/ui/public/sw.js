@@ -1,15 +1,22 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v9";
+const CACHE_VERSION = "v10";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const SHELL_URL = "/static/pages/offline.html";
 const CATALOG_URL = "/__cognis_offline_catalog__";
+const REQUIREMENTS_URL = "/__cognis_offline_requirements__";
+const ACCESS_URL = "/__cognis_offline_access__";
 const PREFERENCE_URL = "/__cognis_offline_preference__";
 
 async function offlineEnabled() {
     const cache = await caches.open(CACHE_NAME);
     const preference = await cache.match(PREFERENCE_URL);
-    return !preference || (await preference.json()).enabled !== false;
+    if (preference && (await preference.json()).enabled === false) return false;
+    const requirements = await cache.match(REQUIREMENTS_URL);
+    if (!requirements) return false;
+    if (!(await requirements.json()).length) return true;
+    const access = await cache.match(ACCESS_URL);
+    return Boolean(access && (await access.json()).allowed === true);
 }
 
 let catalogPromise;
@@ -88,6 +95,7 @@ async function refreshCatalog() {
     );
     if (generation !== catalogGeneration) return [];
     const cache = await caches.open(CACHE_NAME);
+    await cache.put(REQUIREMENTS_URL, Response.json(payload.offlineGuards));
     const allowed = new Set(routes.flatMap(routeAssets).map(assetKey));
     for (const request of await cache.keys()) {
         if (
@@ -173,6 +181,22 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
     const reply = event.ports?.[0];
     const task = (async () => {
+        if (event.data?.type === "COGNIS_OFFLINE_REQUIREMENTS") {
+            const response = await (
+                await caches.open(CACHE_NAME)
+            ).match(REQUIREMENTS_URL);
+            if (!response) throw new Error("offline_requirements_unavailable");
+            return response.json();
+        }
+        if (event.data?.type === "COGNIS_OFFLINE_ACCESS") {
+            await (
+                await caches.open(CACHE_NAME)
+            ).put(
+                ACCESS_URL,
+                Response.json({ allowed: event.data.allowed === true }),
+            );
+            return null;
+        }
         if (event.data?.type === "COGNIS_OFFLINE_PREFERENCE") {
             const cache = await caches.open(CACHE_NAME);
             await cache.put(
@@ -205,6 +229,7 @@ self.addEventListener("message", (event) => {
             catalogGeneration += 1;
             catalogPromise = Promise.resolve([]);
             await cache.delete(CATALOG_URL);
+            await cache.delete(ACCESS_URL);
             for (const request of await cache.keys()) {
                 if (
                     new URL(request.url).pathname.startsWith("/static/modules/")

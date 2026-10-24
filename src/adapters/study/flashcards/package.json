@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-study-flashcards",
-    "version": "1.5.15",
+    "version": "1.5.16",
     "private": true,
     "type": "module",
     "description": "Shareable Study flashcard decks, learner schedules and Anki TSV exchange.",

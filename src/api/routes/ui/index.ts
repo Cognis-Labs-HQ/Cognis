@@ -650,6 +650,9 @@ export function createUiRoutes(
             res.end(
                 JSON.stringify({
                     data: versionDescriptor(routes, ASSET_VERSION),
+                    offlineGuards: (uiRegistry?.listCapabilityProviders() ?? [])
+                        .map((provider) => provider.offlineAccessGuard)
+                        .filter(Boolean),
                 }),
             );
             return true;

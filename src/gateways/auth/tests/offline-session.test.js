@@ -1,3 +1,4 @@
+import { registerOfflineRuntime } from "../../../ui/reuse/offline-runtime.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -21,6 +22,7 @@ function fixture() {
         new URL("../../../ui/reuse/ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
+            "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": { createReuseResources },
             "./sub-page-registry.js": { createSubPageRegistry },
         },

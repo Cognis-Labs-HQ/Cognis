@@ -145,6 +145,14 @@ function scheduleRecovery() {
                 signal: AbortSignal.timeout(4000),
             });
             if (response.ok) {
+                setOffline(false);
+                const tasks = [];
+                window.dispatchEvent(
+                    new CustomEvent("cognis:connection-restoring", {
+                        detail: { waitUntil: (task) => tasks.push(task) },
+                    }),
+                );
+                await Promise.all(tasks);
                 await offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES");
                 const resume = () => window.location.reload();
                 if (
@@ -159,6 +167,7 @@ function scheduleRecovery() {
                 return;
             }
         } catch (error) {
+            setOffline(true);
             console.info("[offline] server still unavailable", {
                 operation: "recoveryProbe",
             });

@@ -1,3 +1,4 @@
+import { offlinePolicy } from "./offline-policy.js";
 import { uiCtx } from "./ui-ctx.js";
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 
@@ -37,7 +38,8 @@ uiCtx.extendFlow(
     ({ input }) => ({
         allowed:
             !input.signal?.aborted &&
-            (!isOffline() || offlineRouteAvailable(input.route)),
+            (!isOffline() ||
+                (offlinePolicy.allows() && offlineRouteAvailable(input.route))),
     }),
 );
 uiCtx.extendFlow(

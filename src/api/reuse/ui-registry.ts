@@ -62,6 +62,7 @@ export interface NavbarPlugin {
 }
 
 export interface UiCapabilityProvider {
+    offlineAccessGuard?: string;
     scriptUrl: string;
     providesCapabilities: string[];
     isEnabled?: () => boolean;

@@ -1,3 +1,5 @@
+import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
+import * as offlineDelivery from "../../../../ui/reuse/offline-delivery.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -19,9 +21,11 @@ async function session(testContext, request, dependencies = {}) {
             "/static/reuse/offline-read-cache.js":
                 dependencies.offlineReadCache ?? offlineReadCache,
             "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/offline-delivery.js":
+                dependencies.offlineDelivery ?? offlineDelivery,
             "/static/reuse/api-client.js": { apiFetch: request },
         },
-        { AbortSignal, URL, Blob, URLSearchParams },
+        { AbortSignal, URL, Blob, URLSearchParams, crypto },
     );
     const scoped = { scriptUrl: "/scoped.js" };
     const provider = { scriptUrl: "/library.js" };
@@ -39,7 +43,20 @@ async function session(testContext, request, dependencies = {}) {
         importProvider: async (url) =>
             url === scoped.scriptUrl
                 ? { mountProvider: mountScopedActions }
-                : { mountProvider: owner.mountProvider },
+                : {
+                      mountProvider: (ctx) =>
+                          owner.mountProvider({
+                              ...ctx,
+                              capabilities: {
+                                  ...ctx.capabilities,
+                                  get: (id) =>
+                                      id === "offline:outbox" &&
+                                      dependencies.outbox
+                                          ? dependencies.outbox
+                                          : ctx.capabilities.get(id),
+                              },
+                          }),
+                  },
     });
     await providers.reconcile([scoped, provider]);
     testContext.after(() => providers.reconcile([]));
@@ -321,7 +338,10 @@ test("registered Library flows restore opted-in character data and stop media, d
     };
     const cache = loadTestModule(
         new URL("../../../../ui/reuse/offline-read-cache.js", import.meta.url),
-        { "./offline-state.js": state },
+        {
+            "./offline-state.js": state,
+            "./offline-policy.js": { offlinePolicy: { allows: () => true } },
+        },
         { console },
     );
     const schema = {
@@ -369,4 +389,33 @@ test("registered Library flows restore opted-in character data and stop media, d
     ])
         await assert.rejects(action(), /offline_operation_unavailable/);
     assert.equal(requests, count);
+});
+
+test("viewed-card updates queue through their registered flow and deliver on reconnect", async (testContext) => {
+    const requests = [];
+    const fixture = createOfflineClientFixture(async (path, options) => {
+        requests.push({ path, body: JSON.parse(options.body) });
+        return { ok: true };
+    });
+    const { client } = await session(
+        testContext,
+        fixture.imports["/static/reuse/api-client.js"].apiFetch,
+        {
+            outbox: fixture.outbox,
+            offlineState: fixture.imports["/static/reuse/offline-state.js"],
+            offlineReadCache:
+                fixture.imports["/static/reuse/offline-read-cache.js"],
+            offlineDelivery:
+                fixture.imports["/static/reuse/offline-delivery.js"],
+        },
+    );
+    fixture.disconnect();
+    assert.equal(
+        (await client.markLibraryEntriesViewed(["character"])).queued,
+        true,
+    );
+    assert.equal(requests.length, 0);
+    fixture.reconnect();
+    assert.equal((await fixture.outbox.flush()).sent, 1);
+    assert.deepEqual(requests[0].body, { entryIds: ["character"] });
 });

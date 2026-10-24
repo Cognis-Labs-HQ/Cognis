@@ -15,6 +15,7 @@
  */
 
 export const BROWSER_FLOW_CONTRACTS = Object.freeze({
+    "activity:record": Object.freeze(["capture"]),
     "declare-focus-surfaces": Object.freeze(["collect", "validate"]),
     "authorize-focus-operation": Object.freeze(["resolve-scope", "authorize"]),
     "start-focus": Object.freeze(["authorize", "create-session", "publish"]),
@@ -43,6 +44,7 @@ export const BROWSER_FLOW_CONTRACTS = Object.freeze({
         "apply-alternate-auth",
         "enforce-setup-requirements",
         "resolve-session",
+        "afterSession",
     ]),
     "navigate-to": Object.freeze([
         "resolve-route",

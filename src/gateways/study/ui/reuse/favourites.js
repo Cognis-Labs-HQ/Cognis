@@ -1,3 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 /**
  * Shared Study favourites and browse sorting for Library cards and flashcard decks.
@@ -12,6 +14,30 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 
 const read = createOfflineReadCache();
+
+export function registerFavouriteDelivery(ctx) {
+    const outbox = ctx.capabilities.get("offline:outbox");
+    if (!outbox) throw new Error("offline_delivery_unavailable");
+    return outbox.register(
+        "study.favourites",
+        (input) => saveFavourite(input, ctx.signal),
+        ctx.signal,
+    );
+}
+
+async function saveFavourite(input, signal) {
+    const response = await apiFetch("/api/v1/study/favourites", {
+        method: "PUT",
+        signal,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+    });
+    if (!response.ok)
+        throw Object.assign(new Error("favourites_failed"), {
+            status: response.status,
+        });
+    return (await response.json()).data;
+}
 
 let active = new Set();
 const key = (kind, id) => `${kind}:${id}`;
@@ -35,6 +61,15 @@ export async function loadFavourites({ signal } = {}) {
         return (await response.json()).data;
     });
     active = new Set(favourites.map((item) => key(item.kind, item.id)));
+    if (uiCtx.capabilities.get("offline:state")?.isOffline()) {
+        const pending = await uiCtx.capabilities
+            .get("offline:outbox")
+            .pending("study.favourites");
+        for (const { payload } of pending) {
+            if (payload.favourite) active.add(key(payload.kind, payload.id));
+            else active.delete(key(payload.kind, payload.id));
+        }
+    }
     const refresh = (root) =>
         root.querySelectorAll("[data-study-favourite]").forEach((button) => {
             const selected = active.has(
@@ -65,30 +100,28 @@ export async function loadFavourites({ signal } = {}) {
                         const kind = button.dataset.studyFavouriteKind;
                         const id = button.dataset.studyFavourite;
                         const selected = !active.has(key(kind, id));
-                        const response = await apiFetch(
-                            "/api/v1/study/favourites",
-                            {
-                                method: "PUT",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({
-                                    kind,
-                                    id,
-                                    favourite: selected,
-                                }),
-                            },
+                        const result = await deliverOrQueue(
+                            uiCtx,
+                            "study.favourites",
+                            crypto.randomUUID(),
+                            { kind, id, favourite: selected },
+                            saveFavourite,
                         );
-                        if (!response.ok) throw new Error("favourites_failed");
-                        active = new Set(
-                            (await response.json()).data.map((item) =>
-                                key(item.kind, item.id),
-                            ),
-                        );
+                        if (result?.queued) {
+                            if (selected) active.add(key(kind, id));
+                            else active.delete(key(kind, id));
+                        } else
+                            active = new Set(
+                                result.map((item) => key(item.kind, item.id)),
+                            );
                         refresh(root);
                         showToast(
                             i18n.t(
-                                selected
-                                    ? "gateway.study.favourite_added"
-                                    : "gateway.study.favourite_removed",
+                                result?.queued
+                                    ? "ui.reuse.offline_changes_queued"
+                                    : selected
+                                      ? "gateway.study.favourite_added"
+                                      : "gateway.study.favourite_removed",
                             ),
                             { variant: "success" },
                         );

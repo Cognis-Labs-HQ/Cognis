@@ -2,7 +2,7 @@
     "id": "flashcards",
     "uuid": "f63db4ab-9326-42c9-8a4c-73527d7a19d1",
     "name": "Flashcards",
-    "version": "1.5.15",
+    "version": "1.5.16",
     "publisher": "Cognis Labs HQ",
     "gateway": "study",
     "requires": [

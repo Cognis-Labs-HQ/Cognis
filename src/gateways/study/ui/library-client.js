@@ -1,3 +1,4 @@
+import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -62,7 +63,10 @@ async function executeMarkLibraryEntriesViewed(request, entryIds) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryIds }),
     });
-    if (!response.ok) throw new Error("mark_viewed_failed");
+    if (!response.ok)
+        throw Object.assign(new Error("mark_viewed_failed"), {
+            status: response.status,
+        });
 }
 
 async function executeFetchLibraryAudioUrl(
@@ -495,6 +499,18 @@ export function registerLibraryClient(ctx) {
         "fetchLibraryEntry",
         "fetchViewedLibraryEntryIds",
     ]);
+    const outbox = ctx.capabilities.get("offline:outbox");
+    if (!outbox) throw new Error("offline_delivery_unavailable");
+    outbox.register(
+        "study.viewed",
+        ({ entryIds }) =>
+            executeMarkLibraryEntriesViewed(
+                (path, options) =>
+                    apiFetch(path, { ...options, signal: ctx.signal }),
+                entryIds,
+            ),
+        ctx.signal,
+    );
     const actions = registerActions(
         ctx,
         "study:library",
@@ -528,6 +544,14 @@ export function registerLibraryClient(ctx) {
                                     ]),
                                 }),
                             ...input.args,
+                        );
+                    if (name === "markLibraryEntriesViewed")
+                        return deliverOrQueue(
+                            ctx,
+                            "study.viewed",
+                            crypto.randomUUID(),
+                            { entryIds: input.args[0] },
+                            load,
                         );
                     if (offlineReads.has(name)) {
                         const result = await read(

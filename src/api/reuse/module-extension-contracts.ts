@@ -59,6 +59,7 @@ export interface ModuleUiRegistrationContext {
             | string,
     ): void;
     registerCapabilityProvider(provider: {
+        offlineAccessGuard?: string;
         scriptUrl: string;
         providesCapabilities: string[];
     }): void;

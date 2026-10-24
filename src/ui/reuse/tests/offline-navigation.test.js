@@ -10,6 +10,7 @@ const navigation = loadTestModule(
     new URL("../offline-navigation.js", import.meta.url),
     {
         "./ui-ctx.js": { uiCtx },
+        "./offline-policy.js": { offlinePolicy: { allows: () => true } },
         "./offline-state.js": {
             isOffline: () => offline,
             offlineWorkerRequest: async (type) => workerRequests.push(type),

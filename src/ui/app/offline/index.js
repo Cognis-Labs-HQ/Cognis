@@ -1,3 +1,5 @@
+import { offlinePolicy } from "../../reuse/offline-policy.js";
+import { offlineWorkerRequest } from "../../reuse/offline-state.js";
 import { setOffline } from "../../reuse/offline-state.js";
 import { initRouter, navigateTo } from "../../reuse/app-router.js";
 import { loadWithSpaImportGuard } from "../../reuse/page-entry.js";
@@ -6,6 +8,9 @@ console.info("offline:restoreShell", {
     component: "ui",
     operation: "offlineBoot",
 });
+offlinePolicy.configure(
+    await offlineWorkerRequest("COGNIS_OFFLINE_REQUIREMENTS"),
+);
 setOffline(true);
 globalThis.__cognisPublicSpaRoute = true;
 const root = document.querySelector("#app");

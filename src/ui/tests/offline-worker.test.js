@@ -10,6 +10,7 @@ function workerFixture() {
     const messages = [];
     let unavailable = false;
     let routes = [];
+    let offlineGuards = [];
     const origin = "https://cognis.test";
     const key = (request) =>
         new URL(typeof request === "string" ? request : request.url, origin)
@@ -73,7 +74,7 @@ function workerFixture() {
                 if (url.endsWith("/static/offline-manifest.json"))
                     return Response.json(["/assets/entry-ABCDEFGH.js"]);
                 if (url.endsWith("/api/v1/ui/offline-routes"))
-                    return Response.json({ data: routes });
+                    return Response.json({ data: routes, offlineGuards });
                 return new Response(
                     url.endsWith("/private")
                         ? "private document"
@@ -97,6 +98,9 @@ function workerFixture() {
         },
         set routes(value) {
             routes = value;
+        },
+        set guards(value) {
+            offlineGuards = value;
         },
         async lifecycle(type) {
             let task;
@@ -243,4 +247,31 @@ test("disabled offline behavior uses the network and never serves cached documen
         0,
     );
     assert.equal(fixture.messages.length, 0);
+});
+
+test("required legal guards deny cached fallback until a current access receipt is supplied", async () => {
+    const fixture = workerFixture();
+    fixture.guards = ["terms-of-service"];
+    await fixture.lifecycle("install");
+    assert.deepEqual(
+        Array.from(
+            (await fixture.message("COGNIS_OFFLINE_REQUIREMENTS")).result,
+        ),
+        ["terms-of-service"],
+    );
+    fixture.unavailable = true;
+    await assert.rejects(
+        fixture.request("/private", "navigate"),
+        /server_unreachable/,
+    );
+    await fixture.message("COGNIS_OFFLINE_ACCESS", { allowed: true });
+    assert.equal(
+        await (await fixture.request("/private", "navigate")).text(),
+        "public asset",
+    );
+    await fixture.message("COGNIS_OFFLINE_ACCESS", { allowed: false });
+    await assert.rejects(
+        fixture.request("/assets/entry-ABCDEFGH.js"),
+        /server_unreachable/,
+    );
 });

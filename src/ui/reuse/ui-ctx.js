@@ -27,6 +27,7 @@
  * ```
  */
 
+import { registerOfflineRuntime } from "./offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
 import { createSubPageRegistry } from "./sub-page-registry.js";
@@ -176,6 +177,8 @@ uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
     if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);
 }
+
+registerOfflineRuntime(uiCtx);
 
 export const { registerFlow, extendFlow, removeFlowHook, runFlow, flowExists } =
     uiCtx;

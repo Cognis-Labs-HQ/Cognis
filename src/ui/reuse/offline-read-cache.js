@@ -1,3 +1,4 @@
+import { offlinePolicy } from "./offline-policy.js";
 /**
  * Bounded, session-only snapshots for explicitly selected lightweight reads.
  * Public exports: createOfflineReadCache — create a component-owned read cache.
@@ -51,7 +52,11 @@ export function createOfflineReadCache({
                 throw new Error("offline_read_unavailable");
             return JSON.parse(snapshot);
         };
-        if (isOffline()) return restore();
+        if (isOffline()) {
+            if (!offlinePolicy.allows())
+                throw new Error("offline_access_denied");
+            return restore();
+        }
         const loadGeneration = generation;
         let result;
         try {
@@ -69,6 +74,8 @@ export function createOfflineReadCache({
             console.info("[offline] restoring lightweight read", {
                 operation: "restoreRead",
             });
+            if (!offlinePolicy.allows())
+                throw new Error("offline_access_denied");
             return restore();
         } finally {
             pending.delete(key);
