@@ -2,9 +2,9 @@
 
 **Feature-Zweig:** test-calendar-error-reporting
 
-## Einzelne Fehlermeldungen
+## Einzelne Kalenderaktionen
 
-Regressionstests prüfen, dass wiederholtes Einrichten der Fehlerbehandlung einen Übersetzungsfehler im Kalender nur einmal meldet und andere spätere Fehler weiterhin sichtbar bleiben.
+Ereignisbehandler der Kalenderansicht gelten nur für einen Rendervorgang. Größenänderungen und erneutes Rendern ersetzen die bisherigen Behandler, sodass ein Klick nur ein Formular öffnet. Beim Navigieren werden sie entfernt; andere Behandler und unterschiedliche Fehlermeldungen bleiben erhalten.
 
 ## Commits
 

@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import * as renderScope from "../../ui/app/render-scope.js";
 
 export async function loadCalendarMount({ hold, signal }) {
     const reached = [];
@@ -10,6 +11,7 @@ export async function loadCalendarMount({ hold, signal }) {
     const contracts = {
         "../offline-client.js": { calendarFetch: unexpected },
         "/static/reuse/offline-state.js": { isOffline: () => false },
+        "./render-scope.js": renderScope,
         "/static/reuse/i18n.js": {
             createI18n: async () => {
                 reached.push("locale");

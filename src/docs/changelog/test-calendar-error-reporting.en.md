@@ -2,9 +2,9 @@
 
 **Feature Branch:** test-calendar-error-reporting
 
-## Single Error Reports
+## Single Calendar Actions
 
-Regression coverage verifies that repeated handler installation reports a Calendar translation failure once, while distinct later failures remain visible.
+Calendar view listeners now belong to one render. Resizing or re-rendering replaces the previous listeners, so one date-add click opens one form. Navigation removes those listeners without removing unrelated handlers. Distinct runtime errors remain visible.
 
 ## Commits
 
