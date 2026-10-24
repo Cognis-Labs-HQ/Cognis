@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadTestModule } from "../../tooling/reuse/test-module.ts";
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
 test("repeated handler installation reports one Calendar rejection and preserves distinct failures", async () => {
     const registrations = new Map();
@@ -35,7 +35,7 @@ test("repeated handler installation reports one Calendar rejection and preserves
     };
     context.globalThis = context;
     const handlers = loadTestModule(
-        new URL("../reuse/runtime-error-popup.js", import.meta.url),
+        new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         Object.fromEntries(
             [
                 "./ui-ctx.js",
