@@ -546,7 +546,8 @@ export function initRouter(root) {
     if (root) _root = root;
     if (_initialized) return;
     _initialized = true;
-    adoptPageStylesheets();
+    const initialRoute = findRoute(window.location.pathname);
+    adoptPageStylesheets(initialRoute?.stylesheets ?? []);
     uiCtx.capabilities.contribute("navigation:commitPage", (root, signal) => {
         if (signal) return _commitPage?.(root, signal) ?? false;
         return false;
@@ -564,7 +565,6 @@ export function initRouter(root) {
     );
 
     void loadAllRoutes();
-    const initialRoute = findRoute(window.location.pathname);
     _currentBase = initialRoute ? initialRoute.base : null;
     if (!_currentBase) {
         void resolveRoute(window.location.pathname).then((resolvedRoute) => {
