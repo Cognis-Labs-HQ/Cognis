@@ -1,0 +1,20 @@
+<resources>
+  <string name="adapter.share.link.name">Link</string>
+  <string name="adapter.share.link.description">Create a link that can be sent outside Cognis.</string>
+  <string name="adapter.share.link.email.send">Send</string>
+  <string name="adapter.share.link.email.recipients">Send an invitation containing this share link to:</string>
+  <string name="adapter.share.link.email.placeholder">Enter email addresses</string>
+  <string name="adapter.share.link.email.required">Add at least one recipient.</string>
+  <string name="adapter.share.link.email.sent">Share email sent.</string>
+  <string name="adapter.share.link.email.failed">Share email could not be sent.</string>
+  <string name="adapter.share.link.popup.empty">No share links yet.</string>
+  <string name="adapter.share.link.popup.active">Active</string>
+  <string name="adapter.share.link.popup.expired">Expired</string>
+  <string name="adapter.share.link.popup.expires">Expires</string>
+  <string name="adapter.share.link.popup.copy">Copy link</string>
+  <string name="adapter.share.link.popup.revoke">Revoke</string>
+  <string name="adapter.share.link.popup.copied">Link copied.</string>
+  <string name="adapter.share.link.popup.copy_failed">Could not copy the link.</string>
+  <string name="adapter.share.link.popup.create_failed">Could not create the share.</string>
+  <string name="adapter.share.link.popup.delete_failed">Could not revoke the share.</string>
+</resources>

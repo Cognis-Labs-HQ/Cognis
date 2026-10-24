@@ -1,0 +1,1 @@
+ALTER TABLE fixture_table ADD COLUMN IF NOT EXISTS label TEXT;

@@ -1,0 +1,119 @@
+.messages-thread--call-active
+    > :not(#messages-thread-header-slot):not(.social-call-stage) {
+    display: none;
+}
+
+.messages-thread--call-active {
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.social-call-stage {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.social-call-stage--floating {
+    position: absolute;
+    width: 0;
+    height: 0;
+    min-height: 0;
+    overflow: visible;
+}
+
+.social-call-stage--floating > :not(.social-call-stage__component) {
+    display: none;
+}
+
+.social-call-stage--floating .social-call-stage__component.floating-window {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    width: min(32vw, 24rem);
+    height: min(32vh, 15rem);
+    min-width: 240px;
+    min-height: 160px;
+}
+
+.social-call-stage--floating
+    .social-call-stage__component.floating-window
+    > .component-page-window {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.social-call-stage--floating
+    .social-call-stage__component.floating-window
+    .composer-view-grid {
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
+    min-height: 0;
+}
+
+.social-call-stage__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem;
+}
+
+.social-call-stage__back {
+    min-width: 2.5rem;
+    font-size: 1.5rem;
+}
+
+.social-call-stage__ringing {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1.5rem;
+    min-height: 20rem;
+}
+
+.social-call-stage__hangup {
+    display: inline-grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+}
+
+.social-call-stage__hangup img {
+    width: 1.75rem;
+    height: 1.75rem;
+    filter: invert(1);
+}
+
+.social-call-stage__component {
+    height: 100%;
+    min-height: 0;
+}
+
+.social-call-stage__component > .component-page-window {
+    height: 100%;
+    min-height: 0;
+}
+
+.social-call-stage__back-icon {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/arrow-back-dark.svg");
+}
+
+body[data-theme="light"] .social-call-stage__back-icon {
+    background-image: url("/static/assets/reuse/arrow-back-light.svg");
+}
+
+.messages-room-call-btn.active {
+    background: var(--color-success-hover-bg);
+    border-color: var(--color-success-outline-text, var(--color-success-text));
+}

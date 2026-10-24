@@ -1,0 +1,10 @@
+<resources>
+  <string name="adapter.logging.file.level">Tingkat log</string>
+  <string name="adapter.logging.file.rotate_max_bytes">Ukuran rotasi (byte)</string>
+  <string name="adapter.logging.file.rotate_max_files">File rotasi yang disimpan</string>
+  <string name="adapter.logging.file.rotate_compress">Kompres log yang dirotasi</string>
+  <string name="adapter.logging.file.error.level">Tingkat log tidak didukung</string>
+  <string name="adapter.logging.file.error.rotate_max_bytes">Ukuran rotasi harus berupa angka positif</string>
+  <string name="adapter.logging.file.error.rotate_max_files">Jumlah berkas rotasi harus berupa bilangan bulat nonnegatif</string>
+  <string name="adapter.logging.file.error.rotate_compress">Pengaturan kompresi harus berupa nilai boolean</string>
+</resources>

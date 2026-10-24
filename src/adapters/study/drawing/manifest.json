@@ -1,0 +1,12 @@
+{
+    "id": "drawing",
+    "uuid": "7de9b7f4-d920-5bce-b4de-9cd1421508ee",
+    "name": "Drawing Practice",
+    "version": "1.1.2",
+    "publisher": "Cognis Labs HQ",
+    "gateway": "study",
+    "requires": [
+        "a4db7882-9207-56bd-b13d-448fc82543ba",
+        "5018b5c9-21ea-51ab-9432-4f83831df97f"
+    ]
+}

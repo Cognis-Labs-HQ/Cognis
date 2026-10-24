@@ -1,0 +1,6 @@
+<resources>
+  <string name="adapter.study.progress.name">Learning Progress</string>
+  <string name="adapter.study.progress.description">Immutable learning history and rebuildable progress</string>
+  <string name="adapter.study.progress.independent_title">Independent Practice</string>
+  <string name="adapter.study.progress.independent_description">Complete a practice attempt correctly without assistance.</string>
+</resources>

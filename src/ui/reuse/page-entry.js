@@ -1,0 +1,419 @@
+/**
+ * Page-entry loading helpers for direct page mounts and SPA transitions.
+ *
+ * Public exports:
+ *   beginPageLoading() — starts a tracked client-side page-loading task and
+ *     returns an idempotent cleanup function that hides the overlay when the
+ *     task is released.
+ *   mountWhenDirect(mount, options) — runs a page mount on direct URL loads
+ *     while skipping SPA-router navigations and automatically updates the
+ *     loading overlay state around the mount.
+ *   loadWithSpaImportGuard(load) — evaluates an SPA entry without its direct
+ *     mount and reference-counts concurrent entry imports.
+ *   ensureHostUiProviders() — waits for every active host UI provider before
+ *     mounting component code that consumes browser capabilities.
+ *
+ * Usage example:
+ *   import { mountWhenDirect } from '/static/reuse/page-entry.js';
+ *   export async function mount(root) { ... }
+ *   await mountWhenDirect(mount);
+ */
+
+import loadingFallback from "../languages/en/loading.json" with { type: "json" };
+import { createI18n, readPreferredLanguages } from "./i18n.js";
+import {
+    installRuntimeErrorHandlers,
+    openRuntimeErrorPopup,
+} from "./runtime-error-popup.js";
+import { uiCtx } from "./ui-ctx.js";
+import "./feedback-capabilities.js";
+import "./floating-window.js";
+import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
+
+const activePageLoadingTokens = new Set();
+let nextPageLoadingToken = 0;
+let loadingOverlayMounted = false;
+let loadingOverlayElement = null;
+let loadingWheelMessageElement = null;
+let loadingOverlayVisibilityTimer = null;
+let loadingMessageTimer = null;
+let loadingMessageIndex = 0;
+let loadingI18nPromise = null;
+let loadingLanguageKey = null;
+let loadingMessages = null;
+let pageUnloadListenersRegistered = false;
+
+const LOADING_MESSAGE_INTERVAL_MILLISECONDS = 1800;
+const LOADING_OVERLAY_DELAY_MILLISECONDS = 120;
+const LOADING_MESSAGE_KEYS = [
+    "ui.reuse.loading_joke_1",
+    "ui.reuse.loading_joke_2",
+    "ui.reuse.loading_joke_3",
+    "ui.reuse.loading_joke_4",
+];
+const FALLBACK_LOADING_MESSAGES = LOADING_MESSAGE_KEYS.map((key) => {
+    const value = loadingFallback[key];
+    if (typeof value !== "string" || !value.trim())
+        throw new Error(`Missing translation: ${key}`);
+    return value;
+});
+const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
+
+/**
+ * Leave a standalone page for a same-origin server document. Dashboard page
+ * transitions continue to use navigateTo; this helper never resolves SPA routes.
+ */
+export function navigateToDocument(path, { signal } = {}) {
+    if (
+        signal?.aborted ||
+        typeof path !== "string" ||
+        !URL.canParse(path, window.location.origin)
+    )
+        return false;
+    const destination = new URL(path, window.location.origin);
+    if (
+        destination.origin !== window.location.origin ||
+        !["http:", "https:"].includes(destination.protocol) ||
+        destination.username ||
+        destination.password
+    )
+        return false;
+    const commit = () => {
+        if (signal?.aborted) return false;
+        window.location.assign(destination.href);
+        return true;
+    };
+    const event = new CustomEvent("cognis:route-before-navigate", {
+        cancelable: true,
+        detail: { path, resume: commit },
+    });
+    if (!window.dispatchEvent(event)) return false;
+    return commit();
+}
+
+export async function ensureHostUiProviders() {
+    await ensureUiProvidersLoaded();
+}
+
+function createLoadingOverlayElement() {
+    if (typeof document.createElement !== "function") return null;
+    const overlay = document.createElement("div");
+    overlay.className = "page-loading-overlay";
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.setAttribute("data-overlay-visible", "false");
+    overlay.setAttribute("data-message-visible", "false");
+
+    const spinner = document.createElement("div");
+    spinner.className = "page-loading-overlay__spinner";
+
+    const message = document.createElement("p");
+    message.className = "page-loading-overlay__message";
+    message.textContent = FALLBACK_LOADING_MESSAGES[0];
+
+    overlay.append(spinner, message);
+    return { overlay, message };
+}
+
+function ensureLoadingOverlay() {
+    if (loadingOverlayMounted) return;
+    const body = document.body;
+    if (!body || typeof body.append !== "function") return;
+    const created = createLoadingOverlayElement();
+    if (!created) return;
+
+    loadingOverlayElement = created.overlay;
+    loadingWheelMessageElement = created.message;
+    body.append(loadingOverlayElement);
+    body.dataset.pageLoadingOverlayMounted = "true";
+    loadingOverlayMounted = true;
+}
+
+function loadLoadingMessagesI18n() {
+    let preferredLanguages = ["en"];
+    try {
+        preferredLanguages = readPreferredLanguages();
+    } catch (error) {
+        log("Failed to read preferred languages, using fallback.", error);
+    }
+    const languageKey = JSON.stringify(preferredLanguages);
+    if (loadingLanguageKey === languageKey && loadingI18nPromise)
+        return loadingI18nPromise;
+    loadingLanguageKey = languageKey;
+    loadingMessages = null;
+    loadingI18nPromise = createI18n({
+        preferredLanguages,
+        persistLocale: false,
+    })
+        .then((i18n) => {
+            if (loadingLanguageKey !== languageKey) return;
+            loadingMessages = LOADING_MESSAGE_KEYS.map((key) => i18n.t(key));
+            return loadingMessages;
+        })
+        .catch((error) => {
+            if (loadingLanguageKey !== languageKey) return;
+            if (error?.code === "missing_translation") throw error;
+            loadingI18nPromise = null;
+            loadingMessages = FALLBACK_LOADING_MESSAGES;
+            log(
+                "Failed to load localized loading messages; using fallback copy.",
+            );
+            return loadingMessages;
+        });
+    return loadingI18nPromise;
+}
+
+function getActiveLoadingMessages() {
+    return loadingMessages?.length
+        ? loadingMessages
+        : FALLBACK_LOADING_MESSAGES;
+}
+
+function normalizeCircularIndex(index, arrayLength) {
+    return ((index % arrayLength) + arrayLength) % arrayLength;
+}
+
+function renderLoadingMessage(index) {
+    if (!loadingWheelMessageElement) return;
+    const messages = getActiveLoadingMessages();
+    if (!messages.length) return;
+    const safeIndex = normalizeCircularIndex(index, messages.length);
+    loadingMessageIndex = safeIndex;
+    loadingWheelMessageElement.textContent = messages[safeIndex];
+}
+
+function startLoadingMessageRotation() {
+    if (loadingMessageTimer) return;
+    renderLoadingMessage(loadingMessageIndex);
+    loadingMessageTimer = setInterval(() => {
+        const translated = loadLoadingMessagesI18n();
+        renderLoadingMessage(loadingMessageIndex + 1);
+        void translated
+            .then(() => {
+                if (activePageLoadingTokens.size)
+                    renderLoadingMessage(loadingMessageIndex);
+            })
+            .catch((error) => openRuntimeErrorPopup({ error }));
+    }, LOADING_MESSAGE_INTERVAL_MILLISECONDS);
+}
+
+function stopLoadingMessageRotation() {
+    if (loadingMessageTimer) {
+        clearInterval(loadingMessageTimer);
+        loadingMessageTimer = null;
+    }
+}
+
+function showLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "true");
+    loadingOverlayElement?.setAttribute("aria-hidden", "false");
+    loadingOverlayElement?.setAttribute("data-overlay-visible", "true");
+}
+
+function hideLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "false");
+    loadingOverlayElement?.setAttribute("aria-hidden", "true");
+    loadingOverlayElement?.setAttribute("data-overlay-visible", "false");
+}
+
+function scheduleLoadingOverlayVisibility() {
+    if (loadingOverlayVisibilityTimer) return;
+    if (
+        loadingOverlayElement?.getAttribute("data-overlay-visible") === "true"
+    ) {
+        return;
+    }
+    loadingOverlayVisibilityTimer = setTimeout(() => {
+        loadingOverlayVisibilityTimer = null;
+        if (!activePageLoadingTokens.size) return;
+        showLoadingOverlay();
+    }, LOADING_OVERLAY_DELAY_MILLISECONDS);
+}
+
+function stopLoadingOverlayVisibilitySchedule() {
+    if (loadingOverlayVisibilityTimer) {
+        clearTimeout(loadingOverlayVisibilityTimer);
+        loadingOverlayVisibilityTimer = null;
+    }
+}
+
+function registerPageUnloadListeners() {
+    if (pageUnloadListenersRegistered) return;
+    if (
+        typeof window === "undefined" ||
+        typeof window.addEventListener !== "function"
+    ) {
+        return;
+    }
+    const markPageAsLoading = () => {
+        const body = document.body;
+        if (!body) return;
+        body.dataset.pageReady = "false";
+        body.setAttribute("aria-busy", "true");
+    };
+    window.addEventListener("pagehide", markPageAsLoading);
+    pageUnloadListenersRegistered = true;
+}
+
+function updatePageLoadingState() {
+    const body = document.body;
+    if (!body) return;
+    ensureLoadingOverlay();
+    const pendingLoadCount = activePageLoadingTokens.size;
+    if (pendingLoadCount > 0) {
+        body.dataset.pageReady = "false";
+        body.setAttribute("aria-busy", "true");
+        scheduleLoadingOverlayVisibility();
+        const translated = loadLoadingMessagesI18n();
+        renderLoadingMessage(loadingMessageIndex);
+        startLoadingMessageRotation();
+        translated
+            .then(() => {
+                renderLoadingMessage(loadingMessageIndex);
+            })
+            .catch((error) => {
+                return openRuntimeErrorPopup({ error });
+            });
+        return;
+    }
+    body.dataset.pageReady = "true";
+    body.setAttribute("aria-busy", "false");
+    stopLoadingOverlayVisibilitySchedule();
+    hideLoadingOverlay();
+    stopLoadingMessageRotation();
+}
+
+/**
+ * Shows the shared page-loading overlay for a new client-side load task.
+ *
+ * @returns {() => void} Idempotent cleanup function that ends this task and
+ *   hides the overlay when all pending tasks are complete.
+ */
+export function beginPageLoading() {
+    const token = nextPageLoadingToken++;
+    let released = false;
+    activePageLoadingTokens.add(token);
+    updatePageLoadingState();
+    return () => {
+        if (released) return;
+        released = true;
+        endPageLoading(token);
+    };
+}
+
+/**
+ * Hides the shared page-loading overlay once a client-side load task finishes.
+ *
+ * @param {number} token - Loading token returned by beginPageLoading().
+ * @returns {void}
+ */
+function endPageLoading(token) {
+    activePageLoadingTokens.delete(token);
+    updatePageLoadingState();
+}
+
+/**
+ * Runs a page mount on direct URL loads while skipping SPA-router navigations.
+ * Runs the `load-page` flow, which enforces session authentication before
+ * mounting, so individual page modules do not need to call auth helpers
+ * themselves.
+ *
+ * @param {(root: Element | null, options: { signal: AbortSignal }) => Promise<unknown>} mount - Page mount
+ *   function for the current entry module.
+ * @param {{ rootSelector?: string, public?: boolean }} [options] - Direct-mount options.
+ * @returns {Promise<void>}
+ */
+export async function mountWhenDirect(
+    mount,
+    { rootSelector = "#app", public: publicPage = false } = {},
+) {
+    if (globalThis.__spaRouter) return;
+    if (publicPage) globalThis.__cognisPublicSpaRoute = true;
+    registerPageUnloadListeners();
+    if (typeof window !== "undefined") {
+        installRuntimeErrorHandlers();
+    }
+    const finishPageLoading = beginPageLoading();
+    const controller = new AbortController();
+    controller.signal.addEventListener("abort", finishPageLoading, {
+        once: true,
+    });
+    if (typeof window !== "undefined") {
+        for (const event of ["cognis:route-will-change", "pagehide"]) {
+            window.addEventListener(event, () => controller.abort(), {
+                signal: controller.signal,
+            });
+        }
+    }
+    let mountError = null;
+    try {
+        const root = document.querySelector(rootSelector);
+        const mountWithProviders = async (mountRoot) => {
+            await ensureHostUiProviders();
+            if (controller.signal.aborted) return;
+            return mount(mountRoot, { signal: controller.signal });
+        };
+        if (
+            !publicPage &&
+            globalThis.__cognisPublicSpaRoute !== true &&
+            uiCtx.flowExists("load-page")
+        ) {
+            const flowResult = await uiCtx.runFlow("load-page", {
+                mount: mountWithProviders,
+                root,
+            });
+            const mountResults = flowResult?.stageResults?.["mount-page"] ?? [];
+            if (mountResults.length === 0) {
+                await mountWithProviders(root);
+            }
+        } else {
+            await mountWithProviders(root);
+        }
+    } catch (error) {
+        if (controller.signal.aborted) return;
+        controller.abort();
+        console.error("[page-entry] Direct mount failed.", {
+            operation: "mountWhenDirect",
+            routePath:
+                typeof window !== "undefined"
+                    ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+                    : "",
+            error,
+        });
+        mountError = error;
+    } finally {
+        finishPageLoading();
+    }
+    if (!mountError) return;
+    const contextDetail =
+        typeof window !== "undefined" &&
+        typeof window.location?.pathname === "string"
+            ? window.location.pathname
+            : "";
+    await openRuntimeErrorPopup({
+        error: mountError,
+        contextKey: "ui.reuse.runtime_error_context_route_mount",
+        contextDetail,
+    }).catch(() => {});
+}
+
+/**
+ * Loads an SPA entry module while suppressing its direct-load mount. Concurrent
+ * imports share a reference-counted guard so one completion cannot expose
+ * another entry that is still evaluating.
+ *
+ * @param {() => Promise<unknown>} load - Entry-module import operation.
+ * @returns {Promise<unknown>} The loaded entry module.
+ */
+export async function loadWithSpaImportGuard(load) {
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+    globalThis.__spaRouter = true;
+    try {
+        return await load();
+    } finally {
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
+    }
+}

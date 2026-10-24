@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.user.name">Pengguna</string>
+  <string name="adapter.share.user.description">Berikan akses langsung kepada pengguna Cognis.</string>
+</resources>

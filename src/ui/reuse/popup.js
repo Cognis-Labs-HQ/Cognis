@@ -1,0 +1,914 @@
+/**
+ * Reusable popup / modal dialog.
+ *
+ * Renders a modal overlay and returns a Promise that resolves with the `id` of
+ * the action the user clicked, or `null` when the popup is dismissed via the
+ * backdrop, the × close button, or the Escape key.
+ *
+ * The action descriptor array mirrors the page-composer `elements` pattern:
+ * each entry is a plain object with `id`, `label`, and an optional `variant`.
+ *
+ * This module keeps /static/styles/popup.css in browser Cache Storage and
+ * injects the cached CSS when a popup opens, so dialogs remain styled through
+ * temporary server interruptions.
+ *
+ * Public exports:
+ *   primePopupStylesheet() — refreshes the browser-cached popup stylesheet.
+ *   openPopup(options) — opens a modal and returns a Promise<string|null>.
+ *   createAnchoredPopup(options) — returns a controller for a non-modal popup
+ *     positioned beside an anchor element.
+ *
+ * Usage:
+ *   import { openPopup, primePopupStylesheet } from '../../reuse/popup.js';
+ *
+ *   void primePopupStylesheet();
+ *   const result = await openPopup({
+ *     title: 'Disable module',
+ *     body: `Are you sure you want to disable "my-module"?`,
+ *     variant: 'danger',
+ *     actions: [
+ *       { id: 'confirm', label: 'Disable', variant: 'confirm' },
+ *       { id: 'cancel',  label: 'Cancel',  variant: 'cancel'  },
+ *     ],
+ *   });
+ *   if (result === 'confirm') { ... }
+ *
+ * Options:
+ *   title    — heading text (rendered as plain text, HTML-escaped).
+ *   titleDetail — optional secondary heading text rendered smaller beside the title.
+ *   titleDetailItems — optional ordered `{ label, actionId?, placement? }` secondary heading fragments.
+ *   headingLayout — "inline" (default) or "annotated" with aside/below detail placements.
+ *   titleLeading — optional trusted HTML rendered immediately before the title.
+ *   titleAction — optional `{ id, label }` that renders the heading as an action.
+ *   titleItems — optional ordered `{ label, actionId? }` title fragments.
+ *   body     — body content: either an HTML string or a `() => string` render
+ *              function. Rendered as innerHTML; callers must escape dynamic values.
+ *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
+ *              Defaults to 'info'.
+ *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
+ *              When omitted, a single green 'Done' (confirm) button is rendered. An empty array renders no footer actions.
+ *   closeButtonVariant — Optional variant for the × header close button.
+ *   mandatory — When true, hides the header close button and disables
+ *              backdrop and Escape-key dismissal. Explicit actions still work.
+ *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
+ *              window. Defaults to the CSS-defined value (480px).
+ *
+ *   onOpen   — Optional callback invoked with the popup overlay element immediately
+ *              after it is appended to the document body. Use this to bind event
+ *              handlers on elements rendered inside the popup body before the
+ *              fade-in animation begins.
+ *
+ *   onAction — Optional async/sync callback invoked before dismissal when an
+ *              action button is clicked. Return `false` to keep the popup open.
+ *
+ *   closeProtection — When true, intercepts cancel-path dismissals (backdrop
+ *              click, × button, Escape key). If any input/textarea/select has
+ *              been changed from its initial value, a confirmation popup is shown
+ *              before the original popup is dismissed. Strings are resolved
+ *              internally from the user's active locale.
+ *
+ *   timeoutMs        — Optional. When set, the popup automatically dismisses
+ *              itself with `timeoutActionId` after this many milliseconds if
+ *              the user has not already responded. The timer is cleared as
+ *              soon as any dismissal path runs.
+ *   timeoutActionId  — Action id to resolve with when `timeoutMs` elapses.
+ *              Defaults to `null` (same as a cancel-path dismissal). If an
+ *              action button with this id is rendered, its label is
+ *              suffixed with a live "(Ns)" countdown that ticks down every
+ *              second until the timeout fires, so the user can see the
+ *              action will happen automatically.
+ *
+ * @param {{
+ *   title: string,
+ *   titleDetail?: string,
+ *   headingLayout?: "inline" | "annotated",
+ *   titleDetailItems?: Array<{ label: string, actionId?: string, placement?: string }>,
+ *   titleLeading?: string,
+ *   titleAction?: { id: string, label: string },
+ *   titleItems?: Array<{ label: string, actionId?: string }>,
+ *   stackTitleDetailOnOverflow?: boolean,
+ *   headerActions?: Array<{ id: string, label: string, icon?: string | { light: string, dark?: string } }>,
+ *   body: string | (() => string),
+ *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
+ *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
+ *   maxWidth?: string,
+ *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
+ *   closeProtection?: boolean,
+ *   timeoutMs?: number,
+ *   timeoutActionId?: string | null,
+ *   closeButtonVariant?: 'cancel' | 'neutral',
+ *   mandatory?: boolean,
+ * }} options
+ * @returns {Promise<string|null>}
+ */
+
+import { createPopupContentApi } from "./popup/content.js";
+import { createI18n } from "./i18n.js";
+import { createFormDirtyTracker } from "./unsaved-changes.js";
+
+/** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
+
+let stylesheetReady = null;
+let stylesheetRefresh = null;
+let i18nReady = null;
+
+const POPUP_STYLESHEET_URL = "/static/styles/popup.css";
+const POPUP_STYLESHEET_CACHE = "cognis-popup-styles-v1";
+const CACHED_STYLESHEET_ID = "popup-cached-styles";
+
+function getI18n() {
+    // Store the Promise, not the resolved value, so concurrent calls
+    // before resolution share the same deferred.
+    if (!i18nReady) i18nReady = createI18n();
+    return i18nReady;
+}
+
+const scrollLockState = {
+    count: 0,
+    bodyOverflow: null,
+    bodyScrollbarGutter: null,
+    rootScrollbarGutter: null,
+    mainOverflowValues: [],
+};
+
+function getScrollableMainElements() {
+    return Array.from(document.querySelectorAll("main")).filter((element) =>
+        /^(auto|scroll)$/.test(getComputedStyle(element).overflowY),
+    );
+}
+
+function lockPageScroll() {
+    if (scrollLockState.count === 0) {
+        scrollLockState.bodyOverflow = document.body.style.overflow;
+        scrollLockState.bodyScrollbarGutter =
+            document.body.style.scrollbarGutter;
+        scrollLockState.rootScrollbarGutter =
+            document.documentElement.style.scrollbarGutter;
+        scrollLockState.mainOverflowValues = getScrollableMainElements().map(
+            (element) => ({
+                element,
+                overflow: element.style.overflow,
+                scrollbarGutter: element.style.scrollbarGutter,
+            }),
+        );
+        // Reserve each scrolling surface's gutter before hiding its scrollbar.
+        // Without this, opening or closing a modal changes the available inline
+        // space and forces the page beneath it to redraw at a different width.
+        if (window.innerWidth > document.documentElement.clientWidth)
+            document.documentElement.style.scrollbarGutter = "stable";
+        document.body.style.overflow = "hidden";
+        scrollLockState.mainOverflowValues.forEach(({ element }) => {
+            if (element.scrollHeight > element.clientHeight)
+                element.style.scrollbarGutter = "stable";
+            element.style.overflow = "hidden";
+        });
+    }
+    scrollLockState.count += 1;
+}
+
+function unlockPageScroll() {
+    scrollLockState.count = Math.max(0, scrollLockState.count - 1);
+    if (scrollLockState.count > 0) return;
+
+    document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
+    document.body.style.scrollbarGutter =
+        scrollLockState.bodyScrollbarGutter ?? "";
+    document.documentElement.style.scrollbarGutter =
+        scrollLockState.rootScrollbarGutter ?? "";
+    scrollLockState.mainOverflowValues.forEach(
+        ({ element, overflow, scrollbarGutter }) => {
+            element.style.overflow = overflow;
+            element.style.scrollbarGutter = scrollbarGutter;
+        },
+    );
+    scrollLockState.bodyOverflow = null;
+    scrollLockState.bodyScrollbarGutter = null;
+    scrollLockState.rootScrollbarGutter = null;
+    scrollLockState.mainOverflowValues = [];
+}
+
+async function getPopupStylesheetCache() {
+    if (typeof globalThis.caches === "undefined") return null;
+    try {
+        return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
+    } catch (error) {
+        console.error(
+            `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
+            error,
+        );
+        return null;
+    }
+}
+
+async function refreshPopupStylesheet() {
+    const stylesheetCache = await getPopupStylesheetCache();
+    if (!stylesheetCache || typeof globalThis.fetch !== "function") return;
+
+    try {
+        const response = await globalThis.fetch(POPUP_STYLESHEET_URL, {
+            cache: "no-cache",
+            credentials: "same-origin",
+        });
+        if (!response.ok) return;
+
+        await stylesheetCache.put(POPUP_STYLESHEET_URL, response.clone());
+        const installedStylesheet = globalThis.document?.querySelector(
+            `#${CACHED_STYLESHEET_ID}`,
+        );
+        if (installedStylesheet) {
+            installedStylesheet.textContent = await response.text();
+        }
+    } catch (error) {
+        console.error(
+            `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
+            error,
+        );
+    }
+}
+
+/**
+ * Refreshes the complete popup stylesheet held in browser Cache Storage.
+ *
+ * @returns {Promise<void>}
+ */
+export function primePopupStylesheet() {
+    if (!stylesheetRefresh) {
+        stylesheetRefresh = refreshPopupStylesheet().finally(() => {
+            stylesheetRefresh = null;
+        });
+    }
+    return stylesheetRefresh;
+}
+
+async function installCachedStylesheet() {
+    const existing = document.querySelector(`#${CACHED_STYLESHEET_ID}`);
+    if (existing) return true;
+    const stylesheetCache = await getPopupStylesheetCache();
+    const cachedResponse = await stylesheetCache?.match(POPUP_STYLESHEET_URL);
+    if (!cachedResponse?.ok) return false;
+    const cachedStylesheet = document.createElement("style");
+    cachedStylesheet.id = CACHED_STYLESHEET_ID;
+    cachedStylesheet.textContent = await cachedResponse.text();
+    document.head.appendChild(cachedStylesheet);
+    return true;
+}
+
+function installNetworkStylesheet() {
+    return new Promise((resolve) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = POPUP_STYLESHEET_URL;
+        link.addEventListener("load", resolve, { once: true });
+        link.addEventListener("error", resolve, { once: true });
+        document.head.appendChild(link);
+    });
+}
+
+function ensureStylesheet() {
+    if (stylesheetReady) return stylesheetReady;
+    const existing = document.querySelector(
+        `link[href="${POPUP_STYLESHEET_URL}"]`,
+    );
+    if (existing?.sheet) {
+        stylesheetReady = Promise.resolve();
+        return stylesheetReady;
+    }
+    if (typeof globalThis.caches === "undefined") {
+        stylesheetReady = installNetworkStylesheet();
+        return stylesheetReady;
+    }
+    stylesheetReady = (async () => {
+        await stylesheetRefresh;
+        if (await installCachedStylesheet()) return;
+        await installNetworkStylesheet();
+    })();
+    return stylesheetReady;
+}
+
+function positionAnchoredPopup(anchorElement, popupElement) {
+    const anchorBounds = anchorElement.getBoundingClientRect();
+    popupElement.style.left = "0";
+    popupElement.style.top = "0";
+    popupElement.hidden = false;
+    const popupBounds = popupElement.getBoundingClientRect();
+    const viewportPadding = 8;
+    const popupGap = 8;
+    let leftPosition =
+        anchorBounds.left + anchorBounds.width / 2 - popupBounds.width / 2;
+    leftPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            leftPosition,
+            window.innerWidth - popupBounds.width - viewportPadding,
+        ),
+    );
+    let topPosition = anchorBounds.bottom + popupGap;
+    if (
+        topPosition + popupBounds.height >
+        window.innerHeight - viewportPadding
+    ) {
+        topPosition = anchorBounds.top - popupBounds.height - popupGap;
+    }
+    topPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            topPosition,
+            window.innerHeight - popupBounds.height - viewportPadding,
+        ),
+    );
+    popupElement.style.left = `${Math.round(leftPosition)}px`;
+    popupElement.style.top = `${Math.round(topPosition)}px`;
+}
+
+export function createAnchoredPopup({
+    className = "",
+    role = "tooltip",
+    tagName = "aside",
+} = {}) {
+    let popupElement = null;
+    let anchorElement = null;
+
+    function getPopupElement() {
+        if (popupElement instanceof HTMLElement) {
+            return popupElement;
+        }
+        void ensureStylesheet();
+        popupElement = document.createElement(tagName);
+        popupElement.className = className.trim();
+        popupElement.setAttribute("role", role);
+        popupElement.hidden = true;
+        document.body.appendChild(popupElement);
+        return popupElement;
+    }
+
+    function hide() {
+        anchorElement = null;
+        if (!(popupElement instanceof HTMLElement)) return;
+        popupElement.hidden = true;
+        popupElement.innerHTML = "";
+    }
+
+    return {
+        show(anchor, body) {
+            if (!(anchor instanceof HTMLElement)) return;
+            let resolvedBody = body ?? "";
+            if (typeof body === "function") {
+                try {
+                    resolvedBody = body();
+                } catch {
+                    hide();
+                    return;
+                }
+            }
+            if (!resolvedBody) {
+                hide();
+                return;
+            }
+            const element = getPopupElement();
+            anchorElement = anchor;
+            element.innerHTML = resolvedBody;
+            positionAnchoredPopup(anchor, element);
+        },
+        hide,
+        reposition() {
+            if (
+                !(anchorElement instanceof HTMLElement) ||
+                !(popupElement instanceof HTMLElement) ||
+                popupElement.hidden
+            ) {
+                return;
+            }
+            positionAnchoredPopup(anchorElement, popupElement);
+        },
+        destroy() {
+            hide();
+            popupElement?.remove();
+            popupElement = null;
+        },
+    };
+}
+
+/**
+ * Returns true if any input, textarea, or select within the element has been
+ * changed from its initial (default) value.
+ *
+ * @param {HTMLElement} overlayElement - The popup overlay to inspect.
+ * @returns {boolean} Whether any form field has an unsaved change.
+ */
+function hasUnsavedFormChanges(overlayElement) {
+    const fields = overlayElement.querySelectorAll("input, textarea, select");
+    for (const field of fields) {
+        if (field instanceof HTMLInputElement) {
+            if (field.type === "checkbox" || field.type === "radio") {
+                if (field.checked !== field.defaultChecked) return true;
+            } else if (field.value !== field.defaultValue) {
+                return true;
+            }
+        } else if (
+            field instanceof HTMLTextAreaElement ||
+            field instanceof HTMLSelectElement
+        ) {
+            if (field.value !== field.defaultValue) return true;
+        }
+    }
+    return false;
+}
+
+export async function openPopup({
+    title,
+    titleDetail,
+    titleDetailItems,
+    titleLeading,
+    titleAction,
+    titleItems,
+    stackTitleDetailOnOverflow = false,
+    headingLayout = "inline",
+    headerActions = [],
+    body,
+    variant = "info",
+    actions,
+    maxWidth,
+    onOpen,
+    onAction,
+    closeProtection = false,
+    timeoutMs = 0,
+    timeoutActionId = null,
+    closeButtonVariant = "cancel",
+    mandatory = false,
+    pages,
+    initialPageId,
+} = {}) {
+    await ensureStylesheet();
+    return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "popup-overlay";
+        const highestPopupZIndex = Array.from(
+            document.querySelectorAll(".popup-overlay"),
+            (candidate) => Number.parseInt(candidate.style.zIndex, 10) || 2000,
+        ).reduce((highest, zIndex) => Math.max(highest, zIndex), 1990);
+        overlay.style.zIndex = String(highestPopupZIndex + 10);
+        overlay.setAttribute("role", "dialog");
+        overlay.setAttribute("aria-modal", "true");
+        overlay.setAttribute("aria-labelledby", "popup-title");
+        let closeProtectionTracker = null;
+        let manuallyDirty = false;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function renderPopupHeading(
+            titleValue,
+            detailValue,
+            actionValue,
+            leadingValue,
+            itemValues,
+            detailItemValues,
+        ) {
+            const detail = String(detailValue ?? "");
+            const renderHeadingItems = (items) => {
+                const rendered = items.map((item) => {
+                    const content = item.actionId
+                        ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(item.actionId)}" type="button">${escapeHtml(item.label)}</button>`
+                        : escapeHtml(item.label);
+                    return { content, placement: item.placement };
+                });
+                const groups = [];
+                for (const item of rendered) {
+                    const previous = groups.at(-1);
+                    if (
+                        item.placement &&
+                        previous?.placement === item.placement
+                    )
+                        previous.content += item.content;
+                    else groups.push({ ...item });
+                }
+                return groups
+                    .map(({ content, placement }) =>
+                        placement
+                            ? `<span data-popup-title-placement="${escapeHtml(placement)}">${content}</span>`
+                            : content,
+                    )
+                    .join("");
+            };
+            const titleContent =
+                Array.isArray(itemValues) && itemValues.length
+                    ? renderHeadingItems(itemValues)
+                    : actionValue
+                      ? `<button class="popup-title-action btn-neutral" data-popup-action="${escapeHtml(actionValue.id)}" type="button">${escapeHtml(actionValue.label)}</button>`
+                      : escapeHtml(titleValue ?? "");
+            const detailContent =
+                Array.isArray(detailItemValues) && detailItemValues.length
+                    ? renderHeadingItems(detailItemValues)
+                    : escapeHtml(detail);
+            return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
+        }
+
+        function renderActionContent(action) {
+            const label = escapeHtml(action.label);
+            if (!action.icon?.light) return label;
+            const dark = action.icon.dark ?? action.icon.light;
+            const icon = `<picture class="popup-action-icon${action.icon.flip ? " popup-action-icon--flip" : ""}" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(dark)}"><img src="${escapeHtml(action.icon.light)}" alt=""></picture>`;
+            return action.icon.position === "after"
+                ? `${label}${icon}`
+                : `${icon}${label}`;
+        }
+
+        let dismissed = false;
+        let timeoutHandle = null;
+        let countdownInterval = null;
+        async function dismiss(actionId) {
+            closeProtectionTracker?.sync();
+            const hasUnsavedChanges =
+                manuallyDirty ||
+                (closeProtectionTracker?.isAnyDirty() ??
+                    hasUnsavedFormChanges(overlay));
+            if (
+                (actionId === null || actionId === "cancel") &&
+                closeProtection &&
+                hasUnsavedChanges
+            ) {
+                const i18n = await getI18n();
+                const confirmed = await openPopup({
+                    title: i18n.t("ui.reuse.unsaved_changes"),
+                    body: `<p>${escapeHtml(i18n.t("ui.reuse.close_form_warning"))}</p>`,
+                    variant: "warning",
+                    actions: [
+                        {
+                            id: "discard",
+                            label: i18n.t("ui.reuse.discard"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "keep",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                });
+                if (confirmed !== "discard") return;
+            }
+            if (dismissed) return;
+            dismissed = true;
+            if (timeoutHandle !== null) {
+                clearTimeout(timeoutHandle);
+                timeoutHandle = null;
+            }
+            if (countdownInterval !== null) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            document.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("resize", fitPopupTitleRow);
+            closeProtectionTracker?.destroy();
+            closeProtectionTracker = null;
+            let removed = false;
+            function removeOverlay() {
+                if (!removed) {
+                    removed = true;
+                    overlay.remove();
+                    unlockPageScroll();
+                }
+            }
+            overlay.addEventListener("transitionend", removeOverlay, {
+                once: true,
+            });
+            setTimeout(removeOverlay, 500); // fallback if no transition fires (line 109 above)
+            overlay.classList.remove("popup-overlay--visible");
+            resolve(actionId ?? null);
+        }
+
+        const popupPages =
+            Array.isArray(pages) && pages.length > 0 ? pages : null;
+        let currentPage = popupPages
+            ? (popupPages.find((page) => page.id === initialPageId) ??
+              popupPages[0])
+            : null;
+
+        function resolvePageValue(pageValue, fallbackValue) {
+            const value = pageValue ?? fallbackValue;
+            return typeof value === "function" ? value() : (value ?? "");
+        }
+
+        const resolvedBody = popupPages
+            ? resolvePageValue(currentPage?.body, body)
+            : typeof body === "function"
+              ? body()
+              : (body ?? "");
+
+        const effectiveActions = popupPages
+            ? (currentPage?.actions ?? actions ?? [])
+            : Array.isArray(actions)
+              ? actions
+              : [{ id: "close", label: "Done", variant: "confirm" }];
+
+        const closeButtonClass =
+            closeButtonVariant === "neutral"
+                ? "popup-close-btn btn-close btn-neutral"
+                : "popup-close-btn btn-close btn-cancel";
+
+        const actionButtons = effectiveActions
+            .map((action) => {
+                const btnVariant = action.variant ?? "neutral";
+                const btnClass =
+                    btnVariant === "confirm"
+                        ? "btn-confirm btn-animated popup-action-btn"
+                        : btnVariant === "cancel"
+                          ? "btn-cancel btn-animated popup-action-btn"
+                          : "popup-action-btn popup-action-btn--neutral btn-animated";
+                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
+            })
+            .join("");
+
+        overlay.innerHTML = `
+      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
+        <div class="popup-header">
+          <div class="popup-heading${headingLayout === "annotated" ? " popup-heading--annotated" : ""}">${renderPopupHeading(
+              currentPage?.title ?? title,
+              currentPage?.titleDetail ?? titleDetail,
+              currentPage?.titleAction ?? titleAction,
+              currentPage?.titleLeading ?? titleLeading,
+              currentPage?.titleItems ?? titleItems,
+              currentPage?.titleDetailItems ?? titleDetailItems,
+          )}</div>
+          <div class="popup-header-actions">${headerActions
+              .map((action) => {
+                  const icon = action.icon;
+                  const content =
+                      icon && typeof icon === "object" && icon.light
+                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt=""></picture>`
+                          : icon
+                            ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
+                            : escapeHtml(action.label);
+                  return `<button class="btn-neutral popup-header-action" data-popup-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}" title="${escapeHtml(action.label)}">${content}</button>`;
+              })
+              .join(
+                  "",
+              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
+        </div>
+        <div class="popup-body">${resolvedBody}</div>
+        ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
+      </div>
+    `;
+
+        if (maxWidth && !window.matchMedia("(max-width: 640px)").matches) {
+            overlay.querySelector(".popup-dialog").style.maxWidth = maxWidth;
+        }
+
+        overlay.addEventListener("click", async (event) => {
+            if (!mandatory && event.target === overlay) await dismiss(null);
+        });
+
+        const contentApi = createPopupContentApi(overlay, fitPopupTitleRow);
+
+        function renderPopupPage(pageId) {
+            if (!popupPages) return false;
+            const nextPage = popupPages.find((page) => page.id === pageId);
+            if (!nextPage) return false;
+            currentPage = nextPage;
+            const headingEl = overlay.querySelector(".popup-heading");
+            const bodyEl = overlay.querySelector(".popup-body");
+            const footerEl = overlay.querySelector(".popup-footer");
+            if (headingEl) {
+                headingEl.innerHTML = renderPopupHeading(
+                    currentPage.title ?? title,
+                    currentPage.titleDetail ?? titleDetail,
+                    currentPage.titleAction ?? titleAction,
+                    currentPage.titleLeading ?? titleLeading,
+                    currentPage.titleItems ?? titleItems,
+                    currentPage.titleDetailItems ?? titleDetailItems,
+                );
+                bindActionButtons(headingEl);
+                fitPopupTitleRow();
+            }
+            if (bodyEl)
+                bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
+            if (closeProtection) {
+                closeProtectionTracker?.destroy();
+                closeProtectionTracker = createFormDirtyTracker(overlay, {
+                    quiet: true,
+                });
+            }
+            const pageActions = currentPage.actions ?? actions ?? [];
+            if (footerEl) {
+                footerEl.innerHTML = pageActions
+                    .map((action) => {
+                        const btnVariant = action.variant ?? "neutral";
+                        const btnClass =
+                            btnVariant === "confirm"
+                                ? "btn-confirm btn-animated popup-action-btn"
+                                : btnVariant === "cancel"
+                                  ? "btn-cancel btn-animated popup-action-btn"
+                                  : "popup-action-btn popup-action-btn--neutral btn-animated";
+                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
+                    })
+                    .join("");
+                bindActionButtons(footerEl);
+            }
+            onOpen?.(overlay, () => dismiss(null), {
+                setPage: renderPopupPage,
+                pageId: currentPage.id,
+                updateBody,
+                ...contentApi,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
+            });
+            return true;
+        }
+
+        function updateBody(nextBody) {
+            const bodyElement = overlay.querySelector(".popup-body");
+            if (!bodyElement) return null;
+            bodyElement.innerHTML =
+                typeof nextBody === "function" ? nextBody() : nextBody;
+            return bodyElement;
+        }
+
+        function bindActionButtons(root) {
+            root.querySelectorAll("[data-popup-action]").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const actionId = btn.dataset.popupAction;
+                    const resolvedActionId =
+                        actionId === "close" ? null : actionId;
+                    if (typeof onAction === "function") {
+                        try {
+                            const shouldDismiss = await onAction(
+                                resolvedActionId,
+                                overlay,
+                                {
+                                    setPage: renderPopupPage,
+                                    pageId: currentPage?.id,
+                                    requestClose: () => dismiss(null),
+                                    updateBody,
+                                    ...contentApi,
+                                    markDirty: () => {
+                                        manuallyDirty = true;
+                                    },
+                                },
+                            );
+                            if (shouldDismiss === false) return;
+                        } catch {
+                            return;
+                        }
+                    }
+                    await dismiss(resolvedActionId);
+                });
+            });
+        }
+
+        function fitPopupTitleRow() {
+            const heading = overlay.querySelector(".popup-heading");
+            const titleElement = heading?.querySelector(".popup-title");
+            const detailElement = heading?.querySelector(".popup-title-detail");
+            if (!heading || !titleElement) return;
+            heading.classList.remove("popup-heading--stacked-detail");
+            heading.style.setProperty("--popup-title-scale", "1");
+            heading.style.setProperty("--popup-title-detail-scale", "1");
+            const style = window.getComputedStyle(heading);
+            const gap = Number.parseFloat(style.columnGap || style.gap) || 0;
+            const contentWidth = () =>
+                Array.from(heading.children).reduce(
+                    (width, element) => width + element.scrollWidth,
+                    gap * Math.max(0, heading.children.length - 1),
+                );
+            let detailScale = 1;
+            while (
+                detailElement &&
+                contentWidth() > heading.clientWidth &&
+                detailScale > 0.5
+            ) {
+                detailScale = Math.max(0.5, detailScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-detail-scale",
+                    String(detailScale),
+                );
+            }
+            let titleScale = 1;
+            while (contentWidth() > heading.clientWidth && titleScale > 0.7) {
+                titleScale = Math.max(0.7, titleScale - 0.05);
+                heading.style.setProperty(
+                    "--popup-title-scale",
+                    String(titleScale),
+                );
+            }
+            const detailIsStressed = Array.from(
+                detailElement?.children ?? [],
+            ).some((element) => {
+                const elementStyle = window.getComputedStyle(element);
+                const lineHeight = Number.parseFloat(elementStyle.lineHeight);
+                return (
+                    element.scrollWidth > element.clientWidth + 1 ||
+                    (Number.isFinite(lineHeight) &&
+                        element.scrollHeight > lineHeight * 1.5)
+                );
+            });
+            if (
+                stackTitleDetailOnOverflow &&
+                (titleElement.scrollWidth > titleElement.clientWidth + 1 ||
+                    detailIsStressed)
+            ) {
+                heading.classList.add("popup-heading--stacked-detail");
+                heading.style.setProperty("--popup-title-scale", "1");
+                heading.style.setProperty("--popup-title-detail-scale", "1");
+            }
+        }
+        bindActionButtons(overlay);
+
+        function onKeyDown(event) {
+            const overlays = document.querySelectorAll(".popup-overlay");
+            if (overlays[overlays.length - 1] !== overlay) return;
+            if (event.key === "Escape") {
+                if (mandatory) return;
+                dismiss(null).catch((error) =>
+                    console.error("[popup] dismiss failed:", error),
+                );
+                return;
+            }
+            if (event.key === "Enter") {
+                if (document.activeElement instanceof HTMLTextAreaElement)
+                    return;
+                const confirmBtn = overlay.querySelector(
+                    '[data-popup-action="confirm"], [data-popup-action="save"], [data-popup-action].btn-confirm',
+                );
+                if (confirmBtn instanceof HTMLButtonElement) {
+                    event.preventDefault();
+                    confirmBtn.click();
+                }
+            }
+        }
+        document.addEventListener("keydown", onKeyDown);
+
+        document.body.appendChild(overlay);
+        lockPageScroll();
+        window.addEventListener("resize", fitPopupTitleRow);
+        fitPopupTitleRow();
+        document.fonts?.ready.then(fitPopupTitleRow);
+
+        if (typeof onOpen === "function") {
+            onOpen(overlay, () => dismiss(null), {
+                updateBody,
+                ...contentApi,
+                setPage: renderPopupPage,
+                pageId: currentPage?.id,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
+            });
+        }
+        if (closeProtection) {
+            closeProtectionTracker = createFormDirtyTracker(overlay, {
+                quiet: true,
+            });
+        }
+        if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+            timeoutHandle = setTimeout(() => {
+                dismiss(timeoutActionId).catch((error) =>
+                    console.error("[popup] timeout dismiss failed:", error),
+                );
+            }, timeoutMs);
+
+            const timeoutButton = timeoutActionId
+                ? overlay.querySelector(
+                      `[data-popup-action="${CSS.escape(timeoutActionId)}"]`,
+                  )
+                : null;
+            if (timeoutButton instanceof HTMLButtonElement) {
+                const originalLabel = timeoutButton.textContent ?? "";
+                const startedAt = Date.now();
+                const updateCountdown = () => {
+                    const remainingSeconds = Math.max(
+                        0,
+                        Math.ceil(
+                            (timeoutMs - (Date.now() - startedAt)) / 1000,
+                        ),
+                    );
+                    timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;
+                };
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+            }
+        }
+
+        requestAnimationFrame(() => {
+            overlay.classList.add("popup-overlay--visible");
+        });
+
+        const firstFocusable =
+            overlay.querySelector("input, textarea, select") ??
+            overlay.querySelector("button:not(.popup-close-btn)");
+        firstFocusable?.focus({ preventScroll: true });
+    });
+}
+
+export {
+    markPopupFieldInvalid,
+    openConfigFormPopup,
+    resolveFieldErrorId,
+} from "./popup/config-form.js";

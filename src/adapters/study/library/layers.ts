@@ -1,0 +1,857 @@
+import { validateClassifications } from "./classification-schema.js";
+import { validateTransformSets } from "./layers/transformations.js";
+import { validateReferenceTransformation } from "./layers/reference-transformation.js";
+import {
+    CONTENT_CLASS_PATTERN,
+    CONTENT_RECORD_ID_PATTERN,
+} from "./identifiers.js";
+import { validateStrokePattern } from "./layers/stroke-pattern.js";
+import type {
+    LibraryEntry,
+    LibraryEntryInput,
+    LibraryFieldSchema,
+    LibraryMetadataValue,
+    LibraryReferenceInput,
+    LibraryRelationshipSchema,
+    LibraryResolutionProposal,
+    LibrarySchema,
+} from "./types.js";
+import { canonicalizeLanguageTag } from "./language.js";
+
+const ID_PATTERN = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
+const BUILT_IN_FIELD_TYPES = new Set([
+    "string",
+    "number",
+    "integer",
+    "boolean",
+    "localizedText",
+    "stringList",
+    "asset",
+    "assetList",
+    "imageList",
+    "audio",
+    "audioList",
+    "strokePattern",
+]);
+
+export function validateLibraryMetadataValue(
+    value: unknown,
+): asserts value is LibraryMetadataValue {
+    if (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "boolean"
+    )
+        return;
+    if (typeof value === "number") {
+        if (!Number.isFinite(value)) throw new Error("invalid_metadata_value");
+        return;
+    }
+    if (Array.isArray(value)) {
+        value.forEach(validateLibraryMetadataValue);
+        return;
+    }
+    if (!value || typeof value !== "object")
+        throw new Error("invalid_metadata_value");
+    for (const [key, item] of Object.entries(
+        value as Record<string, unknown>,
+    )) {
+        if (!key.trim() || item === undefined)
+            throw new Error("invalid_metadata_value");
+        validateLibraryMetadataValue(item);
+    }
+}
+
+function validateLocalizedText(value: unknown, code: string): void {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+        throw new Error(code);
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (!entries.length) throw new Error(code);
+    for (const [locale, text] of entries) {
+        canonicalizeLanguageTag(locale);
+        if (typeof text !== "string" || !text.trim()) throw new Error(code);
+    }
+}
+
+function validateMetadata(
+    metadata: {
+        labels: Record<string, string>;
+        descriptions?: Record<string, string>;
+    },
+    code: string,
+): void {
+    validateLocalizedText(metadata?.labels, code);
+    if (metadata.descriptions !== undefined)
+        validateLocalizedText(metadata.descriptions, code);
+    for (const [key, value] of Object.entries(metadata)) {
+        if (key !== "labels" && key !== "descriptions")
+            validateLibraryMetadataValue(value);
+    }
+}
+
+function assertIdentifier(value: string, code: string): void {
+    if (!ID_PATTERN.test(value)) throw new Error(code);
+}
+
+function validateField(field: LibraryFieldSchema, ids: Set<string>): void {
+    assertIdentifier(field.id, "invalid_field_id");
+    if (ids.has(field.id)) throw new Error("duplicate_field");
+    validateMetadata(field.metadata, "field_metadata_required");
+    if (!field.type?.trim()) throw new Error("invalid_field_type");
+    if (!BUILT_IN_FIELD_TYPES.has(field.type) && !field.validation)
+        throw new Error("custom_field_validation_required");
+    if (field.validation) validateFieldValidation(field.validation);
+    if (
+        field.multi_value !== undefined &&
+        typeof field.multi_value !== "boolean"
+    )
+        throw new Error("invalid_field_multi_value");
+    if (
+        field.detail?.exclusive !== undefined &&
+        typeof field.detail.exclusive !== "boolean"
+    )
+        throw new Error("invalid_filter_group_exclusivity");
+    if (
+        field.detail?.required !== undefined &&
+        typeof field.detail.required !== "boolean"
+    )
+        throw new Error("invalid_filter_group_requirement");
+    if (
+        field.detail?.filterable !== undefined &&
+        typeof field.detail.filterable !== "boolean"
+    )
+        throw new Error("invalid_filterable_field");
+    if (
+        field.detail?.defaultTag !== undefined &&
+        (typeof field.detail.defaultTag !== "string" ||
+            !field.detail.defaultTag.trim())
+    )
+        throw new Error("invalid_filter_group_default_tag");
+    ids.add(field.id);
+}
+
+function validateFieldValidation(
+    validation: NonNullable<LibraryFieldSchema["validation"]>,
+): void {
+    if (!validation || typeof validation !== "object")
+        throw new Error("invalid_field_validation");
+    if (validation.kind === "string") {
+        if (validation.pattern !== undefined) {
+            if (typeof validation.pattern !== "string")
+                throw new Error("invalid_field_validation");
+            try {
+                new RegExp(validation.pattern, "u");
+            } catch {
+                throw new Error("invalid_field_validation");
+            }
+        }
+        return;
+    }
+    if (validation.kind === "number") {
+        if (
+            validation.integer !== undefined &&
+            typeof validation.integer !== "boolean"
+        )
+            throw new Error("invalid_field_validation");
+        for (const value of [validation.minimum, validation.maximum])
+            if (
+                value !== undefined &&
+                (typeof value !== "number" || !Number.isFinite(value))
+            )
+                throw new Error("invalid_field_validation");
+        if (
+            validation.minimum !== undefined &&
+            validation.maximum !== undefined &&
+            validation.minimum > validation.maximum
+        )
+            throw new Error("invalid_field_validation");
+        return;
+    }
+    if (validation.kind === "boolean" || validation.kind === "localizedText")
+        return;
+    if (
+        validation.kind === "list" &&
+        ["string", "number", "boolean"].includes(validation.items)
+    )
+        return;
+    throw new Error("invalid_field_validation");
+}
+
+function validateFilterGroups(fields: readonly LibraryFieldSchema[]): void {
+    const groupSettings = new Map<
+        string,
+        { exclusive: boolean; required: boolean; defaultTag?: string }
+    >();
+    for (const field of fields) {
+        if (
+            !field.detail?.group &&
+            field.detail?.exclusive === undefined &&
+            field.detail?.required === undefined &&
+            field.detail?.defaultTag === undefined
+        )
+            continue;
+        const groupId = field.detail.group ?? field.id;
+        const exclusive = field.detail.exclusive ?? false;
+        const required = field.detail.required ?? false;
+        const defaultTag = field.detail.defaultTag?.trim();
+        const established = groupSettings.get(groupId);
+        if (established) {
+            if (established.exclusive !== exclusive)
+                throw new Error("inconsistent_filter_group_exclusivity");
+            if (established.required !== required)
+                throw new Error("inconsistent_filter_group_requirement");
+            if (
+                established.defaultTag &&
+                defaultTag &&
+                established.defaultTag !== defaultTag
+            )
+                throw new Error("multiple_filter_group_defaults");
+            if (!established.defaultTag && defaultTag)
+                established.defaultTag = defaultTag;
+            continue;
+        }
+        groupSettings.set(groupId, { exclusive, required, defaultTag });
+    }
+}
+
+function validateRelationship(
+    relationship: LibraryRelationshipSchema,
+    layerIds: Set<string>,
+    ids: Set<string>,
+): void {
+    assertIdentifier(relationship.id, "invalid_relationship_id");
+    if (ids.has(relationship.id)) throw new Error("duplicate_relationship");
+    if (!layerIds.has(relationship.targetLayer))
+        throw new Error("relationship_target_not_found");
+    validateMetadata(relationship.metadata, "relationship_metadata_required");
+    const minimum = relationship.minimum ?? 0;
+    const maximum = relationship.maximum ?? Number.POSITIVE_INFINITY;
+    if (minimum < 0 || maximum < 1 || minimum > maximum)
+        throw new Error("invalid_cardinality");
+    if (relationship.requiredTarget && minimum < 1)
+        throw new Error("required_target_needs_minimum");
+    if (!["restrict", "detach", "cascade"].includes(relationship.onDelete))
+        throw new Error("invalid_deletion_behavior");
+    if (
+        relationship.variant !== undefined &&
+        typeof relationship.variant !== "boolean"
+    )
+        throw new Error("invalid_variant_relationship");
+    if (
+        relationship.child !== undefined &&
+        typeof relationship.child !== "boolean"
+    )
+        throw new Error("invalid_child_relationship");
+    if (
+        relationship.grouped !== undefined &&
+        typeof relationship.grouped !== "boolean"
+    )
+        throw new Error("invalid_grouped_relationship");
+    if (
+        relationship.presentationRole !== undefined &&
+        !["composition", "alternateSpelling", "pronunciation"].includes(
+            relationship.presentationRole,
+        )
+    )
+        throw new Error("invalid_relationship_presentation_role");
+    ids.add(relationship.id);
+}
+
+export function validateLibrarySchema(schema: LibrarySchema): LibrarySchema {
+    schema = structuredClone(schema);
+    assertIdentifier(schema.id, "invalid_schema_id");
+    if (!Number.isSafeInteger(schema.version) || schema.version < 1)
+        throw new Error("invalid_schema_version");
+    assertIdentifier(schema.namespace, "invalid_schema_namespace");
+    if (!schema.language.trim()) throw new Error("schema_metadata_required");
+    validateMetadata(schema.metadata, "schema_metadata_required");
+    if (schema.layers.length === 0) throw new Error("layers_required");
+    const layerIds = new Set<string>();
+    const navigationSlugs = new Set<string>();
+    for (const layer of schema.layers) {
+        assertIdentifier(layer.id, "invalid_layer_id");
+        if (layer.navigationSlug !== undefined)
+            assertIdentifier(layer.navigationSlug, "invalid_layer_id");
+        const slug = layer.navigationSlug ?? layer.id;
+        if (navigationSlugs.has(slug)) throw new Error("duplicate_layer");
+        navigationSlugs.add(slug);
+        if (layerIds.has(layer.id)) throw new Error("duplicate_layer");
+        validateMetadata(layer.metadata, "layer_metadata_required");
+        if (
+            layer.displayDefinition !== undefined &&
+            typeof layer.displayDefinition !== "boolean"
+        )
+            throw new Error("invalid_display_definition");
+        if (layer.minimal !== undefined && typeof layer.minimal !== "boolean")
+            throw new Error("invalid_minimal_layer");
+        if (layer.grid) {
+            if (
+                !Number.isSafeInteger(layer.grid.rowSize) ||
+                layer.grid.rowSize < 1 ||
+                layer.grid.rowSize > 24 ||
+                !Array.isArray(layer.grid.items)
+            ) {
+                throw new Error("invalid_layer_grid");
+            }
+            const itemIds = layer.grid.items.filter(
+                (item): item is string | number =>
+                    typeof item === "string" || typeof item === "number",
+            );
+            if (
+                layer.grid.items.some(
+                    (item) =>
+                        item !== null &&
+                        typeof item !== "string" &&
+                        typeof item !== "number" &&
+                        (typeof item !== "object" || item.blank !== true),
+                ) ||
+                itemIds.some((item) =>
+                    typeof item === "string"
+                        ? !CONTENT_RECORD_ID_PATTERN.test(item)
+                        : !Number.isSafeInteger(item) || item < 0,
+                ) ||
+                new Set(itemIds.map(String)).size !== itemIds.length
+            ) {
+                throw new Error("invalid_layer_grid_items");
+            }
+        }
+        for (const role of layer.activityCompatibility ?? []) {
+            if (!CONTENT_CLASS_PATTERN.test(role))
+                throw new Error("invalid_activity_role");
+        }
+        for (const vein of layer.interestVeins ?? []) {
+            if (!CONTENT_CLASS_PATTERN.test(vein))
+                throw new Error("invalid_interest_vein");
+        }
+        validateClassifications(layer, schema, validateMetadata);
+        const viewIds = new Set<string>();
+        for (const view of layer.views ?? []) {
+            assertIdentifier(view.id, "invalid_layer_view_id");
+            if (viewIds.has(view.id)) throw new Error("duplicate_layer_view");
+            viewIds.add(view.id);
+            validateMetadata(view.metadata, "layer_view_metadata_required");
+            if (
+                !["cards", "transformTree"].includes(view.layout) ||
+                !Array.isArray(view.includeTags) ||
+                !view.includeTags.length ||
+                view.includeTags.some(
+                    (tag) => typeof tag !== "string" || !tag.trim(),
+                )
+            )
+                throw new Error("invalid_layer_view");
+        }
+        layerIds.add(layer.id);
+    }
+    for (const layer of schema.layers) {
+        if (
+            layer.dictionary_lookup !== undefined &&
+            typeof layer.dictionary_lookup !== "boolean"
+        )
+            throw new Error("invalid_dictionary_lookup");
+        const fieldIds = new Set<string>();
+        for (const field of layer.fields ?? []) validateField(field, fieldIds);
+        validateFilterGroups(layer.fields ?? []);
+        for (const fieldId of layer.detail?.fieldOrder ?? []) {
+            if (!fieldIds.has(fieldId))
+                throw new Error("detail_field_not_found");
+        }
+        if (layer.detail?.titleField && !fieldIds.has(layer.detail.titleField))
+            throw new Error("detail_title_field_not_found");
+        if (layer.cardConstructor) {
+            validateMetadata(
+                layer.cardConstructor.label,
+                "constructor_label_required",
+            );
+            const constructorFields = layer.cardConstructor.fields ?? [];
+            if (
+                new Set(constructorFields).size !== constructorFields.length ||
+                constructorFields.some((fieldId) => !fieldIds.has(fieldId))
+            )
+                throw new Error("constructor_field_not_found");
+            const relationshipIds = new Set(
+                (layer.relationships ?? []).map(({ id }) => id),
+            );
+            const constructorRelationships =
+                layer.cardConstructor.relationships ?? [];
+            if (
+                !Array.isArray(layer.cardConstructor.input_carousels) ||
+                !Array.isArray(layer.cardConstructor.pronunciation_carousels)
+            )
+                throw new Error("constructor_carousels_required");
+            if (
+                new Set(constructorRelationships).size !==
+                    constructorRelationships.length ||
+                constructorRelationships.some(
+                    (relationshipId) => !relationshipIds.has(relationshipId),
+                )
+            )
+                throw new Error("constructor_relationship_not_found");
+            for (const [carouselIds, pronunciation] of [
+                [layer.cardConstructor.input_carousels, false],
+                [layer.cardConstructor.pronunciation_carousels, true],
+            ] as const) {
+                if (
+                    new Set(carouselIds).size !== carouselIds.length ||
+                    carouselIds.some((targetLayerId) => {
+                        if (!layerIds.has(targetLayerId)) return true;
+                        return !constructorRelationships.some(
+                            (relationshipId) => {
+                                const relationship = (
+                                    layer.relationships ?? []
+                                ).find(({ id }) => id === relationshipId);
+                                return (
+                                    relationship?.targetLayer ===
+                                        targetLayerId &&
+                                    (relationship?.presentationRole ===
+                                        "pronunciation") ===
+                                        pronunciation
+                                );
+                            },
+                        );
+                    })
+                )
+                    throw new Error("constructor_carousel_not_found");
+            }
+            const defaultIds = Object.keys(
+                layer.cardConstructor.defaults ?? {},
+            );
+            if (defaultIds.some((fieldId) => !fieldIds.has(fieldId)))
+                throw new Error("constructor_default_field_not_found");
+            const extraCarouselIds = new Set<string>();
+            for (const carousel of layer.cardConstructor.tag_carousels ?? []) {
+                assertIdentifier(carousel.id, "invalid_tag_carousel_id");
+                if (extraCarouselIds.has(carousel.id))
+                    throw new Error("duplicate_constructor_carousel");
+                extraCarouselIds.add(carousel.id);
+                validateMetadata(
+                    carousel.metadata,
+                    "constructor_carousel_metadata_required",
+                );
+                if (
+                    !relationshipIds.has(carousel.relationship) ||
+                    typeof carousel.tag !== "string" ||
+                    !carousel.tag.trim() ||
+                    typeof carousel.excludeFromBrowse !== "boolean"
+                )
+                    throw new Error("invalid_tag_carousel");
+            }
+            for (const carousel of layer.cardConstructor.literal_carousels ??
+                []) {
+                assertIdentifier(carousel.id, "invalid_literal_carousel_id");
+                if (extraCarouselIds.has(carousel.id))
+                    throw new Error("duplicate_constructor_carousel");
+                extraCarouselIds.add(carousel.id);
+                validateMetadata(
+                    carousel.metadata,
+                    "constructor_carousel_metadata_required",
+                );
+                if (
+                    !Array.isArray(carousel.values) ||
+                    !carousel.values.length ||
+                    new Set(carousel.values).size !== carousel.values.length ||
+                    carousel.values.some(
+                        (value) => typeof value !== "string" || !value,
+                    )
+                )
+                    throw new Error("invalid_literal_carousel");
+            }
+            for (const option of [
+                layer.cardConstructor.allowAlwaysShowDefinition,
+                layer.cardConstructor.allowHidden,
+            ]) {
+                if (option !== undefined && typeof option !== "boolean")
+                    throw new Error("invalid_constructor_option");
+            }
+        }
+        if (
+            layer.semanticRole === "atomicWritingUnit" ||
+            layer.semanticRole === "compoundWritingUnit"
+        ) {
+            const pronunciation = (layer.fields ?? []).find(
+                ({ id }) => id === "pronunciation",
+            );
+            if (pronunciation?.type !== "stringList")
+                throw new Error("pronunciation_field_required");
+            const audio = (layer.fields ?? []).find(({ id }) => id === "audio");
+            if (audio?.type !== "audio")
+                throw new Error("audio_field_required");
+        }
+        if (layer.strokeAsset) {
+            const field = (layer.fields ?? []).find(
+                ({ id }) => id === layer.strokeAsset!.field,
+            );
+            if (field?.type !== "asset")
+                throw new Error("stroke_asset_field_not_found");
+        }
+        if (
+            ["lexicalUnit", "orderedLexicalSequence"].includes(
+                layer.semanticRole ?? "",
+            ) &&
+            (layer.fields ?? []).some(({ type }) => type === "strokePattern")
+        )
+            throw new Error("stroke_pattern_writing_unit_required");
+        if (layer.semanticRole === "definition") {
+            const localization = layer.definitionLocalization;
+            if (!localization)
+                throw new Error("definition_localization_required");
+            if (!CONTENT_CLASS_PATTERN.test(localization.stringKeyPrefix))
+                throw new Error("invalid_definition_string_key_prefix");
+            const stringKeyField = (layer.fields ?? []).find(
+                ({ id }) => id === localization.stringKeyField,
+            );
+            const translationsField = (layer.fields ?? []).find(
+                ({ id }) => id === localization.translationsField,
+            );
+            if (stringKeyField?.type !== "string")
+                throw new Error("definition_string_key_field_required");
+            if (translationsField?.type !== "localizedText")
+                throw new Error("definition_translations_field_required");
+        } else if (layer.definitionLocalization) {
+            throw new Error("definition_localization_role_required");
+        }
+        const relationshipIds = new Set<string>();
+        for (const relationship of layer.relationships ?? []) {
+            validateRelationship(relationship, layerIds, relationshipIds);
+        }
+        for (const field of layer.fields ?? []) {
+            const links = field.input?.linkRelationships;
+            if (links === undefined) continue;
+            if (
+                !Array.isArray(links) ||
+                !links.length ||
+                new Set(links).size !== links.length ||
+                links.some(
+                    (relationshipId) =>
+                        typeof relationshipId !== "string" ||
+                        !relationshipIds.has(relationshipId),
+                )
+            )
+                throw new Error("field_link_relationship_not_found");
+        }
+        if (layer.displayDefinition) {
+            if (
+                layer.semanticRole === "atomicWritingUnit" ||
+                layer.semanticRole === "definition" ||
+                layer.semanticRole === "meaning"
+            )
+                throw new Error("display_definition_not_supported");
+            const hasDefinitionRelationship = (layer.relationships ?? []).some(
+                (relationship) => {
+                    const target = schema.layers.find(
+                        ({ id }) => id === relationship.targetLayer,
+                    );
+                    return target &&
+                        (target.semanticRole === "definition" ||
+                            target.semanticRole === "meaning")
+                        ? (relationship.minimum ?? 0) >= 1
+                        : false;
+                },
+            );
+            if (!hasDefinitionRelationship)
+                throw new Error("display_definition_relationship_required");
+        }
+    }
+    validateTransformSets(schema, { assertIdentifier, validateMetadata });
+    return structuredClone({
+        ...schema,
+        language: canonicalizeLanguageTag(schema.language),
+    });
+}
+
+export function findLayer(schema: LibrarySchema, layerId: string) {
+    const layer = schema.layers.find(({ id }) => id === layerId);
+    if (!layer) throw new Error("layer_not_found");
+    return layer;
+}
+
+export function validateFields(
+    schema: LibrarySchema,
+    layerId: string,
+    values: Record<string, unknown>,
+): void {
+    const fields = findLayer(schema, layerId).fields ?? [];
+    const configured = new Map(fields.map((field) => [field.id, field]));
+    for (const key of Object.keys(values)) {
+        if (!configured.has(key)) throw new Error(`unknown_field:${key}`);
+    }
+    for (const field of fields) {
+        const value = values[field.id];
+        if (
+            field.required &&
+            field.type !== "audio" &&
+            (value === undefined || value === "")
+        )
+            throw new Error(`field_required:${field.id}`);
+        if (value === undefined) continue;
+        const builtInValid =
+            (field.type === "integer" && Number.isSafeInteger(value)) ||
+            (field.type === "number" &&
+                typeof value === "number" &&
+                Number.isFinite(value)) ||
+            ((field.type === "string" ||
+                field.type === "asset" ||
+                field.type === "audio") &&
+                typeof value === "string") ||
+            (field.type === "boolean" && typeof value === "boolean") ||
+            (field.type === "stringList" &&
+                Array.isArray(value) &&
+                value.every((item) => typeof item === "string")) ||
+            (["assetList", "audioList", "imageList"].includes(field.type) &&
+                Array.isArray(value) &&
+                value.every(
+                    (item) => typeof item === "string" && item.length > 0,
+                )) ||
+            (field.type === "localizedText" &&
+                (() => {
+                    try {
+                        validateLocalizedText(
+                            value,
+                            `invalid_field_type:${field.id}`,
+                        );
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                })()) ||
+            (field.type === "strokePattern" && validateStrokePattern(value));
+        const valid = BUILT_IN_FIELD_TYPES.has(field.type)
+            ? builtInValid &&
+              (!field.validation || validateFieldValue(field.validation, value))
+            : field.validation !== undefined &&
+              validateFieldValue(field.validation, value);
+        if (!valid) throw new Error(`invalid_field_type:${field.id}`);
+    }
+}
+
+function validateFieldValue(
+    validation: NonNullable<LibraryFieldSchema["validation"]>,
+    value: unknown,
+): boolean {
+    if (validation.kind === "string")
+        return (
+            typeof value === "string" &&
+            (!validation.pattern ||
+                new RegExp(validation.pattern, "u").test(value))
+        );
+    if (validation.kind === "boolean") return typeof value === "boolean";
+    if (validation.kind === "localizedText") {
+        try {
+            validateLocalizedText(value, "invalid");
+            return true;
+        } catch {
+            return false;
+        }
+    }
+    if (validation.kind === "number")
+        return (
+            typeof value === "number" &&
+            Number.isFinite(value) &&
+            (!validation.integer || Number.isSafeInteger(value)) &&
+            (validation.minimum === undefined || value >= validation.minimum) &&
+            (validation.maximum === undefined || value <= validation.maximum)
+        );
+    return (
+        validation.kind === "list" &&
+        Array.isArray(value) &&
+        value.every((item) =>
+            validation.items === "number"
+                ? typeof item === "number" && Number.isFinite(item)
+                : typeof item === validation.items,
+        )
+    );
+}
+
+export function validateReferences(
+    schema: LibrarySchema,
+    layerId: string,
+    references: readonly LibraryReferenceInput[],
+    targets: ReadonlyMap<string, LibraryEntry>,
+    referenceGroups: LibraryEntryInput["referenceGroups"] = {},
+    fields: Readonly<Record<string, unknown>> = {},
+): void {
+    const layer = findLayer(schema, layerId);
+    const relationships = new Map(
+        (layer.relationships ?? []).map((item) => [item.id, item]),
+    );
+    for (const field of layer.fields ?? []) {
+        if (!field.multi_value || !field.input?.linkRelationships?.length)
+            continue;
+        const values = fields[field.id];
+        if (!Array.isArray(values)) continue;
+        const groupCount = Math.max(
+            0,
+            ...field.input.linkRelationships.map(
+                (relation) => referenceGroups[relation]?.length ?? 0,
+            ),
+        );
+        if (groupCount > values.length)
+            throw new Error(`field_reference_group_mismatch:${field.id}`);
+    }
+    const requiredPronunciationRelationships = new Set(
+        (layer.relationships ?? [])
+            .filter(
+                ({ targetLayer, presentationRole }) =>
+                    presentationRole === "pronunciation" &&
+                    layer.cardConstructor?.pronunciation_carousels.includes(
+                        targetLayer,
+                    ),
+            )
+            .map(({ id }) => id),
+    );
+    for (const [relation, groups] of Object.entries(referenceGroups)) {
+        const relationship = relationships.get(relation);
+        if (!relationship) throw new Error("relationship_not_found");
+        if (!relationship.grouped)
+            throw new Error(`relationship_not_grouped:${relation}`);
+        if (
+            !Array.isArray(groups) ||
+            !groups.length ||
+            groups.some((group) => !Array.isArray(group) || !group.length)
+        )
+            throw new Error(`relationship_group_empty:${relation}`);
+        if (
+            groups.some((group) =>
+                group.some((reference) => reference.relation !== relation),
+            )
+        )
+            throw new Error(`relationship_group_mismatch:${relation}`);
+    }
+    const groupedReferences = Object.entries(referenceGroups).flatMap(
+        ([relation, groups]) =>
+            groups.flatMap((group) =>
+                group.map((reference) => ({ ...reference, relation })),
+            ),
+    );
+    for (const reference of [...references, ...groupedReferences]) {
+        const relationship = relationships.get(reference.relation);
+        if (!relationship) throw new Error("relationship_not_found");
+        const target = targets.get(reference.entryId);
+        if (!target) throw new Error("reference_not_found");
+        if (
+            target.schemaId !== schema.id ||
+            target.schemaVersion > schema.version ||
+            target.layer !== relationship.targetLayer
+        ) {
+            throw new Error("invalid_relationship_target");
+        }
+        validateReferenceTransformation(schema, reference, target);
+    }
+    for (const relationship of relationships.values()) {
+        const matching = [...references, ...groupedReferences].filter(
+            ({ relation }) => relation === relationship.id,
+        );
+        if (
+            relationship.grouped &&
+            references.some(({ relation }) => relation === relationship.id)
+        )
+            throw new Error(`relationship_group_required:${relationship.id}`);
+        const minimum =
+            layer.semanticRole === "compoundWritingUnit" &&
+            layer.cardConstructor &&
+            !requiredPronunciationRelationships.has(relationship.id)
+                ? 0
+                : (relationship.minimum ?? 0);
+        if (matching.length < minimum)
+            throw new Error(`relationship_minimum:${relationship.id}`);
+        if (
+            relationship.maximum !== undefined &&
+            matching.length > relationship.maximum
+        ) {
+            throw new Error(`relationship_maximum:${relationship.id}`);
+        }
+        if (
+            !relationship.ordered &&
+            matching.some(({ position }) => position !== undefined)
+        )
+            throw new Error(`relationship_not_ordered:${relationship.id}`);
+        if (relationship.ordered && !relationship.grouped) {
+            const positions = matching.map(({ position }) => position);
+            if (
+                positions.some(
+                    (position) =>
+                        !Number.isSafeInteger(position) || position! < 0,
+                )
+            )
+                throw new Error(
+                    `relationship_position_required:${relationship.id}`,
+                );
+            if (new Set(positions).size !== positions.length)
+                throw new Error(
+                    `relationship_position_duplicate:${relationship.id}`,
+                );
+        }
+        if (relationship.ordered && relationship.grouped) {
+            for (const group of referenceGroups[relationship.id] ?? []) {
+                const positions = group.map(({ position }) => position);
+                if (
+                    positions.some(
+                        (position) =>
+                            !Number.isSafeInteger(position) || position! < 0,
+                    ) ||
+                    new Set(positions).size !== positions.length
+                )
+                    throw new Error(
+                        `relationship_group_position_invalid:${relationship.id}`,
+                    );
+            }
+        }
+    }
+}
+
+function graphemes(value: string): string[] {
+    const Segmenter = Intl.Segmenter;
+    return Array.from(
+        new Segmenter(undefined, { granularity: "grapheme" }).segment(
+            value.normalize("NFC"),
+        ),
+        ({ segment }) => segment,
+    );
+}
+
+export function resolveRelationships(
+    schema: LibrarySchema,
+    layerId: string,
+    label: string,
+    candidates: readonly LibraryEntry[],
+): LibraryResolutionProposal[] {
+    const relationships = findLayer(schema, layerId).relationships ?? [];
+    return relationships
+        .filter(
+            ({ resolverRole }) => resolverRole && resolverRole !== "explicit",
+        )
+        .map((relationship) => {
+            const available = candidates.filter(
+                (entry) =>
+                    entry.schemaId === schema.id &&
+                    entry.schemaVersion === schema.version &&
+                    entry.layer === relationship.targetLayer,
+            );
+            const units =
+                relationship.resolverRole === "grapheme"
+                    ? graphemes(label)
+                    : label.normalize("NFC").split(/\s+/u).filter(Boolean);
+            const references: LibraryReferenceInput[] = [];
+            const unresolved: string[] = [];
+            units.forEach((unit, position) => {
+                const matches = available.filter(
+                    (entry) => entry.label.normalize("NFC") === unit,
+                );
+                if (matches.length !== 1) {
+                    unresolved.push(unit);
+                    return;
+                }
+                references.push({
+                    entryId: matches[0].id,
+                    relation: relationship.id,
+                    position: relationship.ordered ? position : undefined,
+                });
+            });
+            return {
+                relationship: relationship.id,
+                references,
+                unresolved,
+                resolver: relationship.resolverRole!,
+                deterministic: unresolved.length === 0,
+            };
+        });
+}

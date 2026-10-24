@@ -1,0 +1,51 @@
+# Keluaran pencatatan yang dapat dikonfigurasi
+
+**Cabang Fitur:** feature-add-configurable-logging-adapters
+
+## Tingkat log konsol dan berkas yang independen
+
+Administrator kini dapat memilih ambang tingkat keparahan terpisah untuk pencatatan konsol dan berkas dari tingkat yang didukung gateway pencatatan.
+
+## Penggantian saat berjalan dengan reset ke lingkungan
+
+Pengaturan adapter pencatatan dapat menggantikan nilai lingkungan Docker saat berjalan, termasuk format konsol dan rotasi, lalu direset ke konfigurasi lingkungan. Tindakan Reset terlebih dahulu menampilkan nilai lingkungan di formulir; administrator harus memilih Simpan Pengaturan untuk menerapkan reset. Jalur berkas log tetap dimiliki oleh lingkungan. Penggantian disimpan dalam basis data dan dipulihkan setelah kontainer dimulai ulang.
+
+## Pengaturan untuk adapter yang selalu aktif
+
+Baris Console Logging dan File Logging kini membuka popup pengaturannya meskipun adapter wajib ini tidak dapat dinonaktifkan.
+
+## Keluaran langsung yang tersinkronisasi
+
+Tingkat keparahan dan format yang dikonfigurasi kini menggantikan logger bootstrap awal untuk semua gateway yang dimuat setelahnya, sehingga keluaran Docker langsung mengikuti perubahan konsol. Peringatan penggantian nilai lingkungan kini tampil berwarna oranye di samping judul bidangnya.
+
+## Label konfigurasi yang lebih jelas
+
+Peringatan penggantian kini berbunyi “Mengganti variabel lingkungan”, dan opsi kompresi adapter berkas diberi nama “Log Compression”.
+
+## Konfigurasi tervalidasi milik adapter
+
+Adapter konsol dan berkas kini memiliki validasi konfigurasi serta pemetaan logger. Penggantian berkas menolak ukuran rotasi dan jumlah retensi yang tidak aman sebelum diterapkan.
+
+## Pengaturan pencatatan yang diterjemahkan
+
+Label bidang kini menggunakan sumber daya bahasa Jerman, Inggris, Indonesia, dan Jepang milik adapter, yang dimuat Administrasi sebelum merender formulir konfigurasi.
+
+## Pemulaian gateway yang memahami dependensi
+
+Bootstrap gateway kini mendahulukan dependensi yang dideklarasikan sebelum pengurutan prioritas, sehingga preferensi log berbasis basis data tersedia sebelum gateway pencatatan dimulai.
+
+## Konfigurasi yang dapat diaudit dan diperluas
+
+Kesalahan validasi waktu proses kini diterjemahkan, setiap adapter pencatatan yang ditemukan menerima konfigurasi efektifnya sendiri, serta pembaruan dan pengaturan ulang konfigurasi menghasilkan peristiwa audit terstruktur.
+
+## Pembaruan konsol waktu proses
+
+Perubahan konfigurasi konsol kini memperbarui fungsi pencatatan waktu proses yang sama dengan yang digunakan aplikasi dan peristiwa audit konfigurasi, sehingga tingkat dan format baru langsung berlaku.
+
+## Ambang konsol Docker
+
+Pencatatan bootstrap awal kini menerapkan `LOG_LEVEL` sebelum gateway pencatatan dimulai, sehingga nilai bawaan Docker `info` menyembunyikan keluaran debug selama seluruh proses awal.
+
+## Komit
+
+- [1a843d6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a843d6bcc3ff03b2c40d841f75d29d79da7dc6d)

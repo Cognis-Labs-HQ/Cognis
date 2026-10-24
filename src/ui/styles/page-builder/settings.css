@@ -1,0 +1,195 @@
+.theme-select {
+    min-width: 220px;
+    max-width: 100%;
+    padding: 8px 12px;
+    background: var(--control-bg);
+    color: var(--control-text);
+    border: 1px solid var(--control-border);
+    border-radius: 10px;
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+    appearance: auto;
+}
+
+.theme-select:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    transform: none;
+}
+
+.theme-select option {
+    background: var(--input-bg);
+    color: var(--text);
+}
+
+.language-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.language-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 8px;
+}
+
+.language-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.language-table tr[draggable="true"] {
+    cursor: grab;
+    touch-action: none;
+}
+
+.language-table .drag-handle {
+    width: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 16px;
+    touch-action: none;
+}
+
+.language-table tr.language-row-dragging {
+    opacity: 0.6;
+}
+
+.language-table tr.drop-target-before td {
+    box-shadow: inset 0 3px 0 var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 10%, transparent);
+}
+
+.language-table tr.drop-target-after td {
+    box-shadow: inset 0 -3px 0 var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 10%, transparent);
+}
+
+.settings-language-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 2.5rem;
+}
+
+.settings-language-heading-row h3 {
+    margin: 0;
+    font: inherit;
+}
+
+.settings-language-heading-row button {
+    flex: 0 0 auto;
+    max-width: 50%;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.language-table-empty-cell {
+    color: transparent;
+}
+
+.settings-language-block {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-language-switcher-preference {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.settings-language-switcher-preference h3,
+.settings-language-switcher-preference .switch {
+    margin: 0;
+}
+
+.settings-language-tables {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.sub-composer-heading {
+    margin: 0 0 12px;
+}
+
+.sub-composer-inner {
+    display: block;
+}
+
+.content-grid--two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+@media (max-width: 700px) {
+    .content-grid--two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+.composer-edit-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 74px;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--theme-toggle-bg);
+    color: var(--theme-toggle-color);
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        bottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        background 0.15s ease;
+}
+
+.composer-edit-toggle[hidden] {
+    display: none;
+}
+
+body[data-share-guest="true"] .composer-edit-toggle {
+    display: none;
+}
+
+.composer-edit-toggle:hover {
+    background: var(--theme-toggle-bg-hover);
+}
+
+body:not(:has(#theme-toggle)) .composer-edit-toggle {
+    bottom: 18px;
+}
+
+.composer-edit-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: var(--text);
+    -webkit-mask-image: url("/static/assets/reuse/edit.svg");
+    mask-image: url("/static/assets/reuse/edit.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}

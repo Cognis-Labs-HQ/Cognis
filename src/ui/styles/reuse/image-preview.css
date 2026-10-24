@@ -1,0 +1,76 @@
+.image-preview {
+    position: relative;
+    display: inline-flex;
+    max-width: 100%;
+}
+.image-preview-open {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+    max-width: 100%;
+    border-radius: 0.4rem;
+}
+.image-preview-open:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 3px;
+}
+.image-preview-open img {
+    display: block;
+    width: 8rem;
+    height: 6rem;
+    object-fit: contain;
+    border-radius: inherit;
+    background: var(--surface-2);
+}
+.image-preview--large img {
+    width: auto;
+    height: auto;
+    max-width: min(100%, 20rem);
+    max-height: 18rem;
+}
+.image-preview > .image-preview-remove {
+    position: absolute;
+    inset-block-start: 0.2rem;
+    inset-inline-end: 0.2rem;
+    padding: 0.1rem 0.35rem;
+    background: rgb(from var(--surface) r g b / 1);
+    opacity: 0;
+}
+.image-preview > .image-preview-remove.btn-cancel:is(:hover, :focus-visible) {
+    background: rgb(from var(--surface) r g b / 1);
+}
+.image-preview:is(:hover, :focus-within) > .image-preview-remove {
+    opacity: 1;
+}
+@media (hover: none) {
+    .image-preview > .image-preview-remove {
+        opacity: 1;
+    }
+}
+.image-preview-popup.popup-overlay {
+    overflow: hidden;
+}
+.image-preview-popup .popup-header {
+    justify-content: flex-end;
+    padding: 0.5rem;
+}
+.image-preview-popup .popup-body {
+    padding: 0 0.5rem 0.5rem;
+    overflow: hidden;
+    min-height: 0;
+}
+.image-preview-popup .popup-dialog {
+    width: auto;
+    max-width: 100%;
+    overflow: hidden;
+}
+.image-preview-full {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(100%, calc(100dvw - 4rem));
+    max-height: calc(100dvh - 7rem);
+    object-fit: contain;
+}

@@ -1,0 +1,241 @@
+.calendar-share-entry-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.calendar-share-secret-toggle,
+.calendar-share-copy-btn {
+    flex: 0 0 auto;
+    min-width: 1.85rem;
+    padding: 0.2rem 0.35rem;
+}
+
+[data-calendar-share-delete],
+[data-calendar-user-share-delete] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.85rem;
+    padding: 0.2rem 0.35rem;
+    text-decoration: none;
+}
+
+.calendar-reminder-options {
+    margin-top: 0.35rem;
+    display: grid;
+    gap: 0.3rem;
+}
+
+.calendar-reminder-option {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.45rem;
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    padding: 0.4rem 0.5rem;
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.calendar-reminder-option input[type="checkbox"] {
+    appearance: none;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.calendar-reminder-option-check {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--field-border) 70%, transparent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    font-size: 0.72rem;
+    line-height: 1;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.calendar-reminder-option-label {
+    font-size: 0.84rem;
+}
+
+.calendar-reminder-option.is-selected {
+    border-color: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 45%,
+        var(--field-border)
+    );
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 12%,
+        var(--surface) 88%
+    );
+}
+
+.calendar-reminder-option.is-selected .calendar-reminder-option-check {
+    border-color: color-mix(
+        in srgb,
+        var(--color-success-outline-text, #208643) 70%,
+        transparent
+    );
+    background: color-mix(
+        in srgb,
+        var(--color-success-outline-text, #208643) 20%,
+        transparent
+    );
+    color: color-mix(
+        in srgb,
+        var(--color-success-outline-text, #208643) 90%,
+        var(--text)
+    );
+}
+
+.calendar-user-share-list {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.calendar-user-share-entry {
+    border: 1px solid var(--field-border);
+    border-radius: 10px;
+    padding: 0.6rem 2.2rem 0.6rem 0.65rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    position: relative;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card {
+    flex-direction: row;
+    align-items: center;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card-profile {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card-meta {
+    align-items: flex-start;
+}
+
+.calendar-user-share-entry-profile .calendar-participant-card-name,
+.calendar-user-share-entry-profile .calendar-participant-card-handle {
+    max-width: none;
+    text-align: left;
+}
+
+.calendar-user-share-entry-controls {
+    display: grid;
+    gap: 0.35rem;
+    align-items: start;
+    min-width: 0;
+}
+
+.calendar-user-share-entry-controls label {
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    min-width: 0;
+}
+
+.calendar-user-share-entry-controls select {
+    width: 100%;
+}
+
+.calendar-user-share-entry-remove {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    padding: 0;
+    border: 0;
+    line-height: 1;
+}
+
+@media (max-width: 640px) {
+    .calendar-user-share-entry {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.calendar-share-copy-btn {
+    width: 2rem;
+    min-height: 2rem;
+    padding: 0.25rem;
+    color: inherit;
+    transition: color 0.5s ease;
+}
+
+.calendar-share-secret-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-share-secret-toggle.is-revealed::after {
+    content: "";
+    position: absolute;
+    width: 1.1rem;
+    border-top: 1px solid currentColor;
+    transform: rotate(-32deg);
+}
+
+.calendar-share-copy-btn::before {
+    content: "";
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin: 0 auto;
+    background: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/clipboard.svg");
+    mask-image: url("/static/assets/reuse/clipboard.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.calendar-share-copy-btn--copied {
+    color: var(--color-success-outline-text);
+}
+
+.calendar-share-copy-btn.calendar-share-copy-btn--copied::before {
+    -webkit-mask-image: url("/static/assets/reuse/check.svg");
+    mask-image: url("/static/assets/reuse/check.svg");
+    animation: calendar-share-copy-icon-pop 0.25s ease;
+}
+
+@keyframes calendar-share-copy-icon-pop {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.35);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

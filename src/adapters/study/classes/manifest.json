@@ -1,0 +1,9 @@
+{
+    "id": "classes",
+    "uuid": "0d1370bf-3abb-5c05-b744-2b54088523be",
+    "name": "Classes",
+    "version": "1.4.5",
+    "publisher": "Cognis Labs HQ",
+    "gateway": "study",
+    "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"]
+}
