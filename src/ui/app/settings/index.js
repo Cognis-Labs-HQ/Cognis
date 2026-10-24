@@ -152,6 +152,7 @@ export async function mount(root, { signal } = {}) {
             loadEditorAcknowledgement().catch(() => false),
             loadAuthSetupRequirement(),
         ]);
+    if (signal?.aborted) return;
     const storedLanguagePriorityMode = readLanguagePriorityMode();
     const initialLanguagePriorityMode =
         loadedPrefs?.languagePriorityMode === "manual"
@@ -181,6 +182,7 @@ export async function mount(root, { signal } = {}) {
         createI18n({ preferredLanguages: languagePriority }),
         loadSettingsSections(),
     ]);
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
     applyTimezoneToLocalStorage(

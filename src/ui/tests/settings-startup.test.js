@@ -126,3 +126,48 @@ test("each settings mount reads the current account and locale without reusing p
         ),
     );
 });
+
+test("cancelled settings startup cannot apply a late locale or setup redirect", async () => {
+    const prefs = deferred();
+    const controller = new AbortController();
+    const fixture = await loadSettingsMount({
+        account: () => "account-a",
+        apiFetch: async (url) => {
+            if (url.endsWith("/ui-preferences")) return prefs.promise;
+            if (url.endsWith("/setup-status"))
+                return Response.json({ data: { requiresSetup: true } });
+            assert.fail(`unexpected cancelled read ${url}`);
+        },
+        loadEditorAcknowledgement: async () => false,
+        createI18n: () => assert.fail("cancelled settings must not localize"),
+    });
+    const mounting = fixture.mount({}, { signal: controller.signal });
+    controller.abort();
+    prefs.resolve(preferences(["de"]));
+    await mounting;
+    assert.deepEqual(fixture.redirects, []);
+    assert.deepEqual(fixture.languageChanges, []);
+});
+
+test("cancelled settings localization cannot change the destination title", async () => {
+    const localization = deferred();
+    const controller = new AbortController();
+    const fixture = await loadSettingsMount({
+        account: () => "account-a",
+        apiFetch: async (url) => {
+            if (url.endsWith("/ui-preferences")) return preferences(["en"]);
+            if (url.endsWith("/setup-status"))
+                return Response.json({ data: { requiresSetup: false } });
+            if (url.endsWith("/settings-sections"))
+                return Response.json({ data: [] });
+            assert.fail(`unexpected read ${url}`);
+        },
+        loadEditorAcknowledgement: async () => true,
+        createI18n: () => localization.promise,
+    });
+    const mounting = fixture.mount({}, { signal: controller.signal });
+    await tick();
+    controller.abort();
+    localization.resolve({});
+    await mounting;
+});

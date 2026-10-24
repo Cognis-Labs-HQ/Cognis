@@ -55,6 +55,7 @@ export async function mount(root, { signal } = {}) {
     const calendarEvents = uiCtx.capabilities.get("calendar:dashboardEvents");
     calendarEvents?.loadEventStatusStyles();
     const i18n = await createI18n();
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
 
     const account = localStorage.getItem("cognis_account") ?? "";
