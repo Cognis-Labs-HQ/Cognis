@@ -14,3 +14,4 @@ Instalasi service worker menyiapkan ikon normal 192px, 384px, dan 512px tanpa me
 
 - [eaa76ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/eaa76ae32f517fd4b2a52fd1c064aa19720dc9ac)
 - [b1fd6cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1fd6cd8f41b6b03855eef1f87a21e98989e46b8)
+- [0d6fbe8](https://github.com/Cognis-Labs-HQ/Cognis/commit/0d6fbe8efa1621057a43e721b949beca339cdf82)
