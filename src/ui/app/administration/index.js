@@ -856,6 +856,7 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         subPageNavigation: true,
         elements,

@@ -26,7 +26,7 @@ function element() {
     };
 }
 
-test("loading follows route content, falls back for documents and releases superseded scopes", () => {
+test("full-window loading remains busy until all overlapping navigation tokens finish", () => {
     const previous = Object.fromEntries(
         [
             "document",
@@ -66,38 +66,23 @@ test("loading follows route content, falls back for documents and releases super
     let finishDocument;
     let finishNext;
     try {
-        let workspace = element();
-        finishContent = beginPageLoading({ resolveScope: () => workspace });
+        finishContent = beginPageLoading();
         const overlay = body.children[0];
         assert.equal(body.dataset.pageReady, "false");
-        assert.equal(body.attributes["aria-busy"], "false");
-        assert.equal(workspace.attributes["aria-busy"], "true");
-        assert.equal(overlay.attributes["data-loading-scope"], "content");
-        assert.equal(overlay.style.top, "180px");
-        assert.equal(overlay.style.height, "620px");
+        assert.equal(body.attributes["aria-busy"], "true");
+        assert.equal(overlay.style.top, undefined);
+        assert.equal(overlay.style.height, undefined);
 
         finishDocument = beginPageLoading();
-        assert.equal(overlay.attributes["data-loading-scope"], "document");
-        assert.equal(body.attributes["aria-busy"], "true");
-        assert.equal(overlay.style.top, "");
         finishDocument();
-        assert.equal(overlay.attributes["data-loading-scope"], "content");
-
-        const oldWorkspace = workspace;
-        workspace = element();
-        const callback = [...frames.values()].at(-1);
-        frames.clear();
-        callback();
-        assert.equal(oldWorkspace.attributes["aria-busy"], undefined);
-        assert.equal(workspace.attributes["aria-busy"], "true");
-
-        finishNext = beginPageLoading({ resolveScope: () => workspace });
+        assert.equal(body.attributes["aria-busy"], "true");
+        finishNext = beginPageLoading();
         finishContent();
         finishContent();
         assert.equal(body.dataset.pageReady, "false");
         finishNext();
         assert.equal(body.dataset.pageReady, "true");
-        assert.equal(workspace.attributes["aria-busy"], undefined);
+        assert.equal(body.attributes["aria-busy"], "false");
         assert.equal(frames.size, 0);
     } finally {
         finishContent?.();
