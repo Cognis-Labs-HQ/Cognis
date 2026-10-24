@@ -55,7 +55,7 @@
   <string name="gateway.calendar.week_number_prefix">KW</string>
   <string name="gateway.calendar.week_short">KW</string>
   <string name="gateway.calendar.events_count_suffix">Termine</string>
-  <string name="gateway.calendar.event_composer">Termin-Editor</string>
+  <string name="gateway.calendar.event_composer">Neuer Termin</string>
   <string name="gateway.calendar.upcoming_events">Bevorstehende Termine</string>
   <string name="gateway.calendar.upcoming_summary">Kurzübersicht</string>
   <string name="gateway.calendar.pending_events">Ausstehende Termine</string>

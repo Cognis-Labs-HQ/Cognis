@@ -55,7 +55,7 @@
   <string name="gateway.calendar.week_number_prefix">第</string>
   <string name="gateway.calendar.week_short">週</string>
   <string name="gateway.calendar.events_count_suffix">件</string>
-  <string name="gateway.calendar.event_composer">イベント作成</string>
+  <string name="gateway.calendar.event_composer">新しいイベント</string>
   <string name="gateway.calendar.upcoming_events">今後のイベント</string>
   <string name="gateway.calendar.upcoming_summary">今後の概要</string>
   <string name="gateway.calendar.pending_events">回答待ちの予定</string>
