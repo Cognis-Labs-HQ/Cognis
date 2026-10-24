@@ -55,7 +55,7 @@
   <string name="gateway.calendar.week_number_prefix">W</string>
   <string name="gateway.calendar.week_short">Wk</string>
   <string name="gateway.calendar.events_count_suffix">events</string>
-  <string name="gateway.calendar.event_composer">Event Composer</string>
+  <string name="gateway.calendar.event_composer">New Event</string>
   <string name="gateway.calendar.upcoming_events">Upcoming Events</string>
   <string name="gateway.calendar.upcoming_summary">Upcoming Summary</string>
   <string name="gateway.calendar.pending_events">Pending Events</string>

@@ -106,7 +106,7 @@ for (const descriptorPath of resolvableFiles.filter(
 )) {
     const contents = await readFile(descriptorPath, "utf8");
     for (const match of contents.matchAll(
-        /scriptUrl\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
+        /(?:scriptUrl\s*:\s*|registerNavbarPlugin(?:\?\.)?\s*\(\s*)["'](\/static\/[^"']+\.js)["']/g,
     )) {
         const sourcePath = logicalSourcePaths.get(match[1]);
         if (sourcePath) forcedEntryPaths.add(sourcePath);

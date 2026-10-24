@@ -600,7 +600,10 @@ export function createUiRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: versionDescriptor(sections, ASSET_VERSION),
+                    data: versionDescriptor(
+                        uiRegistry?.resolveDescriptor(sections) ?? sections,
+                        ASSET_VERSION,
+                    ),
                 }),
             );
             return true;

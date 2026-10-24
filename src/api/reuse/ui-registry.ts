@@ -166,14 +166,50 @@ export class UIRegistry {
     }
 
     resolveAssetUrl(assetUrl: string): string {
-        return this.assetManifest[assetUrl] ?? assetUrl;
+        const emittedUrl = this.assetManifest[assetUrl];
+        if (emittedUrl) return emittedUrl;
+
+        const gatewayAsset = assetUrl.match(
+            /^\/static\/gateways\/([^/]+)\/([^?#]+)$/,
+        );
+        const adapterAsset = assetUrl.match(
+            /^\/static\/adapters\/([^/]+)\/([^/]+)\/([^?#]+)$/,
+        );
+        const directory = gatewayAsset
+            ? this.getStaticDir(gatewayAsset[1])
+            : adapterAsset
+              ? this.getAdapterStaticDir(adapterAsset[1], adapterAsset[2])
+              : undefined;
+        const relativeAsset = gatewayAsset?.[2] ?? adapterAsset?.[3];
+        if (
+            !directory ||
+            !relativeAsset ||
+            path.isAbsolute(relativeAsset) ||
+            relativeAsset.split("/").includes("..")
+        ) {
+            return assetUrl;
+        }
+        for (const sourceRoot of ["src", "dist/server/src"]) {
+            const sourcePath = path
+                .relative(
+                    path.resolve(process.cwd(), sourceRoot),
+                    path.resolve(directory, relativeAsset),
+                )
+                .split(path.sep)
+                .join("/");
+            if (!/^(?:gateways|adapters)\//.test(sourcePath)) continue;
+            const resolvedAsset = this.assetManifest[`/static/${sourcePath}`];
+            if (resolvedAsset) return resolvedAsset;
+        }
+        return assetUrl;
     }
 
     listAssetManifest(): Record<string, string> {
         return { ...this.assetManifest };
     }
 
-    private resolveDescriptor<T>(descriptor: T): T {
+    /** Resolves registered and flow-produced host assets without mutating descriptors. */
+    resolveDescriptor<T>(descriptor: T): T {
         if (Array.isArray(descriptor)) {
             return descriptor.map((value) =>
                 this.resolveDescriptor(value),

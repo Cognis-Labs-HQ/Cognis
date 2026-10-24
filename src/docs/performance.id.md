@@ -15,3 +15,11 @@ Jalankan tiga sampel Lighthouse terhadap rilis hosted dan simpan artefak median 
 | Navigasi SPA    |      10 |              100 KiB | 1.500 ms |  250 ms |
 
 Optimasi hanya diterima setelah protokol hosted yang sama menunjukkan tidak ada regresi anggaran terhadap baseline tersimpan. Selidiki kueri basis data, payload, kebijakan cache, dan pekerjaan aplikasi terlebih dahulu. Tambahkan Redis hanya jika pengukuran ini membuktikan bottleneck cache persisten yang tidak dapat diatasi cache dalam proses dan web.
+
+## Resolusi aset produksi
+
+Hanya URL skrip yang dideklarasikan dan pendaftaran bilah navigasi langsung yang menjadi titik masuk wajib; impor statis biasa tetap menjadi dependensi dalam bundel. Build UI menerbitkan kontribusi JavaScript host yang dideklarasikan sebagai titik masuk meskipun titik masuk lain juga mengimpornya. Direktori statis gateway dan adapter yang terdaftar memetakan deskriptornya ke aset sumber hasil build yang sesuai, sehingga prefiks URL khusus dapat memakai bundel produksi. Bagian pengaturan yang ditambahkan oleh alur konstruksi diresolusikan melalui manifes yang sama setelah pemeriksaan otorisasi dan visibilitas. Setiap permintaan memakai deskriptor terkini; sumber yang tidak dibundel dan sumber modul dengan revisi mempertahankan URL resminya.
+
+Resolusi memakai manifes build yang tersedia dan tidak menyimpan respons API dalam cache. Autentikasi dan penyaringan komponen aktif tetap dijalankan saat deskriptor diminta. Instalasi yang hanya memakai sumber, aset yang tidak dibangun, direktori eksternal, dan URL modul dengan revisi tetap memakai jalur pengiriman aslinya.
+
+Hanya katalog yang diperlukan sebelum pemasangan halaman yang mengaktifkan pramuat. Katalog bilah navigasi tetap mengunduh sesuai kebutuhan agar penemuan latar belakang tidak memicu banyak permintaan bersamaan saat navigasi. Setelah penemuan terautentikasi, pemuat penyedia melakukan pramuat URL bundel host yang tidak berubah sambil mempertahankan urutan impor dan pemasangan. Tautan pramuat dihapus setelah selesai atau gagal. Penyedia aktif tidak dipramuat ulang; URL modul eksternal, sumber, dan URL dengan revisi tetap memakai jalur impor yang ada.
