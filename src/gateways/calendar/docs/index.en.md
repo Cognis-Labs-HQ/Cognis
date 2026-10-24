@@ -19,3 +19,7 @@ Calendar follows the proven meeting-share lifecycle: Share clears its loading co
 ## Availability status
 
 Calendar events update a user’s availability when they start or when an event is created over the current timeslot. A manual status selected after that activation takes precedence until another event starts. Users can disable calendar-driven status updates under User Settings → General.
+
+## Cancel Old Calendar Loads
+
+Leaving Calendar stops obsolete startup work before it updates the page or URL. The route signal reaches the page composer, and delayed calendar, event and invitation responses cannot rebuild a destination that has already been replaced. Cancelled startup does not show a late load-failure toast or restart the availability timer.

@@ -19,3 +19,7 @@ Calendar mengikuti siklus hidup berbagi rapat yang sudah terbukti: Share menghap
 ## Status ketersediaan
 
 Acara kalender memperbarui ketersediaan pengguna saat dimulai atau saat acara dibuat pada rentang waktu saat ini. Status manual yang dipilih setelah aktivasi tersebut berlaku hingga acara lain dimulai. Pengguna dapat menonaktifkan pembaruan status dari kalender melalui Pengaturan Pengguna → Umum.
+
+## Batalkan Muatan Kalender Lama
+
+Meninggalkan Kalender menghentikan inisialisasi yang sudah tidak berlaku sebelum mengubah halaman atau URL. Sinyal rute diteruskan ke penyusun halaman; respons kalender, acara, dan undangan yang terlambat tidak dapat membangun kembali tujuan yang telah diganti. Inisialisasi yang dibatalkan tidak menampilkan pemberitahuan kegagalan terlambat atau memulai ulang pengatur waktu ketersediaan.
