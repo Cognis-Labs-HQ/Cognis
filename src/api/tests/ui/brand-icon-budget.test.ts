@@ -114,10 +114,10 @@ test("page favicons use 384px and the page header uses 512px branding", async ()
         /<img\b(?=[^>]*class="topbar-icon")[^>]*src="([^"]+)"/,
     )?.[1];
     assert.ok(brand, "the shell renders its brand image");
-    assert.match(brand, /cognis-icon-512\.png/);
+    assert.match(brand, /cognis-header-512\.png/);
     assert.ok(
-        (await imageBytes(route, brand)) <= 144 * 1024,
-        "shell brand exceeds 144 KiB",
+        (await imageBytes(route, brand)) <= 160 * 1024,
+        "shell brand exceeds 160 KiB",
     );
 });
 
@@ -171,8 +171,9 @@ test("service worker installation retains install icons within its precache imag
     assert.ok(images.has("/static/assets/icons/cognis-icon-192.png"));
     assert.ok(images.has("/static/assets/icons/cognis-icon-512.png"));
     assert.ok(images.has("/static/assets/icons/cognis-icon-384.png"));
+    assert.ok(images.has("/static/assets/icons/cognis-header-512.png"));
     const bytes = [...images.values()].reduce((sum, size) => sum + size, 0);
-    assert.ok(bytes <= 288 * 1024, `precache images exceed 288 KiB: ${bytes}`);
+    assert.ok(bytes <= 416 * 1024, `precache images exceed 416 KiB: ${bytes}`);
 });
 
 test("injected denied and non-admin sessions retain page authorization", async () => {
@@ -207,4 +208,27 @@ test("normal and maskable image variants retain their declared PNG dimensions", 
         assert.equal(image.readUInt32BE(20), 384);
         assert.equal(image[25], 6, "RGBA preserves transparency");
     }
+});
+
+test("header artwork retains the original aspect ratio at 512px height", async () => {
+    const original = await readFile(
+        new URL(
+            "../../../ui/public/assets/icons/cognis-icon.png",
+            import.meta.url,
+        ),
+    );
+    const header = await readFile(
+        new URL(
+            "../../../ui/public/assets/icons/cognis-header-512.png",
+            import.meta.url,
+        ),
+    );
+    const sourceWidth = original.readUInt32BE(16);
+    const sourceHeight = original.readUInt32BE(20);
+    assert.equal(header.readUInt32BE(20), 512);
+    assert.equal(
+        header.readUInt32BE(16),
+        Math.round((sourceWidth * 512) / sourceHeight),
+    );
+    assert.equal(header[25], 6, "header retains RGBA transparency");
 });
