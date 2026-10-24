@@ -6,6 +6,7 @@ function fixture() {
     const window = new EventTarget();
     let reloads = 0;
     let healthy = false;
+    let now = 1_000;
     const timers = [];
     window.location = { pathname: "/license", reload: () => reloads++ };
     const module = loadTestModule(
@@ -13,6 +14,7 @@ function fixture() {
         {},
         {
             window,
+            Date: { now: () => now },
             navigator: { onLine: true },
             CustomEvent,
             AbortSignal,
@@ -26,6 +28,9 @@ function fixture() {
     );
     return {
         window,
+        advance: (milliseconds) => {
+            now += milliseconds;
+        },
         module,
         timers,
         recover: () => {
@@ -61,4 +66,16 @@ test("recovery reloads fresh server state when navigation is allowed", async () 
     state.recover();
     await state.timers.shift()();
     assert.equal(state.reloads(), 1);
+});
+
+test("quiet error feedback is bounded to the connectivity transition", () => {
+    const state = fixture();
+    state.module.setOffline(true);
+    assert.equal(state.module.isOfflineTransition(), true);
+    state.advance(5_001);
+    assert.equal(state.module.isOfflineTransition(), false);
+    state.module.setOffline(true);
+    assert.equal(state.module.isOfflineTransition(), true);
+    state.module.setOffline(false);
+    assert.equal(state.module.isOfflineTransition(), false);
 });

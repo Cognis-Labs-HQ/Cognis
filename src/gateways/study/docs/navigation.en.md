@@ -65,3 +65,13 @@ Drawing guidance and Flashcard answer shuffling share the `randomIndex` helper. 
 ## Component isolation and lifecycle
 
 The API delegates extension namespaces through active gateway-owned policies; Study owns the language namespace rules. Library provider capabilities withdraw when the adapter or its Study dependencies are disabled, reject retained handles, and return when enabled. Study adapter bootstrap exposes `onAvailabilityChange(listener)` for lifecycle-bound contributions; failed bootstrap withdraws them.
+
+## Offline Study
+
+Offline Mode is enabled by default in Settings. Turning it off restores the existing connection warning and error behavior and disables worker fallback. With it enabled, connection loss quietly enters offline mode; unavailable navigation is blocked without an error popup.
+
+Study keeps bounded lightweight JSON snapshots in the current tab: schemas, permitted character/card data, locations, viewed IDs, favourites and previously opened decks. Language schemas opt in with `metadata.offline: { cache: "lightweight" }`. The Library cache holds at most 16 MB and 100 reads; other read caches hold at most 4 MB and 100 reads. No audio bytes, dictionary responses, credentials or authenticated documents are persisted.
+
+Explore previews resolve relationships from already-authorized cached rows. Drawing works locally with fresh guidance; flashcard practice advances locally. Audio and dictionary/ElevenLabs requests stop, and offline practice does not save progress, XP, rewards, favourites or edits. Only previously loaded content that fits the cache is available; missing dependencies remain absent.
+
+Private Study requires the same previously verified, unexpired account session in the same tab. Reloads and first visits retain the public-only offline contract. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.

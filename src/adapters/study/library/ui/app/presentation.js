@@ -1,3 +1,5 @@
+import { allEntryReferences } from "../reuse/entry-graph.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { activateLibraryMediaSession } from "./audio-media-session.js";
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -350,13 +352,6 @@ function entryAudio(entry, layer) {
     };
 }
 
-function allEntryReferences(entry) {
-    return [
-        ...(entry.references ?? []),
-        ...Object.values(entry.referenceGroups ?? {}).flat(2),
-    ];
-}
-
 export function renderAudio(
     entry,
     layer,
@@ -366,6 +361,7 @@ export function renderAudio(
     missingDependencyLabel = "",
     allowUpload = false,
 ) {
+    if (isOffline()) return "";
     const own = entryAudio(entry, layer);
     const composite = own.audioField && allEntryReferences(entry).length > 0;
     const sources =
@@ -428,6 +424,7 @@ export function connectLibraryAudioControls(audio) {
         toggle.textContent = audio.paused ? "▶" : "❚❚";
     };
     toggle.addEventListener("click", () => {
+        if (isOffline()) return;
         if (audio.paused) void audio.play();
         else audio.pause();
     });
@@ -451,7 +448,10 @@ export async function loadLibraryAudio(
     signal,
     errorMessage,
 ) {
+    if (isOffline()) return;
+
     async function prepare(audio) {
+        if (isOffline()) return;
         if (audio.src) return;
         const objectUrl = await fetchLibraryAudioUrl(
             audio.dataset.libraryAudioEntry,
@@ -463,7 +463,7 @@ export async function loadLibraryAudio(
                     : undefined,
             },
         );
-        if (!audio.isConnected || signal?.aborted || audio.src) {
+        if (isOffline() || !audio.isConnected || signal?.aborted || audio.src) {
             URL.revokeObjectURL(objectUrl);
             return;
         }
@@ -473,9 +473,9 @@ export async function loadLibraryAudio(
     }
 
     async function play(audio) {
-        if (signal?.aborted || !audio.isConnected) return;
+        if (isOffline() || signal?.aborted || !audio.isConnected) return;
         await activateLibraryMediaSession(audio, signal);
-        if (signal?.aborted || !audio.isConnected) return;
+        if (isOffline() || signal?.aborted || !audio.isConnected) return;
         await new Promise((resolve, reject) => {
             const finish = (error) => {
                 audio.removeEventListener("ended", ended);

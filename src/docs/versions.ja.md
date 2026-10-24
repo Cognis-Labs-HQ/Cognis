@@ -55,9 +55,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.5`    |
-| Library (Study)            | `src/adapters/study/library/`       | `4.1.3`    |
+| Library (Study)            | `src/adapters/study/library/`       | `4.1.4`    |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.2`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.14`   |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.15`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.5`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -68,7 +68,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.70`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.71`   |
 | Share                 | `src/gateways/share/`         | `1.7.49`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.13`   |
@@ -77,7 +77,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.39`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.2.9`    |
+| Study                 | `src/gateways/study/`         | `2.2.10`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.122`  |
 
 ## コア契約

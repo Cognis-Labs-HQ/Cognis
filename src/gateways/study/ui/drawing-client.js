@@ -1,8 +1,10 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const pendingCompletions = new Map();
 
 export async function fetchDrawingProgress(cardId, { signal } = {}) {
+    if (isOffline()) return { completed: false, hiddenStrokeCount: 0 };
     await pendingCompletions.get(cardId);
     const response = await apiFetch(
         `/api/v1/study/drawing/${encodeURIComponent(cardId)}`,

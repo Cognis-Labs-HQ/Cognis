@@ -107,11 +107,11 @@ function workerFixture() {
             });
             await task;
         },
-        async message(type) {
+        async message(type, options = {}) {
             let task;
             let result;
             handlers.get("message")({
-                data: { type },
+                data: { ...options, type },
                 ports: [
                     {
                         postMessage(value) {
@@ -229,4 +229,18 @@ test("activation preserves unrelated application caches", async () => {
     await fixture.lifecycle("activate");
     assert.ok((await fixture.caches.keys()).includes("popup-styles"));
     assert.ok(!(await fixture.caches.keys()).includes("cognis-shell-v6"));
+});
+
+test("disabled offline behavior uses the network and never serves cached documents or assets", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    await fixture.message("COGNIS_OFFLINE_PREFERENCE", { enabled: false });
+    fixture.unavailable = true;
+    await assert.rejects(fixture.request("/private", "navigate"));
+    await assert.rejects(fixture.request("/assets/entry-ABCDEFGH.js"));
+    assert.equal(
+        (await fixture.message("COGNIS_OFFLINE_ROUTES")).result.length,
+        0,
+    );
+    assert.equal(fixture.messages.length, 0);
 });

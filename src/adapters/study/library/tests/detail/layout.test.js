@@ -4,13 +4,20 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import { pronunciationClass } from "../../../../../gateways/study/ui/reuse/pronunciation.js";
 
-const context = { pronunciationClass };
+const context = {
+    pronunciationClass,
+    window: new EventTarget(),
+    offline: false,
+};
 vm.createContext(context);
 Object.assign(
     context,
     loadTestModule(
         new URL("../../ui/app/detail-layout.js", import.meta.url),
         {
+            "/static/reuse/offline-state.js": {
+                isOffline: () => context.offline,
+            },
             "./reference-images.js": context,
             "./drawing.js": context,
             "./presentation.js": context,

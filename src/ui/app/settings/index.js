@@ -19,7 +19,7 @@ import {
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
-import { initLanguageSwitcherPrefs } from "./language-switcher-prefs.js";
+import { initCheckboxPrefs } from "./checkbox-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
 import {
@@ -72,7 +72,7 @@ async function loadPrefs() {
 async function savePrefs(prefs) {
     const account = localStorage.getItem("cognis_account");
     if (!account) return;
-    await apiFetch(
+    const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
@@ -80,6 +80,8 @@ async function savePrefs(prefs) {
             body: JSON.stringify({ layout: prefs }),
         },
     );
+    if (!response.ok)
+        throw new Error(`ui_preferences_save_failed:${response.status}`);
 }
 
 async function loadSettingsSections() {
@@ -200,6 +202,7 @@ export async function mount(root, { signal } = {}) {
     let themePrefs;
     let messageStylePrefs;
     let releaseNotesPrefs;
+    let offlinePrefs;
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
@@ -378,6 +381,18 @@ export async function mount(root, { signal } = {}) {
                 </label>
               </div>
             </div>
+            <div class="components-section">
+              <h3 class="components-section-heading">
+                ${escapeHtml(i18n.t("ui.app.settings.offline_enabled"))}
+                ${renderInfoTooltip(i18n.t("ui.app.settings.offline_enabled_hint"), tooltipAria)}
+              </h3>
+              <div class="components-section-body">
+                <label class="switch">
+                  <input id="pref-offline-enabled" type="checkbox" aria-label="${escapeHtml(i18n.t("ui.app.settings.offline_enabled"))}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
             ${renderContributedSections(generalContributions)}
             <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
               <h3 id="settings-danger-zone-title" class="components-section-heading">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
@@ -413,6 +428,16 @@ export async function mount(root, { signal } = {}) {
                     } else {
                         releaseNotesPrefs.refresh();
                     }
+                    if (!offlinePrefs) {
+                        offlinePrefs = initCheckboxPrefs(root, {
+                            existingPrefs: loadedPrefs,
+                            preference: "offlineEnabled",
+                            selector: "#pref-offline-enabled",
+                            onDirtyChange: (dirty) =>
+                                markDirty("offline", dirty),
+                        });
+                    }
+                    offlinePrefs.bind();
                     for (const section of generalContributions) {
                         section.onRender();
                     }
@@ -530,21 +555,18 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     if (!languageSwitcherPrefs) {
-                        languageSwitcherPrefs = initLanguageSwitcherPrefs(
-                            root,
-                            {
-                                existingPrefs: loadedPrefs,
-                                onDirtyChange: (dirty) =>
-                                    markDirty("language-switcher", dirty),
-                                onCommit: (visible) =>
-                                    window.dispatchEvent(
-                                        new CustomEvent(
-                                            "cognis:language-switcher-visibility",
-                                            { detail: { visible } },
-                                        ),
+                        languageSwitcherPrefs = initCheckboxPrefs(root, {
+                            existingPrefs: loadedPrefs,
+                            onDirtyChange: (dirty) =>
+                                markDirty("language-switcher", dirty),
+                            onCommit: (visible) =>
+                                window.dispatchEvent(
+                                    new CustomEvent(
+                                        "cognis:language-switcher-visibility",
+                                        { detail: { visible } },
                                     ),
-                            },
-                        );
+                                ),
+                        });
                     }
                     languageSwitcherPrefs.bind();
                     if (!languagePrefs) {
@@ -785,6 +807,10 @@ export async function mount(root, { signal } = {}) {
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
+                offlineEnabled:
+                    offlinePrefs?.getValue() ??
+                    loadedPrefs?.offlineEnabled ??
+                    true,
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
                     shouldShowReleaseChangelog(loadedPrefs),
@@ -815,6 +841,8 @@ export async function mount(root, { signal } = {}) {
                 if (messageStylePrefs?.isDirty()) {
                     prefs.messageStyle = selectedPrefs.messageStyle;
                 }
+                if (offlinePrefs?.isDirty())
+                    prefs.offlineEnabled = selectedPrefs.offlineEnabled;
                 if (releaseNotesPrefs?.isDirty()) {
                     prefs.releaseChangelogShow =
                         selectedPrefs.releaseChangelogShow;
@@ -842,6 +870,7 @@ export async function mount(root, { signal } = {}) {
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();
+            offlinePrefs?.commit();
             releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
@@ -870,6 +899,7 @@ export async function mount(root, { signal } = {}) {
             languageSwitcherPrefs?.discard();
             themePrefs?.discard();
             messageStylePrefs?.discard();
+            offlinePrefs?.discard();
             releaseNotesPrefs?.discard();
             datetimePrefs?.discard();
             advancedPrefs?.discard();

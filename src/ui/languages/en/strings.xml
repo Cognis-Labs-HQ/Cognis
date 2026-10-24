@@ -618,4 +618,6 @@
     <string name="ui.reuse.home">Home</string>
     <string name="ui.reuse.try_again">Try Again</string>
     <string name="ui.reuse.offline_page_unavailable">This page is not available offline. Reconnect to continue.</string>
+    <string name="ui.app.settings.offline_enabled">Offline Mode</string>
+    <string name="ui.app.settings.offline_enabled_hint">Keep supported cached pages and lightweight Study content available when the connection is lost. Audio, dictionary requests and saving require a connection. Turn off to retain connection error feedback.</string>
 </resources>

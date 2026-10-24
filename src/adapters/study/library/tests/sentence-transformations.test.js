@@ -1,3 +1,5 @@
+import * as entryGraph from "../ui/reuse/entry-graph.js";
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { orderedReadingReferences } from "../ui/app/reference-readings.js";
@@ -142,7 +144,11 @@ function load(relativePath, dependencies = {}) {
     };
     return loadTestModule(
         new URL(relativePath, import.meta.url),
-        imports[relativePath],
+        {
+            ...imports[relativePath],
+            "../reuse/entry-graph.js": entryGraph,
+            "/static/reuse/offline-state.js": offlineState,
+        },
         dependencies,
     );
 }

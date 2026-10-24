@@ -1,3 +1,4 @@
+import * as offlineReadCache from "../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -23,6 +24,7 @@ test("favourite success toasts follow persisted add/remove state", async () => {
         loadTestModule(
             new URL("../ui/reuse/favourites.js", import.meta.url),
             {
+                "/static/reuse/offline-read-cache.js": offlineReadCache,
                 "/static/reuse/api-client.js": ctx,
                 "/static/reuse/escape-html.js": ctx,
                 "/static/reuse/toast.js": ctx,

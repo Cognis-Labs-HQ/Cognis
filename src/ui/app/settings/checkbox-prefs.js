@@ -1,12 +1,18 @@
-export function initLanguageSwitcherPrefs(
+export function initCheckboxPrefs(
     root,
-    { existingPrefs, onDirtyChange, onCommit } = {},
+    {
+        existingPrefs,
+        onDirtyChange,
+        onCommit,
+        preference = "alwaysShowLanguageSwitcher",
+        selector = "#pref-always-show-language-switcher",
+    } = {},
 ) {
-    let savedValue = existingPrefs?.alwaysShowLanguageSwitcher !== false;
+    let savedValue = existingPrefs?.[preference] !== false;
     let value = savedValue;
 
     function getInput() {
-        return root.querySelector("#pref-always-show-language-switcher");
+        return root.querySelector(selector);
     }
 
     function syncInput() {

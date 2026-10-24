@@ -1,3 +1,4 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
     loadTestModule,
     importTestModule,
@@ -234,7 +235,9 @@ async function drawingSession({
     );
     environment.createActionRunner = loadTestModule(
         new URL("../../ui/reuse/action-flows.js", import.meta.url),
-        { "/static/reuse/ui-ctx.js": environment },
+        {
+            "/static/reuse/ui-ctx.js": environment,
+        },
         environment,
     ).createActionRunner;
     Object.assign(
@@ -242,6 +245,7 @@ async function drawingSession({
         await importTestModule(
             new URL("../../ui/reuse/drawing.js", import.meta.url),
             {
+                "/static/reuse/offline-state.js": offlineState,
                 "../library-client.js": {
                     fetchLibrarySchemas: environment.fetchLibrarySchemas,
                 },

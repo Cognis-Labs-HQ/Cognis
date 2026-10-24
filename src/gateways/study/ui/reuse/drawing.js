@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { fetchLibrarySchemas } from "../library-client.js";
 import { bindDrawingHeading } from "./drawing-heading.js";
 import { setDrawingCard } from "./drawing-state.js";
@@ -329,6 +330,7 @@ async function createDrawingPad({
     const persistAttempt = async (result) => {
         const attempt = attemptNumber;
         const sequence = loadSequence;
+        if (isOffline()) return;
         const request = recordDrawingCompletion(currentCard.id, {
             strokeCount: currentPattern.strokes.length,
             mistakes,

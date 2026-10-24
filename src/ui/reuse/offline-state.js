@@ -1,12 +1,55 @@
-/** Connectivity state carries no session, permission or private response data. */
+/**
+ * Owns opt-in connectivity state, worker messaging and guarded recovery.
+ * Exports: offlineEnabled, isOffline, isOfflineTransition, setOffline, offlineCacheGeneration and offlineWorkerRequest.
+ * @example if (isOffline()) return;
+ */
 const stateKey = Symbol.for("cognis.offlineState");
 const state = (globalThis[stateKey] ??= { offline: false });
 
+export function offlineCacheGeneration() {
+    return state.cacheGeneration ?? 0;
+}
+
+export function offlineEnabled() {
+    try {
+        const owner = globalThis.localStorage?.getItem(
+            "cognis_offline_preference_account",
+        );
+        if (
+            owner &&
+            owner !== globalThis.localStorage?.getItem("cognis_account")
+        )
+            return true;
+        const preferences = JSON.parse(
+            globalThis.localStorage?.getItem("cognis_ui_preferences") ?? "null",
+        );
+        return preferences?.offlineEnabled !== false;
+    } catch (error) {
+        console.error("[offline] preference read failed", {
+            operation: "readPreference",
+        });
+        return true;
+    }
+}
+
 export function isOffline() {
-    return state.offline || globalThis.navigator?.onLine === false;
+    return (
+        offlineEnabled() &&
+        (state.offline || globalThis.navigator?.onLine === false)
+    );
+}
+
+export function isOfflineTransition() {
+    return (
+        isOffline() &&
+        state.changedAt > 0 &&
+        Date.now() - state.changedAt <= 5_000
+    );
 }
 
 export function setOffline(offline) {
+    if (offline && !offlineEnabled()) return;
+    if (offline) state.changedAt = Date.now();
     if (state.offline === offline) return;
     state.offline = offline;
     if (offline) scheduleRecovery();
@@ -16,7 +59,7 @@ export function setOffline(offline) {
     );
 }
 
-export async function offlineWorkerRequest(type) {
+export async function offlineWorkerRequest(type, options = {}) {
     const worker = globalThis.navigator?.serviceWorker?.controller;
     if (!worker) return [];
     return new Promise((resolve, reject) => {
@@ -31,7 +74,7 @@ export async function offlineWorkerRequest(type) {
             if (data.error) reject(new Error(data.error));
             else resolve(data.result);
         };
-        worker.postMessage({ type }, [channel.port2]);
+        worker.postMessage({ ...options, type }, [channel.port2]);
     });
 }
 
@@ -41,11 +84,33 @@ if (
 ) {
     state.listenersInstalled = true;
     window.addEventListener("offline", () => setOffline(true));
+    window.addEventListener("cognis:module-lifecycle-changed", () => {
+        state.cacheGeneration = offlineCacheGeneration() + 1;
+    });
+    window.addEventListener("cognis:offline-preference-changed", () => {
+        state.cacheGeneration = offlineCacheGeneration() + 1;
+        if (!offlineEnabled()) setOffline(false);
+        void offlineWorkerRequest("COGNIS_OFFLINE_PREFERENCE", {
+            enabled: offlineEnabled(),
+        }).catch((error) =>
+            console.error("[offline] preference sync failed", error),
+        );
+    });
     window.addEventListener("storage", (event) => {
+        if (event.key === "cognis_ui_preferences") {
+            state.cacheGeneration = offlineCacheGeneration() + 1;
+            if (!offlineEnabled()) setOffline(false);
+            void offlineWorkerRequest("COGNIS_OFFLINE_PREFERENCE", {
+                enabled: offlineEnabled(),
+            }).catch((error) =>
+                console.error("[offline] preference sync failed", error),
+            );
+        }
         if (
             ["cognis_account", "cognis_access_token"].includes(event.key) &&
             event.oldValue !== event.newValue
         ) {
+            state.cacheGeneration = offlineCacheGeneration() + 1;
             void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
                 (error) => {
                     console.error("[offline] account cleanup failed", error);

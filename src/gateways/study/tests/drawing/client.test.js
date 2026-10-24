@@ -1,3 +1,4 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -19,7 +20,10 @@ function clientFixture() {
     };
     environment.client = loadTestModule(
         new URL("../../ui/drawing-client.js", import.meta.url),
-        { "/static/reuse/api-client.js": environment },
+        {
+            "/static/reuse/offline-state.js": offlineState,
+            "/static/reuse/api-client.js": environment,
+        },
         environment,
     );
     return {

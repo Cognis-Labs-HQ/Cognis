@@ -1,3 +1,5 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
+import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -5,13 +7,17 @@ import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { mountProvider as mountScopedActions } from "../../../../ui/reuse/scoped-actions.js";
 import { createProviderLifecycle } from "../../../../ui/reuse/provider-lifecycle.js";
 
-async function session(testContext, request) {
+async function session(testContext, request, dependencies = {}) {
     const client = loadTestModule(
         new URL(
             "../../../../gateways/study/ui/library-client.js",
             import.meta.url,
         ),
         {
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/offline-read-cache.js":
+                dependencies.offlineReadCache ?? offlineReadCache,
             "/static/reuse/ui-ctx.js": { uiCtx },
             "/static/reuse/api-client.js": { apiFetch: request },
         },
@@ -303,4 +309,64 @@ test("extensions and callers can cancel Library work through their own signals",
         { name: "AbortError" },
     );
     assert.equal(requests, 1);
+});
+
+test("registered Library flows restore opted-in character data and stop media, dictionary and writes offline", async (testContext) => {
+    let disconnected = false;
+    let requests = 0;
+    const state = {
+        isOffline: () => disconnected,
+        offlineEnabled: () => true,
+        offlineCacheGeneration: () => 0,
+    };
+    const cache = loadTestModule(
+        new URL("../../../../ui/reuse/offline-read-cache.js", import.meta.url),
+        { "./offline-state.js": state },
+        { console },
+    );
+    const schema = {
+        id: "writing",
+        metadata: { offline: { cache: "lightweight" } },
+    };
+    const entries = [
+        {
+            id: "character",
+            schemaId: "writing",
+            label: "a",
+            fields: { stroke_pattern: { strokes: [] } },
+        },
+    ];
+    const { client } = await session(
+        testContext,
+        async (path) => {
+            requests++;
+            return {
+                ok: true,
+                json: async () => ({
+                    data: path.includes("schemas") ? [schema] : entries,
+                }),
+            };
+        },
+        { offlineState: state, offlineReadCache: cache },
+    );
+    await client.fetchLibrarySchemas();
+    await client.fetchLibraryEntries({ scope: "global", schemaId: "writing" });
+    const count = requests;
+    disconnected = true;
+    const restored = await client.fetchLibraryEntries({
+        scope: "global",
+        schemaId: "writing",
+    });
+    assert.equal(restored[0].id, "character");
+    assert.equal(
+        (await client.fetchSearchableDictionaryProviders("en")).length,
+        0,
+    );
+    for (const action of [
+        () => client.fetchLibraryAudioUrl("character", "audio"),
+        () => client.searchLibraryDictionary({ query: "word" }),
+        () => client.createLibraryEntry({ scope: "personal" }, {}),
+    ])
+        await assert.rejects(action(), /offline_operation_unavailable/);
+    assert.equal(requests, count);
 });

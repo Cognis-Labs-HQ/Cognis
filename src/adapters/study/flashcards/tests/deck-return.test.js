@@ -1,3 +1,5 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
+import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import {
     loadTestModule,
     importTestModule,
@@ -158,6 +160,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             import.meta.url,
         ),
         {
+            "/static/reuse/offline-read-cache.js": offlineReadCache,
             "./reuse/explore.js": environment,
             "/static/reuse/mount-scope.js": environment,
             "/static/reuse/toast.js": environment,
@@ -178,7 +181,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                 "../../../../gateways/study/ui/reuse/action-flows.js",
                 import.meta.url,
             ),
-            { "/static/reuse/ui-ctx.js": environment },
+            {
+                "/static/reuse/ui-ctx.js": environment,
+            },
             environment,
         ),
     );
@@ -186,7 +191,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         environment,
         loadTestModule(
             new URL("../ui/app/actions.js", import.meta.url),
-            { "/static/gateways/study/reuse/action-flows.js": environment },
+            {
+                "/static/gateways/study/reuse/action-flows.js": environment,
+            },
             environment,
         ),
     );
@@ -204,6 +211,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         await importTestModule(
             new URL("../ui/app/index.js", import.meta.url),
             {
+                "/static/reuse/offline-state.js": offlineState,
                 "./deck-editor.js": { editDeck: environment.editDeck },
                 "/static/reuse/collection-view.js": {
                     sortItems: environment.sortItems,

@@ -618,4 +618,6 @@
     <string name="ui.reuse.home">Startseite</string>
     <string name="ui.reuse.try_again">Erneut versuchen</string>
     <string name="ui.reuse.offline_page_unavailable">Diese Seite ist offline nicht verfügbar. Stellen Sie die Verbindung wieder her.</string>
+    <string name="ui.app.settings.offline_enabled">Offline-Modus</string>
+    <string name="ui.app.settings.offline_enabled_hint">Unterstützte zwischengespeicherte Seiten und kleine Study-Inhalte bleiben bei Verbindungsverlust verfügbar. Audio, Wörterbuchabfragen und Speichern benötigen eine Verbindung. Deaktivieren stellt die bisherigen Verbindungsfehlermeldungen wieder her.</string>
 </resources>

@@ -618,4 +618,6 @@
     <string name="ui.reuse.home">ホーム</string>
     <string name="ui.reuse.try_again">もう一度</string>
     <string name="ui.reuse.offline_page_unavailable">このページはオフラインでは利用できません。再接続してから続行してください。</string>
+    <string name="ui.app.settings.offline_enabled">オフラインモード</string>
+    <string name="ui.app.settings.offline_enabled_hint">接続が切れても対応するキャッシュ済みページと軽量な学習コンテンツを利用できます。音声、辞書検索、保存には接続が必要です。無効にすると従来の接続エラー通知を表示します。</string>
 </resources>

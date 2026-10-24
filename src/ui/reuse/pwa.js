@@ -18,6 +18,8 @@
  * @returns {void}
  */
 
+import { offlineEnabled } from "./offline-state.js";
+
 let deferredInstallPrompt = null;
 
 /**
@@ -41,6 +43,16 @@ export async function registerServiceWorker(options = {}) {
     const registrationPromise = navigator.serviceWorker
         .register(scriptUrl, { scope })
         .then((registration) => {
+            const syncPreference = () =>
+                navigator.serviceWorker.controller?.postMessage({
+                    type: "COGNIS_OFFLINE_PREFERENCE",
+                    enabled: offlineEnabled(),
+                });
+            syncPreference();
+            navigator.serviceWorker.addEventListener?.(
+                "controllerchange",
+                syncPreference,
+            );
             return registration;
         })
         .catch((error) => {

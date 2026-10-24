@@ -1,3 +1,4 @@
+import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 /**
  * Shared Study favourites and browse sorting for Library cards and flashcard decks.
  * Exports: loadFavourites() creates an account-scoped favourite controller;
@@ -9,6 +10,8 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const read = createOfflineReadCache();
 
 let active = new Set();
 const key = (kind, id) => `${kind}:${id}`;
@@ -26,11 +29,12 @@ export function renderBrowseControls(i18n, { query = "" } = {}) {
 /** @returns {Promise<object>} Controller with has, bind and refresh methods. */
 
 export async function loadFavourites({ signal } = {}) {
-    const response = await apiFetch("/api/v1/study/favourites", { signal });
-    if (!response.ok) throw new Error("favourites_failed");
-    active = new Set(
-        (await response.json()).data.map((item) => key(item.kind, item.id)),
-    );
+    const favourites = await read("favourites", async () => {
+        const response = await apiFetch("/api/v1/study/favourites", { signal });
+        if (!response.ok) throw new Error("favourites_failed");
+        return (await response.json()).data;
+    });
+    active = new Set(favourites.map((item) => key(item.kind, item.id)));
     const refresh = (root) =>
         root.querySelectorAll("[data-study-favourite]").forEach((button) => {
             const selected = active.has(

@@ -20,6 +20,7 @@ test("API requests receive a finite default browser timeout", () => {
 
 function loadApiClientForTests({
     token = "test-token",
+    offlineEnabled = false,
     fetchImpl = async () => ({ ok: true, status: 200 }),
     now = () => Date.now(),
     origin = "https://example.com",
@@ -43,6 +44,8 @@ function loadApiClientForTests({
         localStorage: {
             getItem(key) {
                 if (key === "cognis_access_token") return token;
+                if (key === "cognis_ui_preferences")
+                    return JSON.stringify({ offlineEnabled });
                 return null;
             },
         },
@@ -89,6 +92,7 @@ function loadApiClientForTests({
 
     return {
         apiClient,
+        offlineState,
         dispatchedEvents,
         getReloadCount: () => reloadCount,
         runNextTimer: async () => {
@@ -376,3 +380,36 @@ test("api client suppresses marked connection failures across deep cause chains"
         true,
     );
 });
+
+for (const failure of [
+    new TypeError("Failed to fetch"),
+    { ok: false, status: 503 },
+]) {
+    test("enabled offline fallback enters quietly on the first failure", async () => {
+        const state = loadApiClientForTests({
+            offlineEnabled: true,
+            fetchImpl: async () => {
+                if (failure instanceof Error) throw failure;
+                return failure;
+            },
+        });
+        state.apiClient.configureConnectionRecoveryPrompt(
+            "Connection interrupted.",
+        );
+        if (failure instanceof Error)
+            await assert.rejects(state.apiClient.apiFetch("/api/v1/users"));
+        else await state.apiClient.apiFetch("/api/v1/users");
+        assert.equal(state.offlineState.isOffline(), true);
+        assert.equal(state.showToastCalls.length, 0);
+        assert.equal(
+            state.apiClient.shouldSuppressConnectionRecoveryPopup(failure),
+            true,
+        );
+        assert.equal(
+            state.apiClient.shouldSuppressConnectionRecoveryPopup(
+                new Error("unrelated"),
+            ),
+            false,
+        );
+    });
+}

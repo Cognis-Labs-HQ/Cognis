@@ -1,13 +1,29 @@
 import { uiCtx } from "./ui-ctx.js";
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
-import { createI18n } from "./i18n.js";
-import { openRuntimeErrorPopup } from "./runtime-error-popup.js";
+
+const sessionRoutes = new Set();
+uiCtx.capabilities.contribute(
+    "offline:registerSessionRoutes",
+    (ids, signal) => {
+        for (const id of ids) sessionRoutes.add(id);
+        const dispose = () => {
+            for (const id of ids) sessionRoutes.delete(id);
+        };
+        signal.addEventListener("abort", dispose, { once: true });
+        return dispose;
+    },
+);
+uiCtx.capabilities.contribute("offline:isSessionRouteAvailable", (route) =>
+    sessionRoutes.has(route?.id),
+);
 
 export function offlineRouteAvailable(route) {
     return (
-        route?.public === true &&
-        Boolean(route.offline) &&
-        route.offlineAvailable === true
+        uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(route) ===
+            true ||
+        (route?.public === true &&
+            Boolean(route.offline) &&
+            route.offlineAvailable === true)
     );
 }
 
@@ -31,12 +47,9 @@ uiCtx.extendFlow(
     async ({ input, stageResults }) => {
         const allowed = stageResults.validate[0].allowed;
         if (!allowed && !input.signal?.aborted) {
-            const i18n = await createI18n();
-            if (input.signal?.aborted) return { allowed: false };
-            await openRuntimeErrorPopup({
-                error: new Error(i18n.t("ui.reuse.offline_page_unavailable")),
-                contextKey: "ui.reuse.runtime_error_context_route_load",
-                contextDetail: input.path,
+            console.info("[offline] navigation unavailable", {
+                component: "ui",
+                operation: "prepareNavigation",
             });
         }
         return { allowed };

@@ -42,14 +42,13 @@ test("the registered offline navigation flow requires public opt-in and availabl
             false,
         );
     }
-    assert.equal(popups.length, 4);
-    assert.equal(popups[0].error.message, "Unavailable offline");
+    assert.equal(popups.length, 0);
     offline = false;
     assert.equal(
         await navigation.allowOfflineRoute({ public: false }, "/private"),
         true,
     );
-    assert.equal(popups.length, 4);
+    assert.equal(popups.length, 0);
 });
 
 test("canceled offline navigations cannot open an obsolete popup", async () => {
@@ -71,4 +70,24 @@ test("account lifecycle flows invalidate the offline module catalog", async () =
         "COGNIS_INVALIDATE_OFFLINE_ROUTES",
         "COGNIS_REFRESH_OFFLINE_ROUTES",
     ]);
+});
+
+test("session route registrations permit warm private navigation only during the owning provider lifetime", async () => {
+    const controller = new AbortController();
+    const register = uiCtx.capabilities.get("offline:registerSessionRoutes");
+    register(["owned.page"], controller.signal);
+    offline = true;
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "owned.page" }, "/owned"),
+        true,
+    );
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "other.page" }, "/other"),
+        false,
+    );
+    controller.abort();
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "owned.page" }, "/owned"),
+        false,
+    );
 });

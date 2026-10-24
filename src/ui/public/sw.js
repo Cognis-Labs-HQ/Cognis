@@ -1,9 +1,17 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v8";
+const CACHE_VERSION = "v9";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const SHELL_URL = "/static/pages/offline.html";
 const CATALOG_URL = "/__cognis_offline_catalog__";
+const PREFERENCE_URL = "/__cognis_offline_preference__";
+
+async function offlineEnabled() {
+    const cache = await caches.open(CACHE_NAME);
+    const preference = await cache.match(PREFERENCE_URL);
+    return !preference || (await preference.json()).enabled !== false;
+}
+
 let catalogPromise;
 let catalogGeneration = 0;
 
@@ -142,7 +150,15 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         (async () => {
+            const currentCache = await caches.open(CACHE_NAME);
             for (const key of await caches.keys()) {
+                if (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) {
+                    const previous = await (
+                        await caches.open(key)
+                    ).match(PREFERENCE_URL);
+                    if (previous && !(await currentCache.match(PREFERENCE_URL)))
+                        await currentCache.put(PREFERENCE_URL, previous);
+                }
                 if (
                     (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) ||
                     /^cognis-(shell|assets|app)-v\d+$/.test(key)
@@ -157,7 +173,18 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
     const reply = event.ports?.[0];
     const task = (async () => {
+        if (event.data?.type === "COGNIS_OFFLINE_PREFERENCE") {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(
+                PREFERENCE_URL,
+                new Response(
+                    JSON.stringify({ enabled: event.data.enabled !== false }),
+                ),
+            );
+            return null;
+        }
         if (event.data?.type === "COGNIS_OFFLINE_ROUTES") {
+            if (!(await offlineEnabled())) return [];
             const cache = await caches.open(CACHE_NAME);
             const routes = await catalog();
             return Promise.all(
@@ -204,6 +231,7 @@ self.addEventListener("message", (event) => {
 });
 
 async function assetResponse(request, moduleAsset) {
+    if (!(await offlineEnabled())) return fetch(request);
     const generation = catalogGeneration;
     if (request.headers?.has("authorization")) return fetch(request);
     const parameters = new URL(request.url).searchParams;
@@ -270,6 +298,7 @@ self.addEventListener("fetch", (event) => {
                 })
                 .catch(async (error) => {
                     if (request.signal?.aborted) throw error;
+                    if (!(await offlineEnabled())) throw error;
                     await announceOffline();
                     const cache = await caches.open(CACHE_NAME);
                     const shell = await cache.match(SHELL_URL);

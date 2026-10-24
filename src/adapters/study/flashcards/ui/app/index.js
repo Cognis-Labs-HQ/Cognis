@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { editDeck } from "./deck-editor.js";
 import { sortItems, filterItems } from "/static/reuse/collection-view.js";
 import { createPracticeModePreference } from "../reuse/practice-mode.js";
@@ -259,6 +260,11 @@ export async function mount(root, { signal: routerSignal } = {}) {
             const attempt = reviewedSession.reviewAttempt;
             persistSession();
             if (!grade || reviewedSession.answered) return true;
+            if (isOffline()) {
+                reviewedSession.record(grade, detail.entry.id);
+                persistSession();
+                return true;
+            }
             if (!pendingReview)
                 pendingReview = runDeckAction("review", async () => {
                     const updated = await reviewStudyCard(
