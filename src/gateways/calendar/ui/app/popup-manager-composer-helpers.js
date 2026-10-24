@@ -9,19 +9,3 @@ export function buildConflictCreateKey(values) {
         String(values.endAt ?? "").trim(),
     ]);
 }
-
-export function resolveReminderOffsetsForCalendar(
-    reminderOffsetsMinutes,
-    calendars,
-    calendarId,
-) {
-    if (reminderOffsetsMinutes.length > 0) {
-        return reminderOffsetsMinutes;
-    }
-    const selectedCalendar = calendars.find(
-        (calendar) => calendar.id === calendarId,
-    );
-    return Array.isArray(selectedCalendar?.defaultReminderOffsetsMinutes)
-        ? selectedCalendar.defaultReminderOffsetsMinutes
-        : [];
-}

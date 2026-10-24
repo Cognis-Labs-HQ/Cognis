@@ -23,7 +23,6 @@ import { renderReadOnlyEventPopupBody } from "./popup-manager-read-only-render.j
 import {
     buildConflictCreateKey,
     buildParticipantEntryKey,
-    resolveReminderOffsetsForCalendar,
 } from "./popup-manager-composer-helpers.js";
 import {
     findOverlappingEvents,
@@ -829,12 +828,6 @@ export function createCalendarPopupManager({
                     : [];
                 const reminderOffsetsMinutes =
                     getSelectedReminderOffsets(overlay);
-                const resolvedReminderOffsets =
-                    resolveReminderOffsetsForCalendar(
-                        reminderOffsetsMinutes,
-                        getCalendars(),
-                        normalizedValues.calendarId,
-                    );
                 if (eventData) {
                     let meetingUrl = eventData.event.meetingUrl ?? null;
                     if (!meetingUrl && createMeeting && getJitsiAvailable()) {
@@ -866,7 +859,7 @@ export function createCalendarPopupManager({
                         endAt: normalizedValues.endAt,
                         attendees,
                         inviteEmails,
-                        reminderOffsetsMinutes: resolvedReminderOffsets,
+                        reminderOffsetsMinutes,
                         status: normalizedValues.status,
                         recurrence: normalizedValues.recurrence,
                         meetingUrl,
@@ -886,7 +879,7 @@ export function createCalendarPopupManager({
                     endAt: normalizedValues.endAt,
                     attendees,
                     inviteEmails,
-                    reminderOffsetsMinutes: resolvedReminderOffsets,
+                    reminderOffsetsMinutes,
                     createMeeting,
                     status: normalizedValues.status,
                     recurrence: normalizedValues.recurrence,

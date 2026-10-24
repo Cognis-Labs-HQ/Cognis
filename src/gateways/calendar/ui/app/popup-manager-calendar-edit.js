@@ -1,5 +1,4 @@
 import {
-    bindReminderFieldBehavior,
     getSelectedReminderOffsets,
     normalizeReminderOffsets,
     renderReminderField,
@@ -221,7 +220,6 @@ export function createCalendarEditPopupHandler({
                             });
                         });
                 }
-                bindReminderFieldBehavior({ overlay, i18n });
             },
             onAction: async (actionId, overlay) => {
                 if (actionId === "delete") {

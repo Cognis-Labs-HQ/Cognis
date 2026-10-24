@@ -60,7 +60,6 @@ test("calendar gateway applies calendar default reminders when event reminders a
         title: "Standup",
         startAt: "2026-06-10T09:00:00.000Z",
         endAt: "2026-06-10T09:30:00.000Z",
-        reminderOffsetsMinutes: [],
     });
     assert.deepEqual(event.reminderOffsetsMinutes, [10, 60]);
 });
