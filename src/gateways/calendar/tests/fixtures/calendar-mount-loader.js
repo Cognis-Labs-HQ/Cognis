@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import * as renderScope from "../../ui/app/render-scope.js";
 
 export async function loadCalendarMount({ hold, signal }) {
     const reached = [];
@@ -8,6 +9,7 @@ export async function loadCalendarMount({ hold, signal }) {
         throw new Error("unexpected calendar dependency");
     };
     const contracts = {
+        "./render-scope.js": renderScope,
         "/static/reuse/api-client.js": { apiFetch: unexpected },
         "/static/reuse/i18n.js": {
             createI18n: async () => {
