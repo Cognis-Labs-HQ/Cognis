@@ -12,4 +12,4 @@ Ein Routentest prüft, dass der Platzhalter der Seitenhülle auf ein ausgeliefer
 
 ## Commits
 
-- [7ea9b6aeb0c9d33200003b233ca95228293bd369](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ea9b6aeb0c9d33200003b233ca95228293bd369)
+- [7ea9b6a](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ea9b6aeb0c9d33200003b233ca95228293bd369)
