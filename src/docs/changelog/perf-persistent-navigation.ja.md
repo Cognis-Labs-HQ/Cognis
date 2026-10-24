@@ -1,6 +1,6 @@
 # ナビゲーションの維持
 
-**Feature Branch:** perf-persistent-navigation
+**機能ブランチ:** perf-persistent-navigation
 
 ## ナビゲーションの維持
 
@@ -8,4 +8,6 @@
 
 画面の構成ごとに最新の設定を一度取得し、テーマと言語の操作で共有します。プロバイダーの準備後にアバターを一度更新し、内容が同じ要素は維持します。アカウント、トークン、プロバイダー、更新処理が変わった後の遅延結果は破棄します。非公開応答のキャッシュは追加しません。
 
-## Commits
+## コミット
+
+- [ab071e280a6109d8d617e006fba9f2fe80419548](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab071e280a6109d8d617e006fba9f2fe80419548)
