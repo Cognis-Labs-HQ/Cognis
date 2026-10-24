@@ -2,13 +2,13 @@
 
 **Feature-Zweig:** perf-small-brand-icons
 
-## Installationssymbol verwenden
+## Auflösung je Oberfläche
 
-Seiten-Favicons, Kopfzeile, Dashboard-Widgets sowie Anmelde- und Fehleransichten verwenden das vorhandene quadratische Installationssymbol. Das ursprüngliche Bild bleibt unter seiner bisherigen URL verfügbar. Es entstehen weder eine Bildkonvertierung noch neue Ressourcenabhängigkeiten.
+Seiten-Favicons, Dashboard-Widgets, Anmelde- und Fehleransichten sowie Verknüpfungen verwenden ein 384px-Bild. Die Kopfzeile nutzt das vorhandene 512px-Symbol. Normale und maskierbare 384px-Varianten werden mit Lanczos deterministisch aus den entsprechenden 512px-Bildern verkleinert; Bildaufbau, Seitenverhältnis und Alpha bleiben erhalten. Originalbilder und plattformspezifische Installationssymbole (192px/512px sowie 180px für Apple Touch) bleiben verfügbar.
 
-## Bildtransfer beim Start begrenzen
+## Bildtransfer beim Start
 
-Bei der Installation speichert der Service Worker die vorhandenen kleinen und großen Installationssymbole vorab, ohne zusätzlich das übergroße Quellbild abzurufen. Eine neue Cache-Version aktualisiert die Ressourcenliste bestehender Clients. Die Behandlung privater APIs und von Modulrevisionen bleibt unverändert. Tests der Routen und der Worker-Installation sichern die Bildtransferbudgets ab.
+Der Service Worker speichert normale Symbole in 192px, 384px und 512px vorab, ohne das große Quellbild abzurufen. Die neue Cache-Version aktualisiert die Ressourcenliste. Routen- und Installationstests prüfen Bildgrößen und die zugunsten der Qualität erhöhten Transferbudgets mit injizierten Authentifizierungsverträgen, ohne gespeicherte Tokens anzulegen.
 
 ## Commits
 
