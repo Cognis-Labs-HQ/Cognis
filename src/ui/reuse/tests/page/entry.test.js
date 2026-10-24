@@ -352,3 +352,62 @@ test("leaving a pending direct mount releases its loading token immediately", as
     release();
     await mounting;
 });
+
+test("an already offline direct page cannot mount without current legal access", async (context) => {
+    const previous = {
+        document: globalThis.document,
+        window: globalThis.window,
+        router: globalThis.__spaRouter,
+        publicRoute: globalThis.__cognisPublicSpaRoute,
+    };
+    const oldState = uiCtx.capabilities.get("offline:state");
+    const oldPolicy = uiCtx.capabilities.get("offline:accessPolicy");
+    const offline = { isOffline: () => true };
+    let allowed = false;
+    const policy = { allows: () => allowed };
+    uiCtx.capabilities.remove("offline:state", oldState);
+    uiCtx.capabilities.remove("offline:accessPolicy", oldPolicy);
+    uiCtx.capabilities.contribute("offline:state", offline);
+    uiCtx.capabilities.contribute("offline:accessPolicy", policy);
+    context.after(() => {
+        uiCtx.capabilities.remove("offline:state", offline);
+        uiCtx.capabilities.remove("offline:accessPolicy", policy);
+        uiCtx.capabilities.contribute("offline:state", oldState);
+        uiCtx.capabilities.contribute("offline:accessPolicy", oldPolicy);
+        globalThis.document = previous.document;
+        globalThis.window = previous.window;
+        globalThis.__spaRouter = previous.router;
+        globalThis.__cognisPublicSpaRoute = previous.publicRoute;
+    });
+    const windowTarget = new EventTarget();
+    windowTarget.location = { pathname: "/cached", search: "", hash: "" };
+    globalThis.window = windowTarget;
+    globalThis.document = {
+        body: createMockBody(),
+        createElement: createMockElement,
+        querySelector: () => ({}),
+    };
+    globalThis.__spaRouter = false;
+    let mounts = 0;
+    let blocked = 0;
+    windowTarget.addEventListener(
+        "cognis:offline-policy-changed",
+        () => blocked++,
+    );
+    await mountWhenDirect(
+        async () => {
+            mounts++;
+        },
+        { public: true },
+    );
+    assert.equal(mounts, 0);
+    assert.equal(blocked, 1);
+    allowed = true;
+    await mountWhenDirect(
+        async () => {
+            mounts++;
+        },
+        { public: true },
+    );
+    assert.equal(mounts, 1);
+});

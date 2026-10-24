@@ -49,6 +49,7 @@ function createRouter({
         console,
         document: {
             querySelector: () => root,
+            querySelectorAll: () => [],
             addEventListener: (type, callback) => listeners.set(type, callback),
         },
         CustomEvent: class {
@@ -96,6 +97,9 @@ function createRouter({
         },
         isGuestAllowedPath: () => false,
         installComponentPageBroker() {},
+        isOffline: () => false,
+        offlineWorkerRequest: async () => [],
+        createI18n: async () => ({ t: (key) => key }),
         observePerformance() {},
         recordRouteMount() {},
     };
@@ -103,6 +107,11 @@ function createRouter({
     sandbox.router = loadTestModule(
         new URL("../app-router.js", import.meta.url),
         {
+            "./offline-state.js": sandbox,
+            "./offline-navigation.js": {
+                allowOfflineRoute: async () => true,
+                offlineRouteAvailable: () => false,
+            },
             "./page-styles.js": sandbox,
             "./mount-scope.js": sandbox,
             "./page-entry.js": sandbox,

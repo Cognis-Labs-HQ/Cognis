@@ -1,3 +1,4 @@
+import * as offlineReadCache from "../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -112,6 +113,7 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
         loadTestModule(
             new URL("../ui/sub-navigation.js", import.meta.url),
             {
+                "/static/reuse/offline-read-cache.js": offlineReadCache,
                 "./reuse/explore.js": context,
                 "/static/reuse/mount-scope.js": context,
                 "/static/reuse/toast.js": context,

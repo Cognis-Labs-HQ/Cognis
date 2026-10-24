@@ -1,3 +1,4 @@
+import { uiCtx } from "./ui-ctx.js";
 /**
  * Loads and caches dynamic SPA route descriptors from the UI API so the app
  * router can discover gateway/adapter-provided pages without hardcoding their
@@ -15,6 +16,7 @@
  * ```
  */
 
+import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
 
 let cachedSpaRoutes = null;
@@ -59,6 +61,8 @@ function normalizeRoute(rawRoute) {
                       )
                     : {},
             public: rawRoute.public === true,
+            offline: rawRoute.offline,
+            offlineAvailable: rawRoute.offlineAvailable === true,
             pattern: routePattern,
             base: basePath,
             stylesheets,
@@ -124,6 +128,18 @@ export async function resolveComponentPage({ componentUuid, routeId, mode }) {
  * @returns {Promise<Array<{pattern: RegExp, base: string, stylesheets: string[], load: (path?: string) => Promise<unknown>}>>}
  */
 export async function loadSpaRoutes() {
+    if (isOffline()) {
+        if (cachedSpaRoutes)
+            return cachedSpaRoutes.filter(
+                (route) =>
+                    uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(
+                        route,
+                    ) === true,
+            );
+        return (await offlineWorkerRequest("COGNIS_OFFLINE_ROUTES"))
+            .map(normalizeRoute)
+            .filter(Boolean);
+    }
     if (cachedSpaRoutes) {
         return cachedSpaRoutes;
     }
@@ -146,6 +162,9 @@ export async function loadSpaRoutes() {
                 : [];
             if (loadGeneration === cacheGeneration) {
                 cachedSpaRoutes = normalizedRoutes;
+                void offlineWorkerRequest(
+                    "COGNIS_REFRESH_OFFLINE_ROUTES",
+                ).catch(console.error);
             }
             return normalizedRoutes;
         } catch {

@@ -1,3 +1,5 @@
+import * as entryGraph from "../../ui/reuse/entry-graph.js";
+import * as offlineState from "../../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 
 const CONTRACTS = {
@@ -119,9 +121,13 @@ export function loadLibraryUiModule(
         throw new Error("Unknown Library UI fixture");
     return loadTestModule(
         new URL(`../../ui/${path}`, import.meta.url),
-        Object.fromEntries(
-            CONTRACTS[path].map((specifier) => [specifier, dependencies]),
-        ),
+        {
+            ...Object.fromEntries(
+                CONTRACTS[path].map((specifier) => [specifier, dependencies]),
+            ),
+            "/static/reuse/offline-state.js": offlineState,
+            "../reuse/entry-graph.js": entryGraph,
+        },
         dependencies,
     );
 }

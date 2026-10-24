@@ -34,6 +34,7 @@
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
+import { isOfflineTransition } from "./offline-state.js";
 import { escapeHtml } from "./escape-html.js";
 
 const VARIANT_CLASSES = {
@@ -137,6 +138,7 @@ export function showToast(
         onExpire,
     } = {},
 ) {
+    if (variant === "error" && isOfflineTransition()) return () => {};
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
     const icon = VARIANT_ICONS[variant] ?? VARIANT_ICONS.info;
     const effectiveDuration = permanent

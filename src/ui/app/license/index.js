@@ -1,4 +1,3 @@
-import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -141,6 +140,8 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
+        signal,
+        persistLayoutPreferences: false,
         elements,
         preferenceKey: "license-layout",
         i18n,
@@ -162,14 +163,16 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
 
-    const response = await apiFetch("/api/v1/system/license");
+    const response = await fetch("/static/assets/reuse/license.en.md", {
+        signal,
+    });
     if (response.ok) {
-        const payload = await response.json();
-        sections = parseSections(payload?.data?.markdown ?? "");
+        sections = parseSections(await response.text());
     } else {
         loadError = true;
     }
 
+    if (signal?.aborted) return;
     const nav = root.querySelector(".license-nav");
     if (nav && sections.length > 0) {
         activeSectionId = sections[0].id;

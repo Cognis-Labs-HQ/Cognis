@@ -8,6 +8,14 @@ import {
     invalidateNavbarPlugins,
 } from "../ui-provider-loader.js";
 
+function storageFixture() {
+    const values = new Map([["cognis_access_token", "test-token"]]);
+    return {
+        getItem: (key) => values.get(key) ?? null,
+        setItem: (key, value) => values.set(key, value),
+    };
+}
+
 test("a lifecycle catalog refresh disposes and reactivates cached provider scripts", async (context) => {
     const originalFetch = globalThis.fetch;
     const originalStorage = globalThis.localStorage;
@@ -18,7 +26,7 @@ test("a lifecycle catalog refresh disposes and reactivates cached provider scrip
     let enabled = true;
     const source = `export function mountProvider(ctx) { ctx.capabilities.contribute('test:catalogAction', () => 'ready'); }`;
     const scriptUrl = `data:text/javascript,${encodeURIComponent(source)}`;
-    globalThis.localStorage = { getItem: () => "test-token" };
+    globalThis.localStorage = storageFixture();
     globalThis.fetch = async (url) => {
         assert.ok(
             [
@@ -55,7 +63,7 @@ test("separate loader module instances share provider ownership", async (context
     const source = `export function mountProvider(ctx) { ctx.registerFlow('test:duplicateLoader', ['execute']); ctx.capabilities.contribute('test:duplicateLoaderAction', () => true); }`;
     const scriptUrl = `data:text/javascript,${encodeURIComponent(source)}`;
     let enabled = true;
-    globalThis.localStorage = { getItem: () => "test-token" };
+    globalThis.localStorage = storageFixture();
     globalThis.fetch = async () =>
         Response.json({ data: enabled ? [{ scriptUrl }] : [] });
     const otherLoader =
@@ -91,7 +99,7 @@ test("only the mount-critical capability catalog opts into host preloading", asy
         catalogs.push([catalog, options.preload]);
         return originalReconcile(providers, catalog, options);
     };
-    globalThis.localStorage = { getItem: () => "test-token" };
+    globalThis.localStorage = storageFixture();
     globalThis.fetch = async () => Response.json({ data: [] });
     invalidateUiProviders();
     invalidateNavbarPlugins();

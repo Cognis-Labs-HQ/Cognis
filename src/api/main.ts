@@ -253,7 +253,12 @@ uiRegistry.registerCapabilityProvider({
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
-    providesCapabilities: ["ui:reuse"],
+    providesCapabilities: [
+        "ui:reuse",
+        "offline:accessPolicy",
+        "offline:outbox",
+        "offline:state",
+    ],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/footer-links.js",

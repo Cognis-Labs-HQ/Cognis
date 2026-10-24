@@ -19,7 +19,9 @@ test("dictionary previews fetch selected references and pronunciation characters
         context,
         loadTestModule(
             new URL("../../ui/app/search/references.js", import.meta.url),
-            { "/static/gateways/study/library-client.js": context },
+            {
+                "/static/gateways/study/library-client.js": context,
+            },
             context,
         ),
     );

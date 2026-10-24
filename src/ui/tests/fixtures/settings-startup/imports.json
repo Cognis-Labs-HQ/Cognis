@@ -20,7 +20,7 @@
         "DEFAULT_FONT_SIZE"
     ],
     "./language-prefs.js": ["initLanguagePrefs"],
-    "./language-switcher-prefs.js": ["initLanguageSwitcherPrefs"],
+    "./checkbox-prefs.js": ["initCheckboxPrefs"],
     "./general-prefs.js": ["initGeneralPrefs"],
     "./datetime-prefs.js": ["initDateTimePrefs"],
     "./release-changelog-prefs.js": [

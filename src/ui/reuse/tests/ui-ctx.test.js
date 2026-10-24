@@ -1,3 +1,5 @@
+import { registerOfflineRuntime } from "../offline-runtime.js";
+import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -10,7 +12,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 function loadUiCtxForTests() {
     const context = {
         console,
-        BROWSER_FLOW_CONTRACTS: {},
+        BROWSER_FLOW_CONTRACTS,
         createReuseResources: () => Object.freeze({}),
         createSubPageRegistry: () => Object.freeze({}),
     };
@@ -18,6 +20,7 @@ function loadUiCtxForTests() {
         new URL("../ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": context,
+            "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
             "./sub-page-registry.js": context,
         },

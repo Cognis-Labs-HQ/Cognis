@@ -1,3 +1,4 @@
+import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -189,6 +190,104 @@ for (const htmlPath of (await walk(path.join(outputRoot, "public"))).filter(
     }
     await writeFile(htmlPath, html);
 }
+if (manifest["/static/app/offline/index.js"]) {
+    // The recovery entry's static dependency closure is prepared atomically. Page
+    // bundles outside this small boot set are cached passively when requested.
+    const offlineAssets = new Set([
+        "/static/languages/en/strings.xml",
+        "/static/templates/dashboard-layout.html",
+        "/static/assets/reuse/license.en.md",
+        "/static/assets/reuse/clipboard.svg",
+        "/static/assets/icons/cognis-logo.webp",
+        "/static/assets/icons/cognis-icon-192.png",
+        "/static/assets/icons/cognis-icon-384.png",
+        "/static/assets/icons/cognis-icon-512.png",
+        "/static/assets/icons/cognis-header-512.png",
+    ]);
+    const visitedOutputs = new Set();
+    function includeOfflineOutput(outputPath) {
+        if (visitedOutputs.has(outputPath)) return;
+        visitedOutputs.add(outputPath);
+        const metadata = result.metafile.outputs[outputPath];
+        if (!metadata) throw new Error(`Missing offline output: ${outputPath}`);
+        offlineAssets.add(
+            `/${path.relative(outputRoot, path.resolve(repositoryRoot, outputPath)).split(path.sep).join("/")}`,
+        );
+        for (const dependency of metadata.imports ?? []) {
+            if (!dependency.external && dependency.kind !== "dynamic-import")
+                includeOfflineOutput(dependency.path);
+        }
+    }
+    for (const [outputPath, metadata] of Object.entries(
+        result.metafile.outputs,
+    )) {
+        if (
+            /src\/ui\/app\/(?:offline|error|license)\/index\.js$/.test(
+                metadata.entryPoint ?? "",
+            )
+        )
+            includeOfflineOutput(outputPath);
+    }
+    for (const sourceUrl of [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/styles/error.css",
+        "/static/styles/popup.css",
+        "/static/styles/license.css",
+        "/static/styles/reuse/buttons.css",
+        "/static/styles/reuse/floating-window.css",
+    ]) {
+        offlineAssets.add(sourceUrl);
+        if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);
+    }
+    async function includeStyleDependencies(asset) {
+        if (!asset.endsWith(".css")) return;
+        const sourcePath = logicalSourcePaths.get(asset);
+        if (!sourcePath) return;
+        const stylesheet = await readFile(sourcePath, "utf8");
+        for (const match of stylesheet.matchAll(
+            /url\(\s*["']?([^"')\s]+)["']?\s*\)/g,
+        )) {
+            const resolved = new URL(
+                match[1],
+                `https://offline.invalid${asset}`,
+            );
+            if (
+                resolved.origin !== "https://offline.invalid" ||
+                !resolved.pathname.startsWith("/static/")
+            )
+                continue;
+            const dependency = resolved.pathname;
+            if (offlineAssets.has(dependency)) continue;
+            offlineAssets.add(dependency);
+            await includeStyleDependencies(dependency);
+        }
+    }
+    for (const asset of [...offlineAssets])
+        await includeStyleDependencies(asset);
+    await writeFile(
+        path.join(outputRoot, "public", "offline-manifest.json"),
+        JSON.stringify([...offlineAssets]),
+    );
+    const workerPath = path.join(outputRoot, "public", "sw.js");
+    const workerSource = await readFile(workerPath, "utf8");
+    const offlineResources = [JSON.stringify(manifest)];
+    for (const asset of offlineAssets) {
+        const sourcePath =
+            logicalSourcePaths.get(asset) ?? path.join(outputRoot, asset);
+        offlineResources.push(await readFile(sourcePath));
+    }
+    offlineResources.push(
+        await readFile(
+            path.join(outputRoot, "public", "pages", "offline.html"),
+        ),
+    );
+    await writeFile(
+        workerPath,
+        versionOfflineWorker(workerSource, offlineResources),
+    );
+}
+
 const emittedFiles = await walk(outputRoot);
 await Promise.all(
     emittedFiles

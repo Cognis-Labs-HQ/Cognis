@@ -34,6 +34,7 @@ import "/static/reuse/flow-registry.js";
 import "/static/gateways/auth/reuse/password-confirmation.js";
 import "/static/adapters/auth/keyring/keyring.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
@@ -41,6 +42,7 @@ let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
 let sessionExpiryNavigationPending = false;
 const accountInfoByAccount = new Map();
+let verifiedOfflineSession = null;
 
 function isGuestSession() {
     const accountId = String(
@@ -81,6 +83,7 @@ function clearStoredSession({
     clearKeyring = false,
     skipKeyring = false,
 } = {}) {
+    verifiedOfflineSession = null;
     if (!skipKeyring) {
         const keyringAction = clearKeyring
             ? uiCtx.capabilities.get("keyring:clearAccountState")
@@ -154,6 +157,16 @@ uiCtx.extendFlow(
             // apply-alternate-auth handle it without wiping the token.
             return { valid: false, reason: "session_expired" };
         }
+        const offlineSession = () => {
+            const expiry = localStorage.getItem("cognis_session_expires_at");
+            return verifiedOfflineSession?.ready === true &&
+                verifiedOfflineSession?.token === token &&
+                verifiedOfflineSession?.account === account &&
+                (!expiry || Date.parse(expiry) > Date.now())
+                ? verifiedOfflineSession.result
+                : { valid: false, reason: null };
+        };
+        if (isOffline()) return offlineSession();
         try {
             const response = await apiFetch(
                 "/api/v1/users/" + encodeURIComponent(account) + "/info",
@@ -168,13 +181,28 @@ uiCtx.extendFlow(
                     clearStoredSession();
                     return { valid: false, reason: "account_disabled" };
                 }
-                return {
+                const result = {
                     valid: true,
                     reason: null,
                     accountId: account,
                     role: localStorage.getItem("cognis_role") ?? "user",
                 };
+                const previous =
+                    verifiedOfflineSession?.token === token &&
+                    verifiedOfflineSession?.account === account
+                        ? verifiedOfflineSession
+                        : null;
+                if (!previous) authSetupCacheExpiresAt = 0;
+                verifiedOfflineSession = {
+                    token,
+                    account,
+                    result,
+                    ready: previous?.ready === true,
+                    setupKnown: previous?.setupKnown === true,
+                };
+                return result;
             }
+            if (isOffline()) return offlineSession();
             if (response.status === 404) {
                 clearStoredSession({ clearKeyring: true });
                 return { valid: false, reason: "account_deleted" };
@@ -184,6 +212,7 @@ uiCtx.extendFlow(
                 return { valid: false, reason: "session_expired" };
             }
         } catch {
+            if (isOffline()) return offlineSession();
             return { valid: false, reason: null };
         }
         clearStoredSession();
@@ -211,7 +240,7 @@ uiCtx.extendFlow(
         const isSecurityRoute =
             window.location.pathname === "/settings" &&
             normalizedHash === "#security";
-        if (Date.now() < authSetupCacheExpiresAt) {
+        if (isOffline() || Date.now() < authSetupCacheExpiresAt) {
             if (!authSetupRequiredCached)
                 return { requiresSetup: false, redirectTo: null };
             if (isSecurityRoute)
@@ -225,6 +254,8 @@ uiCtx.extendFlow(
         }
         try {
             const response = await apiFetch("/api/v1/auth/setup-status");
+            if (response.ok && verifiedOfflineSession)
+                verifiedOfflineSession.setupKnown = true;
             authSetupRequiredCached = response.ok
                 ? (await response.json().catch(() => null))?.data
                       ?.requiresSetup === true
@@ -273,6 +304,15 @@ uiCtx.extendFlow(
         const authenticated =
             tokenResult?.valid === true ||
             alternateResult?.authenticated === true;
+        if (
+            isOffline() &&
+            (!authenticated || verifiedOfflineSession?.ready !== true)
+        )
+            throw new Error("offline_operation_unavailable");
+        if (!isOffline() && authenticated && verifiedOfflineSession)
+            verifiedOfflineSession.ready =
+                verifiedOfflineSession.setupKnown === true &&
+                !setupResult?.requiresSetup;
         if (!authenticated) {
             if (alternateResult) {
                 // A share token was present on this page (e.g. /share/:token)

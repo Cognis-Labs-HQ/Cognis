@@ -617,4 +617,12 @@
     <string name="ui.app.modules.config_action_failed">設定操作に失敗しました。設定を確認するか、音声IDを手動で入力してください。</string>
     <string name="ui.reuse.home">ホーム</string>
     <string name="ui.reuse.try_again">もう一度</string>
+    <string name="ui.reuse.offline_page_unavailable">このページはオフラインでは利用できません。再接続してから続行してください。</string>
+    <string name="ui.app.settings.offline_enabled">オフラインモード</string>
+    <string name="ui.app.settings.offline_enabled_hint">接続が切れても対応するキャッシュ済みページと軽量な学習コンテンツを利用できます。音声、辞書検索、保存には接続が必要です。無効にすると従来の接続エラー通知を表示します。</string>
+    <string name="ui.reuse.offline_access_required">オフライン利用には確認が必要です</string>
+    <string name="ui.reuse.offline_access_required_body">再接続し、必要な文書の最新版を確認して同意してからオフラインモードを利用してください。</string>
+    <string name="ui.reuse.retry">再試行</string>
+    <string name="ui.reuse.offline_changes_queued">再接続時に送信する変更を保存しました</string>
+    <string name="ui.reuse.offline_sync_rejected">保存した一部の活動を反映できませんでした。</string>
 </resources>

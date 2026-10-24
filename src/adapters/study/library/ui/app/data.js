@@ -32,7 +32,7 @@ export async function loadLibrary(languageCode, i18n) {
         }));
     } catch {
         showToast(i18n.t("gateway.study.library_load_error"), {
-            type: "error",
+            variant: "error",
         });
     }
     return { schemas, entries };

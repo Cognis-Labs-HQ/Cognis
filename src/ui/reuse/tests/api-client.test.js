@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -19,23 +20,11 @@ test("API requests receive a finite default browser timeout", () => {
 
 function loadApiClientForTests({
     token = "test-token",
+    offlineEnabled = false,
     fetchImpl = async () => ({ ok: true, status: 200 }),
     now = () => Date.now(),
     origin = "https://example.com",
 } = {}) {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/api-client.js"),
-        "utf8",
-    );
-    const testableSource =
-        source.replace(/^import .*;\n/gm, "").replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = {\n" +
-        "  apiFetch,\n" +
-        "  configureConnectionRecoveryPrompt,\n" +
-        "  shouldSuppressConnectionRecoveryPopup,\n" +
-        "};\n";
-
     const showToastCalls = [];
     const dispatchedEvents = [];
     const timers = [];
@@ -55,6 +44,8 @@ function loadApiClientForTests({
         localStorage: {
             getItem(key) {
                 if (key === "cognis_access_token") return token;
+                if (key === "cognis_ui_preferences")
+                    return JSON.stringify({ offlineEnabled });
                 return null;
             },
         },
@@ -84,12 +75,24 @@ function loadApiClientForTests({
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "api-client.js",
-    });
+    vm.createContext(context);
+    const offlineState = loadTestModule(
+        new URL("../offline-state.js", import.meta.url),
+        {},
+        context,
+    );
+    const apiClient = loadTestModule(
+        new URL("../api-client.js", import.meta.url),
+        {
+            "./toast.js": context,
+            "./offline-state.js": offlineState,
+        },
+        context,
+    );
 
     return {
-        apiClient: context.__testExports,
+        apiClient,
+        offlineState,
         dispatchedEvents,
         getReloadCount: () => reloadCount,
         runNextTimer: async () => {
@@ -377,3 +380,36 @@ test("api client suppresses marked connection failures across deep cause chains"
         true,
     );
 });
+
+for (const failure of [
+    new TypeError("Failed to fetch"),
+    { ok: false, status: 503 },
+]) {
+    test("enabled offline fallback enters quietly on the first failure", async () => {
+        const state = loadApiClientForTests({
+            offlineEnabled: true,
+            fetchImpl: async () => {
+                if (failure instanceof Error) throw failure;
+                return failure;
+            },
+        });
+        state.apiClient.configureConnectionRecoveryPrompt(
+            "Connection interrupted.",
+        );
+        if (failure instanceof Error)
+            await assert.rejects(state.apiClient.apiFetch("/api/v1/users"));
+        else await state.apiClient.apiFetch("/api/v1/users");
+        assert.equal(state.offlineState.isOffline(), true);
+        assert.equal(state.showToastCalls.length, 0);
+        assert.equal(
+            state.apiClient.shouldSuppressConnectionRecoveryPopup(failure),
+            true,
+        );
+        assert.equal(
+            state.apiClient.shouldSuppressConnectionRecoveryPopup(
+                new Error("unrelated"),
+            ),
+            false,
+        );
+    });
+}

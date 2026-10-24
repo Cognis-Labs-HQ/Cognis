@@ -1,7 +1,7 @@
 import { markEntryViewed } from "./viewed-entries.js";
 import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
+import { loadEntryDetail } from "./entry-data.js";
 import { composeDetail } from "./detail.js";
 import { isMeaningLayer, layerForEntry } from "./presentation.js";
 import {
@@ -55,10 +55,11 @@ export async function openEntryPopup(
                   options.transformation,
               );
     while (selectedEntry && !signal?.aborted) {
-        const detail =
-            options.detail?.entry.id === selectedEntry.id
-                ? options.detail
-                : await fetchLibraryEntry(selectedEntry.id);
+        const detail = await loadEntryDetail(
+            selectedEntry.id,
+            entries,
+            options.detail,
+        );
         signal?.throwIfAborted();
         const layer = layerForEntry(schemas, detail.entry);
         const titleReferences = detailTitleReferences(

@@ -267,8 +267,10 @@ export async function mount(root, { signal: routerSignal } = {}) {
                         grade,
                         attempt,
                     );
-                    reviewedDeck.deck = updated;
-                    if (session === reviewedDeck) selected = updated;
+                    if (!updated?.queued) {
+                        reviewedDeck.deck = updated;
+                        if (session === reviewedDeck) selected = updated;
+                    }
                     reviewedSession.record(grade, detail.entry.id);
                     if (!signal.aborted && current === generation)
                         persistSession();

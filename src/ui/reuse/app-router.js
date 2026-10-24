@@ -38,6 +38,11 @@
  * @returns {void}
  */
 
+import { isOffline, offlineWorkerRequest } from "./offline-state.js";
+import {
+    offlineRouteAvailable,
+    allowOfflineRoute,
+} from "./offline-navigation.js";
 import { isMountSignal } from "./mount-scope.js";
 import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
 import {
@@ -203,6 +208,8 @@ const STATIC_ROUTES = [
         pattern: /^\/license$/,
         base: "/license",
         public: true,
+        offline: { assets: [] },
+        offlineAvailable: true,
         stylesheets: ROUTE_STYLE_BUNDLES.license,
         load: () => import("../app/license/index.js"),
     },
@@ -216,6 +223,8 @@ const STATIC_ROUTES = [
         pattern: /^\/error$/,
         base: "/error",
         public: true,
+        offline: { assets: [] },
+        offlineAvailable: true,
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
@@ -249,6 +258,7 @@ function findMatchingRoute(routes, path) {
 }
 
 async function loadAllRoutes() {
+    if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
     if (_allRoutes) return _allRoutes;
     if (_allRoutesPromise) return _allRoutesPromise;
     const loadGeneration = _routeCacheGeneration;
@@ -350,6 +360,7 @@ async function loadRouteContent(
     ) {
         return false;
     }
+    if (!(await allowOfflineRoute(route, path, signal))) return false;
     globalThis.__cognisPublicSpaRoute = route.public === true;
     globalThis.__cognisPublicSpaRoutePageContext = route.componentPage ?? null;
 
@@ -358,7 +369,8 @@ async function loadRouteContent(
     // The router flag prevents the entry's direct-load mount from running.
     let mod;
     try {
-        await ensureHostUiProviders();
+        if (!isOffline()) await ensureHostUiProviders();
+        if (!(await allowOfflineRoute(route, path, signal))) return false;
         mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
         if (signal.aborted || navigationSequence !== _navigationSequence)
@@ -384,11 +396,12 @@ async function loadRouteContent(
     if (signal.aborted || navigationSequence !== _navigationSequence) {
         return false;
     }
+    if (!(await allowOfflineRoute(route, path, signal))) return false;
     const session = route.public
         ? null
         : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
 
-    await ensureHostUiProviders();
+    if (!isOffline()) await ensureHostUiProviders();
     if (signal.aborted || navigationSequence !== _navigationSequence) {
         return false;
     }
@@ -511,9 +524,10 @@ async function loadRouteContent(
 
 export async function navigateTo(
     path,
-    { bypassGuard = false, state = {} } = {},
+    { bypassGuard = false, state = {}, replace = false } = {},
 ) {
     const route = await resolveRoute(path);
+    if (!(await allowOfflineRoute(route, path))) return false;
     if (!route) return false;
     if (
         !bypassGuard &&
@@ -523,9 +537,9 @@ export async function navigateTo(
     )
         return false;
     const previousRouterPage = getCurrentRoutePath();
-    _historyIndex += 1;
+    if (!replace) _historyIndex += 1;
     _committedPath = path;
-    history.pushState(
+    history[replace ? "replaceState" : "pushState"](
         {
             ...state,
             routerPage: path,
@@ -553,6 +567,13 @@ uiCtx.capabilities.contribute(
 export function invalidateSpaRouteCache() {
     _routeCacheGeneration += 1;
     clearSpaRouteCache();
+    void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES")
+        .then(
+            () =>
+                !isOffline() &&
+                offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
+        )
+        .catch(console.error);
     _allRoutes = null;
     _allRoutesPromise = null;
 }
@@ -572,6 +593,7 @@ export function initRouter(root) {
         return false;
     });
     installRuntimeErrorHandlers();
+    installOfflineNavigation();
 
     _historyIndex = Number.isInteger(history.state?.routerIndex)
         ? history.state.routerIndex
@@ -622,9 +644,11 @@ export function initRouter(root) {
         event.preventDefault();
         const route = await resolveRoute(href);
         if (!route) {
+            if (!(await allowOfflineRoute(null, href))) return;
             window.location.assign(href);
             return;
         }
+        if (link.getAttribute("aria-disabled") === "true") return;
         await navigateTo(href);
     });
 
@@ -637,6 +661,7 @@ export function initRouter(root) {
         const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
         if (!route) {
+            if (!(await allowOfflineRoute(null, pathWithHash))) return;
             window.location.assign(pathWithHash);
             return;
         }
@@ -683,4 +708,52 @@ export function initRouter(root) {
         _committedPath = pathWithHash;
         await loadRoute(pathWithHash);
     });
+}
+
+function installOfflineNavigation() {
+    let pending = false;
+    const update = async () => {
+        if (pending) return;
+        pending = true;
+        try {
+            const routes = await loadAllRoutes();
+            for (const link of document.querySelectorAll(
+                "a[href^='/'], button[data-navigation-path]",
+            )) {
+                const disabled =
+                    isOffline() &&
+                    !offlineRouteAvailable(
+                        findMatchingRoute(
+                            routes,
+                            link.getAttribute("href") ??
+                                link.dataset.navigationPath,
+                        ),
+                    );
+                if (disabled && !link.dataset.offlineDisabled) {
+                    link.setAttribute("aria-disabled", "true");
+                    link.dataset.offlineDisabled = "true";
+                    if (link.tagName === "BUTTON") {
+                        link.dataset.offlineWasDisabled = String(link.disabled);
+                        link.disabled = true;
+                    }
+                } else if (!disabled && link.dataset.offlineDisabled) {
+                    link.removeAttribute("aria-disabled");
+                    delete link.dataset.offlineDisabled;
+                    if (link.tagName === "BUTTON") {
+                        link.disabled =
+                            link.dataset.offlineWasDisabled === "true";
+                        delete link.dataset.offlineWasDisabled;
+                    }
+                }
+            }
+        } finally {
+            pending = false;
+        }
+    };
+    window.addEventListener("cognis:connectivity-changed", () => void update());
+    if (typeof MutationObserver !== "undefined")
+        new MutationObserver(() => {
+            if (isOffline()) void update();
+        }).observe(document.body, { childList: true, subtree: true });
+    void update();
 }

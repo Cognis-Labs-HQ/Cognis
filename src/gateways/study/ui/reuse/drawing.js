@@ -339,6 +339,7 @@ async function createDrawingPad({
         pendingCompletion = request;
         try {
             const saved = await request;
+            if (saved?.queued) return progress;
             if (attempt === attemptNumber && sequence === loadSequence)
                 progress = saved;
             return saved;

@@ -12,6 +12,7 @@
  *   applyUiPreferences(prefs);
  *   await saveUiPreferences({ font: 'system-ui' });
  */
+import { offlineEnabled } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
 import { normalizeMessageStyle } from "./message-style-options.js";
 
@@ -58,6 +59,22 @@ export async function saveUiPreferences(patch) {
 }
 
 export function applyUiPreferences(prefs) {
+    if (prefs) {
+        const previousEnabled = offlineEnabled();
+        const previousOwner = localStorage.getItem(
+            "cognis_offline_preference_account",
+        );
+        const account = localStorage.getItem("cognis_account") ?? "";
+        localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
+        localStorage.setItem("cognis_offline_preference_account", account);
+        if (
+            previousEnabled !== (prefs.offlineEnabled !== false) ||
+            previousOwner !== account
+        )
+            window.dispatchEvent(
+                new CustomEvent("cognis:offline-preference-changed"),
+            );
+    }
     const messageStyle = normalizeMessageStyle(prefs?.messageStyle);
     document.documentElement.dataset.messageStyle = messageStyle;
     if (!prefs) return;

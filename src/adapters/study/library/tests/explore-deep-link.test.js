@@ -1,3 +1,4 @@
+import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import {
     loadTestModule,
     importTestModule,
@@ -49,6 +50,7 @@ test("a directly opened Explore card path opens the requested preview without hi
             import.meta.url,
         ),
         {
+            "/static/reuse/offline-read-cache.js": offlineReadCache,
             "./reuse/explore.js": context,
             "/static/reuse/mount-scope.js": context,
             "/static/reuse/toast.js": context,

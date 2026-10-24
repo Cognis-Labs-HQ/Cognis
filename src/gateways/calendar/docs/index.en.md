@@ -27,3 +27,9 @@ Leaving Calendar stops obsolete startup work before it updates the page or URL. 
 ## Faster Calendar Startup
 
 Calendar starts invitation discovery alongside the calendar-list request and loads events as soon as that list is ready. Page construction still waits for the required reads. Invitation failures keep the existing empty-invitation behavior, and every navigation requests fresh data. Cancellation checks prevent delayed results from constructing an obsolete page.
+
+## Reminder Selection
+
+Select several reminders using the standard visible checkboxes. Each selection remains visible and is saved together. Removing every selection disables reminders, including when the calendar has defaults. Existing custom reminder offsets remain available when editing.
+
+On creation, omitted `reminderOffsetsMinutes` uses calendar defaults; an explicit empty array disables reminders. Updates that omit the field preserve the existing selection.

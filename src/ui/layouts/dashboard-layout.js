@@ -1,3 +1,4 @@
+import { isOffline } from "../reuse/offline-state.js";
 import { updateNavbarAvatar } from "./navbar-avatar.js";
 export { updateNavbarAvatar } from "./navbar-avatar.js";
 import { apiFetch } from "../reuse/api-client.js";
@@ -535,7 +536,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
-        usePreferenceApi = showTopbar || showNavbar,
+        usePreferenceApi = !isOffline() && (showTopbar || showNavbar),
         // Pages that manage their own auth/session flow (e.g. the Share
         // gateway's anonymous-guest landing page) can render the topbar
         // chrome without a full account session. For those pages,
