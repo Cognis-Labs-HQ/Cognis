@@ -365,7 +365,7 @@ export async function openRuntimeErrorPopup({
         const popupBody = () => `
             <div class="popup-error-report">
                 <div class="popup-error-report-brand">
-                    <img src="/static/assets/icons/cognis-icon-192.png" alt="${escapeHtml(brandName)}" class="popup-error-report-brand-icon" />
+                    <img src="/static/assets/icons/cognis-icon-384.png" alt="${escapeHtml(brandName)}" class="popup-error-report-brand-icon" />
                     <span class="popup-error-report-brand-name">${escapeHtml(brandName)}</span>
                 </div>
                 <section>
