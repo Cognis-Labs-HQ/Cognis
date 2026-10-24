@@ -42,6 +42,7 @@ import {
 capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
+void ensurePersistentStylesheet("/static/styles/page-builder.css");
 void ensurePersistentStylesheet(BUTTON_STYLESHEET);
 
 if (!footerLinks.list().some(({ id }) => id === "core:license"))
@@ -553,6 +554,8 @@ export async function renderDashboardLayout(root, slots = {}) {
     const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
     if (slots.signal?.aborted) return;
 
+    if (!componentWindow)
+        uiCtx.capabilities.get("navigation:commitPage")?.(root, slots.signal);
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
     const hasSubNavigation = Boolean(slots.subNavigation);
