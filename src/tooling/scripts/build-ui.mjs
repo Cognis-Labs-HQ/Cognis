@@ -195,6 +195,7 @@ if (manifest["/static/app/offline/index.js"]) {
         "/static/assets/icons/cognis-icon-192.png",
         "/static/assets/icons/cognis-icon-384.png",
         "/static/assets/icons/cognis-icon-512.png",
+        "/static/assets/icons/cognis-header-512.png",
     ]);
     const visitedOutputs = new Set();
     function includeOfflineOutput(outputPath) {

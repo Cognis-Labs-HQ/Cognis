@@ -122,6 +122,7 @@ self.addEventListener("install", (event) => {
                     "/static/assets/icons/cognis-icon-192.png",
                     "/static/assets/icons/cognis-icon-384.png",
                     "/static/assets/icons/cognis-icon-512.png",
+                    "/static/assets/icons/cognis-header-512.png",
                     ...assets,
                 ].map(async (asset) => {
                     const resource = await fetch(asset, {
