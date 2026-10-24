@@ -8,4 +8,4 @@ Event creation and editing use the existing translated Busy and Free labels, all
 
 ## Commits
 
-- [fa4f4dbd65da0030f75f9c297eb4ddf14b6622f8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa4f4dbd65da0030f75f9c297eb4ddf14b6622f8)
+- [fa4f4db](https://github.com/Cognis-Labs-HQ/Cognis/commit/fa4f4dbd65da0030f75f9c297eb4ddf14b6622f8)
