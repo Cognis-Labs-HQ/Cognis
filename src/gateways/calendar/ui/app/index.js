@@ -143,6 +143,12 @@ export async function mount(root, { signal, shareContext = null } = {}) {
             jitsiAvailable = false;
             return;
         }
+        const invitationsPromise = calendarUi
+            .fetchInvitations()
+            .catch((error) => {
+                console.warn("[calendar]:invitations-load-failed", { error });
+                return [];
+            });
         const calendarState = await calendarUi.fetchCalendarState();
         if (signal?.aborted) return;
         calendarUi.setEventStatusOptions(
@@ -174,13 +180,9 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 .filter((result) => result.status === "fulfilled")
                 .map((result) => result.value),
         );
-        try {
-            pendingInvitations = await calendarUi.fetchInvitations();
-        } catch (err) {
-            console.warn("Failed to load pending invitations:", err);
-            pendingInvitations = [];
-        }
+        const invitations = await invitationsPromise;
         if (signal?.aborted) return;
+        pendingInvitations = invitations;
         scheduleAvailabilityBoundaryRefresh();
     }
 

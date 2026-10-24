@@ -23,3 +23,7 @@ Acara kalender memperbarui ketersediaan pengguna saat dimulai atau saat acara di
 ## Batalkan Muatan Kalender Lama
 
 Meninggalkan Kalender menghentikan inisialisasi yang sudah tidak berlaku sebelum mengubah halaman atau URL. Sinyal rute diteruskan ke penyusun halaman; respons kalender, acara, dan undangan yang terlambat tidak dapat membangun kembali tujuan yang telah diganti. Inisialisasi yang dibatalkan tidak menampilkan pemberitahuan kegagalan terlambat atau memulai ulang pengatur waktu ketersediaan.
+
+## Kalender Lebih Cepat
+
+Kalender mulai mengambil undangan bersamaan dengan daftar kalender dan memuat acara segera setelah daftar tersedia. Penyusunan halaman tetap menunggu pembacaan yang diperlukan. Kegagalan undangan mempertahankan perilaku daftar undangan kosong, dan setiap navigasi meminta data terbaru. Pemeriksaan pembatalan mencegah hasil terlambat menyusun halaman yang sudah tidak berlaku.
