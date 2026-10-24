@@ -4,10 +4,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 import { createUiRoutes } from "../../routes/ui/index.js";
-import {
-    issueAccessToken,
-    revokeAccessTokensForSubject,
-} from "../../../gateways/auth/access-tokens.js";
+import { createCtx } from "@cognis/core";
+import type { RouteContext } from "../../reuse/route-context.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
 
 const origin = "http://localhost";
@@ -15,11 +13,13 @@ const origin = "http://localhost";
 async function requestResource(
     route: ReturnType<typeof createUiRoutes>,
     path: string,
-    cookie = "",
 ) {
     const response = createResponseRecorder();
     await route(
-        { method: "GET", headers: { cookie } } as IncomingMessage,
+        {
+            method: "GET",
+            headers: { cookie: "cognis_access_token=ui-fixture" },
+        } as IncomingMessage,
         response.res as unknown as ServerResponse,
         new URL(path, origin),
     );
@@ -38,11 +38,53 @@ async function imageBytes(
     return bytes;
 }
 
-test("page favicons and the shell brand use images within the small-icon budget", async (context) => {
-    const route = createUiRoutes();
-    const subject = "brand-icon-budget";
-    const token = issueAccessToken(subject, "admin", 60);
-    context.after(() => revokeAccessTokensForSubject(subject));
+function createIconRoute(role: "admin" | "user" | null = "admin") {
+    const claims = role ? { sub: "icon-fixture", role } : null;
+    const context: RouteContext = {
+        getAuthClaims: () => claims,
+        getCookieSession: () => claims,
+        requireAuth: (_request, response) => {
+            if (claims) return claims;
+            response.writeHead(401);
+            response.end();
+            return null;
+        },
+        requireRoleAccess: () => {
+            throw new Error("Unexpected role contract");
+        },
+        canAccessUserData: () => {
+            throw new Error("Unexpected data contract");
+        },
+        hasMinRole: () => {
+            throw new Error("Unexpected role comparison");
+        },
+        setPageSecurityHeaders() {},
+        lookupAccessToken: (token) => {
+            assert.equal(token, "ui-fixture");
+            return claims ? { ...claims, revoked: false } : null;
+        },
+        revokeAccessTokensForSubject: () => {
+            throw new Error("No token mutation in UI fixture");
+        },
+        getCapability: () => undefined,
+        requireCapability: () => {
+            throw new Error("Unexpected capability");
+        },
+        flow: createCtx().flow,
+    };
+    return createUiRoutes(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        context,
+    );
+}
+
+test("page favicons use 384px and the page header uses 512px branding", async () => {
+    const route = createIconRoute();
     for (const page of [
         "/dashboard",
         "/settings",
@@ -53,18 +95,15 @@ test("page favicons and the shell brand use images within the small-icon budget"
         "/users",
         "/administration",
     ]) {
-        const response = await requestResource(
-            route,
-            page,
-            `cognis_access_token=${token}`,
-        );
+        const response = await requestResource(route, page);
         const icon = response.body.match(
             /<link\b(?=[^>]*rel="icon")[^>]*href="([^"]+)"/,
         )?.[1];
         assert.ok(icon, `${page} supplies its favicon`);
+        assert.match(icon, /cognis-icon-384\.png/);
         assert.ok(
-            (await imageBytes(route, icon)) <= 40 * 1024,
-            `${page} favicon exceeds 40 KiB`,
+            (await imageBytes(route, icon)) <= 96 * 1024,
+            `${page} favicon exceeds 96 KiB`,
         );
     }
     const template = await requestResource(
@@ -75,14 +114,15 @@ test("page favicons and the shell brand use images within the small-icon budget"
         /<img\b(?=[^>]*class="topbar-icon")[^>]*src="([^"]+)"/,
     )?.[1];
     assert.ok(brand, "the shell renders its brand image");
+    assert.match(brand, /cognis-icon-512\.png/);
     assert.ok(
-        (await imageBytes(route, brand)) <= 40 * 1024,
-        "shell brand exceeds 40 KiB",
+        (await imageBytes(route, brand)) <= 144 * 1024,
+        "shell brand exceeds 144 KiB",
     );
 });
 
 test("service worker installation retains install icons within its precache image budget", async () => {
-    const route = createUiRoutes();
+    const route = createIconRoute();
     const handlers = new Map();
     const images = new Map<string, number>();
     let activated = false;
@@ -130,6 +170,41 @@ test("service worker installation retains install icons within its precache imag
     assert.equal(activated, true);
     assert.ok(images.has("/static/assets/icons/cognis-icon-192.png"));
     assert.ok(images.has("/static/assets/icons/cognis-icon-512.png"));
+    assert.ok(images.has("/static/assets/icons/cognis-icon-384.png"));
     const bytes = [...images.values()].reduce((sum, size) => sum + size, 0);
-    assert.ok(bytes <= 192 * 1024, `precache images exceed 192 KiB: ${bytes}`);
+    assert.ok(bytes <= 288 * 1024, `precache images exceed 288 KiB: ${bytes}`);
+});
+
+test("injected denied and non-admin sessions retain page authorization", async () => {
+    for (const role of [null, "user"] as const) {
+        const route = createIconRoute(role);
+        const response = createResponseRecorder();
+        await route(
+            {
+                method: "GET",
+                headers: { cookie: "cognis_access_token=ui-fixture" },
+            } as IncomingMessage,
+            response.res as unknown as ServerResponse,
+            new URL("/administration", origin),
+        );
+        assert.equal(response.status, 302);
+        assert.match(
+            response.headers.location,
+            role ? /^\/dashboard$/ : /^\/login/,
+        );
+    }
+});
+
+test("normal and maskable image variants retain their declared PNG dimensions", async () => {
+    for (const suffix of ["", "-maskable"]) {
+        const image = await readFile(
+            new URL(
+                `../../../ui/public/assets/icons/cognis-icon${suffix}-384.png`,
+                import.meta.url,
+            ),
+        );
+        assert.equal(image.readUInt32BE(16), 384);
+        assert.equal(image.readUInt32BE(20), 384);
+        assert.equal(image[25], 6, "RGBA preserves transparency");
+    }
 });
