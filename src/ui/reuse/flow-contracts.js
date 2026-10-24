@@ -40,6 +40,7 @@ export const BROWSER_FLOW_CONTRACTS = Object.freeze({
         "mount",
     ]),
     "authenticate-session": Object.freeze([
+        "beforeSession",
         "validate-stored-token",
         "apply-alternate-auth",
         "enforce-setup-requirements",

@@ -108,7 +108,7 @@ export function registerOfflineRuntime(ctx) {
     );
     ctx.extendFlow(
         "authenticate-session",
-        "validate-stored-token",
+        "beforeSession",
         { id: "ui:invalidateOfflineVerification", order: -1000 },
         () => {
             verifiedSession = undefined;
