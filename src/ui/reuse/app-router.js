@@ -330,6 +330,27 @@ async function loadRoute(path) {
     const navigationController = new AbortController();
     _mountController = navigationController;
     const { signal } = navigationController;
+    const finishPageLoading = beginPageLoading();
+    signal.addEventListener("abort", finishPageLoading, { once: true });
+    try {
+        return await loadRouteContent(
+            path,
+            signal,
+            navigationSequence,
+            finishPageLoading,
+        );
+    } finally {
+        signal.removeEventListener("abort", finishPageLoading);
+        finishPageLoading();
+    }
+}
+
+async function loadRouteContent(
+    path,
+    signal,
+    navigationSequence,
+    finishPageLoading,
+) {
     const routeMountStartedAt = performance.now();
     const route = await resolveRoute(path);
     if (
@@ -355,6 +376,7 @@ async function loadRoute(path) {
         if (signal.aborted || navigationSequence !== _navigationSequence)
             return false;
         console.error("[router] route load error for", path, error);
+        finishPageLoading();
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
@@ -394,6 +416,7 @@ async function loadRoute(path) {
         !isGuestAllowedPath(path) &&
         !isGuestContentPath
     ) {
+        finishPageLoading();
         await openGuestBlockedPopup({ currentRoutePath: path });
         return false;
     }
@@ -410,8 +433,6 @@ async function loadRoute(path) {
         return loadRoute(enforcedPath);
     }
 
-    const finishPageLoading = beginPageLoading();
-    signal.addEventListener("abort", finishPageLoading, { once: true });
     let commitPageStylesheets = null;
     let observer = null;
     let commit = null;
@@ -498,8 +519,6 @@ async function loadRoute(path) {
         observer?.disconnect();
         if (_commitPage === commit) _commitPage = null;
         commitPageStylesheets?.cancel();
-        signal.removeEventListener("abort", finishPageLoading);
-        finishPageLoading();
     }
 }
 
