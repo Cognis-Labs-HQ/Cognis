@@ -41,6 +41,40 @@ test("registered gateway and adapter paths resolve to the same built source iden
     );
 });
 
+test("repository-root production launches resolve compiled component aliases", () => {
+    const registry = createRegistry();
+    const directory = path.resolve(
+        "dist/server/src/adapters/example/sample/ui",
+    );
+    registry.registerStaticDir("compiled-alias", directory);
+    registry.registerAdapterStaticDir("example", "compiled-sample", directory);
+    for (const prefix of [
+        "/static/gateways/compiled-alias",
+        "/static/adapters/example/compiled-sample",
+    ]) {
+        assert.equal(
+            registry.resolveAssetUrl(`${prefix}/provider.js`),
+            "/assets/provider-ABC123.js",
+        );
+        assert.equal(
+            registry.resolveAssetUrl(`${prefix}/styles.css`),
+            "/assets/styles-ABC123.css",
+        );
+        assert.equal(
+            registry.resolveAssetUrl(`${prefix}/fresh.xml`),
+            `${prefix}/fresh.xml`,
+        );
+    }
+    registry.registerStaticDir(
+        "outside",
+        path.resolve("dist/server/src-other/adapters/example/sample/ui"),
+    );
+    assert.equal(
+        registry.resolveAssetUrl("/static/gateways/outside/provider.js"),
+        "/static/gateways/outside/provider.js",
+    );
+});
+
 test("unbuilt, external and revision-qualified resources retain their authoritative URLs", () => {
     const registry = createRegistry();
     registry.registerStaticDir(

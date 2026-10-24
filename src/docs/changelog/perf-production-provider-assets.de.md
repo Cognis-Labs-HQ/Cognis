@@ -4,7 +4,9 @@
 
 ## Produktionsbündel auflösen
 
-Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden als Build-Einstiegspunkte erzwungen; gewöhnliche statische Importe bleiben gebündelte Abhängigkeiten. Der Build enthält wörtliche Host-Skriptverweise auch dann, wenn andere Einstiegspunkte sie importieren. Registrierte statische Gateway- und Adapterverzeichnisse lösen eigene URL-Präfixe zu ihren erzeugten Bündeln auf. Die API-Version steigt auf 0.6.22. Durch Konstruktionsabläufe ergänzte Einstellungsbereiche werden nach Autorisierung und Sichtbarkeitsprüfung über dasselbe Manifest aufgelöst. Jede Anfrage verwendet die aktuellen Deskriptoren; reine Quellressourcen und Modulressourcen mit Revisionsangaben behalten ihre maßgeblichen URLs.
+Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden als Build-Einstiegspunkte erzwungen; gewöhnliche statische Importe bleiben gebündelte Abhängigkeiten. Der Build enthält wörtliche Host-Skriptverweise auch dann, wenn andere Einstiegspunkte sie importieren. Registrierte statische Gateway- und Adapterverzeichnisse lösen eigene URL-Präfixe zu ihren erzeugten Bündeln auf. Die API-Version steigt auf 0.6.23. Durch Konstruktionsabläufe ergänzte Einstellungsbereiche werden nach Autorisierung und Sichtbarkeitsprüfung über dasselbe Manifest aufgelöst. Jede Anfrage verwendet die aktuellen Deskriptoren; reine Quellressourcen und Modulressourcen mit Revisionsangaben behalten ihre maßgeblichen URLs.
+
+Aliase werden auch aufgelöst, wenn der Produktionsbefehl im Repository-Stamm läuft und Komponenten ihre kompilierten Verzeichnisse unter `dist/server/src` registrieren.
 
 ## Host-Downloads überlappen
 
@@ -16,6 +18,7 @@ Regressionstests prüfen Modulidentität, Autorisierung, Aktivierungs- und Deins
 
 ## Commits
 
-- [9def8947fd3571bee5901acf901119e190d3f9d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/9def8947fd3571bee5901acf901119e190d3f9d1)
-- [207a05e4670647f3ad530c99b40a54c19bec94a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/207a05e4670647f3ad530c99b40a54c19bec94a4)
-- [6631c34a1977a82804094b5461b60d9c923d8272](https://github.com/Cognis-Labs-HQ/Cognis/commit/6631c34a1977a82804094b5461b60d9c923d8272)
+- [9def894](https://github.com/Cognis-Labs-HQ/Cognis/commit/9def8947fd3571bee5901acf901119e190d3f9d1)
+- [207a05e](https://github.com/Cognis-Labs-HQ/Cognis/commit/207a05e4670647f3ad530c99b40a54c19bec94a4)
+- [6631c34](https://github.com/Cognis-Labs-HQ/Cognis/commit/6631c34a1977a82804094b5461b60d9c923d8272)
+- [2ae7170](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ae7170d8f5373798f4494692dc9eb836780302c)

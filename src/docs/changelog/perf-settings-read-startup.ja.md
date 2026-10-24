@@ -12,4 +12,4 @@
 
 ## コミット
 
-- [1e90970ab5e72dc6b32779b956341477875a153c](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e90970ab5e72dc6b32779b956341477875a153c)
+- [1e90970](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e90970ab5e72dc6b32779b956341477875a153c)
