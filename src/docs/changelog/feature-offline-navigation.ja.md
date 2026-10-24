@@ -10,8 +10,13 @@ SPA ルートで `public: true` と `offline: { assets: [...] }` を宣言して
 
 API 応答、認証情報、認証済み HTML は保存しません。モジュールの無効化で公開ルートカタログとモジュールアセットを削除し、リビジョン付きアセットは現在のカタログと一致する必要があります。切断中はリモートの変更を検知できず、最後に確認した公開リビジョンのみ利用できます。復旧時はカタログを更新し、未保存の変更を確認して再読み込みし、最新のサーバー認可に戻ります。Worker の更新は既存タブが閉じるまで待機し、復旧アセットを準備してから有効になります。Worker が未導入の初回アクセスではオフライン起動できません。
 
+## リマインダーの選択
+
+標準のチェックボックスで複数のリマインダーを選択し、まとめて保存できます。すべての選択を解除すると、カレンダーに既定値があってもリマインダーは無効になります。既存の独自の通知間隔も編集時に保持されます。
+
 ## コミット
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)
 - [980643a](https://github.com/Cognis-Labs-HQ/Cognis/commit/980643a2d392559194e361745e7aae10f04c7bf2)
 - [9e208d3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9e208d34f2a8b9b117c4029e7a26c712efc11dd5)
+- [39bc5c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/39bc5c3c81a7b87b096d8ed665aa3ddeee7e4c93)

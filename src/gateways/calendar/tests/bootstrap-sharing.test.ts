@@ -329,6 +329,15 @@ test("calendar reminders are scheduled instead of dispatched immediately", async
         [5, 30],
     );
 
+    const clearedReminders = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultCalendarId)}/events/${eventWithExplicitReminders.body.data.id}`,
+        { reminderOffsetsMinutes: [] },
+    );
+    assert.equal(clearedReminders.statusCode, 200);
+    assert.deepEqual(clearedReminders.body.data.reminderOffsetsMinutes, []);
+
     const reminderSubjects = dispatchedSubjects.filter((subject) =>
         subject.startsWith("Calendar reminder: "),
     );

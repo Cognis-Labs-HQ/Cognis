@@ -27,3 +27,9 @@ Meninggalkan Kalender menghentikan inisialisasi yang sudah tidak berlaku sebelum
 ## Kalender Lebih Cepat
 
 Kalender mulai mengambil undangan bersamaan dengan daftar kalender dan memuat acara segera setelah daftar tersedia. Penyusunan halaman tetap menunggu pembacaan yang diperlukan. Kegagalan undangan mempertahankan perilaku daftar undangan kosong, dan setiap navigasi meminta data terbaru. Pemeriksaan pembatalan mencegah hasil terlambat menyusun halaman yang sudah tidak berlaku.
+
+## Pilihan Pengingat
+
+Pilih beberapa pengingat melalui kotak centang standar yang terlihat dan simpan semuanya sekaligus. Menghapus seluruh pilihan menonaktifkan pengingat, termasuk ketika kalender memiliki nilai bawaan. Jarak waktu pengingat khusus yang sudah ada tetap tersedia saat mengedit.
+
+Saat membuat acara, `reminderOffsetsMinutes` yang tidak disertakan memakai nilai bawaan kalender; larik kosong menonaktifkan pengingat. Pembaruan tanpa bidang ini mempertahankan pilihan yang ada.

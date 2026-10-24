@@ -194,4 +194,5 @@
   <string name="gateway.calendar.share_acknowledge_message">Dieser Kalender wird Ihrer Kalenderseite hinzugefügt.</string>
   <string name="gateway.calendar.share_acknowledge_action">Kalender hinzufügen</string>
   <string name="gateway.calendar.delete_shared_calendar_confirm">Dieser geteilte Kalender wird von Ihrer Kalenderseite entfernt.</string>
+  <string name="gateway.calendar.reminder_minutes">{minutes} Minuten vorher</string>
 </resources>

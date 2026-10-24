@@ -363,7 +363,7 @@ test("calendar composer supports multiple reminders and remembers selected view"
         /name="calendar-popup-reminder-offset"/,
     );
     assert.doesNotMatch(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
-    assert.match(POPUP_REMINDERS_SOURCE, /calendar-reminder-option-check/);
+    assert.match(POPUP_REMINDERS_SOURCE, /choice-checkbox/);
     assert.match(
         POPUP_REMINDERS_SOURCE,
         /gateway\.calendar\.reminders_default_tooltip/,
