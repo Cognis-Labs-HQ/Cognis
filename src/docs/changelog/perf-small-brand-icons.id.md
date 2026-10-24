@@ -4,11 +4,11 @@
 
 ## Resolusi per Tampilan
 
-Favicon halaman, widget dasbor, tampilan autentikasi dan kesalahan, serta ikon pintasan memakai gambar 384px. Header halaman memakai ikon 512px yang tersedia. Varian normal dan maskable 384px diperkecil secara deterministik dari gambar 512px yang sesuai menggunakan Lanczos, dengan komposisi, rasio aspek, dan alfa tetap terjaga. Gambar asli dan ikon instalasi khusus platform (192px/512px serta Apple Touch 180px) tetap tersedia.
+Favicon halaman, widget dasbor, tampilan autentikasi dan kesalahan, serta ikon pintasan memakai gambar 384px. Header halaman memakai gambar khusus setinggi 512px yang diskalakan langsung dari gambar asli dengan batas rapat. Rasio aspek dan alfa tetap terjaga tanpa ruang tepi ikon instalasi; ukuran kotak CSS header tetap sama. Varian normal dan maskable 384px diperkecil secara deterministik dari gambar 512px yang sesuai menggunakan Lanczos, dengan komposisi, rasio aspek, dan alfa tetap terjaga. Gambar asli dan ikon instalasi khusus platform (192px/512px serta Apple Touch 180px) tetap tersedia.
 
 ## Transfer Gambar Saat Mulai
 
-Instalasi service worker menyiapkan ikon normal 192px, 384px, dan 512px tanpa mengambil gambar sumber berukuran besar. Versi cache diperbarui agar daftar aset klien ikut diperbarui. Uji rute dan instalasi memeriksa dimensi gambar serta batas transfer yang ditingkatkan untuk kualitas, menggunakan kontrak autentikasi yang diinjeksi tanpa membuat token tersimpan.
+Instalasi service worker menyiapkan ikon normal 192px, 384px, dan 512px tanpa mengambil gambar sumber berukuran besar. Versi cache diperbarui agar daftar aset klien ikut diperbarui. Uji rute dan instalasi memeriksa dimensi gambar serta batas transfer yang ditingkatkan untuk kualitas, menggunakan kontrak autentikasi yang diinjeksi tanpa membuat token tersimpan. Worker juga menyiapkan gambar khusus header.
 
 ## Komit
 
