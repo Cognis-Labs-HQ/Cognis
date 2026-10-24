@@ -29,9 +29,7 @@ import "./feedback-capabilities.js";
 import "./floating-window.js";
 import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
 
-const activePageLoadingTokens = new Map();
-let loadingScopeFrame = null;
-let loadingScopeTarget = null;
+const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
 let loadingOverlayMounted = false;
 let loadingOverlayElement = null;
@@ -273,62 +271,14 @@ function registerPageUnloadListeners() {
     pageUnloadListenersRegistered = true;
 }
 
-function updateLoadingScope() {
-    const scopes = [...activePageLoadingTokens.values()];
-    const targets = scopes.map((resolveScope) => resolveScope?.());
-    const target =
-        targets.length && targets.every((entry) => entry === targets[0])
-            ? targets[0]
-            : null;
-    if (loadingScopeTarget !== target) {
-        loadingScopeTarget?.removeAttribute("aria-busy");
-        loadingScopeTarget = target;
-    }
-    target?.setAttribute("aria-busy", "true");
-    const bounds = target?.getBoundingClientRect();
-    const scoped = Boolean(bounds && bounds.width > 0 && bounds.height > 0);
-    loadingOverlayElement?.setAttribute(
-        "data-loading-scope",
-        scoped ? "content" : "document",
-    );
-    if (scoped && loadingOverlayElement?.style) {
-        loadingOverlayElement.style.top = `${Math.max(0, bounds.top)}px`;
-        loadingOverlayElement.style.left = `${Math.max(0, bounds.left)}px`;
-        loadingOverlayElement.style.width = `${bounds.width}px`;
-        loadingOverlayElement.style.height = `${Math.min(bounds.height, window.innerHeight - Math.max(0, bounds.top))}px`;
-    } else if (loadingOverlayElement?.style) {
-        for (const property of ["top", "left", "width", "height"]) {
-            loadingOverlayElement.style[property] = "";
-        }
-    }
-    document.body?.setAttribute(
-        "aria-busy",
-        String(scopes.length > 0 && !scoped),
-    );
-}
-
-function trackLoadingScope() {
-    updateLoadingScope();
-    if (
-        activePageLoadingTokens.size &&
-        typeof requestAnimationFrame === "function"
-    ) {
-        loadingScopeFrame = requestAnimationFrame(trackLoadingScope);
-    }
-}
-
 function updatePageLoadingState() {
     const body = document.body;
     if (!body) return;
     ensureLoadingOverlay();
     const pendingLoadCount = activePageLoadingTokens.size;
-    if (loadingScopeFrame !== null) {
-        cancelAnimationFrame(loadingScopeFrame);
-        loadingScopeFrame = null;
-    }
-    trackLoadingScope();
     if (pendingLoadCount > 0) {
         body.dataset.pageReady = "false";
+        body.setAttribute("aria-busy", "true");
         scheduleLoadingOverlayVisibility();
         scheduleLoadingMessageVisibility();
         startLoadingMessageRotation();
@@ -353,15 +303,13 @@ function updatePageLoadingState() {
 /**
  * Shows the shared page-loading overlay for a new client-side load task.
  *
- * @param {{ resolveScope?: () => Element | null }} options - Resolve the affected
- *   content on each frame; missing content keeps document-wide loading.
  * @returns {() => void} Idempotent cleanup function that ends this task and
  *   hides the overlay when all pending tasks are complete.
  */
-export function beginPageLoading({ resolveScope } = {}) {
+export function beginPageLoading() {
     const token = nextPageLoadingToken++;
     let released = false;
-    activePageLoadingTokens.set(token, resolveScope);
+    activePageLoadingTokens.add(token);
     updatePageLoadingState();
     return () => {
         if (released) return;

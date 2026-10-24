@@ -179,7 +179,14 @@ for (const htmlPath of (await walk(path.join(outputRoot, "public"))).filter(
 )) {
     let html = await readFile(htmlPath, "utf8");
     for (const [sourceUrl, emittedUrl] of Object.entries(manifest)) {
-        html = html.replaceAll(sourceUrl, emittedUrl);
+        if (sourceUrl.endsWith(".css")) {
+            html = html.replaceAll(
+                `href="${sourceUrl}"`,
+                `href="${emittedUrl}" data-page-stylesheet-source="${sourceUrl}"`,
+            );
+        } else {
+            html = html.replaceAll(sourceUrl, emittedUrl);
+        }
     }
     await writeFile(htmlPath, html);
 }
