@@ -6,6 +6,8 @@
 
 UI-Build-Dateien liegen in einem kompakten Testdatenverzeichnis. Nur der temporäre Build-Test stellt die Produktionsstruktur her. Gemeinsame Einstiegspunkte, Stylesheet-Veröffentlichung und statische Dateien bleiben erhalten.
 
+Unbenutzte SQLite-Testdatenkopien werden entfernt. Die PostgreSQL-Testdaten behalten die für die Datenbankerkennung erforderlichen Anbieter- und SQL-Phasenverzeichnisse.
+
 ## Verwandte Tests gruppieren
 
 Verwandte Tests erhalten Themenverzeichnisse und kürzere Dateinamen. Importe und Ressourcenverweise werden angepasst; die rekursive Testerkennung bleibt erhalten.

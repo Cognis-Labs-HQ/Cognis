@@ -6,6 +6,8 @@
 
 Keep UI build assets in a compact fixture directory and assemble the production layout only in the temporary build test. Preserve entrypoint sharing, stylesheet publication, and static asset handling.
 
+Remove unused SQLite fixture copies; the PostgreSQL fixture retains the provider and SQL phase directories exercised by database discovery.
+
 ## Group related tests
 
 Place related tests in subject directories and shorten filenames, updating imports and resource references while retaining recursive test discovery.
