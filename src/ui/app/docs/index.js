@@ -260,6 +260,7 @@ export async function mount(root, { signal } = {}) {
     ];
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         elements,
         preferenceKey: "docs-layout",

@@ -54,10 +54,7 @@ const credentialsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/credentials.js"),
     "utf8",
 );
-const moduleStylesSource = readFileSync(
-    resolve(ROOT, "src/ui/app/modules/styles.js"),
-    "utf8",
-);
+
 const marketplaceSource =
     readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
     readFileSync(resolve(ROOT, "src/ui/app/modules/polling.js"), "utf8") +
@@ -882,10 +879,21 @@ test("module marketplace refresh actions emit one completion result", () => {
     );
 });
 
-test("module marketplace prepares its complete stylesheet bundle before mounting", () => {
-    assert.match(marketplaceSource, /await loadModulePageStyles\(\)/);
-    assert.match(
-        moduleStylesSource,
-        /preparePageStylesheets[\s\S]*page-builder\.css[\s\S]*page-sections\.css[\s\S]*modules\.css/,
+test("module marketplace declares its stylesheet bundle for direct and SPA navigation", () => {
+    const html = readFileSync(
+        resolve(ROOT, "src/ui/public/pages/modules.html"),
+        "utf8",
     );
+    const router = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    for (const name of [
+        "page-builder.css",
+        "page-sections.css",
+        "modules.css",
+    ]) {
+        assert.ok(html.includes(name));
+        assert.ok(router.includes(name));
+    }
 });

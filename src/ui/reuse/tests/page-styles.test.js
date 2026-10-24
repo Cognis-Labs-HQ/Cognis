@@ -1,113 +1,145 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    ensurePersistentStylesheet,
-    preparePageStylesheets,
-} from "../page-styles.js";
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
-function createStylesheet(pathname) {
-    return {
-        dataset: { pageStylesheet: "true" },
-        href: `http://localhost${pathname}`,
-        rel: "stylesheet",
-        removed: false,
-        sheet: {},
-        remove() {
-            this.removed = true;
+function fixture(initial = ["/old.css"]) {
+    const links = [];
+    function link(href = "", loaded = false) {
+        const listeners = new Map();
+        return {
+            href,
+            media: "",
+            dataset: {},
+            sheet: loaded ? {} : null,
+            removed: false,
+            addEventListener(type, listener) {
+                listeners.set(type, listener);
+            },
+            fire(type) {
+                if (type === "load") this.sheet = {};
+                listeners.get(type)?.();
+            },
+            remove() {
+                this.removed = true;
+            },
+        };
+    }
+    links.push(...initial.map((href) => link(href, true)));
+    const document = {
+        head: {
+            querySelectorAll: () => links.filter((entry) => !entry.removed),
+            appendChild(entry) {
+                links.push(entry);
+            },
         },
+        createElement: () => link(),
     };
+    const styles = loadTestModule(
+        new URL("../page-styles.js", import.meta.url),
+        {},
+        {
+            document,
+            window: { location: { origin: "https://cognis.test" } },
+            URL,
+            console,
+        },
+    );
+    styles.adoptPageStylesheets();
+    return { styles, links, last: () => links.at(-1) };
 }
 
-test("route and shared styles survive SPA navigation", async (testContext) => {
-    const buttonStylesheet = createStylesheet(
-        "/static/styles/reuse/buttons.css",
-    );
-    const meetingsStylesheet = createStylesheet(
-        "/static/modules/jitsi-meet/jitsi-meet.css",
-    );
-    const stylesheets = [buttonStylesheet, meetingsStylesheet];
-    globalThis.window = { location: { origin: "http://localhost" } };
-    globalThis.document = {
-        head: {
-            querySelector(selector) {
-                return stylesheets.find(
-                    (stylesheet) =>
-                        !stylesheet.removed &&
-                        selector.includes(new URL(stylesheet.href).pathname),
-                );
-            },
-            querySelectorAll() {
-                return stylesheets.filter((stylesheet) => !stylesheet.removed);
-            },
-        },
-    };
-    testContext.after(() => {
-        delete globalThis.document;
-        delete globalThis.window;
-    });
-
-    const commitMeetingsStyles = await preparePageStylesheets([
-        "/static/styles/reuse/buttons.css",
-        "/static/modules/jitsi-meet/jitsi-meet.css",
-    ]);
-    commitMeetingsStyles();
-    await ensurePersistentStylesheet("/static/styles/reuse/buttons.css");
-    const commitNextPageStyles = await preparePageStylesheets([]);
-    commitNextPageStyles();
-
-    assert.equal(buttonStylesheet.removed, false);
-    assert.equal(buttonStylesheet.dataset.pageStylesheet, "true");
-    assert.equal(meetingsStylesheet.removed, false);
+test("outgoing styles remain active while destination CSS loads and until commit", async () => {
+    const { styles, links, last } = fixture();
+    const ready = styles.preparePageStylesheets(["/next.css"]);
+    assert.equal(links[0].removed, false);
+    assert.equal(links[0].media, "");
+    assert.equal(last().media, "not all");
+    last().fire("load");
+    const commit = await ready;
+    assert.equal(last().media, "not all");
+    assert.equal(links[0].removed, false);
+    commit();
+    assert.equal(last().media, "");
+    assert.equal(links[0].removed, true);
 });
 
-test("versioned route styles are reused after navigation", async (testContext) => {
-    const pageBuilderPath = "/static/styles/page-builder.css?v=development";
-    const stylesheets = [createStylesheet(pageBuilderPath)];
-    let appendedStylesheets = 0;
-    globalThis.window = { location: { origin: "http://localhost" } };
-    globalThis.document = {
-        createElement() {
-            const listeners = new Map();
-            return {
-                dataset: {},
-                addEventListener(type, listener) {
-                    listeners.set(type, listener);
-                },
-                dispatchLoad() {
-                    listeners.get("load")?.();
-                },
-            };
-        },
-        head: {
-            appendChild(stylesheet) {
-                appendedStylesheets += 1;
-                stylesheet.href = new URL(
-                    stylesheet.href,
-                    window.location.origin,
-                ).href;
-                stylesheet.remove = () => {
-                    stylesheet.removed = true;
-                };
-                stylesheets.push(stylesheet);
-                stylesheet.dispatchLoad();
-            },
-            querySelectorAll() {
-                return stylesheets.filter((stylesheet) => !stylesheet.removed);
-            },
-        },
-    };
-    testContext.after(() => {
-        delete globalThis.document;
-        delete globalThis.window;
+test("cancel and failed CSS discard only staged resources, and failure permits retry", async () => {
+    const { styles, links, last } = fixture();
+    const controller = new AbortController();
+    const pending = styles.preparePageStylesheets(["/canceled.css"], {
+        signal: controller.signal,
     });
+    controller.abort();
+    assert.equal(await pending, null);
+    assert.equal(last().removed, true);
+    assert.equal(links[0].removed, false);
+    const failed = styles.preparePageStylesheets(["/retry.css"]);
+    last().fire("error");
+    await assert.rejects(failed, /page_stylesheet_unavailable/);
+    assert.equal(last().removed, true);
+    const retry = styles.preparePageStylesheets(["/retry.css"]);
+    last().fire("load");
+    (await retry)();
+    assert.equal(last().removed, false);
+});
 
-    const commitMeetingsStyles = await preparePageStylesheets([
-        pageBuilderPath,
-    ]);
-    commitMeetingsStyles();
-    const commitWithoutPageBuilder = await preparePageStylesheets([]);
-    commitWithoutPageBuilder();
-    await preparePageStylesheets([pageBuilderPath]);
+test("superseding navigation cannot release the successor's shared pending sheet", async () => {
+    const { styles, last } = fixture();
+    const controller = new AbortController();
+    const first = styles.preparePageStylesheets(["/shared.css"], {
+        signal: controller.signal,
+    });
+    const second = styles.preparePageStylesheets(["/shared.css"]);
+    controller.abort();
+    assert.equal(await first, null);
+    assert.equal(last().removed, false);
+    last().fire("load");
+    (await second)();
+    assert.equal(last().media, "");
+});
 
-    assert.equal(appendedStylesheets, 0);
+test("component ownership retains route CSS until its own signal is disposed", async () => {
+    const { styles, links } = fixture();
+    const component = new AbortController();
+    await styles.ensurePageStylesheet("/old.css", { signal: component.signal });
+    (await styles.preparePageStylesheets([]))();
+    assert.equal(links[0].removed, false);
+    component.abort();
+    assert.equal(links[0].removed, true);
+});
+
+test("persistent shell styles survive route commits, and module revisions remain distinct", async () => {
+    const { styles, links, last } = fixture();
+    await styles.ensurePersistentStylesheet("/old.css");
+    (await styles.preparePageStylesheets([]))();
+    assert.equal(links[0].removed, false);
+    for (const revision of ["one", "two"]) {
+        const pending = styles.preparePageStylesheets([
+            `/static/modules/example/page.css?revision=${revision}`,
+        ]);
+        last().fire("load");
+        (await pending)();
+    }
+    assert.equal(links[1].removed, true);
+    assert.equal(links[2].removed, false);
+});
+
+test("production stylesheet aliases are adopted and reused without a second fetch", async () => {
+    const { links } = fixture(["/assets/page-ABCDEFGH.css"]);
+    // The build preserves the logical source URL on emitted HTML links.
+    links[0].dataset.pageStylesheetSource = "/static/styles/page.css";
+    // Use a fresh document so adoption reads the server-provided attribute.
+    const module = loadTestModule(
+        new URL("../page-styles.js", import.meta.url),
+        {},
+        {
+            document: { head: { querySelectorAll: () => links } },
+            window: { location: { origin: "https://cognis.test" } },
+            URL,
+            console,
+        },
+    );
+    module.adoptPageStylesheets();
+    (await module.preparePageStylesheets(["/static/styles/page.css"]))();
+    assert.equal(links[0].removed, false);
 });

@@ -1,98 +1,172 @@
-/**
- * Idempotent stylesheet injection for SPA page navigation.
- *
- * When the client-side router loads a new page it must ensure all
- * CSS required by that page is present in <head> before mount() is
- * called. This module provides a single utility for that purpose.
- *
- * Public exports:
- *   ensurePageStylesheet(href) — injects a <link rel="stylesheet"> for
- *                                href if not already present, and returns
- *                                a Promise that resolves once the sheet is
- *                                ready (load event) or has already loaded.
- *                                If the sheet fails to load (network error,
- *                                404, etc.) the promise still resolves rather
- *                                than rejecting, so that a stylesheet failure
- *                                never prevents the page from mounting. The
- *                                error is logged to console.error.
- *   ensurePersistentStylesheet(href) — compatibility alias for loading a
- *                                stylesheet retained by the dashboard shell.
- *   preparePageStylesheets(hrefs) — loads a route's stylesheet set. Loaded
- *                                styles remain available for the lifetime of
- *                                the shell so persistent component windows do
- *                                not lose dependencies during navigation.
- *
- * Usage:
- *   import { ensurePageStylesheet } from '../reuse/page-styles.js';
- *   await Promise.all([
- *     ensurePageStylesheet('/static/styles/profile.css'),
- *     ensurePageStylesheet('/static/styles/reuse/char-counter.css'),
- *   ]);
- *
- * @param {string} href — absolute URL of the stylesheet to inject.
- * @returns {Promise<void>} resolves when the stylesheet is ready.
- */
+/** Route styles are staged without affecting the visible page, then exchanged at commit. */
+const state = (globalThis[Symbol.for("cognis.pageStyles")] ??= {
+    entries: new Map(),
+    route: new Set(),
+});
+const persistentOwner = "persistent";
 
-const _pending = new Map();
-
-function stylesheetPathname(href) {
-    return new URL(href, window.location.origin).pathname;
+function keyFor(href) {
+    const url = new URL(href, window.location.origin);
+    if (!url.pathname.startsWith("/static/modules/"))
+        url.searchParams.delete("v");
+    return url.href;
 }
 
-export function ensurePageStylesheet(href) {
-    const pathname = stylesheetPathname(href);
-    if (_pending.has(pathname)) return _pending.get(pathname);
+function reconcile(entry) {
+    if (!entry.owners.size && !entry.pending.size) {
+        entry.link.remove();
+        if (state.entries.get(entry.key) === entry)
+            state.entries.delete(entry.key);
+    } else {
+        entry.link.media = entry.owners.size ? entry.media : "not all";
+    }
+}
 
+function acquire(href) {
+    const key = keyFor(href);
+    if (state.entries.has(key)) return state.entries.get(key);
     const existing = [
         ...document.head.querySelectorAll('link[rel="stylesheet"][href]'),
-    ].find((link) => stylesheetPathname(link.href) === pathname);
-    if (existing) {
-        const ready = existing.sheet
-            ? Promise.resolve()
-            : new Promise((resolve) =>
-                  existing.addEventListener("load", resolve, { once: true }),
+    ].find(
+        (link) =>
+            keyFor(link.dataset.pageStylesheetSource || link.href) === key,
+    );
+    const link = existing || document.createElement("link");
+    const entry = {
+        key,
+        link,
+        media: link.media || "",
+        owners: new Set(),
+        pending: new Set(),
+        ready: null,
+    };
+    entry.ready = existing?.sheet
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+              link.addEventListener("load", resolve, { once: true });
+              link.addEventListener(
+                  "error",
+                  (error) => {
+                      console.error("[page-styles] failed to load stylesheet", {
+                          href,
+                          error,
+                      });
+                      reject(new Error("page_stylesheet_unavailable"));
+                  },
+                  { once: true },
               );
-        _pending.set(pathname, ready);
-        return ready;
+          });
+    state.entries.set(key, entry);
+    if (!existing) {
+        link.rel = "stylesheet";
+        link.href = href;
+        link.dataset.pageStylesheet = "true";
+        link.media = "not all";
+        document.head.appendChild(link);
     }
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = href;
-    link.dataset.pageStylesheet = "true";
-    const ready = new Promise((resolve) => {
-        link.addEventListener("load", resolve, { once: true });
-        link.addEventListener("error", (err) => {
-            console.error(
-                "[page-styles] failed to load stylesheet:",
-                href,
-                err,
-            );
-            resolve();
-        });
-    });
-    document.head.appendChild(link);
-    _pending.set(pathname, ready);
-    return ready;
+    return entry;
 }
 
-/**
- * Ensures a dashboard-shell stylesheet remains active across SPA navigation.
- *
- * @param {string} href - Absolute stylesheet URL to load and retain.
- * @returns {Promise<void>} Resolves when the stylesheet is ready.
- */
+/** Adopt the direct document's styles as the initially visible route. */
+export function adoptPageStylesheets() {
+    for (const link of document.head.querySelectorAll(
+        'link[rel="stylesheet"][href]',
+    )) {
+        const entry = acquire(link.dataset.pageStylesheetSource || link.href);
+        if (!entry.owners.size) {
+            entry.owners.add(state.route);
+            state.route.add(entry);
+        }
+    }
+}
+
+/** Shared controls may retain a stylesheet; signal-scoped consumers release it on disposal. */
+export async function ensurePageStylesheet(href, { signal } = {}) {
+    if (signal?.aborted) return;
+    const entry = acquire(href);
+    const owner = signal || persistentOwner;
+    entry.owners.add(owner);
+    reconcile(entry);
+    signal?.addEventListener(
+        "abort",
+        () => {
+            entry.owners.delete(owner);
+            reconcile(entry);
+        },
+        { once: true },
+    );
+    try {
+        await entry.ready;
+    } catch {
+        entry.owners.delete(owner);
+        reconcile(entry);
+    }
+}
+
 export function ensurePersistentStylesheet(href) {
     return ensurePageStylesheet(href);
 }
 
-/**
- * Loads the destination route's declared bundle without unloading prior CSS.
- *
- * @param {string[]} hrefs - Complete stylesheet URLs declared by the route.
- * @returns {Promise<() => void>} Resolves after destination styles load with a compatibility no-op callback.
- */
-export async function preparePageStylesheets(hrefs) {
-    await Promise.all(hrefs.map(ensurePageStylesheet));
-    return () => {};
+/** Prepare an inactive route lease. Commit swaps route ownership; abort releases only this lease. */
+export async function preparePageStylesheets(hrefs, { signal } = {}) {
+    const lease = new Set();
+    let committed = false;
+    const cancel = () => {
+        if (committed) return;
+        signal?.removeEventListener("abort", onAbort);
+        for (const entry of lease) {
+            entry.pending.delete(lease);
+            reconcile(entry);
+        }
+    };
+    let abortReady;
+    const aborted = new Promise((resolve) => {
+        abortReady = resolve;
+    });
+    const onAbort = () => {
+        cancel();
+        abortReady(false);
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+        if (signal?.aborted) {
+            cancel();
+            return null;
+        }
+        for (const href of hrefs) {
+            const entry = acquire(href);
+            lease.add(entry);
+            entry.pending.add(lease);
+        }
+        const loaded = await Promise.race([
+            Promise.all([...lease].map((entry) => entry.ready)).then(
+                () => true,
+            ),
+            aborted,
+        ]);
+        if (!loaded || signal?.aborted) return null;
+        const commit = () => {
+            if (committed || signal?.aborted) return false;
+            committed = true;
+            const previous = state.route;
+            state.route = lease;
+            for (const entry of lease) {
+                entry.pending.delete(lease);
+                entry.owners.add(lease);
+                reconcile(entry);
+            }
+            for (const entry of previous) {
+                entry.owners.delete(previous);
+                reconcile(entry);
+            }
+            signal?.removeEventListener("abort", onAbort);
+            return true;
+        };
+        commit.cancel = cancel;
+        return commit;
+    } catch (error) {
+        cancel();
+        signal?.removeEventListener("abort", onAbort);
+        throw error;
+    }
 }
