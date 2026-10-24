@@ -7,3 +7,5 @@
 Regressionstests prüfen, dass wiederholtes Einrichten der Fehlerbehandlung einen Übersetzungsfehler im Kalender nur einmal meldet und andere spätere Fehler weiterhin sichtbar bleiben.
 
 ## Commits
+
+- [a74092b4ad19133fa63b19ae25d95281e76bb3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a74092b4ad19133fa63b19ae25d95281e76bb3ed)
