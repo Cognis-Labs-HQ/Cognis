@@ -8,4 +8,4 @@ New calendar event popups use “New Event” in English and equivalent wording 
 
 ## Commits
 
-- [99d7e345ec3a62db3438765999bea703d6ddf041](https://github.com/Cognis-Labs-HQ/Cognis/commit/99d7e345ec3a62db3438765999bea703d6ddf041)
+- [99d7e34](https://github.com/Cognis-Labs-HQ/Cognis/commit/99d7e345ec3a62db3438765999bea703d6ddf041)
