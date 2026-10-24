@@ -201,7 +201,7 @@ test("public module opt-in requires all assets and invalidation removes availabi
             .offlineAvailable,
         false,
     );
-    await fixture.request(scriptUrl);
+    await fixture.request(`${scriptUrl}&v=host-release`);
     await fixture.request(localeUrl);
     assert.equal(
         (await fixture.message("COGNIS_OFFLINE_ROUTES")).result[0]

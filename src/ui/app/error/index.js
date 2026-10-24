@@ -78,7 +78,7 @@ function buildErrorElement(i18n, errorCode, errorMessage, isAuthenticated) {
         pinned: true,
         gridSize: {
             default: [12, 8],
-            min: [12, 6],
+            min: [1, 6],
             max: ["fill", "fill"],
         },
         render: () =>
@@ -121,6 +121,7 @@ export async function mount(root, { signal } = {}) {
           };
 
     const composer = createPageComposer(root, {
+        signal,
         ...sharedComposerOptions,
         ...authComposerOptions,
         elements: [

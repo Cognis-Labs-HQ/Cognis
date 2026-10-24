@@ -100,6 +100,7 @@ export function createPageComposer(
         showNavbar = false;
         showThemeToggle = true;
         showFooter = true;
+        frameless = false;
         requireAccountSession = false;
         enableAccountEnhancements = false;
     }

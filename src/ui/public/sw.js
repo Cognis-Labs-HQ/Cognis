@@ -37,6 +37,20 @@ async function catalog() {
     return catalogPromise;
 }
 
+function assetKey(request) {
+    const url = new URL(
+        typeof request === "string" ? request : request.url,
+        self.location.origin,
+    );
+    if (
+        url.pathname.startsWith("/static/modules/") &&
+        url.searchParams.has("revision")
+    ) {
+        url.searchParams.delete("v");
+    }
+    return url.href;
+}
+
 function routeAssets(route) {
     return [
         ...new Set([
@@ -66,11 +80,7 @@ async function refreshCatalog() {
     );
     if (generation !== catalogGeneration) return [];
     const cache = await caches.open(CACHE_NAME);
-    const allowed = new Set(
-        routes
-            .flatMap(routeAssets)
-            .map((asset) => new URL(asset, self.location.origin).href),
-    );
+    const allowed = new Set(routes.flatMap(routeAssets).map(assetKey));
     for (const request of await cache.keys()) {
         if (
             new URL(request.url).pathname.startsWith("/static/modules/") &&
@@ -154,7 +164,7 @@ self.addEventListener("message", (event) => {
                     offlineAvailable: (
                         await Promise.all(
                             routeAssets(route).map((asset) =>
-                                cache.match(asset),
+                                cache.match(assetKey(asset)),
                             ),
                         )
                     ).every(Boolean),
@@ -198,7 +208,8 @@ async function assetResponse(request, moduleAsset) {
     if ([...parameters.keys()].some((key) => !["v", "revision"].includes(key)))
         return fetch(request);
     const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
+    const cacheKey = moduleAsset ? assetKey(request) : request;
+    const cached = await cache.match(cacheKey);
     // Only content-hashed production files are immutable, never arbitrary ?v= URLs.
     const immutable =
         /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp)$/.test(
@@ -222,7 +233,7 @@ async function assetResponse(request, moduleAsset) {
                     response.headers.get("x-cognis-module-revision") ===
                         parameters.get("revision")))
         )
-            await cache.put(request, response.clone()).catch((error) => {
+            await cache.put(cacheKey, response.clone()).catch((error) => {
                 console.error(
                     "[cognis-sw] public asset cache write failed",
                     error,
@@ -271,9 +282,7 @@ self.addEventListener("fetch", (event) => {
             (async () => {
                 const allowed = (await catalog()).some((route) =>
                     routeAssets(route).some(
-                        (asset) =>
-                            new URL(asset, self.location.origin).href ===
-                            url.href,
+                        (asset) => assetKey(asset) === assetKey(url.href),
                     ),
                 );
                 if (!allowed) return fetch(request, { cache: "no-store" });

@@ -59,16 +59,8 @@ if (
             if (data?.type === "COGNIS_OFFLINE") setOffline(true);
         },
     );
-    window.addEventListener("online", async () => {
-        try {
-            await offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES");
-            const response = await fetch("/api/v1/system/healthcheck", {
-                cache: "no-store",
-            });
-            if (response.ok) window.location.reload();
-        } catch (error) {
-            console.error("[offline] recovery probe failed", error);
-        }
+    window.addEventListener("online", () => {
+        if (isOffline()) scheduleRecovery();
     });
 }
 
