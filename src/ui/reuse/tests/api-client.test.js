@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -23,19 +24,6 @@ function loadApiClientForTests({
     now = () => Date.now(),
     origin = "https://example.com",
 } = {}) {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/api-client.js"),
-        "utf8",
-    );
-    const testableSource =
-        source.replace(/^import .*;\n/gm, "").replace(/\bexport\s+/g, "") +
-        "\n" +
-        "globalThis.__testExports = {\n" +
-        "  apiFetch,\n" +
-        "  configureConnectionRecoveryPrompt,\n" +
-        "  shouldSuppressConnectionRecoveryPopup,\n" +
-        "};\n";
-
     const showToastCalls = [];
     const dispatchedEvents = [];
     const timers = [];
@@ -84,12 +72,23 @@ function loadApiClientForTests({
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
-        filename: "api-client.js",
-    });
+    vm.createContext(context);
+    const offlineState = loadTestModule(
+        new URL("../offline-state.js", import.meta.url),
+        {},
+        context,
+    );
+    const apiClient = loadTestModule(
+        new URL("../api-client.js", import.meta.url),
+        {
+            "./toast.js": context,
+            "./offline-state.js": offlineState,
+        },
+        context,
+    );
 
     return {
-        apiClient: context.__testExports,
+        apiClient,
         dispatchedEvents,
         getReloadCount: () => reloadCount,
         runNextTimer: async () => {

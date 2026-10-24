@@ -70,6 +70,8 @@ export interface ModuleUiRegistrationContext {
         stylesheets?: string[];
         access?: RoleAccessPolicy;
         public?: boolean;
+        /** Public, server-independent page; list every runtime asset it needs. */
+        offline?: { assets: string[] };
         requiredCapabilities?: string[];
         componentPage?: {
             labelKey: string;

@@ -32,6 +32,7 @@ import {
     resolveModuleRoot,
     serveDeclaredModuleStrings,
     serveEnabledModuleAsset,
+    validateModuleAssetRevision,
     uiStaticPath as staticPath,
 } from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
@@ -632,6 +633,28 @@ export function createUiRoutes(
         if (serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
             return true;
 
+        if (
+            url.pathname === "/api/v1/ui/offline-routes" &&
+            req.method === "GET"
+        ) {
+            const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
+                (route) =>
+                    route.public === true &&
+                    route.offline &&
+                    (!route.isEnabled || route.isEnabled()),
+            );
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "cache-control": "no-store",
+            });
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(routes, ASSET_VERSION),
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
             const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
@@ -760,6 +783,15 @@ export function createUiRoutes(
                 );
                 return true;
             }
+            if (
+                !(await validateModuleAssetRevision(
+                    res,
+                    url,
+                    urlPath.split("/")[0],
+                    runtime,
+                ))
+            )
+                return true;
             const resolved = uiRegistry?.resolveModulePath(urlPath);
             if (resolved) {
                 await serveVersionedAsset(

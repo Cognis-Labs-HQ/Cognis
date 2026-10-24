@@ -617,4 +617,5 @@
     <string name="ui.app.modules.config_action_failed">The configuration action failed. Check your settings or enter a voice ID manually.</string>
     <string name="ui.reuse.home">Home</string>
     <string name="ui.reuse.try_again">Try Again</string>
+    <string name="ui.reuse.offline_page_unavailable">This page is not available offline. Reconnect to continue.</string>
 </resources>

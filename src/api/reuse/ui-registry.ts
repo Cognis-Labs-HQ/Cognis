@@ -92,6 +92,8 @@ export interface SpaRoute {
     access?: RoleAccessPolicy;
     /** Allows the route shell and descriptor to be served without a session. */
     public?: boolean;
+    /** Public, server-independent page; list every runtime asset it needs. */
+    offline?: { assets: string[] };
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
     ownerId?: string;
@@ -299,6 +301,25 @@ export class UIRegistry {
     }
 
     registerSpaRoute(route: SpaRoute): void {
+        if (
+            route.offline &&
+            (route.public !== true ||
+                route.access ||
+                !Array.isArray(route.offline.assets) ||
+                route.offline.assets.length === 0 ||
+                [
+                    route.scriptUrl,
+                    ...(route.stylesheets ?? []),
+                    ...route.offline.assets,
+                ].some(
+                    (asset) =>
+                        !/^\/static\/[a-zA-Z0-9_./-]+(?:\?[^#]*)?$/.test(
+                            asset,
+                        ) || asset.includes(".."),
+                ))
+        ) {
+            throw new TypeError("invalid_offline_spa_route");
+        }
         if (route.public === true && route.access) {
             throw new TypeError("public_spa_route_cannot_require_role");
         }

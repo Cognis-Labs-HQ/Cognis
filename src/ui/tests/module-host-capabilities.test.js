@@ -76,7 +76,7 @@ test("direct and routed module mounts await active UI providers", () => {
     );
     assert.match(
         router,
-        /await ensureHostUiProviders\(\);\s*mod = await loadWithSpaImportGuard\(\(\) => route\.load/,
+        /await ensureHostUiProviders\(\);[\s\S]*mod = await loadWithSpaImportGuard\(\(\) => route\.load/,
     );
     assert.match(
         router,

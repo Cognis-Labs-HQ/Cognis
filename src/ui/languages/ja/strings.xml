@@ -617,4 +617,5 @@
     <string name="ui.app.modules.config_action_failed">設定操作に失敗しました。設定を確認するか、音声IDを手動で入力してください。</string>
     <string name="ui.reuse.home">ホーム</string>
     <string name="ui.reuse.try_again">もう一度</string>
+    <string name="ui.reuse.offline_page_unavailable">このページはオフラインでは利用できません。再接続してから続行してください。</string>
 </resources>

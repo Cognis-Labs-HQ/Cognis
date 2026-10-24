@@ -1,3 +1,4 @@
+import { setOffline } from "./offline-state.js";
 /**
  * Authenticated fetch wrapper. Reads the Bearer token from localStorage
  * and attaches it as an Authorization header on every request.
@@ -113,6 +114,7 @@ async function confirmConnectionFailure() {
     try {
         const response = await fetch("/api/v1/system/healthcheck", {
             cache: "no-store",
+            signal: globalThis.AbortSignal?.timeout?.(4000),
         });
         return isRetryableServerStatusCode(response.status);
     } catch {
@@ -122,6 +124,7 @@ async function confirmConnectionFailure() {
 
 async function signalConnectionFailure(error) {
     if (!(await confirmConnectionFailure())) return;
+    setOffline(true);
     const state = getConnectionRecoveryState();
     showConnectionRecoveryToast(state);
     markConnectionRecoveryFailure(error);

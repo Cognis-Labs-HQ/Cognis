@@ -1,3 +1,4 @@
+import { isOffline } from "../../reuse/offline-state.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -51,6 +52,10 @@ function buildErrorContent(i18n, errorCode, errorMessage, isAuthenticated) {
             </div>
         `;
 
+    const offlineNavigation = isOffline()
+        ? `<a href="/license" class="error-dashboard-btn">${escapeHtml(i18n.t("ui.app.license.page_title"))}</a>`
+        : "";
+
     return `
         <div class="error-page${fullscreenClass}">
             <div class="error-content${contentClass}">
@@ -60,6 +65,7 @@ function buildErrorContent(i18n, errorCode, errorMessage, isAuthenticated) {
                 <a href="/dashboard" class="error-dashboard-btn">
                     ${escapeHtml(i18n.t("ui.reuse.return_to_dashboard"))}
                 </a>
+                ${offlineNavigation}
             </div>
         </div>
     `;
@@ -85,7 +91,7 @@ export async function mount(root, { signal } = {}) {
 
     const [i18n, isAuthenticated] = await Promise.all([
         createI18n(),
-        checkIsAuthenticated(),
+        isOffline() ? false : checkIsAuthenticated(),
     ]);
 
     applyDocumentTitle(i18n, "ui.page.title.error");

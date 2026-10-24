@@ -39,6 +39,7 @@ function createRouter({ allowNavigation = true } = {}) {
         console,
         document: {
             querySelector: () => root,
+            querySelectorAll: () => [],
             addEventListener: (type, callback) => listeners.set(type, callback),
         },
         CustomEvent: class {
@@ -74,6 +75,9 @@ function createRouter({ allowNavigation = true } = {}) {
         },
         isGuestAllowedPath: () => false,
         installComponentPageBroker() {},
+        isOffline: () => false,
+        offlineWorkerRequest: async () => [],
+        createI18n: async () => ({ t: (key) => key }),
         observePerformance() {},
         recordRouteMount() {},
     };
@@ -81,6 +85,11 @@ function createRouter({ allowNavigation = true } = {}) {
     sandbox.router = loadTestModule(
         new URL("../app-router.js", import.meta.url),
         {
+            "./offline-state.js": sandbox,
+            "./offline-navigation.js": {
+                allowOfflineRoute: async () => true,
+                offlineRouteAvailable: () => false,
+            },
             "./page-styles.js": sandbox,
             "./page-entry.js": sandbox,
             "./route-path.js": sandbox,

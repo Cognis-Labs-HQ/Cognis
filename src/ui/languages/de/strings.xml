@@ -617,4 +617,5 @@
     <string name="ui.app.modules.config_action_failed">Die Konfigurationsaktion ist fehlgeschlagen. Einstellungen prüfen oder eine Stimmen-ID manuell eingeben.</string>
     <string name="ui.reuse.home">Startseite</string>
     <string name="ui.reuse.try_again">Erneut versuchen</string>
+    <string name="ui.reuse.offline_page_unavailable">Diese Seite ist offline nicht verfügbar. Stellen Sie die Verbindung wieder her.</string>
 </resources>
