@@ -279,6 +279,25 @@ Route handler files live in subdirectories named after their domain, mirroring t
 
 Never use redundant prefixes or suffixes in file names when the directory path already provides the context. A file at `gateways/notifications.ts` does not need to be named `notification-gateway.ts`; a file at `routes/users/index.ts` does not need to live at `routes/user-routes.ts`; files inside `adapters/notify/smtp/` do not need the `smtp-` prefix. When a file would need a feature or adapter prefix to disambiguate it, that is a signal to place it in a subdirectory and give it a generic name instead (e.g. `message-builders.ts` inside `smtp/`, not `smtp-message-builders.ts` at a higher level).
 
+### Concise fixture and test paths
+
+Do not check in redundant nested source-tree scaffolding or needlessly repetitive
+paths. Store test fixtures in concise, purpose-specific layouts; do not mirror
+`src/ui/public/pages/` or another project tree beneath an existing source-tree
+fixture directory. When a test genuinely exercises production path resolution,
+copy static fixture assets into the minimal required temporary layout using an
+explicit data mapping. Keep executable fixtures static and preserve the actual
+build/discovery behavior. Keep meaningful package, provider, and schema layout
+segments when those segments are themselves the contract under test.
+
+Group related tests by their descriptive subject instead of repeating a prefix
+on every filename: use `src/tooling/tests/ui-build/entrypoints.test.js`, not
+`src/tooling/tests/ui-build-entrypoints.test.js`. Reuse an existing subject
+directory and omit context already supplied by its path. Do not split arbitrary
+hyphenated names or add a directory that merely repeats its parent. Update every
+caller, import, discovery rule, and configuration when moving files; do not retain
+compatibility copies, aliases, or forwarding files to avoid those updates.
+
 ### Core contract file organisation
 
 In `src/core/contracts/`, use domain subdirectories instead of feature prefixes in flat file names. For example, prefer `src/core/contracts/profile/media-flow-catalog.ts` over `src/core/contracts/profile-media-flow-catalog.ts`.

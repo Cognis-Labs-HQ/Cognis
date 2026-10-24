@@ -1,10 +1,20 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
+import { isMountSignal, replaceMountScope } from "../mount-scope.js";
 import assert from "node:assert/strict";
 import vm from "node:vm";
 
-function createRouter({ allowNavigation = true } = {}) {
+function createRouter({
+    allowNavigation = true,
+    routes,
+    prepareStyles,
+    onError,
+    beginLoading,
+    prepareProviders,
+    runFlow,
+} = {}) {
     const listeners = new Map();
+    const capabilities = new Map();
     const assigned = [];
     const navigationEvents = [];
     const mounted = [];
@@ -47,29 +57,41 @@ function createRouter({ allowNavigation = true } = {}) {
                 Object.assign(this, options);
             }
         },
-        uiCtx: { capabilities: { contribute() {}, get() {} } },
-        preparePageStylesheets: async () => () => {},
-        beginPageLoading: () => () => {},
-        ensureHostUiProviders: async () => {},
+        uiCtx: {
+            runFlow,
+            capabilities: {
+                contribute: (name, value) => capabilities.set(name, value),
+                get: (name) => capabilities.get(name),
+            },
+        },
+        adoptPageStylesheets() {},
+        isMountSignal,
+        preparePageStylesheets:
+            prepareStyles ||
+            (async () => Object.assign(() => {}, { cancel() {} })),
+        beginPageLoading: beginLoading || (() => () => {}),
+        ensureHostUiProviders: prepareProviders || (async () => {}),
         loadWithSpaImportGuard: (load) => load(),
         getCurrentRoutePath: () =>
             `${location.pathname}${location.search}${location.hash}`,
         clearSpaRouteCache() {},
-        loadSpaRoutes: async () => [
-            {
-                pattern: /^\/terms-of-service$/,
-                base: "/terms-of-service",
-                public: true,
-                load: async () => ({
-                    mount: async (target) => {
-                        target.textContent = "Terms";
-                        mounted.push("Terms");
-                    },
-                }),
-            },
-        ],
+        loadSpaRoutes: async () =>
+            routes || [
+                {
+                    pattern: /^\/terms-of-service$/,
+                    base: "/terms-of-service",
+                    public: true,
+                    load: async () => ({
+                        mount: async (target) => {
+                            target.textContent = "Terms";
+                            mounted.push("Terms");
+                        },
+                    }),
+                },
+            ],
         installRuntimeErrorHandlers() {},
         openRuntimeErrorPopup: async ({ error }) => {
+            if (onError) return onError(error);
             throw error;
         },
         isGuestAllowedPath: () => false,
@@ -82,6 +104,7 @@ function createRouter({ allowNavigation = true } = {}) {
         new URL("../app-router.js", import.meta.url),
         {
             "./page-styles.js": sandbox,
+            "./mount-scope.js": sandbox,
             "./page-entry.js": sandbox,
             "./route-path.js": sandbox,
             "./spa-route-registry.js": sandbox,
@@ -103,6 +126,7 @@ function createRouter({ allowNavigation = true } = {}) {
         location,
         mounted,
         navigationEvents,
+        capabilities,
     };
 }
 
@@ -161,4 +185,205 @@ test("missing share renderers decline navigation without leaving the current pag
     assert.deepEqual(router.assigned, []);
     assert.equal(router.root.textContent, "Login");
     assert.equal(router.location.pathname, "/login");
+});
+
+function deferred() {
+    let resolve;
+    const promise = new Promise((done) => {
+        resolve = done;
+    });
+    return { promise, resolve };
+}
+
+function routeFixture(path, mount) {
+    return {
+        pattern: new RegExp(`^${path}$`),
+        base: path,
+        public: true,
+        stylesheets: [path + ".css"],
+        load: async () => ({ mount }),
+    };
+}
+
+test("route style commit waits for destination readiness and superseded mounts cannot commit", async () => {
+    const entered = deferred();
+    const release = deferred();
+    const committed = [];
+    const canceled = [];
+    const router = createRouter({
+        routes: [
+            routeFixture("/first", async (root) => {
+                root.textContent = "First";
+            }),
+            routeFixture("/delayed", async (root, { signal }) => {
+                entered.resolve();
+                await release.promise;
+                if (!signal.aborted) root.textContent = "Delayed";
+            }),
+            routeFixture("/last", async (root) => {
+                root.textContent = "Last";
+            }),
+        ],
+        prepareStyles: async (hrefs) =>
+            Object.assign(() => committed.push(hrefs[0]), {
+                cancel: () => canceled.push(hrefs[0]),
+            }),
+    });
+    await router.navigateTo("/first");
+    const delayed = router.navigateTo("/delayed");
+    await entered.promise;
+    assert.equal(router.root.textContent, "First");
+    assert.deepEqual(committed, ["/first.css"]);
+    await router.navigateTo("/last");
+    release.resolve();
+    assert.equal(await delayed, false);
+    assert.equal(router.root.textContent, "Last");
+    assert.deepEqual(committed, ["/first.css", "/last.css"]);
+    assert.ok(canceled.includes("/delayed.css"));
+});
+
+test("failed destination keeps outgoing styles and reports the mount failure", async () => {
+    const committed = [];
+    const errors = [];
+    const router = createRouter({
+        routes: [
+            routeFixture("/first", async (root) => {
+                root.textContent = "First";
+            }),
+            routeFixture("/failure", async () => {
+                throw new Error("fixture_mount_failure");
+            }),
+        ],
+        prepareStyles: async (hrefs) =>
+            Object.assign(() => committed.push(hrefs[0]), { cancel() {} }),
+        onError: (error) => errors.push(error.message),
+    });
+    await router.navigateTo("/first");
+    assert.equal(await router.navigateTo("/failure"), false);
+    assert.equal(router.root.textContent, "First");
+    assert.deepEqual(committed, ["/first.css"]);
+    assert.deepEqual(errors, ["fixture_mount_failure"]);
+});
+
+test("content commit accepts only the active route root and signal lineage before DOM replacement", async () => {
+    const committed = [];
+    let previousSignal;
+    const router = createRouter({
+        routes: [
+            routeFixture("/first", async (root, { signal }) => {
+                previousSignal = signal;
+                root.textContent = "First";
+            }),
+            routeFixture("/next", async (root, { signal }) => {
+                const commit = router.capabilities.get("navigation:commitPage");
+                assert.equal(commit(root, previousSignal), false);
+                assert.equal(commit({}, signal), false);
+                assert.equal(commit(root), false);
+                assert.deepEqual(committed, ["/first.css"]);
+                const child = replaceMountScope(null, signal);
+                assert.equal(commit(root, child.signal), true);
+                assert.equal(root.textContent, "First");
+                assert.deepEqual(committed, ["/first.css", "/next.css"]);
+                root.textContent = "Next";
+            }),
+        ],
+        prepareStyles: async (hrefs) =>
+            Object.assign(() => committed.push(hrefs[0]), { cancel() {} }),
+    });
+    await router.navigateTo("/first");
+    assert.equal(await router.navigateTo("/next"), true);
+    assert.equal(
+        router.capabilities.get("navigation:commitPage")(
+            router.root,
+            previousSignal,
+        ),
+        false,
+    );
+    assert.deepEqual(committed, ["/first.css", "/next.css"]);
+});
+
+test("loading covers provider, entry and fresh-auth stages and releases immediately on supersession", async () => {
+    const providers = deferred();
+    const entry = deferred();
+    const entered = deferred();
+    const auth = deferred();
+    const authenticating = deferred();
+    let active = 0;
+    const router = createRouter({
+        beginLoading() {
+            active++;
+            let finished = false;
+            return () => {
+                if (!finished) {
+                    finished = true;
+                    active--;
+                }
+            };
+        },
+        prepareProviders: () => providers.promise,
+        async runFlow(name) {
+            assert.equal(name, "authenticate-session");
+            authenticating.resolve();
+            return auth.promise;
+        },
+        routes: [
+            {
+                ...routeFixture("/slow", async () => {}),
+                public: false,
+                async load() {
+                    entered.resolve();
+                    await entry.promise;
+                    return {
+                        mount() {
+                            assert.fail("superseded mount");
+                        },
+                    };
+                },
+            },
+            routeFixture("/last", async (root) => {
+                root.textContent = "Last";
+            }),
+        ],
+    });
+    const slow = router.navigateTo("/slow");
+    await new Promise(setImmediate);
+    assert.equal(active, 1);
+    providers.resolve();
+    await entered.promise;
+    assert.equal(active, 1);
+    entry.resolve();
+    await authenticating.promise;
+    assert.equal(active, 1);
+    assert.equal(await router.navigateTo("/last"), true);
+    assert.equal(active, 0);
+    auth.resolve({ stageResults: { "resolve-session": [{}] } });
+    assert.equal(await slow, false);
+    assert.equal(router.root.textContent, "Last");
+    assert.equal(active, 0);
+});
+
+test("entry failure releases loading before presenting its error popup", async () => {
+    let active = false;
+    const router = createRouter({
+        beginLoading() {
+            active = true;
+            return () => {
+                active = false;
+            };
+        },
+        routes: [
+            {
+                ...routeFixture("/broken", async () => {}),
+                load: async () => {
+                    throw new Error("entry failed");
+                },
+            },
+        ],
+        onError(error) {
+            assert.equal(error.message, "entry failed");
+            assert.equal(active, false);
+        },
+    });
+    assert.equal(await router.navigateTo("/broken"), false);
+    assert.equal(active, false);
 });

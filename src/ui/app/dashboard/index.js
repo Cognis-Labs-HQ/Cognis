@@ -55,6 +55,7 @@ export async function mount(root, { signal } = {}) {
     const calendarEvents = uiCtx.capabilities.get("calendar:dashboardEvents");
     calendarEvents?.loadEventStatusStyles();
     const i18n = await createI18n();
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
 
     const account = localStorage.getItem("cognis_account") ?? "";
@@ -188,6 +189,7 @@ export async function mount(root, { signal } = {}) {
     ];
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: true,
         elements,
         preferenceKey: "dashboard-layout",
@@ -199,6 +201,7 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    if (signal?.aborted) return;
 
     void accountInfoPromise.then((accountInfo) => {
         if (signal?.aborted) return;

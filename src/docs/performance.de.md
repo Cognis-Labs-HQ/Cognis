@@ -23,3 +23,11 @@ Nur deklarierte Skript-URLs und direkte Navigationsleistenregistrierungen werden
 Die Auflösung verwendet das vorhandene Build-Manifest und speichert keine API-Antworten zwischen. Authentifizierung und Filter für aktivierte Komponenten bleiben bei Deskriptoranfragen wirksam. Reine Quellinstallationen, nicht gebaute Ressourcen, externe Verzeichnisse und Modul-URLs mit Revisionsangaben behalten ihre ursprünglichen Auslieferungspfade.
 
 Nur vor dem Seitenaufbau benötigte Kataloge aktivieren das Vorladen. Navigationsleistenkataloge laden weiterhin nach Bedarf, damit ihre Erkennung bei der Navigation keine parallelen Hintergrundanfragen auslöst. Nach der authentifizierten Erkennung lädt der Provider-Lader unveränderliche Host-Bündel vorab, während Importe und Einbindungen weiterhin nacheinander erfolgen. Vorladelinks werden nach Abschluss oder Fehlern entfernt. Aktive Provider werden nicht erneut vorgeladen; externe Modul-, Quell- und revisionsbezogene URLs behalten ihren bisherigen Importpfad.
+
+## Beständige Navigation
+
+Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Die Lademeldung erscheint unter dem Ladesymbol mit derselben verzögerten Einblendung und bleibt während der Vorbereitung von Anbietern, des Imports, der Sitzungsprüfung und des Inhaltsaufbaus einer akzeptierten Navigation verfügbar. Überholte Navigationen geben ihre Ladefreigabe sofort zurück. Abschluss und Fehler beenden die Ladeanzeige; Fehler nutzen die vorhandenen Anzeigen. Übersetzungsabfragen im Hintergrund ändern die gewählte Sprache nicht.
+
+Bei jedem Aufbau werden aktuelle Einstellungen einmal gemeinsam für Design- und Sprachsteuerung geladen. Nach Bereitschaft der Anbieter erfolgt eine Avatar-Aktualisierung. Unveränderte Avatar-Elemente bleiben bestehen. Verspätete Ergebnisse werden nach Konto-, Token-, Anbieter- oder Aktualisierungswechsel verworfen. Private Antworten werden nicht zwischengespeichert.
+
+Navigationsbeginn, sichtbare Ladezeit und Bereitschaft benötigter Inhalte getrennt messen, auch bei wiederholten Routen sowie Vorwärts und Zurück. Dokument-, Shell- und Avatar-Identität sowie Anfrageabläufe aufzeichnen. Ein abgeschlossener Aufbau oder ein zunächst leeres Widget beweist keine Inhaltsbereitschaft. Lokale synthetische Messungen belegen keine Leistung im Hosting.

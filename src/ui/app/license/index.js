@@ -102,7 +102,7 @@ function parseSections(markdown) {
     return sections;
 }
 
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.license");
 
@@ -139,6 +139,7 @@ export async function mount(root) {
     ];
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         elements,
         preferenceKey: "license-layout",
