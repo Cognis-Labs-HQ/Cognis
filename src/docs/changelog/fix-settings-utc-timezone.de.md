@@ -8,4 +8,4 @@ Die Einstellungen für Datum und Uhrzeit bieten UTC auch dann an, wenn der Brows
 
 ## Commits
 
-- [19da58c476ce65dc68eec07e6c9911766f07aaee](https://github.com/Cognis-Labs-HQ/Cognis/commit/19da58c476ce65dc68eec07e6c9911766f07aaee)
+- [19da58c](https://github.com/Cognis-Labs-HQ/Cognis/commit/19da58c476ce65dc68eec07e6c9911766f07aaee)
