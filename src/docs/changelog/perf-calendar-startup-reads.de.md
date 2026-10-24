@@ -8,4 +8,4 @@ Der Kalender lädt Einladungen gleichzeitig mit der Kalenderliste und startet Er
 
 ## Commits
 
-- [85589901ffa36dbc5f0efc3671cc13b67fe35bb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/85589901ffa36dbc5f0efc3671cc13b67fe35bb3)
+- [8558990](https://github.com/Cognis-Labs-HQ/Cognis/commit/85589901ffa36dbc5f0efc3671cc13b67fe35bb3)
