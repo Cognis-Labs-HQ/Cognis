@@ -8,6 +8,8 @@ Pemuatan rute dan dokumen memakai lapisan pemuatan seluruh jendela. Navigasi yan
 
 Halaman yang masih terlihat mempertahankan gaya rutenya selama tujuan dimuat. Gaya tujuan disiapkan dalam keadaan tidak aktif dan diaktifkan saat konten diganti. Persiapan yang dibatalkan atau gagal hanya melepaskan gayanya sendiri. Kontrol bersama dan jendela komponen yang terbuka mempertahankan gaya miliknya hingga dibuang. Dokumen produksi menyimpan identitas sumber stylesheet agar pemuatan langsung dan navigasi SPA memakai kepemilikan yang sama.
 
+Kepemilikan rute awal hanya mencakup gaya rute yang dideklarasikan atau gaya dokumen produksi dengan metadata sumber. Gaya yang disisipkan penyedia notifikasi dan penyedia persisten lainnya tetap dimiliki penyedia tersebut, sehingga pergantian rute tidak menghapus aturan ukuran ikon lonceng.
+
 Setiap penyusunan antarmuka mengambil preferensi terkini satu kali untuk kontrol tema dan bahasa serta menjadwalkan satu pembaruan avatar setelah penyedia siap. Elemen avatar yang tidak berubah dipertahankan. Hasil terlambat ditolak setelah akun, token, penyedia, atau pembaruan berubah. Tidak ada cache respons pribadi baru.
 
 ## Komit

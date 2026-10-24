@@ -67,12 +67,15 @@ function acquire(href) {
     return entry;
 }
 
-/** Adopt the direct document's styles as the initially visible route. */
-export function adoptPageStylesheets() {
+/** Adopt declared document styles without taking ownership of provider-injected links. */
+export function adoptPageStylesheets(hrefs = []) {
+    const declared = new Set(hrefs.map(keyFor));
     for (const link of document.head.querySelectorAll(
         'link[rel="stylesheet"][href]',
     )) {
-        const entry = acquire(link.dataset.pageStylesheetSource || link.href);
+        const source = link.dataset.pageStylesheetSource;
+        if (!source && !declared.has(keyFor(link.href))) continue;
+        const entry = acquire(source || link.href);
         if (!entry.owners.size) {
             entry.owners.add(state.route);
             state.route.add(entry);

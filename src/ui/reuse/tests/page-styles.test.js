@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
-function fixture(initial = ["/old.css"]) {
+function fixture(initial = ["/old.css"], declared = initial) {
     const links = [];
     function link(href = "", loaded = false) {
         const listeners = new Map();
@@ -44,7 +44,7 @@ function fixture(initial = ["/old.css"]) {
             console,
         },
     );
-    styles.adoptPageStylesheets();
+    styles.adoptPageStylesheets(declared);
     return { styles, links, last: () => links.at(-1) };
 }
 
@@ -142,4 +142,41 @@ test("production stylesheet aliases are adopted and reused without a second fetc
     module.adoptPageStylesheets();
     (await module.preparePageStylesheets(["/static/styles/page.css"]))();
     assert.equal(links[0].removed, false);
+});
+
+test("initial adoption leaves provider-injected notification and header styles under provider ownership", async () => {
+    const { styles, links, last } = fixture(
+        [
+            "/old.css",
+            "/static/gateways/notify-internal/notifications.css",
+            "/broadcast.css",
+        ],
+        ["/old.css"],
+    );
+    const controller = new AbortController();
+    const pending = styles.preparePageStylesheets(["/cancel.css"], {
+        signal: controller.signal,
+    });
+    controller.abort();
+    assert.equal(await pending, null);
+    for (const href of ["/next.css", "/last.css", "/old.css"]) {
+        const prepared = styles.preparePageStylesheets([href]);
+        last().fire("load");
+        (await prepared)();
+        assert.equal(links[1].removed, false);
+        assert.equal(links[1].media, "");
+        assert.equal(links[2].removed, false);
+    }
+    assert.equal(
+        links[0].removed,
+        true,
+        "the outgoing declared route still releases its styles",
+    );
+    links[1].remove();
+    (await styles.preparePageStylesheets([]))();
+    assert.equal(
+        links[1].removed,
+        true,
+        "provider disposal is not reversed by route ownership",
+    );
 });

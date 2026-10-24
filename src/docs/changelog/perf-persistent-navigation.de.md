@@ -8,6 +8,8 @@ Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Überholte Na
 
 Die sichtbare Seite behält ihre Routenstile, während das Ziel lädt. Zielstile werden inaktiv vorbereitet und erst beim Austausch des Inhalts aktiviert. Abgebrochene oder fehlgeschlagene Vorbereitungen geben nur ihre eigenen Stile frei. Gemeinsame Steuerelemente und offene Komponentenfenster behalten ihre Stile bis zur Freigabe. Produktionsdokumente bewahren die Quellidentität der Stylesheets, damit direkte Aufrufe und SPA-Navigation dieselbe Zuordnung nutzen.
 
+Die anfängliche Routenzuordnung übernimmt nur deklarierte Routenstile oder Produktionsdokumentstile mit Quellmetadaten. Von Benachrichtigungs- und anderen dauerhaften Anbietern eingefügte Stile bleiben diesen Anbietern zugeordnet, damit ein Routenwechsel die Größenregeln der Benachrichtigungsglocke nicht entfernt.
+
 Bei jedem Aufbau werden aktuelle Einstellungen einmal gemeinsam für Design- und Sprachsteuerung geladen. Nach Bereitschaft der Anbieter erfolgt eine Avatar-Aktualisierung. Unveränderte Avatar-Elemente bleiben bestehen. Verspätete Ergebnisse werden nach Konto-, Token-, Anbieter- oder Aktualisierungswechsel verworfen. Private Antworten werden nicht zwischengespeichert.
 
 ## Commits

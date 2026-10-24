@@ -8,6 +8,8 @@ Route and document loading use the full-window shade. Superseded navigation rele
 
 The visible page keeps its route styles while the destination loads. Destination styles are staged inactive and become active when content commits; superseded or failed preparations release only their own styles. Shared controls and open component windows retain their owned styles until disposal. Production documents preserve stylesheet source identity so direct loads and SPA navigation share the same ownership.
 
+Initial route adoption claims only declared route styles or production document styles with source metadata. Styles injected by notification and other persistent providers remain owned by those providers, so a route commit cannot remove the notification bell sizing rules.
+
 Each shell composition requests current preferences once for theme and language controls and schedules one avatar refresh after provider readiness. Unchanged avatar nodes remain mounted. Late avatar results are rejected after account, token, provider or refresh changes. No private-response cache is introduced.
 
 ## Commits
