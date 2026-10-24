@@ -393,7 +393,11 @@ export function installComponentPageBroker({
             });
             try {
                 await Promise.all(
-                    (data.route.stylesheets ?? []).map(ensurePageStylesheet),
+                    (data.route.stylesheets ?? []).map((href) =>
+                        ensurePageStylesheet(href, {
+                            signal: controller.signal,
+                        }),
+                    ),
                 );
                 const module = await loadWithSpaImportGuard(() =>
                     data.route.load({ signal: controller.signal }),

@@ -30,13 +30,25 @@ test("a directly registered provider remains a built entry when another entry im
             manifest["/static/adapters/example/sample/provider.js"];
         assert.equal(
             new Set(Object.values(manifest)).size,
-            2,
-            "the app and registered provider own the two entrypoints; ordinary imports stay bundled",
+            3,
+            "the app, registered provider and stylesheet own entrypoints; ordinary imports stay bundled",
         );
         assert.match(providerUrl, /^\/assets\/.+\.js$/);
         assert.equal(
             providerUrl,
             manifest["/static/adapters/example/sample/ui/provider.js"],
+        );
+        const html = await readFile(
+            path.join(directory, "dist/ui/public/pages/index.html"),
+            "utf8",
+        );
+        assert.ok(
+            html.includes(`href="${manifest["/static/styles/fixture.css"]}"`),
+        );
+        assert.ok(
+            html.includes(
+                'data-page-stylesheet-source="/static/styles/fixture.css"',
+            ),
         );
         const app = await import(
             pathToFileURL(

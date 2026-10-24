@@ -4,7 +4,9 @@
 
 ## Beständige Navigation
 
-Beim Routenwechsel überdeckt die Ladeanzeige den betroffenen Arbeitsbereich; Kopfbereich und Navigation bleiben sichtbar. Direkte Dokumentaufrufe behalten die ganzseitige Ladeanzeige. Überholte Navigationen geben ihre Ladefreigabe sofort zurück. Ausstehende Inhalte und Laufzeitfehler bleiben über die vorhandenen Lade- und Fehleranzeigen erkennbar.
+Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Überholte Navigationen geben ihre Ladefreigabe sofort zurück; ausstehende Inhalte und Laufzeitfehler behalten die vorhandenen Lade- und Fehleranzeigen.
+
+Die sichtbare Seite behält ihre Routenstile, während das Ziel lädt. Zielstile werden inaktiv vorbereitet und erst beim Austausch des Inhalts aktiviert. Abgebrochene oder fehlgeschlagene Vorbereitungen geben nur ihre eigenen Stile frei. Gemeinsame Steuerelemente und offene Komponentenfenster behalten ihre Stile bis zur Freigabe. Produktionsdokumente bewahren die Quellidentität der Stylesheets, damit direkte Aufrufe und SPA-Navigation dieselbe Zuordnung nutzen.
 
 Bei jedem Aufbau werden aktuelle Einstellungen einmal gemeinsam für Design- und Sprachsteuerung geladen. Nach Bereitschaft der Anbieter erfolgt eine Avatar-Aktualisierung. Unveränderte Avatar-Elemente bleiben bestehen. Verspätete Ergebnisse werden nach Konto-, Token-, Anbieter- oder Aktualisierungswechsel verworfen. Private Antworten werden nicht zwischengespeichert.
 
