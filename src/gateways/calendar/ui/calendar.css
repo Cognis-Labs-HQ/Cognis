@@ -303,7 +303,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     flex: 1;
 }
 
-.calendar-view-switcher button.active {
+.calendar-view-switcher button.active,
+.calendar-view-nav button.active {
     background: var(--btn-confirm-bg, #1f8ceb);
     color: #fff;
 }
@@ -418,6 +419,12 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     opacity: 0.6;
 }
 
+.calendar-month-day .calendar-all-day-create {
+    align-self: center;
+    padding: 0;
+    flex: 0 0 1.4rem;
+}
+
 .calendar-all-day-create:hover {
     opacity: 1;
 }
@@ -428,6 +435,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     padding: 0.45rem;
     display: grid;
     gap: 0.35rem;
+    grid-template-rows: auto 1fr;
     min-height: 8.5rem;
     min-width: 0;
 }
@@ -437,12 +445,13 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-month-day header {
+    min-height: 1.4rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.calendar-day-jump {
+.calendar-month-day .calendar-day-jump {
     border: 0;
     background: transparent;
     color: inherit;
@@ -453,7 +462,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     border-radius: 4px;
 }
 
-.calendar-day-jump:hover {
+.calendar-month-day .calendar-day-jump:hover {
     background: var(--surface, transparent);
 }
 
@@ -569,4 +578,11 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 
 .calendar-view-canvas .calendar-year-day-dot--outside {
     opacity: 0.55;
+}
+
+@media (max-width: 600px) {
+    .calendar-month-day header {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 }

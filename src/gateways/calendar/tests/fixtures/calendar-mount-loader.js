@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 import * as renderScope from "../../ui/app/render-scope.js";
+import * as periodNavigation from "../../ui/app/period-navigation.js";
 
 export async function loadCalendarMount({ hold, signal }) {
     const reached = [];
@@ -10,6 +11,7 @@ export async function loadCalendarMount({ hold, signal }) {
     };
     const contracts = {
         "./render-scope.js": renderScope,
+        "./period-navigation.js": periodNavigation,
         "/static/reuse/api-client.js": { apiFetch: unexpected },
         "/static/reuse/i18n.js": {
             createI18n: async () => {
@@ -28,7 +30,10 @@ export async function loadCalendarMount({ hold, signal }) {
                 throw renderBoundary;
             },
         },
-        "/static/reuse/timestamp.js": { formatDateTime: unexpected },
+        "/static/reuse/timestamp.js": {
+            formatDateTime: unexpected,
+            getEffectiveTimezone: () => "UTC",
+        },
         "/static/reuse/toast.js": { showToast: () => reached.push("toast") },
         "/static/reuse/popup.js": { openPopup: unexpected },
         "/static/reuse/escape-html.js": { escapeHtml: unexpected },

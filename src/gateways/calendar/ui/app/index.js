@@ -2,7 +2,10 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import {
+    formatDateTime,
+    getEffectiveTimezone,
+} from "/static/reuse/timestamp.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -13,6 +16,7 @@ import { mount as mountSharedCalendar } from "../share-renderer.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
 import { createRenderScope } from "./render-scope.js";
+import { calendarDate, bindCurrentPeriod } from "./period-navigation.js";
 
 const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
 
@@ -38,7 +42,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     let currentAccountId = "";
     let jitsiAvailable = false;
     let selectedView = "month";
-    let activeDate = new Date();
+    let activeDate = calendarDate(new Date(), getEffectiveTimezone());
     let composer = null;
     const nextViewRender = createRenderScope(signal);
     let availabilityBoundaryTimer = null;
@@ -425,7 +429,10 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 const navigation =
                     navigationButton.getAttribute("data-calendar-nav");
                 if (navigation === "today") {
-                    activeDate = new Date();
+                    activeDate = calendarDate(
+                        new Date(),
+                        getEffectiveTimezone(),
+                    );
                 } else if (selectedView === "day") {
                     activeDate = calendarUi.addDays(
                         activeDate,
@@ -480,6 +487,14 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         },
         { signal },
     );
+
+    const syncCurrentPeriod = bindCurrentPeriod({
+        root,
+        getDate: () => activeDate,
+        getView: () => selectedView,
+        getTimeZone: getEffectiveTimezone,
+        signal,
+    });
 
     composer = createPageComposer(root, {
         signal,
@@ -660,6 +675,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
             subtitle: i18n.t("gateway.calendar.page_subtitle"),
         },
         onRender: () => {
+            syncCurrentPeriod();
             bindViewInteractions();
             const createTrigger = root.querySelector(
                 "#calendar-create-trigger",
