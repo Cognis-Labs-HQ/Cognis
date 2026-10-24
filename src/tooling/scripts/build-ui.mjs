@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -263,25 +263,20 @@ if (manifest["/static/app/offline/index.js"]) {
     );
     const workerPath = path.join(outputRoot, "public", "sw.js");
     const workerSource = await readFile(workerPath, "utf8");
-    const offlineVersion = createHash("sha256")
-        .update(workerSource)
-        .update(JSON.stringify(manifest));
+    const offlineResources = [JSON.stringify(manifest)];
     for (const asset of offlineAssets) {
         const sourcePath =
             logicalSourcePaths.get(asset) ?? path.join(outputRoot, asset);
-        offlineVersion.update(await readFile(sourcePath));
+        offlineResources.push(await readFile(sourcePath));
     }
-    offlineVersion.update(
+    offlineResources.push(
         await readFile(
             path.join(outputRoot, "public", "pages", "offline.html"),
         ),
     );
     await writeFile(
         workerPath,
-        workerSource.replace(
-            '"v7"',
-            JSON.stringify(`v7-${offlineVersion.digest("hex").slice(0, 16)}`),
-        ),
+        versionOfflineWorker(workerSource, offlineResources),
     );
 }
 
