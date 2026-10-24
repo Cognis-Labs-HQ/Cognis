@@ -539,9 +539,10 @@ export function createCalendarCoreRoutes({
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
             const inviteEmails = normalizeStringList(body.inviteEmails);
-            const reminderOffsetsMinutes = normalizeReminderOffsets(
-                body.reminderOffsetsMinutes,
-            );
+            const reminderOffsetsMinutes =
+                body.reminderOffsetsMinutes === undefined
+                    ? undefined
+                    : normalizeReminderOffsets(body.reminderOffsetsMinutes);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (!title || !startAt || !endAt) {
                 sendCalendarError(

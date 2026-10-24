@@ -297,9 +297,7 @@ export function resolveReminderOffsets(
     value: unknown,
     fallback: unknown = [],
 ): number[] {
-    const normalized = normalizeReminderOffsets(value);
-    if (normalized.length > 0) return normalized;
-    return normalizeReminderOffsets(fallback);
+    return normalizeReminderOffsets(value === undefined ? fallback : value);
 }
 
 export function normalizeEventStatus(value: unknown): CalendarEventStatus {
