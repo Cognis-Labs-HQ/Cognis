@@ -7,3 +7,5 @@
 Der Kalender lädt Einladungen gleichzeitig mit der Kalenderliste und startet Ereignisabfragen, sobald die Liste bereitsteht. Der Seitenaufbau wartet weiterhin auf die erforderlichen Abfragen. Bei Fehlern der Einladungsabfrage bleibt die bisherige leere Einladungsliste erhalten. Jede Navigation lädt aktuelle Daten. Abbruchprüfungen verhindern den Aufbau überholter Seiten durch verspätete Antworten.
 
 ## Commits
+
+- [85589901ffa36dbc5f0efc3671cc13b67fe35bb3](https://github.com/Cognis-Labs-HQ/Cognis/commit/85589901ffa36dbc5f0efc3671cc13b67fe35bb3)
