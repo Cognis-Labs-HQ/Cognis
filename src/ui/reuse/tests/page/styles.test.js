@@ -180,3 +180,15 @@ test("initial adoption leaves provider-injected notification and header styles u
         "provider disposal is not reversed by route ownership",
     );
 });
+
+test("aborting a component stylesheet settles readiness without a later load event", async () => {
+    const { styles, last, links } = fixture();
+    const controller = new AbortController();
+    const ready = styles.ensurePageStylesheet("/pending-component.css", {
+        signal: controller.signal,
+    });
+    controller.abort();
+    await ready;
+    assert.equal(last().removed, true);
+    assert.equal(links[0].removed, false);
+});

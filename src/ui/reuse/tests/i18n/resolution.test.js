@@ -142,3 +142,52 @@ test("unavailable locale bundles log diagnostics and English fallback still reso
         errorName: "Error",
     });
 });
+
+test("background translation completion cannot overwrite a newer locale selection", async () => {
+    const pendingEnglish = Promise.withResolvers();
+    const { storage } = installI18nEnvironment((path) =>
+        path.includes("/en/")
+            ? pendingEnglish.promise
+            : xml({ title: "Deutsch" }),
+    );
+    const host = await import(`../../i18n.js?fixture=${crypto.randomUUID()}`);
+    document.documentElement.lang = "en";
+    host.setPreferredLanguages(["en"], { mode: "manual" });
+    const loadingCopy = host.createI18n({
+        preferredLanguages: ["en"],
+        persistLocale: false,
+    });
+    host.setPreferredLanguages(["de"], { mode: "manual" });
+    document.documentElement.lang = "de";
+    const currentPreferences = [...storage];
+    const currentCookie = document.cookie;
+    pendingEnglish.resolve(xml({ title: "English" }));
+    const i18n = await loadingCopy;
+    assert.equal(i18n.locale, "en");
+    assert.equal(i18n.t("title"), "English");
+    assert.deepEqual([...storage], currentPreferences);
+    assert.equal(document.cookie, currentCookie);
+    assert.equal(document.documentElement.lang, "de");
+});
+
+test("read-only translation fallback does not prune saved locale preferences", async (context) => {
+    context.mock.method(console, "error", () => {});
+    const { storage } = installI18nEnvironment((path) =>
+        path.includes("/de/")
+            ? new Response("", { status: 404 })
+            : xml({ title: "English fallback" }),
+    );
+    const host = await import(`../../i18n.js?fixture=${crypto.randomUUID()}`);
+    host.setPreferredLanguages(["de"], { mode: "manual" });
+    const currentPreferences = [...storage];
+    const currentCookie = document.cookie;
+    const i18n = await host.createI18n({
+        preferredLanguages: ["de"],
+        persistLocale: false,
+    });
+    assert.equal(i18n.locale, "en");
+    assert.equal(i18n.t("title"), "English fallback");
+    assert.deepEqual([...storage], currentPreferences);
+    assert.equal(document.cookie, currentCookie);
+    assert.equal(document.documentElement.lang, "de");
+});

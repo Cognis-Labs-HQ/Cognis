@@ -4,7 +4,7 @@
 
 ## Beständige Navigation
 
-Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Überholte Navigationen geben ihre Ladefreigabe sofort zurück; ausstehende Inhalte und Laufzeitfehler behalten die vorhandenen Lade- und Fehleranzeigen.
+Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Die Lademeldung erscheint unter dem Ladesymbol mit derselben verzögerten Einblendung und bleibt während der Vorbereitung von Anbietern, des Imports, der Sitzungsprüfung und des Inhaltsaufbaus einer akzeptierten Navigation verfügbar. Überholte Navigationen geben ihre Ladefreigabe sofort zurück. Abschluss und Fehler beenden die Ladeanzeige; Fehler nutzen die vorhandenen Anzeigen. Übersetzungsabfragen im Hintergrund ändern die gewählte Sprache nicht.
 
 Die sichtbare Seite behält ihre Routenstile, während das Ziel lädt. Zielstile werden inaktiv vorbereitet und erst beim Austausch des Inhalts aktiviert. Abgebrochene oder fehlgeschlagene Vorbereitungen geben nur ihre eigenen Stile frei. Gemeinsame Steuerelemente und offene Komponentenfenster behalten ihre Stile bis zur Freigabe. Produktionsdokumente bewahren die Quellidentität der Stylesheets, damit direkte Aufrufe und SPA-Navigation dieselbe Zuordnung nutzen.
 

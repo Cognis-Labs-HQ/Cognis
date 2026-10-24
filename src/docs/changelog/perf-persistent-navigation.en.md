@@ -4,7 +4,7 @@
 
 ## Persistent Navigation
 
-Route and document loading use the full-window shade. Superseded navigation releases its loading token immediately; pending content and runtime errors retain their existing loading and error surfaces.
+Route and document loading use the full-window shade. The loading message appears below the spinner with the same delayed reveal and remains available while accepted navigation prepares providers, imports its entry, validates the session and mounts content. Superseded navigation releases its token immediately. Completion and failures clear loading feedback through the existing error surfaces. Background translation reads do not change the selected language.
 
 The visible page keeps its route styles while the destination loads. Destination styles are staged inactive and become active when content commits; superseded or failed preparations release only their own styles. Shared controls and open component windows retain their owned styles until disposal. Production documents preserve stylesheet source identity so direct loads and SPA navigation share the same ownership.
 

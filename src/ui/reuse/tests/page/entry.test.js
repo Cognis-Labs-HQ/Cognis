@@ -95,10 +95,11 @@ test("page loading helpers keep the page busy until all pending loads finish", (
             loadingOverlay.getAttribute("data-overlay-visible"),
             "true",
         );
-        const showMessageCallback = [...timeoutEntries.values()].find(
-            ({ delay }) => delay === 500,
-        )?.callback;
-        showMessageCallback?.();
+        assert.equal(
+            [...timeoutEntries.values()].some(({ delay }) => delay === 500),
+            false,
+            "message and spinner share the same visibility schedule",
+        );
         assert.equal(
             loadingOverlay.getAttribute("data-message-visible"),
             "true",
