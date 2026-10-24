@@ -142,13 +142,3 @@ body:has(.popup-overlay):not([data-page-ready="true"])::after {
         transition: none;
     }
 }
-
-.workspace[aria-busy="true"] {
-    isolation: isolate;
-}
-
-.page-loading-overlay[data-loading-scope="content"] {
-    z-index: 1199;
-    right: auto;
-    bottom: auto;
-}

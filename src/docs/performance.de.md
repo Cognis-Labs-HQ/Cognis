@@ -26,7 +26,7 @@ Nur vor dem Seitenaufbau benötigte Kataloge aktivieren das Vorladen. Navigation
 
 ## Beständige Navigation
 
-Beim Routenwechsel überdeckt die Ladeanzeige den betroffenen Arbeitsbereich; Kopfbereich und Navigation bleiben sichtbar. Direkte Dokumentaufrufe behalten die ganzseitige Ladeanzeige. Überholte Navigationen geben ihre Ladefreigabe sofort zurück. Ausstehende Inhalte und Laufzeitfehler bleiben über die vorhandenen Lade- und Fehleranzeigen erkennbar.
+Routen- und Dokumentaufrufe verwenden die ganzseitige Ladeanzeige. Die Lademeldung erscheint unter dem Ladesymbol mit derselben verzögerten Einblendung und bleibt während der Vorbereitung von Anbietern, des Imports, der Sitzungsprüfung und des Inhaltsaufbaus einer akzeptierten Navigation verfügbar. Überholte Navigationen geben ihre Ladefreigabe sofort zurück. Abschluss und Fehler beenden die Ladeanzeige; Fehler nutzen die vorhandenen Anzeigen. Übersetzungsabfragen im Hintergrund ändern die gewählte Sprache nicht.
 
 Bei jedem Aufbau werden aktuelle Einstellungen einmal gemeinsam für Design- und Sprachsteuerung geladen. Nach Bereitschaft der Anbieter erfolgt eine Avatar-Aktualisierung. Unveränderte Avatar-Elemente bleiben bestehen. Verspätete Ergebnisse werden nach Konto-, Token-, Anbieter- oder Aktualisierungswechsel verworfen. Private Antworten werden nicht zwischengespeichert.
 

@@ -399,6 +399,10 @@ export function installComponentPageBroker({
                         }),
                     ),
                 );
+                if (controller.signal.aborted) {
+                    await discard();
+                    return;
+                }
                 const module = await loadWithSpaImportGuard(() =>
                     data.route.load({ signal: controller.signal }),
                 );
