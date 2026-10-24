@@ -7,8 +7,16 @@ export function bindViewInteractions({
     setSelectedCalendarId,
     openEventPopup,
 }) {
+    if (signal?.aborted) return;
     if (root.dataset.calendarInteractionsBound === "true") return;
     root.dataset.calendarInteractionsBound = "true";
+    signal?.addEventListener(
+        "abort",
+        () => {
+            delete root.dataset.calendarInteractionsBound;
+        },
+        { once: true },
+    );
     root.addEventListener(
         "click",
         (event) => {
