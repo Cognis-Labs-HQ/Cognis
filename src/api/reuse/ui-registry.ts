@@ -189,15 +189,19 @@ export class UIRegistry {
         ) {
             return assetUrl;
         }
-        const sourcePath = path
-            .relative(
-                path.resolve(process.cwd(), "src"),
-                path.resolve(directory, relativeAsset),
-            )
-            .split(path.sep)
-            .join("/");
-        if (!/^(?:gateways|adapters)\//.test(sourcePath)) return assetUrl;
-        return this.assetManifest[`/static/${sourcePath}`] ?? assetUrl;
+        for (const sourceRoot of ["src", "dist/server/src"]) {
+            const sourcePath = path
+                .relative(
+                    path.resolve(process.cwd(), sourceRoot),
+                    path.resolve(directory, relativeAsset),
+                )
+                .split(path.sep)
+                .join("/");
+            if (!/^(?:gateways|adapters)\//.test(sourcePath)) continue;
+            const resolvedAsset = this.assetManifest[`/static/${sourcePath}`];
+            if (resolvedAsset) return resolvedAsset;
+        }
+        return assetUrl;
     }
 
     listAssetManifest(): Record<string, string> {

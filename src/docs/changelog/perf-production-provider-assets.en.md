@@ -4,7 +4,9 @@
 
 ## Resolve Production Bundles
 
-Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The build includes literal host script references even when other entries import them. Registered gateway and adapter static directories resolve custom URL prefixes to their emitted bundles. API version advances to 0.6.22. Settings sections added by construction flows are resolved through the same manifest after authorization and visibility filtering. Each request uses the current descriptors; source-only and revision-qualified module resources keep their authoritative URLs.
+Only declared script URLs and direct navbar registrations are forced build entries; ordinary static imports remain bundled dependencies. The build includes literal host script references even when other entries import them. Registered gateway and adapter static directories resolve custom URL prefixes to their emitted bundles. API version advances to 0.6.23. Settings sections added by construction flows are resolved through the same manifest after authorization and visibility filtering. Each request uses the current descriptors; source-only and revision-qualified module resources keep their authoritative URLs.
+
+Aliases also resolve when the production command runs from the repository root and components register their compiled `dist/server/src` directories.
 
 ## Overlap Host Downloads
 
@@ -16,6 +18,6 @@ Regression coverage checks built module identity, authorization, enable and unin
 
 ## Commits
 
-- [9def8947fd3571bee5901acf901119e190d3f9d1](https://github.com/Cognis-Labs-HQ/Cognis/commit/9def8947fd3571bee5901acf901119e190d3f9d1)
-- [207a05e4670647f3ad530c99b40a54c19bec94a4](https://github.com/Cognis-Labs-HQ/Cognis/commit/207a05e4670647f3ad530c99b40a54c19bec94a4)
-- [6631c34a1977a82804094b5461b60d9c923d8272](https://github.com/Cognis-Labs-HQ/Cognis/commit/6631c34a1977a82804094b5461b60d9c923d8272)
+- [9def894](https://github.com/Cognis-Labs-HQ/Cognis/commit/9def8947fd3571bee5901acf901119e190d3f9d1)
+- [207a05e](https://github.com/Cognis-Labs-HQ/Cognis/commit/207a05e4670647f3ad530c99b40a54c19bec94a4)
+- [6631c34](https://github.com/Cognis-Labs-HQ/Cognis/commit/6631c34a1977a82804094b5461b60d9c923d8272)
