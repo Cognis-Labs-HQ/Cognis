@@ -19,6 +19,7 @@
  *   await mountWhenDirect(mount);
  */
 
+import loadingFallback from "../languages/en/loading.json" with { type: "json" };
 import { createI18n, readPreferredLanguages } from "./i18n.js";
 import {
     installRuntimeErrorHandlers,
@@ -36,27 +37,26 @@ let loadingOverlayElement = null;
 let loadingWheelMessageElement = null;
 let loadingOverlayVisibilityTimer = null;
 let loadingMessageTimer = null;
-let loadingMessageVisibilityTimer = null;
 let loadingMessageIndex = 0;
 let loadingI18nPromise = null;
+let loadingLanguageKey = null;
 let loadingMessages = null;
 let pageUnloadListenersRegistered = false;
 
 const LOADING_MESSAGE_INTERVAL_MILLISECONDS = 1800;
 const LOADING_OVERLAY_DELAY_MILLISECONDS = 120;
-const LOADING_MESSAGE_DELAY_MILLISECONDS = 500;
 const LOADING_MESSAGE_KEYS = [
     "ui.reuse.loading_joke_1",
     "ui.reuse.loading_joke_2",
     "ui.reuse.loading_joke_3",
     "ui.reuse.loading_joke_4",
 ];
-const FALLBACK_LOADING_MESSAGES = [
-    "Cognis shouldn't be this slow, isn't it 2026?",
-    "Polishing pixels... apparently one by one.",
-    "Loading... at a speed historians can appreciate.",
-    "We promise this spinner is judging us too.",
-];
+const FALLBACK_LOADING_MESSAGES = LOADING_MESSAGE_KEYS.map((key) => {
+    const value = loadingFallback[key];
+    if (typeof value !== "string" || !value.trim())
+        throw new Error(`Missing translation: ${key}`);
+    return value;
+});
 const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
 
 /**
@@ -130,26 +130,30 @@ function ensureLoadingOverlay() {
 }
 
 function loadLoadingMessagesI18n() {
-    if (loadingI18nPromise) return loadingI18nPromise;
     let preferredLanguages = ["en"];
     try {
         preferredLanguages = readPreferredLanguages();
     } catch (error) {
         log("Failed to read preferred languages, using fallback.", error);
     }
+    const languageKey = JSON.stringify(preferredLanguages);
+    if (loadingLanguageKey === languageKey && loadingI18nPromise)
+        return loadingI18nPromise;
+    loadingLanguageKey = languageKey;
+    loadingMessages = null;
     loadingI18nPromise = createI18n({
         preferredLanguages,
+        persistLocale: false,
     })
         .then((i18n) => {
-            const translated = LOADING_MESSAGE_KEYS.map((key) =>
-                i18n.t(key),
-            ).filter((value) => typeof value === "string" && value.trim());
-            loadingMessages = translated.length
-                ? translated
-                : FALLBACK_LOADING_MESSAGES;
+            if (loadingLanguageKey !== languageKey) return;
+            loadingMessages = LOADING_MESSAGE_KEYS.map((key) => i18n.t(key));
             return loadingMessages;
         })
-        .catch(() => {
+        .catch((error) => {
+            if (loadingLanguageKey !== languageKey) return;
+            if (error?.code === "missing_translation") throw error;
+            loadingI18nPromise = null;
             loadingMessages = FALLBACK_LOADING_MESSAGES;
             log(
                 "Failed to load localized loading messages; using fallback copy.",
@@ -182,7 +186,14 @@ function startLoadingMessageRotation() {
     if (loadingMessageTimer) return;
     renderLoadingMessage(loadingMessageIndex);
     loadingMessageTimer = setInterval(() => {
+        const translated = loadLoadingMessagesI18n();
         renderLoadingMessage(loadingMessageIndex + 1);
+        void translated
+            .then(() => {
+                if (activePageLoadingTokens.size)
+                    renderLoadingMessage(loadingMessageIndex);
+            })
+            .catch((error) => openRuntimeErrorPopup({ error }));
     }, LOADING_MESSAGE_INTERVAL_MILLISECONDS);
 }
 
@@ -194,11 +205,13 @@ function stopLoadingMessageRotation() {
 }
 
 function showLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "true");
     loadingOverlayElement?.setAttribute("aria-hidden", "false");
     loadingOverlayElement?.setAttribute("data-overlay-visible", "true");
 }
 
 function hideLoadingOverlay() {
+    loadingOverlayElement?.setAttribute("data-message-visible", "false");
     loadingOverlayElement?.setAttribute("aria-hidden", "true");
     loadingOverlayElement?.setAttribute("data-overlay-visible", "false");
 }
@@ -221,35 +234,6 @@ function stopLoadingOverlayVisibilitySchedule() {
     if (loadingOverlayVisibilityTimer) {
         clearTimeout(loadingOverlayVisibilityTimer);
         loadingOverlayVisibilityTimer = null;
-    }
-}
-
-function showLoadingMessage() {
-    loadingOverlayElement?.setAttribute("data-message-visible", "true");
-}
-
-function hideLoadingMessage() {
-    loadingOverlayElement?.setAttribute("data-message-visible", "false");
-}
-
-function scheduleLoadingMessageVisibility() {
-    if (loadingMessageVisibilityTimer) return;
-    if (
-        loadingOverlayElement?.getAttribute("data-message-visible") === "true"
-    ) {
-        return;
-    }
-    loadingMessageVisibilityTimer = setTimeout(() => {
-        loadingMessageVisibilityTimer = null;
-        if (!activePageLoadingTokens.size) return;
-        showLoadingMessage();
-    }, LOADING_MESSAGE_DELAY_MILLISECONDS);
-}
-
-function stopLoadingMessageVisibilitySchedule() {
-    if (loadingMessageVisibilityTimer) {
-        clearTimeout(loadingMessageVisibilityTimer);
-        loadingMessageVisibilityTimer = null;
     }
 }
 
@@ -280,14 +264,15 @@ function updatePageLoadingState() {
         body.dataset.pageReady = "false";
         body.setAttribute("aria-busy", "true");
         scheduleLoadingOverlayVisibility();
-        scheduleLoadingMessageVisibility();
+        const translated = loadLoadingMessagesI18n();
+        renderLoadingMessage(loadingMessageIndex);
         startLoadingMessageRotation();
-        loadLoadingMessagesI18n()
+        translated
             .then(() => {
                 renderLoadingMessage(loadingMessageIndex);
             })
             .catch((error) => {
-                log("Failed to refresh loading overlay message.", error);
+                return openRuntimeErrorPopup({ error });
             });
         return;
     }
@@ -295,8 +280,6 @@ function updatePageLoadingState() {
     body.setAttribute("aria-busy", "false");
     stopLoadingOverlayVisibilitySchedule();
     hideLoadingOverlay();
-    stopLoadingMessageVisibilitySchedule();
-    hideLoadingMessage();
     stopLoadingMessageRotation();
 }
 

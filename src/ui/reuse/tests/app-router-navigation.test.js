@@ -9,6 +9,9 @@ function createRouter({
     routes,
     prepareStyles,
     onError,
+    beginLoading,
+    prepareProviders,
+    runFlow,
 } = {}) {
     const listeners = new Map();
     const capabilities = new Map();
@@ -55,6 +58,7 @@ function createRouter({
             }
         },
         uiCtx: {
+            runFlow,
             capabilities: {
                 contribute: (name, value) => capabilities.set(name, value),
                 get: (name) => capabilities.get(name),
@@ -65,8 +69,8 @@ function createRouter({
         preparePageStylesheets:
             prepareStyles ||
             (async () => Object.assign(() => {}, { cancel() {} })),
-        beginPageLoading: () => () => {},
-        ensureHostUiProviders: async () => {},
+        beginPageLoading: beginLoading || (() => () => {}),
+        ensureHostUiProviders: prepareProviders || (async () => {}),
         loadWithSpaImportGuard: (load) => load(),
         getCurrentRoutePath: () =>
             `${location.pathname}${location.search}${location.hash}`,
@@ -296,4 +300,90 @@ test("content commit accepts only the active route root and signal lineage befor
         false,
     );
     assert.deepEqual(committed, ["/first.css", "/next.css"]);
+});
+
+test("loading covers provider, entry and fresh-auth stages and releases immediately on supersession", async () => {
+    const providers = deferred();
+    const entry = deferred();
+    const entered = deferred();
+    const auth = deferred();
+    const authenticating = deferred();
+    let active = 0;
+    const router = createRouter({
+        beginLoading() {
+            active++;
+            let finished = false;
+            return () => {
+                if (!finished) {
+                    finished = true;
+                    active--;
+                }
+            };
+        },
+        prepareProviders: () => providers.promise,
+        async runFlow(name) {
+            assert.equal(name, "authenticate-session");
+            authenticating.resolve();
+            return auth.promise;
+        },
+        routes: [
+            {
+                ...routeFixture("/slow", async () => {}),
+                public: false,
+                async load() {
+                    entered.resolve();
+                    await entry.promise;
+                    return {
+                        mount() {
+                            assert.fail("superseded mount");
+                        },
+                    };
+                },
+            },
+            routeFixture("/last", async (root) => {
+                root.textContent = "Last";
+            }),
+        ],
+    });
+    const slow = router.navigateTo("/slow");
+    await new Promise(setImmediate);
+    assert.equal(active, 1);
+    providers.resolve();
+    await entered.promise;
+    assert.equal(active, 1);
+    entry.resolve();
+    await authenticating.promise;
+    assert.equal(active, 1);
+    assert.equal(await router.navigateTo("/last"), true);
+    assert.equal(active, 0);
+    auth.resolve({ stageResults: { "resolve-session": [{}] } });
+    assert.equal(await slow, false);
+    assert.equal(router.root.textContent, "Last");
+    assert.equal(active, 0);
+});
+
+test("entry failure releases loading before presenting its error popup", async () => {
+    let active = false;
+    const router = createRouter({
+        beginLoading() {
+            active = true;
+            return () => {
+                active = false;
+            };
+        },
+        routes: [
+            {
+                ...routeFixture("/broken", async () => {}),
+                load: async () => {
+                    throw new Error("entry failed");
+                },
+            },
+        ],
+        onError(error) {
+            assert.equal(error.message, "entry failed");
+            assert.equal(active, false);
+        },
+    });
+    assert.equal(await router.navigateTo("/broken"), false);
+    assert.equal(active, false);
 });

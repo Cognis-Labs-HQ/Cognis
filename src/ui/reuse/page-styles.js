@@ -90,19 +90,21 @@ export async function ensurePageStylesheet(href, { signal } = {}) {
     const owner = signal || persistentOwner;
     entry.owners.add(owner);
     reconcile(entry);
-    signal?.addEventListener(
-        "abort",
-        () => {
-            entry.owners.delete(owner);
-            reconcile(entry);
-        },
-        { once: true },
-    );
-    try {
-        await entry.ready;
-    } catch {
+    let finishAbort;
+    const aborted = new Promise((resolve) => {
+        finishAbort = resolve;
+    });
+    const release = () => {
         entry.owners.delete(owner);
         reconcile(entry);
+        finishAbort();
+    };
+    signal?.addEventListener("abort", release, { once: true });
+    try {
+        await (signal ? Promise.race([entry.ready, aborted]) : entry.ready);
+    } catch {
+        signal?.removeEventListener("abort", release);
+        release();
     }
 }
 

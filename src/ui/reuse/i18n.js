@@ -6,6 +6,8 @@
  *                                      Pass `componentStringBaseUrls` to merge additional per-component
  *                                      strings alongside the core locale file. Missing or empty
  *                                      locale values fall back to English XML; unresolved keys throw.
+ *                                      Set `persistLocale: false` for background copy that must not
+ *                                      change language preferences, cookies or document language.
  * - extendI18n(baseI18n, stringsBaseUrl) — returns a new resolver with core strings from
  *                                          `baseI18n` merged with component strings from `stringsBaseUrl`.
  * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
@@ -399,13 +401,15 @@ export async function createI18n(options = {}) {
     );
     componentStrings.forEach((value, key) => strings.set(key, value));
 
-    const persistedLocales = normalizedPriority.filter(
-        (locale) => !unsupportedLocales.has(locale),
-    );
-    setPreferredLanguages(
-        persistedLocales.length ? persistedLocales : [DEFAULT_LOCALE],
-    );
-    document.documentElement.lang = activeLocale;
+    if (options.persistLocale !== false) {
+        const persistedLocales = normalizedPriority.filter(
+            (locale) => !unsupportedLocales.has(locale),
+        );
+        setPreferredLanguages(
+            persistedLocales.length ? persistedLocales : [DEFAULT_LOCALE],
+        );
+        document.documentElement.lang = activeLocale;
+    }
 
     return {
         locale: activeLocale,
