@@ -11,7 +11,7 @@ const EVENT_RECURRENCE_OPTIONS = [
 ];
 
 function getStatusLabelKey(status) {
-    return `gateway.calendar.event_status_${status}`;
+    return `gateway.calendar.status_${status}`;
 }
 
 function getRecurrenceLabelKey(recurrence) {
