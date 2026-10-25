@@ -48,6 +48,14 @@ Die Modules-Werkzeugleiste behält ihre Symbolgröße, wenn gemeinsame Schaltfl�
 
 Die Profilverfügbarkeit startet beim Einbinden des Anbieters, nachdem sein gepufferter Client registriert und die Avatar-Stile bereit sind. Der Import startet weder Anwesenheitsaufrufe noch Abfragen. Deaktivieren und fehlgeschlagenes Einbinden entfernen Abonnements, Seiten-Listener, Timer und zwischengespeicherte Verfügbarkeit; veraltete asynchrone Arbeit verändert keinen späteren Anbieterbereich. So entsteht beim Online-Start von Verwaltungsseiten kein Fehler `profile_client_unavailable`.
 
+## Registrierung und Suche
+
+Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach einer SSO-Weiterleitung. Der Benachrichtigungsdienst liefert erforderliche E-Mail-Einrichtung über `auth:getSetupIntegrations(accountId, role)`: Skripte desselben Ursprungs mit dem Export `enforceSetup({ accountId })`. Die Einrichtung endet vor der Freigabe für Navigation oder Offline-Nutzung. SMTP-Ausfälle heben die Verifizierungspflicht nicht auf; der ursprüngliche Gründeradministrator bleibt ausgenommen.
+
+SMTP-Verifizierung gilt für SSO-Konten und lokale Konten. Erneutes Senden verwendet den konfigurierten Benachrichtigungsdienst. Codes und Bestätigungslinks binden die vollständige Konto-ID und E-Mail als undurchsichtiges Tupel, einschließlich SSO-Namensräumen. Abbrechen der Verifizierung in den Einstellungen erhält die vorhandene E-Mail-Adresse.
+
+Die Administration speichert die öffentliche Registrierung lokaler Konten unabhängig vom Registrierungsadapter. Bei aktiviertem öffentlichen Adapter und ausgeschalteter lokaler Registrierung können SSO-Konten angelegt werden, ohne öffentliche Benutzername/Passwort-Registrierung zu erlauben. Das Deaktivieren des Adapters sperrt auch diesen Bereitstellungspfad; Einladungstoken bleiben über ihren eigenen Adapter verfügbar. Die globale Suche liefert Teilergebnisse, bricht ersetzte Suchanfragen ab und begrenzt die Laufzeit der Suchanbieter. Dokumenttitel erscheinen vor den Inhalten; vier abbrechbare Arbeitsabläufe indizieren Dokumenttexte statt die gesamte Bibliothek gleichzeitig abzurufen.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

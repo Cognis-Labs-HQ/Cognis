@@ -72,7 +72,7 @@ export class CoreAuthGateway {
 
 プロバイダーはアダプターに `routeNamespace` と `registerRoutes(router)` を宣言できます。ルーターは `/api/v1/auth/<routeNamespace>` からの相対 `GET` および `POST` パスを受け付けるため、提供元モジュールに保護されたコアルートへの直接アクセスを与えず、OAuth コールバックを認証ゲートウェイ配下に配置できます。名前空間は安全な URL セグメントに制限され、認証コアの名前空間は予約され、重複ルートは拒否され、プロバイダーを削除すると提供されたすべてのルートも削除されます。
 
-外部プロバイダーのセッションは、`ensureExternalAccount` の前に `gateAccountCreation` を通過します。公開登録が無効な場合、セッションには登録トークンと一致するプロバイダーのメールアドレスが必要です。保留されたセッションは `emailRequired`、`registrationTokenRequired`、`retryEndpoint` を含む `account_creation_required` を返します。プロバイダー UI は同じプロバイダー ID とともにトークンおよび必要なメールアドレスをそのエンドポイントへ送信し、プロバイダーアダプターが認証済み ID のみを返す場合でも Cognis がそれらをアカウント作成ゲートへ引き渡します。再試行せずキャンセルすると、アカウントを作成せずログインを中止します。
+外部プロバイダーのセッションは、`ensureExternalAccount` の前に `gateAccountCreation` を通過します。有効な公開登録アダプターは、ローカルアカウントの公開登録ポリシーとは独立して SSO アカウントの作成を許可します。それ以外の場合、Cognis は未知の認証済み ID を有効期限付きの不透明な処理 ID で保持し、`registrationUrl` を含む `account_creation_required` を返します。プロバイダーはその URL にリダイレクトします。登録トークンアダプターが標準の登録画面に認可フォームを追加し、プロバイダーのコールバック状態を公開せずに保留中の ID の処理を再開します。
 
 ## APIルート
 
@@ -131,3 +131,7 @@ SSO モジュールは CTX を介して `auth:registerExternalProfileProvider` �
 ### モジュールのライフサイクル統合
 
 `auth:registerKeyringDataOwner(ownerId, purge)` は公開サーバー機能です。所有者 ID の重複を拒否し、登録の同一性を検証する解除関数を返します。モジュールは `module:<id>` を使い、`ctx.registerDisposer` に解除関数を登録します。purge は正規化したアカウント ID を受け取り、Keyring 依存状態のみを消去し、アカウント識別情報と無関係な共有資源を保持します。
+
+## セッション設定
+
+SSO リダイレクト後に復元した場合も含め、認証済みセッションは `/api/v1/auth/setup-status` を確認します。通知側は `auth:getSetupIntegrations(accountId, role)` を通じ、`enforceSetup({ accountId })` を公開する同一オリジンの設定スクリプトを返します。設定完了後に画面移動とオフライン利用が許可されます。SMTP 障害でも必須の確認は免除されません。最初の創設者管理者は引き続き対象外です。

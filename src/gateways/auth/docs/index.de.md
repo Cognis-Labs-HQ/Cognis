@@ -72,7 +72,7 @@ Browserseitige OAuth-Weiterleitungen können `/sso/<routeNamespace>/<path>` verw
 
 Ein Anbieter kann `routeNamespace` und `registerRoutes(router)` in seinem Adapter deklarieren. Der Router akzeptiert `GET`- und `POST`-Pfade relativ zu `/api/v1/auth/<routeNamespace>`, sodass OAuth-Rückrufe unter dem Authentifizierungs-Gateway liegen können, ohne dem beitragenden Modul direkten Zugriff auf geschützte Core-Routen zu geben. Namespaces sind auf sichere URL-Segmente beschränkt, Core-Authentifizierungs-Namespaces sind reserviert, doppelte Routen werden abgelehnt und beim Entfernen des Anbieters werden alle beigetragenen Routen entfernt.
 
-Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Bei deaktivierter öffentlicher Registrierung speichert Cognis eine unbekannte authentifizierte Identität hinter einer undurchsichtigen, ablaufenden Vorgangs-ID und gibt `account_creation_required` mit einer `registrationUrl` zurück. Anbieter leiten zu dieser URL weiter, statt eine eigene Autorisierungsoberfläche darzustellen. Der Registrierungstoken-Adapter trägt das Autorisierungsformular zur standardmäßigen Registrierungshülle bei und setzt die angehaltene Identität fort, ohne den Rückrufstatus des Anbieters offenzulegen. Öffentliche Registrierung überspringt die Tokenautorisierung.
+Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Ein aktivierter öffentlicher Registrierungsadapter erlaubt die Bereitstellung von SSO-Konten unabhängig von der Richtlinie für öffentliche lokale Registrierung. Andernfalls speichert Cognis eine unbekannte authentifizierte Identität hinter einer undurchsichtigen, ablaufenden Vorgangs-ID und gibt `account_creation_required` mit einer `registrationUrl` zurück. Anbieter leiten zu dieser URL weiter. Der Registrierungstoken-Adapter ergänzt die Autorisierung in der standardmäßigen Registrierungshülle und setzt die angehaltene Identität fort, ohne Rückrufdaten des Anbieters offenzulegen.
 
 ## API-Routen
 
@@ -131,3 +131,7 @@ Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und bro
 ### Modul-Lebenszyklus
 
 `auth:registerKeyringDataOwner(ownerId, purge)` ist eine öffentliche Serverfähigkeit. Doppelte Eigentümer-IDs werden abgelehnt; zurückgegeben wird ein identitätsgeprüfter Disposer. Module verwenden `module:<id>` und registrieren die Bereinigung mit `ctx.registerDisposer`; purge erhält die normalisierte Konto-ID. Nur Keyring-abhängigen Zustand bereinigen, Kontenidentität und fremde gemeinsame Ressourcen erhalten.
+
+## Sitzungseinrichtung
+
+Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach einer SSO-Weiterleitung. Der Benachrichtigungsdienst liefert erforderliche E-Mail-Einrichtung über `auth:getSetupIntegrations(accountId, role)`: Skripte desselben Ursprungs mit dem Export `enforceSetup({ accountId })`. Die Einrichtung endet vor der Freigabe für Navigation oder Offline-Nutzung. SMTP-Ausfälle heben die Verifizierungspflicht nicht auf; der ursprüngliche Gründeradministrator bleibt ausgenommen.

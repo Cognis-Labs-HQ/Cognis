@@ -1,3 +1,4 @@
+import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
@@ -155,6 +156,18 @@ export function createRequiredEmailEnforcementClient() {
                         entry.primary === true && entry.verified !== true,
                 );
                 if (pendingPrimary?.email) {
+                    const response = await apiFetch(
+                        `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(pendingPrimary.email)}/resend`,
+                        { method: "POST" },
+                    );
+                    if (!response.ok && response.status !== 429) {
+                        const payload = await response.json();
+                        showAddEmailFailure({
+                            code: payload?.error?.code,
+                            i18n,
+                        });
+                        throw new Error("required_email_delivery_failed");
+                    }
                     await verifyRequiredEmailLoop({
                         accountId,
                         emailAddress: pendingPrimary.email,
@@ -185,4 +198,27 @@ export function createRequiredEmailEnforcementClient() {
             }
         },
     };
+}
+
+/** Enforces this owner's setup requirement for cookie and SSO session restoration. */
+export async function enforceSetup({ accountId }) {
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/notify/languages"],
+    });
+    try {
+        await createRequiredEmailEnforcementClient().enforceRequiredEmailSetup({
+            accountId,
+            i18n,
+        });
+    } catch (error) {
+        if (
+            ![
+                "required_email_delivery_failed",
+                "required_email_cancelled",
+            ].includes(error?.message)
+        ) {
+            showAddEmailFailure({ code: error?.message, i18n });
+        }
+        throw error;
+    }
 }

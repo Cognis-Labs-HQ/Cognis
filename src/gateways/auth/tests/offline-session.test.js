@@ -18,6 +18,8 @@ function fixture() {
     let offline = false;
     let calls = 0;
     let status = 200;
+    let clockOffset = 0;
+    let loseSetupConnection = false;
     const { uiCtx } = loadTestModule(
         new URL("../../../ui/reuse/ui-ctx.js", import.meta.url),
         {
@@ -39,8 +41,15 @@ function fixture() {
             "/static/reuse/ui-ctx.js": { uiCtx },
             "/static/reuse/offline-state.js": { isOffline: () => offline },
             "/static/reuse/api-client.js": {
-                apiFetch: async () => {
+                apiFetch: async (url) => {
                     calls++;
+                    if (
+                        loseSetupConnection &&
+                        url === "/api/v1/auth/setup-status"
+                    ) {
+                        offline = true;
+                        throw new TypeError("Failed to fetch");
+                    }
                     if (offline) throw new TypeError("Failed to fetch");
                     return {
                         ok: status === 200,
@@ -54,6 +63,11 @@ function fixture() {
         },
         {
             window,
+            Date: class extends Date {
+                static now() {
+                    return Date.now() + clockOffset;
+                }
+            },
             document: { cookie: "" },
             console,
             localStorage: {
@@ -69,6 +83,10 @@ function fixture() {
             offline = true;
         },
         calls: () => calls,
+        loseConnectionDuringSetup: () => {
+            clockOffset += 6_000;
+            loseSetupConnection = true;
+        },
         deny: () => {
             status = 401;
         },
@@ -116,4 +134,12 @@ test("stored tokens alone, changed accounts, expired sessions and server denials
             /offline_operation_unavailable/,
         );
     }
+});
+
+test("a verified session stays offline when connectivity is lost during its setup refresh", async () => {
+    const state = fixture();
+    assert.equal((await authenticate(state)).authenticated, true);
+    state.loseConnectionDuringSetup();
+    assert.equal((await authenticate(state)).authenticated, true);
+    assert.equal((await authenticate(state)).authenticated, true);
 });

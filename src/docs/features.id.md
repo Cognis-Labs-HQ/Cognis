@@ -26,3 +26,7 @@ Cognis adalah platform belajar bahasa yang di-hosting sendiri yang menggabungkan
 | Autentikasi      | `local`, `ldap`, `saml`, `oidc` |
 | Penyimpanan file | `local`                         |
 | Notifikasi       | `smtp`                          |
+
+## Pendaftaran dan Pencarian
+
+Administrasi menyimpan izin pendaftaran akun lokal publik secara terpisah dari adapter pendaftaran. Aktifkan adapter publik dan nonaktifkan pendaftaran lokal untuk mengizinkan pembuatan akun SSO tanpa membuka pendaftaran nama pengguna/kata sandi publik. Menonaktifkan adapter juga menutup jalur pembuatan tersebut; token undangan tetap tersedia melalui adapternya sendiri. Pencarian global menampilkan hasil parsial, membatalkan kueri yang diganti, dan membatasi waktu penyedia pencarian. Judul dokumentasi muncul sebelum isi; empat pekerja yang dapat dibatalkan mengindeks isi dokumen alih-alih mengambil seluruh pustaka sekaligus.

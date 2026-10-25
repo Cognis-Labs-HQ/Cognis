@@ -72,7 +72,7 @@ Pengalihan OAuth yang menghadap browser dapat menggunakan `/sso/<routeNamespace>
 
 Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
 
-Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Saat pendaftaran publik dinonaktifkan, sesi harus membawa token pendaftaran dan email penyedia yang cocok. Sesi yang ditahan mengembalikan `account_creation_required` dengan `emailRequired`, `registrationTokenRequired`, dan `retryEndpoint`. UI penyedia mengirim token dan email yang diminta ke endpoint tersebut dengan ID penyedia yang sama; Cognis meneruskan nilai itu ke gerbang pembuatan akun walaupun adapter penyedia hanya mengembalikan identitas terautentikasinya. Membatalkan alih-alih mencoba kembali menghentikan login tanpa membuat akun.
+Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Adapter pendaftaran publik yang aktif mengizinkan pembuatan akun SSO secara terpisah dari kebijakan pendaftaran akun lokal publik. Jika tidak, Cognis menyimpan identitas terautentikasi yang belum dikenal di balik ID percobaan buram yang kedaluwarsa dan mengembalikan `account_creation_required` dengan `registrationUrl`. Penyedia mengalihkan pengguna ke URL itu. Adapter Token Pendaftaran menambahkan otorisasi pada kerangka pendaftaran standar dan melanjutkan identitas yang ditahan tanpa mengekspos status panggilan balik penyedia.
 
 ## Route API
 
@@ -131,3 +131,7 @@ Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL
 ### Integrasi siklus hidup modul
 
 `auth:registerKeyringDataOwner(ownerId, purge)` adalah kapabilitas server publik. ID pemilik duplikat ditolak dan disposer memeriksa identitas registrasinya. Modul memakai `module:<id>` dan memasang disposer dengan `ctx.registerDisposer`; purge menerima ID akun ternormalisasi. Bersihkan hanya keadaan yang bergantung pada keyring sambil mempertahankan identitas akun serta sumber daya bersama lainnya.
+
+## Penyiapan Sesi
+
+Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi setelah pengalihan SSO. Pemilik notifikasi menyediakan penyiapan email wajib melalui `auth:getSetupIntegrations(accountId, role)`, yang mengembalikan skrip dari asal yang sama dengan ekspor `enforceSetup({ accountId })`. Penyiapan selesai sebelum sesi diizinkan bernavigasi atau digunakan luring. Gangguan SMTP tidak membatalkan kewajiban verifikasi; administrator pendiri awal tetap dikecualikan.

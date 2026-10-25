@@ -75,3 +75,7 @@ Key source locations:
 | `POST` | `/api/v1/users/email/verify`                | Complete email verification         | Bearer |
 | `GET`  | `/api/v1/users/:username/email`             | Get primary email for a user        | Bearer |
 | `PUT`  | `/api/v1/users/:username/email`             | Set primary email for a user        | Bearer |
+
+## Email Verification
+
+SMTP verification applies to SSO accounts as well as native accounts. Resending uses the configured notification delivery service. Codes and one-click links bind the complete account ID and email as an opaque tuple, including namespaced SSO IDs. Cancelling verification from Settings preserves the existing email address.

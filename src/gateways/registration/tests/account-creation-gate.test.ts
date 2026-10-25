@@ -13,7 +13,7 @@ function createGateway({ publicEnabled = false, inviteEmail = "" } = {}) {
     return {
         consumed,
         gateway: {
-            isPublicEnabled: () => publicEnabled,
+            isAccountCreationEnabled: () => publicEnabled,
             resolveInvite: async () =>
                 inviteEmail
                     ? {

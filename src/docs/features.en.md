@@ -48,3 +48,7 @@ Admins have access to:
 - Per-category file size limits (`image`, `video`, `text`, `global`).
 - System health and diagnostics endpoints.
 - Deletion of any file or post on the platform.
+
+## Signup and Search
+
+Administration stores Allow Public Native Registration independently of the registration adapter. Keep the public adapter enabled and turn native signup off to allow SSO account provisioning without allowing public username/password signup. Disabling the adapter also disables that provisioning path; invitation tokens remain available through their own adapter. Global search streams partial results, cancels replaced queries and bounds provider execution. Documentation titles appear before content; four cancellable workers index document bodies instead of fetching the entire library at once.

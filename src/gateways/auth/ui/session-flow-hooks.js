@@ -254,14 +254,50 @@ uiCtx.extendFlow(
         }
         try {
             const response = await apiFetch("/api/v1/auth/setup-status");
-            if (response.ok && verifiedOfflineSession)
+            if (!response.ok) throw new Error("setup_status_unavailable");
+            const data = (await response.json())?.data;
+            if (
+                verifiedOfflineSession &&
+                (data?.requiresSetup || data?.integrations?.length)
+            ) {
+                verifiedOfflineSession.setupKnown = false;
+                verifiedOfflineSession.ready = false;
+            }
+            for (const integration of data?.integrations ?? []) {
+                const scriptUrl = new URL(
+                    integration.scriptUrl,
+                    window.location.origin,
+                );
+                if (
+                    scriptUrl.origin !== window.location.origin ||
+                    !scriptUrl.pathname.startsWith("/static/")
+                ) {
+                    throw new Error("invalid_setup_integration");
+                }
+                const client = await import(scriptUrl.href);
+                await client.enforceSetup({
+                    accountId: localStorage.getItem("cognis_account"),
+                });
+            }
+            if (verifiedOfflineSession)
                 verifiedOfflineSession.setupKnown = true;
-            authSetupRequiredCached = response.ok
-                ? (await response.json().catch(() => null))?.data
-                      ?.requiresSetup === true
-                : false;
-        } catch {
-            authSetupRequiredCached = false;
+            authSetupRequiredCached = data?.requiresSetup === true;
+        } catch (error) {
+            if (
+                isOffline() &&
+                verifiedOfflineSession?.ready &&
+                verifiedOfflineSession.setupKnown &&
+                !authSetupRequiredCached
+            ) {
+                return { requiresSetup: false, redirectTo: null };
+            }
+            console.error("[auth]:setup-enforcement-failed", {
+                component: "auth",
+                operation: "enforceSetup",
+                error,
+            });
+            authSetupRequiredCached = true;
+            return { requiresSetup: true, redirectTo: "/login" };
         }
         authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
         if (!authSetupRequiredCached)

@@ -382,17 +382,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                 if (!allowed) return;
                 try {
                     const result = await resendVerification(resendAttr);
-                    const action = await openVerifyPopup(
-                        resendAttr,
-                        result.watchToken,
-                    );
-                    if (action !== "verified") {
-                        try {
-                            await forceRemoveUnverifiedEmail(resendAttr);
-                        } catch {
-                            /* ignore */
-                        }
-                    }
+                    await openVerifyPopup(resendAttr, result.watchToken);
                     await loadEmails();
                     renderEmailList();
                 } catch (err) {

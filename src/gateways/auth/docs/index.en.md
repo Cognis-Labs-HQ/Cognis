@@ -72,7 +72,7 @@ Browser-facing OAuth redirects may use `/sso/<routeNamespace>/<path>`. Cognis fo
 
 A provider may declare `routeNamespace` and `registerRoutes(router)` on its adapter. The router accepts `GET` and `POST` paths relative to `/api/v1/auth/<routeNamespace>` so OAuth callbacks can live under the Authentication gateway without granting the contributing module direct access to protected core routes. Namespaces are restricted to safe URL segments, core Authentication namespaces are reserved, duplicate routes are rejected, and provider disposal removes every contributed route.
 
-External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, Cognis stores an unknown authenticated identity behind an opaque, expiring attempt ID and returns `account_creation_required` with a `registrationUrl`. Providers redirect to that URL rather than rendering authorization UI. The Registration Token adapter contributes the authorization form to the standard registration shell and resumes the held identity without exposing provider callback state. Public registration bypasses token authorization.
+External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. An enabled public registration adapter authorizes SSO account provisioning independently of the public native signup policy. Otherwise Cognis stores an unknown authenticated identity behind an opaque, expiring attempt ID and returns `account_creation_required` with a `registrationUrl`. Providers redirect to that URL. The Registration Token adapter contributes authorization to the standard registration shell and resumes the held identity without exposing provider callback state.
 
 ## API Routes
 
@@ -131,3 +131,7 @@ Authenticated pages permit media from same-origin routes and browser-generated `
 ### Module lifecycle integration
 
 `auth:registerKeyringDataOwner(ownerId, purge)` is a public server capability. It rejects duplicate owner IDs and returns an identity-checked disposer. A module uses its stable `module:<id>` owner and registers the disposer with `ctx.registerDisposer`; purge receives the normalized account ID. Purge only keyring-dependent state, preserving account identity and unrelated shared resources.
+
+## Session Setup
+
+Every authenticated session checks `/api/v1/auth/setup-status`, including sessions restored after an SSO redirect. The notification owner contributes required email setup through `auth:getSetupIntegrations(accountId, role)`, returning same-origin setup scripts that export `enforceSetup({ accountId })`. Setup finishes before the session is approved for navigation or offline use. SMTP delivery outages do not waive required verification; the initial founder administrator remains exempt.

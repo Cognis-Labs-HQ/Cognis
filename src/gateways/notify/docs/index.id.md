@@ -54,3 +54,7 @@ export interface NotificationGateway {
 | `POST` | `/api/v1/users/email/verify`                | Selesaikan verifikasi email            | Bearer      |
 | `GET`  | `/api/v1/users/:username/email`             | Dapatkan email utama pengguna          | Bearer      |
 | `PUT`  | `/api/v1/users/:username/email`             | Atur email utama pengguna              | Bearer      |
+
+## Verifikasi Email
+
+Verifikasi SMTP berlaku untuk akun SSO dan akun lokal. Pengiriman ulang menggunakan layanan pengiriman notifikasi yang dikonfigurasi. Kode dan tautan verifikasi mengikat ID akun lengkap dan email sebagai tupel buram, termasuk ID SSO dengan ruang nama. Membatalkan verifikasi dari Pengaturan mempertahankan alamat email yang ada.

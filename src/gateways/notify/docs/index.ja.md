@@ -54,3 +54,7 @@ export interface NotificationGateway {
 | `POST`   | `/api/v1/users/email/verify`                | メール検証を完了               | Bearer   |
 | `GET`    | `/api/v1/users/:username/email`             | ユーザーのメールアドレスを取得 | Bearer   |
 | `PUT`    | `/api/v1/users/:username/email`             | ユーザーのメールアドレスを設定 | Bearer   |
+
+## メールアドレス確認
+
+SMTP による確認は SSO とローカルの両アカウントに適用されます。再送には設定済みの通知配信サービスを使います。確認コードとリンクは、名前空間を含む SSO ID も含め、完全なアカウント ID とメールアドレスの組に結び付けられます。設定画面で確認を取り消しても既存のメールアドレスは保持されます。

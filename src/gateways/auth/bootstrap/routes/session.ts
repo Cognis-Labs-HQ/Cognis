@@ -810,10 +810,22 @@ export function createSessionRoutes({
             const status = getTfaUserStatus
                 ? await getTfaUserStatus(claims.sub).catch(() => null)
                 : null;
+            const getIntegrations = capabilities.get<
+                (
+                    accountId: string,
+                    role: string,
+                ) => Promise<Array<{ scriptUrl: string }>>
+            >("auth:getSetupIntegrations");
+            // Limited TFA setup tokens cannot access other owners' setup APIs.
+            const integrations =
+                getIntegrations && status?.requiresSetup !== true
+                    ? await getIntegrations(claims.sub, claims.role)
+                    : [];
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
+                        integrations,
                         requiresSetup: status?.requiresSetup === true,
                     },
                 }),

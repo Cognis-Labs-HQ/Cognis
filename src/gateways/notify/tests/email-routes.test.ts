@@ -1,3 +1,4 @@
+import { emailVerificationKey } from "../bootstrap/email-verification-key.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
@@ -286,7 +287,7 @@ test("email verification rejects wrong code with 422", async () => {
     await notifStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
-    tfaService.issue("alice:alice@example.com");
+    tfaService.issue(emailVerificationKey("alice", "alice@example.com"));
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
@@ -319,7 +320,9 @@ test("link verification GET redirects to /verify-email", async () => {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const linkToken = verifyTokenService.issue(
+        emailVerificationKey("alice", "alice@example.com"),
+    );
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
@@ -365,7 +368,9 @@ test("POST /api/v1/notify/verify-email with valid token verifies email", async (
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const linkToken = verifyTokenService.issue(
+        emailVerificationKey("alice", "alice@example.com"),
+    );
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
@@ -397,7 +402,9 @@ test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const linkToken = verifyTokenService.issue(
+        emailVerificationKey("alice", "alice@example.com"),
+    );
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
@@ -478,7 +485,9 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const liveToken = verifyTokenService.issue("alice:alice@example.com");
+    const liveToken = verifyTokenService.issue(
+        emailVerificationKey("alice", "alice@example.com"),
+    );
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
@@ -509,7 +518,9 @@ test("verify-tokens/status returns pending:false after token is consumed", async
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const liveToken = verifyTokenService.issue("alice:alice@example.com");
+    const liveToken = verifyTokenService.issue(
+        emailVerificationKey("alice", "alice@example.com"),
+    );
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
@@ -599,4 +610,73 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);
     assert.equal(data.data.pending, false);
+});
+
+test("SSO email resends support code and link verification with namespaced account IDs", async () => {
+    const store = await makeNotifStore();
+    const account = "x:firehawksystems";
+    const email = "firehawk@opayq.net";
+    await store.addUserEmail(account, email);
+    const codes = new TfaCodeService(new InMemoryTfaStore());
+    const tokens = new VerifyTokenService(new InMemoryVerifyTokenStore());
+    const sent: Array<Record<string, string>> = [];
+    let available = true;
+    const route = createUserEmailRoutes(
+        store,
+        codes,
+        tokens,
+        {
+            canSendVerificationEmail: () => available,
+            sendEmail: async ({ variables }) => {
+                sent.push(variables);
+            },
+        },
+        "https://cognis.example",
+    );
+    const auth = issueAccessToken(account, "user", 60);
+    const address = `http://localhost/api/v1/notify/users/${encodeURIComponent(account)}/emails/${encodeURIComponent(email)}`;
+    const resend = makeResponse();
+    await route(
+        makeRequest("POST", {}, auth),
+        resend,
+        new URL(`${address}/resend`),
+    );
+    assert.equal(resend.status, 200);
+    assert.equal(sent.length, 1);
+    const verify = makeResponse();
+    await route(
+        makeRequest("POST", { code: sent[0].code }, auth),
+        verify,
+        new URL(`${address}/verify`),
+    );
+    assert.equal(verify.status, 200);
+    assert.equal((await store.getUserEmails(account))[0].verified, true);
+    const link = new URL(sent[0].verifyUrl);
+    const linked = makeResponse();
+    await route(
+        makeRequest("POST", { token: link.searchParams.get("token") }, auth),
+        linked,
+        new URL("http://localhost/api/v1/notify/verify-email"),
+    );
+    assert.equal(linked.status, 200);
+    assert.equal((await store.getUserEmails("x")).length, 0);
+    const duplicate = makeResponse();
+    await route(
+        makeRequest("POST", {}, auth),
+        duplicate,
+        new URL(`${address}/resend`),
+    );
+    assert.equal(duplicate.status, 409);
+    available = false;
+    const unavailable = makeResponse();
+    await route(
+        makeRequest("POST", {}, auth),
+        unavailable,
+        new URL(`${address}/resend`),
+    );
+    assert.equal(unavailable.status, 503);
+    assert.equal(
+        JSON.parse(unavailable.payload).error.code,
+        "smtp_unavailable",
+    );
 });

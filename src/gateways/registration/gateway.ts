@@ -99,6 +99,7 @@ export class CoreRegistrationGateway {
     private readonly enabledAdapters = new Set<string>();
     private inviteAdapterId: string | null = null;
     private publicAdapterId: string | null = null;
+    private publicRegistrationEnabled = true;
 
     constructor(private readonly db: DbExecutor) {}
 
@@ -118,6 +119,12 @@ export class CoreRegistrationGateway {
         await this.db.ensureTable({
             name: "registration_policy",
             columns: [
+                {
+                    name: "public_registration_enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
                 { name: "id", type: "text", primaryKey: true },
                 {
                     name: "founder_invites_enabled",
@@ -133,20 +140,32 @@ export class CoreRegistrationGateway {
                 },
             ],
         });
+        await this.getInvitationPolicy();
     }
 
     async getInvitationPolicy(): Promise<{
+        publicRegistrationEnabled: boolean;
         founderInvitesEnabled: boolean;
         adminInvitesEnabled: boolean;
     }> {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "registration_policy",
-            columns: ["founder_invites_enabled", "admin_invites_enabled"],
+            columns: [
+                "public_registration_enabled",
+                "founder_invites_enabled",
+                "admin_invites_enabled",
+            ],
             where: [{ column: "id", value: "default" }],
         });
         const row = result.rows?.[0];
+        this.publicRegistrationEnabled =
+            row?.public_registration_enabled === undefined
+                ? true
+                : row.public_registration_enabled === true ||
+                  Number(row.public_registration_enabled) === 1;
         return {
+            publicRegistrationEnabled: this.publicRegistrationEnabled,
             founderInvitesEnabled:
                 row?.founder_invites_enabled === undefined
                     ? true
@@ -161,14 +180,18 @@ export class CoreRegistrationGateway {
     }
 
     async setInvitationPolicy(input: {
+        publicRegistrationEnabled?: boolean;
         founderInvitesEnabled: boolean;
         adminInvitesEnabled: boolean;
     }): Promise<void> {
+        const publicRegistrationEnabled =
+            input.publicRegistrationEnabled ?? this.publicRegistrationEnabled;
         await this.db.executeCommand({
             option: "INSERT",
             table: "registration_policy",
             values: {
                 id: "default",
+                public_registration_enabled: publicRegistrationEnabled,
                 founder_invites_enabled: input.founderInvitesEnabled,
                 admin_invites_enabled: input.adminInvitesEnabled,
             },
@@ -176,11 +199,13 @@ export class CoreRegistrationGateway {
                 action: "update",
                 target: ["id"],
                 update: {
+                    public_registration_enabled: publicRegistrationEnabled,
                     founder_invites_enabled: input.founderInvitesEnabled,
                     admin_invites_enabled: input.adminInvitesEnabled,
                 },
             },
         });
+        this.publicRegistrationEnabled = publicRegistrationEnabled;
     }
 
     private registerAdapter(adapter: RegistrationGatewayAdapter): void {
@@ -297,6 +322,12 @@ export class CoreRegistrationGateway {
     }
 
     isPublicEnabled(): boolean {
+        return (
+            this.publicRegistrationEnabled && this.isAccountCreationEnabled()
+        );
+    }
+
+    isAccountCreationEnabled(): boolean {
         return Boolean(
             this.publicAdapterId &&
             this.enabledAdapters.has(this.publicAdapterId) &&
@@ -372,7 +403,7 @@ export class CoreRegistrationGateway {
         email?: string;
         displayName?: string;
     }) {
-        const adapter = this.getPublicAdapter();
+        const adapter = this.isPublicEnabled() ? this.getPublicAdapter() : null;
         if (!adapter) throw new Error("public_disabled");
         return adapter.register(input);
     }

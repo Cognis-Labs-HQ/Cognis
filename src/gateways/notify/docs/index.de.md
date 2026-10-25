@@ -55,3 +55,7 @@ export interface NotificationGateway {
 | `POST`  | `/api/v1/users/email/verify`                | E-Mail-Verifizierung abschließen                    | Bearer            |
 | `GET`   | `/api/v1/users/:username/email`             | Primäre E-Mail-Adresse eines Benutzers abrufen      | Bearer            |
 | `PUT`   | `/api/v1/users/:username/email`             | Primäre E-Mail-Adresse eines Benutzers setzen       | Bearer            |
+
+## E-Mail-Verifizierung
+
+SMTP-Verifizierung gilt für SSO-Konten und lokale Konten. Erneutes Senden verwendet den konfigurierten Benachrichtigungsdienst. Codes und Bestätigungslinks binden die vollständige Konto-ID und E-Mail als undurchsichtiges Tupel, einschließlich SSO-Namensräumen. Abbrechen der Verifizierung in den Einstellungen erhält die vorhandene E-Mail-Adresse.

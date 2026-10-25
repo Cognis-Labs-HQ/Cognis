@@ -33,3 +33,7 @@ Cognis ist eine selbst gehostete Sprachlernplattform, die strukturierte Lerninha
 - Modul-Installation und Lifecycle-Management.
 - Pro-Kategorie-Dateigrößenbeschränkungen.
 - System-Health- und Diagnose-Endpunkte.
+
+## Registrierung und Suche
+
+Die Administration speichert die öffentliche Registrierung lokaler Konten unabhängig vom Registrierungsadapter. Bei aktiviertem öffentlichen Adapter und ausgeschalteter lokaler Registrierung können SSO-Konten angelegt werden, ohne öffentliche Benutzername/Passwort-Registrierung zu erlauben. Das Deaktivieren des Adapters sperrt auch diesen Bereitstellungspfad; Einladungstoken bleiben über ihren eigenen Adapter verfügbar. Die globale Suche liefert Teilergebnisse, bricht ersetzte Suchanfragen ab und begrenzt die Laufzeit der Suchanbieter. Dokumenttitel erscheinen vor den Inhalten; vier abbrechbare Arbeitsabläufe indizieren Dokumenttexte statt die gesamte Bibliothek gleichzeitig abzurufen.

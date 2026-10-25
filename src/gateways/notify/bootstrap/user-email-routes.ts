@@ -1,3 +1,7 @@
+import {
+    emailVerificationKey,
+    parseEmailVerificationKey,
+} from "./email-verification-key.js";
 import { readJson } from "../../shared.js";
 import { TfaCodeService } from "../../../api/reuse/tfa-code.js";
 import { VerifyTokenService } from "../../../api/reuse/verify-token.js";
@@ -93,8 +97,8 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            const colonIndex = userEmailPair.indexOf(":");
-            if (colonIndex === -1) {
+            const identity = parseEmailVerificationKey(userEmailPair);
+            if (!identity) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -106,8 +110,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            const username = userEmailPair.slice(0, colonIndex);
-            const email = userEmailPair.slice(colonIndex + 1);
+            const [username, email] = identity;
             await notifStore.verifyUserEmail(username, email);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
@@ -226,7 +229,7 @@ export function createUserEmailRoutes(
                 await notifStore.addUserEmail(username, email);
 
                 try {
-                    const key = `${username}:${email}`;
+                    const key = emailVerificationKey(username, email);
                     const code = issueVerificationCode(key);
                     const watchToken = verifyTokenService.issueOrGet(key);
                     const verifyUrl = externalHost
@@ -371,7 +374,10 @@ export function createUserEmailRoutes(
             if (req.method === "POST" && emailAction === "verify") {
                 const body = await readJson(req);
                 const code = String(body.code ?? "").trim();
-                const valid = tfaService.verify(`${username}:${email}`, code);
+                const valid = tfaService.verify(
+                    emailVerificationKey(username, email),
+                    code,
+                );
                 if (!valid) {
                     res.writeHead(422, {
                         "content-type": "application/json",
@@ -393,7 +399,7 @@ export function createUserEmailRoutes(
             }
 
             if (req.method === "POST" && emailAction === "resend") {
-                if (!gateway.canSendVerificationEmail()) {
+                if (!emailDelivery.canSendVerificationEmail()) {
                     res.writeHead(503, {
                         "content-type": "application/json",
                     });
@@ -440,7 +446,7 @@ export function createUserEmailRoutes(
                     return true;
                 }
                 try {
-                    const key = `${username}:${email}`;
+                    const key = emailVerificationKey(username, email);
                     const code = issueVerificationCode(key);
                     const watchToken = verifyTokenService.issueOrGet(key);
                     const verifyUrl = externalHost
