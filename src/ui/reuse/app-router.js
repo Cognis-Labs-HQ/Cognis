@@ -44,6 +44,7 @@ import {
     allowOfflineRoute,
     recoverOfflineNavigation,
 } from "./offline-navigation.js";
+import { prepareOfflineRouteAssets } from "./offline-route-assets.js";
 import { showOfflineUnavailable } from "./offline-unavailable.js";
 import { isMountSignal } from "./mount-scope.js";
 import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
@@ -270,6 +271,9 @@ async function loadAllRoutes() {
         const routes = [...STATIC_ROUTES, ...dynamicRoutes];
         if (loadGeneration === _routeCacheGeneration) {
             _allRoutes = routes;
+            prepareOfflineRouteAssets(
+                routes.filter((route) => offlineRouteAvailable(route)),
+            );
         }
         return routes;
     })();
@@ -374,7 +378,16 @@ async function loadRouteContent(
     // The router flag prevents the entry's direct-load mount from running.
     let mod;
     try {
-        if (!isOffline()) await ensureHostUiProviders();
+        if (!isOffline()) {
+            await ensureHostUiProviders();
+            void loadAllRoutes().then((routes) =>
+                prepareOfflineRouteAssets(
+                    routes.filter((candidate) =>
+                        offlineRouteAvailable(candidate),
+                    ),
+                ),
+            );
+        }
         if (!(await allowOfflineRoute(route, path, signal))) return false;
         mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
@@ -495,6 +508,7 @@ async function loadRouteContent(
             if (_lastSuccessfulPath !== path)
                 _previousSuccessfulPath = _lastSuccessfulPath;
             _lastSuccessfulPath = path;
+            uiCtx.capabilities.get("offline:recordRouteAssets")?.(route);
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
@@ -670,8 +684,10 @@ export function initRouter(root) {
         ? history.state.routerIndex
         : 0;
     _committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (initialRoute && root?.childElementCount)
+    if (initialRoute && root?.childElementCount) {
         _lastSuccessfulPath = _committedPath;
+        uiCtx.capabilities.get("offline:recordRouteAssets")?.(initialRoute);
+    }
     history.replaceState(
         { ...(history.state ?? {}), routerIndex: _historyIndex },
         "",
@@ -803,8 +819,12 @@ function internalNavigationPath(href) {
 
 function installOfflineNavigation() {
     let pending = false;
+    let updateRequested = false;
     const update = async () => {
-        if (pending) return;
+        if (pending) {
+            updateRequested = true;
+            return;
+        }
         pending = true;
         try {
             const routes = await loadAllRoutes();
@@ -817,7 +837,10 @@ function installOfflineNavigation() {
                 if (path === null) continue;
                 const disabled =
                     isOffline() &&
-                    !offlineRouteAvailable(findMatchingRoute(routes, path));
+                    !offlineRouteAvailable(
+                        findMatchingRoute(routes, path),
+                        path,
+                    );
                 if (disabled && !link.dataset.offlineDisabled) {
                     link.setAttribute("aria-disabled", "true");
                     link.dataset.offlineDisabled = "true";
@@ -837,6 +860,10 @@ function installOfflineNavigation() {
             }
         } finally {
             pending = false;
+            if (updateRequested) {
+                updateRequested = false;
+                void update();
+            }
         }
     };
     const transition = async () => {
@@ -855,14 +882,23 @@ function installOfflineNavigation() {
                 showOfflineUnavailable(resolveRouterRoot(), isCurrent),
         });
     };
-    window.addEventListener("cognis:connectivity-changed", () => {
-        void transition().catch((error) =>
-            console.error("[offline] page transition failed", {
-                operation: "recoverActivePage",
-                errorName: error?.name,
-            }),
-        );
-    });
+    window.addEventListener("cognis:offline-data-changed", () => void update());
+    window.addEventListener(
+        "cognis:offline-routes-prepared",
+        () => void update(),
+    );
+    for (const type of [
+        "cognis:connectivity-changed",
+        "cognis:offline-policy-changed",
+    ])
+        window.addEventListener(type, () => {
+            void transition().catch((error) =>
+                console.error("[offline] page transition failed", {
+                    operation: "recoverActivePage",
+                    errorName: error?.name,
+                }),
+            );
+        });
     if (typeof MutationObserver !== "undefined")
         new MutationObserver(() => {
             if (isOffline()) void update();

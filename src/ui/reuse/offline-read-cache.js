@@ -5,7 +5,7 @@ import { offlinePolicy } from "./offline-policy.js";
  * @example const read = createOfflineReadCache({ signal });
  * const data = await read('schemas', () => fetchSchemas());
  * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number}} options
- * @returns {(key: string, load: () => Promise<unknown>) => Promise<unknown>} Cached read executor.
+ * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean}} Cached read executor and snapshot readiness.
  */
 import {
     isOffline,
@@ -37,7 +37,7 @@ export function createOfflineReadCache({
         pending.clear();
     }
     signal?.addEventListener("abort", clear, { once: true });
-    return async (key, load, canCache = () => true) => {
+    const execute = async (key, load, canCache = () => true) => {
         signal?.throwIfAborted();
         const currentIdentity = readIdentity();
         const expiry = globalThis.localStorage?.getItem(
@@ -92,6 +92,7 @@ export function createOfflineReadCache({
             return result;
         const snapshot = JSON.stringify(result);
         if (snapshot !== undefined && snapshot.length * 2 <= maxBytes) {
+            let changed = !snapshots.has(key);
             size -= (snapshots.get(key)?.length ?? 0) * 2;
             snapshots.delete(key);
             while (
@@ -99,13 +100,31 @@ export function createOfflineReadCache({
                 (size + snapshot.length * 2 > maxBytes ||
                     snapshots.size >= maxEntries)
             ) {
+                changed = true;
                 const oldest = snapshots.keys().next().value;
                 size -= snapshots.get(oldest).length * 2;
                 snapshots.delete(oldest);
             }
             snapshots.set(key, snapshot);
             size += snapshot.length * 2;
+            if (changed && typeof globalThis.CustomEvent === "function")
+                globalThis.window?.dispatchEvent(
+                    new CustomEvent("cognis:offline-data-changed"),
+                );
         }
         return result;
     };
+    execute.has = (key) => {
+        const expiry = globalThis.localStorage?.getItem(
+            "cognis_session_expires_at",
+        );
+        return (
+            !signal?.aborted &&
+            offlineEnabled() &&
+            identity === readIdentity() &&
+            (!expiry || Date.parse(expiry) > Date.now()) &&
+            snapshots.has(key)
+        );
+    };
+    return execute;
 }

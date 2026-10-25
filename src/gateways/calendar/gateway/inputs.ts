@@ -23,6 +23,7 @@ export type UpdateCalendarInput = {
 };
 
 export type AddEventToCalendarInput = {
+    operationId?: string;
     calendarId: string;
     sourceEventId?: string | null;
     title: string;
@@ -41,6 +42,7 @@ export type AddEventToCalendarInput = {
 };
 
 export type AddEventInput = {
+    operationId?: string;
     ownerAccountId: string;
     calendarId: string;
     title: string;

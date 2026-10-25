@@ -131,7 +131,9 @@ export async function resolveComponentPage({ componentUuid, routeId, mode }) {
 export async function loadSpaRoutes() {
     if (isOffline()) {
         if (cachedSpaRoutes)
-            return cachedSpaRoutes.filter(offlineRouteAvailable);
+            return cachedSpaRoutes.filter((route) =>
+                offlineRouteAvailable(route),
+            );
         return (await offlineWorkerRequest("COGNIS_OFFLINE_ROUTES"))
             .map(normalizeRoute)
             .filter(Boolean);

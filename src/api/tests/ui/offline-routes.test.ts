@@ -93,7 +93,10 @@ test("the anonymous offline catalog contains only enabled explicit public opt-in
         routes.map((route: { id: string }) => route.id),
         [declaration.id],
     );
-    assert.equal(routes[0].offline.assets[0], "/static/modules/example/en.xml");
+    assert.equal(
+        routes[0].offline.assets[0],
+        "/static/modules/example/en.xml?v=development",
+    );
 });
 
 test("external module revisioning traverses the same offline asset declaration", async () => {

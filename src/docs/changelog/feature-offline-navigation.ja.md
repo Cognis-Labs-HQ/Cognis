@@ -68,21 +68,6 @@ SMTP による確認は SSO とローカルの両アカウントに適用され�
 
 ユーザー一覧は Composer の利用可能な幅全体を使います。各アカウントは独立した開閉式の行となり、見出しにユーザー名、ロール、状態、管理操作を並べ、その下に詳細を行全体の幅で表示します。詳細はラベルと値のレスポンシブなグリッドで整理し、ローカライズしたロール名と認証元名、メインアドレスと確認状態のバッジ付きメール行を表示します。狭い画面では見出しの操作を折り返し、詳細を一列に並べます。
 
-## コミット
-
-- [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)
-- [980643a](https://github.com/Cognis-Labs-HQ/Cognis/commit/980643a2d392559194e361745e7aae10f04c7bf2)
-- [9e208d3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9e208d34f2a8b9b117c4029e7a26c712efc11dd5)
-- [39bc5c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/39bc5c3c81a7b87b096d8ed665aa3ddeee7e4c93)
-- [5cfeb11](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cfeb11f0684d87760f8cc697bd42df4fcdd72b9)
-- [f9e9412](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9e94123bf209c424d03113bd35a4b6eb307163f)
-- [7fe3dfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/7fe3dfe17d68047602ae510a892503e7f0bbdc5e)
-- [09ca5a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/09ca5a58239ff2a21195d9b3f8d755c64753d977)
-- [950309c](https://github.com/Cognis-Labs-HQ/Cognis/commit/950309c0c732d732f3558c8f153b697214378cc2)
-- [5e3abf8](https://github.com/Cognis-Labs-HQ/Cognis/commit/5e3abf80c5046e5e9f783ce8900f84506cac817f)
-- [a087357](https://github.com/Cognis-Labs-HQ/Cognis/commit/a087357f0eed1acfa938fa449c92ea5fd7ef63b3)
-- [9ddc4fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ddc4fb3086075e50448928439eb30d543a3dd0d)
-
 ## アカウントのプライバシーとキーリングの分離
 
 SSO アカウントにはプロバイダーを示さないランダムな ID を使用します。プロバイダー ID は別に保存し、管理者だけに表示します。公開ユーザー名には含めません。Auth はプロフィールやメールの変更前にユーザー名を確保します。同じプロバイダー内の重複名は拒否し、別プロバイダーとの重複には短いランダムな接尾辞を付けます。ユーザー一覧と操作 API は公開用の `username` と内部用の `accountId` を区別します。
@@ -124,3 +109,29 @@ Dashboard はセッション内限定の非公開オフラインアクセスを�
 オフライン状態と利用できないページの説明を、閉じる操作のない単一のヘッダー通知にまとめます。再接続後は接続復旧のメッセージと、共通のボタンスタイルと操作間隔を使用した更新ボタンだけを表示します。シェルの既定スタイルは、明示的に指定された確認・キャンセル・中立のボタンスタイルを維持します。ヘッダーのないページでは、内容内に一つの通知を表示します。
 
 実装: [9cfab80](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cfab806b213cc6b48525e22ddd6b7fee8677ed4)
+
+## オフライン資産とカレンダー
+
+本番用アセットの解決は、ルートに必要なスクリプトやスタイルシートの配列にも適用されます。公開アセットはバージョン付き・なしの URL でワーカーのキャッシュキーを共有し、モジュールのリビジョン境界は維持します。二つのバックグラウンド処理で対応ページのコードと非表示のスタイルを準備し、ページ自体はマウントしません。オフラインリンクには準備済みコードと各所有者が必要とするアカウント・セッション別スナップショットが必要です。ナビゲーションを再描画しても無効状態を維持するため、Meetings は無効のままです。非公開 API と認証済み HTML は引き続きワーカーに保存しません。
+
+認証確認後、Calendar はカレンダー一覧、招待、所有する予定を最大二つの同時バックグラウンド要求で保存します。キャッシュを無効化した場合も、ログインを妨げず再取得します。保存済み予定を閲覧でき、予定の作成・編集・削除・回答、状態設定、カレンダーの編集は共通の送信待ちバッファーに入ります。保留中の作成と編集は保存済み一覧に反映します。作成には固定の操作 UUID を使用し、再送では既存の予定を返すため、繰り返し予定や招待通知を重複作成しません。内容の変更や別アカウントでの ID 再利用は拒否します。再送時にはサーバーが権限を再確認します。
+
+予定のスナップショットはタブ内限定で 4 MB・100 件の読み取りまでです。共通の送信待ちキューは従来どおり 1 MB・1,000 件・七日間までです。新しい繰り返し予定は、サーバーで展開するまで最初の予定だけを表示します。カレンダー自体の作成、会議の生成、共有とパスワードの管理、ゲスト資格情報には接続が必要です。共有パスワードはバッファーに保存しません。オフラインナビゲーションを有効にするには、Messages は保存済みルーム一覧、Study は保存済みの言語・設定情報が必要です。
+
+認証確認後、Study は言語一覧、設定、選択済み言語のモジュールリンクをバックグラウンドで準備し、モジュールへの同時リクエストは最大2件に制限します。サブナビゲーションも同じ所有者のキャッシュを使用するため、ハブへの初回アクセスをオフラインで行えます。キャッシュが無効化されると、ログインを妨げずに再準備を行います。
+
+## コミット
+
+- [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)
+- [980643a](https://github.com/Cognis-Labs-HQ/Cognis/commit/980643a2d392559194e361745e7aae10f04c7bf2)
+- [9e208d3](https://github.com/Cognis-Labs-HQ/Cognis/commit/9e208d34f2a8b9b117c4029e7a26c712efc11dd5)
+- [39bc5c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/39bc5c3c81a7b87b096d8ed665aa3ddeee7e4c93)
+- [5cfeb11](https://github.com/Cognis-Labs-HQ/Cognis/commit/5cfeb11f0684d87760f8cc697bd42df4fcdd72b9)
+- [f9e9412](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9e94123bf209c424d03113bd35a4b6eb307163f)
+- [7fe3dfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/7fe3dfe17d68047602ae510a892503e7f0bbdc5e)
+- [09ca5a5](https://github.com/Cognis-Labs-HQ/Cognis/commit/09ca5a58239ff2a21195d9b3f8d755c64753d977)
+- [950309c](https://github.com/Cognis-Labs-HQ/Cognis/commit/950309c0c732d732f3558c8f153b697214378cc2)
+- [5e3abf8](https://github.com/Cognis-Labs-HQ/Cognis/commit/5e3abf80c5046e5e9f783ce8900f84506cac817f)
+- [a087357](https://github.com/Cognis-Labs-HQ/Cognis/commit/a087357f0eed1acfa938fa449c92ea5fd7ef63b3)
+- [9ddc4fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ddc4fb3086075e50448928439eb30d543a3dd0d)
+- [9cfab80](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cfab806b213cc6b48525e22ddd6b7fee8677ed4)

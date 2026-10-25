@@ -56,6 +56,7 @@ function acquire(href) {
                   { once: true },
               );
           });
+    link.dataset.resourceErrorHandled = "true";
     state.entries.set(key, entry);
     if (!existing) {
         link.rel = "stylesheet";

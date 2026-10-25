@@ -110,6 +110,7 @@ function createRouter({
         new URL("../app-router.js", import.meta.url),
         {
             "./offline-state.js": sandbox,
+            "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
             "./offline-unavailable.js": {
                 showOfflineUnavailable: async () => {
                     root.textContent = "Offline unavailable";

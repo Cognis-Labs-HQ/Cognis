@@ -96,6 +96,7 @@ export function mountProvider(ctx) {
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["social-messages-page"],
         ctx.signal,
+        { available: () => request.hasCachedRead(`${ROOT}/rooms`) },
     );
 }
 export function messagesFetch(path, options = {}) {

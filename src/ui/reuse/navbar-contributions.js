@@ -19,7 +19,8 @@ function renderLinks() {
             element.setAttribute("aria-disabled", "true");
         } else {
             element.href = link.href;
-            element.removeAttribute("aria-disabled");
+            if (!element.dataset.offlineDisabled)
+                element.removeAttribute("aria-disabled");
         }
         if (link.title) element.setAttribute("title", link.title);
         else element.removeAttribute("title");

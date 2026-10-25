@@ -1,4 +1,5 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { calendarFetch as apiFetch } from "../offline-client.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
@@ -230,8 +231,8 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     }
 
     function scheduleAvailabilityBoundaryRefresh() {
-        if (signal?.aborted) return;
         window.clearTimeout(availabilityBoundaryTimer);
+        if (signal?.aborted || isOffline()) return;
         const now = Date.now();
         const nextBoundary = allCalendarEvents()
             .flatMap((event) => [
@@ -388,7 +389,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         getEventsByCalendar: () => eventsByCalendar,
         getCanInviteExternal: () => canInviteExternal,
         getCurrentAccountId: () => currentAccountId,
-        getJitsiAvailable: () => jitsiAvailable,
+        getJitsiAvailable: () => jitsiAvailable && !isOffline(),
         reloadState,
         syncRouteSelection,
         refreshComposer: refreshCalendarComposer,
@@ -808,6 +809,15 @@ export async function mount(root, { signal, shareContext = null } = {}) {
 
     await composer.init();
     if (signal?.aborted) return;
+    const syncOnlineActions = () => {
+        scheduleAvailabilityBoundaryRefresh();
+        const createCalendar = root.querySelector("#calendar-create-trigger");
+        if (createCalendar) createCalendar.disabled = isOffline();
+    };
+    window.addEventListener("cognis:connectivity-changed", syncOnlineActions, {
+        signal,
+    });
+    syncOnlineActions();
     syncRouteSelection();
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);

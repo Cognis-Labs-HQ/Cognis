@@ -23,7 +23,7 @@ import {
     type CalendarVisibility,
     type ScopedMeetingAccessTokenRecord,
 } from "./utils.js";
-import { createEventSeries } from "./event-series.js";
+import { ownedEventInput, createEventsOnce } from "./event-creation.js";
 import type {
     AddEventInput,
     AddEventToCalendarInput,
@@ -299,37 +299,16 @@ export class CoreCalendarGateway {
         if (!calendar) {
             throw new Error("calendar_not_found");
         }
-        return this.addEventToCalendar({
-            calendarId: calendar.id,
-            title: input.title,
-            description: input.description,
-            startAt: input.startAt,
-            endAt: input.endAt,
-            createdBy: input.ownerAccountId,
-            attendees: enforceOwnerAttendance(
-                input.ownerAccountId,
-                input.attendees,
-            ),
-            inviteEmails: input.inviteEmails,
-            reminderOffsetsMinutes: resolveReminderOffsets(
-                input.reminderOffsetsMinutes,
-                calendar.defaultReminderOffsetsMinutes,
-            ),
-            meetingUrl: input.meetingUrl,
-            status: input.status,
-            recurrence: input.recurrence,
-        });
+        return this.addEventToCalendar(ownedEventInput(input, calendar));
     }
 
     addEventToCalendar(input: AddEventToCalendarInput): CalendarEventRecord {
-        if (!this.calendarsById.has(input.calendarId)) {
-            throw new Error("calendar_not_found");
-        }
-        const events = createEventSeries(input);
-        for (const event of events) {
-            this.insertEventIntoCalendar(event);
-        }
-        return events[0];
+        return createEventsOnce(input, {
+            exists: (id) => this.calendarsById.has(id),
+            lookup: (id) =>
+                this.resolveGlobalEventId(id).find((event) => event.id === id),
+            insert: (event) => this.insertEventIntoCalendar(event),
+        });
     }
 
     listEvents(calendarId: string): CalendarEventRecord[] {

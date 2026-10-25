@@ -65,6 +65,10 @@ test("host navbar contributions survive shell redraws and release only their own
     });
     assert.equal(current.children[0].href, "/example");
     assert.equal(current.children[0].textContent, "Example");
+    current.children[0].dataset.offlineDisabled = "true";
+    current.children[0].setAttribute("aria-disabled", "true");
+    navbar.render();
+    assert.equal(current.children[0].attributes["aria-disabled"], "true");
     current = createNavbar();
     window.dispatchEvent(new Event("cognis:navbar-refresh"));
     assert.equal(current.children.length, 1);

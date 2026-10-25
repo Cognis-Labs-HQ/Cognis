@@ -176,9 +176,40 @@ test("explicit private session routes remain available, while consent still gate
     const route = { id: "core.dashboard", offline: { session: true } };
     assert.equal(await navigation.allowOfflineRoute(route, "/dashboard"), true);
     consented = false;
+    assert.equal(navigation.offlineRouteAvailable(route), false);
     assert.equal(
         await navigation.allowOfflineRoute(route, "/dashboard"),
         false,
     );
     consented = true;
+});
+
+test("session route availability checks its required snapshots when offline", async () => {
+    const controller = new AbortController();
+    let cached = false;
+    uiCtx.capabilities.get("offline:registerSessionRoutes")(
+        ["snapshots"],
+        controller.signal,
+        { available: () => cached },
+    );
+    offline = false;
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "snapshots" }, "/cached"),
+        true,
+    );
+    offline = true;
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "snapshots" }, "/cached"),
+        false,
+    );
+    cached = true;
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "snapshots" }, "/cached"),
+        true,
+    );
+    controller.abort();
+    assert.equal(
+        await navigation.allowOfflineRoute({ id: "snapshots" }, "/cached"),
+        false,
+    );
 });

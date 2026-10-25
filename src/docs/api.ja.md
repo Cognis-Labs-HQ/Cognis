@@ -180,3 +180,7 @@
 ## 接続確認
 
 `GET /api/v1/system/healthcheck` はコンポーネントの診断を実行せず、即座に `{ "data": { "status": "ok" } }` を返します。接続の有無の確認にはこのエンドポイントを使用します。`GET /api/v1/system/health` は詳細診断、時刻、稼働時間を引き続き提供します。任意コンポーネントの遅延だけで、稼働中のサーバーをオフラインと見なすことを防ぎます。
+
+## オフラインルートの準備
+
+`offline:registerSessionRoutes(ids, signal, { available })` は、オフライン時にルートとパスを受け取る任意の所有者判定関数を指定できます。シグナルの中断で宣言を解除します。ホストは `offline:prepareRouteAssets` を通じて公開ページコードとスタイルを別途準備し、`offline:areRouteAssetsReady` が完了を示します。`createOfflineReadCache` の `read.has(key)` とスコープ付き HTTP クライアントの `request.hasCachedRead(path)` は非公開データを返さずに存在を確認します。判定にはアカウント・セッション、有効期限、キャッシュ世代、プロバイダーのライフサイクルを含みます。権限を付与したり、保存済みの法的同意を不要にしたりするものではありません。

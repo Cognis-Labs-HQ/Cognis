@@ -74,7 +74,7 @@ Study menyimpan snapshot JSON ringan dengan batas ukuran di tab saat ini: skema,
 
 Pratinjau Explore memakai data cache yang telah diotorisasi. Menggambar dan latihan kartu bekerja secara lokal. Penyelesaian, ulasan, ID yang dilihat, dan status akhir favorit diantrekan; progres, XP, dan hadiah menjadi resmi setelah konfirmasi server. Audio serta permintaan kamus/ElevenLabs berhenti. Penyuntingan, penghapusan, dan berbagi memerlukan koneksi. Hanya konten yang pernah dimuat dalam batas cache yang tersedia.
 
-Study privat memerlukan sesi akun yang sama, pernah diverifikasi, dan belum kedaluwarsa di tab yang sama. Muat ulang dan kunjungan pertama tetap mengikuti kontrak offline khusus halaman publik. Perubahan akun/sesi, preferensi, siklus hidup modul, dan pelepasan penyedia membatalkan snapshot privat. Pencabutan akses server tidak dapat diketahui saat terputus. Pemulihan memakai penjaga perubahan yang belum disimpan lalu memuat ulang otorisasi server.
+Study privat memerlukan sesi akun yang sama, pernah diverifikasi, dan belum kedaluwarsa di tab yang sama. Muat ulang privat secara luring memerlukan koneksi; kunjungan pertama ke hub di tab terverifikasi dapat dilakukan setelah persiapan latar belakang. Perubahan akun/sesi, preferensi, siklus hidup modul, dan pelepasan penyedia membatalkan snapshot privat. Pencabutan akses server tidak dapat diketahui saat terputus. Pemulihan memakai penjaga perubahan yang belum disimpan lalu memuat ulang otorisasi server.
 
 ## Antrean dan Persetujuan
 
@@ -85,3 +85,9 @@ Pemulihan memperbarui penyedia dan menjalankan `authenticate-session` sebelum ta
 ## Akses Dashboard dan Study
 
 Dashboard menyatakan akses luring privat yang hanya berlaku dalam sesi dan mempertahankan ringkasan akun serta acara mendatang yang tersimpan. Ekstensi Dashboard opsional yang diambil dari server dilewati saat dibuka kembali secara luring. Penyedia Study mendaftarkan rute hub dan menggunakan snapshot katalog bahasa, preferensi belajar, serta tautan modul yang terikat akun dan sesi melalui alur `study:navigation`. Pemuatan bilah navigasi menyiapkan metadata ringan hub. Explore dan kartu belajar tetap menggunakan deklarasi rute milik penyedianya; halaman yang tidak didukung tetap memakai pemulihan tanpa dialog kesalahan. Kontrol pemilihan bahasa belajar memerlukan koneksi.
+
+## Navigasi luring
+
+Hub Study hanya mengaktifkan navigasi luring jika akun dan sesi saat ini memiliki metadata bahasa dan preferensi tersimpan serta aset halaman yang siap. Explore dan kartu belajar tetap mengikuti persyaratan cache penyedianya; konten yang belum tersimpan memerlukan koneksi.
+
+Setelah autentikasi terverifikasi, Study menyiapkan katalog bahasa, preferensi, dan tautan modul bahasa yang dipilih di latar belakang, dengan paling banyak dua permintaan modul sekaligus. Subnavigasi menggunakan cache milik penyedia yang sama sehingga kunjungan pertama ke hub dapat dilakukan secara luring. Pembatalan cache menjadwalkan persiapan ulang tanpa menghambat login.

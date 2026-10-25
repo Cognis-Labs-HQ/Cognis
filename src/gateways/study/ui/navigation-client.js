@@ -1,3 +1,6 @@
+import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
+import { captureAccountGuard } from "/static/reuse/offline-identity.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -7,8 +10,13 @@ export function registerStudyNavigation(ctx) {
     const read = createOfflineReadCache({ signal: ctx.signal });
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("scoped_actions_unavailable");
-    const load = (path, signal) =>
-        read(path, async () => {
+    let required = [
+        "/api/v1/study/registered-languages",
+        "/api/v1/study/preferences",
+    ];
+    const load = async (path, signal) => {
+        const assertAccount = captureAccountGuard();
+        const result = await read(path, async () => {
             const response = await apiFetch(path, {
                 signal: AbortSignal.any([
                     ctx.signal,
@@ -21,11 +29,27 @@ export function registerStudyNavigation(ctx) {
                 });
             return (await response.json()).data;
         });
+        assertAccount();
+        return result;
+    };
     const actions = registerActions(ctx, "study:navigation", {
         languages: ({ signal } = {}) =>
             load("/api/v1/study/registered-languages", signal ?? ctx.signal),
-        preferences: ({ signal } = {}) =>
-            load("/api/v1/study/preferences", signal ?? ctx.signal),
+        preferences: async ({ signal } = {}) => {
+            const prefs = await load(
+                "/api/v1/study/preferences",
+                signal ?? ctx.signal,
+            );
+            required = [
+                "/api/v1/study/registered-languages",
+                "/api/v1/study/preferences",
+                ...(prefs?.learningLanguages ?? []).map(
+                    (code) =>
+                        `/api/v1/study/languages/${encodeURIComponent(code)}/modules`,
+                ),
+            ];
+            return prefs;
+        },
         modules: ({ languageCode, signal }) =>
             load(
                 `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
@@ -33,9 +57,33 @@ export function registerStudyNavigation(ctx) {
             ),
     });
     ctx.capabilities.contribute("study:navigation", actions);
+    bindOfflineSnapshotRefresh(ctx, {
+        id: "study:prepareOfflineSnapshot",
+        refresh: async () => {
+            const [, prefs] = await Promise.all([
+                actions.languages(),
+                actions.preferences(),
+            ]);
+            const codes = prefs?.learningLanguages ?? [];
+            let index = 0;
+            await Promise.all(
+                Array.from({ length: Math.min(2, codes.length) }, async () => {
+                    while (
+                        index < codes.length &&
+                        !isOffline() &&
+                        !ctx.signal.aborted
+                    )
+                        await actions.modules({ languageCode: codes[index++] });
+                }),
+            );
+        },
+    });
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["gateway.study"],
         ctx.signal,
+        {
+            available: () => required.every((path) => read.has(path)),
+        },
     );
 }
 

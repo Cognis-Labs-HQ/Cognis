@@ -175,3 +175,15 @@ test("an authoritative denial invalidates prior reads even if connectivity chang
         /offline_read_unavailable/,
     );
 });
+
+test("snapshot readiness rejects uncached, expired and cross-account reads", async () => {
+    const state = fixture();
+    assert.equal(state.read.has("page"), false);
+    await state.read("page", async () => ({ ready: true }));
+    assert.equal(state.read.has("page"), true);
+    state.values.set("cognis_account", "another");
+    assert.equal(state.read.has("page"), false);
+    await state.read("page", async () => ({ ready: true }));
+    state.values.set("cognis_session_expires_at", "2000-01-01T00:00:00Z");
+    assert.equal(state.read.has("page"), false);
+});

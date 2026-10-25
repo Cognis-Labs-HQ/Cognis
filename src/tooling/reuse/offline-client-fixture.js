@@ -5,8 +5,9 @@ import { uiCtx } from "../../ui/reuse/ui-ctx.js";
 import { loadTestModule } from "./test-module.ts";
 
 /** Exercise component clients against the public host delivery/cache contracts. */
-export function createOfflineClientFixture(send) {
+export function createOfflineClientFixture(send, { window } = {}) {
     let disconnected = false;
+    let cacheGeneration = 0;
     let actor = { account: "learner", session: "fixture-token" };
     const values = new Map();
     const capabilities = new Map([
@@ -16,7 +17,7 @@ export function createOfflineClientFixture(send) {
     const state = {
         isOffline: () => disconnected,
         offlineEnabled: () => true,
-        offlineCacheGeneration: () => 0,
+        offlineCacheGeneration: () => cacheGeneration,
     };
     const outbox = createOfflineOutbox({
         identity: () => actor,
@@ -72,6 +73,7 @@ export function createOfflineClientFixture(send) {
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
     };
     const globals = {
+        ...(window ? { window } : {}),
         crypto: webcrypto,
         AbortSignal,
         console,
@@ -118,8 +120,16 @@ export function createOfflineClientFixture(send) {
         },
         globals,
     );
+    const snapshots = loadTestModule(
+        new URL("../../ui/reuse/offline-snapshot.js", import.meta.url),
+        { "./offline-state.js": state },
+        globals,
+    );
     return {
         values,
+        invalidateCache: () => {
+            cacheGeneration++;
+        },
         changeAccount: (account, session = "new-token") => {
             actor = { account, session };
         },
@@ -127,6 +137,8 @@ export function createOfflineClientFixture(send) {
         ctx,
         outbox,
         imports: {
+            "/static/reuse/offline-snapshot.js": snapshots,
+            "/static/reuse/offline-identity.js": guard,
             "/static/reuse/offline-http-client.js": http,
             "/static/reuse/ui-ctx.js": { uiCtx: ctx },
             "/static/reuse/api-client.js": { apiFetch: send },

@@ -74,7 +74,7 @@ Study keeps bounded lightweight JSON snapshots in the current tab: schemas, perm
 
 Explore previews resolve relationships from already-authorized cached rows. Drawing and flashcard practice work locally. Completions, reviews, viewed IDs and final favourite states are queued for delivery; progress, XP and rewards become authoritative only after server acknowledgement. Audio and dictionary/ElevenLabs requests stop. Content edits, deletion and sharing require connectivity. Only previously loaded content within the cache limits is available.
 
-Private Study requires the same previously verified, unexpired account session in the same tab. Reloads and first visits retain the public-only offline contract. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
+Private Study requires the same previously verified, unexpired account session in the same tab. Private offline reloads require connectivity; a first hub visit in the verified tab works after background preparation. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
 
 ## Queued Delivery and Consent
 
@@ -85,3 +85,9 @@ Recovery refreshes providers and runs `authenticate-session` before the final `a
 ## Dashboard and Study access
 
 Dashboard declares private session-only offline access and keeps its account summary and cached upcoming events usable. Optional server-fetched Dashboard extensions are skipped when reopening offline. The Study provider registers its hub route and uses account/session-bound snapshots for language catalogs, learning preferences and module links through `study:navigation` flows. Navbar loading warms the lightweight hub metadata. Explore and flashcards retain their provider-owned route declarations; unsupported pages still use the quiet fallback. Language enrollment controls require connectivity.
+
+## Offline navigation
+
+The Study hub enables offline navigation only when the current account and session have cached language and preference metadata and prepared page assets. Explore and flashcards retain their provider-specific cache requirements; uncached content requires connectivity.
+
+After verified authentication, Study prepares language catalogs, preferences and selected-language module links in the background, with at most two module requests at a time. Sub-navigation uses the same owner cache, so the first visit to the hub can happen offline. Cache invalidation schedules preparation again without blocking login.

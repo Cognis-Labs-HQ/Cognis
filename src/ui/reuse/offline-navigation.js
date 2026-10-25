@@ -9,30 +9,52 @@ import {
     enableOfflineAutoRefresh,
 } from "./offline-state.js";
 
-const sessionRoutes = new Set();
+const sessionRoutes = new Map();
 uiCtx.capabilities.contribute(
     "offline:registerSessionRoutes",
-    (ids, signal) => {
-        for (const id of ids) sessionRoutes.add(id);
+    (ids, signal, { available = () => true } = {}) => {
+        signal.throwIfAborted();
+        if (typeof available !== "function")
+            throw new TypeError("invalid_offline_route_predicate");
+        const owner = { signal, available };
+        for (const id of ids) sessionRoutes.set(id, owner);
         const dispose = () => {
-            for (const id of ids) sessionRoutes.delete(id);
+            for (const id of ids)
+                if (sessionRoutes.get(id) === owner) sessionRoutes.delete(id);
         };
         signal.addEventListener("abort", dispose, { once: true });
         return dispose;
     },
 );
-uiCtx.capabilities.contribute("offline:isSessionRouteAvailable", (route) =>
-    sessionRoutes.has(route?.id),
+uiCtx.capabilities.contribute(
+    "offline:isSessionRouteAvailable",
+    (route, path) => {
+        const owner = sessionRoutes.get(route?.id);
+        return Boolean(
+            owner &&
+            !owner.signal.aborted &&
+            (!isOffline() || owner.available(route, path) === true),
+        );
+    },
 );
 
-export function offlineRouteAvailable(route) {
-    return (
+export function offlineRouteAvailable(route, path) {
+    if (isOffline() && !offlinePolicy.allows()) return false;
+    const supported =
         (route?.public !== true && route?.offline?.session === true) ||
-        uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(route) ===
-            true ||
+        uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(
+            route,
+            path,
+        ) === true ||
         (route?.public === true &&
             Boolean(route.offline) &&
-            route.offlineAvailable === true)
+            route.offlineAvailable === true);
+    return (
+        supported &&
+        (!isOffline() ||
+            route?.public === true ||
+            uiCtx.capabilities.get("offline:areRouteAssetsReady")?.(route) !==
+                false)
     );
 }
 
@@ -47,7 +69,8 @@ uiCtx.extendFlow(
         allowed:
             !input.signal?.aborted &&
             (!isOffline() ||
-                (offlinePolicy.allows() && offlineRouteAvailable(input.route))),
+                (offlinePolicy.allows() &&
+                    offlineRouteAvailable(input.route, input.path))),
     }),
 );
 uiCtx.extendFlow(

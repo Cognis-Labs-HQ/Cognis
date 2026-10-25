@@ -21,6 +21,7 @@ function preloadHostProviders(urls) {
         .filter((url) => url.startsWith("/assets/") && !/[?#]/.test(url))
         .map((url) => {
             const link = document.createElement("link");
+            link.dataset.resourceErrorHandled = "true";
             link.rel = "modulepreload";
             link.href = url;
             document.head.appendChild(link);

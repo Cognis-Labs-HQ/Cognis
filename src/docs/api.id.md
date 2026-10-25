@@ -55,3 +55,7 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 ## Keterjangkauan
 
 `GET /api/v1/system/healthcheck` segera mengembalikan `{ "data": { "status": "ok" } }` tanpa menjalankan pemeriksaan komponen. Endpoint ini dipakai untuk deteksi koneksi. `GET /api/v1/system/health` tetap menyediakan kesehatan komponen terperinci, cap waktu, dan waktu aktif. Komponen opsional yang lambat tidak boleh membuat server yang tersedia dianggap luring.
+
+## Kesiapan rute luring
+
+`offline:registerSessionRoutes(ids, signal, { available })` menerima predikat pemilik opsional yang dipanggil dengan rute dan jalur saat luring. Pembatalan sinyal menghapus deklarasi. Host menyiapkan kode publik dan gaya halaman secara terpisah melalui `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` melaporkan penyelesaian. `createOfflineReadCache` menyediakan `read.has(key)`, dan klien HTTP tercakup menyediakan `request.hasCachedRead(path)`, tanpa mengembalikan data privat. Pemeriksaan mencakup identitas akun/sesi, kedaluwarsa, generasi cache, dan siklus hidup penyedia. Pemeriksaan ini tidak memberikan otorisasi atau menggantikan persetujuan dokumen hukum tersimpan.

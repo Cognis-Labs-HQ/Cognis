@@ -4,7 +4,7 @@
  * @example const request = registerOfflineHttpClient(ctx, { owner, describe, request });
  * @param {object} ctx Lifecycle-scoped browser context.
  * @param {object} options Owning component's transport, request declarations and projections.
- * @returns {(path: string, options?: object) => Promise<Response>} Scoped request executor.
+ * @returns {((path: string, options?: object) => Promise<Response>) & {hasCachedRead: (path: string) => boolean}} Scoped request executor and snapshot readiness.
  */
 import { captureAccountGuard } from "./offline-identity.js";
 import { createOfflineReadCache } from "./offline-read-cache.js";
@@ -163,7 +163,7 @@ export function registerOfflineHttpClient(
             );
         },
     });
-    return async (path, options = {}) => {
+    const scopedRequest = async (path, options = {}) => {
         options.signal?.throwIfAborted();
         const assertAccount = captureAccountGuard();
         try {
@@ -182,4 +182,6 @@ export function registerOfflineHttpClient(
             throw error;
         }
     };
+    scopedRequest.hasCachedRead = read.has;
+    return scopedRequest;
 }

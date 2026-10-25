@@ -8,7 +8,8 @@ export async function loadCalendarMount({ hold, signal }) {
         throw new Error("unexpected calendar dependency");
     };
     const contracts = {
-        "/static/reuse/api-client.js": { apiFetch: unexpected },
+        "../offline-client.js": { calendarFetch: unexpected },
+        "/static/reuse/offline-state.js": { isOffline: () => false },
         "/static/reuse/i18n.js": {
             createI18n: async () => {
                 reached.push("locale");

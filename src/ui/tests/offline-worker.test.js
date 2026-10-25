@@ -308,3 +308,22 @@ test("worker policy and catalog acknowledgements remain responsive while asset c
         release();
     }
 });
+
+test("public static assets warmed with a build query are available through their canonical URL offline", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    await fixture.request("/static/example.svg?v=development");
+    fixture.unavailable = true;
+    assert.equal(
+        await (await fixture.request("/static/example.svg")).text(),
+        "public asset",
+    );
+    assert.equal(
+        await (
+            await fixture.request(
+                "/static/assets/icons/cognis-icon-384.png?v=development",
+            )
+        ).text(),
+        "public asset",
+    );
+});

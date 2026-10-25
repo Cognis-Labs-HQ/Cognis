@@ -184,3 +184,7 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 ## Reachability
 
 `GET /api/v1/system/healthcheck` returns `{ "data": { "status": "ok" } }` immediately, without running component contributors. This is the liveness endpoint used for connectivity detection. `GET /api/v1/system/health` retains detailed component health, timestamps and uptime. A slow optional component must not make an available server appear offline.
+
+## Offline route readiness
+
+`offline:registerSessionRoutes(ids, signal, { available })` accepts an optional owner predicate called with the route and path while offline. Disposing its signal removes the declaration. The host separately prepares public page code and styles through `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` reports completion. `createOfflineReadCache` exposes `read.has(key)`, and scoped HTTP clients expose `request.hasCachedRead(path)`, without returning private data. These checks include account/session identity, expiry, cache generation and provider lifetime. They do not grant authorization or waive cached legal consent.

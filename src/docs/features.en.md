@@ -90,3 +90,11 @@ Dashboard declares private session-only offline access and keeps its account sum
 ## One offline notice
 
 Offline status and unavailable-page details share a single header notice without a Dismiss action. Reconnection replaces it with the connection-restored message and one Refresh button using shared button variants and action spacing. Shell defaults preserve explicit confirm, cancel and neutral button styles. Pages without a shell header use one inline notice.
+
+## Offline assets and Calendar
+
+Production asset resolution now traverses arrays, including route capability scripts and stylesheets. Versioned and unversioned public asset URLs share worker cache keys while module revision boundaries remain intact. Supported page code and inactive styles prepare in two background workers without mounting pages. Offline links require prepared code and their owner’s required account/session snapshots; navbar redraws preserve disabled state, so Meetings remains disabled. Private APIs and authenticated HTML remain outside the worker cache.
+
+Calendar snapshots its calendar list, invitations and owned-event lists after verified authentication, with two background requests at a time. Cache invalidation refreshes those snapshots without blocking login. Cached events remain readable; event creation, edits, deletions, responses, status preferences and calendar edits enter the shared durable outbox. Pending creations and edits appear in cached event lists. Creation uses a stable operation UUID; a replay returns the existing event without another recurrence series or repeated invitation dispatch, and changed or cross-account reuse conflicts. Server authorization is checked on replay.
+
+Calendar snapshots are tab-local and bounded to 4 MB/100 reads. The global outbox remains bounded to 1 MB/1,000 records/seven days. New recurring events show their first occurrence until server expansion. Creating calendar containers, generating meetings, share/password management and guest credentials require connectivity; share passwords are never buffered. Messages requires a cached room list and Study requires cached language/preference metadata before enabling offline navigation.

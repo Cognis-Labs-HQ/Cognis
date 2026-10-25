@@ -213,6 +213,8 @@ export class UIRegistry {
 
     /** Resolves registered and flow-produced host assets without mutating descriptors. */
     resolveDescriptor<T>(descriptor: T): T {
+        if (typeof descriptor === "string")
+            return this.resolveAssetUrl(descriptor) as T;
         if (Array.isArray(descriptor)) {
             return descriptor.map((value) =>
                 this.resolveDescriptor(value),

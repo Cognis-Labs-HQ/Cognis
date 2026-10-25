@@ -74,7 +74,7 @@ Study behält begrenzte, kleine JSON-Schnappschüsse im aktuellen Tab: Schemas, 
 
 Explore-Vorschauen verwenden bereits autorisierte Cache-Daten. Zeichnen und Lernkarten funktionieren lokal. Abschlüsse, Bewertungen, gesehene IDs und endgültige Favoritenzustände werden zur Übertragung vorgemerkt; Fortschritt, XP und Belohnungen sind erst nach Serverbestätigung verbindlich. Audio sowie Wörterbuch- und ElevenLabs-Abfragen stoppen. Bearbeiten, Löschen und Freigaben benötigen eine Verbindung. Nur zuvor geladene Inhalte innerhalb der Cache-Grenzen sind verfügbar.
 
-Privates Study benötigt dieselbe zuvor bestätigte, noch gültige Kontositzung im selben Tab. Nach Neuladen und beim Erstbesuch gilt weiterhin der ausschließlich öffentliche Offline-Vertrag. Konto- und Sitzungswechsel, geänderte Einstellungen, Modul-Lebenszyklusänderungen und die Freigabe eines Anbieters verwerfen private Schnappschüsse. Serverseitige Sperren können ohne Verbindung nicht erkannt werden. Die Wiederherstellung prüft ungespeicherte Änderungen und lädt die Serverautorisierung neu.
+Privates Study benötigt dieselbe zuvor bestätigte, noch gültige Kontositzung im selben Tab. Privates Offline-Neuladen benötigt eine Verbindung; der erste Besuch der Übersicht im bestätigten Tab funktioniert nach der Vorbereitung im Hintergrund. Konto- und Sitzungswechsel, geänderte Einstellungen, Modul-Lebenszyklusänderungen und die Freigabe eines Anbieters verwerfen private Schnappschüsse. Serverseitige Sperren können ohne Verbindung nicht erkannt werden. Die Wiederherstellung prüft ungespeicherte Änderungen und lädt die Serverautorisierung neu.
 
 ## Übertragung und Zustimmung
 
@@ -85,3 +85,9 @@ Die Wiederherstellung aktualisiert Anbieter und führt `authenticate-session` au
 ## Zugriff auf Dashboard und Study
 
 Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoübersicht und zwischengespeicherte bevorstehende Termine bleiben nutzbar. Beim erneuten Offline-Öffnen werden optionale, vom Server geladene Erweiterungen ausgelassen. Der Study-Anbieter registriert die Übersichtsroute und nutzt über `study:navigation`-Abläufe konto- und sitzungsgebundene Schnappschüsse von Sprachkatalogen, Lernpräferenzen und Modulverweisen. Beim Laden der Navigationsleiste werden diese kleinen Metadaten vorab geladen. Explore und Lernkarten behalten ihre anbietergebundenen Routendeklarationen; nicht unterstützte Seiten nutzen weiterhin die stille Wiederherstellung. Die Auswahl zu lernender Sprachen erfordert eine Verbindung.
+
+## Offline-Navigation
+
+Die Study-Übersicht gibt Offline-Navigation nur mit gespeicherten Sprach- und Präferenzdaten des aktuellen Kontos und der aktuellen Sitzung sowie vorbereiteten Seiten-Assets frei. Explore und Lernkarten behalten ihre anbieterspezifischen Cache-Voraussetzungen; nicht gespeicherte Inhalte erfordern eine Verbindung.
+
+Nach bestätigter Authentifizierung bereitet Study Sprachkataloge, Präferenzen und Modulverweise der ausgewählten Sprachen im Hintergrund vor, mit höchstens zwei gleichzeitigen Modulanfragen. Die Unternavigation nutzt denselben anbietereigenen Cache, sodass der erste Besuch der Übersicht offline erfolgen kann. Nach einer Cache-Ungültigkeit wird die Vorbereitung erneut geplant, ohne die Anmeldung zu blockieren.

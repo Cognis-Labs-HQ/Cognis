@@ -114,6 +114,15 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     }
     assert.equal(openPopupCalls.length, 0);
 
+    errorHandler({
+        target: {
+            dataset: { resourceErrorHandled: "true" },
+            href: "/managed-prefetch.css",
+        },
+    });
+    await Promise.resolve();
+    assert.equal(openPopupCalls.length, 0);
+
     const brokenModuleImage = new TestImageElement();
     brokenModuleImage.dataset.resourceFallback = "/fallback.svg";
     brokenModuleImage.src = "blob:https://example.com/broken";

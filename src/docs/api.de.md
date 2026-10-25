@@ -180,3 +180,7 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 ## Erreichbarkeit
 
 `GET /api/v1/system/healthcheck` antwortet sofort mit `{ "data": { "status": "ok" } }`, ohne Komponentenprüfungen auszuführen. Dieser Endpunkt dient zur Verbindungserkennung. `GET /api/v1/system/health` behält ausführliche Komponenteninformationen, Zeitstempel und Laufzeit bei. Langsame optionale Komponenten dürfen einen verfügbaren Server nicht als offline erscheinen lassen.
+
+## Bereitschaft von Offline-Routen
+
+`offline:registerSessionRoutes(ids, signal, { available })` akzeptiert eine optionale Prüfung des Anbieters, die offline Route und Pfad erhält. Abbruch des Signals entfernt die Deklaration. Der Host bereitet öffentlichen Seitencode und Styles separat über `offline:prepareRouteAssets` vor; `offline:areRouteAssetsReady` meldet den Abschluss. `createOfflineReadCache` stellt `read.has(key)` bereit, HTTP-Clients mit begrenzter Lebensdauer bieten `request.hasCachedRead(path)`, ohne private Daten zurückzugeben. Die Prüfungen berücksichtigen Konto, Sitzung, Ablauf, Cache-Generation und Anbieter-Lebensdauer. Sie gewähren keine Berechtigung und ersetzen keine gespeicherte Zustimmung zu Rechtstexten.

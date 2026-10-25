@@ -3,21 +3,6 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { fetchCalendarState, fetchEvents } from "./calendar-api.js";
 
-const i18n = await createI18n({
-    componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
-});
-
-function ensureCalendarNavbarLink() {
-    const topnav = document.querySelector(".topnav");
-    if (!topnav) return;
-    if (topnav.querySelector('a[href="/calendar"]')) return;
-
-    const link = document.createElement("a");
-    link.href = "/calendar";
-    link.textContent = i18n.t("ui.reuse.calendar");
-    topnav.appendChild(link);
-}
-
 async function collectCalendarSearchGroups() {
     const calendarState = await fetchCalendarState();
     const eventResults = await Promise.allSettled(
@@ -57,5 +42,28 @@ async function collectCalendarSearchGroups() {
     return items.length ? [{ category: "Calendar Events", items }] : [];
 }
 
-ensureCalendarNavbarLink();
-registerSearchIndex("calendar-events", collectCalendarSearchGroups);
+export async function mountProvider(ctx) {
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
+    });
+    ctx.signal.throwIfAborted();
+    const navbar = ctx.capabilities.get("ui:navbarLinks");
+    if (!navbar) throw new Error("navbar_links_unavailable");
+    const releaseLink = navbar.contribute("calendar", {
+        href: "/calendar",
+        label: i18n.t("ui.reuse.calendar"),
+    });
+    try {
+        const releaseSearch = registerSearchIndex(
+            "calendar-events",
+            collectCalendarSearchGroups,
+        );
+        return () => {
+            releaseSearch();
+            releaseLink();
+        };
+    } catch (error) {
+        releaseLink();
+        throw error;
+    }
+}

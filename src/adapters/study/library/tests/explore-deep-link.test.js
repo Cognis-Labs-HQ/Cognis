@@ -1,4 +1,3 @@
-import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import {
     loadTestModule,
     importTestModule,
@@ -50,12 +49,15 @@ test("a directly opened Explore card path opens the requested preview without hi
             import.meta.url,
         ),
         {
-            "/static/reuse/offline-read-cache.js": offlineReadCache,
+            "./navigation-client.js": {
+                fetchStudyPreferences: () => {
+                    throw new Error("unexpected_study_preferences_read");
+                },
+            },
             "./reuse/explore.js": context,
             "/static/reuse/mount-scope.js": context,
             "/static/reuse/toast.js": context,
             "/static/reuse/form-builder.js": context,
-            "/static/reuse/api-client.js": context,
             "/static/reuse/escape-html.js": context,
             "/static/reuse/ui-ctx.js": context,
             "/static/reuse/spa-route-registry.js": context,

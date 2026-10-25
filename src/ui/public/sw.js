@@ -1,5 +1,5 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v11";
+const CACHE_VERSION = "v12";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const CONTROL_CACHE_NAME = `${CACHE_NAME}-control`;
@@ -59,7 +59,7 @@ function assetKey(request) {
         self.location.origin,
     );
     if (
-        url.pathname.startsWith("/static/modules/") &&
+        !url.pathname.startsWith("/static/modules/") ||
         url.searchParams.has("revision")
     ) {
         url.searchParams.delete("v");
@@ -297,7 +297,7 @@ async function assetResponse(request, moduleAsset) {
     if ([...parameters.keys()].some((key) => !["v", "revision"].includes(key)))
         return fetch(request);
     const cache = await caches.open(CACHE_NAME);
-    const cacheKey = moduleAsset ? assetKey(request) : request;
+    const cacheKey = assetKey(request);
     const cached = await cache.match(cacheKey);
     // Only content-hashed production files are immutable, never arbitrary ?v= URLs.
     const immutable =

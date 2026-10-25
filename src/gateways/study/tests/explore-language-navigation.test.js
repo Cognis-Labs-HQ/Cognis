@@ -1,4 +1,3 @@
-import * as offlineReadCache from "../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -76,9 +75,8 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
         history: { state: {} },
         parseLanguageCode: (value) => value,
         resolveLanguageLabel: (_code, name) => name,
-        apiFetch: async () => ({
-            ok: true,
-            json: async () => ({ data: { learningLanguages: ["ja", "en"] } }),
+        fetchStudyPreferences: async () => ({
+            learningLanguages: ["ja", "en"],
         }),
         fetchLibrarySchemas: async () => schemas,
         fetchLibraryPushRequests: async () => pending,
@@ -113,12 +111,11 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
         loadTestModule(
             new URL("../ui/sub-navigation.js", import.meta.url),
             {
-                "/static/reuse/offline-read-cache.js": offlineReadCache,
+                "./navigation-client.js": context,
                 "./reuse/explore.js": context,
                 "/static/reuse/mount-scope.js": context,
                 "/static/reuse/toast.js": context,
                 "/static/reuse/form-builder.js": context,
-                "/static/reuse/api-client.js": context,
                 "/static/reuse/escape-html.js": context,
                 "/static/reuse/ui-ctx.js": context,
                 "/static/reuse/spa-route-registry.js": context,

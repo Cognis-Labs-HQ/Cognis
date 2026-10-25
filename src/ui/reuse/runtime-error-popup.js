@@ -176,6 +176,9 @@ function installConsoleCapture() {
 function buildResourceLoadError(event) {
     const eventTarget = event?.target;
     if (!eventTarget || eventTarget === window) return null;
+    // Managed loaders report rejected promises through their owning route or preload flow.
+    if (eventTarget.dataset?.resourceErrorHandled === "true")
+        return HANDLED_RESOURCE_FALLBACK;
     if (
         eventTarget instanceof HTMLImageElement &&
         (eventTarget.dataset.resourceFallback ||

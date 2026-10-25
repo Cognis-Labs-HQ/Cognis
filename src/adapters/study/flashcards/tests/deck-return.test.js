@@ -1,5 +1,4 @@
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
-import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import {
     loadTestModule,
     importTestModule,
@@ -160,12 +159,15 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             import.meta.url,
         ),
         {
-            "/static/reuse/offline-read-cache.js": offlineReadCache,
+            "./navigation-client.js": {
+                fetchStudyPreferences: () => {
+                    throw new Error("unexpected_study_preferences_read");
+                },
+            },
             "./reuse/explore.js": environment,
             "/static/reuse/mount-scope.js": environment,
             "/static/reuse/toast.js": environment,
             "/static/reuse/form-builder.js": environment,
-            "/static/reuse/api-client.js": environment,
             "/static/reuse/escape-html.js": environment,
             "/static/reuse/ui-ctx.js": environment,
             "/static/reuse/spa-route-registry.js": environment,

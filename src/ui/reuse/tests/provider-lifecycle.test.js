@@ -154,6 +154,7 @@ test("host provider fetches are preloaded while imports and mounts retain catalo
         createElement(tag) {
             assert.equal(tag, "link");
             return {
+                dataset: {},
                 remove() {
                     removed.push(this.href);
                 },
@@ -230,6 +231,7 @@ test("failed host imports clean preload links and remain retryable", async (cont
     globalThis.document = {
         createElement() {
             return {
+                dataset: {},
                 remove() {
                     removals += 1;
                 },

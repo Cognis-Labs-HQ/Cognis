@@ -1,9 +1,8 @@
-import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
+import { fetchStudyPreferences } from "./navigation-client.js";
 import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadSpaRoutes } from "/static/reuse/spa-route-registry.js";
@@ -19,19 +18,13 @@ import {
     fetchSearchableDictionaryProviders,
 } from "/static/gateways/study/library-client.js";
 
-const read = createOfflineReadCache();
-
 const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 
 async function loadLearningLanguages() {
-    return read("learningLanguages", async () => {
-        const response = await apiFetch("/api/v1/study/preferences");
-        if (!response.ok) throw new Error("study_preferences_unavailable");
-        const payload = await response.json();
-        return Array.isArray(payload?.data?.learningLanguages)
-            ? [...new Set(payload.data.learningLanguages)]
-            : [];
-    });
+    const preferences = await fetchStudyPreferences();
+    return Array.isArray(preferences?.learningLanguages)
+        ? [...new Set(preferences.learningLanguages)]
+        : [];
 }
 
 const SUB_NAV_CACHE = {

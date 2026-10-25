@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { calendarFetch as apiFetch } from "./offline-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
@@ -253,11 +253,11 @@ async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
 
-uiCtx.capabilities.contribute("calendar:dashboardEvents", {
+export const calendarDashboardEvents = {
     fetchUpcomingEvents,
     loadEventStatusStyles: loadCalendarEventStatusStyles,
     eventStatusClasses: calendarEventStatusClasses,
-});
+};
 
 export {
     fetchCalendarState,
