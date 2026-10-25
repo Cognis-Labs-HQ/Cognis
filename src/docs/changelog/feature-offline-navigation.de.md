@@ -106,3 +106,5 @@ Ein schließbarer Hinweis im Kopfbereich nutzt die gemeinsamen Hinweisstile und 
 ## Abfragelimits im Offline-Modus
 
 Im Offline-Modus stoppen die Einwilligungsabfragen und normalen Wiederherstellungsabfragen. Nur eine kleine Server-Gesundheitsabfrage läuft alle fünfzehn Minuten, auch bei wiederholten Online-Ereignissen des Browsers. Fehlgeschlagene Online-Verbindungsprüfungen werden bis auf fünfzehn Minuten verlangsamt. Einwilligungsabfragen werden bei Fehlern bis auf fünf Minuten verlangsamt, offline vollständig gestoppt und nach Wiederverbindung fortgesetzt. Die erforderliche zwischengespeicherte Zustimmung bleibt Voraussetzung für Offline-Zugriff.
+
+Implementierung von Offline-Status, Navigationswiederherstellung und Abfrageintervallen: `b889c1fd03d733da95b11af0bff65c7bb590b679`.

@@ -106,3 +106,5 @@ A dismissible header notice uses the shared callout styles to show “You are in
 ## Offline polling limits
 
 Offline Mode stops consent polling and ordinary recovery polling. Only one lightweight server health probe runs every fifteen minutes, even after repeated browser online events. Online connection-recovery failures back off to fifteen minutes. Consent polling backs off after failures to five minutes, stops entirely offline, and resumes after reconnection. Required cached legal acceptance still gates offline access.
+
+Offline status, navigation recovery and polling implementation: `b889c1fd03d733da95b11af0bff65c7bb590b679`.

@@ -106,3 +106,5 @@ Pemberitahuan header yang dapat ditutup menggunakan gaya callout bersama untuk m
 ## Batas polling offline
 
 Mode Offline menghentikan polling persetujuan dan pemulihan biasa. Hanya satu pemeriksaan kesehatan server ringan berjalan setiap lima belas menit, termasuk setelah peristiwa online browser berulang. Kegagalan pemulihan koneksi saat online memperpanjang interval hingga lima belas menit. Polling persetujuan memperpanjang interval kegagalan hingga lima menit, berhenti sepenuhnya saat offline, dan dilanjutkan setelah tersambung kembali. Persetujuan dokumen wajib yang disimpan tetap menjadi syarat akses offline.
+
+Implementasi status offline, pemulihan navigasi, dan interval polling: `b889c1fd03d733da95b11af0bff65c7bb590b679`.
