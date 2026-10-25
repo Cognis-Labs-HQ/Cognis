@@ -57,3 +57,9 @@ The local adapter is also the target of `POST /api/v1/auth/register` for self-re
 No configurable fields. The local adapter reads its storage from whichever database executor is active (`db:executor` capability). Credential management is done exclusively through the `user:*` CLI commands or the register/login API routes.
 
 External identity cleanup can remove identities by provider-owned source prefix. Re-authentication updates a retained external account's current email, display name, role, and enabled state before attaching the new identity.
+
+## Account privacy and keyring isolation
+
+SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
+
+This is a clean break with no account-ID migration. Stop the instance and reset databases containing provider-bearing SSO account IDs before upgrading; Authentication refuses startup with `provider_account_ids_require_clean_database` rather than serve those IDs. Existing relationships and meetings are not migrated.

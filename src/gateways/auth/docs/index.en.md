@@ -139,3 +139,9 @@ Every authenticated session checks `/api/v1/auth/setup-status`, including sessio
 ## Login Feedback
 
 Credential, TFA-code and SSO authorization requests show the shared loading wheel and release it before interactive setup. Duplicate credential submissions are ignored while pending. Public offline-cache cleanup and refresh run in the background after login. Last-login timestamps are recorded for SSO even when the local authentication adapter is disabled.
+
+## Account privacy and keyring isolation
+
+SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
+
+This is a clean break with no account-ID migration. Stop the instance and reset databases containing provider-bearing SSO account IDs before upgrading; Authentication refuses startup with `provider_account_ids_require_clean_database` rather than serve those IDs. Existing relationships and meetings are not migrated.

@@ -57,14 +57,9 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
         localEnvelope?.accountInstanceId ?? "",
     );
     const remoteAccountInstanceId = String(remoteState.accountInstanceId ?? "");
-    if (
-        remoteState.resolved &&
-        localAccountInstanceId &&
-        remoteAccountInstanceId &&
-        localAccountInstanceId !== remoteAccountInstanceId
-    ) {
-        return null;
-    }
+    if (!remoteAccountInstanceId) return null;
+    if (localAccountInstanceId !== remoteAccountInstanceId)
+        localEnvelope = null;
     if (!remoteState.resolved) return localEnvelope;
     return envelopeTimestamp(remoteState.envelope) >
         envelopeTimestamp(localEnvelope)

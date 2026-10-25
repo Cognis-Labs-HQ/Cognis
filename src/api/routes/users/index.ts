@@ -83,12 +83,12 @@ export function createUserRoutes(
                 (await accountStore.list()).map(async (user) => ({
                     ...user,
                     handle: getProfileHandle
-                        ? await getProfileHandle(user.username).catch(
+                        ? await getProfileHandle(user.accountId).catch(
                               () => undefined,
                           )
                         : undefined,
                     lifecycleState:
-                        (await getProfileLifecycleState?.(user.username).catch(
+                        (await getProfileLifecycleState?.(user.accountId).catch(
                             () => null,
                         )) ?? "active",
                     role: resolveEffectiveRole(
@@ -96,7 +96,7 @@ export function createUserRoutes(
                         Boolean(user.isFounder),
                     ),
                     hasTfaConfigured: isSecondFactorEnabled
-                        ? await isSecondFactorEnabled(user.username).catch(
+                        ? await isSecondFactorEnabled(user.accountId).catch(
                               () => false,
                           )
                         : false,

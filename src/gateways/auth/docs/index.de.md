@@ -139,3 +139,9 @@ Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach eine
 ## Ladeanzeige bei Anmeldung
 
 Anfragen für Zugangsdaten, TFA-Codes und SSO-Autorisierung zeigen das gemeinsame Laderad und blenden es vor interaktiver Einrichtung aus. Doppelte Anmeldungen werden während einer laufenden Anfrage ignoriert. Öffentliche Offline-Caches werden nach der Anmeldung im Hintergrund bereinigt und aktualisiert. Der letzte Anmeldezeitpunkt wird auch für SSO bei deaktiviertem lokalem Authentifizierungsadapter erfasst.
+
+## Kontodatenschutz und Schlüsselbund-Isolation
+
+SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
+
+Dies ist eine inkompatible Umstellung ohne Konto-ID-Migration. Instanz stoppen und Datenbanken mit anbieterhaltigen SSO-Konto-IDs vor dem Upgrade zurücksetzen; Authentication verweigert den Start mit `provider_account_ids_require_clean_database`, statt solche IDs auszuliefern. Vorhandene Beziehungen und Besprechungen werden nicht migriert.

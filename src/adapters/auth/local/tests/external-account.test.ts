@@ -1,3 +1,4 @@
+import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { DbLocalAccountStore } from "../store.js";
@@ -5,16 +6,15 @@ import { externalIdentityFingerprint } from "../../../../gateways/auth/reuse/acc
 
 test("external account persistence creates the account before its identity", async () => {
     const commands: Array<Record<string, unknown>> = [];
-    const executor = {
-        async executeCommand(command: Record<string, unknown>) {
-            commands.push(command);
-            return { rows: [] };
-        },
-        async transaction(operation: (tx: unknown) => Promise<void>) {
-            await operation(this);
-        },
+    const executor = new InMemoryTestExecutor();
+    const execute = executor.executeCommand.bind(executor);
+    executor.executeCommand = async (command) => {
+        commands.push(command as unknown as Record<string, unknown>);
+        return execute(command);
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DbLocalAccountStore(executor);
+    await store.ensureSchema();
+    commands.length = 0;
 
     const accountId = await store.ensureExternalAccount({
         accountId: "FireHawk",
@@ -26,7 +26,9 @@ test("external account persistence creates the account before its identity", asy
     });
 
     assert.deepEqual(
-        commands.map((command) => command.table),
+        commands
+            .filter((command) => command.table !== "auth_account_names")
+            .map((command) => command.table),
         [
             "auth_identities",
             "accounts",
@@ -35,7 +37,8 @@ test("external account persistence creates the account before its identity", asy
             "auth_identities",
         ],
     );
-    assert.equal(accountId, "ldap:firehawk");
+    assert.match(accountId, /^u_[a-f0-9]{32}$/);
+    assert.equal(await store.getUsername(accountId), "firehawk");
     assert.deepEqual(commands[2]?.where, [
         {
             column: "id",
@@ -54,7 +57,7 @@ test("external account persistence creates the account before its identity", asy
         },
     ]);
     assert.deepEqual(commands[3]?.values, {
-        id: "ldap:firehawk",
+        id: accountId,
         email: "firehawk@example.org",
         display_name: "Fire Hawk",
         is_admin: false,
@@ -65,7 +68,7 @@ test("external account persistence creates the account before its identity", asy
     });
     assert.equal(
         (commands[4]?.values as Record<string, unknown>).account_id,
-        "ldap:firehawk",
+        accountId,
     );
     assert.deepEqual(commands[3]?.conflict, {
         action: "update",
@@ -114,6 +117,9 @@ test("external identity removal returns every account tied to a source", async (
 test("local auth schema provisions external identities", async () => {
     const tables: Array<Record<string, unknown>> = [];
     const executor = {
+        async executeCommand() {
+            return { rows: [] };
+        },
         async ensureTable(table: Record<string, unknown>) {
             tables.push(table);
         },
@@ -128,6 +134,7 @@ test("local auth schema provisions external identities", async () => {
             "auth_identities",
             "deleted_auth_identities",
             "local_auth_password_history",
+            "auth_account_names",
         ],
     );
     const identityTable = tables[0];
@@ -300,6 +307,25 @@ test("external identities cannot attach to a colliding persisted account", async
     );
     assert.equal(
         commands.some((command) => command.option === "INSERT"),
+        false,
+    );
+});
+
+test("startup rejects provider-bearing stored IDs without rewriting or deleting accounts", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const store = new DbLocalAccountStore({
+        async ensureTable() {},
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return { rows: [{ account_id: "x:alice" }] };
+        },
+    } as never);
+    await assert.rejects(
+        store.ensureSchema(),
+        /provider_account_ids_require_clean_database/,
+    );
+    assert.equal(
+        commands.some((command) => command.option !== "SELECT"),
         false,
     );
 });

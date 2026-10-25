@@ -6,7 +6,7 @@
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/gateways": "<=0.1.31",
+        "@cognis/gateways": "<=0.2.0",
         "@cognis/core": "<=0.5.4",
         "@cognis/adapter-study-progress": "<=1.3.1"
     }

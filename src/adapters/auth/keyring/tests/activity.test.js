@@ -151,7 +151,11 @@ test("an oversized activity history recovers and syncs without losing secrets", 
         }
         return new Response(
             JSON.stringify({
-                data: { vault: envelope, accountInstanceId: account },
+                data: {
+                    vault: envelope,
+                    accountInstanceId: account,
+                    accountId: account,
+                },
             }),
         );
     };

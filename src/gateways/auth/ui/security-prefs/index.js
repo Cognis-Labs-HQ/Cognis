@@ -18,7 +18,7 @@ import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/pa
 
 const LOGIN_SESSION_TIMEOUT_DIRTY_KEY = "auth-login-session-timeout";
 
-export function createSettingsSection({ i18n, root, markDirty }) {
+export function createSettingsSection({ i18n, root, markDirty, signal }) {
     let capability = null;
     const settingsRoot = root ?? document;
     let subsectionInstances = null;
@@ -334,6 +334,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
                     root,
                     markDirty,
+                    signal,
                 }),
                 onError: (error, descriptor) => {
                     console.warn(

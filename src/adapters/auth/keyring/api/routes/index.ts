@@ -103,6 +103,7 @@ export function createKeyringRoutes(input: {
                 JSON.stringify({
                     data: {
                         vault,
+                        accountId,
                         accountInstanceId,
                         policy: { ...input.getPolicy?.(), maxVaultBytes },
                     },

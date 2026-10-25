@@ -29,6 +29,7 @@ import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
 import { createAuthPageRoutes } from "./routes/pages.js";
 
 export interface AuthAccountStore {
+    getUsername(accountId: string): Promise<string | null>;
     updateLastLogin(username: string): Promise<void>;
     ensureSchema(): Promise<void>;
     has(username: string): Promise<boolean>;
@@ -42,6 +43,7 @@ export interface AuthAccountStore {
     ensureExternalAccount?(identity: {
         accountId: string;
         accountNamespace?: string;
+        username?: string;
         provider: string;
         externalUserId: string;
         email?: string;
@@ -191,6 +193,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
     await accountStore.ensureSchema();
+    ctx.capabilities.contribute("auth:getUsername", (accountId: string) =>
+        accountStore.getUsername(accountId),
+    );
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
     });

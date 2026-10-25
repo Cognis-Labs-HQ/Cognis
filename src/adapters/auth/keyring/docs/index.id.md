@@ -52,9 +52,9 @@ const password = await keyring.resolve("meeting:123:password", {
 
 Saat masuk, adapter hanya mencoba mendekripsi brankas yang ada dengan kata sandi akun. Percobaan yang gagal membiarkan brankas terkunci, tidak membuka dialog buka kunci, dan tidak menghambat navigasi ke dasbor. Dialog buka kunci kontekstual baru diminta saat komponen menyelesaikan konten yang didukung keyring.
 
-## Pemulihan buka kunci sesi peramban
+## Privasi akun dan isolasi keyring
 
-Setelah berhasil dibuka, adapter menyimpan kunci Web Crypto yang tidak dapat diekstrak di penyimpanan kunci sesi IndexedDB dan hanya menulis penanda nonrahasia ke `sessionStorage`. Batas penguncian terbatas mencatat satu tenggat absolut saat keyring dibuka; pembacaan, penulisan, pemuatan ulang halaman, dan mulai ulang server tidak memperpanjang atau memperpendeknya. “Saat Keluar” tidak menyimpan tenggat dan mempertahankan keyring terbuka sampai sesi terautentikasi berakhir secara eksplisit. Penguncian eksplisit, keluar, ketidakcocokan instans akun, dan tenggat yang berlalu membatalkan pemulihan. Komponen tetap meminta akses melalui lingkup keyring beratribusi yang mencoba pemulihan lebih dahulu dan hanya membuka dialog kontekstual saat diperlukan.
+Brankas browser terenkripsi disimpan terpisah menurut origin, ID akun, dan ID instans akun dari server. Server harus memverifikasi akun serta instans sebelum cache dimuat. Kata sandi dan kunci dekripsi hanya ada di memori; kunci pembuka IndexedDB lama dihapus. Setelah memuat ulang, kata sandi keyring diperlukan kembali, kecuali login kata sandi berhasil mendekripsi brankas. Pergantian akun membatalkan dialog dan operasi kriptografi yang tertunda. Membuka keyring tidak membuat keyring baru; pembuatan memerlukan penyiapan atau tindakan Buat secara eksplisit.
 
 ## Akses yang dibatalkan dan pemulihan manual
 

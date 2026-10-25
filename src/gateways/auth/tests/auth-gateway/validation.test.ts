@@ -415,11 +415,12 @@ test("external login retries account creation through the registration token gat
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: new InMemoryTestExecutor(),
+        db,
     });
     let createdProfileHandle = "";
     let synchronizedProfileHandle = "";
@@ -540,8 +541,10 @@ test("external login retries account creation through the registration token gat
         "/api/v1/auth/login",
     );
     assert.equal(completedResult.res.status, 200);
+    const assignedId = JSON.parse(completedResult.res.payload).data.accountId;
+    assert.match(assignedId, /^u_[a-f0-9]{32}$/);
     assert.deepEqual(authorizationInputs.at(-1), {
-        accountId: "x:thefirehawk",
+        accountId: assignedId,
         providerId: "external-sso",
         email: "external@example.com",
         registrationToken: "invite-token",
@@ -557,7 +560,7 @@ test("external login retries account creation through the registration token gat
             externalUserId: string,
         ): Promise<boolean>;
     }>("auth:accountStore");
-    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+    assert.notEqual(await accountStore.getInfo(assignedId), null);
 
     const authorizationsBeforeReturningLogin = authorizationInputs.length;
     const returningLogin = await dispatchRoute(
@@ -572,10 +575,17 @@ test("external login retries account creation through the registration token gat
     );
     assert.equal(
         JSON.parse(returningLogin.res.payload).data.accountId,
-        "x:thefirehawk",
+        assignedId,
     );
 
-    await accountStore.delete("x:thefirehawk");
+    await accountStore.delete(assignedId);
+    // This contract fake does not implement ON DELETE CASCADE.
+    for (const table of ["auth_identities", "auth_account_names"])
+        await db.executeCommand({
+            option: "DELETE",
+            table,
+            where: [{ column: "account_id", value: assignedId }],
+        });
     assert.equal(
         await accountStore.isExternalIdentityDeleted(
             "external-sso",
@@ -593,7 +603,9 @@ test("external login retries account creation through the registration token gat
         "/api/v1/auth/login",
     );
     assert.equal(recreatedResult.res.status, 200);
-    assert.notEqual(await accountStore.getInfo("x:thefirehawk"), null);
+    const recreatedId = JSON.parse(recreatedResult.res.payload).data.accountId;
+    assert.notEqual(recreatedId, assignedId);
+    assert.notEqual(await accountStore.getInfo(recreatedId), null);
     assert.equal(
         await accountStore.isExternalIdentityDeleted(
             "external-sso",
@@ -715,12 +727,14 @@ test("external login uses the adapter namespace when the session provider is not
         getInfo(accountId: string): Promise<unknown>;
     }>("auth:accountStore");
     assert.notEqual(
-        await accountStore.getInfo("external-sso:externaluser"),
+        await accountStore.getInfo(
+            JSON.parse(result.res.payload).data.accountId,
+        ),
         null,
     );
 });
 
-test("external login cannot claim a colliding local account id", async () => {
+test("external login cannot attach to a local account or bypass registration authorization", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -759,7 +773,7 @@ test("external login cannot claim a colliding local account id", async () => {
         "/api/v1/auth/login",
     );
 
-    assert.equal(result.res.status, 401);
+    assert.equal(result.res.status, 403);
     assert.equal(
         await accountStore.resolveExternalAccountId(
             "external-sso",

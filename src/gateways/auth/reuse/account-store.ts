@@ -1,3 +1,9 @@
+import {
+    createAccountId,
+    isPrivateAccountId,
+    usernameBase,
+    usernameWithSuffix,
+} from "./usernames.js";
 /**
  * Account-store contract and volatile test implementation owned by the Auth
  * gateway. Concrete adapters implement this boundary; API routes receive it
@@ -8,9 +14,11 @@ import { createHash, pbkdf2Sync } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
 
 export interface LocalAccountStore {
+    getUsername(accountId: string): Promise<string | null>;
     ensureExternalAccount?(identity: {
         accountId: string;
         accountNamespace?: string;
+        username?: string;
         provider: string;
         externalUserId: string;
         email?: string;
@@ -43,6 +51,7 @@ export interface LocalAccountStore {
     has(username: string): Promise<boolean>;
     list(): Promise<
         Array<{
+            accountId: string;
             username: string;
             enabled: boolean;
             isFounder: boolean;
@@ -61,6 +70,7 @@ export interface LocalAccountStore {
         options?: { recordExternalIdentityDeletion?: boolean },
     ): Promise<void>;
     getInfo(username: string): Promise<{
+        accountId: string;
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
@@ -145,6 +155,34 @@ export function validateUsername(username: string): string | null {
  * iteration count for test-execution speed.
  */
 export class VolatileLocalAccountStore implements LocalAccountStore {
+    private readonly names = new Map<
+        string,
+        { username: string; provider: string; base: string }
+    >();
+    private reserveName(
+        accountId: string,
+        provider: string,
+        proposed: string,
+    ): void {
+        if (this.names.has(accountId)) return;
+        const base = usernameBase(proposed);
+        if (
+            [...this.names.values()].some(
+                (name) => name.provider === provider && name.base === base,
+            )
+        )
+            throw new Error("provider_username_taken");
+        let username = base;
+        while (
+            [...this.names.values()].some((name) => name.username === username)
+        )
+            username = usernameWithSuffix(base);
+        this.names.set(accountId, { username, provider, base });
+    }
+    async getUsername(accountId: string): Promise<string | null> {
+        return this.names.get(accountId)?.username ?? null;
+    }
+
     private readonly accounts = new Map<string, StoredAccount>();
     private readonly externalIdentities = new Map<string, string>();
     private readonly externalIdentityFingerprints = new Map<string, string>();
@@ -153,6 +191,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     async ensureExternalAccount(identity: {
         accountId: string;
         accountNamespace?: string;
+        username?: string;
         provider: string;
         externalUserId: string;
         displayName?: string;
@@ -169,10 +208,19 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         );
         this.deletedExternalIdentities.delete(identityFingerprint);
         const mappedAccountId = this.externalIdentities.get(identityId);
-        const accountId = mappedAccountId ?? normalizedAccountId;
+        const accountId =
+            mappedAccountId ??
+            (isPrivateAccountId(identity.accountId)
+                ? identity.accountId
+                : createAccountId());
         if (!mappedAccountId && this.accounts.has(accountId)) {
             throw new Error("external_account_id_conflict");
         }
+        this.reserveName(
+            accountId,
+            identity.provider,
+            identity.username ?? normalizedAccountId,
+        );
         this.externalIdentities.set(identityId, accountId);
         this.externalIdentityFingerprints.set(identityId, identityFingerprint);
         const existingAccount = this.accounts.get(accountId);
@@ -187,7 +235,9 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             isFounder: false,
             enabled: true,
             lastLogin: null,
-            displayName: identity.displayName?.trim() || accountId,
+            displayName:
+                identity.displayName?.trim() ||
+                this.names.get(accountId)!.username,
             role:
                 identity.role === "teacher" ||
                 identity.role === "moderator" ||
@@ -243,6 +293,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         if (validationError) throw new Error(validationError);
         if (this.accounts.has(username)) throw new Error("username_taken");
         const passwordHash = hashPassword(password);
+        this.reserveName(username, "local", username);
         this.accounts.set(username, {
             passwordHash,
             passwordHistoryHashes: [passwordHash],
@@ -287,7 +338,8 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
     async list() {
         return [...this.accounts.entries()].map(([username, account]) => ({
-            username,
+            accountId: username,
+            username: this.names.get(username)!.username,
             enabled: account.enabled,
             isFounder: account.isFounder,
             role: account.role,
@@ -372,9 +424,11 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             this.externalIdentityFingerprints.delete(identityId);
         }
         this.accounts.delete(accountId);
+        this.names.delete(accountId);
     }
 
     async getInfo(username: string): Promise<{
+        accountId: string;
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
@@ -386,7 +440,8 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         const account = this.accounts.get(lowercaseUsername);
         if (!account) return null;
         return {
-            username: lowercaseUsername,
+            accountId: lowercaseUsername,
+            username: this.names.get(lowercaseUsername)!.username,
             createdAt: null,
             lastLogin: account.lastLogin,
             enabled: account.enabled,

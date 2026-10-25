@@ -286,7 +286,9 @@ async function refreshData() {
 
 function renderUsersList() {
     const currentUsername = getCurrentUsername();
-    const currentUser = users.find((user) => user.username === currentUsername);
+    const currentUser = users.find(
+        (user) => user.accountId === currentUsername,
+    );
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
     const sectionComposer = createCollapsibleSectionComposer({
@@ -294,7 +296,7 @@ function renderUsersList() {
         detailsLabel: i18n.t("ui.reuse.details"),
     });
     const rows = users.map((user) => {
-        const isSelf = user.username === currentUsername;
+        const isSelf = user.accountId === currentUsername;
         const userRole = user.role ?? "user";
         const isOwner = userRole === "owner";
         const protectPrivilegedFromViewer =
@@ -311,7 +313,7 @@ function renderUsersList() {
                     `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
             )
             .join("");
-        const roleControlHtml = `<select class="users-role-select theme-select" aria-label="${escapeHtml(i18n.t("ui.app.users.role"))}" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+        const roleControlHtml = `<select class="users-role-select theme-select" aria-label="${escapeHtml(i18n.t("ui.app.users.role"))}" data-username="${escapeHtml(user.accountId)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
         const lifecycleState = user.lifecycleState ?? "active";
         const statusLabel =
             lifecycleState === "archived"
@@ -326,18 +328,18 @@ function renderUsersList() {
             isOwner || protectPrivilegedFromViewer
                 ? ""
                 : `
-                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
-                              <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>
-                              <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
+                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.accountId)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
+                              <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.accountId)}"${isSelf ? " disabled" : ""}>🗑</button>
+                              <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.accountId)}"${isSelf ? " disabled" : ""}>☰</button>
                           `;
         return {
-            id: user.username,
+            id: user.accountId,
             className: "users-row",
             summaryClassName: "users-row-summary",
             controlsClassName: "users-row-controls",
             contentClassName: "users-row-meta",
-            attributesHtml: `data-user-details="${escapeHtml(user.username)}" data-username="${escapeHtml(user.username)}"`,
-            titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}<strong class="users-name">${escapeHtml(user.handle || user.username)}</strong></span>`,
+            attributesHtml: `data-user-details="${escapeHtml(user.accountId)}" data-username="${escapeHtml(user.accountId)}"`,
+            titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}<strong class="users-name">${escapeHtml(user.username)}</strong></span>`,
             controlsHtml: `${roleControlHtml}<span class="state-pill ${user.enabled && lifecycleState === "active" ? "pill-active" : "pill-disabled"}" aria-label="${escapeHtml(i18n.t("ui.app.users.status"))}">${escapeHtml(statusLabel)}</span><div class="users-actions" role="group" aria-label="${escapeHtml(i18n.t("ui.reuse.actions"))}">${actionsHtml}</div>`,
             contentHtml: `<div data-user-details-content></div>`,
         };
@@ -449,7 +451,7 @@ async function runUserMenuAction(action, username) {
         // Update from the confirmed mutation instead of immediately reloading.
         // The users endpoint can briefly return its pre-delete state, which would
         // put the deleted row straight back into the table.
-        users = users.filter((user) => user.username !== username);
+        users = users.filter((user) => user.accountId !== username);
         const deletedUserRow = Array.from(
             root.querySelectorAll(".users-row"),
         ).find((userRow) => userRow.dataset.username === username);
@@ -498,7 +500,7 @@ function bindUsersInteractions() {
         details.addEventListener("toggle", async () => {
             if (!details.open) return;
             const user = users.find(
-                (user) => user.username === details.dataset.userDetails,
+                (user) => user.accountId === details.dataset.userDetails,
             );
             if (!user) return;
             try {

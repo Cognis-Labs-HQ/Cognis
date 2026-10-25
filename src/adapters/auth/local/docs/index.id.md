@@ -41,3 +41,9 @@ Akun lokal dikelola melalui CLI `cognisctl` menggunakan namespace perintah `user
 Tidak ada field yang dapat dikonfigurasi. Manajemen kredensial dilakukan melalui perintah CLI `user:*` atau route API register/login.
 
 Pembersihan identitas eksternal dapat menghapus identitas berdasarkan awalan sumber milik penyedia. Autentikasi ulang memperbarui email, nama tampilan, peran, dan status aktif akun eksternal yang dipertahankan sebelum mengaitkan identitas baru.
+
+## Privasi akun dan isolasi keyring
+
+Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
+
+Ini perubahan yang tidak kompatibel tanpa migrasi ID akun. Hentikan instans dan reset basis data yang memiliki ID akun SSO berisi penyedia sebelum peningkatan; Authentication menolak startup dengan `provider_account_ids_require_clean_database` daripada menampilkan ID tersebut. Hubungan dan rapat lama tidak dimigrasikan.

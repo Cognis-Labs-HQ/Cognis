@@ -18,7 +18,7 @@ export function createUserDetailsReader({ i18n, signal }) {
     uiCtx.extendFlow(flowId, "authorize", { id: hook }, active);
     uiCtx.extendFlow(flowId, "load", { id: hook }, async (stage) => {
         active();
-        const accountId = stage.input.user.username;
+        const accountId = stage.input.user.accountId;
         const [response, emails] = await Promise.all([
             apiFetch(`/api/v1/users/${encodeURIComponent(accountId)}/info`, {
                 signal,
@@ -36,7 +36,8 @@ export function createUserDetailsReader({ i18n, signal }) {
         const yesNo = (value) => i18n.t(value ? "ui.reuse.yes" : "ui.reuse.no");
         const unknown = i18n.t("ui.reuse.unknown");
         const fields = [
-            ["ui.reuse.account_id", info.username],
+            ["ui.app.users.username", info.username],
+            ["ui.reuse.account_id", info.accountId],
             [
                 "ui.reuse.authentication_provider",
                 info.providerLabel ?? info.provider,

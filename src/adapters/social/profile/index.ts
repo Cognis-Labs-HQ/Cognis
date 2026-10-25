@@ -1,4 +1,3 @@
-import { allocatePublicHandle } from "./public-handle.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -164,23 +163,6 @@ export async function bootstrapSocialAdapter(
 
     const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
-    // Public names are presentation data; internal account and relationship IDs stay stable.
-    for (const profile of await profileStore.searchProfiles("", undefined, {
-        includeHidden: true,
-    })) {
-        if (!profile.handle.includes(":")) continue;
-        const handle = await allocatePublicHandle(
-            profileStore,
-            profile.accountId,
-            profile.handle,
-        );
-        await profileStore.updateProfile(profile.accountId, { handle });
-        ctx.log?.("info", "Public profile handle made provider-neutral.", {
-            component: "social-profile-adapter",
-            operation: "preparePublicHandle",
-            accountId: profile.accountId,
-        });
-    }
     const deleteAccountActivity = async (accountId: string) => {
         await dbExecutor.transaction(async (transactionDb) => {
             for (const column of ["follower_id", "following_id"]) {
@@ -349,15 +331,15 @@ export async function bootstrapSocialAdapter(
             role?: string,
             displayName?: string,
         ): Promise<void> => {
+            const getUsername =
+                ctx.capabilities.get<
+                    (accountId: string) => Promise<string | null>
+                >("auth:getUsername");
+            const username = await getUsername?.(accountId);
+            if (!username) throw new Error("account_username_unavailable");
             await profileStore.createProfile(
                 accountId,
-                accountId.includes(":")
-                    ? await allocatePublicHandle(
-                          profileStore,
-                          accountId,
-                          handle,
-                      )
-                    : handle,
+                username,
                 (role as AccountRole) ?? "user",
                 displayName,
             );
@@ -437,12 +419,15 @@ export async function bootstrapSocialAdapter(
             const handle = String(externalProfile.handle ?? "")
                 .trim()
                 .replace(/^@/, "");
-            if (handle)
-                updates.handle = await allocatePublicHandle(
-                    profileStore,
-                    accountId,
-                    handle,
-                );
+            if (handle) {
+                const getUsername =
+                    ctx.capabilities.get<
+                        (accountId: string) => Promise<string | null>
+                    >("auth:getUsername");
+                const username = await getUsername?.(accountId);
+                if (!username) throw new Error("account_username_unavailable");
+                updates.handle = username;
+            }
             if (
                 externalProfile.profileVisibility === "hidden" ||
                 externalProfile.profileVisibility === "private" ||

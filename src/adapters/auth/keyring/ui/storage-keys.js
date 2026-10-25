@@ -1,19 +1,23 @@
-const STORAGE_KEY = "cognis_secure_keyring";
-const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
-
-function accountStorageKey(baseKey) {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    return accountId ? `${baseKey}:${encodeURIComponent(accountId)}` : baseKey;
+/** Browser artifacts are partitioned by verified origin, account and account instance. */
+export function keyringStorageKeys(binding) {
+    if (
+        !binding?.origin ||
+        !binding.accountId ||
+        !binding.accountInstanceId ||
+        !binding.sessionId
+    )
+        throw new Error("keyring_identity_unverified");
+    const owner = encodeURIComponent(
+        JSON.stringify([
+            binding.origin,
+            binding.accountId,
+            binding.accountInstanceId,
+        ]),
+    );
+    return {
+        vault: `cognis_secure_keyring:${owner}`,
+        relock: `cognis_secure_keyring_relock_minutes:${owner}`,
+        deferred: `cognis_keyring_setup_pending:${owner}`,
+        session: `${owner}:${binding.sessionId}`,
+    };
 }
-
-export function keyringStorageKey() {
-    return accountStorageKey(STORAGE_KEY);
-}
-
-export function relockStorageKey() {
-    return accountStorageKey(RELOCK_STORAGE_KEY);
-}
-
-export { STORAGE_KEY };

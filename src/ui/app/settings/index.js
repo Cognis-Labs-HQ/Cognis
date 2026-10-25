@@ -224,6 +224,7 @@ export async function mount(root, { signal } = {}) {
                     i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
                     root,
                     markDirty,
+                    signal,
                 }),
                 onError: (error, descriptor) => {
                     console.warn(

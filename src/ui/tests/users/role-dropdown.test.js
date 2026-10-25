@@ -123,7 +123,7 @@ test("users delete action removes the confirmed deletion from local table data",
     assert.match(deleteAction, /if \(!response\.ok\)/);
     assert.match(
         deleteAction,
-        /users = users\.filter\(\(user\) => user\.username !== username\)/,
+        /users = users\.filter\(\(user\) => user\.accountId !== username\)/,
     );
     assert.match(deleteAction, /root\.querySelectorAll\("\.users-row"\)/);
     assert.match(deleteAction, /deletedUserRow\?\.remove\(\)/);

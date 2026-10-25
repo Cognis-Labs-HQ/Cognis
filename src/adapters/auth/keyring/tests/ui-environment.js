@@ -9,10 +9,11 @@ export const settingsSource = readFileSync(
     resolve(import.meta.dirname, "../ui/settings.js"),
     "utf8",
 );
-export const keyringSource = readFileSync(
-    resolve(import.meta.dirname, "../ui/keyring.js"),
-    "utf8",
-);
+export const keyringSource =
+    readFileSync(
+        resolve(import.meta.dirname, "../ui/password-prompts.js"),
+        "utf8",
+    ) + readFileSync(resolve(import.meta.dirname, "../ui/keyring.js"), "utf8");
 
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
@@ -72,3 +73,62 @@ globalThis.indexedDB = {
         return request;
     },
 };
+
+export const remoteVaults = new Map();
+Object.defineProperty(globalThis, "location", {
+    configurable: true,
+    value: { origin: "https://keyring.test" },
+});
+
+export function authenticate(
+    accountId = "test-user",
+    origin = "https://keyring.test",
+) {
+    globalThis.location.origin = origin;
+    values.set("cognis_account", accountId);
+    values.set("cognis_access_token", `session:${accountId}`);
+}
+
+export function resetBrowserStorage() {
+    values.clear();
+    remoteVaults.clear();
+    authenticate();
+}
+
+export function cachedVaultKey(
+    accountId = values.get("cognis_account"),
+    instanceId = `instance:${accountId}`,
+) {
+    return `cognis_secure_keyring:${encodeURIComponent(JSON.stringify([location.origin, accountId, instanceId]))}`;
+}
+
+export const keyringApiFetch = async (_path, options = {}) => {
+    const authorization = new Headers(options.headers).get("authorization");
+    const accountId = authorization?.replace(/^Bearer session:/, "");
+    if (!accountId || authorization !== `Bearer session:${accountId}`)
+        return new Response(null, { status: 401 });
+    const id = JSON.stringify([location.origin, accountId]);
+    if (options.method === "PUT")
+        remoteVaults.set(id, JSON.parse(options.body).vault);
+    if (options.method === "DELETE") remoteVaults.delete(id);
+    return new Response(
+        JSON.stringify({
+            data: {
+                accountId,
+                accountInstanceId: `instance:${accountId}`,
+                vault: remoteVaults.get(id) ?? null,
+                policy: { derivationIterations: 1000 },
+            },
+        }),
+    );
+};
+globalThis.fetch = keyringApiFetch;
+authenticate();
+
+/** Existing tests explicitly provision a vault before testing its unlock behavior. */
+export async function provisionAndUnlock(keyring, password) {
+    const created = await keyring.createKeyring({
+        requestSetupPassword: async () => password,
+    });
+    return created || keyring.unlockKeyring(password);
+}

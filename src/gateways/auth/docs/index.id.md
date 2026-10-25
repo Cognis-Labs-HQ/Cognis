@@ -139,3 +139,9 @@ Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi 
 ## Indikator Login
 
 Permintaan kredensial, kode TFA, dan otorisasi SSO menampilkan roda pemuatan bersama dan menutupnya sebelum penyiapan interaktif. Pengiriman kredensial ganda diabaikan selama permintaan berlangsung. Pembersihan dan penyegaran cache luring publik berjalan di latar belakang setelah login. Waktu login terakhir tetap dicatat untuk SSO meskipun adapter autentikasi lokal dinonaktifkan.
+
+## Privasi akun dan isolasi keyring
+
+Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
+
+Ini perubahan yang tidak kompatibel tanpa migrasi ID akun. Hentikan instans dan reset basis data yang memiliki ID akun SSO berisi penyedia sebelum peningkatan; Authentication menolak startup dengan `provider_account_ids_require_clean_database` daripada menampilkan ID tersebut. Hubungan dan rapat lama tidak dimigrasikan.

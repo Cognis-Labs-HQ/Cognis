@@ -15,11 +15,13 @@ test("account details execute registered stages, escape email/provider values, r
         {
             "../../reuse/ui-ctx.js": { uiCtx },
             "../../reuse/api-client.js": {
-                apiFetch: async () => {
+                apiFetch: async (path) => {
+                    assert.equal(path, "/api/v1/users/u_account/info");
                     calls++;
                     return Response.json({
                         data: {
-                            username: "x:person",
+                            accountId: "u_account",
+                            username: "person",
                             provider: "<provider>",
                             createdAt: "2026-10-25T00:00:00Z",
                             lastLogin: null,
@@ -49,21 +51,27 @@ test("account details execute registered stages, escape email/provider values, r
         i18n: { t: (key) => key },
         signal: controller.signal,
     });
-    const html = await reader({ username: "x:person" });
+    const html = await reader({ accountId: "u_account", username: "person" });
     assert.match(html, /&lt;provider&gt;/);
     assert.match(html, /&lt;private&gt;@example.com/);
     assert.match(html, /emails_unverified/);
     assert.match(html, /member_since/);
     assert.equal(calls, 1);
     admin = false;
-    await assert.rejects(reader({ username: "x:person" }), /admin_required/);
+    await assert.rejects(
+        reader({ accountId: "u_account", username: "person" }),
+        /admin_required/,
+    );
     assert.equal(calls, 1);
     controller.abort();
-    await assert.rejects(reader({ username: "x:person" }), {
-        name: "AbortError",
-    });
+    await assert.rejects(
+        reader({ accountId: "u_account", username: "person" }),
+        {
+            name: "AbortError",
+        },
+    );
     const flow = await uiCtx.runFlow("users:readDetails", {
-        user: { username: "x:person" },
+        user: { accountId: "u_account", username: "person" },
     });
     assert.equal(flow.stageResults.present.length, 0);
 });

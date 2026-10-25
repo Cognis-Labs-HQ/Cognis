@@ -41,3 +41,9 @@ Lokale Konten werden über die `cognisctl`-CLI mit dem `user:*`-Befehlsnamespace
 Keine konfigurierbaren Felder. Die Credential-Verwaltung erfolgt ausschließlich über die `user:*`-CLI-Befehle oder die Registrierungs-/Anmelde-API-Routen.
 
 Die Bereinigung externer Identitäten kann Identitäten anhand eines anbietereigenen Quellenpräfixes entfernen. Eine erneute Authentifizierung aktualisiert E-Mail, Anzeigename, Rolle und Aktivierungsstatus eines erhaltenen externen Kontos, bevor die neue Identität verknüpft wird.
+
+## Kontodatenschutz und Schlüsselbund-Isolation
+
+SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
+
+Dies ist eine inkompatible Umstellung ohne Konto-ID-Migration. Instanz stoppen und Datenbanken mit anbieterhaltigen SSO-Konto-IDs vor dem Upgrade zurücksetzen; Authentication verweigert den Start mit `provider_account_ids_require_clean_database`, statt solche IDs auszuliefern. Vorhandene Beziehungen und Besprechungen werden nicht migriert.
