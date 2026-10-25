@@ -1,22 +1,17 @@
 import { registerDrawingDelivery } from "./drawing-client.js";
 import { registerFavouriteDelivery } from "./reuse/favourites.js";
-import { apiFetch } from "/static/reuse/api-client.js";
-
-async function fetchList(path) {
-    const response = await apiFetch(path);
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
-}
+import {
+    registerStudyNavigation,
+    fetchStudyLanguages,
+    fetchStudyModules,
+} from "./navigation-client.js";
 
 export function mountProvider(uiCtx) {
+    registerStudyNavigation(uiCtx);
     const subPages = uiCtx.capabilities.get("ui:subPages");
     subPages?.register("study", {
-        listGroups: () => fetchList("/api/v1/study/registered-languages"),
-        listPages: (languageCode) =>
-            fetchList(
-                `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-            ),
+        listGroups: () => fetchStudyLanguages(),
+        listPages: (languageCode) => fetchStudyModules(languageCode),
     });
     uiCtx.signal.addEventListener(
         "abort",

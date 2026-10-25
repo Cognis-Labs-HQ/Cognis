@@ -5,6 +5,7 @@ import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { uiCtx } from "../ui-ctx.js";
 
 let offline = true;
+let consented = true;
 let stallWorker = false;
 let autoRefreshes = 0;
 const popups = [];
@@ -14,7 +15,7 @@ const navigation = loadTestModule(
     {
         "./ui-ctx.js": { uiCtx },
         "./escape-html.js": { escapeHtml },
-        "./offline-policy.js": { offlinePolicy: { allows: () => true } },
+        "./offline-policy.js": { offlinePolicy: { allows: () => consented } },
         "./offline-state.js": {
             isOffline: () => offline,
             enableOfflineAutoRefresh: () => autoRefreshes++,
@@ -149,4 +150,35 @@ test("unavailable offline navigation tries the previous view before arming autom
     );
     assert.equal(autoRefreshes, start + 2);
     assert.equal(popups.at(-1).actions[0].id, "back");
+});
+
+test("loss of connectivity uses quiet recovery and renders a fallback only when restoration fails", async () => {
+    const count = popups.length;
+    const refreshes = autoRefreshes;
+    let fallbacks = 0;
+    for (const restored of [true, false]) {
+        assert.equal(
+            await navigation.recoverOfflineNavigation({
+                notify: false,
+                restore: async () => restored,
+                fallback: async () => fallbacks++,
+            }),
+            restored,
+        );
+    }
+    assert.equal(popups.length, count);
+    assert.equal(fallbacks, 1);
+    assert.equal(autoRefreshes, refreshes + 1);
+});
+
+test("explicit private session routes remain available, while consent still gates them", async () => {
+    offline = true;
+    const route = { id: "core.dashboard", offline: { session: true } };
+    assert.equal(await navigation.allowOfflineRoute(route, "/dashboard"), true);
+    consented = false;
+    assert.equal(
+        await navigation.allowOfflineRoute(route, "/dashboard"),
+        false,
+    );
+    consented = true;
 });

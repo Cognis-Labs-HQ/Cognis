@@ -9,7 +9,9 @@ export function createOfflineClientFixture(send) {
     let disconnected = false;
     let actor = { account: "learner", session: "fixture-token" };
     const values = new Map();
-    const capabilities = new Map();
+    const capabilities = new Map([
+        ["ui:scopedActions", registerScopedUiActions],
+    ]);
     const controller = new AbortController();
     const state = {
         isOffline: () => disconnected,

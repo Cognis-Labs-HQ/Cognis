@@ -191,3 +191,25 @@ test("read-only translation fallback does not prune saved locale preferences", a
     assert.equal(document.cookie, currentCookie);
     assert.equal(document.documentElement.lang, "de");
 });
+
+test("warmed public component translations remain usable without network", async () => {
+    const host = await resolver({
+        component: { en: { title: "Cached title" } },
+    });
+    const base = { locale: "en", t: (key) => key };
+    const first = await host.extendI18n(
+        base,
+        "/static/modules/example/languages",
+    );
+    assert.equal(first.t("title"), "Cached title");
+    const requests = host.requests.length;
+    globalThis.fetch = async () => {
+        throw new TypeError("network unavailable");
+    };
+    const offline = await host.extendI18n(
+        base,
+        "/static/modules/example/languages",
+    );
+    assert.equal(offline.t("title"), "Cached title");
+    assert.equal(host.requests.length, requests);
+});

@@ -13,8 +13,15 @@
  *   await saveUiPreferences({ font: 'system-ui' });
  */
 import { offlineEnabled } from "./offline-state.js";
+import { uiCtx } from "./ui-ctx.js";
+import { captureAccountGuard } from "./offline-identity.js";
 import { apiFetch } from "./api-client.js";
 import { normalizeMessageStyle } from "./message-style-options.js";
+
+function preferenceRequest(path, options) {
+    const request = uiCtx.capabilities.get("social:profileRequest") ?? apiFetch;
+    return request(path, options);
+}
 
 function hasPreferenceApiContext() {
     return Boolean(
@@ -27,7 +34,7 @@ export async function loadUiPreferences() {
     const account = localStorage.getItem("cognis_account");
     if (!account || !hasPreferenceApiContext()) return null;
     try {
-        const response = await apiFetch(
+        const response = await preferenceRequest(
             `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         );
         if (!response.ok) return null;
@@ -43,9 +50,11 @@ export async function loadUiPreferences() {
 export async function saveUiPreferences(patch) {
     const account = localStorage.getItem("cognis_account");
     if (!account || !hasPreferenceApiContext()) return;
+    const assertAccount = captureAccountGuard();
     const current = await loadUiPreferences();
+    assertAccount();
     const merged = { ...(current || {}), ...patch };
-    const response = await apiFetch(
+    const response = await preferenceRequest(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",

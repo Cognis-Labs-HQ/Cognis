@@ -61,6 +61,8 @@ function fixture() {
         new URL("../ui/availability.js", import.meta.url),
         {
             "./offline-client.js": { profileFetch: client.profileFetch },
+            "/static/reuse/offline-state.js":
+                host.imports["/static/reuse/offline-state.js"],
             "/static/reuse/escape-html.js": { escapeHtml: String },
             "/static/reuse/ui-ctx.js": { uiCtx: host.ctx },
             "/static/reuse/i18n.js": {
@@ -207,4 +209,29 @@ test("availability stops safely when the scoped profile client is removed before
     await state.availability.hydrateAvailabilityIndicators();
     assert.equal(state.requests.length, sent);
     await state.lifecycle.reconcile([]);
+});
+
+test("offline transition stops availability timers and stale callbacks; recovery and remount stay scoped", async () => {
+    const state = fixture();
+    state.ready();
+    await state.lifecycle.reconcile(catalog);
+    await settle();
+    const sent = state.requests.length;
+    const staleTimers = [...state.timers.values()];
+    state.host.disconnect();
+    state.window.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(state.timers.size, 0);
+    staleTimers.forEach((callback) => callback());
+    for (const activity of state.subscribers) activity({ active: true });
+    await state.availability.fetchAvailability();
+    await settle();
+    assert.equal(state.requests.length, sent);
+    assert.equal(state.errors.length, 0);
+    state.host.reconnect();
+    state.window.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(state.timers.size, 2);
+    await state.lifecycle.reconcile([]);
+    state.window.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(state.timers.size, 0);
+    state.host.controller.abort();
 });

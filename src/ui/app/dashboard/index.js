@@ -1,3 +1,5 @@
+import { isOffline } from "../../reuse/offline-state.js";
+import { createOfflineReadCache } from "../../reuse/offline-read-cache.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -13,6 +15,8 @@ import {
 import { getRoleLabel } from "../../reuse/access-role.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+
+const read = createOfflineReadCache();
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -33,6 +37,7 @@ async function loadAccountInfo(account) {
 }
 
 async function loadDashboardExtensions({ i18n, account, role }) {
+    if (isOffline()) return [];
     try {
         const response = await apiFetch("/api/v1/ui/page-extensions/dashboard");
         if (!response.ok) return [];
@@ -66,7 +71,9 @@ export async function mount(root, { signal } = {}) {
     let upcomingCalendarEvents = null;
     const accountInfoPromise = loadAccountInfo(account);
     const upcomingEventsPromise = calendarEvents
-        ? calendarEvents.fetchUpcomingEvents(5)
+        ? read("upcomingEvents", () =>
+              calendarEvents.fetchUpcomingEvents(5),
+          ).catch(() => [])
         : Promise.resolve([]);
     const extensionElementsPromise = loadDashboardExtensions({
         i18n,

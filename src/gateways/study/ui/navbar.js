@@ -1,4 +1,7 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import {
+    fetchStudyLanguages,
+    fetchStudyPreferences,
+} from "./navigation-client.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { registerSearchIndexing } from "./search/index.js";
 
@@ -10,17 +13,23 @@ export async function mountProvider(ctx) {
         "load",
         { id: "study:navigation:load" },
         async (stage) => {
-            const response = await apiFetch(
-                "/api/v1/study/registered-languages",
-                {
-                    signal: ctx.signal,
+            const languages = await fetchStudyLanguages({ signal: ctx.signal });
+            // Warm the lightweight hub preferences without blocking navigation on optional setup.
+            void fetchStudyPreferences({ signal: ctx.signal }).catch(
+                (error) => {
+                    ctx.capabilities.get("ui:log")?.(
+                        "info",
+                        "Study preferences not yet available.",
+                        {
+                            component: "study-gateway",
+                            operation: "warmNavigation",
+                            errorName: error?.name,
+                        },
+                    );
                 },
             );
-            if (!response.ok)
-                throw new Error("study_navigation_languages_unavailable");
-            const payload = await response.json();
             stage.data.languagesAvailable =
-                Array.isArray(payload?.data) && payload.data.length > 0;
+                Array.isArray(languages) && languages.length > 0;
             stage.data.i18n = await createI18n({
                 componentStringBaseUrls: ["/static/gateways/study/languages"],
             });

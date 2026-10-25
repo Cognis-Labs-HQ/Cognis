@@ -49,7 +49,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.39` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.0`  |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.1`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.25` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
@@ -77,7 +77,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.41`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14`  |
 | Observability         | `src/gateways/observability/` | `1.0.7`   |
-| Study                 | `src/gateways/study/`         | `2.2.11`  |
+| Study                 | `src/gateways/study/`         | `2.2.12`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.122` |
 
 ## Core contracts
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.8.0` |
+| API Server | `src/api/` | `0.8.1` |
 
 ## Tooling
 

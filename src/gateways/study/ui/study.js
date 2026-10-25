@@ -11,6 +11,11 @@
  * @returns {Promise<void>}
  */
 
+import {
+    fetchStudyLanguages,
+    fetchStudyPreferences,
+} from "./navigation-client.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -33,6 +38,18 @@ import {
 } from "/static/gateways/study/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+function bindOnlineControls(root, signal, canStart = () => true) {
+    const update = () => {
+        for (const button of root.querySelectorAll(
+            ".study-lang-action-btn, #study-start-btn",
+        ))
+            button.disabled =
+                isOffline() || (button.id === "study-start-btn" && !canStart());
+    };
+    window.addEventListener("cognis:connectivity-changed", update, { signal });
+    update();
+}
 
 function toLanguageRecord(rawLanguage) {
     const languageCode = String(rawLanguage?.code ?? "").trim();
@@ -59,13 +76,17 @@ export async function mount(root, { signal } = {}) {
     const isSettingsPath = currentPath === "/study/settings";
 
     const [languagesResult, prefsResult] = await Promise.allSettled([
-        apiFetch("/api/v1/study/registered-languages").then((response) =>
-            response.ok ? response.json() : null,
-        ),
-        apiFetch("/api/v1/study/preferences").then((response) =>
-            response.ok ? response.json() : null,
-        ),
+        fetchStudyLanguages({ signal }).then((data) => ({ data })),
+        fetchStudyPreferences({ signal }).then((data) => ({ data })),
     ]);
+
+    if (signal?.aborted) return;
+    if (
+        isOffline() &&
+        (languagesResult.status === "rejected" ||
+            prefsResult.status === "rejected")
+    )
+        throw new Error("offline_read_unavailable");
 
     const registeredLanguages =
         languagesResult.status === "fulfilled" &&
@@ -116,7 +137,7 @@ export async function mount(root, { signal } = {}) {
     });
 }
 
-async function mountWelcome(root, { i18n, registeredLanguages }) {
+async function mountWelcome(root, { i18n, registeredLanguages, signal }) {
     const selectedLanguages = new Set();
 
     function renderWelcomeContent() {
@@ -161,7 +182,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                         type="button"
                         id="study-start-btn"
                         class="btn-confirm btn-animated study-start-btn"
-                        ${selectedLanguages.size === 0 ? "disabled" : ""}
+                        ${selectedLanguages.size === 0 || isOffline() ? "disabled" : ""}
                     >
                         ${escapeHtml(i18n.t("gateway.study.start"))}
                     </button>
@@ -171,6 +192,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
     }
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         elements: [
             {
@@ -191,6 +213,8 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         toolbar: [],
     });
     await composer.init();
+    if (signal?.aborted) return;
+    bindOnlineControls(root, signal, () => selectedLanguages.size > 0);
 
     function bindWelcomeEvents() {
         root.querySelectorAll(".study-lang-card").forEach((card) => {
@@ -206,7 +230,8 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                 }
                 const startButton = root.querySelector("#study-start-btn");
                 if (startButton) {
-                    startButton.disabled = selectedLanguages.size === 0;
+                    startButton.disabled =
+                        selectedLanguages.size === 0 || isOffline();
                 }
             });
         });
@@ -525,6 +550,7 @@ async function mountHub(
           };
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         elements: [viewElement],
         preferenceKey: isSettingsPath
@@ -548,10 +574,13 @@ async function mountHub(
     });
 
     await composer.init();
+    if (signal?.aborted) return;
+    bindOnlineControls(root, signal);
     bindStudySubNavigation(root, { signal, i18n });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {
+            button.disabled = isOffline();
             button.addEventListener("click", async () => {
                 const languageCode = String(button.dataset.code ?? "");
                 const action = String(button.dataset.action ?? "");

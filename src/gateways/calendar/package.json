@@ -5,7 +5,7 @@
     "type": "module",
     "private": true,
     "dependencies": {
-        "@cognis/adapter-social-profile": "<=3.0.0",
+        "@cognis/adapter-social-profile": "<=3.0.1",
         "@cognis/gateways": "<=0.2.0"
     }
 }

@@ -44,6 +44,7 @@ import {
     allowOfflineRoute,
     recoverOfflineNavigation,
 } from "./offline-navigation.js";
+import { showOfflineUnavailable } from "./offline-unavailable.js";
 import { isMountSignal } from "./mount-scope.js";
 import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
 import {
@@ -111,6 +112,7 @@ function componentPage(
 const STATIC_ROUTES = [
     {
         id: "core.dashboard",
+        offline: { session: true },
         ownerUuid: CORE_COMPONENT_UUID,
         componentPage: componentPage(
             "ui.reuse.dashboard",
@@ -313,6 +315,7 @@ let _initialized = false;
 let _historyIndex = 0;
 let _committedPath = "";
 let _lastSuccessfulPath = "";
+let _previousSuccessfulPath = "";
 let _restoringHistory = false;
 let _guardBypassPath = null;
 
@@ -489,6 +492,8 @@ async function loadRouteContent(
             if (signal.aborted || navigationSequence !== _navigationSequence)
                 return false;
             commit(routeRoot);
+            if (_lastSuccessfulPath !== path)
+                _previousSuccessfulPath = _lastSuccessfulPath;
             _lastSuccessfulPath = path;
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
@@ -575,12 +580,25 @@ export async function navigateTo(
     return mounted;
 }
 
-async function restoreAfterOfflineFailure(path) {
+async function restoreAfterOfflineFailure(
+    path,
+    { notify = true, fallback } = {},
+) {
     const previous =
-        _lastSuccessfulPath ||
+        (_lastSuccessfulPath !== path
+            ? _lastSuccessfulPath
+            : _previousSuccessfulPath) ||
         history.state?.previousRouterPage ||
         internalNavigationPath(document.referrer);
+    let recoverySequence = _navigationSequence;
     return recoverOfflineNavigation({
+        notify,
+        fallback: () => {
+            if (isOffline() && recoverySequence === _navigationSequence)
+                return fallback?.(
+                    () => recoverySequence === _navigationSequence,
+                );
+        },
         restore: async () => {
             if (!previous || previous === path) return false;
             if (
@@ -588,6 +606,14 @@ async function restoreAfterOfflineFailure(path) {
                 _lastSuccessfulPath === previous
             )
                 return true;
+            if (
+                !(await allowOfflineRoute(
+                    await resolveRoute(previous),
+                    previous,
+                ))
+            )
+                return false;
+            recoverySequence = _navigationSequence + 1;
             return navigateTo(previous, {
                 replace: true,
                 bypassGuard: true,
@@ -813,7 +839,30 @@ function installOfflineNavigation() {
             pending = false;
         }
     };
-    window.addEventListener("cognis:connectivity-changed", () => void update());
+    const transition = async () => {
+        await update();
+        if (!isOffline()) return;
+        const path = getCurrentRoutePath();
+        const route = await resolveRoute(path);
+        if (!isOffline() || path !== getCurrentRoutePath()) return;
+        if (await allowOfflineRoute(route, path)) return;
+        ++_navigationSequence;
+        _mountController?.abort();
+        window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
+        await restoreAfterOfflineFailure(path, {
+            notify: false,
+            fallback: (isCurrent) =>
+                showOfflineUnavailable(resolveRouterRoot(), isCurrent),
+        });
+    };
+    window.addEventListener("cognis:connectivity-changed", () => {
+        void transition().catch((error) =>
+            console.error("[offline] page transition failed", {
+                operation: "recoverActivePage",
+                errorName: error?.name,
+            }),
+        );
+    });
     if (typeof MutationObserver !== "undefined")
         new MutationObserver(() => {
             if (isOffline()) void update();

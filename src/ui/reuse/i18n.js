@@ -31,6 +31,11 @@ const STRINGS_BASE_PATH = "/static/languages";
 
 const cache = new Map();
 const stringRequestCache = new Map();
+const publicBundleCache = new Map();
+const PUBLIC_BUNDLE_CACHE_LIMIT = 128;
+globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
+    publicBundleCache.clear();
+});
 const STRING_REQUEST_TIMEOUT_MS = 15_000;
 
 async function fetchStrings(path) {
@@ -252,13 +257,25 @@ function parseStringsXml(xmlText) {
 }
 
 async function readTranslationBundle(path) {
+    const url = new URL(path, window.location.origin);
+    const cacheable =
+        url.origin === window.location.origin &&
+        url.pathname.startsWith("/static/");
+    if (cacheable && publicBundleCache.has(path))
+        return publicBundleCache.get(path);
     const response = await fetchStrings(path);
     if (!response.ok) {
         throw Object.assign(new Error("translation_bundle_unavailable"), {
             status: response.status,
         });
     }
-    return parseStringsXml(await response.text());
+    const parsed = parseStringsXml(await response.text());
+    if (cacheable) {
+        if (publicBundleCache.size >= PUBLIC_BUNDLE_CACHE_LIMIT)
+            publicBundleCache.delete(publicBundleCache.keys().next().value);
+        publicBundleCache.set(path, parsed);
+    }
+    return parsed;
 }
 
 async function loadLocaleStrings(locale) {

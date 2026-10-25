@@ -475,7 +475,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/study/flow-contracts.js",
-        providesCapabilities: ["study:library:detailFlow", "study:subPages"],
+        providesCapabilities: [
+            "study:library:detailFlow",
+            "study:subPages",
+            "study:navigation",
+        ],
         isEnabled: isStudyEnabled,
     });
 

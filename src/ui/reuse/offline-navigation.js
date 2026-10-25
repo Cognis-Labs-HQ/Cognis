@@ -27,6 +27,7 @@ uiCtx.capabilities.contribute("offline:isSessionRouteAvailable", (route) =>
 
 export function offlineRouteAvailable(route) {
     return (
+        (route?.public !== true && route?.offline?.session === true) ||
         uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(route) ===
             true ||
         (route?.public === true &&
@@ -119,7 +120,8 @@ if (!uiCtx.flowExists(recoveryFlow)) {
         recoveryFlow,
         "notify",
         { id: "ui:offlineRecovery" },
-        async () => {
+        async ({ input }) => {
+            if (input.notify === false) return;
             const i18n = await createI18n();
             await openPopup({
                 title: i18n.t("ui.reuse.offline_mode_active"),
@@ -154,18 +156,21 @@ if (!uiCtx.flowExists(recoveryFlow)) {
         recoveryFlow,
         "recover",
         { id: "ui:offlineRecovery" },
-        ({ data }) => {
-            if (!data.restored) enableOfflineAutoRefresh();
+        async ({ input, data }) => {
+            if (!data.restored) {
+                enableOfflineAutoRefresh();
+                await input.fallback?.();
+            }
             return { restored: data.restored };
         },
     );
 }
 
 /** Show unavailable-page feedback once, restore the previous view or wait for guarded recovery. */
-export function recoverOfflineNavigation({ restore }) {
+export function recoverOfflineNavigation({ restore, notify = true, fallback }) {
     if (recoveryPromise) return recoveryPromise;
     recoveryPromise = uiCtx
-        .runFlow(recoveryFlow, { restore })
+        .runFlow(recoveryFlow, { restore, notify, fallback })
         .then((result) => result.data.restored)
         .finally(() => {
             recoveryPromise = null;

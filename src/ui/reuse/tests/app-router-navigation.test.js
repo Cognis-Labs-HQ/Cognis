@@ -13,6 +13,7 @@ function createRouter({
     prepareProviders,
     runFlow,
     offline = false,
+    allowOfflineRoute = async () => true,
 } = {}) {
     const listeners = new Map();
     const capabilities = new Map();
@@ -98,7 +99,7 @@ function createRouter({
         },
         isGuestAllowedPath: () => false,
         installComponentPageBroker() {},
-        isOffline: () => offline,
+        isOffline: () => (typeof offline === "function" ? offline() : offline),
         offlineWorkerRequest: async () => [],
         createI18n: async () => ({ t: (key) => key }),
         observePerformance() {},
@@ -109,9 +110,18 @@ function createRouter({
         new URL("../app-router.js", import.meta.url),
         {
             "./offline-state.js": sandbox,
+            "./offline-unavailable.js": {
+                showOfflineUnavailable: async () => {
+                    root.textContent = "Offline unavailable";
+                },
+            },
             "./offline-navigation.js": {
-                allowOfflineRoute: async () => true,
-                recoverOfflineNavigation: async ({ restore }) => restore(),
+                allowOfflineRoute,
+                recoverOfflineNavigation: async ({ restore, fallback }) => {
+                    const restored = await restore();
+                    if (!restored) await fallback?.();
+                    return restored;
+                },
                 offlineRouteAvailable: () => false,
             },
             "./page-styles.js": sandbox,
@@ -424,3 +434,41 @@ test("absolute same-origin links stay in the SPA when offline", async () => {
     assert.equal(router.root.textContent, "Terms");
     assert.deepEqual(router.assigned, []);
 });
+
+for (const previousAvailable of [true, false]) {
+    test(`sudden offline transition stops an unsupported page and recovers gracefully (previous available: ${previousAvailable})`, async () => {
+        let offline = false;
+        let stopped = false;
+        const router = createRouter({
+            offline: () => offline,
+            allowOfflineRoute: async (route) =>
+                !offline || route?.base === "/usable",
+            routes: [
+                routeFixture("/usable", async (root) => {
+                    root.textContent = "Usable";
+                }),
+                routeFixture("/unsupported", async (root, { signal }) => {
+                    root.textContent = "Unsupported";
+                    signal.addEventListener("abort", () => {
+                        stopped = true;
+                    });
+                }),
+            ],
+        });
+        if (previousAvailable) await router.navigateTo("/usable");
+        await router.navigateTo("/unsupported");
+        offline = true;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.equal(stopped, true);
+        assert.equal(
+            router.root.textContent,
+            previousAvailable ? "Usable" : "Offline unavailable",
+        );
+        assert.ok(
+            router.navigationEvents.some(
+                (event) => event.type === "cognis:route-will-change",
+            ),
+        );
+    });
+}

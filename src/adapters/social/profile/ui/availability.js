@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -68,6 +69,7 @@ function getPresenceSessionId() {
 
 function reportPresenceActivity(active, keepalive = false) {
     if (!canRequestAvailability()) return Promise.resolve(null);
+    if (isOffline()) return Promise.resolve(null);
     if (!keepalive && presenceRequest) return presenceRequest;
     const scope = activeScope;
     const request = apiFetch("/api/v1/social/availability/presence", {
@@ -110,6 +112,7 @@ async function applyIndicatorStatus(indicator, status, i18n) {
 
 export async function fetchAvailability(handle = "") {
     if (!canRequestAvailability()) return null;
+    if (isOffline()) return null;
     const normalizedHandle = String(handle).replace(/^@/, "");
     const cacheKey = normalizedHandle || "self";
     if (availabilityCache.has(cacheKey)) return availabilityCache.get(cacheKey);
@@ -207,6 +210,7 @@ function isCurrent(scope) {
 }
 
 function reportFailure(scope, operation, error) {
+    if (isOffline() || error?.name === "AbortError") return;
     const log =
         scope.capabilities.get("ui:log") ??
         ((level, message, metadata) => console[level](message, metadata));
@@ -266,9 +270,9 @@ export function mountAvailability(scope) {
             );
     }
     const run = (operation, task) => {
-        if (!isCurrent(scope)) return;
+        if (!isCurrent(scope) || isOffline()) return;
         void Promise.resolve()
-            .then(() => (isCurrent(scope) ? task() : null))
+            .then(() => (isCurrent(scope) && !isOffline() ? task() : null))
             .catch((error) => {
                 if (isCurrent(scope)) reportFailure(scope, operation, error);
             });
@@ -283,21 +287,32 @@ export function mountAvailability(scope) {
         () => run("pageHide", () => reportPresenceActivity(false, true)),
         { signal: scope.signal },
     );
-    const heartbeat = window.setInterval(() => {
-        if (document.hidden || !locallyActive) return;
-        run("heartbeat", () => reportPresenceActivity(locallyActive));
-    }, PRESENCE_HEARTBEAT_INTERVAL_MS);
-    const refresh = window.setInterval(() => {
-        if (document.hidden || !locallyActive) return;
-        const hasVisibleUserAvailability = document.querySelector(
-            "[data-availability-handle]",
-        );
-        if (hasVisibleUserAvailability)
-            run("refreshAvailability", () => refreshAvailabilityIndicators());
-    }, AVAILABILITY_REFRESH_INTERVAL_MS);
-    cleanup.push(
-        () => window.clearInterval(heartbeat),
-        () => window.clearInterval(refresh),
-    );
+    let heartbeat;
+    let refresh;
+    const stopPolling = () => {
+        window.clearInterval(heartbeat);
+        window.clearInterval(refresh);
+        heartbeat = refresh = undefined;
+    };
+    const startPolling = () => {
+        stopPolling();
+        if (isOffline() || !isCurrent(scope)) return;
+        heartbeat = window.setInterval(() => {
+            if (document.hidden || !locallyActive) return;
+            run("heartbeat", () => reportPresenceActivity(locallyActive));
+        }, PRESENCE_HEARTBEAT_INTERVAL_MS);
+        refresh = window.setInterval(() => {
+            if (document.hidden || !locallyActive) return;
+            if (document.querySelector("[data-availability-handle]"))
+                run("refreshAvailability", () =>
+                    refreshAvailabilityIndicators(),
+                );
+        }, AVAILABILITY_REFRESH_INTERVAL_MS);
+    };
+    window.addEventListener("cognis:connectivity-changed", startPolling, {
+        signal: scope.signal,
+    });
+    cleanup.push(stopPolling);
+    startPolling();
     return dispose;
 }

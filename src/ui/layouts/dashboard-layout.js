@@ -207,9 +207,6 @@ async function bindThemeToggle({ usePreferenceApi = true, preferences } = {}) {
     applyTimeFormatToLocalStorage(prefs?.timeFormat ?? "auto");
     const storedMode = getStoredTheme();
     const initialMode = storedMode || prefs?.mode || "dark";
-    if (prefs?.mode !== initialMode) {
-        await saveUiPreferences({ mode: initialMode });
-    }
     bindSharedThemeToggle({
         readInitialTheme: () => initialMode,
         onThemeChange: async (mode) => {
@@ -537,7 +534,9 @@ export async function renderDashboardLayout(root, slots = {}) {
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
-        usePreferenceApi = !isOffline() && (showTopbar || showNavbar),
+        usePreferenceApi = (showTopbar || showNavbar) &&
+            (!isOffline() ||
+                Boolean(uiCtx.capabilities.get("social:profileRequest"))),
         // Pages that manage their own auth/session flow (e.g. the Share
         // gateway's anonymous-guest landing page) can render the topbar
         // chrome without a full account session. For those pages,
