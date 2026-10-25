@@ -6,7 +6,8 @@ import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { createReuseResources } from "../resources.js";
 import { createSubPageRegistry } from "../sub-page-registry.js";
 
-function fixture() {
+function fixture({ browser = false } = {}) {
+    const window = new EventTarget();
     const values = new Map([
         ["cognis_account", "learner"],
         ["cognis_access_token", "fixture-session"],
@@ -39,7 +40,19 @@ function fixture() {
                 offlineWorkerRequest: async () => [],
             },
         },
-        { localStorage: storage, console },
+        {
+            localStorage: storage,
+            console,
+            ...(browser
+                ? {
+                      window,
+                      queueMicrotask,
+                      CustomEvent,
+                      setTimeout,
+                      clearTimeout,
+                  }
+                : {}),
+        },
     );
     const { uiCtx } = loadTestModule(new URL("../ui-ctx.js", import.meta.url), {
         "./offline-runtime.js": runtime,
@@ -50,6 +63,7 @@ function fixture() {
     return {
         uiCtx,
         values,
+        window,
         reconnect: () => {
             disconnected = false;
         },
@@ -103,4 +117,37 @@ test("queued writes require successful registered session authorization and curr
     state.values.set("cognis_account", "other");
     assert.equal((await outbox.flush()).sent, 0);
     controller.abort();
+});
+
+test("browser close warns for buffered changes, including disabled owners, and clears after delivery", async () => {
+    const state = fixture({ browser: true });
+    const outbox = state.uiCtx.capabilities.get("offline:outbox");
+    const warning = () => {
+        const event = new Event("beforeunload", { cancelable: true });
+        state.window.dispatchEvent(event);
+        return event.defaultPrevented;
+    };
+    assert.equal(warning(), false);
+    const controller = new AbortController();
+    outbox.register("messages", async () => {}, controller.signal);
+    await outbox.submit("messages", "message", { ciphertext: "encrypted" });
+    assert.equal(warning(), true);
+    controller.abort();
+    assert.equal(warning(), true);
+    state.values.set("cognis_account", "other");
+    assert.equal(warning(), false);
+    state.values.set("cognis_account", "learner");
+    assert.equal(warning(), true);
+    const mounted = new AbortController();
+    outbox.register("messages", async () => {}, mounted.signal);
+    state.reconnect();
+    state.uiCtx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "auth:online" },
+        () => ({ authenticated: true }),
+    );
+    await state.uiCtx.runFlow("authenticate-session", {});
+    assert.equal(warning(), false);
+    mounted.abort();
 });

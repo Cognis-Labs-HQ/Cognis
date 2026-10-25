@@ -345,11 +345,15 @@ export function createSocialRoutes(
                     );
                     return true;
                 }
+                const alreadyFollowing = await profileStore.isFollowing(
+                    claims.sub,
+                    target.accountId,
+                );
                 await followers.add({
                     followerAccountId: claims.sub,
                     followedAccountId: target.accountId,
                 });
-                if (options.dispatchNotification) {
+                if (options.dispatchNotification && !alreadyFollowing) {
                     const followerName =
                         requester?.displayName ??
                         requester?.handle ??

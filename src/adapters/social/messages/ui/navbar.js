@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndexing } from "./search/index.js";
 import "./chat-loading.js";
@@ -7,6 +8,7 @@ import { messagesUiClient } from "./client.js";
 uiCtx.capabilities.contribute("social:messagesUiClient", messagesUiClient);
 
 async function syncMessagesLink() {
+    if (isOffline()) return;
     const messagesLink = document.querySelector("[data-messages-link]");
     if (!messagesLink) return;
     try {

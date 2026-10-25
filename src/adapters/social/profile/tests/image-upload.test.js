@@ -50,7 +50,7 @@ test("successful uploads refresh local blob state before follow-up requests", ()
 test("successful uploads do not fail on optional follow-up data", () => {
     assert.match(
         PROFILE_UPLOAD_SOURCE,
-        /try \{\s*responseData = \(await response\.json\(\)\)\?\.data \?\? \{\};\s*\} catch \(error\) \{/,
+        /try \{\s*const receipt = await response\.json\(\);\s*responseData = receipt\?\.data \?\? \{\};[\s\S]*?\} catch \(error\) \{/,
     );
     assert.match(
         PROFILE_UPLOAD_SOURCE,

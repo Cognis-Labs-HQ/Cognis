@@ -560,6 +560,7 @@ export async function bootstrapSocialAdapter(
     ctx.registerAdapterStaticDir?.("social", "profile", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-profile-page",
+        requiredCapabilities: ["social:profileRequest"],
         pattern: "^/profile(?:/[^/]+)?$",
         base: "/profile",
         scriptUrl: "/static/adapters/social/profile/app.js",
@@ -577,6 +578,7 @@ export async function bootstrapSocialAdapter(
         providesCapabilities: [
             "ui:profileAvatarRenderer",
             "social:profileUiClient",
+            "social:profileRequest",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });

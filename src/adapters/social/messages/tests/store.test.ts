@@ -294,21 +294,16 @@ test("membership changes persist their room event in the same transaction", asyn
                 command.option === "SELECT" &&
                 command.table === "chat_messages"
             ) {
+                const insert = commandCalls.find(
+                    (operation) =>
+                        operation.option === "INSERT" &&
+                        operation.table === "chat_messages",
+                );
                 return {
                     rows: [
-                        {
-                            id: "event-1",
-                            chatroom_id: "room-1",
-                            sender_id: "alice",
-                            ciphertext: JSON.stringify({
-                                eventType: "member_joined",
-                            }),
-                            iv: "",
-                            auth_tag: "",
-                            content_type:
-                                "application/vnd.cognis.room-event+json",
-                            created_at: new Date().toISOString(),
-                        },
+                        insert && insert.option === "INSERT"
+                            ? insert.values
+                            : {},
                     ],
                 };
             }
@@ -522,4 +517,24 @@ test("unreadCount normalizes Date last_read_at to ISO before filtering", async (
     );
     assert.ok(createdAfterClause);
     assert.equal(createdAfterClause.value, "2026-06-05T11:32:07.000Z");
+});
+
+test("delayed read receipts preserve their original time and never regress newer receipts", async () => {
+    const { InMemoryTestExecutor } =
+        await import("../../../../gateways/db/tests/in-memory-test-executor.js");
+    const store = new DbMessagesStore(new InMemoryTestExecutor());
+    await store.ensureSchema();
+    const room = await store.createRoom("group", "Test", "reader");
+    await store.addMember(room.id, "reader", "owner");
+    await store.markRead(room.id, "reader", "2026-10-20T00:00:00.000Z");
+    assert.equal(
+        (await store.getMember(room.id, "reader"))?.lastReadAt,
+        "2026-10-20T00:00:00.000Z",
+    );
+    await store.markRead(room.id, "reader", "2026-10-21T00:00:00.000Z");
+    await store.markRead(room.id, "reader", "2026-10-20T00:00:00.000Z");
+    assert.equal(
+        (await store.getMember(room.id, "reader"))?.lastReadAt,
+        "2026-10-21T00:00:00.000Z",
+    );
 });

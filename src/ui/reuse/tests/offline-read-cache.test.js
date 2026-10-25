@@ -159,3 +159,19 @@ test("a response that finishes after an account switch cannot populate the next 
         /offline_read_unavailable/,
     );
 });
+
+test("an authoritative denial invalidates prior reads even if connectivity changes during the response", async () => {
+    const state = fixture();
+    await state.read("profile", async () => ({ name: "Private" }));
+    await assert.rejects(
+        state.read("profile", async () => {
+            state.disconnect();
+            throw Object.assign(new Error("forbidden"), { status: 403 });
+        }),
+        /forbidden/,
+    );
+    await assert.rejects(
+        state.read("profile", () => assert.fail("offline transport")),
+        /offline_read_unavailable/,
+    );
+});

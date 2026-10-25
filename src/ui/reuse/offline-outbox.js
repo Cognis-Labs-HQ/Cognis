@@ -23,6 +23,7 @@ export function createOfflineOutbox({
         return navigator.locks.request("cognis-offline-outbox", operation);
     },
     now = () => Date.now(),
+    changed = () => {},
     log = (level, message, meta) => console[level]?.(message, meta),
 }) {
     const handlers = new Map();
@@ -56,6 +57,7 @@ export function createOfflineOutbox({
         if (rows.length > MAX_ITEMS || serialized.length * 2 > MAX_BYTES)
             throw new Error("offline_outbox_full");
         storage().setItem(STORAGE_KEY, serialized);
+        changed();
     }
     function current(expected) {
         const actual = identity();
@@ -98,6 +100,7 @@ export function createOfflineOutbox({
                         operation: "flushOutbox",
                         owner: item.owner,
                         status: error?.status ?? null,
+                        errorName: error?.name,
                     });
                     if (
                         !current(actor) ||
@@ -192,6 +195,18 @@ export function createOfflineOutbox({
             return { queued: true };
         },
         flush,
+        hasBufferedChanges() {
+            try {
+                return read().some((row) => row.account === identity().account);
+            } catch (error) {
+                log("error", "Pending activity could not be checked.", {
+                    component: "ui",
+                    operation: "checkPendingChanges",
+                    errorName: error.name,
+                });
+                return true;
+            }
+        },
         async hasPending() {
             const actor = identity();
             if (!actor.account || !storage()?.getItem(STORAGE_KEY))

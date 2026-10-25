@@ -254,6 +254,7 @@ export class DbMessagesStore {
         iv: string;
         authTag?: string;
         contentType?: string;
+        operationId?: string;
     }): Promise<MessageRow> {
         return appendMessage(this.db, input);
     }
@@ -282,8 +283,12 @@ export class DbMessagesStore {
         return getMessage(this.db, messageId);
     }
 
-    async markRead(roomId: string, accountId: string): Promise<void> {
-        await markRead(this.db, roomId, accountId);
+    async markRead(
+        roomId: string,
+        accountId: string,
+        readAt?: string,
+    ): Promise<void> {
+        await markRead(this.db, roomId, accountId, readAt);
     }
 
     async unreadCount(roomId: string, accountId: string): Promise<number> {

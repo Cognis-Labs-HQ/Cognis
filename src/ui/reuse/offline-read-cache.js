@@ -64,7 +64,9 @@ export function createOfflineReadCache({
                 pending.set(key, Promise.resolve().then(load));
             result = await pending.get(key);
         } catch (error) {
+            if ([401, 403].includes(error?.status)) clear();
             if (
+                (error?.status && error.status < 500) ||
                 signal?.aborted ||
                 !isOffline() ||
                 readIdentity() !== currentIdentity ||

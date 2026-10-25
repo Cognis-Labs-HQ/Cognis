@@ -245,6 +245,7 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
     assert.deepEqual(providers[0].providesCapabilities, [
         "ui:profileAvatarRenderer",
         "social:profileUiClient",
+        "social:profileRequest",
     ]);
 
     const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");

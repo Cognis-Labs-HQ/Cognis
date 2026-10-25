@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
@@ -129,7 +129,12 @@ export function createProfileImageUploadActions({
             }
             let responseData = {};
             try {
-                responseData = (await response.json())?.data ?? {};
+                const receipt = await response.json();
+                responseData = receipt?.data ?? {};
+                if (receipt.queued)
+                    showToast(i18n.t("ui.reuse.offline_changes_queued"), {
+                        variant: "info",
+                    });
             } catch (error) {
                 console.error(
                     "[profile] unable to read optional upload response",

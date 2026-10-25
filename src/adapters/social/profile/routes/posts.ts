@@ -1,3 +1,4 @@
+import { validateOperationId } from "../../../../api/reuse/operation-id.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { hasMinRole } from "@cognis/core";
 import {
@@ -132,14 +133,41 @@ export function createPostRoutes(
                 );
                 return true;
             }
-            const post = await profileStore.createPost(claims.sub, {
-                title:
-                    body.title != null
-                        ? String(body.title).trim() || undefined
-                        : undefined,
-                content,
-                visibility,
-            });
+            let operationId: string | undefined;
+            try {
+                operationId = validateOperationId(body.operationId);
+            } catch {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({ error: { code: "invalid_operation_id" } }),
+                );
+                return true;
+            }
+            const post = await profileStore
+                .createPost(claims.sub, {
+                    operationId,
+                    title:
+                        body.title != null
+                            ? String(body.title).trim() || undefined
+                            : undefined,
+                    content,
+                    visibility,
+                })
+                .catch((error: unknown) => {
+                    if (
+                        !(error instanceof Error) ||
+                        error.message !== "delivery_conflict"
+                    )
+                        throw error;
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: { code: "delivery_conflict" },
+                        }),
+                    );
+                    return null;
+                });
+            if (!post) return true;
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: post }));
             return true;

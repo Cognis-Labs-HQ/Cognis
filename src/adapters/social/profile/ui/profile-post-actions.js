@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -40,7 +40,16 @@ export function createProfilePostActions({
             });
 
             if (response.ok) {
-                setState({ posts: await loadOwnPosts() });
+                const receipt = await response.json();
+                setState({
+                    posts: receipt.queued
+                        ? [receipt.data, ...(getState().posts ?? [])]
+                        : await loadOwnPosts(),
+                });
+                if (receipt.queued)
+                    showToast(i18n.t("ui.reuse.offline_changes_queued"), {
+                        variant: "info",
+                    });
                 const postFormElement = root?.querySelector("#new-post-form");
                 if (postFormElement instanceof HTMLFormElement) {
                     postFormElement.reset();
@@ -53,6 +62,20 @@ export function createProfilePostActions({
                     variant: "error",
                 });
             }
+        } catch (error) {
+            console.error("[profile] post delivery failed", {
+                component: "social-profile",
+                operation: "createPost",
+                errorName: error.name,
+            });
+            showToast(
+                i18n.t(
+                    error.message === "offline_outbox_full"
+                        ? "ui.reuse.offline_buffer_full_body"
+                        : "ui.app.profile.post_failed",
+                ),
+                { variant: "error" },
+            );
         } finally {
             if (submitButton) submitButton.disabled = false;
         }

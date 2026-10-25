@@ -1,5 +1,5 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
@@ -195,6 +195,8 @@ function renderMessageStatus(
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
+    if (message.queued)
+        return `<span class="messages-message-status">${escapeHtml(i18n.t("ui.reuse.offline_changes_queued"))}</span>`;
     if (readersHere.length > 0) {
         const readerPayload = escapeHtml(
             encodeURIComponent(

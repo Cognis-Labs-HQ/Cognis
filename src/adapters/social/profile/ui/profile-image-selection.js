@@ -1,4 +1,4 @@
-export function createProfileImageSelection() {
+export function createProfileImageSelection({ onFileSelected, onError }) {
     const pendingSelections = new Set();
 
     function createFileInput() {
@@ -23,9 +23,28 @@ export function createProfileImageSelection() {
         fileInput.click();
     }
 
-    return {
+    const inputs = {
         avatarFileInput: createFileInput(),
         bannerFileInput: createFileInput(),
+    };
+    for (const [kind, input] of [
+        ["avatar", inputs.avatarFileInput],
+        ["banner", inputs.bannerFileInput],
+    ]) {
+        input.addEventListener("change", async () => {
+            const file = input.files?.[0];
+            try {
+                if (file) await onFileSelected(kind, file);
+            } catch (error) {
+                onError(error);
+            } finally {
+                input.value = "";
+                pendingSelections.delete(kind);
+            }
+        });
+    }
+    return {
+        ...inputs,
         clearPendingSelection: (kind) => pendingSelections.delete(kind),
         requestSelection,
     };

@@ -1,7 +1,9 @@
-import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { registerProfileOfflineClient } from "./offline-client.js";
 import { profileUiClient } from "./client.js";
 import { ensureProfileAvatarStyles } from "./profile-avatar.js";
 
-await ensureProfileAvatarStyles();
-
-uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
+export async function mountProvider(uiCtx) {
+    await ensureProfileAvatarStyles();
+    registerProfileOfflineClient(uiCtx);
+    uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
+}

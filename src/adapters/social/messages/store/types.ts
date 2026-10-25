@@ -23,6 +23,7 @@ export interface MemberRow {
 }
 
 export interface MessageRow {
+    replayed?: boolean;
     id: string;
     chatroomId: string;
     senderId: string;

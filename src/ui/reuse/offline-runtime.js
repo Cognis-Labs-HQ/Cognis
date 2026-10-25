@@ -23,6 +23,10 @@ export function registerOfflineRuntime(ctx) {
         enabled: offlineEnabled,
         offline: isOffline,
         allowed: offlinePolicy.allows,
+        changed: () =>
+            globalThis.window?.dispatchEvent(
+                new CustomEvent("cognis:offline-buffer-changed"),
+            ),
     });
     let verifiedSession;
     let retrySession;
@@ -64,6 +68,7 @@ export function registerOfflineRuntime(ctx) {
     ctx.capabilities.contribute("offline:outbox", {
         register: outbox.register,
         pending: outbox.pending,
+        hasBufferedChanges: outbox.hasBufferedChanges,
         submit: async (owner, id, payload) =>
             (await ctx.runFlow("offline:enqueue", { owner, id, payload })).data
                 .result,
@@ -184,6 +189,18 @@ export function registerOfflineRuntime(ctx) {
             })(),
         ),
     );
+    window.addEventListener("beforeunload", (event) => {
+        if (!outbox.hasBufferedChanges()) return;
+        event.preventDefault();
+        event.returnValue = "";
+    });
+    window.addEventListener("cognis:offline-buffer-changed", () => {
+        if (outbox.hasBufferedChanges()) scheduleRetry();
+        else {
+            clearTimeout(retryTimer);
+            retryTimer = null;
+        }
+    });
     let blocker;
     let dismissBlocker;
     const updatePolicy = async () => {

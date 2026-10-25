@@ -619,10 +619,11 @@
     <string name="ui.reuse.try_again">Try Again</string>
     <string name="ui.reuse.offline_page_unavailable">This page is not available offline. Reconnect to continue.</string>
     <string name="ui.app.settings.offline_enabled">Offline Mode</string>
-    <string name="ui.app.settings.offline_enabled_hint">Keep supported cached pages and lightweight Study content available when the connection is lost. Audio, dictionary requests and saving require a connection. Turn off to retain connection error feedback.</string>
+    <string name="ui.app.settings.offline_enabled_hint">Keep supported cached content available and buffer supported changes until reconnection. Audio, dictionary requests and large uploads require a connection. The latest fetched terms must be accepted. Turn off to retain connection error feedback.</string>
     <string name="ui.reuse.offline_access_required">Offline Access Requires Review</string>
     <string name="ui.reuse.offline_access_required_body">Reconnect to review and accept the latest required documents before using offline mode.</string>
     <string name="ui.reuse.retry">Retry</string>
     <string name="ui.reuse.offline_changes_queued">Changes Queued for Reconnection</string>
     <string name="ui.reuse.offline_sync_rejected">Some Queued Activity Could Not Be Applied.</string>
+    <string name="ui.reuse.offline_buffer_full_body">The offline buffer is full. Reconnect and send pending changes before adding more.</string>
 </resources>

@@ -9,13 +9,27 @@
  * @param {(payload: object) => Promise<unknown>} send Owning component transport.
  * @returns {Promise<unknown>} Server result or explicit queued result.
  */
+import { captureAccountGuard } from "./offline-identity.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
 
 export async function deliverOrQueue(ctx, owner, id, payload, send) {
-    if (!isOffline()) {
+    const assertAccount = captureAccountGuard();
+    const outbox = ctx.capabilities.get("offline:outbox");
+    let pending = outbox ? await outbox.pending(owner) : [];
+    assertAccount();
+    if (!isOffline() && pending.length && !offlineEnabled()) {
+        await outbox.flush();
+        pending = await outbox.pending(owner);
+        assertAccount();
+        if (pending.length) throw new Error("offline_delivery_pending");
+    }
+    if (!isOffline() && pending.length === 0) {
         try {
-            return await send(payload);
+            const result = await send(payload);
+            assertAccount();
+            return result;
         } catch (error) {
+            assertAccount();
             if (
                 !offlineEnabled() ||
                 !isOffline() ||
@@ -24,7 +38,9 @@ export async function deliverOrQueue(ctx, owner, id, payload, send) {
                 throw error;
         }
     }
-    const outbox = ctx.capabilities.get("offline:outbox");
     if (!outbox) throw new Error("offline_delivery_unavailable");
-    return outbox.submit(owner, id, payload);
+    assertAccount();
+    const result = await outbox.submit(owner, id, payload);
+    assertAccount();
+    return result;
 }

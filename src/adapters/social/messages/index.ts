@@ -566,8 +566,10 @@ export async function bootstrapSocialAdapter(
                 iv: string;
                 authTag?: string;
                 contentType?: string;
+                operationId?: string;
             };
             const message = await messagesStore.appendMessage({
+                operationId: input.operationId,
                 roomId: input.roomId,
                 senderId: input.senderId,
                 ciphertext: input.ciphertext,
@@ -576,7 +578,12 @@ export async function bootstrapSocialAdapter(
                 contentType: input.contentType ?? "text/plain",
             });
             await messagesStore.setTyping(input.roomId, input.senderId, false);
-            return { messageId: message.id, persisted: true, message };
+            return {
+                messageId: message.id,
+                persisted: true,
+                message,
+                replayed: message.replayed === true,
+            };
         },
     );
     if (!persistHookRegistered) {
@@ -596,10 +603,12 @@ export async function bootstrapSocialAdapter(
             const persistResults = (stageCtx.stageResults["persist-message"] ??
                 []) as Array<{
                 messageId?: string;
+                replayed?: boolean;
                 persisted?: boolean;
                 message?: { id: string };
             }>;
             const persistResult = persistResults[0];
+            if (persistResult?.replayed) return { dispatched: false };
             if (!persistResult?.persisted || !persistResult.messageId) {
                 return { dispatched: false };
             }
@@ -663,6 +672,7 @@ export async function bootstrapSocialAdapter(
     ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
+        requiredCapabilities: ["social:messagesRequest"],
         pattern: "^/messages(?:/[^/]+)?$",
         base: "/messages",
         scriptUrl: "/static/adapters/social/messages/app.js",
@@ -676,6 +686,11 @@ export async function bootstrapSocialAdapter(
             "/static/adapters/social/messages/messages-template-composer.css",
             "/static/adapters/social/messages/messages-sidebar.css",
         ],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
+    ctx.registerCapabilityProvider?.({
+        scriptUrl: "/static/adapters/social/messages/offline-client.js",
+        providesCapabilities: ["social:messagesRequest"],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
     ctx.registerNavbarPlugin(

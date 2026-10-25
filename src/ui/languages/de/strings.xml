@@ -619,10 +619,11 @@
     <string name="ui.reuse.try_again">Erneut versuchen</string>
     <string name="ui.reuse.offline_page_unavailable">Diese Seite ist offline nicht verfügbar. Stellen Sie die Verbindung wieder her.</string>
     <string name="ui.app.settings.offline_enabled">Offline-Modus</string>
-    <string name="ui.app.settings.offline_enabled_hint">Unterstützte zwischengespeicherte Seiten und kleine Study-Inhalte bleiben bei Verbindungsverlust verfügbar. Audio, Wörterbuchabfragen und Speichern benötigen eine Verbindung. Deaktivieren stellt die bisherigen Verbindungsfehlermeldungen wieder her.</string>
+    <string name="ui.app.settings.offline_enabled_hint">Unterstützte Cache-Inhalte bleiben verfügbar und Änderungen werden bis zur Wiederverbindung gepuffert. Audio, Wörterbuchabfragen und große Uploads benötigen eine Verbindung. Die zuletzt abgerufenen Bedingungen müssen akzeptiert sein. Deaktivieren behält die bisherigen Verbindungsfehler bei.</string>
     <string name="ui.reuse.offline_access_required">Offline-Zugriff erfordert Prüfung</string>
     <string name="ui.reuse.offline_access_required_body">Stellen Sie die Verbindung wieder her und akzeptieren Sie die neuesten erforderlichen Dokumente, bevor Sie den Offline-Modus verwenden.</string>
     <string name="ui.reuse.retry">Erneut versuchen</string>
     <string name="ui.reuse.offline_changes_queued">Änderungen für die Wiederverbindung vorgemerkt</string>
     <string name="ui.reuse.offline_sync_rejected">Einige vorgemerkte Aktivitäten konnten nicht übernommen werden.</string>
+    <string name="ui.reuse.offline_buffer_full_body">Der Offline-Puffer ist voll. Verbinde dich und sende ausstehende Änderungen, bevor du weitere hinzufügst.</string>
 </resources>

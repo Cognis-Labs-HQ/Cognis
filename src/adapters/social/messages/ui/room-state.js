@@ -1,4 +1,6 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { nextReactionState } from "./reaction-state.js";
+import { isOffline } from "/static/reuse/offline-state.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 import {
     MESSAGES_FILE_NAMESPACE_ID,
     buildNamespacedFileUrl,
@@ -334,7 +336,14 @@ export function createMessagesRoomState({
         if (!force && !selectedRoomHasUnread()) return;
         await apiFetch(
             `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
-            { method: "POST" },
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    readAt:
+                        getSelectedRoom()?.lastMessage?.createdAt ??
+                        new Date().toISOString(),
+                }),
+            },
         ).catch(() => undefined);
         rooms = rooms.map((room) =>
             String(room.id) === String(selectedRoomId)
@@ -424,7 +433,10 @@ export function createMessagesRoomState({
             `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
             {
                 method: "POST",
-                body: JSON.stringify({ emoji: normalizedEmoji }),
+                body: JSON.stringify({
+                    emoji: normalizedEmoji,
+                    active: nextReactionState(messageId, normalizedEmoji),
+                }),
             },
         );
         if (!response.ok) return;
@@ -576,6 +588,7 @@ export function createMessagesRoomState({
     }
 
     function queueTypingUpdate(typing) {
+        if (isOffline()) return;
         if (!selectedRoomId) return;
         const now = Date.now();
         if (typingSendTimeoutId) {
@@ -613,6 +626,7 @@ export function createMessagesRoomState({
     }
 
     async function refreshTypingIndicator() {
+        if (isOffline()) return;
         if (!selectedRoomId) return;
         const response = await apiFetch(
             `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,

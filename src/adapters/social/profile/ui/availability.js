@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";

@@ -8,6 +8,10 @@ import test from "node:test";
 function clientFixture() {
     const requests = [];
     let successful = true;
+    let start;
+    const started = new Promise((resolve) => {
+        start = resolve;
+    });
     let finish;
     const pending = new Promise((resolve) => {
         finish = resolve;
@@ -17,6 +21,7 @@ function clientFixture() {
         crypto,
         apiFetch: async (path, options = {}) => {
             requests.push({ path, options });
+            start();
             if (options.method === "POST") await pending;
             return { ok: successful, json: async () => ({ data: saved }) };
         },
@@ -36,6 +41,7 @@ function clientFixture() {
         requests,
         finish,
         saved,
+        started,
         fail: () => {
             successful = false;
         },
@@ -43,11 +49,12 @@ function clientFixture() {
 }
 
 test("progress reads wait for in-flight completion on the same card", async () => {
-    const { client, requests, finish, saved } = clientFixture();
+    const { client, requests, finish, saved, started } = clientFixture();
     const completion = client.recordDrawingCompletion("card-a", {
         strokeCount: 4,
         mistakes: 0,
     });
+    await started;
     assert.equal(requests.length, 1);
     assert.equal(requests[0].options.keepalive, true);
     assert.equal(requests[0].options.signal, undefined);

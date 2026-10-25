@@ -696,3 +696,53 @@ test("post routes - private account posts only visible to followers", async () =
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("post retries preserve identity and reject changed or cross-account payloads", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const store = await setupUser(executor, "alice", "community");
+        await setupUser(executor, "bob", "community");
+        const route = createPostRoutes(store);
+        const input = {
+            operationId: "a41d92c4-34a0-4603-9c6b-a12345678901",
+            content: "Offline post",
+            visibility: "community",
+        };
+        async function send(body = input, account = "alice") {
+            let status = 0;
+            let payload = "";
+            await route(
+                makeReq(
+                    "POST",
+                    issueAccessToken(account, "user", 60),
+                    JSON.stringify(body),
+                ),
+                {
+                    writeHead(value: number) {
+                        status = value;
+                    },
+                    end(value: string) {
+                        payload = value;
+                    },
+                } as any,
+                new URL("http://localhost/api/v1/social/posts"),
+            );
+            return { status, body: JSON.parse(payload) };
+        }
+        const first = await send();
+        assert.equal(first.status, 201);
+        assert.equal((await send()).body.data.id, first.body.data.id);
+        assert.equal((await store.getPostsByAccount("alice")).length, 1);
+        assert.equal(
+            (await send({ ...input, content: "conflict" })).status,
+            409,
+        );
+        assert.equal((await send(input, "bob")).status, 409);
+        assert.equal(
+            (await send({ ...input, operationId: "invalid" })).status,
+            400,
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
