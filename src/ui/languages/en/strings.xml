@@ -628,4 +628,6 @@
     <string name="ui.reuse.offline_buffer_full_body">The offline buffer is full. Reconnect and send pending changes before adding more.</string>
   <string name="ui.reuse.account_id">Account ID</string>
   <string name="ui.reuse.authentication_provider">Authentication Provider</string>
+  <string name="ui.reuse.offline_mode_active">You are in offline mode</string>
+  <string name="ui.reuse.offline_connection_restored">Connection to the server is restored. Refresh when you are ready.</string>
 </resources>

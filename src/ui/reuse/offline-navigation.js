@@ -1,6 +1,13 @@
+import { createI18n } from "./i18n.js";
+import { openPopup } from "./popup.js";
+import { escapeHtml } from "./escape-html.js";
 import { offlinePolicy } from "./offline-policy.js";
 import { uiCtx } from "./ui-ctx.js";
-import { isOffline, offlineWorkerRequest } from "./offline-state.js";
+import {
+    isOffline,
+    offlineWorkerRequest,
+    enableOfflineAutoRefresh,
+} from "./offline-state.js";
 
 const sessionRoutes = new Set();
 uiCtx.capabilities.contribute(
@@ -103,3 +110,65 @@ uiCtx.extendFlow(
         return { scheduled: true };
     },
 );
+
+let recoveryPromise;
+const recoveryFlow = "offline:recoverNavigation";
+if (!uiCtx.flowExists(recoveryFlow)) {
+    uiCtx.registerFlow(recoveryFlow, ["notify", "restore", "recover"]);
+    uiCtx.extendFlow(
+        recoveryFlow,
+        "notify",
+        { id: "ui:offlineRecovery" },
+        async () => {
+            const i18n = await createI18n();
+            await openPopup({
+                title: i18n.t("ui.reuse.offline_mode_active"),
+                body: `<p>${escapeHtml(i18n.t("ui.reuse.offline_page_unavailable"))}</p>`,
+                actions: [
+                    {
+                        id: "back",
+                        label: i18n.t("ui.reuse.back"),
+                        variant: "neutral",
+                    },
+                ],
+            });
+        },
+    );
+    uiCtx.extendFlow(
+        recoveryFlow,
+        "restore",
+        { id: "ui:offlineRecovery" },
+        async ({ input, data }) => {
+            try {
+                data.restored = (await input.restore()) === true;
+            } catch (error) {
+                data.restored = false;
+                console.info("[offline] previous page unavailable", {
+                    operation: "restorePreviousPage",
+                    errorName: error?.name,
+                });
+            }
+        },
+    );
+    uiCtx.extendFlow(
+        recoveryFlow,
+        "recover",
+        { id: "ui:offlineRecovery" },
+        ({ data }) => {
+            if (!data.restored) enableOfflineAutoRefresh();
+            return { restored: data.restored };
+        },
+    );
+}
+
+/** Show unavailable-page feedback once, restore the previous view or wait for guarded recovery. */
+export function recoverOfflineNavigation({ restore }) {
+    if (recoveryPromise) return recoveryPromise;
+    recoveryPromise = uiCtx
+        .runFlow(recoveryFlow, { restore })
+        .then((result) => result.data.restored)
+        .finally(() => {
+            recoveryPromise = null;
+        });
+    return recoveryPromise;
+}

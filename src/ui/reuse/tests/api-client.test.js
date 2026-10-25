@@ -28,6 +28,7 @@ function loadApiClientForTests({
     const showToastCalls = [];
     const dispatchedEvents = [];
     const timers = [];
+    const delays = [];
     let reloadCount = 0;
     const context = {
         showToast(message, options) {
@@ -37,7 +38,8 @@ function loadApiClientForTests({
                 call.dismissed = true;
             };
         },
-        setTimeout(callback) {
+        setTimeout(callback, delay) {
+            delays.push(delay);
             timers.push(callback);
             return timers.length;
         },
@@ -94,6 +96,7 @@ function loadApiClientForTests({
         apiClient,
         offlineState,
         dispatchedEvents,
+        delays,
         getReloadCount: () => reloadCount,
         runNextTimer: async () => {
             const callback = timers.shift();
@@ -413,3 +416,20 @@ for (const failure of [
         );
     });
 }
+
+test("connection recovery backs off after repeated failures", async () => {
+    const state = loadApiClientForTests({
+        fetchImpl: async () => {
+            throw new TypeError("Failed to fetch");
+        },
+    });
+    state.apiClient.configureConnectionRecoveryPrompt(
+        "Connection interrupted.",
+    );
+    await assert.rejects(state.apiClient.apiFetch("/api/v1/users"));
+    assert.equal(state.delays.at(-1), 5000);
+    await state.runNextTimer();
+    assert.equal(state.delays.at(-1), 10000);
+    await state.runNextTimer();
+    assert.equal(state.delays.at(-1), 20000);
+});

@@ -628,4 +628,6 @@
     <string name="ui.reuse.offline_buffer_full_body">Buffer offline penuh. Sambungkan kembali dan kirim perubahan tertunda sebelum menambah lagi.</string>
   <string name="ui.reuse.account_id">ID Akun</string>
   <string name="ui.reuse.authentication_provider">Penyedia Autentikasi</string>
+  <string name="ui.reuse.offline_mode_active">Anda sedang dalam mode offline</string>
+  <string name="ui.reuse.offline_connection_restored">Koneksi ke server telah pulih. Muat ulang saat Anda siap.</string>
 </resources>

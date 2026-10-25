@@ -628,4 +628,6 @@
     <string name="ui.reuse.offline_buffer_full_body">オフラインバッファーがいっぱいです。再接続して保留中の変更を送信してから追加してください。</string>
   <string name="ui.reuse.account_id">アカウント ID</string>
   <string name="ui.reuse.authentication_provider">認証プロバイダー</string>
+  <string name="ui.reuse.offline_mode_active">オフラインモードです</string>
+  <string name="ui.reuse.offline_connection_restored">サーバーへの接続が復旧しました。準備ができたらページを更新してください。</string>
 </resources>

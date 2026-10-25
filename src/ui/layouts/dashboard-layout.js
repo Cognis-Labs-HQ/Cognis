@@ -1,3 +1,4 @@
+import { mountOfflineStatus } from "../reuse/offline-status.js";
 import { isOffline } from "../reuse/offline-state.js";
 import { updateNavbarAvatar } from "./navbar-avatar.js";
 export { updateNavbarAvatar } from "./navbar-avatar.js";
@@ -661,6 +662,8 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
+        if (!componentWindow)
+            mountOfflineStatus(root, { i18n, signal: slots.signal });
         if (!componentWindow) {
             initRouter(root);
             const preferences = usePreferenceApi ? loadUiPreferences() : null;
@@ -719,6 +722,8 @@ export async function renderDashboardLayout(root, slots = {}) {
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
+    if (!componentWindow)
+        mountOfflineStatus(root, { i18n, signal: slots.signal });
     if (!componentWindow) {
         initRouter(root);
         const preferences = usePreferenceApi ? loadUiPreferences() : null;

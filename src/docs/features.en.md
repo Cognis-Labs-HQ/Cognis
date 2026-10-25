@@ -70,3 +70,11 @@ SSO accounts use opaque random IDs. Provider IDs are stored separately and expos
 Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.
 
 Encrypted browser vaults are cached independently by origin, account ID and server account-instance ID. The server must verify the account and instance before a cache is loaded. Passwords and decryption keys remain in memory and are never persisted; old IndexedDB unlock keys are retired. Reloading requires the keyring password again, unless a password login successfully decrypts the vault. Account changes cancel outstanding prompts and cryptographic work. Unlock never creates a missing keyring: only explicit setup or Create can do so.
+
+## Offline status and navigation recovery
+
+A dismissible header notice uses the shared callout styles to show “You are in offline mode”. On reconnection it offers Refresh instead of reloading automatically; refresh respects unsaved-change and buffered-write guards. An unavailable page first restores the previous usable page. If restoration fails, it arms guarded automatic refresh on reconnection. Same-origin absolute and relative links use the SPA router, and the offline catalog retains both cached public pages and provider-authorized private routes.
+
+## Offline polling limits
+
+Offline Mode stops consent polling and ordinary recovery polling. Only one lightweight server health probe runs every fifteen minutes, even after repeated browser online events. Online connection-recovery failures back off to fifteen minutes. Consent polling backs off after failures to five minutes, stops entirely offline, and resumes after reconnection. Required cached legal acceptance still gates offline access.

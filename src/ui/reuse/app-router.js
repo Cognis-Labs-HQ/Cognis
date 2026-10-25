@@ -42,6 +42,7 @@ import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import {
     offlineRouteAvailable,
     allowOfflineRoute,
+    recoverOfflineNavigation,
 } from "./offline-navigation.js";
 import { isMountSignal } from "./mount-scope.js";
 import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
@@ -258,8 +259,8 @@ function findMatchingRoute(routes, path) {
 }
 
 async function loadAllRoutes() {
-    if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
     if (_allRoutes) return _allRoutes;
+    if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
     if (_allRoutesPromise) return _allRoutesPromise;
     const loadGeneration = _routeCacheGeneration;
     const loadPromise = (async () => {
@@ -311,6 +312,7 @@ let _navigationSequence = 0;
 let _initialized = false;
 let _historyIndex = 0;
 let _committedPath = "";
+let _lastSuccessfulPath = "";
 let _restoringHistory = false;
 let _guardBypassPath = null;
 
@@ -377,6 +379,7 @@ async function loadRouteContent(
             return false;
         console.error("[router] route load error for", path, error);
         finishPageLoading();
+        if (isOffline()) return false;
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
@@ -486,6 +489,7 @@ async function loadRouteContent(
             if (signal.aborted || navigationSequence !== _navigationSequence)
                 return false;
             commit(routeRoot);
+            _lastSuccessfulPath = path;
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
@@ -494,6 +498,7 @@ async function loadRouteContent(
                 observer?.disconnect();
                 if (_commitPage === commit) _commitPage = null;
                 commitPageStylesheets?.cancel();
+                if (isOffline()) return false;
                 await openRuntimeErrorPopup({
                     error,
                     contextKey: "ui.reuse.runtime_error_context_route_mount",
@@ -509,6 +514,7 @@ async function loadRouteContent(
         }
         console.error("[router] route load error for", path, error);
         finishPageLoading();
+        if (isOffline()) return false;
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
@@ -524,10 +530,18 @@ async function loadRouteContent(
 
 export async function navigateTo(
     path,
-    { bypassGuard = false, state = {}, replace = false } = {},
+    {
+        bypassGuard = false,
+        state = {},
+        replace = false,
+        recoverOfflineFailure = true,
+    } = {},
 ) {
     const route = await resolveRoute(path);
-    if (!(await allowOfflineRoute(route, path))) return false;
+    if (!(await allowOfflineRoute(route, path))) {
+        if (recoverOfflineFailure) await restoreAfterOfflineFailure(path);
+        return false;
+    }
     if (!route) return false;
     if (
         !bypassGuard &&
@@ -549,7 +563,38 @@ export async function navigateTo(
         "",
         path,
     );
-    return loadRoute(path);
+    const expectedSequence = _navigationSequence + 1;
+    const mounted = await loadRoute(path);
+    if (
+        !mounted &&
+        isOffline() &&
+        expectedSequence === _navigationSequence &&
+        recoverOfflineFailure
+    )
+        await restoreAfterOfflineFailure(path);
+    return mounted;
+}
+
+async function restoreAfterOfflineFailure(path) {
+    const previous =
+        _lastSuccessfulPath ||
+        history.state?.previousRouterPage ||
+        internalNavigationPath(document.referrer);
+    return recoverOfflineNavigation({
+        restore: async () => {
+            if (!previous || previous === path) return false;
+            if (
+                getCurrentRoutePath() === previous &&
+                _lastSuccessfulPath === previous
+            )
+                return true;
+            return navigateTo(previous, {
+                replace: true,
+                bypassGuard: true,
+                recoverOfflineFailure: false,
+            });
+        },
+    });
 }
 
 uiCtx.capabilities.contribute("ui:navigate", navigateTo);
@@ -599,6 +644,8 @@ export function initRouter(root) {
         ? history.state.routerIndex
         : 0;
     _committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (initialRoute && root?.childElementCount)
+        _lastSuccessfulPath = _committedPath;
     history.replaceState(
         { ...(history.state ?? {}), routerIndex: _historyIndex },
         "",
@@ -632,24 +679,20 @@ export function initRouter(root) {
             (link.target && link.target !== "_self")
         )
             return;
-        const href = link.getAttribute("href");
-        if (
-            !href ||
-            href.startsWith("http") ||
-            href.startsWith("//") ||
-            href.startsWith("#") ||
-            !href.startsWith("/")
-        )
-            return;
+        const routePath = internalNavigationPath(link.getAttribute("href"));
+        if (routePath === null) return;
         event.preventDefault();
-        const route = await resolveRoute(href);
+        const route = await resolveRoute(routePath);
         if (!route) {
-            if (!(await allowOfflineRoute(null, href))) return;
-            window.location.assign(href);
+            if (!(await allowOfflineRoute(null, routePath))) {
+                await restoreAfterOfflineFailure(routePath);
+                return;
+            }
+            window.location.assign(routePath);
             return;
         }
         if (link.getAttribute("aria-disabled") === "true") return;
-        await navigateTo(href);
+        await navigateTo(routePath);
     });
 
     window.addEventListener("popstate", async (event) => {
@@ -661,7 +704,10 @@ export function initRouter(root) {
         const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
         if (!route) {
-            if (!(await allowOfflineRoute(null, pathWithHash))) return;
+            if (!(await allowOfflineRoute(null, pathWithHash))) {
+                await restoreAfterOfflineFailure(pathWithHash);
+                return;
+            }
             window.location.assign(pathWithHash);
             return;
         }
@@ -706,8 +752,27 @@ export function initRouter(root) {
             _historyIndex = event.state.routerIndex;
         }
         _committedPath = pathWithHash;
-        await loadRoute(pathWithHash);
+        if (!(await loadRoute(pathWithHash)) && isOffline())
+            await restoreAfterOfflineFailure(pathWithHash);
     });
+}
+
+function internalNavigationPath(href) {
+    if (!href || href.startsWith("#")) return null;
+    let destination;
+    try {
+        destination = new URL(href, window.location.href);
+    } catch {
+        return null;
+    }
+    if (
+        destination.origin !== window.location.origin ||
+        !["http:", "https:"].includes(destination.protocol) ||
+        destination.username ||
+        destination.password
+    )
+        return null;
+    return destination.pathname + destination.search + destination.hash;
 }
 
 function installOfflineNavigation() {
@@ -718,17 +783,15 @@ function installOfflineNavigation() {
         try {
             const routes = await loadAllRoutes();
             for (const link of document.querySelectorAll(
-                "a[href^='/'], button[data-navigation-path]",
+                "a[href], button[data-navigation-path]",
             )) {
+                const path = internalNavigationPath(
+                    link.getAttribute("href") ?? link.dataset.navigationPath,
+                );
+                if (path === null) continue;
                 const disabled =
                     isOffline() &&
-                    !offlineRouteAvailable(
-                        findMatchingRoute(
-                            routes,
-                            link.getAttribute("href") ??
-                                link.dataset.navigationPath,
-                        ),
-                    );
+                    !offlineRouteAvailable(findMatchingRoute(routes, path));
                 if (disabled && !link.dataset.offlineDisabled) {
                     link.setAttribute("aria-disabled", "true");
                     link.dataset.offlineDisabled = "true";

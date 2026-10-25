@@ -1,3 +1,4 @@
+import { escapeHtml } from "../escape-html.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -5,15 +6,18 @@ import { uiCtx } from "../ui-ctx.js";
 
 let offline = true;
 let stallWorker = false;
+let autoRefreshes = 0;
 const popups = [];
 const workerRequests = [];
 const navigation = loadTestModule(
     new URL("../offline-navigation.js", import.meta.url),
     {
         "./ui-ctx.js": { uiCtx },
+        "./escape-html.js": { escapeHtml },
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
         "./offline-state.js": {
             isOffline: () => offline,
+            enableOfflineAutoRefresh: () => autoRefreshes++,
             offlineWorkerRequest: async (type) => {
                 workerRequests.push(type);
                 if (stallWorker) await new Promise(() => {});
@@ -22,6 +26,7 @@ const navigation = loadTestModule(
         "./i18n.js": {
             createI18n: async () => ({ t: () => "Unavailable offline" }),
         },
+        "./popup.js": { openPopup: async (popup) => popups.push(popup) },
         "./runtime-error-popup.js": {
             openRuntimeErrorPopup: async (popup) => popups.push(popup),
         },
@@ -111,4 +116,37 @@ test("login completion does not wait for an unresponsive worker", async () => {
     } finally {
         stallWorker = false;
     }
+});
+
+test("unavailable offline navigation tries the previous view before arming automatic refresh", async () => {
+    let attempts = 0;
+    const start = autoRefreshes;
+    assert.equal(
+        await navigation.recoverOfflineNavigation({
+            restore: async () => {
+                attempts++;
+                return true;
+            },
+        }),
+        true,
+    );
+    assert.equal(attempts, 1);
+    assert.equal(autoRefreshes, start);
+    assert.equal(
+        await navigation.recoverOfflineNavigation({
+            restore: async () => false,
+        }),
+        false,
+    );
+    assert.equal(autoRefreshes, start + 1);
+    assert.equal(
+        await navigation.recoverOfflineNavigation({
+            restore: async () => {
+                throw new Error("cached_page_unavailable");
+            },
+        }),
+        false,
+    );
+    assert.equal(autoRefreshes, start + 2);
+    assert.equal(popups.at(-1).actions[0].id, "back");
 });

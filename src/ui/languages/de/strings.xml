@@ -628,4 +628,6 @@
     <string name="ui.reuse.offline_buffer_full_body">Der Offline-Puffer ist voll. Verbinde dich und sende ausstehende Änderungen, bevor du weitere hinzufügst.</string>
   <string name="ui.reuse.account_id">Konto-ID</string>
   <string name="ui.reuse.authentication_provider">Authentifizierungsanbieter</string>
+  <string name="ui.reuse.offline_mode_active">Du bist im Offline-Modus</string>
+  <string name="ui.reuse.offline_connection_restored">Die Verbindung zum Server wurde wiederhergestellt. Aktualisiere die Seite, wenn du bereit bist.</string>
 </resources>

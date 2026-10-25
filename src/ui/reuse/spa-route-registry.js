@@ -1,3 +1,4 @@
+import { offlineRouteAvailable } from "./offline-navigation.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
  * Loads and caches dynamic SPA route descriptors from the UI API so the app
@@ -130,12 +131,7 @@ export async function resolveComponentPage({ componentUuid, routeId, mode }) {
 export async function loadSpaRoutes() {
     if (isOffline()) {
         if (cachedSpaRoutes)
-            return cachedSpaRoutes.filter(
-                (route) =>
-                    uiCtx.capabilities.get("offline:isSessionRouteAvailable")?.(
-                        route,
-                    ) === true,
-            );
+            return cachedSpaRoutes.filter(offlineRouteAvailable);
         return (await offlineWorkerRequest("COGNIS_OFFLINE_ROUTES"))
             .map(normalizeRoute)
             .filter(Boolean);

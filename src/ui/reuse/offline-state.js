@@ -47,8 +47,37 @@ export function isOfflineTransition() {
     );
 }
 
+export function hasRecoveredConnection() {
+    return offlineEnabled() && !isOffline() && state.recovered === true;
+}
+
+export function enableOfflineAutoRefresh() {
+    state.autoRefresh = true;
+    if (hasRecoveredConnection()) refreshAfterOffline();
+}
+
+export function refreshAfterOffline() {
+    if (!hasRecoveredConnection()) return false;
+    const resume = () => {
+        if (hasRecoveredConnection()) window.location.reload();
+    };
+    if (
+        window.dispatchEvent(
+            new CustomEvent("cognis:route-before-navigate", {
+                cancelable: true,
+                detail: { path: window.location.pathname, resume },
+            }),
+        )
+    )
+        resume();
+    return true;
+}
+
 export function setOffline(offline) {
     if (offline && !offlineEnabled()) return;
+    if (!offlineEnabled()) state.autoRefresh = false;
+    if (offline || !offlineEnabled()) state.recovered = false;
+    else if (state.offline) state.recovered = true;
     if (offline) state.changedAt = Date.now();
     if (state.offline === offline) return;
     state.offline = offline;
@@ -202,16 +231,10 @@ function scheduleRecovery() {
                         },
                     );
                 });
-                const resume = () => window.location.reload();
-                if (
-                    window.dispatchEvent(
-                        new CustomEvent("cognis:route-before-navigate", {
-                            cancelable: true,
-                            detail: { path: window.location.pathname, resume },
-                        }),
-                    )
-                )
-                    resume();
+                window.dispatchEvent(
+                    new CustomEvent("cognis:connection-restored"),
+                );
+                if (state.autoRefresh) refreshAfterOffline();
                 return;
             }
         } catch (error) {
@@ -228,5 +251,5 @@ function scheduleRecovery() {
             });
         }
         scheduleRecovery();
-    }, 5000);
+    }, 15 * 60_000);
 }

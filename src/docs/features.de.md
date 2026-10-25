@@ -55,3 +55,11 @@ SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat 
 Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätzen weiter. Der Start erfordert kein Zurücksetzen der Datenbank. Anmeldung und Bereitstellung alter SSO-Konten werden einzeln abgelehnt, bis diese Konten mit undurchsichtigen IDs neu erstellt wurden. Konto-IDs, Beziehungen und Besprechungen werden weder automatisch migriert noch gelöscht.
 
 Verschlüsselte Browser-Tresore werden getrennt nach Origin, Konto-ID und serverseitiger Kontoinstanz-ID gespeichert. Vor dem Laden muss der Server Konto und Instanz bestätigen. Passwörter und Entschlüsselungsschlüssel bleiben ausschließlich im Arbeitsspeicher; alte IndexedDB-Entsperrschlüssel werden entfernt. Nach Neuladen ist das Schlüsselbund-Passwort erneut nötig, außer eine Passwortanmeldung entschlüsselt den Tresor erfolgreich. Kontowechsel brechen offene Dialoge und kryptografische Vorgänge ab. Entsperren erstellt keinen fehlenden Schlüsselbund; dafür ist die ausdrückliche Einrichtung oder Erstellen erforderlich.
+
+## Offline-Status und Wiederherstellung der Navigation
+
+Ein schließbarer Hinweis im Kopfbereich nutzt die gemeinsamen Hinweisstile und zeigt den Offline-Modus an. Nach Wiederverbindung bietet er Aktualisieren an, statt automatisch neu zu laden; die Aktion beachtet ungespeicherte und gepufferte Änderungen. Eine nicht verfügbare Seite versucht zuerst, die vorherige nutzbare Seite wiederherzustellen. Schlägt dies fehl, wird nach Wiederverbindung eine geschützte automatische Aktualisierung aktiviert. Absolute und relative Links derselben Origin verwenden den SPA-Router. Der Offline-Katalog behält öffentliche zwischengespeicherte Seiten sowie vom Anbieter freigegebene private Routen.
+
+## Abfragelimits im Offline-Modus
+
+Im Offline-Modus stoppen die Einwilligungsabfragen und normalen Wiederherstellungsabfragen. Nur eine kleine Server-Gesundheitsabfrage läuft alle fünfzehn Minuten, auch bei wiederholten Online-Ereignissen des Browsers. Fehlgeschlagene Online-Verbindungsprüfungen werden bis auf fünfzehn Minuten verlangsamt. Einwilligungsabfragen werden bei Fehlern bis auf fünf Minuten verlangsamt, offline vollständig gestoppt und nach Wiederverbindung fortgesetzt. Die erforderliche zwischengespeicherte Zustimmung bleibt Voraussetzung für Offline-Zugriff.

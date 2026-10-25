@@ -8,6 +8,8 @@ function fixture({ workerError = false } = {}) {
     let healthy = false;
     let now = 1_000;
     const timers = [];
+    const delays = [];
+    let probes = 0;
     window.location = { pathname: "/license", reload: () => reloads++ };
     const module = loadTestModule(
         new URL("../offline-state.js", import.meta.url),
@@ -45,11 +47,15 @@ function fixture({ workerError = false } = {}) {
             CustomEvent,
             AbortSignal,
             console,
-            setTimeout: (callback) => {
+            setTimeout: (callback, delay) => {
+                delays.push(delay);
                 timers.push(callback);
                 return timers.length;
             },
-            fetch: async () => ({ ok: healthy }),
+            fetch: async () => {
+                probes++;
+                return { ok: healthy };
+            },
         },
     );
     return {
@@ -59,6 +65,8 @@ function fixture({ workerError = false } = {}) {
         },
         module,
         timers,
+        delays,
+        probes: () => probes,
         recover: () => {
             healthy = true;
         },
@@ -81,16 +89,20 @@ test("real server recovery and browser online events honor the navigation guard"
     assert.equal(state.timers.length, 1);
     await state.timers.shift()();
     assert.equal(state.reloads(), 0);
+    assert.equal(state.module.hasRecoveredConnection(), true);
+    state.module.refreshAfterOffline();
     assert.equal(typeof resume, "function");
     resume();
     assert.equal(state.reloads(), 1);
 });
 
-test("recovery reloads fresh server state when navigation is allowed", async () => {
+test("recovery waits for the user to request a guarded refresh", async () => {
     const state = fixture();
     state.module.setOffline(true);
     state.recover();
     await state.timers.shift()();
+    assert.equal(state.reloads(), 0);
+    assert.equal(state.module.refreshAfterOffline(), true);
     assert.equal(state.reloads(), 1);
 });
 
@@ -113,5 +125,37 @@ test("worker maintenance errors cannot turn a reachable server back into offline
     await state.timers.shift()();
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(state.module.isOffline(), false);
+    assert.equal(state.reloads(), 0);
+});
+
+test("offline probes run at most once every fifteen minutes even after repeated online events", async () => {
+    const state = fixture();
+    state.module.setOffline(true);
+    for (let attempt = 0; attempt < 3; attempt++) {
+        for (let online = 0; online < 5; online++)
+            state.window.dispatchEvent(new Event("online"));
+        assert.equal(state.timers.length, 1);
+        assert.equal(state.delays.at(-1), 15 * 60_000);
+        await state.timers.shift()();
+        assert.equal(state.probes(), attempt + 1);
+    }
+    assert.equal(state.module.refreshAfterOffline(), false);
+    assert.equal(state.reloads(), 0);
+});
+
+test("failed previous-page recovery arms automatic guarded refresh after server recovery", async () => {
+    const state = fixture();
+    let resume;
+    state.window.addEventListener("cognis:route-before-navigate", (event) => {
+        event.preventDefault();
+        resume = event.detail.resume;
+    });
+    state.module.setOffline(true);
+    state.module.enableOfflineAutoRefresh();
+    state.recover();
+    await state.timers.shift()();
+    assert.equal(state.reloads(), 0);
+    assert.equal(typeof resume, "function");
+    resume();
     assert.equal(state.reloads(), 1);
 });

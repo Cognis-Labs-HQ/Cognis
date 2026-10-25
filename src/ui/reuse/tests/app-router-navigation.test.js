@@ -12,6 +12,7 @@ function createRouter({
     beginLoading,
     prepareProviders,
     runFlow,
+    offline = false,
 } = {}) {
     const listeners = new Map();
     const capabilities = new Map();
@@ -97,7 +98,7 @@ function createRouter({
         },
         isGuestAllowedPath: () => false,
         installComponentPageBroker() {},
-        isOffline: () => false,
+        isOffline: () => offline,
         offlineWorkerRequest: async () => [],
         createI18n: async () => ({ t: (key) => key }),
         observePerformance() {},
@@ -110,6 +111,7 @@ function createRouter({
             "./offline-state.js": sandbox,
             "./offline-navigation.js": {
                 allowOfflineRoute: async () => true,
+                recoverOfflineNavigation: async ({ restore }) => restore(),
                 offlineRouteAvailable: () => false,
             },
             "./page-styles.js": sandbox,
@@ -395,4 +397,30 @@ test("entry failure releases loading before presenting its error popup", async (
     });
     assert.equal(await router.navigateTo("/broken"), false);
     assert.equal(active, false);
+});
+
+test("absolute same-origin links stay in the SPA when offline", async () => {
+    const router = createRouter({
+        offline: true,
+        prepareProviders: () =>
+            assert.fail("offline navigation must not fetch providers"),
+    });
+    let prevented = false;
+    const link = {
+        hasAttribute: () => false,
+        target: "",
+        getAttribute: (name) =>
+            name === "href" ? "https://cognis.test/terms-of-service" : null,
+    };
+    await router.listeners.get("click")({
+        defaultPrevented: false,
+        button: 0,
+        target: { closest: () => link },
+        preventDefault() {
+            prevented = true;
+        },
+    });
+    assert.equal(prevented, true);
+    assert.equal(router.root.textContent, "Terms");
+    assert.deepEqual(router.assigned, []);
 });
