@@ -122,3 +122,5 @@ Implementation: [f05ea0a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f05ea0
 ## One offline notice
 
 Offline status and unavailable-page details share a single header notice without a Dismiss action. Reconnection replaces it with the connection-restored message and one Refresh button using shared button variants and action spacing. Shell defaults preserve explicit confirm, cancel and neutral button styles. Pages without a shell header use one inline notice.
+
+Implementation: [9cfab80](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cfab806b213cc6b48525e22ddd6b7fee8677ed4)

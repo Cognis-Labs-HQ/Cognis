@@ -122,3 +122,5 @@ Implementierung: [f05ea0a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f05ea
 ## Ein Offline-Hinweis
 
 Offline-Status und Angaben zur nicht verfügbaren Seite stehen gemeinsam in einem einzigen Hinweis im Kopfbereich ohne Schließen-Aktion. Nach Wiederverbindung erscheinen dort die Wiederherstellungsmeldung und eine Aktualisieren-Schaltfläche mit gemeinsamen Schaltflächenstilen und Aktionsabständen. Standardstile der Oberfläche erhalten ausdrücklich gewählte Bestätigen-, Abbrechen- und neutrale Schaltflächenstile. Seiten ohne Kopfbereich verwenden einen einzelnen Hinweis im Inhalt.
+
+Implementierung: [9cfab80](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cfab806b213cc6b48525e22ddd6b7fee8677ed4)
