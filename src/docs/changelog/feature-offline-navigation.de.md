@@ -44,6 +44,10 @@ Zwischengespeicherte soziale Inhalte bleiben tablokal und zustimmungspflichtig. 
 
 Die Modules-Werkzeugleiste behält ihre Symbolgröße, wenn gemeinsame Schaltflächenstile später laden. Erfolgreich geladene SVGs für Aktualisieren und Einstellungen werden nicht mehr durch Schaltflächenabstände auf einen schmalen Streifen gedrückt.
 
+## Profilstart
+
+Die Profilverfügbarkeit startet beim Einbinden des Anbieters, nachdem sein gepufferter Client registriert und die Avatar-Stile bereit sind. Der Import startet weder Anwesenheitsaufrufe noch Abfragen. Deaktivieren und fehlgeschlagenes Einbinden entfernen Abonnements, Seiten-Listener, Timer und zwischengespeicherte Verfügbarkeit; veraltete asynchrone Arbeit verändert keinen späteren Anbieterbereich. So entsteht beim Online-Start von Verwaltungsseiten kein Fehler `profile_client_unavailable`.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

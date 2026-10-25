@@ -50,9 +50,19 @@ export function createOfflineClientFixture(send) {
             return added;
         },
         runFlow: uiCtx.runFlow,
+        removeFlowHook: uiCtx.removeFlowHook,
         capabilities: {
             get: (id) => capabilities.get(id) ?? uiCtx.capabilities.get(id),
-            contribute: (id, value) => capabilities.set(id, value),
+            contribute(id, value) {
+                if (capabilities.has(id)) return false;
+                capabilities.set(id, value);
+                return true;
+            },
+            remove(id, value) {
+                return (
+                    capabilities.get(id) === value && capabilities.delete(id)
+                );
+            },
         },
     };
     const dependency = {

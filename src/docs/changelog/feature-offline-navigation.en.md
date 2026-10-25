@@ -44,6 +44,10 @@ Cached social content remains tab-local and consent-gated. First visits, private
 
 The Modules toolbar now keeps its icon dimensions when shared button styles load afterward. Correctly fetched refresh/settings SVGs are no longer squeezed to a narrow strip by button padding.
 
+## Profile Startup
+
+Profile availability starts from the provider mount after its buffered client has been registered and avatar styles are ready. Importing the provider does not start presence callbacks or polling. Disable and failed mounts remove subscriptions, page listeners, timers and cached availability; stale asynchronous work cannot update a later provider scope. This prevents online administration pages from raising `profile_client_unavailable` during initialization.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)
