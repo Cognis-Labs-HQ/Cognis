@@ -90,3 +90,5 @@ Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyed
 Ini perubahan yang tidak kompatibel tanpa migrasi ID akun. Hentikan instans dan reset basis data yang memiliki ID akun SSO berisi penyedia sebelum peningkatan; Authentication menolak startup dengan `provider_account_ids_require_clean_database` daripada menampilkan ID tersebut. Hubungan dan rapat lama tidak dimigrasikan.
 
 Brankas browser terenkripsi disimpan terpisah menurut origin, ID akun, dan ID instans akun dari server. Server harus memverifikasi akun serta instans sebelum cache dimuat. Kata sandi dan kunci dekripsi hanya ada di memori; kunci pembuka IndexedDB lama dihapus. Setelah memuat ulang, kata sandi keyring diperlukan kembali, kecuali login kata sandi berhasil mendekripsi brankas. Pergantian akun membatalkan dialog dan operasi kriptografi yang tertunda. Membuka keyring tidak membuat keyring baru; pembuatan memerlukan penyiapan atau tindakan Buat secara eksplisit.
+
+Implementasi privasi akun dan isolasi keyring: `015e99106e7c190b999e55e73d413257fcb41725`.

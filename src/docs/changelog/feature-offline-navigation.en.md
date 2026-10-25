@@ -90,3 +90,5 @@ SSO accounts use opaque random IDs. Provider IDs are stored separately and expos
 This is a clean break with no account-ID migration. Stop the instance and reset databases containing provider-bearing SSO account IDs before upgrading; Authentication refuses startup with `provider_account_ids_require_clean_database` rather than serve those IDs. Existing relationships and meetings are not migrated.
 
 Encrypted browser vaults are cached independently by origin, account ID and server account-instance ID. The server must verify the account and instance before a cache is loaded. Passwords and decryption keys remain in memory and are never persisted; old IndexedDB unlock keys are retired. Reloading requires the keyring password again, unless a password login successfully decrypts the vault. Account changes cancel outstanding prompts and cryptographic work. Unlock never creates a missing keyring: only explicit setup or Create can do so.
+
+Account privacy and keyring isolation implementation: `015e99106e7c190b999e55e73d413257fcb41725`.

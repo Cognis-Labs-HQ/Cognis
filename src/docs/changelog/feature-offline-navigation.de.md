@@ -90,3 +90,5 @@ SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat 
 Dies ist eine inkompatible Umstellung ohne Konto-ID-Migration. Instanz stoppen und Datenbanken mit anbieterhaltigen SSO-Konto-IDs vor dem Upgrade zurücksetzen; Authentication verweigert den Start mit `provider_account_ids_require_clean_database`, statt solche IDs auszuliefern. Vorhandene Beziehungen und Besprechungen werden nicht migriert.
 
 Verschlüsselte Browser-Tresore werden getrennt nach Origin, Konto-ID und serverseitiger Kontoinstanz-ID gespeichert. Vor dem Laden muss der Server Konto und Instanz bestätigen. Passwörter und Entschlüsselungsschlüssel bleiben ausschließlich im Arbeitsspeicher; alte IndexedDB-Entsperrschlüssel werden entfernt. Nach Neuladen ist das Schlüsselbund-Passwort erneut nötig, außer eine Passwortanmeldung entschlüsselt den Tresor erfolgreich. Kontowechsel brechen offene Dialoge und kryptografische Vorgänge ab. Entsperren erstellt keinen fehlenden Schlüsselbund; dafür ist die ausdrückliche Einrichtung oder Erstellen erforderlich.
+
+Implementierung von Kontodatenschutz und Schlüsselbund-Isolation: `015e99106e7c190b999e55e73d413257fcb41725`.
