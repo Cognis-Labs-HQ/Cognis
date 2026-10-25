@@ -96,3 +96,5 @@ Account privacy and keyring isolation implementation: `015e99106e7c190b999e55e73
 ## Preserve local-account startup
 
 Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.
+
+Local-account startup correction: `894e74060ef7ff67fce1e8d45d94863ad5abd4a7`.

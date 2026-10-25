@@ -96,3 +96,5 @@ Implementierung von Kontodatenschutz und Schlüsselbund-Isolation: `015e99106e7c
 ## Start mit lokalen Konten erhalten
 
 Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätzen weiter. Der Start erfordert kein Zurücksetzen der Datenbank. Anmeldung und Bereitstellung alter SSO-Konten werden einzeln abgelehnt, bis diese Konten mit undurchsichtigen IDs neu erstellt wurden. Konto-IDs, Beziehungen und Besprechungen werden weder automatisch migriert noch gelöscht.
+
+Korrektur des Starts mit lokalen Konten: `894e74060ef7ff67fce1e8d45d94863ad5abd4a7`.

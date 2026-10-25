@@ -96,3 +96,5 @@ Implementasi privasi akun dan isolasi keyring: `015e99106e7c190b999e55e73d413257
 ## Pertahankan startup akun lokal
 
 Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup tidak memerlukan reset basis data. Login dan provisi akun SSO lama ditolak secara individual sampai akun tersebut dibuat ulang dengan ID opak. ID akun, hubungan, dan rapat tidak dimigrasikan atau dihapus secara otomatis.
+
+Perbaikan startup akun lokal: `894e74060ef7ff67fce1e8d45d94863ad5abd4a7`.
