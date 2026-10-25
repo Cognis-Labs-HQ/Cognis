@@ -90,7 +90,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi   |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.8.1` |
+| API Server | `src/api/` | `0.8.2` |
 
 ## Peralatan
 

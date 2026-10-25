@@ -101,7 +101,7 @@ Korrektur des Starts mit lokalen Konten: `894e74060ef7ff67fce1e8d45d94863ad5abd4
 
 ## Offline-Status und Wiederherstellung der Navigation
 
-Ein schließbarer Hinweis im Kopfbereich nutzt die gemeinsamen Hinweisstile und zeigt den Offline-Modus an. Nach Wiederverbindung bietet er Aktualisieren an, statt automatisch neu zu laden; die Aktion beachtet ungespeicherte und gepufferte Änderungen. Eine nicht verfügbare Seite versucht zuerst, die vorherige nutzbare Seite wiederherzustellen. Schlägt dies fehl, wird nach Wiederverbindung eine geschützte automatische Aktualisierung aktiviert. Absolute und relative Links derselben Origin verwenden den SPA-Router. Der Offline-Katalog behält öffentliche zwischengespeicherte Seiten sowie vom Anbieter freigegebene private Routen.
+Ein dauerhafter Hinweis im Kopfbereich nutzt die gemeinsamen Hinweisstile und zeigt den Offline-Modus an. Nach Wiederverbindung bietet er Aktualisieren an, statt automatisch neu zu laden; die Aktion beachtet ungespeicherte und gepufferte Änderungen. Eine nicht verfügbare Seite versucht zuerst, die vorherige nutzbare Seite wiederherzustellen. Schlägt dies fehl, wird nach Wiederverbindung eine geschützte automatische Aktualisierung aktiviert. Absolute und relative Links derselben Origin verwenden den SPA-Router. Der Offline-Katalog behält öffentliche zwischengespeicherte Seiten sowie vom Anbieter freigegebene private Routen.
 
 ## Abfragelimits im Offline-Modus
 
@@ -111,10 +111,14 @@ Implementierung von Offline-Status, Navigationswiederherstellung und Abfrageinte
 
 ## Plötzlicher Verbindungsverlust
 
-Kann die aktuelle Seite offline nicht verwendet werden, beendet der Host ihren Seitenlebenszyklus und versucht ohne Fehlerdialog zur vorherigen offlinefähigen Seite zurückzukehren. Schlägt dies fehl, ersetzt ein Offline-Hinweis den nicht verfügbaren Inhalt; bei erneuter Verbindung wird eine durch Navigationsschutz abgesicherte automatische Aktualisierung versucht. Präsenz-Timer pausieren offline und starten nach Wiederherstellung neu. Erfolgreich geladene öffentliche Übersetzungen werden im Tab wiederverwendet; geschützte Kataloge erfordern weiterhin authentifizierte Anfragen.
+Kann die aktuelle Seite offline nicht verwendet werden, beendet der Host ihren Seitenlebenszyklus und versucht ohne Fehlerdialog zur vorherigen offlinefähigen Seite zurückzukehren. Schlägt dies fehl, erklärt der Hinweis im Kopfbereich die nicht verfügbare Seite und der Inhalt wird geleert; bei erneuter Verbindung wird eine durch Navigationsschutz abgesicherte automatische Aktualisierung versucht. Präsenz-Timer pausieren offline und starten nach Wiederherstellung neu. Erfolgreich geladene öffentliche Übersetzungen werden im Tab wiederverwendet; geschützte Kataloge erfordern weiterhin authentifizierte Anfragen.
 
 ## Zugriff auf Dashboard und Study
 
 Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoübersicht und zwischengespeicherte bevorstehende Termine bleiben nutzbar. Beim erneuten Offline-Öffnen werden optionale, vom Server geladene Erweiterungen ausgelassen. Der Study-Anbieter registriert die Übersichtsroute und nutzt über `study:navigation`-Abläufe konto- und sitzungsgebundene Schnappschüsse von Sprachkatalogen, Lernpräferenzen und Modulverweisen. Beim Laden der Navigationsleiste werden diese kleinen Metadaten vorab geladen. Explore und Lernkarten behalten ihre anbietergebundenen Routendeklarationen; nicht unterstützte Seiten nutzen weiterhin die stille Wiederherstellung. Die Auswahl zu lernender Sprachen erfordert eine Verbindung. Beim erneuten Öffnen der Oberfläche wird keine Theme-Präferenz mehr automatisch geschrieben. Ausdrückliche Änderungen der Oberflächeneinstellungen nutzen den aktiven Profile-Client und damit dessen Offline-Puffer; verzögerte Zusammenführungen prüfen weiterhin das Konto.
 
 Implementierung: [f05ea0a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f05ea0a48325a7a1e58ea22ca46c613f7cd85b87)
+
+## Ein Offline-Hinweis
+
+Offline-Status und Angaben zur nicht verfügbaren Seite stehen gemeinsam in einem einzigen Hinweis im Kopfbereich ohne Schließen-Aktion. Nach Wiederverbindung erscheinen dort die Wiederherstellungsmeldung und eine Aktualisieren-Schaltfläche mit gemeinsamen Schaltflächenstilen und Aktionsabständen. Standardstile der Oberfläche erhalten ausdrücklich gewählte Bestätigen-, Abbrechen- und neutrale Schaltflächenstile. Seiten ohne Kopfbereich verwenden einen einzelnen Hinweis im Inhalt.

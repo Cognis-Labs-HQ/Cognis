@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { renderInPageCallout } from "../in-page-callout.js";
 
-function fixture() {
+function fixture({ headerAvailable = true } = {}) {
     let finish;
     let current = true;
     const translations = new Promise((resolve) => {
@@ -20,7 +20,10 @@ function fixture() {
             "./in-page-callout.js": { renderInPageCallout },
             "./offline-state.js": { isOffline: () => true },
             "./offline-status.js": {
-                mountOfflineStatus: (owner) => notices.push(owner),
+                mountOfflineStatus: (owner, options) => {
+                    notices.push({ owner, options });
+                    return headerAvailable ? () => {} : undefined;
+                },
             },
         },
     );
@@ -49,9 +52,13 @@ test("the unavailable view replaces page content and remounts the host notice af
     const showing = state.show();
     state.finish();
     await showing;
-    assert.match(state.content.innerHTML, /Unavailable offline/);
-    assert.equal(state.content.dataset.offlineUnavailable, "true");
-    assert.deepEqual(state.notices, [state.root]);
+    assert.equal(
+        state.content.innerHTML,
+        "<div data-offline-unavailable></div>",
+    );
+    assert.equal(state.notices.length, 1);
+    assert.equal(state.notices[0].owner, state.root);
+    assert.equal(state.notices[0].options.unavailable, true);
 });
 
 test("a delayed offline fallback cannot overwrite a newer navigation", async () => {
@@ -62,4 +69,16 @@ test("a delayed offline fallback cannot overwrite a newer navigation", async () 
     await showing;
     assert.equal(state.content.innerHTML, "New page");
     assert.equal(state.notices.length, 0);
+});
+
+test("a page without a shell header gets one inline unavailable notice", async () => {
+    const state = fixture({ headerAvailable: false });
+    const showing = state.show();
+    state.finish();
+    await showing;
+    assert.match(state.content.innerHTML, /Unavailable offline/);
+    assert.equal(
+        (state.content.innerHTML.match(/role="status"/g) ?? []).length,
+        1,
+    );
 });

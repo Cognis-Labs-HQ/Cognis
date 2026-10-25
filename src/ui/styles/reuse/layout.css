@@ -484,11 +484,16 @@
     color: var(--text);
     background: var(--surface-soft);
 }
+.workspace:has(> .main-window > [data-offline-unavailable]:empty),
+.main-window:has(> [data-offline-unavailable]:empty) {
+    display: none;
+}
+
 .content-grid {
     display: grid;
     gap: 14px;
 }
-.app-shell button,
+.app-shell button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)),
 .app-shell select,
 .app-shell input,
 .app-shell textarea {

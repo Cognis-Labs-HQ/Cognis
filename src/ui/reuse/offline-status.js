@@ -10,8 +10,6 @@ import { escapeHtml } from "./escape-html.js";
 import { ensurePersistentStylesheet } from "./page-styles.js";
 
 const owners = new WeakMap();
-let lastMode = "";
-let dismissedMode = "";
 const refreshFlow = "offline:refreshPage";
 if (!uiCtx.flowExists(refreshFlow)) {
     uiCtx.registerFlow(refreshFlow, ["validate", "navigate"]);
@@ -30,8 +28,11 @@ if (!uiCtx.flowExists(refreshFlow)) {
     );
 }
 
-/** Mount a dismissible host-header notice using the shared callout and guarded navigation. */
-export function mountOfflineStatus(root, { i18n, signal } = {}) {
+/** Mount one host-header notice using the shared callout and guarded navigation. */
+export function mountOfflineStatus(
+    root,
+    { i18n, signal, unavailable = false } = {},
+) {
     owners.get(root)?.();
     if (signal?.aborted) return;
     const header = root.querySelector(".site-header");
@@ -46,14 +47,9 @@ export function mountOfflineStatus(root, { i18n, signal } = {}) {
               : hasRecoveredConnection()
                 ? "recovered"
                 : "";
-        if (mode !== lastMode) {
-            lastMode = mode;
-            dismissedMode = "";
-        }
         notice?.remove();
         notice = null;
-        if (!mode || mode === dismissedMode || controller.signal.aborted)
-            return;
+        if (!mode || controller.signal.aborted) return;
         notice = document.createElement("div");
         notice.dataset.offlineStatus = mode;
         notice.innerHTML = renderInPageCallout({
@@ -63,20 +59,19 @@ export function mountOfflineStatus(root, { i18n, signal } = {}) {
                     ? "ui.reuse.offline_mode_active"
                     : "ui.reuse.offline_connection_restored",
             ),
-            footerHtml: `<div class="controls">${mode === "recovered" ? `<button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button>` : ""}<button type="button" class="btn-neutral btn-animated" data-offline-dismiss>${escapeHtml(i18n.t("ui.reuse.dismiss"))}</button></div>`,
+            body:
+                mode === "offline" && unavailable
+                    ? i18n.t("ui.reuse.offline_page_unavailable")
+                    : "",
+            footerHtml:
+                mode === "recovered"
+                    ? `<div class="in-page-callout__actions"><button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button></div>`
+                    : "",
         });
         notice.querySelector("[data-offline-refresh]")?.addEventListener(
             "click",
             () => {
                 void uiCtx.runFlow(refreshFlow, {});
-            },
-            { signal: controller.signal },
-        );
-        notice.querySelector("[data-offline-dismiss]").addEventListener(
-            "click",
-            () => {
-                dismissedMode = mode;
-                notice?.remove();
             },
             { signal: controller.signal },
         );
@@ -96,9 +91,10 @@ export function mountOfflineStatus(root, { i18n, signal } = {}) {
     };
     signal?.addEventListener("abort", dispose, { once: true });
     owners.set(root, dispose);
-    void ensurePersistentStylesheet(
-        "/static/styles/reuse/in-page-callout.css",
-    ).catch((error) =>
+    void Promise.all([
+        ensurePersistentStylesheet("/static/styles/reuse/in-page-callout.css"),
+        ensurePersistentStylesheet("/static/styles/reuse/buttons.css"),
+    ]).catch((error) =>
         console.info("[offline] status stylesheet unavailable", {
             operation: "loadStatusStyles",
             errorName: error?.name,

@@ -14,11 +14,13 @@ export async function showOfflineUnavailable(root, isCurrent = () => true) {
         (root.querySelector(".main-window") ?? root) !== content
     )
         return;
-    mountOfflineStatus(root, { i18n });
-    content.innerHTML = renderInPageCallout({
-        variant: "info",
-        title: i18n.t("ui.reuse.offline_mode_active"),
-        body: i18n.t("ui.reuse.offline_page_unavailable"),
-    });
-    content.dataset.offlineUnavailable = "true";
+    const headerNotice = mountOfflineStatus(root, { i18n, unavailable: true });
+    const fallback = headerNotice
+        ? ""
+        : renderInPageCallout({
+              variant: "info",
+              title: i18n.t("ui.reuse.offline_mode_active"),
+              body: i18n.t("ui.reuse.offline_page_unavailable"),
+          });
+    content.innerHTML = `<div data-offline-unavailable>${fallback}</div>`;
 }
