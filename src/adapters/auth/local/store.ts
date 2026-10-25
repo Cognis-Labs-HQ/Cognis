@@ -111,6 +111,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 : isPrivateAccountId(identity.accountId)
                   ? identity.accountId
                   : createAccountId();
+            if (!isPrivateAccountId(accountId)) {
+                throw new Error("legacy_sso_account_requires_recreation");
+            }
             if (!identityResult.rows?.[0]?.account_id) {
                 const accountResult = await txDb.executeCommand({
                     option: "SELECT",
@@ -337,18 +340,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
             ],
             indexes: [{ columns: ["account_id"] }],
         });
-        const identities = await this.db.executeCommand({
-            option: "SELECT",
-            table: "auth_identities",
-            columns: ["account_id"],
-        });
-        if (
-            (identities.rows ?? []).some(
-                (row) => !isPrivateAccountId(String(row.account_id)),
-            )
-        ) {
-            throw new Error("provider_account_ids_require_clean_database");
-        }
         await prepareUsernames(this.db);
     }
 

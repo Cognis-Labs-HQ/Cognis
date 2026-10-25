@@ -20,7 +20,7 @@ import {
     resolveExternalAccountNamespace,
     resolveSessionEmail,
 } from "./external-session.js";
-import { createAccountId } from "../reuse/usernames.js";
+import { createAccountId, isPrivateAccountId } from "../reuse/usernames.js";
 
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
@@ -195,6 +195,20 @@ export async function registerAuthBootstrapHook(
                           adapter.id,
                       )
                     : undefined;
+            if (
+                resolvedExternalAccountId &&
+                !isPrivateAccountId(resolvedExternalAccountId)
+            ) {
+                context.ctx.log?.(
+                    "warn",
+                    "Legacy SSO account requires individual recreation.",
+                    {
+                        component: "auth-gateway",
+                        operation: "authenticate",
+                    },
+                );
+                return { success: false, reason: "invalid_credentials" };
+            }
             const canonicalAccountId =
                 adapter.id === "local"
                     ? session.accountId.trim().toLowerCase()

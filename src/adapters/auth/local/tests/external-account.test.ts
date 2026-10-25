@@ -311,18 +311,27 @@ test("external identities cannot attach to a colliding persisted account", async
     );
 });
 
-test("startup rejects provider-bearing stored IDs without rewriting or deleting accounts", async () => {
+test("legacy SSO provisioning is refused individually without account mutations", async () => {
     const commands: Array<Record<string, unknown>> = [];
-    const store = new DbLocalAccountStore({
-        async ensureTable() {},
+    const executor = {
         async executeCommand(command: Record<string, unknown>) {
             commands.push(command);
             return { rows: [{ account_id: "x:alice" }] };
         },
-    } as never);
+        async transaction(
+            operation: (transaction: unknown) => Promise<unknown>,
+        ) {
+            return operation(this);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
     await assert.rejects(
-        store.ensureSchema(),
-        /provider_account_ids_require_clean_database/,
+        store.ensureExternalAccount({
+            accountId: "alice",
+            provider: "x",
+            externalUserId: "alice-subject",
+        }),
+        /legacy_sso_account_requires_recreation/,
     );
     assert.equal(
         commands.some((command) => command.option !== "SELECT"),

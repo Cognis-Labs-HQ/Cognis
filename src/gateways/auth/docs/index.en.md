@@ -144,4 +144,4 @@ Credential, TFA-code and SSO authorization requests show the shared loading whee
 
 SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
 
-This is a clean break with no account-ID migration. Stop the instance and reset databases containing provider-bearing SSO account IDs before upgrading; Authentication refuses startup with `provider_account_ids_require_clean_database` rather than serve those IDs. Existing relationships and meetings are not migrated.
+Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.

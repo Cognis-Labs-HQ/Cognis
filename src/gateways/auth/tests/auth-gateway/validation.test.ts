@@ -782,3 +782,93 @@ test("external login cannot attach to a local account or bypass registration aut
         null,
     );
 });
+
+test("existing local login survives gateway restart with legacy SSO records present", async () => {
+    const executor = new InMemoryTestExecutor();
+    const initialCapabilities = new CapabilityStore();
+    await bootstrapAuthGateway({
+        gatewayRegistry: new GatewayRegistry(),
+        routeRegistry: new RouteRegistry(),
+        capabilities: initialCapabilities,
+        db: executor,
+    });
+    await initialCapabilities
+        .require<{
+            register(username: string, password: string): Promise<unknown>;
+        }>("auth:accountStore")
+        .register("existing-local", "local-password");
+    await executor.executeCommand({
+        option: "INSERT",
+        table: "accounts",
+        values: {
+            id: "x:alice",
+            display_name: "Alice",
+            enabled: true,
+            role: "user",
+        },
+    });
+    await executor.executeCommand({
+        option: "INSERT",
+        table: "auth_identities",
+        values: {
+            id: "external-sso:subject",
+            account_id: "x:alice",
+            provider: "external-sso",
+            external_user_id: "subject",
+        },
+    });
+    const capabilities = new CapabilityStore();
+    const routeRegistry = new RouteRegistry();
+    await bootstrapAuthGateway({
+        gatewayRegistry: new GatewayRegistry(),
+        routeRegistry,
+        capabilities,
+        db: executor,
+    });
+    const localLogin = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "existing-local",
+            password: "local-password",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(localLogin.res.status, 200);
+    assert.equal(
+        JSON.parse(localLogin.res.payload).data.accountId,
+        "existing-local",
+    );
+    await capabilities.require<
+        (provider: Record<string, unknown>) => Promise<() => void>
+    >("auth:registerProvider")({
+        id: "external-sso",
+        name: "External SSO",
+        locked: true,
+        authenticate: async () => ({
+            accountId: "alice",
+            provider: "external-sso",
+            externalUserId: "subject",
+        }),
+        configure() {},
+        getConfigSchema: () => [],
+    });
+    const legacyLogin = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { provider: "external-sso" }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(legacyLogin.res.status, 401);
+    assert.equal(JSON.parse(legacyLogin.res.payload).data, undefined);
+    assert.deepEqual(
+        (
+            await executor.executeCommand({
+                option: "SELECT",
+                table: "accounts",
+                columns: ["id"],
+                orderBy: [{ column: "id", direction: "ASC" }],
+            })
+        ).rows,
+        [{ id: "existing-local" }, { id: "x:alice" }],
+    );
+});
