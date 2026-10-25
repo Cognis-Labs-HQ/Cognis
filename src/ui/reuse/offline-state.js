@@ -62,20 +62,56 @@ export function setOffline(offline) {
 export async function offlineWorkerRequest(type, options = {}) {
     const worker = globalThis.navigator?.serviceWorker?.controller;
     if (!worker) return [];
-    return new Promise((resolve, reject) => {
+    const coalesced = [
+        "COGNIS_REFRESH_OFFLINE_ROUTES",
+        "COGNIS_OFFLINE_ROUTES",
+        "COGNIS_OFFLINE_REQUIREMENTS",
+    ].includes(type);
+    const requests = (state.workerRequests ??= new Map());
+    const previous = requests.get(type);
+    if (coalesced && previous?.worker === worker) return previous.promise;
+    const promise = new Promise((resolve, reject) => {
         const channel = new MessageChannel();
-        const timeout = setTimeout(() => {
-            channel.port1.close();
-            reject(new Error("offline_worker_timeout"));
-        }, 5000);
-        channel.port1.onmessage = ({ data }) => {
+        const finish = (error, result) => {
             clearTimeout(timeout);
             channel.port1.close();
-            if (data.error) reject(new Error(data.error));
-            else resolve(data.result);
+            channel.port2.close();
+            if (error) reject(error);
+            else resolve(result);
         };
-        worker.postMessage({ ...options, type }, [channel.port2]);
+        const timeout = setTimeout(
+            () => finish(new Error("offline_worker_timeout")),
+            5000,
+        );
+        channel.port1.onmessage = ({ data }) => {
+            if (!data || typeof data !== "object")
+                return finish(new Error("offline_worker_invalid_reply"));
+            finish(data.error ? new Error(data.error) : null, data.result);
+        };
+        channel.port1.onmessageerror = () =>
+            finish(new Error("offline_worker_invalid_reply"));
+        try {
+            worker.postMessage({ ...options, type }, [channel.port2]);
+        } catch (error) {
+            finish(error);
+        }
     });
+    const record = { worker, promise };
+    if (coalesced) requests.set(type, record);
+    try {
+        const result = await promise;
+        if (
+            type === "COGNIS_INVALIDATE_OFFLINE_ROUTES" &&
+            typeof globalThis.CustomEvent === "function"
+        ) {
+            globalThis.window?.dispatchEvent?.(
+                new CustomEvent("cognis:offline-worker-reset"),
+            );
+        }
+        return result;
+    } finally {
+        if (requests.get(type) === record) requests.delete(type);
+    }
 }
 
 if (
@@ -139,12 +175,14 @@ function scheduleRecovery() {
     recoveryTimer = setTimeout(async () => {
         recoveryTimer = null;
         if (!isOffline()) return;
+        let reachable = false;
         try {
             const response = await fetch("/api/v1/system/healthcheck", {
                 cache: "no-store",
                 signal: AbortSignal.timeout(4000),
             });
             if (response.ok) {
+                reachable = true;
                 setOffline(false);
                 const tasks = [];
                 window.dispatchEvent(
@@ -153,7 +191,17 @@ function scheduleRecovery() {
                     }),
                 );
                 await Promise.all(tasks);
-                await offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES");
+                void offlineWorkerRequest(
+                    "COGNIS_REFRESH_OFFLINE_ROUTES",
+                ).catch((error) => {
+                    console.error(
+                        "[offline] recovery cache maintenance failed",
+                        {
+                            operation: "refreshAfterRecovery",
+                            code: error?.message,
+                        },
+                    );
+                });
                 const resume = () => window.location.reload();
                 if (
                     window.dispatchEvent(
@@ -167,6 +215,13 @@ function scheduleRecovery() {
                 return;
             }
         } catch (error) {
+            if (reachable) {
+                console.error("[offline] session recovery failed", {
+                    operation: "restoreSession",
+                    errorName: error?.name,
+                });
+                return;
+            }
             setOffline(true);
             console.info("[offline] server still unavailable", {
                 operation: "recoveryProbe",

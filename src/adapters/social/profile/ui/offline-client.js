@@ -118,7 +118,7 @@ export function registerProfileOfflineClient(ctx) {
         ctx.signal,
     );
 }
-export function profileFetch(path, options = {}) {
+export async function profileFetch(path, options = {}) {
     if (!path.startsWith(ROOT) && !path.startsWith("/api/v1/files/"))
         throw new Error("invalid_profile_request");
     const request = uiCtx.capabilities.get("social:profileRequest");

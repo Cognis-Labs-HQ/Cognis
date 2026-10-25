@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { shouldShowInviteMenuEntry } from "../ui/invite-menu-visibility.js";
 
-test("registration Invite entry includes owners but excludes administrators", () => {
+test("registration Invite entry includes authorized administrators and owners", () => {
     assert.equal(
         shouldShowInviteMenuEntry({
             role: "owner",
@@ -15,11 +15,12 @@ test("registration Invite entry includes owners but excludes administrators", ()
     assert.equal(
         shouldShowInviteMenuEntry({
             role: "admin",
-            isFounder: true,
+            isFounder: false,
+            canInvite: true,
             gatewayEnabled: true,
             inviteEnabled: true,
         }),
-        false,
+        true,
     );
     assert.equal(
         shouldShowInviteMenuEntry({
@@ -30,4 +31,19 @@ test("registration Invite entry includes owners but excludes administrators", ()
         }),
         true,
     );
+});
+
+test("administrator Invite entry follows the server invitation policy", () => {
+    for (const canInvite of [false, undefined]) {
+        assert.equal(
+            shouldShowInviteMenuEntry({
+                role: "admin",
+                isFounder: false,
+                gatewayEnabled: true,
+                inviteEnabled: true,
+                canInvite,
+            }),
+            false,
+        );
+    }
 });

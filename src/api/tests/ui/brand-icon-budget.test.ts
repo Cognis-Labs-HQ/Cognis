@@ -132,6 +132,7 @@ test("service worker installation retains install icons within its precache imag
         ),
         {
             URL,
+            AbortSignal,
             Response,
             fetch: async (url: string) => {
                 if (url === "/static/offline-manifest.json")

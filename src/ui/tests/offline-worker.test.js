@@ -11,6 +11,7 @@ function workerFixture() {
     let unavailable = false;
     let routes = [];
     let offlineGuards = [];
+    let assetMaintenance = Promise.resolve();
     const origin = "https://cognis.test";
     const key = (request) =>
         new URL(typeof request === "string" ? request : request.url, origin)
@@ -30,6 +31,7 @@ function workerFixture() {
                     return store.delete(key(request));
                 },
                 async keys() {
+                    if (!name.endsWith("-control")) await assetMaintenance;
                     return [...store.keys()].map((url) => ({ url }));
                 },
             };
@@ -111,24 +113,33 @@ function workerFixture() {
             });
             await task;
         },
-        async message(type, options = {}) {
-            let task;
-            let result;
+        pauseAssetMaintenance() {
+            let release;
+            assetMaintenance = new Promise((resolve) => {
+                release = resolve;
+            });
+            return release;
+        },
+        beginMessage(type, options = {}) {
+            const tasks = [];
+            let reply;
+            const response = new Promise((resolve) => {
+                reply = resolve;
+            });
             handlers.get("message")({
                 data: { ...options, type },
-                ports: [
-                    {
-                        postMessage(value) {
-                            result = value;
-                        },
-                    },
-                ],
-                waitUntil(promise) {
-                    task = promise;
-                },
+                ports: [{ postMessage: reply }],
+                waitUntil: (promise) => tasks.push(promise),
             });
-            await task;
-            return result;
+            const finished = (async () => {
+                for (let i = 0; i < tasks.length; i++) await tasks[i];
+            })();
+            return { response, finished };
+        },
+        async message(type, options = {}) {
+            const pending = this.beginMessage(type, options);
+            await pending.finished;
+            return pending.response;
         },
         request(path, mode) {
             let response;
@@ -274,4 +285,26 @@ test("required legal guards deny cached fallback until a current access receipt 
         fixture.request("/assets/entry-ABCDEFGH.js"),
         /server_unreachable/,
     );
+});
+
+test("worker policy and catalog acknowledgements remain responsive while asset cleanup is blocked", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const release = fixture.pauseAssetMaintenance();
+    try {
+        const refresh = fixture.beginMessage("COGNIS_REFRESH_OFFLINE_ROUTES");
+        assert.ok(Array.isArray((await refresh.response).result));
+        const access = await fixture.message("COGNIS_OFFLINE_ACCESS", {
+            allowed: false,
+        });
+        assert.equal(access.result, null);
+        const invalidation = fixture.beginMessage(
+            "COGNIS_INVALIDATE_OFFLINE_ROUTES",
+        );
+        assert.equal((await invalidation.response).result.length, 0);
+        release();
+        await Promise.all([refresh.finished, invalidation.finished]);
+    } finally {
+        release();
+    }
 });

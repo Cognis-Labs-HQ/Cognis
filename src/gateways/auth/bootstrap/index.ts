@@ -29,6 +29,7 @@ import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
 import { createAuthPageRoutes } from "./routes/pages.js";
 
 export interface AuthAccountStore {
+    updateLastLogin(username: string): Promise<void>;
     ensureSchema(): Promise<void>;
     has(username: string): Promise<boolean>;
     delete(

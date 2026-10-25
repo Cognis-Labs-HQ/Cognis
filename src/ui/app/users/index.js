@@ -1,3 +1,6 @@
+import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
+import { createUserDetailsReader } from "./details.js";
+import { loadUserEmails as fetchUserEmails } from "/static/gateways/notify/email-client.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -8,7 +11,6 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { loadLoginMethods } from "/static/gateways/auth/login-client.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
-import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
@@ -26,6 +28,7 @@ let composer = null;
 let elements = [];
 let leadingControlsHtml = "";
 let providerIcons = new Map();
+let readUserDetails;
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -34,14 +37,6 @@ const QUOTA_UNITS = [
     { id: "GiB", multiplier: 1024 ** 3 },
     { id: "TiB", multiplier: 1024 ** 4 },
 ];
-
-function formatMemberSince(iso) {
-    return formatDate(iso, i18n.t("ui.app.dashboard.never"));
-}
-
-function formatLastLogin(iso) {
-    return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
-}
 
 function getCurrentRole() {
     return (localStorage.getItem("cognis_role") ?? "user").trim();
@@ -83,24 +78,6 @@ async function loadUsers() {
     if (!response.ok) return [];
     const payload = await response.json();
     return payload.data ?? [];
-}
-
-async function fetchUserInfo(username) {
-    const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(username)}/info`,
-    );
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return payload?.data ?? null;
-}
-
-async function fetchUserEmails(username) {
-    const response = await apiFetch(
-        `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
-    );
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return payload?.data ?? [];
 }
 
 async function promptInput({ title, label, type = "text", placeholder = "" }) {
@@ -359,7 +336,7 @@ function renderUsersTable() {
                           `;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
-                <td><span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}${escapeHtml(user.handle || user.username)}</span></td>
+                <td>${createCollapsibleSectionComposer({ escapeHtml, detailsLabel: i18n.t("ui.reuse.details") }).render([{ id: user.username, titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}${escapeHtml(user.handle || user.username)}</span>`, attributesHtml: `data-user-details="${escapeHtml(user.username)}"`, contentHtml: `<div data-user-details-content></div>` }])}</td>
                 <td>${roleCellHtml}</td>
                 <td>${escapeHtml(statusLabel)}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
@@ -514,25 +491,38 @@ async function runUserMenuAction(action, username) {
 }
 
 function bindUsersInteractions() {
-    root.querySelectorAll(".users-row").forEach((row) => {
-        row.addEventListener("click", async (event) => {
-            const target = event.target;
-            if (
-                target instanceof HTMLElement &&
-                target.closest("button,input,select")
-            )
-                return;
-            const username = row.dataset.username;
-            if (!username) return;
-            const info = await fetchUserInfo(username);
-            await openPopup({
-                title: username,
-                body: `
-            <p>${escapeHtml(i18n.t("ui.app.users.member_since"))}: ${escapeHtml(formatMemberSince(info?.createdAt ?? null))}</p>
-            <p>${escapeHtml(i18n.t("ui.app.users.last_login"))}: ${escapeHtml(formatLastLogin(info?.lastLogin ?? null))}</p>
-            <p>${escapeHtml(i18n.t("ui.app.users.founder"))}: ${info?.isFounder ? "true" : "false"}</p>
-          `,
-            });
+    root.querySelectorAll("[data-user-details]").forEach((details) => {
+        if (details.dataset.userDetailsBound === "true") return;
+        details.dataset.userDetailsBound = "true";
+        const toggle = details.querySelector("[data-details-toggle]");
+        toggle.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            details.open = !details.open;
+        });
+        details.addEventListener("toggle", async () => {
+            if (!details.open) return;
+            const user = users.find(
+                (user) => user.username === details.dataset.userDetails,
+            );
+            if (!user) return;
+            try {
+                const html = await readUserDetails(user);
+                if (details.isConnected && details.open)
+                    details.querySelector(
+                        "[data-user-details-content]",
+                    ).innerHTML = html;
+            } catch (error) {
+                if (error?.name === "AbortError") return;
+                console.error("users_account_details_failed", {
+                    component: "ui",
+                    operation: "readUserDetails",
+                    errorName: error?.name,
+                });
+                showToast(i18n.t("ui.app.login.error.generic"), {
+                    variant: "error",
+                });
+            }
         });
     });
 
@@ -667,6 +657,7 @@ function bindUsersInteractions() {
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
     i18n = await createI18n();
+    readUserDetails = createUserDetailsReader({ i18n, signal });
     applyDocumentTitle(i18n, "ui.page.title.users");
 
     reprompt = createRepromptGuard({ i18n });

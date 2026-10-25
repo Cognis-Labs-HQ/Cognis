@@ -135,3 +135,7 @@ Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL
 ## Penyiapan Sesi
 
 Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi setelah pengalihan SSO. Pemilik notifikasi menyediakan penyiapan email wajib melalui `auth:getSetupIntegrations(accountId, role)`, yang mengembalikan skrip dari asal yang sama dengan ekspor `enforceSetup({ accountId })`. Penyiapan selesai sebelum sesi diizinkan bernavigasi atau digunakan luring. Gangguan SMTP tidak membatalkan kewajiban verifikasi; administrator pendiri awal tetap dikecualikan.
+
+## Indikator Login
+
+Permintaan kredensial, kode TFA, dan otorisasi SSO menampilkan roda pemuatan bersama dan menutupnya sebelum penyiapan interaktif. Pengiriman kredensial ganda diabaikan selama permintaan berlangsung. Pembersihan dan penyegaran cache luring publik berjalan di latar belakang setelah login. Waktu login terakhir tetap dicatat untuk SSO meskipun adapter autentikasi lokal dinonaktifkan.

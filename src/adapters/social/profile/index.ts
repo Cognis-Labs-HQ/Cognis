@@ -1,3 +1,4 @@
+import { allocatePublicHandle } from "./public-handle.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -163,6 +164,23 @@ export async function bootstrapSocialAdapter(
 
     const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
+    // Public names are presentation data; internal account and relationship IDs stay stable.
+    for (const profile of await profileStore.searchProfiles("", undefined, {
+        includeHidden: true,
+    })) {
+        if (!profile.handle.includes(":")) continue;
+        const handle = await allocatePublicHandle(
+            profileStore,
+            profile.accountId,
+            profile.handle,
+        );
+        await profileStore.updateProfile(profile.accountId, { handle });
+        ctx.log?.("info", "Public profile handle made provider-neutral.", {
+            component: "social-profile-adapter",
+            operation: "preparePublicHandle",
+            accountId: profile.accountId,
+        });
+    }
     const deleteAccountActivity = async (accountId: string) => {
         await dbExecutor.transaction(async (transactionDb) => {
             for (const column of ["follower_id", "following_id"]) {
@@ -333,7 +351,13 @@ export async function bootstrapSocialAdapter(
         ): Promise<void> => {
             await profileStore.createProfile(
                 accountId,
-                handle,
+                accountId.includes(":")
+                    ? await allocatePublicHandle(
+                          profileStore,
+                          accountId,
+                          handle,
+                      )
+                    : handle,
                 (role as AccountRole) ?? "user",
                 displayName,
             );
@@ -413,7 +437,12 @@ export async function bootstrapSocialAdapter(
             const handle = String(externalProfile.handle ?? "")
                 .trim()
                 .replace(/^@/, "");
-            if (handle) updates.handle = handle;
+            if (handle)
+                updates.handle = await allocatePublicHandle(
+                    profileStore,
+                    accountId,
+                    handle,
+                );
             if (
                 externalProfile.profileVisibility === "hidden" ||
                 externalProfile.profileVisibility === "private" ||

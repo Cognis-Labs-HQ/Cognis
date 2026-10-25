@@ -13,3 +13,7 @@ When public registration is disabled, external authentication can create a Cogni
 Founding users may hold at most ten pending email invitations at once. Redeeming, revoking, or allowing an invitation to expire immediately returns its slot. Only administrators and owners may generate a standalone registration token. Owners may independently disable founder invitations or administrator invitations from Administration → Registration; owner invitations remain available.
 
 Token redemption occurs only after the external account is persisted and records the matched invitation address as the account's verified primary email. Failed account or email persistence leaves the invitation usable. A replacement invitation supersedes earlier pending links only after its email is delivered successfully.
+
+## Invitation Commands
+
+Administrators and owners can open `/invite` without founder status. Invitation policy still controls issuance. The enabled Registration Token adapter contributes `cognisctl invite:token:generate` to create a standalone token without SMTP delivery, and `cognisctl invite:email:send person@example.com` to send an invitation. Omitting the email opens the CLI input wizard. Both commands use the authenticated registration API and respect role, domain and delivery restrictions.

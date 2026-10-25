@@ -626,4 +626,6 @@
     <string name="ui.reuse.offline_changes_queued">Änderungen für die Wiederverbindung vorgemerkt</string>
     <string name="ui.reuse.offline_sync_rejected">Einige vorgemerkte Aktivitäten konnten nicht übernommen werden.</string>
     <string name="ui.reuse.offline_buffer_full_body">Der Offline-Puffer ist voll. Verbinde dich und sende ausstehende Änderungen, bevor du weitere hinzufügst.</string>
+  <string name="ui.reuse.account_id">Konto-ID</string>
+  <string name="ui.reuse.authentication_provider">Authentifizierungsanbieter</string>
 </resources>

@@ -442,12 +442,16 @@ export async function registerAuthBootstrapHook(
 
             const globalTtlSeconds =
                 context.authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
-            const localAdapter = context.authGateway.getLocalAdapter();
-            if (localAdapter) {
-                await localAdapter
-                    .updateLastLogin(session.accountId)
-                    .catch(() => undefined);
-            }
+            await context.accountStore
+                .updateLastLogin(session.accountId)
+                .catch((error) =>
+                    context.ctx.log?.("error", "Could not record login time.", {
+                        component: "auth-gateway",
+                        operation: "updateLastLogin",
+                        accountId: session.accountId,
+                        errorName: error?.name,
+                    }),
+                );
 
             const createProfile = capabilities.get<
                 (
@@ -619,7 +623,7 @@ export async function registerAuthBootstrapHook(
             }
             const sharedPayload = {
                 accountId: session.accountId,
-                displayName: displayName ?? session.accountId,
+                displayName: displayName ?? profileHandle ?? session.accountId,
                 provider: session.provider,
                 providerId: session.provider ?? adapterId,
                 role,

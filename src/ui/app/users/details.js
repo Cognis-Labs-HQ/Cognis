@@ -1,0 +1,82 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import { apiFetch } from "../../reuse/api-client.js";
+import { isAdminScope } from "../../reuse/access-role.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
+import { formatDateTime } from "../../reuse/timestamp.js";
+import { loadUserEmails } from "/static/gateways/notify/email-client.js";
+
+/** Creates an admin-only, page-scoped account-details reader backed by real ctx stages. */
+export function createUserDetailsReader({ i18n, signal }) {
+    const flowId = "users:readDetails";
+    if (!uiCtx.flowExists(flowId))
+        uiCtx.registerFlow(flowId, ["authorize", "load", "present"]);
+    const hook = "users:accountDetails";
+    const active = () => {
+        signal.throwIfAborted();
+        if (!isAdminScope()) throw new Error("admin_required");
+    };
+    uiCtx.extendFlow(flowId, "authorize", { id: hook }, active);
+    uiCtx.extendFlow(flowId, "load", { id: hook }, async (stage) => {
+        active();
+        const accountId = stage.input.user.username;
+        const [response, emails] = await Promise.all([
+            apiFetch(`/api/v1/users/${encodeURIComponent(accountId)}/info`, {
+                signal,
+            }),
+            loadUserEmails(accountId, { signal }),
+        ]);
+        if (!response.ok) throw new Error("user_metadata_unavailable");
+        active();
+        stage.data.info = (await response.json())?.data;
+        stage.data.emails = emails;
+    });
+    uiCtx.extendFlow(flowId, "present", { id: hook }, (stage) => {
+        active();
+        const info = { ...stage.input.user, ...stage.data.info };
+        const yesNo = (value) => i18n.t(value ? "ui.reuse.yes" : "ui.reuse.no");
+        const unknown = i18n.t("ui.reuse.unknown");
+        const fields = [
+            ["ui.reuse.account_id", info.username],
+            ["ui.reuse.authentication_provider", info.provider],
+            ["ui.app.users.role", info.role],
+            ["ui.app.users.founder", yesNo(info.isFounder)],
+            [
+                "ui.app.users.status",
+                i18n.t(
+                    info.enabled
+                        ? "ui.app.users.enabled"
+                        : "ui.app.users.disabled",
+                ),
+            ],
+            [
+                "ui.app.users.member_since",
+                formatDateTime(info.createdAt, unknown),
+            ],
+            [
+                "ui.app.users.last_login",
+                formatDateTime(info.lastLogin, unknown),
+            ],
+        ];
+        const emails = stage.data.emails
+            .map(
+                (email) =>
+                    `${escapeHtml(email.email)} (${escapeHtml(i18n.t(email.verified ? "ui.app.settings.emails_verified" : "ui.app.settings.emails_unverified"))}${email.primary ? `, ${escapeHtml(i18n.t("ui.app.settings.emails_primary"))}` : ""})`,
+            )
+            .join("<br>");
+        return `<dl>${fields.map(([key, value]) => `<dt>${escapeHtml(i18n.t(key))}</dt><dd>${escapeHtml(value ?? unknown)}</dd>`).join("")}<dt>${escapeHtml(i18n.t("ui.app.settings.emails"))}</dt><dd>${emails || escapeHtml(unknown)}</dd></dl>`;
+    });
+    signal.addEventListener(
+        "abort",
+        () => {
+            for (const stage of ["authorize", "load", "present"])
+                uiCtx.removeFlowHook(flowId, stage, hook);
+        },
+        { once: true },
+    );
+    return async (user) => {
+        active();
+        const result = await uiCtx.runFlow(flowId, { user });
+        active();
+        return result.stageResults.present[0];
+    };
+}

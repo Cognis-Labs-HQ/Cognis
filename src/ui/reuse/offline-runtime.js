@@ -203,15 +203,40 @@ export function registerOfflineRuntime(ctx) {
     });
     let blocker;
     let dismissBlocker;
-    const updatePolicy = async () => {
+    let lastPolicySync;
+    const syncAccess = () => {
+        const worker = globalThis.navigator?.serviceWorker?.controller;
+        const allowed = offlinePolicy.allows();
+        if (
+            lastPolicySync &&
+            lastPolicySync.worker === worker &&
+            lastPolicySync.allowed === allowed
+        )
+            return;
+        const sync = { worker, allowed };
+        lastPolicySync = sync;
         void offlineWorkerRequest("COGNIS_OFFLINE_ACCESS", {
-            allowed: offlinePolicy.allows(),
-        }).catch((error) =>
+            allowed,
+        }).catch((error) => {
+            if (lastPolicySync === sync) lastPolicySync = undefined;
             console.error("[offline] worker policy sync failed", {
                 operation: "syncAccess",
                 errorName: error?.name,
-            }),
-        );
+                code: error?.message,
+                workerState: worker?.state,
+            });
+        });
+    };
+    globalThis.navigator?.serviceWorker?.addEventListener?.(
+        "controllerchange",
+        syncAccess,
+    );
+    window.addEventListener("cognis:offline-worker-reset", () => {
+        lastPolicySync = undefined;
+        syncAccess();
+    });
+    const updatePolicy = async () => {
+        syncAccess();
         if (!isOffline() && offlinePolicy.allows()) dismissBlocker?.();
         if (
             !isOffline() ||

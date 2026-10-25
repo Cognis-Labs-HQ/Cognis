@@ -144,15 +144,6 @@ test("users tfa reset action has standalone branch", () => {
     );
 });
 
-test("users row click guard ignores role dropdown interaction", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/users/index.js"),
-        "utf8",
-    );
-
-    assert.match(source, /target\.closest\("button,input,select"\)/);
-});
-
 test("users resend verification action is hidden when smtp adapter is disabled", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),

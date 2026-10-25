@@ -626,4 +626,6 @@
     <string name="ui.reuse.offline_changes_queued">再接続時に送信する変更を保存しました</string>
     <string name="ui.reuse.offline_sync_rejected">保存した一部の活動を反映できませんでした。</string>
     <string name="ui.reuse.offline_buffer_full_body">オフラインバッファーがいっぱいです。再接続して保留中の変更を送信してから追加してください。</string>
+  <string name="ui.reuse.account_id">アカウント ID</string>
+  <string name="ui.reuse.authentication_provider">認証プロバイダー</string>
 </resources>

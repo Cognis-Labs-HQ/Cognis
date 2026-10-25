@@ -4,14 +4,18 @@ import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 import { createResponseRecorder } from "../../../api/tests/ui/ui-routes-test-helpers.js";
 import { createRegistrationPageRoutes } from "../bootstrap/page-routes.js";
 
-function createRoute(role: "admin" | "user", enabled = true) {
+function createRoute(
+    role: "admin" | "owner" | "user",
+    enabled = true,
+    founder = true,
+) {
     const routeContext = {
         ...createDefaultRouteContext(),
         getCookieSession: () => ({ sub: "founder", role }),
         setPageSecurityHeaders: () => undefined,
     };
     return createRegistrationPageRoutes(
-        { isFounder: async () => true } as any,
+        { isFounder: async () => founder } as any,
         () => enabled,
         routeContext,
     );
@@ -33,16 +37,16 @@ test("registration gateway serves its registration page", async () => {
     );
 });
 
-test("registration gateway redirects admins away from founder invites", async () => {
+test("registration gateway serves invite management for non-founder admins", async () => {
     const response = createResponseRecorder();
-    await createRoute("admin")(
+    await createRoute("admin", true, false)(
         { method: "GET" } as any,
         response.res as any,
         new URL("http://localhost/invite"),
     );
 
-    assert.equal(response.status, 302);
-    assert.equal(response.headers.location, "/users");
+    assert.equal(response.status, 200);
+    assert.match(response.body, /app\/invite\/index/);
 });
 
 test("registration gateway serves founder invite management", async () => {

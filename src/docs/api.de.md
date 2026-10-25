@@ -176,3 +176,7 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 | `POST`   | `/api/v1/users/:username/disable` | Konto deaktivieren   | Admin |
 | `POST`   | `/api/v1/users/:username/enable`  | Konto aktivieren     | Admin |
 | `DELETE` | `/api/v1/users/:username`         | Konto löschen        | Admin |
+
+## Erreichbarkeit
+
+`GET /api/v1/system/healthcheck` antwortet sofort mit `{ "data": { "status": "ok" } }`, ohne Komponentenprüfungen auszuführen. Dieser Endpunkt dient zur Verbindungserkennung. `GET /api/v1/system/health` behält ausführliche Komponenteninformationen, Zeitstempel und Laufzeit bei. Langsame optionale Komponenten dürfen einen verfügbaren Server nicht als offline erscheinen lassen.

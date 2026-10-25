@@ -135,3 +135,7 @@ Authenticated pages permit media from same-origin routes and browser-generated `
 ## Session Setup
 
 Every authenticated session checks `/api/v1/auth/setup-status`, including sessions restored after an SSO redirect. The notification owner contributes required email setup through `auth:getSetupIntegrations(accountId, role)`, returning same-origin setup scripts that export `enforceSetup({ accountId })`. Setup finishes before the session is approved for navigation or offline use. SMTP delivery outages do not waive required verification; the initial founder administrator remains exempt.
+
+## Login Feedback
+
+Credential, TFA-code and SSO authorization requests show the shared loading wheel and release it before interactive setup. Duplicate credential submissions are ignored while pending. Public offline-cache cleanup and refresh run in the background after login. Last-login timestamps are recorded for SSO even when the local authentication adapter is disabled.

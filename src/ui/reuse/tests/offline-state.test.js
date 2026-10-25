@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
-function fixture() {
+function fixture({ workerError = false } = {}) {
     const window = new EventTarget();
     let reloads = 0;
     let healthy = false;
@@ -15,7 +15,33 @@ function fixture() {
         {
             window,
             Date: { now: () => now },
-            navigator: { onLine: true },
+            navigator: {
+                onLine: true,
+                ...(workerError
+                    ? {
+                          serviceWorker: {
+                              controller: {
+                                  postMessage(_message, ports) {
+                                      queueMicrotask(() =>
+                                          ports[0].peer.onmessage({
+                                              data: {
+                                                  error: "offline_catalog_unavailable",
+                                              },
+                                          }),
+                                      );
+                                  },
+                              },
+                          },
+                      }
+                    : {}),
+            },
+            MessageChannel: class {
+                constructor() {
+                    this.port1 = { close() {} };
+                    this.port2 = { peer: this.port1, close() {} };
+                }
+            },
+            clearTimeout: () => {},
             CustomEvent,
             AbortSignal,
             console,
@@ -78,4 +104,14 @@ test("quiet error feedback is bounded to the connectivity transition", () => {
     assert.equal(state.module.isOfflineTransition(), true);
     state.module.setOffline(false);
     assert.equal(state.module.isOfflineTransition(), false);
+});
+
+test("worker maintenance errors cannot turn a reachable server back into offline mode", async () => {
+    const state = fixture({ workerError: true });
+    state.module.setOffline(true);
+    state.recover();
+    await state.timers.shift()();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(state.module.isOffline(), false);
+    assert.equal(state.reloads(), 1);
 });

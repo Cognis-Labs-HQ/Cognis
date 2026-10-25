@@ -1,7 +1,8 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v10";
+const CACHE_VERSION = "v11";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
+const CONTROL_CACHE_NAME = `${CACHE_NAME}-control`;
 const SHELL_URL = "/static/pages/offline.html";
 const CATALOG_URL = "/__cognis_offline_catalog__";
 const REQUIREMENTS_URL = "/__cognis_offline_requirements__";
@@ -9,7 +10,7 @@ const ACCESS_URL = "/__cognis_offline_access__";
 const PREFERENCE_URL = "/__cognis_offline_preference__";
 
 async function offlineEnabled() {
-    const cache = await caches.open(CACHE_NAME);
+    const cache = await caches.open(CONTROL_CACHE_NAME);
     const preference = await cache.match(PREFERENCE_URL);
     if (preference && (await preference.json()).enabled === false) return false;
     const requirements = await cache.match(REQUIREMENTS_URL);
@@ -41,7 +42,7 @@ function cacheable(response) {
 async function catalog() {
     if (!catalogPromise) {
         catalogPromise = (async () => {
-            const cache = await caches.open(CACHE_NAME);
+            const cache = await caches.open(CONTROL_CACHE_NAME);
             const response = await cache.match(CATALOG_URL);
             return response ? response.json() : [];
         })().catch((error) => {
@@ -81,9 +82,9 @@ function routeAssets(route) {
     );
 }
 
-async function refreshCatalog() {
+async function refreshCatalog(waitUntil) {
     const generation = ++catalogGeneration;
-    const response = await fetch("/api/v1/ui/offline-routes", {
+    const response = await fetchAvailable("/api/v1/ui/offline-routes", {
         credentials: "omit",
         cache: "no-store",
     });
@@ -94,24 +95,29 @@ async function refreshCatalog() {
             route.public === true && Array.isArray(route.offline?.assets),
     );
     if (generation !== catalogGeneration) return [];
-    const cache = await caches.open(CACHE_NAME);
-    await cache.put(REQUIREMENTS_URL, Response.json(payload.offlineGuards));
-    const allowed = new Set(routes.flatMap(routeAssets).map(assetKey));
-    for (const request of await cache.keys()) {
-        if (
-            new URL(request.url).pathname.startsWith("/static/modules/") &&
-            !allowed.has(request.url)
-        ) {
-            await cache.delete(request);
-        }
-    }
-    await cache.put(
+    const control = await caches.open(CONTROL_CACHE_NAME);
+    await control.put(REQUIREMENTS_URL, Response.json(payload.offlineGuards));
+    await control.put(
         CATALOG_URL,
         new Response(JSON.stringify(routes), {
             headers: { "content-type": "application/json" },
         }),
     );
     catalogPromise = Promise.resolve(routes);
+    const cleanup = (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const allowed = new Set(routes.flatMap(routeAssets).map(assetKey));
+        for (const request of await cache.keys()) {
+            if (generation !== catalogGeneration) return;
+            if (
+                new URL(request.url).pathname.startsWith("/static/modules/") &&
+                !allowed.has(request.url)
+            )
+                await cache.delete(request);
+        }
+    })();
+    if (waitUntil) waitUntil(cleanup);
+    else await cleanup;
     return routes;
 }
 
@@ -124,31 +130,46 @@ async function announceOffline() {
 self.addEventListener("install", (event) => {
     event.waitUntil(
         (async () => {
-            const response = await fetch("/static/offline-manifest.json", {
-                cache: "no-store",
-                credentials: "omit",
-            });
+            const response = await fetchAvailable(
+                "/static/offline-manifest.json",
+                {
+                    cache: "no-store",
+                    credentials: "omit",
+                },
+            );
             if (!response.ok)
                 throw new Error("offline_boot_manifest_unavailable");
             const assets = await response.json();
             const cache = await caches.open(CACHE_NAME);
-            await Promise.all(
-                [
+            const bootAssets = [
+                ...new Set([
                     SHELL_URL,
                     "/static/assets/icons/cognis-icon-192.png",
                     "/static/assets/icons/cognis-icon-384.png",
                     "/static/assets/icons/cognis-icon-512.png",
                     "/static/assets/icons/cognis-header-512.png",
                     ...assets,
-                ].map(async (asset) => {
-                    const resource = await fetch(asset, {
-                        credentials: "omit",
-                        cache: "reload",
-                    });
-                    if (!cacheable(resource))
-                        throw new Error("offline_boot_asset_unavailable");
-                    await cache.put(asset, resource);
-                }),
+                ]),
+            ];
+            let nextAsset = 0;
+            await Promise.all(
+                Array.from(
+                    { length: Math.min(4, bootAssets.length) },
+                    async () => {
+                        while (nextAsset < bootAssets.length) {
+                            const asset = bootAssets[nextAsset++];
+                            const resource = await fetchAvailable(asset, {
+                                credentials: "omit",
+                                cache: "reload",
+                            });
+                            if (!cacheable(resource))
+                                throw new Error(
+                                    "offline_boot_asset_unavailable",
+                                );
+                            await cache.put(asset, resource);
+                        }
+                    },
+                ),
             );
             await refreshCatalog();
         })(),
@@ -158,17 +179,11 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         (async () => {
-            const currentCache = await caches.open(CACHE_NAME);
             for (const key of await caches.keys()) {
-                if (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) {
-                    const previous = await (
-                        await caches.open(key)
-                    ).match(PREFERENCE_URL);
-                    if (previous && !(await currentCache.match(PREFERENCE_URL)))
-                        await currentCache.put(PREFERENCE_URL, previous);
-                }
                 if (
-                    (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) ||
+                    (key.startsWith(CACHE_PREFIX) &&
+                        key !== CACHE_NAME &&
+                        key !== CONTROL_CACHE_NAME) ||
                     /^cognis-(shell|assets|app)-v\d+$/.test(key)
                 )
                     await caches.delete(key);
@@ -178,27 +193,33 @@ self.addEventListener("activate", (event) => {
     );
 });
 
+let accessWrite = Promise.resolve();
+
 self.addEventListener("message", (event) => {
     const reply = event.ports?.[0];
     const task = (async () => {
         if (event.data?.type === "COGNIS_OFFLINE_REQUIREMENTS") {
             const response = await (
-                await caches.open(CACHE_NAME)
+                await caches.open(CONTROL_CACHE_NAME)
             ).match(REQUIREMENTS_URL);
             if (!response) throw new Error("offline_requirements_unavailable");
             return response.json();
         }
         if (event.data?.type === "COGNIS_OFFLINE_ACCESS") {
-            await (
-                await caches.open(CACHE_NAME)
-            ).put(
-                ACCESS_URL,
-                Response.json({ allowed: event.data.allowed === true }),
-            );
+            accessWrite = accessWrite
+                .catch(() => {})
+                .then(async () => {
+                    const cache = await caches.open(CONTROL_CACHE_NAME);
+                    await cache.put(
+                        ACCESS_URL,
+                        Response.json({ allowed: event.data.allowed === true }),
+                    );
+                });
+            await accessWrite;
             return null;
         }
         if (event.data?.type === "COGNIS_OFFLINE_PREFERENCE") {
-            const cache = await caches.open(CACHE_NAME);
+            const cache = await caches.open(CONTROL_CACHE_NAME);
             await cache.put(
                 PREFERENCE_URL,
                 new Response(
@@ -225,21 +246,34 @@ self.addEventListener("message", (event) => {
             );
         }
         if (event.data?.type === "COGNIS_INVALIDATE_OFFLINE_ROUTES") {
-            const cache = await caches.open(CACHE_NAME);
             catalogGeneration += 1;
             catalogPromise = Promise.resolve([]);
-            await cache.delete(CATALOG_URL);
-            await cache.delete(ACCESS_URL);
-            for (const request of await cache.keys()) {
-                if (
-                    new URL(request.url).pathname.startsWith("/static/modules/")
-                )
-                    await cache.delete(request);
-            }
+            const generation = catalogGeneration;
+            const control = await caches.open(CONTROL_CACHE_NAME);
+            await control.delete(CATALOG_URL);
+            // Order revocation after any older policy write.
+            accessWrite = accessWrite
+                .catch(() => {})
+                .then(() => control.delete(ACCESS_URL));
+            await accessWrite;
+            event.waitUntil(
+                (async () => {
+                    const cache = await caches.open(CACHE_NAME);
+                    for (const request of await cache.keys()) {
+                        if (generation !== catalogGeneration) return;
+                        if (
+                            new URL(request.url).pathname.startsWith(
+                                "/static/modules/",
+                            )
+                        )
+                            await cache.delete(request);
+                    }
+                })(),
+            );
             return [];
         }
         if (event.data?.type === "COGNIS_REFRESH_OFFLINE_ROUTES")
-            return refreshCatalog();
+            return refreshCatalog((task) => event.waitUntil(task));
         return null;
     })();
     event.waitUntil(

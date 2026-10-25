@@ -83,5 +83,5 @@ export function resolveExternalProfileHandle(
     session: Record<string, unknown>,
     adapterId: string,
 ): string {
-    return resolveExternalAccountKey(session, adapterId);
+    return resolveExternalAccountKey(session, adapterId).split(":").at(-1)!;
 }

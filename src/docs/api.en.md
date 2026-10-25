@@ -180,3 +180,7 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 | `POST`   | `/api/v1/users/:username/disable` | Disable an account | Admin |
 | `POST`   | `/api/v1/users/:username/enable`  | Enable an account  | Admin |
 | `DELETE` | `/api/v1/users/:username`         | Delete an account  | Admin |
+
+## Reachability
+
+`GET /api/v1/system/healthcheck` returns `{ "data": { "status": "ok" } }` immediately, without running component contributors. This is the liveness endpoint used for connectivity detection. `GET /api/v1/system/health` retains detailed component health, timestamps and uptime. A slow optional component must not make an available server appear offline.

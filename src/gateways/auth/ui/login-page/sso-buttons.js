@@ -6,6 +6,8 @@ export function isStyledSsoMethod(method) {
 
 export async function beginSsoLogin(method, i18n) {
     const { showToast } = await import("/static/reuse/toast.js");
+    const { beginPageLoading } = await import("/static/reuse/page-entry.js");
+    const finish = beginPageLoading();
     try {
         const redirectUrl = await startSsoLogin(method.id);
         window.location.assign(redirectUrl);
@@ -21,6 +23,8 @@ export async function beginSsoLogin(method, i18n) {
         showToast(i18n.t("ui.app.login.error.generic"), {
             variant: "error",
         });
+    } finally {
+        finish();
     }
 }
 

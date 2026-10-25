@@ -40,6 +40,8 @@ function canRequestAvailability() {
     return (
         activeScope &&
         !activeScope.signal.aborted &&
+        typeof activeScope.capabilities.get("social:profileRequest") ===
+            "function" &&
         uiCtx.capabilities.get("session:isAuthenticated")?.() === true &&
         !isGuestSession()
     );

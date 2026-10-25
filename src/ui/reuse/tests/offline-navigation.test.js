@@ -4,6 +4,7 @@ import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { uiCtx } from "../ui-ctx.js";
 
 let offline = true;
+let stallWorker = false;
 const popups = [];
 const workerRequests = [];
 const navigation = loadTestModule(
@@ -13,7 +14,10 @@ const navigation = loadTestModule(
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
         "./offline-state.js": {
             isOffline: () => offline,
-            offlineWorkerRequest: async (type) => workerRequests.push(type),
+            offlineWorkerRequest: async (type) => {
+                workerRequests.push(type);
+                if (stallWorker) await new Promise(() => {});
+            },
         },
         "./i18n.js": {
             createI18n: async () => ({ t: () => "Unavailable offline" }),
@@ -91,4 +95,20 @@ test("session route registrations permit warm private navigation only during the
         await navigation.allowOfflineRoute({ id: "owned.page" }, "/owned"),
         false,
     );
+});
+
+test("login completion does not wait for an unresponsive worker", async () => {
+    offline = false;
+    stallWorker = true;
+    try {
+        const result = await uiCtx.runFlow("complete-login", {});
+        assert.equal(
+            result.stageResults["setup-account-services"].find(
+                (item) => item?.scheduled,
+            )?.scheduled,
+            true,
+        );
+    } finally {
+        stallWorker = false;
+    }
 });

@@ -626,4 +626,6 @@
     <string name="ui.reuse.offline_changes_queued">Changes Queued for Reconnection</string>
     <string name="ui.reuse.offline_sync_rejected">Some Queued Activity Could Not Be Applied.</string>
     <string name="ui.reuse.offline_buffer_full_body">The offline buffer is full. Reconnect and send pending changes before adding more.</string>
+  <string name="ui.reuse.account_id">Account ID</string>
+  <string name="ui.reuse.authentication_provider">Authentication Provider</string>
 </resources>

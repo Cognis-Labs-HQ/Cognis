@@ -192,3 +192,19 @@ test("a failed style load rolls back the profile client without starting backgro
     assert.equal(state.timers.size, 0);
     state.host.controller.abort();
 });
+
+test("availability stops safely when the scoped profile client is removed before its callbacks", async () => {
+    const state = fixture();
+    state.ready();
+    await state.lifecycle.reconcile(catalog);
+    await settle();
+    const sent = state.requests.length;
+    state.host.ctx.capabilities.remove(
+        "social:profileRequest",
+        state.host.ctx.capabilities.get("social:profileRequest"),
+    );
+    await state.availability.refreshAvailabilityIndicators();
+    await state.availability.hydrateAvailabilityIndicators();
+    assert.equal(state.requests.length, sent);
+    await state.lifecycle.reconcile([]);
+});

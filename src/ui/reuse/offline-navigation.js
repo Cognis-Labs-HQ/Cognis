@@ -86,14 +86,20 @@ uiCtx.extendFlow(
     "complete-login",
     "setup-account-services",
     { id: "ui:refreshOfflineRoutes" },
-    async () => {
-        await offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
-            (error) => console.error("[offline] account cleanup failed", error),
-        );
-        if (!isOffline())
-            await offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES").catch(
-                (error) =>
-                    console.error("[offline] catalog refresh failed", error),
+    () => {
+        // Public cache maintenance must not hold authenticated navigation open.
+        void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES")
+            .then(
+                () =>
+                    !isOffline() &&
+                    offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
+            )
+            .catch((error) =>
+                console.error("[offline] login cache maintenance failed", {
+                    operation: "refreshAfterLogin",
+                    code: error?.message,
+                }),
             );
+        return { scheduled: true };
     },
 );

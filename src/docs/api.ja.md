@@ -176,3 +176,7 @@
 | `POST`   | `/api/v1/users/:username/disable` | アカウントを無効化     | Admin |
 | `POST`   | `/api/v1/users/:username/enable`  | アカウントを有効化     | Admin |
 | `DELETE` | `/api/v1/users/:username`         | アカウントを削除       | Admin |
+
+## 接続確認
+
+`GET /api/v1/system/healthcheck` はコンポーネントの診断を実行せず、即座に `{ "data": { "status": "ok" } }` を返します。接続の有無の確認にはこのエンドポイントを使用します。`GET /api/v1/system/health` は詳細診断、時刻、稼働時間を引き続き提供します。任意コンポーネントの遅延だけで、稼働中のサーバーをオフラインと見なすことを防ぎます。

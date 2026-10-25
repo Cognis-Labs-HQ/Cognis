@@ -135,3 +135,7 @@ Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und bro
 ## Sitzungseinrichtung
 
 Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach einer SSO-Weiterleitung. Der Benachrichtigungsdienst liefert erforderliche E-Mail-Einrichtung über `auth:getSetupIntegrations(accountId, role)`: Skripte desselben Ursprungs mit dem Export `enforceSetup({ accountId })`. Die Einrichtung endet vor der Freigabe für Navigation oder Offline-Nutzung. SMTP-Ausfälle heben die Verifizierungspflicht nicht auf; der ursprüngliche Gründeradministrator bleibt ausgenommen.
+
+## Ladeanzeige bei Anmeldung
+
+Anfragen für Zugangsdaten, TFA-Codes und SSO-Autorisierung zeigen das gemeinsame Laderad und blenden es vor interaktiver Einrichtung aus. Doppelte Anmeldungen werden während einer laufenden Anfrage ignoriert. Öffentliche Offline-Caches werden nach der Anmeldung im Hintergrund bereinigt und aktualisiert. Der letzte Anmeldezeitpunkt wird auch für SSO bei deaktiviertem lokalem Authentifizierungsadapter erfasst.

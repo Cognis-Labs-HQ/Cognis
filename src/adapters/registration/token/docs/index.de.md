@@ -15,3 +15,7 @@ Das Token wird erst nach dem Speichern des externen Kontos eingelöst; dabei wir
 ## SSO-Autorisierung und Einladungsrichtlinien
 
 Bei geschlossener öffentlicher Registrierung hält Cognis den authentifizierten Anbieterzustand hinter einer undurchsichtigen, ablaufenden Vorgangs-ID und zeigt das Tokenformular dieses Adapters in der standardmäßigen Registrierungshülle. Die Aktion „Einladungs-E-Mail senden“ versendet Einladungen per SMTP; nur Administratoren und Eigentümer können mit „Registrierungstoken erstellen“ ein eigenständiges Token erzeugen. Öffentliche Registrierung überspringt die Tokenstufe. Gründungsbenutzer dürfen höchstens zehn ausstehende E-Mail-Einladungen gleichzeitig besitzen; eingelöste, widerrufene oder abgelaufene Einladungen geben ihren Platz sofort frei. Nur Eigentümer können Einladungen durch Gründer oder Administratoren unter Administration → Registrierung deaktivieren.
+
+## Einladungsbefehle
+
+Administratoren und Eigentümer können `/invite` ohne Gründerstatus öffnen. Die Einladungsrichtlinie bestimmt weiterhin die Ausstellung. Der aktivierte Registrierungstoken-Adapter stellt `cognisctl invite:token:generate` für eigenständige Token ohne SMTP-Versand und `cognisctl invite:email:send person@example.com` für E-Mail-Einladungen bereit. Ohne E-Mail-Argument öffnet sich der CLI-Assistent. Beide Befehle nutzen die authentifizierte Registrierungs-API und beachten Rollen-, Domain- und Versandbeschränkungen.
