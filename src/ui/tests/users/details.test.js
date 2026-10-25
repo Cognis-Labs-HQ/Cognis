@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+import { getRoleLabel } from "../../reuse/access-role.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 
@@ -27,7 +28,10 @@ test("account details execute registered stages, escape email/provider values, r
                     });
                 },
             },
-            "../../reuse/access-role.js": { isAdminScope: () => admin },
+            "../../reuse/access-role.js": {
+                getRoleLabel,
+                isAdminScope: () => admin,
+            },
             "../../reuse/escape-html.js": { escapeHtml },
             "../../reuse/timestamp.js": { formatDateTime },
             "/static/gateways/notify/email-client.js": {

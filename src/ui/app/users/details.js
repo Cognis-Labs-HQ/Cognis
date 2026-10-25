@@ -1,6 +1,6 @@
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
-import { isAdminScope } from "../../reuse/access-role.js";
+import { getRoleLabel, isAdminScope } from "../../reuse/access-role.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 import { loadUserEmails } from "/static/gateways/notify/email-client.js";
@@ -37,8 +37,14 @@ export function createUserDetailsReader({ i18n, signal }) {
         const unknown = i18n.t("ui.reuse.unknown");
         const fields = [
             ["ui.reuse.account_id", info.username],
-            ["ui.reuse.authentication_provider", info.provider],
-            ["ui.app.users.role", info.role],
+            [
+                "ui.reuse.authentication_provider",
+                info.providerLabel ?? info.provider,
+            ],
+            [
+                "ui.app.users.role",
+                info.role ? getRoleLabel(i18n, info.role) : unknown,
+            ],
             ["ui.app.users.founder", yesNo(info.isFounder)],
             [
                 "ui.app.users.status",
@@ -60,10 +66,10 @@ export function createUserDetailsReader({ i18n, signal }) {
         const emails = stage.data.emails
             .map(
                 (email) =>
-                    `${escapeHtml(email.email)} (${escapeHtml(i18n.t(email.verified ? "ui.app.settings.emails_verified" : "ui.app.settings.emails_unverified"))}${email.primary ? `, ${escapeHtml(i18n.t("ui.app.settings.emails_primary"))}` : ""})`,
+                    `<div class="users-email-row"><span>${escapeHtml(email.email)}</span><span class="users-email-badges">${email.primary ? `<span class="state-pill pill-available">${escapeHtml(i18n.t("ui.app.settings.emails_primary"))}</span>` : ""}<span class="state-pill ${email.verified ? "pill-active" : "pill-disabled"}">${escapeHtml(i18n.t(email.verified ? "ui.app.settings.emails_verified" : "ui.app.settings.emails_unverified"))}</span></span></div>`,
             )
-            .join("<br>");
-        return `<dl>${fields.map(([key, value]) => `<dt>${escapeHtml(i18n.t(key))}</dt><dd>${escapeHtml(value ?? unknown)}</dd>`).join("")}<dt>${escapeHtml(i18n.t("ui.app.settings.emails"))}</dt><dd>${emails || escapeHtml(unknown)}</dd></dl>`;
+            .join("");
+        return `<dl class="users-details-grid">${fields.map(([key, value]) => `<div class="users-detail-field"><dt>${escapeHtml(i18n.t(key))}</dt><dd>${escapeHtml(value ?? unknown)}</dd></div>`).join("")}<div class="users-detail-field users-detail-emails"><dt>${escapeHtml(i18n.t("ui.app.settings.emails"))}</dt><dd class="users-email-list">${emails || escapeHtml(i18n.t("ui.app.settings.emails_none"))}</dd></div></dl>`;
     });
     signal.addEventListener(
         "abort",

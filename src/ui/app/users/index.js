@@ -1,3 +1,4 @@
+import { ensurePageStylesheet } from "../../reuse/page-styles.js";
 import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
 import { createUserDetailsReader } from "./details.js";
 import { loadUserEmails as fetchUserEmails } from "/static/gateways/notify/email-client.js";
@@ -66,9 +67,9 @@ function buildElements() {
             gridSize: {
                 default: [12, estimatedHeight],
                 min: [6, 5],
-                max: ["full", "fill"],
+                max: "full",
             },
-            render: () => renderUsersTable(),
+            render: () => renderUsersList(),
         },
     ];
 }
@@ -267,7 +268,13 @@ async function refreshData() {
         isSmtpAdapterActive(apiFetch),
         loadLoginMethods(),
     ]);
-    users = loadedUsers;
+    const providerNames = new Map(
+        loginMethods.map((method) => [method.id, method.name]),
+    );
+    users = loadedUsers.map((user) => ({
+        ...user,
+        providerLabel: providerNames.get(user.provider),
+    }));
     smtpAdapterActive = isSmtpActive;
     providerIcons = new Map(
         loginMethods
@@ -277,77 +284,65 @@ async function refreshData() {
     buildElements();
 }
 
-function renderUsersTable() {
+function renderUsersList() {
     const currentUsername = getCurrentUsername();
     const currentUser = users.find((user) => user.username === currentUsername);
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    return `
-    ${leadingControlsHtml}
-    <div class="users-table-wrap">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>${escapeHtml(i18n.t("ui.app.users.username"))}</th>
-            <th>${escapeHtml(i18n.t("ui.app.users.role"))}</th>
-            <th>${escapeHtml(i18n.t("ui.app.users.status"))}</th>
-            <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${users
-              .map((user) => {
-                  const isSelf = user.username === currentUsername;
-                  const userRole = user.role ?? "user";
-                  const isOwner = userRole === "owner";
-                  const protectPrivilegedFromViewer =
-                      !viewerCanManagePrivileged &&
-                      hasMinAccessRole(userRole, "admin") &&
-                      !isSelf;
-                  const roleDisabled =
-                      isOwner || isSelf || protectPrivilegedFromViewer;
-                  const roleOptions = isOwner
-                      ? ["owner"]
-                      : ACCESS_ROLES.filter((role) => role !== "owner");
-                  const roleOptionsHtml = roleOptions
-                      .map(
-                          (role) =>
-                              `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
-                      )
-                      .join("");
-                  const roleCellHtml = `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
-                  const lifecycleState = user.lifecycleState ?? "active";
-                  const statusLabel =
-                      lifecycleState === "archived"
-                          ? i18n.t("ui.app.users.archived")
-                          : lifecycleState === "deactivated"
-                            ? i18n.t("ui.app.users.deactivated")
-                            : user.enabled
-                              ? i18n.t("ui.app.users.enabled")
-                              : i18n.t("ui.app.users.disabled");
-                  const deleteUserLabel = i18n.t("ui.app.users.delete_user");
-                  const actionsHtml =
-                      isOwner || protectPrivilegedFromViewer
-                          ? ""
-                          : `
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
+    const rows = users.map((user) => {
+        const isSelf = user.username === currentUsername;
+        const userRole = user.role ?? "user";
+        const isOwner = userRole === "owner";
+        const protectPrivilegedFromViewer =
+            !viewerCanManagePrivileged &&
+            hasMinAccessRole(userRole, "admin") &&
+            !isSelf;
+        const roleDisabled = isOwner || isSelf || protectPrivilegedFromViewer;
+        const roleOptions = isOwner
+            ? ["owner"]
+            : ACCESS_ROLES.filter((role) => role !== "owner");
+        const roleOptionsHtml = roleOptions
+            .map(
+                (role) =>
+                    `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
+            )
+            .join("");
+        const roleControlHtml = `<select class="users-role-select theme-select" aria-label="${escapeHtml(i18n.t("ui.app.users.role"))}" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+        const lifecycleState = user.lifecycleState ?? "active";
+        const statusLabel =
+            lifecycleState === "archived"
+                ? i18n.t("ui.app.users.archived")
+                : lifecycleState === "deactivated"
+                  ? i18n.t("ui.app.users.deactivated")
+                  : user.enabled
+                    ? i18n.t("ui.app.users.enabled")
+                    : i18n.t("ui.app.users.disabled");
+        const deleteUserLabel = i18n.t("ui.app.users.delete_user");
+        const actionsHtml =
+            isOwner || protectPrivilegedFromViewer
+                ? ""
+                : `
                               <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
                               <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>
                               <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
                           `;
-                  return `
-              <tr class="users-row" data-username="${escapeHtml(user.username)}">
-                <td>${createCollapsibleSectionComposer({ escapeHtml, detailsLabel: i18n.t("ui.reuse.details") }).render([{ id: user.username, titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}${escapeHtml(user.handle || user.username)}</span>`, attributesHtml: `data-user-details="${escapeHtml(user.username)}"`, contentHtml: `<div data-user-details-content></div>` }])}</td>
-                <td>${roleCellHtml}</td>
-                <td>${escapeHtml(statusLabel)}</td>
-                <td class="users-actions-cell">${actionsHtml}</td>
-              </tr>
-            `;
-              })
-              .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
+        return {
+            id: user.username,
+            className: "users-row",
+            summaryClassName: "users-row-summary",
+            controlsClassName: "users-row-controls",
+            contentClassName: "users-row-meta",
+            attributesHtml: `data-user-details="${escapeHtml(user.username)}" data-username="${escapeHtml(user.username)}"`,
+            titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}<strong class="users-name">${escapeHtml(user.handle || user.username)}</strong></span>`,
+            controlsHtml: `${roleControlHtml}<span class="state-pill ${user.enabled && lifecycleState === "active" ? "pill-active" : "pill-disabled"}" aria-label="${escapeHtml(i18n.t("ui.app.users.status"))}">${escapeHtml(statusLabel)}</span><div class="users-actions" role="group" aria-label="${escapeHtml(i18n.t("ui.reuse.actions"))}">${actionsHtml}</div>`,
+            contentHtml: `<div data-user-details-content></div>`,
+        };
+    });
+    return `${leadingControlsHtml}<div class="users-list">${sectionComposer.render(rows)}</div>`;
 }
 
 async function runUserMenuAction(action, username) {
@@ -656,6 +651,7 @@ function bindUsersInteractions() {
 
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
+    await ensurePageStylesheet("/static/styles/users.css", { signal });
     i18n = await createI18n();
     readUserDetails = createUserDetailsReader({ i18n, signal });
     applyDocumentTitle(i18n, "ui.page.title.users");

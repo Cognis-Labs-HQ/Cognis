@@ -7,7 +7,7 @@ import { ACCESS_ROLES } from "../../reuse/access-role.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("users page renders contributed controls directly above the table", () => {
+test("users page renders contributed controls directly above the account list", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
@@ -15,7 +15,7 @@ test("users page renders contributed controls directly above the table", () => {
 
     assert.match(
         source,
-        /\$\{leadingControlsHtml\}\s*<div class="users-table-wrap">/,
+        /\$\{leadingControlsHtml\}\s*<div class="users-list">/,
     );
     assert.match(source, /toolbar: \[\]/);
 });
@@ -44,7 +44,7 @@ test("users role dropdown renders owner as a disabled display select", () => {
     assert.match(source, /const roleOptions = isOwner\s*\? \["owner"\]/);
     assert.match(
         source,
-        /const roleCellHtml = `<select class="users-role-select theme-select"/,
+        /const roleControlHtml = `<select class="users-role-select theme-select"/,
     );
     assert.doesNotMatch(
         source,
