@@ -172,3 +172,4 @@ Dashboard はセッション内限定の非公開オフラインアクセスを�
 - [b90e0cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/b90e0cda258130cc9b30db1f8c388385cdce4e1b)
 - [dde15f4](https://github.com/Cognis-Labs-HQ/Cognis/commit/dde15f4c898abb129a31228e0894272f0366f811)
 - [f6b4ede](https://github.com/Cognis-Labs-HQ/Cognis/commit/f6b4ede722b7a14cfe67f2eb758670bc28071fb3)
+- [341087c](https://github.com/Cognis-Labs-HQ/Cognis/commit/341087c11a97fa9cfdd578beffa9761cffcbf9db)
