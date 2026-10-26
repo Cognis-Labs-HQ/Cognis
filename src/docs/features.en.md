@@ -114,3 +114,13 @@ Background analytics stays queued but does not arm the browser close warning. Ow
 ## Refresh unlocks and module loading
 
 Host route-asset preparation registers its flow and cache capabilities once per shared ctx. Bundled scripts and source imports from external modules reuse the same registrations and prepared-route state, so opening Meetings no longer fails with a duplicate `offline:prepareRouteAssets` flow.
+
+## Shared top banners
+
+The host exposes `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` before providers or pages mount. Descriptors accept a plain-text `title`, sanitized `bodyHtml`, trusted `actionsHtml` and an `info`, `success`, `warning` or `danger` variant. The returned handle has `element` and `remove()`. Reusing an ID replaces only that owner’s notice; an older disposer cannot remove its replacement. Bind provider/page lifetimes with `signal`. Lower priorities appear first. Titles are escaped; callers must sanitize rich text.
+
+Offline Mode and Broadcast now use one sticky stack at the very top of the document, above the app header. Offline Mode has priority, cannot be dismissed, and retains Recheck Connectivity and the recovered Refresh action. Removing or dismissing an announcement does not remove Offline Mode. Broadcast polling skips disconnected requests and its provider disposes its bar and timer.
+
+## Empty offline Study pages
+
+Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.

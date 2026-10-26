@@ -214,6 +214,16 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             new URL("../ui/app/index.js", import.meta.url),
             {
                 "/static/reuse/offline-state.js": offlineState,
+                "/static/gateways/study/offline-page.js": {
+                    mountOfflineStudyPage: () =>
+                        assert.fail("cached content must mount normally"),
+                },
+                "/static/gateways/study/offline-content.js": {
+                    readStudySnapshot: (load) => load(),
+                    showOfflineContentNotice: () =>
+                        assert.fail("unexpected cache miss"),
+                    isOfflineContentMiss: () => false,
+                },
                 "./deck-editor.js": { editDeck: environment.editDeck },
                 "/static/reuse/collection-view.js": {
                     sortItems: environment.sortItems,

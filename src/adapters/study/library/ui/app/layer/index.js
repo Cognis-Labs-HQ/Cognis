@@ -1,3 +1,7 @@
+import {
+    readStudySnapshot,
+    showOfflineContentNotice,
+} from "/static/gateways/study/offline-content.js";
 import { exploreLayers } from "/static/gateways/study/reuse/explore.js";
 import { openEntryPopup } from "../entry-popup.js";
 import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
@@ -53,6 +57,7 @@ export async function mount(root, { signal } = {}) {
     const { schemas, entries: loadedEntries } = await loadLibrary(
         languageCode,
         i18n,
+        { signal },
     );
     const entries = loadedEntries;
     const browseable = exploreLayers(schemas);
@@ -99,7 +104,7 @@ export async function mount(root, { signal } = {}) {
         ? localizedLabel(view.metadata, schema.language) || view.id
         : layer
           ? localizedLabel(layer.metadata, schema.language) || layer.id
-          : i18n.t("gateway.study.library_label");
+          : i18n.t("gateway.study.explore");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -202,7 +207,16 @@ export async function mount(root, { signal } = {}) {
     if (requestedEntryId) {
         const entry =
             entries.find(({ id }) => id === requestedEntryId) ??
-            (await fetchLibraryEntry(requestedEntryId)).entry;
+            (
+                await readStudySnapshot(
+                    () => fetchLibraryEntry(requestedEntryId),
+                    { entry: null },
+                )
+            ).entry;
+        if (!entry) {
+            showOfflineContentNotice(i18n, signal);
+            return;
+        }
         await openEntryPopup(
             root,
             entry,

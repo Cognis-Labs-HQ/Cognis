@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { uiCtx } from "../ui-ctx.js";
-import { renderInPageCallout } from "../in-page-callout.js";
+import { renderTopBanner } from "../top-banners.js";
 import { escapeHtml } from "../escape-html.js";
 
 let offline = false;
@@ -15,7 +15,6 @@ const window = new EventTarget();
 const root = { querySelector: () => header };
 let current;
 const liveNotices = new Set();
-const styles = new Set();
 const header = {
     append: (element) => {
         current = element;
@@ -52,7 +51,29 @@ function element() {
 const { mountOfflineStatus } = loadTestModule(
     new URL("../offline-status.js", import.meta.url),
     {
-        "./ui-ctx.js": { uiCtx },
+        "./ui-ctx.js": {
+            uiCtx: {
+                ...uiCtx,
+                capabilities: {
+                    get: (id) =>
+                        id === "ui:broadcast"
+                            ? {
+                                  prepare: async () => {},
+                                  publish: (_id, descriptor) => {
+                                      const notice = element();
+                                      notice.innerHTML =
+                                          renderTopBanner(descriptor);
+                                      header.append(notice);
+                                      return {
+                                          element: notice,
+                                          remove: () => notice.remove(),
+                                      };
+                                  },
+                              }
+                            : uiCtx.capabilities.get(id),
+                },
+            },
+        },
         "./button-loading.js": {
             beginButtonLoading: (button) => {
                 button.disabled = true;
@@ -76,11 +97,7 @@ const { mountOfflineStatus } = loadTestModule(
                 return true;
             },
         },
-        "./in-page-callout.js": { renderInPageCallout },
         "./escape-html.js": { escapeHtml },
-        "./page-styles.js": {
-            ensurePersistentStylesheet: async (path) => styles.add(path),
-        },
     },
     { window, document: { createElement: element }, AbortController, console },
 );
@@ -122,7 +139,6 @@ test("one persistent header status survives remounts, offers styled guarded refr
     );
     assert.equal((current.innerHTML.match(/<button/g) ?? []).length, 1);
     assert.equal(liveNotices.size, 1);
-    assert.ok(styles.has("/static/styles/reuse/buttons.css"));
     assert.equal(refreshes, 0);
     current.click("data-offline-refresh");
     await new Promise(setImmediate);

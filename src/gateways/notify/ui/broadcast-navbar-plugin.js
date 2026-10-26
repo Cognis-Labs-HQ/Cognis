@@ -1,3 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -11,7 +13,7 @@ import {
     loadTrustedDomains,
 } from "/static/reuse/trusted-domains.js";
 
-const CSS_HREF = "/static/gateways/notify/broadcast.css";
+const CSS_HREF = "/static/styles/reuse/top-banners.css";
 const POLL_INTERVAL_VISIBLE_MILLISECONDS = 20_000;
 const POLL_INTERVAL_HIDDEN_MILLISECONDS = 45_000;
 const BAR_CONTAINER_ID = "notify-broadcast-bar";
@@ -21,6 +23,7 @@ let currentPopupBroadcastId = null;
 let isPopupOpen = false;
 let pollTimer = null;
 let stopPollingForAuthFailure = false;
+let activeSignal;
 
 async function navigateAfterClose(redirectUrl, i18n) {
     if (!redirectUrl) return;
@@ -47,9 +50,11 @@ async function navigateAfterClose(redirectUrl, i18n) {
     }
 }
 
-async function fetchActiveBroadcasts() {
+async function fetchActiveBroadcasts(signal) {
     try {
-        const response = await apiFetch("/api/v1/notify/broadcasts/active");
+        const response = await apiFetch("/api/v1/notify/broadcasts/active", {
+            signal,
+        });
         if (response.status === 401) {
             return { broadcasts: [], unauthorized: true };
         }
@@ -78,41 +83,36 @@ async function dismissBroadcast(broadcastId) {
     );
 }
 
-function getBarContainer() {
-    let barContainer = document.getElementById(BAR_CONTAINER_ID);
-    if (barContainer) return barContainer;
-    barContainer = document.createElement("div");
-    barContainer.id = BAR_CONTAINER_ID;
-    document.body.prepend(barContainer);
-    return barContainer;
-}
-
+let releaseBanner;
 function removeBroadcastBar() {
-    document.getElementById(BAR_CONTAINER_ID)?.remove();
+    releaseBanner?.();
+    releaseBanner = null;
 }
 
 function renderBroadcastBar(broadcast, i18n) {
-    const barContainer = getBarContainer();
-    barContainer.innerHTML = `
-      <section class="notify-broadcast-bar" role="status" aria-live="polite">
-        <div class="notify-broadcast-content">
-          <strong class="notify-broadcast-title">${escapeHtml(broadcast.title)}</strong>
-          <div class="notify-broadcast-message">${renderMarkdown(broadcast.message)}</div>
-        </div>
-        <div class="notify-broadcast-actions">
-          <button type="button" class="notify-broadcast-ack btn-animated">${
+    const banner = uiCtx.capabilities.get("ui:broadcast").publish(
+        "notify.broadcast",
+        {
+            title: broadcast.title,
+            bodyHtml: renderMarkdown(broadcast.message),
+            actionsHtml: `
+          <button type="button" class="notify-broadcast-ack btn-neutral btn-animated">${
               broadcast.requireAcknowledgement
                   ? i18n.t("gateway.notify.broadcast.acknowledge")
                   : i18n.t("ui.reuse.dismiss")
           }</button>
           ${
               broadcast.requireAcknowledgement
-                  ? `<button type="button" class="notify-broadcast-close">${i18n.t("ui.reuse.close")}</button>`
+                  ? `<button type="button" class="notify-broadcast-close btn-neutral">${i18n.t("ui.reuse.close")}</button>`
                   : ""
           }
-        </div>
-      </section>
-    `;
+    `,
+        },
+        { signal: activeSignal },
+    );
+    const barContainer = banner.element;
+    barContainer.id = BAR_CONTAINER_ID;
+    releaseBanner = banner.remove;
 
     const acknowledgeButton = barContainer.querySelector(
         ".notify-broadcast-ack",
@@ -196,8 +196,10 @@ async function openBroadcastPopup(broadcast, i18n) {
     }
 }
 
-async function refreshBroadcast(i18n) {
-    const { broadcasts, unauthorized } = await fetchActiveBroadcasts();
+async function refreshBroadcast(i18n, signal) {
+    if (isOffline() || signal?.aborted) return;
+    const { broadcasts, unauthorized } = await fetchActiveBroadcasts(signal);
+    if (signal?.aborted) return;
     if (unauthorized) {
         stopPollingForAuthFailure = true;
         removeBroadcastBar();
@@ -234,15 +236,17 @@ async function refreshBroadcast(i18n) {
     await openBroadcastPopup(activePopupBroadcast, i18n);
 }
 
-async function startPolling(i18n) {
-    await refreshBroadcast(i18n);
+async function startPolling(i18n, signal) {
+    await refreshBroadcast(i18n, signal);
+    if (signal.aborted) return;
 
     const runTick = async () => {
-        if (stopPollingForAuthFailure) {
+        if (stopPollingForAuthFailure || signal.aborted) {
             pollTimer = null;
             return;
         }
-        await refreshBroadcast(i18n);
+        await refreshBroadcast(i18n, signal);
+        if (signal.aborted) return;
         const pollDelay =
             document.visibilityState === "visible"
                 ? POLL_INTERVAL_VISIBLE_MILLISECONDS
@@ -257,7 +261,16 @@ async function startPolling(i18n) {
     pollTimer = setTimeout(runTick, initialPollDelay);
 }
 
-(async function initBroadcastPlugin() {
+export async function mountProvider(ctx) {
+    const signal = ctx.signal;
+    activeSignal = signal;
+    const dispose = () => {
+        if (activeSignal !== signal) return;
+        clearTimeout(pollTimer);
+        pollTimer = null;
+        removeBroadcastBar();
+    };
+    signal.addEventListener("abort", dispose, { once: true });
     if (!localStorage.getItem("cognis_access_token")) return;
     if (pollTimer) clearTimeout(pollTimer);
     stopPollingForAuthFailure = false;
@@ -266,8 +279,15 @@ async function startPolling(i18n) {
         const i18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/notify/languages"],
         });
-        await startPolling(i18n);
-    } catch {
-        removeBroadcastBar();
+        signal.throwIfAborted();
+        await startPolling(i18n, signal);
+    } catch (error) {
+        if (!signal.aborted)
+            console.error("[notify] broadcast provider failed", {
+                operation: "mountBroadcastProvider",
+                errorName: error?.name,
+            });
+        dispose();
     }
-})();
+    return dispose;
+}

@@ -631,4 +631,5 @@
   <string name="ui.reuse.offline_mode_active">オフラインモードです</string>
   <string name="ui.reuse.offline_connection_restored">サーバーへの接続が復旧しました。準備ができたらページを更新してください。</string>
   <string name="ui.reuse.recheck_connectivity">接続を再確認</string>
+  <string name="ui.reuse.offline_no_cached_content">オフライン用に保存されたコンテンツはありません。</string>
 </resources>

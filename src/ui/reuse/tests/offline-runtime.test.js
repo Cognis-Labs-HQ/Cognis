@@ -1,3 +1,4 @@
+import { createTopBanners } from "../top-banners.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -60,6 +61,7 @@ function fixture({ browser = false } = {}) {
         "./offline-runtime.js": runtime,
         "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
         "./resources.js": { createReuseResources },
+        "./top-banners.js": { createTopBanners },
         "./sub-page-registry.js": { createSubPageRegistry },
     });
     return {

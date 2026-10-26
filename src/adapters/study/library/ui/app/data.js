@@ -1,3 +1,7 @@
+import {
+    isOfflineContentMiss,
+    showOfflineContentNotice,
+} from "/static/gateways/study/offline-content.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchLibraryEntries,
@@ -6,7 +10,7 @@ import {
     fetchLibraryLocations,
 } from "/static/gateways/study/library-client.js";
 
-export async function loadLibrary(languageCode, i18n) {
+export async function loadLibrary(languageCode, i18n, { signal } = {}) {
     let schemas = [];
     let entries = [];
     try {
@@ -30,7 +34,11 @@ export async function loadLibrary(languageCode, i18n) {
             ...entry,
             isNew: !entry.relocatedAt && !viewed.has(entry.id),
         }));
-    } catch {
+    } catch (error) {
+        if (isOfflineContentMiss(error)) {
+            showOfflineContentNotice(i18n, signal);
+            return { schemas, entries: [] };
+        }
         showToast(i18n.t("gateway.study.library_load_error"), {
             variant: "error",
         });

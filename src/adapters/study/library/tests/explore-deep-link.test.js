@@ -70,6 +70,11 @@ test("a directly opened Explore card path opens the requested preview without hi
         await importTestModule(
             new URL("../ui/app/layer/index.js", import.meta.url),
             {
+                "/static/gateways/study/offline-content.js": {
+                    readStudySnapshot: (load) => load(),
+                    showOfflineContentNotice: () =>
+                        assert.fail("cached entry must open"),
+                },
                 "/static/gateways/study/reuse/explore.js": {
                     exploreLayers: context.exploreLayers,
                 },

@@ -32,6 +32,9 @@ function fixture() {
                 "./viewed-entries.js": context,
                 "/static/reuse/mount-scope.js": context,
                 "/static/reuse/toast.js": context,
+                "/static/gateways/study/offline-content.js": {
+                    isOfflineContentMiss: () => false,
+                },
                 "/static/gateways/study/library-client.js": context,
                 "./filters.js": context,
                 "./layer-cards.js": context,

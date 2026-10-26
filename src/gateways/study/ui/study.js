@@ -1,3 +1,4 @@
+import { showOfflineContentNotice } from "./offline-content.js";
 /**
  * Study hub — welcome onboarding, dashboard, and settings.
  *
@@ -96,6 +97,18 @@ export async function mount(root, { signal } = {}) {
                   .filter(Boolean)
             : [];
 
+    if (registeredLanguages.length === 0 && isOffline()) {
+        await mountHub(root, {
+            i18n,
+            registeredLanguages: [],
+            learningLanguages: [],
+            requestedLanguageCode,
+            isSettingsPath,
+            signal,
+        });
+        showOfflineContentNotice(i18n, signal);
+        return;
+    }
     if (registeredLanguages.length === 0) {
         await navigateTo("/error?code=503");
         return;

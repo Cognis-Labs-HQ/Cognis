@@ -27,6 +27,7 @@
  * ```
  */
 
+import { createTopBanners } from "./top-banners.js";
 import { registerOfflineRuntime } from "./offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
@@ -172,6 +173,8 @@ export const uiCtx =
     globalThis[UI_CTX_KEY] ?? (globalThis[UI_CTX_KEY] = createFlowEngine());
 
 uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
+if (!uiCtx.capabilities.get("ui:broadcast"))
+    uiCtx.capabilities.contribute("ui:broadcast", createTopBanners());
 uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {

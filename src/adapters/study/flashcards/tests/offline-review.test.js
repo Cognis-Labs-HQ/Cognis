@@ -14,10 +14,17 @@ test("reviews queue idempotent attempts while offline content edits remain unava
     });
     const client = loadTestModule(
         new URL("../ui/decks-client.js", import.meta.url),
-        fixture.imports,
+        {
+            ...fixture.imports,
+            "/static/gateways/study/offline-content.js": {
+                readStudySnapshot: (load) => load(),
+            },
+            "/static/reuse/i18n.js": { createI18n: async () => ({}) },
+            "./app/markup.js": { loadDeckTemplates: async () => ({}) },
+        },
         fixture.globals,
     );
-    client.mountProvider(fixture.ctx);
+    await client.mountProvider(fixture.ctx);
     fixture.disconnect();
     const attempt = {
         id: "788b4cf9-30e4-424b-87ad-e69f6e319cf7",

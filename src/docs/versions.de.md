@@ -55,9 +55,9 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.5`  |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.6`  |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`  |
-| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.16` |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.17` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.5`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -71,13 +71,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Authentication (auth) | `src/gateways/auth/`          | `2.0.2`  |
 | Share                 | `src/gateways/share/`         | `1.7.49` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.15` |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.16` |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
 | Registration          | `src/gateways/registration/`  | `1.1.41` |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.2.13` |
+| Study                 | `src/gateways/study/`         | `2.3.0`  |
 | Calendar              | `src/gateways/calendar/`      | `1.5.0`  |
 
 ## Kernverträge
@@ -90,7 +90,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.8.6` |
+| API Server | `src/api/` | `0.9.0` |
 
 ## Werkzeuge
 

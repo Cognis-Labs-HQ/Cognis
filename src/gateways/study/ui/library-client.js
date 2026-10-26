@@ -1,3 +1,4 @@
+import { readStudySnapshot } from "./offline-content.js";
 import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -554,24 +555,31 @@ export function registerLibraryClient(ctx) {
                             load,
                         );
                     if (offlineReads.has(name)) {
-                        const result = await read(
-                            JSON.stringify([name, input.args]),
-                            load,
-                            (data) => {
-                                if (name === "fetchLibraryEntries")
-                                    return (
-                                        Array.isArray(data) &&
-                                        data.every((entry) =>
-                                            offlineSchemas.has(entry.schemaId),
-                                        )
-                                    );
-                                if (name === "fetchLibraryEntry")
-                                    return offlineSchemas.has(
-                                        data?.entry?.schemaId,
-                                    );
-                                return true;
-                            },
-                        );
+                        const cached = () =>
+                            read(
+                                JSON.stringify([name, input.args]),
+                                load,
+                                (data) => {
+                                    if (name === "fetchLibraryEntries")
+                                        return (
+                                            Array.isArray(data) &&
+                                            data.every((entry) =>
+                                                offlineSchemas.has(
+                                                    entry.schemaId,
+                                                ),
+                                            )
+                                        );
+                                    if (name === "fetchLibraryEntry")
+                                        return offlineSchemas.has(
+                                            data?.entry?.schemaId,
+                                        );
+                                    return true;
+                                },
+                            );
+                        const result =
+                            name === "fetchLibraryForms"
+                                ? await readStudySnapshot(cached, [])
+                                : await cached();
                         if (name === "fetchLibrarySchemas") {
                             for (const schema of Array.isArray(result)
                                 ? result

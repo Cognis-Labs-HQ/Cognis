@@ -1,3 +1,4 @@
+import { readStudySnapshot } from "./offline-content.js";
 import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -10,25 +11,30 @@ export function registerStudyNavigation(ctx) {
     const read = createOfflineReadCache({ signal: ctx.signal });
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("scoped_actions_unavailable");
-    let required = [
-        "/api/v1/study/registered-languages",
-        "/api/v1/study/preferences",
-    ];
     const load = async (path, signal) => {
         const assertAccount = captureAccountGuard();
-        const result = await read(path, async () => {
-            const response = await apiFetch(path, {
-                signal: AbortSignal.any([
-                    ctx.signal,
-                    ...(signal ? [signal] : []),
-                ]),
-            });
-            if (!response.ok)
-                throw Object.assign(new Error("study_navigation_unavailable"), {
-                    status: response.status,
-                });
-            return (await response.json()).data;
-        });
+        const result = await readStudySnapshot(
+            () =>
+                read(path, async () => {
+                    const response = await apiFetch(path, {
+                        signal: AbortSignal.any([
+                            ctx.signal,
+                            ...(signal ? [signal] : []),
+                        ]),
+                    });
+                    if (!response.ok)
+                        throw Object.assign(
+                            new Error("study_navigation_unavailable"),
+                            {
+                                status: response.status,
+                            },
+                        );
+                    return (await response.json()).data;
+                }),
+            path.endsWith("/preferences")
+                ? { learningLanguages: [], teachingLanguages: [] }
+                : [],
+        );
         assertAccount();
         return result;
     };
@@ -40,14 +46,6 @@ export function registerStudyNavigation(ctx) {
                 "/api/v1/study/preferences",
                 signal ?? ctx.signal,
             );
-            required = [
-                "/api/v1/study/registered-languages",
-                "/api/v1/study/preferences",
-                ...(prefs?.learningLanguages ?? []).map(
-                    (code) =>
-                        `/api/v1/study/languages/${encodeURIComponent(code)}/modules`,
-                ),
-            ];
             return prefs;
         },
         modules: ({ languageCode, signal }) =>
@@ -81,9 +79,6 @@ export function registerStudyNavigation(ctx) {
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["gateway.study"],
         ctx.signal,
-        {
-            available: () => required.every((path) => read.has(path)),
-        },
     );
 }
 

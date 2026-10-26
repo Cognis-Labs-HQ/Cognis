@@ -3,6 +3,28 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { createOfflineClientFixture } from "../../../tooling/reuse/offline-client-fixture.js";
 
+function loadClient(host) {
+    const offline = loadTestModule(
+        new URL("../ui/offline-content.js", import.meta.url),
+        {
+            "/static/reuse/offline-state.js":
+                host.imports["/static/reuse/offline-state.js"],
+            "/static/reuse/ui-ctx.js": { uiCtx: host.ctx },
+            "/static/reuse/popup.js": {
+                openPopup: () =>
+                    assert.fail("navigation reads must not open popups"),
+            },
+            "/static/reuse/escape-html.js": { escapeHtml: String },
+        },
+        host.globals,
+    );
+    return loadTestModule(
+        new URL("../ui/navigation-client.js", import.meta.url),
+        { ...host.imports, "./offline-content.js": offline },
+        host.globals,
+    );
+}
+
 function fixture() {
     const requests = [];
     const host = createOfflineClientFixture(async (path) => {
@@ -14,11 +36,7 @@ function fixture() {
               : [{ id: "kana", pageUrl: "/study/explore/ja/kana" }];
         return Response.json({ data });
     });
-    const client = loadTestModule(
-        new URL("../ui/navigation-client.js", import.meta.url),
-        host.imports,
-        host.globals,
-    );
+    const client = loadClient(host);
     client.registerStudyNavigation(host.ctx);
     return { host, client, requests };
 }
@@ -54,9 +72,9 @@ test("Study hub metadata and module links reopen offline through their registere
     assert.equal(reads, 2);
     assert.equal(requests.length, 3);
     host.changeAccount("another-learner");
-    await assert.rejects(
-        client.fetchStudyPreferences(),
-        /offline_read_unavailable/,
+    assert.equal(
+        (await client.fetchStudyPreferences()).learningLanguages.length,
+        0,
     );
     host.controller.abort();
     await assert.rejects(client.fetchStudyLanguages(), { name: "AbortError" });
@@ -78,11 +96,7 @@ test("Study prepares an unvisited hub after authentication and refreshes invalid
         },
         { window },
     );
-    const client = loadTestModule(
-        new URL("../ui/navigation-client.js", import.meta.url),
-        host.imports,
-        host.globals,
-    );
+    const client = loadClient(host);
     client.registerStudyNavigation(host.ctx);
     host.ctx.extendFlow(
         "authenticate-session",

@@ -1,3 +1,4 @@
+import { createTopBanners } from "../../../ui/reuse/top-banners.js";
 import { registerOfflineRuntime } from "../../../ui/reuse/offline-runtime.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -26,6 +27,7 @@ function fixture() {
             "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": { createReuseResources },
+            "./top-banners.js": { createTopBanners },
             "./sub-page-registry.js": { createSubPageRegistry },
         },
     );

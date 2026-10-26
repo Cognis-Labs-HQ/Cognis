@@ -1,3 +1,6 @@
+import { createI18n } from "/static/reuse/i18n.js";
+import { loadDeckTemplates } from "./app/markup.js";
+import { readStudySnapshot } from "/static/gateways/study/offline-content.js";
 import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
@@ -5,7 +8,7 @@ import { isOffline } from "/static/reuse/offline-state.js";
 
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-export function mountProvider(ctx) {
+export async function mountProvider(ctx) {
     const read = createOfflineReadCache({ signal: ctx.signal });
     const outbox = ctx.capabilities.get("offline:outbox");
     if (!outbox) throw new Error("offline_delivery_unavailable");
@@ -25,6 +28,16 @@ export function mountProvider(ctx) {
         ["adapter.study.flashcards"],
         ctx.signal,
     );
+    await Promise.all([
+        createI18n({
+            componentStringBaseUrls: [
+                "/static/gateways/study/languages",
+                "/static/adapters/study/flashcards/languages",
+            ],
+        }),
+        loadDeckTemplates(ctx.signal),
+    ]);
+    ctx.signal.throwIfAborted();
 }
 
 async function request(path, method = "GET", body, signal) {
@@ -52,7 +65,9 @@ async function request(path, method = "GET", body, signal) {
     if (method !== "GET") return load();
     const read = uiCtx.capabilities.get("study:decks:offlineRead");
     if (!read) throw new Error("decks_client_unavailable");
-    return read(path, load);
+    return path === ""
+        ? readStudySnapshot(() => read(path, load), [])
+        : read(path, load);
 }
 
 export const fetchStudyDecks = () => request("");

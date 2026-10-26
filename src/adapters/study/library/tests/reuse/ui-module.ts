@@ -68,6 +68,7 @@ const CONTRACTS = {
         "/static/reuse/escape-html.js",
     ],
     "app/requests.js": [
+        "/static/reuse/offline-state.js",
         "./request-preview.js",
         "/static/reuse/popup.js",
         "/static/reuse/ui-ctx.js",
@@ -126,6 +127,9 @@ export function loadLibraryUiModule(
                 CONTRACTS[path].map((specifier) => [specifier, dependencies]),
             ),
             "/static/reuse/offline-state.js": offlineState,
+            "/static/gateways/study/offline-content.js": {
+                isOfflineContentMiss: () => false,
+            },
             "../reuse/entry-graph.js": entryGraph,
         },
         dependencies,

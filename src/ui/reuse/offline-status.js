@@ -7,9 +7,7 @@ import {
     refreshAfterOffline,
     recheckConnectivity,
 } from "./offline-state.js";
-import { renderInPageCallout } from "./in-page-callout.js";
 import { escapeHtml } from "./escape-html.js";
-import { ensurePersistentStylesheet } from "./page-styles.js";
 
 const owners = new WeakMap();
 const refreshFlow = "offline:refreshPage";
@@ -41,17 +39,20 @@ if (!uiCtx.flowExists(recheckFlow)) {
     );
 }
 
-/** Mount one host-header notice using the shared callout and guarded navigation. */
+/** Mount one top-of-page notice using the shared callout and guarded navigation. */
 export function mountOfflineStatus(
     root,
     { i18n, signal, unavailable = false } = {},
 ) {
     owners.get(root)?.();
     if (signal?.aborted) return;
-    const header = root.querySelector(".site-header");
-    if (!header) return;
+    if (!root) return;
+    const banners = uiCtx.capabilities.get("ui:broadcast");
+    if (!banners) throw new Error("top_banners_unavailable");
+    void banners.prepare();
     const controller = new AbortController();
     let notice;
+    let releaseBanner;
     let checking = false;
     const render = () => {
         const mode = !offlineEnabled()
@@ -61,27 +62,34 @@ export function mountOfflineStatus(
               : hasRecoveredConnection()
                 ? "recovered"
                 : "";
-        notice?.remove();
+        releaseBanner?.();
         notice = null;
         if (!mode || controller.signal.aborted) return;
-        notice = document.createElement("div");
+        const banner = banners.publish(
+            "ui.offline",
+            {
+                variant: mode === "offline" ? "info" : "success",
+                title: i18n.t(
+                    mode === "offline"
+                        ? "ui.reuse.offline_mode_active"
+                        : "ui.reuse.offline_connection_restored",
+                ),
+                bodyHtml:
+                    mode === "offline" && unavailable
+                        ? escapeHtml(
+                              i18n.t("ui.reuse.offline_page_unavailable"),
+                          )
+                        : "",
+                actionsHtml:
+                    mode === "recovered"
+                        ? `<div class="in-page-callout__actions"><button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button></div>`
+                        : `<div class="in-page-callout__actions"><button type="button" class="btn-neutral btn-animated${checking ? " button-loading" : ""}" data-offline-recheck${checking ? ' disabled aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.reuse.recheck_connectivity"))}</button></div>`,
+            },
+            { priority: -100, signal: controller.signal },
+        );
+        notice = banner.element;
         notice.dataset.offlineStatus = mode;
-        notice.innerHTML = renderInPageCallout({
-            variant: mode === "offline" ? "info" : "success",
-            title: i18n.t(
-                mode === "offline"
-                    ? "ui.reuse.offline_mode_active"
-                    : "ui.reuse.offline_connection_restored",
-            ),
-            body:
-                mode === "offline" && unavailable
-                    ? i18n.t("ui.reuse.offline_page_unavailable")
-                    : "",
-            footerHtml:
-                mode === "recovered"
-                    ? `<div class="in-page-callout__actions"><button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button></div>`
-                    : `<div class="in-page-callout__actions"><button type="button" class="btn-neutral btn-animated${checking ? " button-loading" : ""}" data-offline-recheck${checking ? ' disabled aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.reuse.recheck_connectivity"))}</button></div>`,
-        });
+        releaseBanner = banner.remove;
         notice.querySelector("[data-offline-recheck]")?.addEventListener(
             "click",
             async (event) => {
@@ -113,7 +121,6 @@ export function mountOfflineStatus(
             },
             { signal: controller.signal },
         );
-        header.append(notice);
     };
     for (const type of [
         "cognis:connectivity-changed",
@@ -124,20 +131,11 @@ export function mountOfflineStatus(
         window.addEventListener(type, render, { signal: controller.signal });
     const dispose = () => {
         controller.abort();
-        notice?.remove();
+        releaseBanner?.();
         if (owners.get(root) === dispose) owners.delete(root);
     };
     signal?.addEventListener("abort", dispose, { once: true });
     owners.set(root, dispose);
-    void Promise.all([
-        ensurePersistentStylesheet("/static/styles/reuse/in-page-callout.css"),
-        ensurePersistentStylesheet("/static/styles/reuse/buttons.css"),
-    ]).catch((error) =>
-        console.info("[offline] status stylesheet unavailable", {
-            operation: "loadStatusStyles",
-            errorName: error?.name,
-        }),
-    );
     render();
     return dispose;
 }

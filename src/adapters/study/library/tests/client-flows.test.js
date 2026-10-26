@@ -10,12 +10,29 @@ import { mountProvider as mountScopedActions } from "../../../../ui/reuse/scoped
 import { createProviderLifecycle } from "../../../../ui/reuse/provider-lifecycle.js";
 
 async function session(testContext, request, dependencies = {}) {
+    const offlineContent = loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/offline-content.js",
+            import.meta.url,
+        ),
+        {
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/popup.js": {
+                openPopup: () => assert.fail("no popup without a page"),
+            },
+            "/static/reuse/escape-html.js": { escapeHtml: String },
+        },
+        { structuredClone, console },
+    );
     const client = loadTestModule(
         new URL(
             "../../../../gateways/study/ui/library-client.js",
             import.meta.url,
         ),
         {
+            "./offline-content.js": offlineContent,
             "/static/reuse/offline-state.js":
                 dependencies.offlineState ?? offlineState,
             "/static/reuse/offline-read-cache.js":
@@ -33,6 +50,7 @@ async function session(testContext, request, dependencies = {}) {
         new URL("../ui/provider.js", import.meta.url),
         {
             "/static/gateways/study/library-client.js": client,
+            "/static/reuse/i18n.js": { createI18n: async () => ({}) },
             "./app/presentation.js": {
                 headingCompositionReferences: (detail) => detail.composition,
             },

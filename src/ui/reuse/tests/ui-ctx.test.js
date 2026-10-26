@@ -1,3 +1,4 @@
+import { createTopBanners } from "../top-banners.js";
 import { registerOfflineRuntime } from "../offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -22,6 +23,7 @@ function loadUiCtxForTests() {
             "./flow-contracts.js": context,
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
+            "./top-banners.js": { createTopBanners },
             "./sub-page-registry.js": context,
         },
         context,
@@ -198,4 +200,16 @@ test("uiCtx — registered hooks can be removed", async () => {
         engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
         false,
     );
+});
+
+test("uiCtx exposes the shared broadcast publisher before a page or provider mounts", async () => {
+    const { uiCtx: ctx } = loadUiCtxForTests();
+    assert.equal(
+        typeof ctx.capabilities.get("ui:broadcast").publish,
+        "function",
+    );
+    const first = await import("../ui-ctx.js");
+    const publisher = first.uiCtx.capabilities.get("ui:broadcast");
+    const second = await import("../ui-ctx.js?broadcast-lifecycle");
+    assert.equal(second.uiCtx.capabilities.get("ui:broadcast"), publisher);
 });
