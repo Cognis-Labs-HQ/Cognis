@@ -238,3 +238,9 @@ The offline route registry survives repeated bundled and directly served imports
 ## Shared Study Favourites
 
 The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.
+
+## Cached Public Resources
+
+Shared reuse styles, including toasts and secret visibility controls, are included in the worker boot manifest in both logical and built forms. Calendar prepares its lazy status stylesheet through its provider. The SPA route catalog is shared through ctx across bundled and directly served imports, preserving authorized Study routes when another loader first reads the catalog offline. Private page snapshots remain account/session-bound and authorization and consent checks still apply.
+
+Cached public assets return immediately even online. Content-hashed bundles remain immutable; mutable public resources refresh in the background on demand, coalescing concurrent refreshes and checking at most once per minute per resource. Browser conditional revalidation avoids downloading unchanged files. Failed background refreshes retain cached bytes without declaring the server offline; authoritative removal or access-denial responses evict the asset. API responses and authenticated documents remain network-only in the worker.

@@ -1,3 +1,4 @@
+import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
 import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
 import { brotliCompress, gzip } from "node:zlib";
@@ -227,6 +228,7 @@ if (manifest["/static/app/offline/index.js"]) {
         "/static/styles/license.css",
         "/static/styles/reuse/buttons.css",
         "/static/styles/reuse/floating-window.css",
+        ...COMMON_STYLESHEETS.map((name) => `/static/styles/reuse/${name}`),
     ]) {
         offlineAssets.add(sourceUrl);
         if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);

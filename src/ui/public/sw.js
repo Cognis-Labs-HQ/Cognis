@@ -289,6 +289,12 @@ self.addEventListener("message", (event) => {
     );
 });
 
+// Revalidate mutable public resources only on demand, at most once per minute.
+// Bound metadata and coalesce overlapping reads; failed refreshes retain the snapshot.
+const assetRefreshes = new Map();
+const ASSET_REFRESH_INTERVAL = 60_000;
+const MAX_ASSET_REFRESHES = 256;
+
 async function assetResponse(request, moduleAsset, event) {
     if (!(await offlineEnabled())) return fetch(request);
     const generation = catalogGeneration;
@@ -305,39 +311,77 @@ async function assetResponse(request, moduleAsset, event) {
             new URL(request.url).pathname,
         );
     if (cached && immutable) return cached;
-    try {
-        const response = await fetchAvailable(
-            request,
-            moduleAsset
-                ? { cache: "no-store", credentials: "omit" }
-                : undefined,
-        );
-        if ([502, 503, 504].includes(response.status))
-            throw new Error("server_unavailable");
-        if (
-            cacheable(response) &&
-            (!moduleAsset ||
-                (generation === catalogGeneration &&
-                    parameters.has("revision") &&
-                    response.headers.get("x-cognis-module-revision") ===
-                        parameters.get("revision")))
-        )
-            event.waitUntil(
-                cache.put(cacheKey, response.clone()).catch((error) => {
-                    console.error(
-                        "[cognis-sw] public asset cache write failed",
-                        error,
-                    );
-                }),
+    const refresh = async () => {
+        try {
+            const response = await fetchAvailable(
+                request,
+                moduleAsset
+                    ? { cache: "no-store", credentials: "omit" }
+                    : { cache: "no-cache", credentials: "omit" },
             );
-        return response;
-    } catch (error) {
-        if (request.signal?.aborted) throw error;
-        await announceOffline();
-        if (cached && (!moduleAsset || generation === catalogGeneration))
-            return cached;
-        throw error;
+            if ([502, 503, 504].includes(response.status))
+                throw new Error("server_unavailable");
+            if (!cacheable(response)) event.waitUntil(cache.delete(cacheKey));
+            if (
+                cacheable(response) &&
+                (!moduleAsset ||
+                    (generation === catalogGeneration &&
+                        parameters.has("revision") &&
+                        response.headers.get("x-cognis-module-revision") ===
+                            parameters.get("revision")))
+            )
+                event.waitUntil(
+                    cache.put(cacheKey, response.clone()).catch((error) => {
+                        console.error(
+                            "[cognis-sw] public asset cache write failed",
+                            error,
+                        );
+                    }),
+                );
+            return response;
+        } catch (error) {
+            if (request.signal?.aborted) throw error;
+            if (!cached) await announceOffline();
+            if (cached && (!moduleAsset || generation === catalogGeneration)) {
+                console.info("[cognis-sw] cached public asset retained", {
+                    errorName: error?.name,
+                });
+                return cached;
+            }
+            throw error;
+        }
+    };
+    if (!cached) return refresh();
+    const previous = assetRefreshes.get(cacheKey);
+    if (
+        !previous ||
+        (!previous.pending &&
+            Date.now() - previous.at >= ASSET_REFRESH_INTERVAL)
+    ) {
+        if (assetRefreshes.size >= MAX_ASSET_REFRESHES) {
+            const removable = [...assetRefreshes].find(
+                ([, entry]) => !entry.pending,
+            );
+            if (removable) assetRefreshes.delete(removable[0]);
+        }
+        if (assetRefreshes.size < MAX_ASSET_REFRESHES || previous) {
+            const entry = { at: Date.now(), pending: true };
+            assetRefreshes.set(cacheKey, entry);
+            event.waitUntil(
+                refresh()
+                    .catch((error) => {
+                        console.info(
+                            "[cognis-sw] public asset refresh deferred",
+                            { errorName: error?.name },
+                        );
+                    })
+                    .finally(() => {
+                        entry.pending = false;
+                    }),
+            );
+        }
     }
+    return cached;
 }
 
 self.addEventListener("fetch", (event) => {

@@ -109,3 +109,9 @@ Registri rute luring bertahan pada impor berulang dari bundel maupun berkas lang
 ## Favorit Study Bersama
 
 Penyedia Study menyediakan `study:favourites` dengan operasi `load`, `toggle`, dan `has` yang mengikuti masa hidup penyedia. Utilitas tampilan memakai kapabilitas ctx ini, bukan cache terpisah per pemuat. Favorit disiapkan setelah autentikasi terverifikasi, menerapkan perubahan tertunda, dan berbagi keadaan terikat akun/sesi antara Explore, kartu belajar, dan impor berulang. Jika snapshot favorit opsional belum tersedia, pilihan kosong tetap menerapkan perubahan dalam antrean tanpa menyembunyikan konten atau menampilkan toast gagal memperbarui. Pergantian akun mengosongkan pilihan yang terlihat. Penolakan akses tidak pernah dianggap sebagai cache yang tidak ditemukan.
+
+## Sumber Daya Publik Tersimpan
+
+Gaya bersama, termasuk toast dan kontrol visibilitas rahasia, disertakan dalam manifes awal worker dalam bentuk URL logis dan hasil build. Calendar menyiapkan lembar gaya status yang dimuat tertunda melalui penyedianya. Katalog rute SPA dibagikan melalui ctx antara impor bundel dan berkas langsung sehingga rute Study yang diizinkan tetap tersedia saat pemuat lain pertama kali membaca katalog secara luring. Cuplikan halaman privat tetap terikat akun dan sesi; pemeriksaan izin serta persetujuan tetap berlaku.
+
+Aset publik tersimpan langsung dikembalikan bahkan saat daring. Bundel dengan hash konten tetap tidak berubah; sumber daya publik yang dapat berubah diperbarui di latar belakang sesuai permintaan. Pembaruan bersamaan digabungkan dan dibatasi sekali per menit per sumber daya. Validasi bersyarat browser menghindari unduhan ulang berkas yang tidak berubah. Kegagalan pembaruan mempertahankan data tersimpan tanpa menganggap server luring. Respons penghapusan atau penolakan akses yang sah menghapus aset dari cache. Respons API dan dokumen terautentikasi tetap hanya melalui jaringan pada worker.

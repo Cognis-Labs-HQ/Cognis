@@ -43,3 +43,7 @@ Calendar snapshots are tab-local and bounded to 4 MB/100 reads. The global outbo
 ## Durable Queued Results
 
 Queued event creation and later edits appear in cached lists and detail popups. Concurrent submissions share one request. Optional activity, availability or view-refresh failures cannot turn a persisted event into a failed creation. Replay uses the same event UUID and current server authorization.
+
+## Offline Status Styles
+
+The Calendar provider prepares the lazy event-status stylesheet for first use offline. Shared popup, toast and secret-visibility styles are prepared by the host, so opening a cached event does not depend on previously opening its details online.

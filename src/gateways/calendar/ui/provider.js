@@ -4,6 +4,11 @@ import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 
 export function mountProvider(ctx) {
+    ctx.capabilities
+        .get("offline:assets")
+        .register(["/static/gateways/calendar/ui/calendar-status.css"], {
+            signal: ctx.signal,
+        });
     registerCalendarClient(ctx);
     ctx.capabilities.contribute(
         "calendar:dashboardEvents",

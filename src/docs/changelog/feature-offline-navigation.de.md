@@ -170,6 +170,12 @@ Die Offline-Routenregistrierung bleibt bei wiederholten gebündelten und direkt 
 
 Der Study-Anbieter stellt `study:favourites` mit lebenszyklusgebundenen Operationen `load`, `toggle` und `has` bereit. Darstellungsfunktionen verwenden diese ctx-Funktion statt eines eigenen Caches pro Lader. Favoriten werden nach bestätigter Anmeldung vorbereitet, berücksichtigen vorgemerkte Änderungen und teilen konto- und sitzungsgebundenen Zustand zwischen Explore, Lernkarten und wiederholten Importen. Fehlt ein optionaler Favoriten-Snapshot, bleibt die Auswahl mit vorgemerkten Änderungen nutzbar; Inhalte werden nicht verborgen und kein Aktualisierungsfehler angezeigt. Ein Kontowechsel leert die sichtbare Auswahl. Zugriffsverweigerungen gelten niemals als Cache-Fehltreffer.
 
+## Öffentliche Ressourcen im Cache
+
+Gemeinsame Styles für Wiederverwendung, einschließlich Toasts und Sichtbarkeitssteuerung für Geheimnisse, stehen im Startmanifest des Workers sowohl mit logischen als auch gebauten URLs. Calendar bereitet sein verzögert geladenes Status-Stylesheet über seinen Provider vor. Der SPA-Routenkatalog wird über ctx zwischen gebündelten und direkt bereitgestellten Importen geteilt. Dadurch bleiben autorisierte Study-Routen erhalten, wenn ein weiterer Loader den Katalog erstmals offline liest. Private Seitenschnappschüsse bleiben an Konto und Sitzung gebunden; Berechtigungs- und Zustimmungsprüfungen gelten weiterhin.
+
+Öffentliche Ressourcen aus dem Cache werden auch online sofort geliefert. Inhaltsbasierte Bundles bleiben unveränderlich; veränderbare öffentliche Ressourcen werden bei Bedarf im Hintergrund aktualisiert. Gleichzeitige Prüfungen werden zusammengefasst und pro Ressource höchstens einmal pro Minute ausgeführt. Bedingte Browserprüfungen vermeiden erneutes Herunterladen unveränderter Dateien. Fehlgeschlagene Hintergrundaktualisierungen behalten gespeicherte Daten, ohne den Server als offline einzustufen. Bestätigte Entfernung oder verweigerter Zugriff entfernen die Ressource aus dem Cache. API-Antworten und authentifizierte Dokumente bleiben im Worker ausschließlich netzwerkbasiert.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

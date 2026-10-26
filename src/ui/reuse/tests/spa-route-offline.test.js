@@ -12,41 +12,44 @@ test("a warm offline catalog keeps both cached public pages and provider-authori
         base: "/legal",
         scriptUrl: "/static/app/legal/index.js",
     };
-    const { loadSpaRoutes } = loadTestModule(
-        new URL("../spa-route-registry.js", import.meta.url),
-        {
-            "./ui-ctx.js": { uiCtx },
-            "./offline-navigation.js": { offlineRouteAvailable },
-            "./offline-state.js": {
-                isOffline: () => offline,
-                offlineWorkerRequest: async () => [],
-            },
-            "./api-client.js": {
-                apiFetch: async () => {
-                    requests++;
-                    return Response.json({
-                        data: [
-                            {
-                                ...route,
-                                id: "legal",
-                                public: true,
-                                offline: {},
-                                offlineAvailable: true,
-                            },
-                            { ...route, id: "private" },
-                            {
-                                ...route,
-                                id: "unavailable",
-                                public: true,
-                                offline: {},
-                                offlineAvailable: false,
-                            },
-                        ],
-                    });
-                },
+    const imports = {
+        "./ui-ctx.js": { uiCtx },
+        "./offline-navigation.js": { offlineRouteAvailable },
+        "./offline-state.js": {
+            isOffline: () => offline,
+            offlineWorkerRequest: async () => [],
+        },
+        "./api-client.js": {
+            apiFetch: async () => {
+                requests++;
+                return Response.json({
+                    data: [
+                        {
+                            ...route,
+                            id: "legal",
+                            public: true,
+                            offline: {},
+                            offlineAvailable: true,
+                        },
+                        { ...route, id: "private" },
+                        {
+                            ...route,
+                            id: "unavailable",
+                            public: true,
+                            offline: {},
+                            offlineAvailable: false,
+                        },
+                    ],
+                });
             },
         },
-    );
+    };
+    const load = () =>
+        loadTestModule(
+            new URL("../spa-route-registry.js", import.meta.url),
+            imports,
+        );
+    const { loadSpaRoutes } = load();
     await loadSpaRoutes();
     const controller = new AbortController();
     uiCtx.capabilities.get("offline:registerSessionRoutes")(
@@ -56,6 +59,12 @@ test("a warm offline catalog keeps both cached public pages and provider-authori
     offline = true;
     assert.deepEqual(
         (await loadSpaRoutes()).map((route) => route.id),
+        ["legal", "private"],
+    );
+    assert.equal(requests, 1);
+    const duplicate = load();
+    assert.deepEqual(
+        (await duplicate.loadSpaRoutes()).map((route) => route.id),
         ["legal", "private"],
     );
     assert.equal(requests, 1);

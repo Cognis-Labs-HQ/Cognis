@@ -43,3 +43,7 @@ Kalender-Schnappschüsse bleiben im Tab und sind auf 4 MB und 100 Lesevorgänge 
 ## Dauerhaft vorgemerkte Änderungen
 
 Vorgemerkte neue Termine und spätere Änderungen erscheinen in zwischengespeicherten Listen und Detailfenstern. Gleichzeitige Übermittlungen teilen sich eine Anfrage. Fehler optionaler Aktivitätserfassung, Verfügbarkeitsanzeige oder Ansichtsaktualisierung machen einen gespeicherten Termin nicht zu einer fehlgeschlagenen Erstellung. Die Übertragung verwendet dieselbe Termin-UUID und die aktuellen Serverberechtigungen.
+
+## Offline-Statusdarstellung
+
+Der Calendar-Provider bereitet das verzögert geladene Stylesheet für Ereignisstatus vor der ersten Offlineverwendung vor. Gemeinsame Popup-, Toast- und Geheimnis-Sichtbarkeitsstile bereitet der Host vor. Dadurch lassen sich gespeicherte Ereignisse öffnen, ohne ihre Details zuvor online geöffnet zu haben.

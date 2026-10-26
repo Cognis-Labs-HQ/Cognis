@@ -43,3 +43,7 @@ Snapshot kalender hanya berada dalam tab dan dibatasi 4 MB/100 pembacaan. Outbox
 ## Hasil Antrean Tersimpan
 
 Pembuatan acara dalam antrean dan suntingan berikutnya muncul di daftar serta popup detail tersimpan. Pengiriman bersamaan berbagi satu permintaan. Kegagalan aktivitas opsional, ketersediaan, atau penyegaran tampilan tidak menjadikan acara tersimpan sebagai pembuatan gagal. Pengiriman ulang memakai UUID acara yang sama dan otorisasi server terkini.
+
+## Gaya Status Luring
+
+Penyedia Calendar menyiapkan lembar gaya status acara yang dimuat tertunda untuk penggunaan luring pertama. Host menyiapkan gaya popup, toast, dan visibilitas rahasia bersama sehingga membuka acara tersimpan tidak bergantung pada pembukaan detailnya secara daring sebelumnya.

@@ -1,3 +1,4 @@
+import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -32,6 +33,25 @@ for (const [sourceUrl, emittedUrl] of Object.entries(manifest)) {
         access(`${emittedPath}.br`),
         access(`${emittedPath}.gz`),
     ]);
+}
+const offlineAssets = new Set(
+    JSON.parse(
+        await readFile(
+            path.join(outputRoot, "public/offline-manifest.json"),
+            "utf8",
+        ),
+    ),
+);
+for (const name of COMMON_STYLESHEETS) {
+    const logical = `/static/styles/reuse/${name}`;
+    assert.ok(
+        offlineAssets.has(logical),
+        `Shared offline stylesheet: ${logical}`,
+    );
+    assert.ok(
+        offlineAssets.has(manifest[logical]),
+        `Built shared offline stylesheet: ${logical}`,
+    );
 }
 const publicPages = await readdir(path.join(outputRoot, "public", "pages"));
 for (const publicAssetPath of await walk(

@@ -1,3 +1,4 @@
+import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
@@ -133,20 +134,56 @@ test("router loads adapter-backed SPA routes from the UI app-routes API", () => 
     );
 });
 
-test("route invalidation prevents in-flight anonymous loads from restoring stale routes", () => {
-    const routerSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/app-router.js"),
-        "utf8",
-    );
-    const registrySource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
-        "utf8",
-    );
-
-    assert.match(routerSource, /loadGeneration === _routeCacheGeneration/);
-    assert.match(routerSource, /_routeCacheGeneration \+= 1/);
-    assert.match(registrySource, /loadGeneration === cacheGeneration/);
-    assert.match(registrySource, /cacheGeneration \+= 1/);
+test("route invalidation prevents in-flight anonymous loads from restoring stale routes", async () => {
+    const values = new Map();
+    const pending = [];
+    const imports = {
+        "./ui-ctx.js": {
+            uiCtx: {
+                capabilities: {
+                    get: (id) => values.get(id),
+                    contribute: (id, value) => {
+                        if (!values.has(id)) values.set(id, value);
+                    },
+                },
+            },
+        },
+        "./offline-navigation.js": { offlineRouteAvailable: () => true },
+        "./offline-state.js": {
+            isOffline: () => false,
+            offlineWorkerRequest: async () => [],
+        },
+        "./api-client.js": {
+            apiFetch: () => new Promise((resolve) => pending.push(resolve)),
+        },
+    };
+    const load = () =>
+        loadTestModule(
+            new URL("../reuse/spa-route-registry.js", import.meta.url),
+            imports,
+        );
+    const first = load();
+    const old = first.loadSpaRoutes();
+    const second = load();
+    second.clearSpaRouteCache();
+    const current = second.loadSpaRoutes();
+    const response = (id) =>
+        Response.json({
+            data: [
+                {
+                    id,
+                    pattern: "^/study$",
+                    base: "/study",
+                    scriptUrl: "/static/study.js",
+                },
+            ],
+        });
+    pending[1](response("authenticated-study"));
+    assert.equal((await current)[0].id, "authenticated-study");
+    pending[0](response("anonymous-study"));
+    await old;
+    assert.equal((await first.loadSpaRoutes())[0].id, "authenticated-study");
+    assert.equal((await second.loadSpaRoutes())[0].id, "authenticated-study");
 });
 
 test("adapters self-register SPA route metadata for the app router", () => {

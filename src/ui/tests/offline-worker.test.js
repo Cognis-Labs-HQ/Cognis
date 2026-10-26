@@ -10,6 +10,8 @@ function workerFixture() {
     const messages = [];
     let unavailable = false;
     let routes = [];
+    let clock = Date.now();
+    let serveAsset;
     let offlineGuards = [];
     let assetMaintenance = Promise.resolve();
     let assetWrites = Promise.resolve();
@@ -49,6 +51,7 @@ function workerFixture() {
         readFileSync(new URL("../public/sw.js", import.meta.url), "utf8"),
         {
             URL,
+            Date: { now: () => clock },
             AbortSignal,
             Response,
             console,
@@ -79,6 +82,7 @@ function workerFixture() {
                     return Response.json(["/assets/entry-ABCDEFGH.js"]);
                 if (url.endsWith("/api/v1/ui/offline-routes"))
                     return Response.json({ data: routes, offlineGuards });
+                if (serveAsset) return serveAsset(url, options);
                 return new Response(
                     url.endsWith("/private")
                         ? "private document"
@@ -95,6 +99,12 @@ function workerFixture() {
     );
     return {
         caches,
+        advance: (ms) => {
+            clock += ms;
+        },
+        serve: (callback) => {
+            serveAsset = callback;
+        },
         requests,
         messages,
         set unavailable(value) {
@@ -381,4 +391,52 @@ test("cold scripts and styles reach the page without waiting for asset cache wri
             await (await fixture.request(asset)).text(),
             "public asset",
         );
+});
+
+test("mutable public assets return cached bytes immediately, coalesce refreshes and pick up changes on demand", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/styles/reuse/toast.css";
+    await fixture.request(path);
+    let release;
+    let calls = 0;
+    fixture.serve(async (_url, options) => {
+        calls++;
+        assert.equal(options.cache, "no-cache");
+        assert.equal(options.credentials, "omit");
+        await new Promise((resolve) => {
+            release = resolve;
+        });
+        return new Response("updated toast styles");
+    });
+    const first = fixture.beginRequest(path);
+    assert.equal(await (await first.response).text(), "public asset");
+    const concurrent = fixture.beginRequest(path);
+    assert.equal(await (await concurrent.response).text(), "public asset");
+    assert.equal(calls, 1);
+    release();
+    await first.finished();
+    await concurrent.finished();
+    assert.equal(
+        await (await fixture.request(path)).text(),
+        "updated toast styles",
+    );
+    assert.equal(calls, 1);
+    fixture.advance(60_001);
+    fixture.unavailable = true;
+    assert.equal(
+        await (await fixture.request(path)).text(),
+        "updated toast styles",
+    );
+    assert.equal(fixture.messages.length, 0);
+});
+
+test("an authoritative public asset denial replaces cached access with the current server response", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/styles/reuse/toast.css";
+    assert.equal((await fixture.request(path)).status, 200);
+    fixture.serve(() => new Response("denied", { status: 403 }));
+    assert.equal((await fixture.request(path)).status, 200);
+    assert.equal((await fixture.request(path)).status, 403);
 });
