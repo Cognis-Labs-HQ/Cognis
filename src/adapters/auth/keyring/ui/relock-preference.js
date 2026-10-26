@@ -25,7 +25,7 @@ export function createRelockPreference({
             vaultData.preferences ??= {};
             vaultData.preferences.relockMinutes = normalizedMinutes;
             await persistVault();
-            scheduleRelock({ resetDeadline: true });
+            await scheduleRelock({ resetDeadline: true });
         }
     }
 

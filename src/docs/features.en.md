@@ -69,7 +69,7 @@ SSO accounts use opaque random IDs. Provider IDs are stored separately and expos
 
 Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.
 
-Encrypted browser vaults are cached independently by origin, account ID and server account-instance ID. The server must verify the account and instance before a cache is loaded. Passwords and decryption keys remain in memory and are never persisted; old IndexedDB unlock keys are retired. Reloading requires the keyring password again, unless a password login successfully decrypts the vault. Account changes cancel outstanding prompts and cryptographic work. Unlock never creates a missing keyring: only explicit setup or Create can do so.
+Unlocks survive refreshes in the same authenticated tab/session. The password still encrypts the vault; neither a password nor a plaintext decryption key is persisted. Session storage holds only an AES-GCM encrypted unlock, wrapped using HKDF from the active session secret and bound to origin, account, server account-instance and session identity. The server must verify that binding before restoration. Finite relock deadlines are authenticated and remain absolute across refreshes. Explicit Lock, logout, account/instance/session changes and expiry invalidate restoration. Closing the tab or starting a new session requires unlocking again. The retired plaintext IndexedDB cache remains disabled.
 
 ## Offline status and navigation recovery
 
@@ -110,3 +110,7 @@ Outbox replay starts in the background only after successful session authorizati
 The Offline Mode banner offers Recheck Connectivity with shared button styling and a busy state. It immediately calls `/api/v1/system/healthcheck`, coalesces simultaneous checks, then reauthorizes the session and attempts queued delivery when the server is reachable. Required consent still gates replay. Failure keeps Offline Mode active without an error popup. Automatic checks remain limited to once every fifteen minutes; this explicit action can run sooner. Refresh remains available after recovery.
 
 Background analytics stays queued but does not arm the browser close warning. Owners opt out with `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; the default remains true for user changes, and each new record stores its classification so provider disposal or reload cannot turn telemetry into an unsaved edit. Older records use an active owner’s declaration, with unknown owners protected. Automatic detected-timezone synchronization uses `saveUiPreferences(patch, { bufferOffline: false })`; the scoped HTTP client rejects that operation offline instead of queueing it. Explicit preference changes, messages and Calendar edits still buffer and warn.
+
+## Refresh unlocks and module loading
+
+Host route-asset preparation registers its flow and cache capabilities once per shared ctx. Bundled scripts and source imports from external modules reuse the same registrations and prepared-route state, so opening Meetings no longer fails with a duplicate `offline:prepareRouteAssets` flow.

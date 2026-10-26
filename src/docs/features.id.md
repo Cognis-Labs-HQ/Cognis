@@ -47,7 +47,7 @@ Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyed
 
 Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup tidak memerlukan reset basis data. Login dan provisi akun SSO lama ditolak secara individual sampai akun tersebut dibuat ulang dengan ID opak. ID akun, hubungan, dan rapat tidak dimigrasikan atau dihapus secara otomatis.
 
-Brankas browser terenkripsi disimpan terpisah menurut origin, ID akun, dan ID instans akun dari server. Server harus memverifikasi akun serta instans sebelum cache dimuat. Kata sandi dan kunci dekripsi hanya ada di memori; kunci pembuka IndexedDB lama dihapus. Setelah memuat ulang, kata sandi keyring diperlukan kembali, kecuali login kata sandi berhasil mendekripsi brankas. Pergantian akun membatalkan dialog dan operasi kriptografi yang tertunda. Membuka keyring tidak membuat keyring baru; pembuatan memerlukan penyiapan atau tindakan Buat secara eksplisit.
+Status terbuka bertahan saat halaman dimuat ulang dalam tab dan sesi terautentikasi yang sama. Kata sandi tetap mengenkripsi brankas; kata sandi maupun kunci dekripsi dalam teks biasa tidak disimpan. Penyimpanan sesi hanya memuat data buka kunci terenkripsi AES-GCM, dibungkus dengan kunci HKDF dari rahasia sesi aktif dan diikat pada origin, akun, instans akun server, serta identitas sesi. Server harus memverifikasi ikatan itu sebelum pemulihan. Batas waktu penguncian diautentikasi dan tetap absolut saat muat ulang. Kunci eksplisit, logout, perubahan akun/instans/sesi, dan kedaluwarsa membatalkan pemulihan. Menutup tab atau memulai sesi baru memerlukan buka kunci lagi. Cache IndexedDB lama yang menyimpan kunci tanpa enkripsi tetap dinonaktifkan.
 
 ## Status offline dan pemulihan navigasi
 
@@ -88,3 +88,7 @@ Pengiriman ulang dimulai di latar belakang hanya setelah otorisasi sesi dan pers
 Tombol Periksa Ulang Koneksi pada banner Mode Luring segera memanggil `/api/v1/system/healthcheck`, menggabungkan pemeriksaan bersamaan, lalu mengotorisasi ulang sesi dan mencoba mengirim antrean jika server terjangkau. Persetujuan wajib tetap diperlukan. Kegagalan mempertahankan Mode Luring tanpa popup kesalahan. Tombol memakai gaya bersama dan indikator sibuk; Muat Ulang tersedia setelah pemulihan. Pemeriksaan otomatis tetap sekali setiap lima belas menit, sedangkan tindakan eksplisit dapat dilakukan lebih awal.
 
 Analitik latar belakang tetap diantrekan tetapi tidak mengaktifkan peringatan penutupan. Pemilik memilih `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; nilai bawaan tetap melindungi perubahan pengguna. Rekaman baru menyimpan klasifikasinya agar pelepasan penyedia dan muat ulang tidak menganggap telemetri sebagai edit. Rekaman lama memakai deklarasi pemilik aktif; pemilik tak dikenal tetap dilindungi. Sinkronisasi zona waktu otomatis memakai `saveUiPreferences(patch, { bufferOffline: false })`; klien HTTP berskop menolaknya saat luring alih-alih mengantrekannya. Pengaturan eksplisit, pesan, dan edit Kalender tetap diantrekan dan memicu peringatan.
+
+## Buka kunci dan pemuatan modul
+
+Persiapan aset rute host mendaftarkan alur dan kapabilitas cache sekali per ctx bersama. Skrip bundel dan impor sumber dari modul eksternal memakai registrasi serta status rute yang sama, sehingga membuka Meetings tidak lagi gagal akibat duplikasi alur `offline:prepareRouteAssets`.

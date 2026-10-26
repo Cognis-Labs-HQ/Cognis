@@ -25,6 +25,10 @@ globalThis.localStorage = {
     removeItem: (key) => values.delete(key),
 };
 globalThis.sessionStorage = {
+    get length() {
+        return sessionValues.size;
+    },
+    key: (index) => [...sessionValues.keys()][index] ?? null,
     getItem: (key) => sessionValues.get(key) ?? null,
     setItem: (key, value) => sessionValues.set(key, String(value)),
     removeItem: (key) => sessionValues.delete(key),

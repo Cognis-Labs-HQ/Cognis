@@ -132,6 +132,12 @@ Der Offline-Hinweis bietet Verbindung erneut prüfen mit gemeinsamen Schaltfläc
 
 Hintergrundanalysen bleiben gespeichert, lösen aber keine Schließwarnung aus. Anbieter wählen `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; Benutzeränderungen bleiben standardmäßig geschützt. Jeder neue Datensatz speichert die Einstufung, damit Anbieterfreigabe und Neuladen Telemetrie nicht zu einer ungespeicherten Änderung machen. Ältere Einträge nutzen die Erklärung aktiver Anbieter; unbekannte Anbieter bleiben geschützt. Die automatische Zeitzonenerkennung nutzt `saveUiPreferences(patch, { bufferOffline: false })`; der gebundene HTTP-Client lehnt dies offline ab, statt es zu puffern. Ausdrückliche Einstellungen, Nachrichten und Kalenderänderungen werden weiterhin gepuffert und geschützt.
 
+## Entsperren und Modulladen
+
+Die Entsperrung bleibt beim Neuladen im selben authentifizierten Tab und derselben Sitzung erhalten. Das Passwort verschlüsselt weiterhin den Tresor; weder Passwort noch unverschlüsselter Entschlüsselungsschlüssel werden gespeichert. Der Sitzungsspeicher enthält nur eine mit AES-GCM verschlüsselte Entsperrung, deren Schlüssel mit HKDF aus dem aktiven Sitzungsgeheimnis abgeleitet und an Ursprung, Konto, serverseitige Kontoinstanz und Sitzung gebunden ist. Vor Wiederherstellung muss der Server diese Bindung bestätigen. Endliche Sperrfristen sind authentifiziert und bleiben beim Neuladen absolut. Sperren, Abmelden, Konto-, Instanz- oder Sitzungswechsel und Ablauf verhindern die Wiederherstellung. Nach Schließen des Tabs oder Beginn einer neuen Sitzung ist erneutes Entsperren nötig. Der alte unverschlüsselte IndexedDB-Cache bleibt stillgelegt.
+
+Die Vorbereitung von Routen-Assets registriert ihren Ablauf und ihre Cache-Funktionen einmal pro gemeinsamem ctx. Gebündelte Skripte und Quellimporte externer Module verwenden dieselben Registrierungen und vorbereiteten Routen. Meetings scheitert dadurch nicht mehr am doppelten Ablauf `offline:prepareRouteAssets`.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

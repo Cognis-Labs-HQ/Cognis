@@ -127,11 +127,11 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     await keyring.setKeyringValue("share:token-1", "share-password");
     await keyring.setKeyringRelockMinutes(15);
     const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.startsWith("cognis_keyring_session_expires_at:"),
+        key.startsWith("cognis_keyring_unlock:"),
     );
-    const expiry = sessionValues.get(expiryKey);
+    const expiry = JSON.parse(sessionValues.get(expiryKey)).deadline;
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
-    assert.equal(sessionValues.get(expiryKey), expiry);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, expiry);
     assert.equal(keyring.getKeyringRelockMinutes(), 15);
     assert.doesNotMatch(values.get(cachedVaultKey()), /share-password/);
 
@@ -142,7 +142,7 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
     await keyring.setKeyringRelockMinutes(0);
-    assert.equal(sessionValues.has(expiryKey), false);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, 0);
     await keyring.lockKeyring();
 });
 
@@ -244,7 +244,7 @@ test("component scopes attribute direct unlock requests to their owner", async (
     await keyring.lockKeyring();
 });
 
-test("a page reload requires the password and stores no decryption key", async () => {
+test("a page reload restores only the authenticated tab's encrypted session unlock", async () => {
     const keyring = await import("../ui/keyring.js");
     resetBrowserStorage();
     sessionValues.clear();
@@ -254,16 +254,22 @@ test("a page reload requires the password and stores no decryption key", async (
     await keyring.setKeyringRelockMinutes(5);
     await keyring.setKeyringValue("chatroom:session:key", "room-key");
     const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.startsWith("cognis_keyring_session_expires_at:"),
+        key.startsWith("cognis_keyring_unlock:"),
     );
-    const expiry = sessionValues.get(expiryKey);
+    const expiry = JSON.parse(sessionValues.get(expiryKey)).deadline;
 
     const reloadedKeyring = await import("../ui/keyring.js?session-restore");
-    assert.equal(await reloadedKeyring.restoreKeyringSession(), false);
-    assert.equal(reloadedKeyring.getKeyringValue("chatroom:session:key"), null);
+    assert.equal(await reloadedKeyring.restoreKeyringSession(), true);
+    assert.equal(
+        reloadedKeyring.getKeyringValue("chatroom:session:key"),
+        "room-key",
+    );
     assert.equal(indexedDbValues.size, 0);
-    assert.equal(await reloadedKeyring.unlockKeyring("keyring-password"), true);
-    assert.equal(sessionValues.get(expiryKey), expiry);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, expiry);
+    assert.doesNotMatch(
+        sessionValues.get(expiryKey),
+        /room-key|keyring-password|session:session-restore-user/,
+    );
     assert.equal(
         reloadedKeyring.getKeyringValue("chatroom:session:key"),
         "room-key",
@@ -273,15 +279,18 @@ test("a page reload requires the password and stores no decryption key", async (
     localStorage.removeItem("cognis_account");
 });
 
-test("a finite keyring deadline cannot be extended by reloading", async () => {
+test("a finite keyring deadline cannot be extended by reloading", async (context) => {
     const keyring = await import("../ui/keyring.js");
     authenticate("expired-session-user");
     assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringRelockMinutes(5);
-    const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.includes(encodeURIComponent("expired-session-user")),
+    const expiryKey = [...sessionValues.keys()].find(
+        (key) =>
+            key.startsWith("cognis_keyring_unlock:") &&
+            key.includes("expired-session-user"),
     );
-    sessionValues.set(expiryKey, String(Date.now() - 1));
+    const deadline = JSON.parse(sessionValues.get(expiryKey)).deadline;
+    context.mock.method(Date, "now", () => deadline + 1);
 
     const reloadedKeyring = await import("../ui/keyring.js?expired-session");
     let prompted = false;
@@ -759,6 +768,7 @@ test("login requires the recreated custom keyring password after session invalid
             await provisionAndUnlock(keyring, "custom-keyring-password"),
             true,
         );
+        values.set("cognis_access_token", "rotated-session");
         const reloadedKeyring =
             await import("../ui/keyring.js?recreated-ldap-keyring");
 

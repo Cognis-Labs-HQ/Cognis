@@ -132,6 +132,12 @@ The Offline Mode banner offers Recheck Connectivity with shared button styling a
 
 Background analytics stays queued but does not arm the browser close warning. Owners opt out with `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; the default remains true for user changes, and each new record stores its classification so provider disposal or reload cannot turn telemetry into an unsaved edit. Older records use an active owner’s declaration, with unknown owners protected. Automatic detected-timezone synchronization uses `saveUiPreferences(patch, { bufferOffline: false })`; the scoped HTTP client rejects that operation offline instead of queueing it. Explicit preference changes, messages and Calendar edits still buffer and warn.
 
+## Refresh unlocks and module loading
+
+Unlocks survive refreshes in the same authenticated tab/session. The password still encrypts the vault; neither a password nor a plaintext decryption key is persisted. Session storage holds only an AES-GCM encrypted unlock, wrapped using HKDF from the active session secret and bound to origin, account, server account-instance and session identity. The server must verify that binding before restoration. Finite relock deadlines are authenticated and remain absolute across refreshes. Explicit Lock, logout, account/instance/session changes and expiry invalidate restoration. Closing the tab or starting a new session requires unlocking again. The retired plaintext IndexedDB cache remains disabled.
+
+Host route-asset preparation registers its flow and cache capabilities once per shared ctx. Bundled scripts and source imports from external modules reuse the same registrations and prepared-route state, so opening Meetings no longer fails with a duplicate `offline:prepareRouteAssets` flow.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

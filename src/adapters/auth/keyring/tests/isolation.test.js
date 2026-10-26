@@ -7,6 +7,7 @@ import {
     keyringApiFetch,
     remoteVaults,
     resetBrowserStorage,
+    sessionValues,
     values,
 } from "./ui-environment.js";
 
@@ -210,4 +211,29 @@ test("a delayed encrypted write cannot be committed into another account's cache
         crypto.subtle.encrypt = encrypt;
         globalThis.fetch = keyringApiFetch;
     }
+});
+
+test("locking a refreshed page clears the cached unlock before the vault was restored", async () => {
+    resetBrowserStorage();
+    sessionValues.clear();
+    authenticate("lock-before-restore");
+    const unlocked = await import("../ui/keyring.js?lock-before-restore-seed");
+    assert.equal(await create(unlocked, "password"), true);
+    assert.equal(
+        [...sessionValues.keys()].some((id) =>
+            id.startsWith("cognis_keyring_unlock:"),
+        ),
+        true,
+    );
+    const refreshed =
+        await import("../ui/keyring.js?lock-before-restore-new-page");
+    await refreshed.lockKeyring();
+    assert.equal(await refreshed.restoreKeyringSession(), false);
+    assert.equal(
+        [...sessionValues.keys()].some((id) =>
+            id.startsWith("cognis_keyring_unlock:"),
+        ),
+        false,
+    );
+    await unlocked.lockKeyring();
 });

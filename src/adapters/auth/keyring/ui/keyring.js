@@ -1,4 +1,5 @@
 import { createKeyringIdentityGuard } from "./identity-guard.js";
+import { createSessionUnlockCache } from "./session-unlock.js";
 import { keyringStorageKeys } from "./storage-keys.js";
 import {
     requestKeyringPassword,
@@ -14,6 +15,7 @@ import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 import {
     decodeBytes,
     deriveKey,
+    decryptVault,
     encodeBytes,
     normalizeEntry,
     selectKeyringEnvelope,
@@ -68,13 +70,17 @@ function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
 }
 
+const sessionUnlock = createSessionUnlockCache({
+    assertBinding: (binding) => identityGuard.assertBinding(binding),
+});
 const identityGuard = createKeyringIdentityGuard({
     readActor: () => ({
         origin: globalThis.location?.origin,
         accountId: localStorage.getItem("cognis_account"),
         token: localStorage.getItem("cognis_access_token"),
     }),
-    onInvalidate(_previous, previousActor) {
+    onInvalidate(previous, previousActor) {
+        sessionUnlock.remove(previous);
         keyringStateVersion++;
         clearVault();
         keyringExists = false;
@@ -109,7 +115,7 @@ function scheduleRelock({ resetDeadline = false } = {}) {
     const minutes = getKeyringRelockMinutes();
     if (minutes <= 0) {
         relockDeadline = 0;
-        return;
+        return sessionUnlock.remember(vaultBinding, vaultKey, relockDeadline);
     }
     if (resetDeadline || !relockDeadline)
         relockDeadline = Date.now() + minutes * 60_000;
@@ -117,6 +123,7 @@ function scheduleRelock({ resetDeadline = false } = {}) {
         lockKeyring,
         Math.max(0, relockDeadline - Date.now()),
     );
+    return sessionUnlock.remember(vaultBinding, vaultKey, relockDeadline);
 }
 
 function clearVault() {
@@ -295,23 +302,14 @@ async function activateVault(
             remoteState.derivationIterations ??
             DEFAULT_ITERATIONS,
     ),
+    deadline,
 ) {
     const binding = remoteState.binding;
     identityGuard.assertBinding(binding);
     const version = keyringStateVersion;
     let decrypted;
     try {
-        decrypted = stored?.cipher
-            ? JSON.parse(
-                  new TextDecoder().decode(
-                      await crypto.subtle.decrypt(
-                          { name: "AES-GCM", iv: decodeBytes(stored.iv) },
-                          key,
-                          decodeBytes(stored.cipher),
-                      ),
-                  ),
-              )
-            : { values: {}, preferences: { relockMinutes: 0 } };
+        decrypted = await decryptVault(key, stored);
     } catch {
         return false;
     }
@@ -353,8 +351,9 @@ async function activateVault(
     await persistVault();
     identityGuard.assertBinding(binding);
     if (version !== keyringStateVersion) return false;
-    scheduleRelock({ resetDeadline: true });
-    return true;
+    if (deadline !== undefined) relockDeadline = deadline;
+    await scheduleRelock({ resetDeadline: deadline === undefined });
+    return isKeyringUnlocked();
 }
 
 async function openVault(password, { create = false } = {}) {
@@ -384,7 +383,7 @@ async function openVault(password, { create = false } = {}) {
             DEFAULT_ITERATIONS,
     );
     const expectedVersion = keyringStateVersion;
-    const key = await deriveKey(normalizedPassword, salt, iterations);
+    const key = await deriveKey(normalizedPassword, salt, iterations, true);
     identityGuard.assertBinding(remoteState.binding);
     if (expectedVersion !== keyringStateVersion) return false;
     const unlocked = await activateVault(
@@ -420,11 +419,22 @@ async function restoreCurrentSessionUnlock() {
         String(localEnvelope?.accountInstanceId ?? "");
     const stored = selectKeyringEnvelope(localEnvelope, remoteState);
     keyringExists = Boolean(stored);
-    if (remoteState.resolved && localEnvelope && !stored) {
-        removeLocalEnvelope();
+    if (!remoteState.resolved || !stored) {
+        if (remoteState.resolved) sessionUnlock.remove(remoteState.binding);
         return false;
     }
-    return false;
+    const restored = await sessionUnlock.restore(remoteState.binding);
+    if (!restored) return false;
+    const unlocked = await activateVault(
+        restored.key,
+        stored,
+        remoteState,
+        undefined,
+        undefined,
+        restored.deadline,
+    );
+    if (!unlocked) sessionUnlock.remove(remoteState.binding);
+    return unlocked;
 }
 
 export async function restoreKeyringSession() {
@@ -433,7 +443,9 @@ export async function restoreKeyringSession() {
 
 export async function lockKeyring() {
     if (temporaryKeyringAccountId) return Promise.resolve();
+    sessionUnlock.clearActor(identityGuard.snapshot());
     if (!identityGuard.currentBinding()) return;
+    sessionUnlock.remove(identityGuard.currentBinding());
     keyringStateVersion++;
     clearVault();
     dispatchKeyringEvent("locked");
@@ -469,6 +481,10 @@ export function endTemporaryKeyring() {
 }
 
 export function isKeyringUnlocked() {
+    if (relockDeadline && relockDeadline <= Date.now()) {
+        void lockKeyring();
+        return false;
+    }
     const binding = identityGuard.currentBinding();
     return Boolean(
         binding && vaultBinding === binding && vaultData && vaultKey,
@@ -822,7 +838,12 @@ export async function changeKeyringPassword(password) {
     const binding = vaultBinding;
     const expectedVersion = keyringStateVersion;
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const key = await deriveKey(normalizedPassword, salt, DEFAULT_ITERATIONS);
+    const key = await deriveKey(
+        normalizedPassword,
+        salt,
+        DEFAULT_ITERATIONS,
+        true,
+    );
     identityGuard.assertBinding(binding);
     if (!isKeyringUnlocked() || expectedVersion !== keyringStateVersion)
         return false;
@@ -831,7 +852,7 @@ export async function changeKeyringPassword(password) {
     vaultKey = key;
     recordKeyringActivity(vaultData, "password-change");
     await persistVault();
-    scheduleRelock();
+    await scheduleRelock();
     return true;
 }
 
