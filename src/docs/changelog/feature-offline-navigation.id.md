@@ -167,3 +167,4 @@ Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverif
 - [d895d67](https://github.com/Cognis-Labs-HQ/Cognis/commit/d895d67d17cdc3888f665a5ea06395fe746d2e2b)
 - [b90e0cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/b90e0cda258130cc9b30db1f8c388385cdce4e1b)
 - [dde15f4](https://github.com/Cognis-Labs-HQ/Cognis/commit/dde15f4c898abb129a31228e0894272f0366f811)
+- [f6b4ede](https://github.com/Cognis-Labs-HQ/Cognis/commit/f6b4ede722b7a14cfe67f2eb758670bc28071fb3)
