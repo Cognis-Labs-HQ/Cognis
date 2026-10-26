@@ -120,6 +120,12 @@ Snapshot kalender hanya berada dalam tab dan dibatasi 4 MB/100 pembacaan. Outbox
 
 Setelah autentikasi terverifikasi, Study menyiapkan katalog bahasa, preferensi, dan tautan modul bahasa yang dipilih di latar belakang, dengan paling banyak dua permintaan modul sekaligus. Subnavigasi menggunakan cache milik penyedia yang sama sehingga kunjungan pertama ke hub dapat dilakukan secara luring. Pembatalan cache menjadwalkan persiapan ulang tanpa menghambat login.
 
+## Login dan pengiriman tertunda
+
+Setelah login kata sandi atau TFA berhasil, kapabilitas navigasi SPA yang sudah ada mengganti halaman login dengan Dashboard. Tab terverifikasi dan perubahan tertunda tetap tersedia tanpa memicu peringatan penutupan halaman dari browser. Indikator pemuatan tetap terlihat sampai navigasi selesai; sinkronisasi zona waktu opsional berjalan sesudahnya dan menolak pergantian akun. Peringatan tetap melindungi perubahan yang benar-benar tertunda saat tab terautentikasi ditutup atau dimuat ulang.
+
+Pengiriman ulang dimulai di latar belakang hanya setelah otorisasi sesi dan persetujuan wajib berhasil. Kunci pengiriman browser terpisah mengurutkan pengiriman antar-tab; kunci penyimpanan singkat melindungi snapshot dan konfirmasi tanpa menunggu jaringan. Pembacaan dan perubahan tertunda baru tetap berjalan selama pengiriman lambat. Konfirmasi membaca ulang penyimpanan agar perubahan bersamaan tetap tersimpan. Antrean kosong tidak ditulis ulang saat autentikasi; halaman tanpa autentikasi tidak memperingatkan tentang buffer akun lain.
+
 ## Komit
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

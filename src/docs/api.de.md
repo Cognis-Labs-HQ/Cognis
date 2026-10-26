@@ -184,3 +184,7 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 ## Bereitschaft von Offline-Routen
 
 `offline:registerSessionRoutes(ids, signal, { available })` akzeptiert eine optionale Prüfung des Anbieters, die offline Route und Pfad erhält. Abbruch des Signals entfernt die Deklaration. Der Host bereitet öffentlichen Seitencode und Styles separat über `offline:prepareRouteAssets` vor; `offline:areRouteAssetsReady` meldet den Abschluss. `createOfflineReadCache` stellt `read.has(key)` bereit, HTTP-Clients mit begrenzter Lebensdauer bieten `request.hasCachedRead(path)`, ohne private Daten zurückzugeben. Die Prüfungen berücksichtigen Konto, Sitzung, Ablauf, Cache-Generation und Anbieter-Lebensdauer. Sie gewähren keine Berechtigung und ersetzen keine gespeicherte Zustimmung zu Rechtstexten.
+
+## Anmeldung und Übertragung
+
+Die Übertragung beginnt erst nach erfolgreicher Sitzungsautorisierung und erforderlicher Zustimmung im Hintergrund. Eine separate Browsersperre serialisiert die Übertragung zwischen Tabs; kurze Speichersperren schützen Schnappschüsse und Bestätigungen, ohne auf Netzwerkantworten zu warten. Lesen und neue gepufferte Änderungen bleiben während langsamer Übertragungen möglich. Bestätigungen lesen den Speicher erneut, damit gleichzeitige Änderungen erhalten bleiben. Leere Warteschlangen werden bei der Authentifizierung nicht neu geschrieben; nicht authentifizierte Seiten warnen nicht vor dem Puffer eines anderen Kontos.

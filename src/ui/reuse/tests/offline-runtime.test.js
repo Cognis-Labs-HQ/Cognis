@@ -31,6 +31,8 @@ function fixture({ browser = false } = {}) {
                         storage: () => storage,
                         withLock: (operation) =>
                             Promise.resolve().then(operation),
+                        withDeliveryLock: (operation) =>
+                            Promise.resolve().then(operation),
                         log: () => {},
                     }),
             },
@@ -98,6 +100,7 @@ test("queued writes require successful registered session authorization and curr
     assert.equal(delivered.length, 0);
     state.consent(true);
     await state.uiCtx.runFlow("authenticate-session", {});
+    await outbox.flush();
     assert.deepEqual(delivered, [{ grade: "good" }]);
     await outbox.submit("practice", "second", { grade: "again" });
     state.uiCtx.extendFlow(
@@ -148,6 +151,64 @@ test("browser close warns for buffered changes, including disabled owners, and c
         () => ({ authenticated: true }),
     );
     await state.uiCtx.runFlow("authenticate-session", {});
+    await outbox.flush();
     assert.equal(warning(), false);
     mounted.abort();
+});
+
+test("session completion does not wait for a slow queued delivery", async () => {
+    const state = fixture();
+    const outbox = state.uiCtx.capabilities.get("offline:outbox");
+    const controller = new AbortController();
+    let release;
+    const response = new Promise((resolve) => {
+        release = resolve;
+    });
+    outbox.register("practice", () => response, controller.signal);
+    await outbox.submit("practice", "slow", {});
+    state.reconnect();
+    state.uiCtx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "auth:slowDelivery" },
+        () => ({ authenticated: true }),
+    );
+    let completed = false;
+    const authentication = state.uiCtx
+        .runFlow("authenticate-session", {})
+        .then(() => {
+            completed = true;
+        });
+    await new Promise((resolve) => setImmediate(resolve));
+    try {
+        assert.equal(
+            completed,
+            true,
+            "queued writes must not hold session completion open",
+        );
+        assert.equal(outbox.hasBufferedChanges(), true);
+    } finally {
+        release();
+        await authentication;
+        await outbox.flush();
+        controller.abort();
+    }
+    assert.equal(outbox.hasBufferedChanges(), false);
+});
+
+test("an unauthenticated login page does not warn about a previous account's buffer", async () => {
+    const state = fixture({ browser: true });
+    const outbox = state.uiCtx.capabilities.get("offline:outbox");
+    const controller = new AbortController();
+    outbox.register("practice", async () => {}, controller.signal);
+    await outbox.submit("practice", "one", {});
+    state.values.delete("cognis_access_token");
+    const event = new Event("beforeunload", { cancelable: true });
+    state.window.dispatchEvent(event);
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(
+        JSON.parse(state.values.get("cognis_offline_outbox")).length,
+        1,
+    );
+    controller.abort();
 });

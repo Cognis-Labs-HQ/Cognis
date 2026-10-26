@@ -20,7 +20,7 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "/static/reuse/auth-layout.js";
-import { syncTimezoneOnLogin } from "/static/reuse/timestamp.js";
+import { navigateAfterLogin } from "./navigation.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
 import { reportClientError } from "/static/reuse/error-reporting.js";
@@ -355,13 +355,7 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
         }
-        const finishNavigation = beginPageLoading();
-        try {
-            await syncTimezoneOnLogin(data.accountId);
-            window.location.href = "/dashboard";
-        } finally {
-            finishNavigation();
-        }
+        await navigateAfterLogin(data.accountId);
     }
 
     async function handleAuthResult(data, password = "") {

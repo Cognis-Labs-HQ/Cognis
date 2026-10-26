@@ -9,6 +9,7 @@ function fixture() {
     let allowed = true;
     let clock = 1_000_000;
     let lock = Promise.resolve();
+    let deliveryLock = Promise.resolve();
     const settings = {
         identity: () => actor,
         enabled: () => true,
@@ -21,6 +22,11 @@ function fixture() {
         withLock: (operation) => {
             const next = lock.then(operation);
             lock = next.catch(() => {});
+            return next;
+        },
+        withDeliveryLock: (operation) => {
+            const next = deliveryLock.then(operation);
+            deliveryLock = next.catch(() => {});
             return next;
         },
         now: () => clock,
@@ -146,4 +152,77 @@ test("concurrent tabs serialize queue changes, coalesce duplicate activity and e
     state.expire();
     state.reconnect();
     assert.equal((await first.flush()).sent, 0);
+});
+
+test("slow delivery does not lock reads or overwrite writes from another tab", async () => {
+    const state = fixture();
+    const first = state.create();
+    const second = state.create();
+    let started;
+    let release;
+    const sending = new Promise((resolve) => {
+        started = resolve;
+    });
+    const response = new Promise((resolve) => {
+        release = resolve;
+    });
+    register(first, async () => {
+        started();
+        await response;
+    });
+    register(second, async () => {});
+    await first.submit("practice", "first", {});
+    state.reconnect();
+    const flushing = first.flush();
+    await sending;
+    let readCompleted = false;
+    const reading = second.pending("practice").then(() => {
+        readCompleted = true;
+    });
+    let writeCompleted = false;
+    const writing = second.submit("practice", "second", {}).then(() => {
+        writeCompleted = true;
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    try {
+        assert.equal(
+            readCompleted,
+            true,
+            "queue reads must not await network delivery",
+        );
+        assert.equal(
+            writeCompleted,
+            true,
+            "another tab must be able to preserve edits",
+        );
+    } finally {
+        release();
+        await Promise.all([flushing, reading, writing]);
+    }
+    assert.deepEqual(
+        (await first.pending("practice")).map(({ id }) => id),
+        ["second"],
+    );
+});
+
+test("separate delivery locks prevent two tabs from replaying the same queued action", async () => {
+    const state = fixture();
+    const first = state.create();
+    const second = state.create();
+    let sent = 0;
+    register(first, async () => {
+        sent++;
+    });
+    register(second, async () => {
+        sent++;
+    });
+    await first.submit("practice", "one", {});
+    state.reconnect();
+    const results = await Promise.all([first.flush(), second.flush()]);
+    assert.equal(sent, 1);
+    assert.equal(
+        results.reduce((sum, result) => sum + result.sent, 0),
+        1,
+    );
+    assert.equal(first.hasBufferedChanges(), false);
 });

@@ -120,6 +120,12 @@ Kalender-Schnappschüsse bleiben im Tab und sind auf 4 MB und 100 Lesevorgänge 
 
 Nach bestätigter Authentifizierung bereitet Study Sprachkataloge, Präferenzen und Modulverweise der ausgewählten Sprachen im Hintergrund vor, mit höchstens zwei gleichzeitigen Modulanfragen. Die Unternavigation nutzt denselben anbietereigenen Cache, sodass der erste Besuch der Übersicht offline erfolgen kann. Nach einer Cache-Ungültigkeit wird die Vorbereitung erneut geplant, ohne die Anmeldung zu blockieren.
 
+## Anmeldung und Übertragung
+
+Nach erfolgreicher Passwort- oder TFA-Anmeldung ersetzt die vorhandene SPA-Navigationsfunktion die Anmeldeseite durch das Dashboard. Der bestätigte Tab und gepufferte Arbeit bleiben dadurch erhalten, ohne die Schließwarnung des Browsers auszulösen. Die Ladeanzeige bleibt bis zum Abschluss der Navigation sichtbar; die optionale Zeitzonensynchronisierung folgt danach und verwirft Kontowechsel. Tatsächlich gepufferte Änderungen bleiben beim Schließen oder Neuladen eines authentifizierten Tabs durch die Warnung geschützt.
+
+Die Übertragung beginnt erst nach erfolgreicher Sitzungsautorisierung und erforderlicher Zustimmung im Hintergrund. Eine separate Browsersperre serialisiert die Übertragung zwischen Tabs; kurze Speichersperren schützen Schnappschüsse und Bestätigungen, ohne auf Netzwerkantworten zu warten. Lesen und neue gepufferte Änderungen bleiben während langsamer Übertragungen möglich. Bestätigungen lesen den Speicher erneut, damit gleichzeitige Änderungen erhalten bleiben. Leere Warteschlangen werden bei der Authentifizierung nicht neu geschrieben; nicht authentifizierte Seiten warnen nicht vor dem Puffer eines anderen Kontos.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

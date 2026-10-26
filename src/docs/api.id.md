@@ -59,3 +59,7 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 ## Kesiapan rute luring
 
 `offline:registerSessionRoutes(ids, signal, { available })` menerima predikat pemilik opsional yang dipanggil dengan rute dan jalur saat luring. Pembatalan sinyal menghapus deklarasi. Host menyiapkan kode publik dan gaya halaman secara terpisah melalui `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` melaporkan penyelesaian. `createOfflineReadCache` menyediakan `read.has(key)`, dan klien HTTP tercakup menyediakan `request.hasCachedRead(path)`, tanpa mengembalikan data privat. Pemeriksaan mencakup identitas akun/sesi, kedaluwarsa, generasi cache, dan siklus hidup penyedia. Pemeriksaan ini tidak memberikan otorisasi atau menggantikan persetujuan dokumen hukum tersimpan.
+
+## Login dan pengiriman tertunda
+
+Pengiriman ulang dimulai di latar belakang hanya setelah otorisasi sesi dan persetujuan wajib berhasil. Kunci pengiriman browser terpisah mengurutkan pengiriman antar-tab; kunci penyimpanan singkat melindungi snapshot dan konfirmasi tanpa menunggu jaringan. Pembacaan dan perubahan tertunda baru tetap berjalan selama pengiriman lambat. Konfirmasi membaca ulang penyimpanan agar perubahan bersamaan tetap tersimpan. Antrean kosong tidak ditulis ulang saat autentikasi; halaman tanpa autentikasi tidak memperingatkan tentang buffer akun lain.

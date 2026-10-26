@@ -120,6 +120,12 @@ Calendar snapshots are tab-local and bounded to 4 MB/100 reads. The global outbo
 
 After verified authentication, Study prepares language catalogs, preferences and selected-language module links in the background, with at most two module requests at a time. Sub-navigation uses the same owner cache, so the first visit to the hub can happen offline. Cache invalidation schedules preparation again without blocking login.
 
+## Login and queued delivery
+
+Successful password and TFA login use the existing SPA navigation capability to replace the login page with Dashboard. Login therefore keeps the verified tab and buffered work alive without invoking the browser’s page-close warning. Loading remains visible until navigation finishes; optional timezone synchronization runs afterward and rejects account switches. The warning still protects actual buffered changes when closing or reloading an authenticated tab.
+
+Outbox replay starts in the background only after successful session authorization and required consent. A separate browser delivery lock serializes replay across tabs; short storage locks protect snapshots and acknowledgements without waiting for network delivery. Reads and new queued writes remain usable during a slow replay, and acknowledgements re-read storage so concurrent writes survive. Empty queues are not rewritten during authentication; unauthenticated pages do not warn about another account’s buffer.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

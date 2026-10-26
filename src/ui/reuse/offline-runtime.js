@@ -119,11 +119,49 @@ export function registerOfflineRuntime(ctx) {
             verifiedSession = undefined;
         },
     );
+    const deliverAfterAuthentication = async (actor) => {
+        try {
+            if (
+                !(await outbox.hasPending()) ||
+                actor !== verifiedSession ||
+                actor !== sessionIdentity()
+            )
+                return;
+            const result = await ctx.runFlow("offline:flush", {});
+            if (result.data.result?.rejected && globalThis.document) {
+                const { createI18n } = await import("./i18n.js");
+                const i18n = await createI18n();
+                if (actor !== sessionIdentity()) return;
+                ctx.capabilities.get("ui:showToast")?.(
+                    i18n.t("ui.reuse.offline_sync_rejected"),
+                    { variant: "warning" },
+                );
+            }
+        } catch (error) {
+            console.error("[offline] queued delivery could not start", {
+                operation: "flushOutbox",
+                errorName: error?.name,
+            });
+        }
+        try {
+            if (
+                actor === verifiedSession &&
+                actor === sessionIdentity() &&
+                (await outbox.hasPending())
+            )
+                scheduleRetry();
+        } catch (error) {
+            console.error("[offline] queued delivery state could not be read", {
+                operation: "readOutbox",
+                errorName: error?.name,
+            });
+        }
+    };
     ctx.extendFlow(
         "authenticate-session",
         "afterSession",
         { id: "ui:deliverOfflineActivity", order: 1000 },
-        async ({ stageResults }) => {
+        ({ stageResults }) => {
             if (
                 !isOffline() &&
                 stageResults["resolve-session"]?.some(
@@ -132,30 +170,8 @@ export function registerOfflineRuntime(ctx) {
             ) {
                 verifiedSession = sessionIdentity();
                 retrySession = verifiedSession;
-                try {
-                    const result = await ctx.runFlow("offline:flush", {});
-                    if (result.data.result?.rejected && globalThis.document) {
-                        const { createI18n } = await import("./i18n.js");
-                        const i18n = await createI18n();
-                        ctx.capabilities.get("ui:showToast")?.(
-                            i18n.t("ui.reuse.offline_sync_rejected"),
-                            { variant: "warning" },
-                        );
-                    }
-                } catch (error) {
-                    console.error("[offline] queued delivery could not start", {
-                        operation: "flushOutbox",
-                        errorName: error?.name,
-                    });
-                }
-                try {
-                    if (await outbox.hasPending()) scheduleRetry();
-                } catch (error) {
-                    console.error(
-                        "[offline] queued delivery state could not be read",
-                        { operation: "readOutbox", errorName: error?.name },
-                    );
-                }
+                void deliverAfterAuthentication(verifiedSession);
+                return { scheduled: true };
             }
         },
     );

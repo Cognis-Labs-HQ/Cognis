@@ -11,17 +11,21 @@ const MAX_BYTES = 1_000_000;
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const PERMANENT_STATUS = new Set([400, 403, 404, 409, 410, 413, 422]);
 
+function requestLock(name, operation) {
+    if (!globalThis.navigator?.locks)
+        throw new Error("offline_storage_lock_unavailable");
+    return navigator.locks.request(name, operation);
+}
+
 export function createOfflineOutbox({
     identity,
     enabled,
     offline,
     allowed,
     storage = () => globalThis.localStorage,
-    withLock = (operation) => {
-        if (!globalThis.navigator?.locks)
-            throw new Error("offline_storage_lock_unavailable");
-        return navigator.locks.request("cognis-offline-outbox", operation);
-    },
+    withLock = (operation) => requestLock("cognis-offline-outbox", operation),
+    withDeliveryLock = (operation) =>
+        requestLock("cognis-offline-delivery", operation),
     now = () => Date.now(),
     changed = () => {},
     log = (level, message, meta) => console[level]?.(message, meta),
@@ -67,22 +71,46 @@ export function createOfflineOutbox({
             actual.session === expected.session
         );
     }
+    async function acknowledge(item, actor) {
+        await withLock(() => {
+            if (!current(actor)) return;
+            const rows = read();
+            write(
+                rows.filter(
+                    (row) =>
+                        !(
+                            row.account === item.account &&
+                            row.owner === item.owner &&
+                            row.id === item.id
+                        ),
+                ),
+            );
+        });
+    }
     async function flush() {
         if (flushing) return flushing;
         const actor = identity();
         if (!actor.account || !actor.session || offline() || !allowed())
             return { sent: 0, rejected: 0 };
-        flushing = withLock(async () => {
-            const actor = identity();
+        flushing = withDeliveryLock(async () => {
             const result = { sent: 0, rejected: 0 };
-            if (!actor.account || !actor.session || offline() || !allowed())
-                return result;
-            let rows = read();
+            if (!current(actor) || offline() || !allowed()) return result;
+            const rows = await withLock(() => read());
             const blockedOwners = new Set();
             for (const item of [...rows]) {
                 if (item.account !== actor.account) continue;
                 const registration = handlers.get(item.owner);
                 if (!registration || blockedOwners.has(item.owner)) continue;
+                if (!current(actor) || offline() || !allowed()) break;
+                const stillPending = await withLock(() =>
+                    read().some(
+                        (row) =>
+                            row.account === item.account &&
+                            row.owner === item.owner &&
+                            row.id === item.id,
+                    ),
+                );
+                if (!stillPending) continue;
                 if (!current(actor) || offline() || !allowed()) break;
                 try {
                     registration.signal.throwIfAborted();
@@ -91,9 +119,8 @@ export function createOfflineOutbox({
                         item.id,
                     );
                     if (!current(actor) || registration.signal.aborted) break;
-                    rows = rows.filter((row) => row !== item);
+                    await acknowledge(item, actor);
                     result.sent++;
-                    write(rows);
                 } catch (error) {
                     log("error", "Queued action delivery failed.", {
                         component: "ui",
@@ -113,12 +140,10 @@ export function createOfflineOutbox({
                         blockedOwners.add(item.owner);
                         continue;
                     }
-                    rows = rows.filter((row) => row !== item);
+                    await acknowledge(item, actor);
                     result.rejected++;
-                    write(rows);
                 }
             }
-            write(rows);
             log("info", "Queued delivery completed.", {
                 component: "ui",
                 operation: "flushOutbox",
@@ -196,6 +221,8 @@ export function createOfflineOutbox({
         },
         flush,
         hasBufferedChanges() {
+            const actor = identity();
+            if (!actor.account || !actor.session) return false;
             try {
                 return read().some((row) => row.account === identity().account);
             } catch (error) {

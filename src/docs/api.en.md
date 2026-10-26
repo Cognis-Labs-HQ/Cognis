@@ -188,3 +188,7 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 ## Offline route readiness
 
 `offline:registerSessionRoutes(ids, signal, { available })` accepts an optional owner predicate called with the route and path while offline. Disposing its signal removes the declaration. The host separately prepares public page code and styles through `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` reports completion. `createOfflineReadCache` exposes `read.has(key)`, and scoped HTTP clients expose `request.hasCachedRead(path)`, without returning private data. These checks include account/session identity, expiry, cache generation and provider lifetime. They do not grant authorization or waive cached legal consent.
+
+## Login and queued delivery
+
+Outbox replay starts in the background only after successful session authorization and required consent. A separate browser delivery lock serializes replay across tabs; short storage locks protect snapshots and acknowledgements without waiting for network delivery. Reads and new queued writes remain usable during a slow replay, and acknowledgements re-read storage so concurrent writes survive. Empty queues are not rewritten during authentication; unauthenticated pages do not warn about another account’s buffer.

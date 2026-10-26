@@ -42,6 +42,7 @@
  * @returns {string}
  */
 import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
+import { captureAccountGuard } from "./offline-identity.js";
 
 const TIMEZONE_STORAGE_KEY = "cognis_timezone";
 const TIME_FORMAT_STORAGE_KEY = "cognis_time_format";
@@ -228,9 +229,12 @@ export function formatRelativeTime(epochMs, fallback = "") {
 }
 
 export async function syncTimezoneOnLogin(username) {
-    if (!username) return;
+    if (!username || username !== localStorage.getItem("cognis_account"))
+        return;
+    const assertAccount = captureAccountGuard();
     try {
         const prefs = await loadUiPreferences();
+        assertAccount();
         const savedTz = prefs?.timezone;
 
         applyTimeFormatToLocalStorage(prefs?.timeFormat);
@@ -247,6 +251,7 @@ export async function syncTimezoneOnLogin(username) {
             await saveUiPreferences({ detectedTimezone: detected });
         }
     } catch {
+        assertAccount();
         applyTimezoneToLocalStorage(null, detectBrowserTimezone());
     }
 }

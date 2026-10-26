@@ -29,6 +29,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
             setItem: (key, value) => values.set(key, value),
         }),
         withLock: (operation) => Promise.resolve().then(operation),
+        withDeliveryLock: (operation) => Promise.resolve().then(operation),
         log: () => {},
     });
     capabilities.set("offline:outbox", outbox);
