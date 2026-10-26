@@ -21,3 +21,7 @@ The shared drawing pad loads its owned HTML template once per browser module. Fa
 ## Conceal writing answers
 
 The drawing heading initially shows a masked character and a standard click-to-reveal button. Loading a different character masks it again. Floating sessions expose their current card through the removable `study:drawing:observe` capability. The matching Library preview stays open, blurred and non-interactive until the pad changes character or closes; pronunciation and meaning remain available in the pad. Embedded Writing uses the same concealment and reports reveals as assisted attempts.
+
+## Offline Study Assets
+
+The provider prepares the drawing template, styles and close icons online, so a cached character can open the pad for the first time offline. Preparation, contributed actions, card observers and styles follow provider lifetime. Closing the pad removes its lifetime listener. No audio or dictionary data is fetched for this preparation.

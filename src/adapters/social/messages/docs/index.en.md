@@ -45,3 +45,7 @@ Cached social content remains tab-local and consent-gated. First visits, private
 ## Offline navigation
 
 Messages enables offline navigation only when the current account and session have a cached room list and prepared page assets. Threads still require their cached encrypted messages and an unlocked keyring; uncached conversations require connectivity. Provider redraws preserve the disabled state of offline links.
+
+## Durable Queued Results
+
+Encrypted messages clear their draft only after server acknowledgement or durable queuing. A later room-refresh failure cannot relabel that receipt as a failed send. Pending messages retain their stable operation identity for replay.

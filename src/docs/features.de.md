@@ -113,3 +113,13 @@ Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gül
 ## Direktes Laden und Stile
 
 Direktes Laden und Aktualisieren behalten ihre Seitenstile, während Offline-Assets vorbereitet werden. Host- und Komponenten-Builds bewahren die Quellidentität der Stylesheets; logische und erzeugte URLs teilen sich dieselbe Verwaltung. Asset-Antworten warten nicht mehr auf Cache-Schreibvorgänge im Hintergrund; Fehler werden protokolliert und verzögern die Auslieferung nicht. Webfonts werden getrennt vom Design geladen, damit ein nicht erreichbarer Schriftserver weder die Seite noch das Laderad blockiert. Die gewählte Schrift wird angewendet, sobald sie verfügbar ist; währenddessen gilt der vorhandene Browser-Ersatz.
+
+## Offline-Lernressourcen
+
+Study bereitet verzögert benötigte Popup-Symbole, Zeichenvorlage, Zeichenstile und Schließen-Symbole online vor, ohne das Zeichenfeld zu öffnen oder die Anmeldung zu blockieren. Nach Wiederherstellung wird die Vorbereitung wiederholt; mit dem Anbieter wird sie beendet. Bereits zwischengespeicherte Zeichen können das Zeichenfeld erstmals offline öffnen. Inhalte lassen sich offline nicht bearbeiten; ein offenes Detailfenster deaktiviert Bearbeiten bei Verbindungsverlust. Fehlende dekorative Popup-Symbole behalten ihre übersetzte Aktionsbeschriftung, statt einen Ressourcenfehler anzuzeigen.
+
+## Dauerhaft vorgemerkte Änderungen
+
+Sobald eine Änderung dauerhaft vorgemerkt ist, machen Fehler bei optionaler Aktivitätserfassung oder Ansichtsaktualisierung sie nicht zu einer fehlgeschlagenen Änderung. Kalender öffnet Details aus zwischengespeicherten Terminlisten, einschließlich neuer vorgemerkter Termine und späterer Änderungen. Gleichzeitige Terminübermittlungen teilen sich eine Anfrage. Nachrichten löschen den Entwurf erst nach Bestätigung oder Speicherung; ein Fehler beim Aktualisieren des Chats erhält diesen Beleg. Auch Profiltext, Beiträge und Bilder behalten ihren abgeschlossenen Status bei Ansichtsfehlern. Die Verfügbarkeitsanzeige verzögert keine abgeschlossenen Kalenderänderungen.
+
+Fehler im Anbieterlebenszyklus protokollieren jetzt den betroffenen Skriptpfad ohne Abfragedaten und die fehlgeschlagene Import- oder Bereitstellungsphase. Fehler optionaler Aktivitätserfassung werden getrennt von der dauerhaft gespeicherten Benutzeraktion protokolliert.

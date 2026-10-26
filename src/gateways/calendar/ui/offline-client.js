@@ -47,6 +47,10 @@ export function registerCalendarClient(ctx) {
             recurrence: operation.body.recurrence ?? "none",
             recurrenceId: null,
             responses: {},
+            attendees: operation.body.attendees ?? [],
+            inviteEmails: operation.body.inviteEmails ?? [],
+            reminderOffsetsMinutes: operation.body.reminderOffsetsMinutes ?? [],
+            sourceEventId: null,
             queued: true,
         };
     }
@@ -159,6 +163,42 @@ export function registerCalendarClient(ctx) {
         owner: "calendar.events",
         describe,
         project,
+        restoreRead: async (path, pending, read) => {
+            const match = path.match(
+                /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/?]+)$/,
+            );
+            if (!match) return undefined;
+            const calendars = await read(`${ROOT}/calendars`);
+            const calendar = calendars.data?.find(
+                (item) => item.id === decodeURIComponent(match[1]),
+            );
+            if (!calendar) return undefined;
+            const listing = `${ROOT}/calendars/${match[1]}/events`;
+            const events = project(listing, await read(listing), pending);
+            const event = events.data?.events?.find(
+                (item) => item.id === decodeURIComponent(match[2]),
+            );
+            if (!event) return undefined;
+            const account = localStorage.getItem("cognis_account");
+            const response = event.responses?.[account] ?? null;
+            return {
+                data: {
+                    calendar,
+                    event,
+                    meta: {
+                        canEdit: event.createdBy === account,
+                        canRespond:
+                            (event.attendees ?? []).includes(account) &&
+                            !response,
+                        responseUpdatesExistingEvent:
+                            event.createdBy !== account &&
+                            event.sourceEventId === null,
+                        response,
+                        responseOptions: ["accepted", "tentative", "declined"],
+                    },
+                },
+            };
+        },
         request: async (path, options) => {
             const response = await apiFetch(path, options);
             return options?.method === "DELETE" && response.status === 404

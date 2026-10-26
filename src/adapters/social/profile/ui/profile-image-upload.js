@@ -95,6 +95,7 @@ export function createProfileImageUploadActions({
     async function handleProfileImageUpload({ kind, file, aspectRatio }) {
         if (pendingUploads.has(kind)) return false;
         pendingUploads.add(kind);
+        let delivered = false;
         try {
             const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
             const cropResult = await openImageCropPopup({
@@ -128,6 +129,7 @@ export function createProfileImageUploadActions({
                 return false;
             }
             let responseData = {};
+            delivered = true;
             try {
                 const receipt = await response.json();
                 responseData = receipt?.data ?? {};
@@ -205,6 +207,13 @@ export function createProfileImageUploadActions({
             if (kind === "avatar") {
                 updateNavbarAvatar().catch(() => {});
             }
+            return true;
+        } catch (error) {
+            if (!delivered) throw error;
+            console.error("[profile] uploaded image view refresh failed", {
+                operation: "refreshAfterUpload",
+                errorName: error?.name,
+            });
             return true;
         } finally {
             pendingUploads.delete(kind);

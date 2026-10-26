@@ -49,15 +49,15 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.39` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.1`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.26` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.2`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.27` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.6`  |
-| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.2`  |
-| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.17` |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.7`  |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
+| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.18` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.5`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -77,8 +77,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration          | `src/gateways/registration/`  | `1.1.41` |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.3.0`  |
-| Calendar              | `src/gateways/calendar/`      | `1.5.0`  |
+| Study                 | `src/gateways/study/`         | `2.3.1`  |
+| Calendar              | `src/gateways/calendar/`      | `1.5.1`  |
 
 ## Kontrak inti
 
@@ -88,9 +88,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 ## API
 
-| Komponen   | Jalur      | Versi   |
-| ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.9.1` |
+| Komponen   | Jalur      | Versi    |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | `0.10.0` |
 
 ## Peralatan
 

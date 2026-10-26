@@ -175,7 +175,8 @@ export const uiCtx =
 uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
 if (!uiCtx.capabilities.get("ui:broadcast"))
     uiCtx.capabilities.contribute("ui:broadcast", createTopBanners());
-uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
+if (!uiCtx.capabilities.get("ui:subPages"))
+    uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
     if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);

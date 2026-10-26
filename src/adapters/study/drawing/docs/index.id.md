@@ -19,3 +19,7 @@ Papan gambar bersama memuat templat HTML miliknya sekali per modul browser. Perm
 ## Sembunyikan jawaban menulis
 
 Judul pad mula-mula menyamarkan karakter dengan tombol standar untuk membukanya. Memuat karakter lain menyamarkannya kembali. Sesi mengambang menyediakan kartu aktif melalui kapabilitas yang dapat dilepas `study:drawing:observe`. Pratinjau Library yang cocok tetap terbuka, diburamkan, dan tidak interaktif sampai pad berganti karakter atau ditutup; bacaan dan arti tetap tersedia di pad. Mode Menulis tertanam memakai penyamaran yang sama serta melaporkan pembukaan karakter sebagai percobaan berbantuan.
+
+## Aset Study Luring
+
+Penyedia menyiapkan templat gambar, gaya, dan ikon tutup saat daring agar karakter tersimpan dapat membuka papan gambar pertama kali saat luring. Persiapan, tindakan, pengamat kartu, dan gaya mengikuti masa hidup penyedia. Menutup papan menghapus pendengar masa hidupnya. Persiapan ini tidak mengambil data audio atau kamus.

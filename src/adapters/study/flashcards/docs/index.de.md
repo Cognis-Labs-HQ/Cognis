@@ -77,3 +77,7 @@ Beim Öffnen eines anderen Stapels wird dessen Inhalt sofort sichtbar; die Rück
 ## Leere Offline-Lernseiten
 
 Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gültiger Zustimmung auch ohne private Inhalte erreichbar. Fehlende Sprach- und Präferenzdaten ergeben eine leere Navigation. Explore zeigt seine normale leere Ansicht und den gezielten Hinweis „Keine offline gespeicherten Inhalte verfügbar“ statt einer nicht verfügbaren Route oder Fehlermeldungen. Flashcards behält eine leere Seite, wenn Kartendaten oder notwendige Ansichtsressourcen fehlen. Hinweise sind an die Seite gebunden und werden nicht doppelt angezeigt. Cache-Fehler verbergen keine Zugriffs- oder Zustimmungsverweigerung. Library und Flashcards bereiten öffentliche Übersetzungen und kleine Vorlagen online vor; private Daten bleiben in begrenzten tablokalen Caches.
+
+## Dauerhaft vorgemerkte Änderungen
+
+Vorgemerkte Kartenbewertungen behalten ihr erfolgreiches Ergebnis, auch wenn optionale Aktivitätserfassung fehlschlägt. Sie verzögert den Bewertungsbeleg nicht. Die bestehenden Konto-, Einwilligungs- und Puffergrenzen gelten weiter.

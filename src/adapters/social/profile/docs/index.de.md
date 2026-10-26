@@ -97,3 +97,7 @@ Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätz
 ## Plötzlicher Verbindungsverlust
 
 Die Abfrage flüchtiger Präsenz- und Verfügbarkeitsdaten pausiert im Offline-Modus und setzt nach der Wiederherstellung fort. Manuelle Verfügbarkeitsänderungen werden weiterhin im Offline-Puffer gespeichert.
+
+## Dauerhaft vorgemerkte Änderungen
+
+Vorgemerkte Profiltexte, Beiträge und begrenzte Bild-Uploads behalten ihren abgeschlossenen Status bei Ansichtsfehlern. Profiltexte verwenden online die Serverantwort und offline eine ausdrückliche vorgemerkte Darstellung. Fehlgeschlagene Übermittlung erhält Entwürfe; ein Fehler beim anschließenden Aktualisieren fordert nicht zu doppelter Übermittlung auf.

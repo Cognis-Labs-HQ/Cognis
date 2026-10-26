@@ -77,3 +77,7 @@ Opening another deck brings its content into view immediately; returning from Ex
 ## Empty offline Study pages
 
 Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Durable Queued Results
+
+Queued card reviews retain their successful result even if optional activity recording fails. Activity capture runs without holding up the review receipt. The existing account, consent and queue limits still apply.

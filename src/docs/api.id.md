@@ -89,3 +89,15 @@ Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverif
 ## Pemuatan Langsung dan Gaya
 
 Pemuatan langsung dan penyegaran mempertahankan gaya halaman saat aset luring disiapkan. Build host dan komponen mempertahankan identitas sumber lembar gaya, dan URL logis serta URL hasil build berbagi kepemilikan. Respons aset tidak lagi menunggu penulisan cache di latar belakang; kegagalan dicatat tanpa menunda pengiriman. Font web dimuat terpisah dari tema, sehingga server font yang tidak tersedia tidak menghalangi halaman atau indikator pemuatan. Font pilihan tetap diterapkan saat tersedia, dengan font pengganti browser yang sudah ada selama pemuatan.
+
+## Persiapan Aset Publik
+
+Host menyediakan `ctx.capabilities.get("offline:assets")` dengan `prepare(paths, { signal })` dan `register(paths, { signal })`. Keduanya menggunakan alur bertahap `offline:prepareAssets`. Pendaftaran memulai persiapan latar belakang, mencoba kembali saat koneksi atau preferensi berubah, dan mengembalikan fungsi coba lagi. Hanya jalur publik relatif akar `/static/` atau `/assets/` yang diterima; permintaan tidak mengirim kredensial dan menolak respons private/no-store. Empat pekerja membaca isi respons. Permintaan bersamaan digabung per sinyal pemilik, kegagalan dapat dicoba kembali, dan pembatalan pemilik menghentikan pekerjaan serta pendengar. Fasilitas ini tidak menyimpan data API pribadi dan tidak memberikan akses luring. Callback `restoreRead` pada klien HTTP luring hanya berjalan setelah cache tidak ditemukan dengan akses yang sah dan menggunakan pembaca snapshot terlindungi yang sama. Penolakan akses tidak pernah diubah menjadi tampilan kosong atau antrean.
+
+Persiapan tetap diam ketika Mode Luring dinonaktifkan, koneksi terputus, atau persetujuan wajib belum dipenuhi. Pendaftaran juga mencoba kembali setelah pembaruan persetujuan dan perubahan pengendali worker. Pekerjaan berhasil dibatasi pada pemilik dan worker saat ini; persiapan tanpa pengendali tidak menghalangi persiapan ulang ketika worker mengambil kendali.
+
+## Hasil Antrean Tersimpan
+
+Setelah perubahan disimpan dalam antrean, kegagalan pencatatan aktivitas opsional atau penyegaran tampilan tidak mengubahnya menjadi perubahan gagal. Kalender membuka detail dari daftar acara tersimpan, termasuk acara baru dalam antrean dan suntingan berikutnya. Pengiriman acara bersamaan berbagi satu permintaan. Pesan hanya menghapus draf setelah pengakuan server atau penyimpanan; kegagalan penyegaran ruang tidak membatalkan bukti tersebut. Teks profil, postingan, dan gambar juga mempertahankan hasilnya jika penyegaran tampilan gagal. Penyegaran ketersediaan tidak menghambat perubahan Kalender yang sudah selesai.
+
+Kegagalan siklus hidup penyedia kini mencatat jalur skrip tanpa data kueri dan tahap impor atau pemasangan yang gagal. Kegagalan aktivitas opsional dicatat terpisah dari tindakan pengguna yang telah disimpan.

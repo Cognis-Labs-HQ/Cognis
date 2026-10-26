@@ -39,3 +39,7 @@ On creation, omitted `reminderOffsetsMinutes` uses calendar defaults; an explici
 Calendar snapshots its calendar list, invitations and owned-event lists after verified authentication, with two background requests at a time. Cache invalidation refreshes those snapshots without blocking login. Cached events remain readable; event creation, edits, deletions, responses, status preferences and calendar edits enter the shared durable outbox. Pending creations and edits appear in cached event lists. Creation uses a stable operation UUID; a replay returns the existing event without another recurrence series or repeated invitation dispatch, and changed or cross-account reuse conflicts. Server authorization is checked on replay.
 
 Calendar snapshots are tab-local and bounded to 4 MB/100 reads. The global outbox remains bounded to 1 MB/1,000 records/seven days. New recurring events show their first occurrence until server expansion. Creating calendar containers, generating meetings, share/password management and guest credentials require connectivity; share passwords are never buffered. Messages requires a cached room list and Study requires cached language/preference metadata before enabling offline navigation.
+
+## Durable Queued Results
+
+Queued event creation and later edits appear in cached lists and detail popups. Concurrent submissions share one request. Optional activity, availability or view-refresh failures cannot turn a persisted event into a failed creation. Replay uses the same event UUID and current server authorization.

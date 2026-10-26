@@ -49,9 +49,28 @@ test("Calendar caches owned events, projects queued creates and edits, and repla
         .events;
     assert.equal(events[0].title, "Edited");
     assert.equal(events[1].id, created.data.id);
+    const details = (
+        await (await client.calendarFetch(path + "/" + created.data.id)).json()
+    ).data;
+    assert.equal(details.event.id, created.data.id);
+    assert.equal(details.event.title, "New event");
+    assert.equal(details.calendar.id, "primary");
+    assert.equal(details.meta.canEdit, true);
+    await client.calendarFetch(path + "/" + created.data.id, {
+        method: "PATCH",
+        body: JSON.stringify({ title: "Pending edit" }),
+    });
+    assert.equal(
+        (
+            await (
+                await client.calendarFetch(path + "/" + created.data.id)
+            ).json()
+        ).data.event.title,
+        "Pending edit",
+    );
     assert.equal(sent.length, 0);
     host.reconnect();
-    assert.equal((await host.outbox.flush()).sent, 2);
+    assert.equal((await host.outbox.flush()).sent, 3);
     assert.equal(sent[0].body.operationId, created.data.id);
     host.disconnect();
     host.changeAccount("another-account");

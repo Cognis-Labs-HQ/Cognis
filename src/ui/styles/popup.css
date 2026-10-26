@@ -93,6 +93,11 @@
     background: transparent;
 }
 
+.popup-header-action--text {
+    width: auto;
+    white-space: nowrap;
+}
+
 .popup-header-action-icon,
 .popup-header-action-icon img {
     display: block;

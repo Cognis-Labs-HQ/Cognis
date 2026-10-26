@@ -1,4 +1,5 @@
 import { markEntryViewed } from "./viewed-entries.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { loadEntryDetail } from "./entry-data.js";
@@ -68,11 +69,9 @@ export async function openEntryPopup(
             entries,
             selectedTransformation,
         );
-        const editMode = popupEntryEditMode(
-            selectedEntry,
-            initialEntry,
-            options,
-        );
+        const editMode =
+            !isOffline() &&
+            popupEntryEditMode(selectedEntry, initialEntry, options);
         const handleSaved = (updated) => {
             if (editMode !== "direct") return;
             Object.assign(selectedEntry, updated);
@@ -274,7 +273,7 @@ export async function openEntryPopup(
             sourceDefinition = "";
             continue;
         }
-        if (result === "edit" && editMode) {
+        if (result === "edit" && editMode && !isOffline()) {
             await openLibraryEntryEditor({
                 entry: detail.entry,
                 entries,

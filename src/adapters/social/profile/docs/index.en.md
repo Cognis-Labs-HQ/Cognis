@@ -170,3 +170,7 @@ Existing local accounts continue to work when legacy SSO records are present. St
 ## Sudden connection loss
 
 Transient presence and availability polling stops when Offline Mode begins and resumes after recovery. Manual availability changes retain their existing offline-buffer behavior.
+
+## Durable Queued Results
+
+Queued profile text, posts and bounded image uploads retain their completed result if a view refresh fails. Profile text updates use the returned server data online and an explicit queued projection offline. Failed delivery still retains drafts; a failed follow-up refresh does not invite a duplicate submission.

@@ -8,13 +8,19 @@
  */
 import { captureAccountGuard } from "./offline-identity.js";
 import { createOfflineReadCache } from "./offline-read-cache.js";
-import { deliverOrQueue } from "./offline-delivery.js";
+import { deliverOrQueue, recordQueuedActivity } from "./offline-delivery.js";
 import { registerScopedUiActions } from "./scoped-actions.js";
 import { isOffline } from "./offline-state.js";
 
 export function registerOfflineHttpClient(
     ctx,
-    { owner, describe, request, project = (_path, payload) => payload },
+    {
+        owner,
+        describe,
+        request,
+        project = (_path, payload) => payload,
+        restoreRead,
+    },
 ) {
     const outbox = ctx.capabilities.get("offline:outbox");
     if (!outbox) throw new Error("offline_delivery_unavailable");
@@ -80,16 +86,31 @@ export function registerOfflineHttpClient(
             }
             const pending = () => outbox.pending(owner);
             if (method === "GET") {
-                const payload = await read(path, async () => {
-                    assertAccount();
-                    const response = await request(path, options);
-                    if (!response.ok)
-                        throw Object.assign(new Error("read_failed"), {
-                            response,
-                            status: response.status,
-                        });
-                    return response.json();
-                });
+                let payload;
+                try {
+                    payload = await read(path, async () => {
+                        assertAccount();
+                        const response = await request(path, options);
+                        if (!response.ok)
+                            throw Object.assign(new Error("read_failed"), {
+                                response,
+                                status: response.status,
+                            });
+                        return response.json();
+                    });
+                } catch (error) {
+                    if (
+                        error?.message !== "offline_read_unavailable" ||
+                        !restoreRead
+                    )
+                        throw error;
+                    payload = await restoreRead(path, await pending(), (key) =>
+                        read(key, () => {
+                            throw error;
+                        }),
+                    );
+                    if (payload === undefined) throw error;
+                }
                 return Response.json(
                     await project(path, payload, await pending(), ctx),
                 );
@@ -155,7 +176,7 @@ export function registerOfflineHttpClient(
                 return result.status === 204
                     ? new Response(null, { status: 204 })
                     : Response.json(result.payload, { status: result.status });
-            await ctx.runFlow("activity:record", {
+            void recordQueuedActivity(ctx, {
                 id: body?.operationId ?? id,
                 type: owner,
                 occurredAt: operation.createdAt,

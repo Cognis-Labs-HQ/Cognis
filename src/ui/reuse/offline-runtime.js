@@ -6,6 +6,7 @@
  * @returns {void}
  */
 import { offlinePolicy } from "./offline-policy.js";
+import { registerOfflineAssets } from "./offline-assets.js";
 import { createOfflineOutbox } from "./offline-outbox.js";
 import {
     isOffline,
@@ -14,6 +15,7 @@ import {
 } from "./offline-state.js";
 
 export function registerOfflineRuntime(ctx) {
+    registerOfflineAssets(ctx);
     if (ctx.capabilities.get("offline:outbox")) return;
     const outbox = createOfflineOutbox({
         identity: () => ({

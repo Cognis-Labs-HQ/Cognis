@@ -3,6 +3,31 @@ import test from "node:test";
 import { uiCtx } from "../ui-ctx.js";
 import { createProviderLifecycle } from "../provider-lifecycle.js";
 
+test("provider failures log the safe script identity and failing phase", async () => {
+    const logs = [];
+    const log = (_level, _message, metadata) => logs.push(metadata);
+    uiCtx.capabilities.contribute("ui:log", log);
+    try {
+        const lifecycle = createProviderLifecycle({
+            uiCtx,
+            importProvider: async () => {
+                throw new TypeError("unavailable");
+            },
+        });
+        await assert.rejects(
+            lifecycle.reconcile([
+                { scriptUrl: "/static/provider.js?revision=private" },
+            ]),
+            /unavailable/,
+        );
+        assert.equal(logs[0].providerScript, "/static/provider.js");
+        assert.equal(logs[0].providerPhase, "import");
+        assert.equal(logs[0].errorName, "TypeError");
+    } finally {
+        uiCtx.capabilities.remove("ui:log", log);
+    }
+});
+
 test("provider disable and re-enable remove capabilities, flows and listeners", async () => {
     let mounts = 0;
     let releases = 0;

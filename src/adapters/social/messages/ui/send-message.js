@@ -18,6 +18,7 @@ export function createMessageSender({
         event.preventDefault();
         if (sending) return;
         sending = true;
+        let delivered = false;
         try {
             const selectedRoomId = roomState.getSelectedRoomId();
             if (!selectedRoomId) return;
@@ -90,6 +91,7 @@ export function createMessageSender({
                 return;
             }
             const receipt = await response.json();
+            delivered = true;
             if (receipt.queued)
                 showToast(i18n.t("ui.reuse.offline_changes_queued"), {
                     variant: "info",
@@ -105,11 +107,18 @@ export function createMessageSender({
                 roomState.startLiveRefreshPolling();
             }
         } catch (error) {
-            console.error("[messages] message delivery failed", {
-                component: "social-messages",
-                operation: "sendMessage",
-                errorName: error.name,
-            });
+            console.error(
+                delivered
+                    ? "[messages] message view refresh failed"
+                    : "[messages] message delivery failed",
+                {
+                    component: "social-messages",
+                    operation: "sendMessage",
+                    errorName: error.name,
+                    delivered,
+                },
+            );
+            if (delivered) return;
             showToast(
                 i18n.t(
                     error.message === "offline_outbox_full"

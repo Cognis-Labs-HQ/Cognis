@@ -45,3 +45,7 @@ Konten sosial tersimpan tetap hanya di tab dan memerlukan persetujuan. Kunjungan
 ## Navigasi luring
 
 Messages hanya mengaktifkan navigasi luring jika akun dan sesi saat ini memiliki daftar ruang tersimpan serta aset halaman yang siap. Percakapan tetap memerlukan pesan terenkripsi tersimpan dan keyring yang terbuka; percakapan yang belum tersimpan memerlukan koneksi. Penggambaran ulang penyedia mempertahankan status nonaktif tautan luring.
+
+## Hasil Antrean Tersimpan
+
+Pesan terenkripsi hanya menghapus draf setelah pengakuan server atau penyimpanan dalam antrean. Kegagalan penyegaran ruang berikutnya tidak menandai bukti tersebut sebagai pengiriman gagal. Pesan tertunda mempertahankan identitas operasi yang stabil untuk pengiriman ulang.

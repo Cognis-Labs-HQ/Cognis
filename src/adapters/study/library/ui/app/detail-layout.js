@@ -47,19 +47,21 @@ export function bindEntryDetail(
     bindDetailLayout(root, signal);
     bindDrawingPreview(popupApi, entry, signal);
     placeAudioSpeaker(root, signal, popupApi);
-    window.addEventListener(
-        "cognis:connectivity-changed",
-        () => {
-            if (!isOffline()) return;
-            for (const audio of root.querySelectorAll("audio")) audio.pause();
-            for (const button of root.querySelectorAll(
-                "[data-library-audio-sequence-toggle], [data-library-audio-toggle], [data-library-refresh-audio]",
-            ))
-                button.disabled = true;
-        },
-        { signal },
-    );
-    if (isOffline()) return;
+    const stopOnlineActions = () => {
+        if (!isOffline()) return;
+        for (const audio of root.querySelectorAll("audio")) audio.pause();
+        for (const button of root.querySelectorAll(
+            '[data-library-audio-sequence-toggle], [data-library-audio-toggle], [data-library-refresh-audio], [data-popup-action="edit"]',
+        ))
+            button.disabled = true;
+    };
+    window.addEventListener("cognis:connectivity-changed", stopOnlineActions, {
+        signal,
+    });
+    if (isOffline()) {
+        stopOnlineActions();
+        return;
+    }
     void loadLibraryAudio(root, audioObjectUrls, signal, audioError);
     void loadReferenceImages(root, {
         signal,

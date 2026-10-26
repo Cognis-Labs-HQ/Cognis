@@ -89,3 +89,7 @@ Dashboard declares private session-only offline access and keeps its account sum
 ## Empty offline Study pages
 
 Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Offline Study Assets
+
+Study prepares its lazy popup icons, drawing template, drawing styles and close icons while online, without mounting the drawing pad or blocking login. Preparation retries after recovery and stops with its provider. Previously cached characters can open the pad for the first time offline. Content editing is unavailable offline; an open detail popup disables Edit when connectivity is lost. Missing decorative popup icons retain their translated action label instead of opening a resource-error dialog.

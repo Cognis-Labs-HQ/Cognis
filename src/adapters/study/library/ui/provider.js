@@ -3,6 +3,22 @@ import { registerLibraryClient } from "/static/gateways/study/library-client.js"
 import { headingCompositionReferences } from "./app/presentation.js";
 
 export async function mountProvider(ctx) {
+    ctx.capabilities
+        .get("offline:assets")
+        .register(
+            [
+                "/static/adapters/study/library/assets/edit-light.svg",
+                "/static/adapters/study/library/assets/edit-dark.svg",
+                "/static/adapters/study/library/assets/draw-light.svg",
+                "/static/adapters/study/library/assets/draw-dark.svg",
+                "/static/adapters/study/library/assets/speaker-light.svg",
+                "/static/adapters/study/library/assets/speaker-dark.svg",
+                "/static/adapters/study/library/assets/clear-search.svg",
+                "/static/assets/reuse/arrow-back-light.svg",
+                "/static/assets/reuse/arrow-back-dark.svg",
+            ],
+            { signal: ctx.signal },
+        );
     registerLibraryClient(ctx);
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["study-library-page", "study-library-layer-page"],

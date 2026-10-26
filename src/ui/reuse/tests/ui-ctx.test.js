@@ -210,6 +210,8 @@ test("uiCtx exposes the shared broadcast publisher before a page or provider mou
     );
     const first = await import("../ui-ctx.js");
     const publisher = first.uiCtx.capabilities.get("ui:broadcast");
+    const subPages = first.uiCtx.capabilities.get("ui:subPages");
     const second = await import("../ui-ctx.js?broadcast-lifecycle");
     assert.equal(second.uiCtx.capabilities.get("ui:broadcast"), publisher);
+    assert.equal(second.uiCtx.capabilities.get("ui:subPages"), subPages);
 });

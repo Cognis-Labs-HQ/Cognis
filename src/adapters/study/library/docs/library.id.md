@@ -610,3 +610,7 @@ Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, In
 ## Halaman Study luring kosong
 
 Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverifikasi dengan persetujuan wajib meskipun snapshot konten privat belum ada. Metadata bahasa atau preferensi yang hilang menghasilkan navigasi kosong. Explore memasang tampilan kosong normal dan menampilkan “Tidak ada konten luring tersimpan yang tersedia” alih-alih kesalahan rute atau toast kesalahan. Flashcards juga mempertahankan halaman kosong jika data dek atau sumber tampilan wajib belum tersedia. Pemberitahuan terikat halaman saat ini dan tidak diduplikasi. Kekurangan cache tidak menyembunyikan penolakan akses atau persetujuan. Library dan Flashcards menyiapkan terjemahan publik serta templat ringan saat daring; data privat tetap berada dalam cache tab yang dibatasi.
+
+## Aset Study Luring
+
+Kedua varian tema ikon popup disiapkan melalui kapabilitas aset luring host yang mengikuti masa hidup penyedia. Penelusuran tersimpan dan menggambar tetap tersedia. Penyuntingan konten dinonaktifkan saat luring, termasuk Sunting pada popup terbuka ketika koneksi hilang. Ikon dekoratif yang tidak tersedia menampilkan label tindakan terjemahannya.

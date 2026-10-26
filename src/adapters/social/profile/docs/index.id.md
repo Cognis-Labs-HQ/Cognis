@@ -87,3 +87,7 @@ Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup
 ## Koneksi terputus mendadak
 
 Polling kehadiran dan ketersediaan sementara berhenti saat Mode Luring dimulai dan dilanjutkan setelah koneksi pulih. Perubahan ketersediaan manual tetap menggunakan buffer luring yang ada.
+
+## Hasil Antrean Tersimpan
+
+Teks profil, postingan, dan unggahan gambar terbatas dalam antrean mempertahankan hasil selesai jika penyegaran tampilan gagal. Pembaruan teks memakai data server saat daring dan proyeksi antrean saat luring. Kegagalan pengiriman mempertahankan draf; kegagalan penyegaran berikutnya tidak mendorong pengiriman ganda.

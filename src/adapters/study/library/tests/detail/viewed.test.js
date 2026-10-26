@@ -22,6 +22,7 @@ function popupFixture({ next, fetchError, editing = false } = {}) {
     const { openEntryPopup } = loadTestModule(
         new URL("../../ui/app/entry-popup.js", import.meta.url),
         {
+            "/static/reuse/offline-state.js": offlineState,
             "../reuse/entry-graph.js": entryGraph,
             "./viewed-entries.js": {
                 markEntryViewed: async (_root, entry) => {

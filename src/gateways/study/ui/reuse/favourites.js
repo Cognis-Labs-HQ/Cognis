@@ -96,6 +96,7 @@ export async function loadFavourites({ signal } = {}) {
                     if (!button) return;
                     event.stopPropagation();
                     button.disabled = true;
+                    let saved = false;
                     try {
                         const kind = button.dataset.studyFavouriteKind;
                         const id = button.dataset.studyFavourite;
@@ -107,6 +108,7 @@ export async function loadFavourites({ signal } = {}) {
                             { kind, id, favourite: selected },
                             saveFavourite,
                         );
+                        saved = true;
                         if (result?.queued) {
                             if (selected) active.add(key(kind, id));
                             else active.delete(key(kind, id));
@@ -126,7 +128,17 @@ export async function loadFavourites({ signal } = {}) {
                             { variant: "success" },
                         );
                         onChange();
-                    } catch {
+                    } catch (error) {
+                        if (saved) {
+                            console.error(
+                                "[study] saved favourite view refresh failed",
+                                {
+                                    operation: "refreshFavourite",
+                                    errorName: error?.name,
+                                },
+                            );
+                            return;
+                        }
                         showToast(i18n.t("gateway.study.favourite_failed"), {
                             variant: "error",
                         });

@@ -45,3 +45,7 @@ Zwischengespeicherte soziale Inhalte bleiben tablokal und zustimmungspflichtig. 
 ## Offline-Navigation
 
 Messages gibt Offline-Navigation nur frei, wenn für das aktuelle Konto und die aktuelle Sitzung eine Raumliste zwischengespeichert und die Seiten-Assets vorbereitet sind. Nachrichtenverläufe benötigen weiterhin gespeicherte verschlüsselte Nachrichten und einen entsperrten Schlüsselbund; unbekannte Unterhaltungen erfordern eine Verbindung. Das erneute Zeichnen der Navigation erhält die Offline-Sperren.
+
+## Dauerhaft vorgemerkte Änderungen
+
+Verschlüsselte Nachrichten löschen ihren Entwurf erst nach Serverbestätigung oder dauerhafter Vormerkung. Ein späterer Fehler beim Aktualisieren des Chats kennzeichnet diesen Beleg nicht als fehlgeschlagenen Versand. Ausstehende Nachrichten behalten ihre stabile Vorgangskennung für die Übertragung.

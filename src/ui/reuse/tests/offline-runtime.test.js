@@ -1,4 +1,5 @@
 import { createTopBanners } from "../top-banners.js";
+import { registerOfflineAssets } from "../offline-assets.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -22,6 +23,7 @@ function fixture({ browser = false } = {}) {
     const runtime = loadTestModule(
         new URL("../offline-runtime.js", import.meta.url),
         {
+            "./offline-assets.js": { registerOfflineAssets },
             "./offline-policy.js": {
                 offlinePolicy: { allows: () => consented },
             },

@@ -12,6 +12,21 @@
 import { captureAccountGuard } from "./offline-identity.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
 
+/**
+ * Telemetry failures must not turn an already persisted user action into a failed write.
+ * @returns {Promise<void>}
+ */
+export async function recordQueuedActivity(ctx, activity) {
+    try {
+        await ctx.runFlow("activity:record", activity);
+    } catch (error) {
+        console.error("[offline] queued activity recording failed", {
+            operation: "recordQueuedActivity",
+            errorName: error?.name,
+        });
+    }
+}
+
 export async function deliverOrQueue(ctx, owner, id, payload, send) {
     const assertAccount = captureAccountGuard();
     const outbox = ctx.capabilities.get("offline:outbox");

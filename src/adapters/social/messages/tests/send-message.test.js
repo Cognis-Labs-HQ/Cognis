@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 
-function fixture(send) {
+function fixture(send, { refreshError } = {}) {
     class TextArea {
         value = " Draft message ";
     }
@@ -34,7 +34,10 @@ function fixture(send) {
             getSelectedRoomId: () => "room",
             getSelectedRoom: () => ({ canSend: true }),
             queueTypingUpdate: () => {},
-            openRoom: async (id) => opened.push(id),
+            openRoom: async (id) => {
+                if (refreshError) throw refreshError;
+                opened.push(id);
+            },
             refreshTypingIndicator: () =>
                 assert.fail("queued messages do not restart typing"),
             startLiveRefreshPolling: () =>
@@ -55,6 +58,17 @@ function fixture(send) {
         submit: () => handler(new Event("submit", { cancelable: true })),
     };
 }
+
+test("a queued message keeps its successful receipt when refreshing the room fails", async () => {
+    const state = fixture(
+        async () => Response.json({ queued: true }, { status: 202 }),
+        { refreshError: new Error("offline_read_unavailable") },
+    );
+    await state.submit();
+    assert.equal(state.input.value, "");
+    assert.deepEqual(state.cleared, ["room"]);
+    assert.deepEqual(state.toasts, ["ui.reuse.offline_changes_queued"]);
+});
 
 test("the draft remains until durable submission finishes and repeated submit cannot duplicate it", async () => {
     let finish;

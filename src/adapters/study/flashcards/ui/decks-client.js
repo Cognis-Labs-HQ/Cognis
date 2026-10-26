@@ -1,7 +1,10 @@
 import { createI18n } from "/static/reuse/i18n.js";
 import { loadDeckTemplates } from "./app/markup.js";
 import { readStudySnapshot } from "/static/gateways/study/offline-content.js";
-import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
+import {
+    deliverOrQueue,
+    recordQueuedActivity,
+} from "/static/reuse/offline-delivery.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -94,7 +97,7 @@ export const reviewStudyCard = async (id, cardId, grade, attempt) => {
             }),
     );
     if (result?.queued)
-        await uiCtx.runFlow("activity:record", {
+        void recordQueuedActivity(uiCtx, {
             id: attempt.id,
             type: "study.flashcards",
             occurredAt: attempt.occurredAt,

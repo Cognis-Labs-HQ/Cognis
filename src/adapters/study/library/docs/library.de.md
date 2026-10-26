@@ -610,3 +610,7 @@ Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deuts
 ## Leere Offline-Lernseiten
 
 Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gültiger Zustimmung auch ohne private Inhalte erreichbar. Fehlende Sprach- und Präferenzdaten ergeben eine leere Navigation. Explore zeigt seine normale leere Ansicht und den gezielten Hinweis „Keine offline gespeicherten Inhalte verfügbar“ statt einer nicht verfügbaren Route oder Fehlermeldungen. Flashcards behält eine leere Seite, wenn Kartendaten oder notwendige Ansichtsressourcen fehlen. Hinweise sind an die Seite gebunden und werden nicht doppelt angezeigt. Cache-Fehler verbergen keine Zugriffs- oder Zustimmungsverweigerung. Library und Flashcards bereiten öffentliche Übersetzungen und kleine Vorlagen online vor; private Daten bleiben in begrenzten tablokalen Caches.
+
+## Offline-Lernressourcen
+
+Beide Designvarianten der Popup-Symbole werden über die lebenszyklusgebundene Offline-Asset-Funktion des Hosts vorbereitet. Zwischengespeicherte Inhalte bleiben durchsuchbar und Zeichenübungen verfügbar. Bearbeiten ist offline deaktiviert, auch in bereits geöffneten Popups bei Verbindungsverlust. Fehlende dekorative Symbole zeigen die übersetzte Aktionsbeschriftung.

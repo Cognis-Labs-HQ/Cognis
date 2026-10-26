@@ -268,6 +268,9 @@ async function drawingSession({
                     createActionRunner: environment.createActionRunner,
                 },
                 "/static/reuse/toast.js": { showToast: environment.showToast },
+                "/static/reuse/page-styles.js": {
+                    ensurePageStylesheet: async () => {},
+                },
                 "/static/reuse/ui-ctx.js": { uiCtx: environment.uiCtx },
                 "/static/reuse/i18n.js": { createI18n: environment.createI18n },
                 "./drawing-viewport.js": {

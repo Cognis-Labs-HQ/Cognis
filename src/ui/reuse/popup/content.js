@@ -1,3 +1,27 @@
+/**
+ * Decorative action icons retain their caller-supplied labels when unavailable.
+ * @returns {void}
+ */
+export function bindPopupActionIcons(overlay) {
+    for (const image of overlay.querySelectorAll(
+        ".popup-header-action-icon img",
+    )) {
+        image.addEventListener(
+            "error",
+            () => {
+                const button = image.closest(".popup-header-action");
+                if (!button) return;
+                button.textContent = button.getAttribute("aria-label");
+                button.classList.add("popup-header-action--text");
+                console.info("[popup] action icon unavailable", {
+                    operation: "renderActionIcon",
+                });
+            },
+            { once: true },
+        );
+    }
+}
+
 /** Owner-controlled heading accessories and reversible visual/accessibility concealment. */
 export function createPopupContentApi(overlay, refitHeading) {
     const concealedState = new WeakMap();

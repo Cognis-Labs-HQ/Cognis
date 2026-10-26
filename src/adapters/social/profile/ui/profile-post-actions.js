@@ -27,6 +27,7 @@ export function createProfilePostActions({
         if (!content) return;
 
         if (submitButton) submitButton.disabled = true;
+        let delivered = false;
 
         try {
             const response = await apiFetch("/api/v1/social/posts", {
@@ -41,6 +42,7 @@ export function createProfilePostActions({
 
             if (response.ok) {
                 const receipt = await response.json();
+                delivered = true;
                 setState({
                     posts: receipt.queued
                         ? [receipt.data, ...(getState().posts ?? [])]
@@ -63,11 +65,18 @@ export function createProfilePostActions({
                 });
             }
         } catch (error) {
-            console.error("[profile] post delivery failed", {
-                component: "social-profile",
-                operation: "createPost",
-                errorName: error.name,
-            });
+            console.error(
+                delivered
+                    ? "[profile] post view refresh failed"
+                    : "[profile] post delivery failed",
+                {
+                    component: "social-profile",
+                    operation: "createPost",
+                    errorName: error.name,
+                    delivered,
+                },
+            );
+            if (delivered) return;
             showToast(
                 i18n.t(
                     error.message === "offline_outbox_full"

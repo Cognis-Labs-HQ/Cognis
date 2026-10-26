@@ -128,3 +128,13 @@ Prepared Study pages remain navigable in a verified, consented offline session e
 ## Direct Loads and Styles
 
 Direct loads and refreshes retain their route styles while offline assets prepare. Host and component builds preserve stylesheet source identity, and logical and emitted URLs share ownership. Asset responses no longer wait for background cache writes; failures are logged and do not delay delivery. Web fonts load separately from the theme, so an unavailable font server cannot block the page or loading wheel. The selected font still applies when available, with the existing browser fallback while it loads.
+
+## Offline Study Assets
+
+Study prepares its lazy popup icons, drawing template, drawing styles and close icons while online, without mounting the drawing pad or blocking login. Preparation retries after recovery and stops with its provider. Previously cached characters can open the pad for the first time offline. Content editing is unavailable offline; an open detail popup disables Edit when connectivity is lost. Missing decorative popup icons retain their translated action label instead of opening a resource-error dialog.
+
+## Durable Queued Results
+
+Once a write is durably queued, optional activity capture or view-refresh failures do not turn it into a failed write. Calendar can open details from cached event lists, including newly queued events and later pending edits. Concurrent event submissions share one request. Messages clear their draft only after acknowledgement or persistence; room-refresh failures preserve that receipt. Profile text, posts and images likewise retain their completed result when a view refresh fails. Availability refreshes cannot hold up completed Calendar writes.
+
+Provider lifecycle failures now record the failing script path without query data and whether importing or mounting failed. Optional activity failures are logged separately from the durable user action.

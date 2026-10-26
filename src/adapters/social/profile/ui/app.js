@@ -1,4 +1,4 @@
-import { profileUiClient } from "./client.js";
+import { saveProfileFields } from "./profile-save.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -381,64 +381,22 @@ async function openEditPopup() {
 
     if (result === "save") {
         const fieldValues = profileEditFormController?.getValues() ?? {};
-        const displayName = fieldValues.displayName ?? currentDisplayName;
-        const bio = fieldValues.bio ?? currentBio;
-        const location = fieldValues.location ?? currentLocation;
-        const website = fieldValues.website ?? currentWebsite;
-        const visibility = fieldValues.visibility ?? currentVisibility;
-        try {
-            const response = await profileUiClient.updateProfile({
-                displayName,
-                bio,
-                location,
-                website,
-                visibility,
-            });
-            if (!response.ok) {
-                const responseBody = await response.json().catch(() => null);
-                const responseMessage =
-                    responseBody?.error?.message ??
-                    i18n.t("ui.app.profile.save_failed");
-                throw new Error(responseMessage);
-            }
-            const responseBody = await response.json();
-            localStorage.setItem("cognis_display_name", displayName);
-            setState({
-                profile: responseBody.queued
-                    ? {
-                          ...getState().profile,
-                          displayName,
-                          bio,
-                          location,
-                          website,
-                          visibility,
-                          queued: true,
-                      }
-                    : responseBody.data,
-            });
-            refreshProfileCards(["hero", "social-links", "posts-new"]);
-            bindProfileHeroEvents();
-            updateNavbarAvatar().catch(() => {});
-            showToast(
-                i18n.t(
-                    responseBody.queued
-                        ? "ui.reuse.offline_changes_queued"
-                        : "ui.app.profile.saved",
-                ),
-                { variant: responseBody.queued ? "info" : "success" },
-            );
-        } catch (error) {
-            showToast(
-                i18n.t(
-                    error.message === "offline_outbox_full"
-                        ? "ui.reuse.offline_buffer_full_body"
-                        : "ui.app.profile.save_failed",
-                ),
-                {
-                    variant: "error",
-                },
-            );
-        }
+        await saveProfileFields(
+            {
+                displayName: fieldValues.displayName ?? currentDisplayName,
+                bio: fieldValues.bio ?? currentBio,
+                location: fieldValues.location ?? currentLocation,
+                website: fieldValues.website ?? currentWebsite,
+                visibility: fieldValues.visibility ?? currentVisibility,
+            },
+            {
+                getState,
+                setState,
+                refreshProfileCards,
+                bindProfileHeroEvents,
+                i18n,
+            },
+        );
     }
 }
 

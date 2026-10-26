@@ -1,4 +1,7 @@
-import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
+import {
+    deliverOrQueue,
+    recordQueuedActivity,
+} from "/static/reuse/offline-delivery.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
@@ -61,7 +64,7 @@ export function recordDrawingCompletion(cardId, completion) {
         () => sendDrawingCompletion(cardId, completion),
     ).then(async (result) => {
         if (result?.queued)
-            await uiCtx.runFlow("activity:record", {
+            void recordQueuedActivity(uiCtx, {
                 id: completion.attempt.id,
                 occurredAt: completion.attempt.occurredAt,
                 type: "study.drawing",
