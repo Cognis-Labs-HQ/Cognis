@@ -9,34 +9,37 @@ import {
     enableOfflineAutoRefresh,
 } from "./offline-state.js";
 
-const sessionRoutes = new Map();
-uiCtx.capabilities.contribute(
-    "offline:registerSessionRoutes",
-    (ids, signal, { available = () => true } = {}) => {
-        signal.throwIfAborted();
-        if (typeof available !== "function")
-            throw new TypeError("invalid_offline_route_predicate");
-        const owner = { signal, available };
-        for (const id of ids) sessionRoutes.set(id, owner);
-        const dispose = () => {
-            for (const id of ids)
-                if (sessionRoutes.get(id) === owner) sessionRoutes.delete(id);
-        };
-        signal.addEventListener("abort", dispose, { once: true });
-        return dispose;
-    },
-);
-uiCtx.capabilities.contribute(
-    "offline:isSessionRouteAvailable",
-    (route, path) => {
-        const owner = sessionRoutes.get(route?.id);
-        return Boolean(
-            owner &&
-            !owner.signal.aborted &&
-            (!isOffline() || owner.available(route, path) === true),
-        );
-    },
-);
+if (!uiCtx.capabilities.get("offline:registerSessionRoutes")) {
+    const sessionRoutes = new Map();
+    uiCtx.capabilities.contribute(
+        "offline:registerSessionRoutes",
+        (ids, signal, { available = () => true } = {}) => {
+            signal.throwIfAborted();
+            if (typeof available !== "function")
+                throw new TypeError("invalid_offline_route_predicate");
+            const owner = { signal, available };
+            for (const id of ids) sessionRoutes.set(id, owner);
+            const dispose = () => {
+                for (const id of ids)
+                    if (sessionRoutes.get(id) === owner)
+                        sessionRoutes.delete(id);
+            };
+            signal.addEventListener("abort", dispose, { once: true });
+            return dispose;
+        },
+    );
+    uiCtx.capabilities.contribute(
+        "offline:isSessionRouteAvailable",
+        (route, path) => {
+            const owner = sessionRoutes.get(route?.id);
+            return Boolean(
+                owner &&
+                !owner.signal.aborted &&
+                (!isOffline() || owner.available(route, path) === true),
+            );
+        },
+    );
+}
 
 export function offlineRouteAvailable(route, path) {
     if (isOffline() && !offlinePolicy.allows()) return false;

@@ -82,8 +82,8 @@ export function mountOfflineStatus(
                         : "",
                 actionsHtml:
                     mode === "recovered"
-                        ? `<div class="in-page-callout__actions"><button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button></div>`
-                        : `<div class="in-page-callout__actions"><button type="button" class="btn-neutral btn-animated${checking ? " button-loading" : ""}" data-offline-recheck${checking ? ' disabled aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.reuse.recheck_connectivity"))}</button></div>`,
+                        ? `<button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button>`
+                        : `<button type="button" class="btn-neutral btn-animated${checking ? " button-loading" : ""}" data-offline-recheck${checking ? ' disabled aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.reuse.recheck_connectivity"))}</button>`,
             },
             { priority: -100, signal: controller.signal },
         );

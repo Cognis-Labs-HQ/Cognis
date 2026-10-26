@@ -50,12 +50,12 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.39`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
 | Profile (Social)           | `src/adapters/social/profile/`      | `3.0.2`    |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.27`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.28`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.5`    |
-| Library (Study)            | `src/adapters/study/library/`       | `4.1.7`    |
+| Library (Study)            | `src/adapters/study/library/`       | `4.1.8`    |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
 | フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.18`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
@@ -77,7 +77,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.41`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.3.1`    |
+| Study                 | `src/gateways/study/`         | `2.4.0`    |
 | Calendar              | `src/gateways/calendar/`      | `1.5.1`    |
 
 ## コア契約
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.10.0`   |
+| API Server     | `src/api/` | `0.10.1`   |
 
 ## ツール
 

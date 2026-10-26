@@ -1,5 +1,6 @@
 import { nextReactionState } from "./reaction-state.js";
 import { isOffline } from "/static/reuse/offline-state.js";
+import { canOpenCachedRoom, selectInitialRoomId } from "./offline-room.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import {
     MESSAGES_FILE_NAMESPACE_ID,
@@ -89,14 +90,9 @@ export function createMessagesRoomState({
 
     async function loadInitialRooms() {
         rooms = await loadRooms(i18n, { getRoomKey });
-        if (
-            selectedRoomId &&
-            !rooms.some((room) => String(room.id) === String(selectedRoomId))
-        ) {
-            selectedRoomId = null;
-        }
-        if (!selectedRoomId && rooms.length > 0) {
-            selectedRoomId = rooms[0].id;
+        const previous = selectedRoomId;
+        selectedRoomId = selectInitialRoomId(rooms, selectedRoomId);
+        if (selectedRoomId && selectedRoomId !== previous) {
             history.replaceState(
                 {},
                 "",
@@ -227,6 +223,12 @@ export function createMessagesRoomState({
     }
 
     async function performOpenRoom(roomId) {
+        if (isOffline() && !canOpenCachedRoom(roomId)) {
+            showToast(i18n.t("ui.reuse.offline_no_cached_content"), {
+                variant: "info",
+            });
+            return;
+        }
         const threadList = document.getElementById("messages-thread-list");
         const headerSlot = document.getElementById(
             "messages-thread-header-slot",

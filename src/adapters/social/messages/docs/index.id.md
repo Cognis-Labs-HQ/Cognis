@@ -49,3 +49,7 @@ Messages hanya mengaktifkan navigasi luring jika akun dan sesi saat ini memiliki
 ## Hasil Antrean Tersimpan
 
 Pesan terenkripsi hanya menghapus draf setelah pengakuan server atau penyimpanan dalam antrean. Kegagalan penyegaran ruang berikutnya tidak menandai bukti tersebut sebagai pengiriman gagal. Pesan tertunda mempertahankan identitas operasi yang stabil untuk pengiriman ulang.
+
+## Ketersediaan Luring
+
+Messages menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah masuk terverifikasi. Dengan aset halaman yang disiapkan dan daftar ruang tersimpan, halaman dapat dibuka luring sebelum kunjungan daring pertama. Hanya ruang dengan metadata dan percakapan tersimpan yang terbuka otomatis; memilih percakapan yang belum tersimpan menampilkan pemberitahuan informasi khusus. Pendaftaran ruang dan ketersediaan aset tetap terjaga saat impor berulang melalui bundel maupun berkas langsung.

@@ -67,6 +67,8 @@ function normalizeRoute(rawRoute) {
             pattern: routePattern,
             base: basePath,
             stylesheets,
+            scriptUrl,
+            capabilityScripts,
             load: async () => {
                 await Promise.all(
                     capabilityScripts.map(

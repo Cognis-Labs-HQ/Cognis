@@ -93,3 +93,11 @@ Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gül
 ## Offline-Lernressourcen
 
 Study bereitet verzögert benötigte Popup-Symbole, Zeichenvorlage, Zeichenstile und Schließen-Symbole online vor, ohne das Zeichenfeld zu öffnen oder die Anmeldung zu blockieren. Nach Wiederherstellung wird die Vorbereitung wiederholt; mit dem Anbieter wird sie beendet. Bereits zwischengespeicherte Zeichen können das Zeichenfeld erstmals offline öffnen. Inhalte lassen sich offline nicht bearbeiten; ein offenes Detailfenster deaktiviert Bearbeiten bei Verbindungsverlust. Fehlende dekorative Popup-Symbole behalten ihre übersetzte Aktionsbeschriftung, statt einen Ressourcenfehler anzuzeigen.
+
+## Offline-Verfügbarkeit
+
+Die Offline-Routenregistrierung bleibt bei wiederholten gebündelten und direkt ausgelieferten Importen erhalten. Vorbereitete Routen behalten ihre Verfügbarkeit bei neu erzeugten Beschreibungen mit denselben Skripten, Stilen und Funktionsanbietern; geänderte Assets müssen erneut vorbereitet werden. Nachrichten bereitet Chatlisten, Übersetzungen und Emoji-Kataloge nach bestätigter Anmeldung vor. Die Seite kann vor dem ersten Online-Besuch offline geöffnet werden. Automatisch öffnen nur zwischengespeicherte Chats mit zwischengespeichertem Verlauf; ein nicht gespeicherter Verlauf zeigt einen gezielten Informationstoast. Explore behält verfügbare Sammlungen, wenn eine andere Sammlung oder der Gelesen-Status fehlt. Zugriffs- und Einwilligungsverweigerungen werden weiterhin weitergegeben. Banneraktionen stehen direkt in der gemeinsamen Aktionszeile und verlieren den geerbten vertikalen Versatz.
+
+## Gemeinsame Lernfavoriten
+
+Der Study-Anbieter stellt `study:favourites` mit lebenszyklusgebundenen Operationen `load`, `toggle` und `has` bereit. Darstellungsfunktionen verwenden diese ctx-Funktion statt eines eigenen Caches pro Lader. Favoriten werden nach bestätigter Anmeldung vorbereitet, berücksichtigen vorgemerkte Änderungen und teilen konto- und sitzungsgebundenen Zustand zwischen Explore, Lernkarten und wiederholten Importen. Fehlt ein optionaler Favoriten-Snapshot, bleibt die Auswahl mit vorgemerkten Änderungen nutzbar; Inhalte werden nicht verborgen und kein Aktualisierungsfehler angezeigt. Ein Kontowechsel leert die sichtbare Auswahl. Zugriffsverweigerungen gelten niemals als Cache-Fehltreffer.

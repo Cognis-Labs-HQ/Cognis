@@ -49,3 +49,7 @@ Messages gibt Offline-Navigation nur frei, wenn für das aktuelle Konto und die 
 ## Dauerhaft vorgemerkte Änderungen
 
 Verschlüsselte Nachrichten löschen ihren Entwurf erst nach Serverbestätigung oder dauerhafter Vormerkung. Ein späterer Fehler beim Aktualisieren des Chats kennzeichnet diesen Beleg nicht als fehlgeschlagenen Versand. Ausstehende Nachrichten behalten ihre stabile Vorgangskennung für die Übertragung.
+
+## Offline-Verfügbarkeit
+
+Messages bereitet Raumliste, Übersetzungen und Emoji-Kataloge nach bestätigter Anmeldung vor. Mit vorbereiteten Seitenressourcen und einer zwischengespeicherten Raumliste lässt sich die Seite vor dem ersten Onlinebesuch offline öffnen. Nur Räume mit zwischengespeicherten Metadaten und Nachrichtenverläufen öffnen sich automatisch; die Auswahl eines nicht gespeicherten Verlaufs zeigt einen gezielten Informationshinweis. Raumregistrierung und Ressourcenverfügbarkeit bleiben bei wiederholten gebündelten und direkt bereitgestellten Importen erhalten.

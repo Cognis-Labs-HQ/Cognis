@@ -479,6 +479,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "study:library:detailFlow",
             "study:subPages",
             "study:navigation",
+            "study:favourites",
         ],
         isEnabled: isStudyEnabled,
     });

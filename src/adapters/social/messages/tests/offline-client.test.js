@@ -3,6 +3,49 @@ import assert from "node:assert/strict";
 import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 
+test("verified authentication primes the room list without requiring an online Messages visit", async (context) => {
+    const paths = [];
+    const fixture = createOfflineClientFixture(async (path) => {
+        paths.push(path);
+        return Response.json({ data: [{ id: "room", name: "Cached room" }] });
+    });
+    context.after(() => fixture.controller.abort());
+    const client = loadTestModule(
+        new URL("../ui/offline-client.js", import.meta.url),
+        {
+            ...fixture.imports,
+            "./i18n.js": { createMessagesI18n: async () => ({}) },
+        },
+        fixture.globals,
+    );
+    client.mountProvider(fixture.ctx);
+    fixture.ctx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "test:messagesSession" },
+        () => ({ authenticated: true }),
+    );
+    await fixture.ctx.runFlow("authenticate-session", {});
+    const request = fixture.ctx.capabilities.get("social:messagesRequest");
+    for (
+        let attempt = 0;
+        attempt < 20 && !request.hasCachedRead("/api/v1/social/messages/rooms");
+        attempt++
+    )
+        await new Promise(setImmediate);
+    fixture.disconnect();
+    assert.equal(request.hasCachedRead("/api/v1/social/messages/rooms"), true);
+    assert.equal(
+        (
+            await (
+                await client.messagesFetch("/api/v1/social/messages/rooms")
+            ).json()
+        ).data[0].name,
+        "Cached room",
+    );
+    assert.deepEqual(paths, ["/api/v1/social/messages/rooms"]);
+});
+
 test("encrypted messages remain visibly queued and retain their identity after a lost response", async () => {
     const stored = new Map();
     let fail = true;
@@ -18,7 +61,10 @@ test("encrypted messages remain visibly queued and retain their identity after a
     });
     const client = loadTestModule(
         new URL("../ui/offline-client.js", import.meta.url),
-        fixture.imports,
+        {
+            ...fixture.imports,
+            "./i18n.js": { createMessagesI18n: async () => ({}) },
+        },
         fixture.globals,
     );
     client.mountProvider(fixture.ctx);
@@ -59,7 +105,10 @@ test("offline reaction changes project their final state and replay without togg
     });
     const client = loadTestModule(
         new URL("../ui/offline-client.js", import.meta.url),
-        fixture.imports,
+        {
+            ...fixture.imports,
+            "./i18n.js": { createMessagesI18n: async () => ({}) },
+        },
         fixture.globals,
     );
     client.mountProvider(fixture.ctx);

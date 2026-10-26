@@ -230,3 +230,11 @@ Preparation remains idle while Offline Mode is disabled, disconnected or blocked
 Once a write is durably queued, optional activity capture or view-refresh failures do not turn it into a failed write. Calendar can open details from cached event lists, including newly queued events and later pending edits. Concurrent event submissions share one request. Messages clear their draft only after acknowledgement or persistence; room-refresh failures preserve that receipt. Profile text, posts and images likewise retain their completed result when a view refresh fails. Availability refreshes cannot hold up completed Calendar writes.
 
 Provider lifecycle failures now record the failing script path without query data and whether importing or mounting failed. Optional activity failures are logged separately from the durable user action.
+
+## Offline Availability
+
+The offline route registry survives repeated bundled and directly served imports. Prepared route descriptors retain availability when reconstructed with the same script, styles and capability providers; changed assets require preparation again. Messages prepares its room list, translations and emoji catalogs after verified sign-in. The page can open offline before its first online visit; only cached rooms with cached threads open automatically, and selecting an uncached thread gives a targeted information toast. Explore keeps available cached collections when another collection or viewed-marker snapshot is missing. Access and consent denials still propagate. Banner actions sit directly in the shared action row, removing the inherited vertical offset.
+
+## Shared Study Favourites
+
+The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.

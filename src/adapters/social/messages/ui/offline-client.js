@@ -1,6 +1,8 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js";
+import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
+import { createMessagesI18n } from "./i18n.js";
 
 const ROOT = "/api/v1/social/messages";
 function queuedMessage(operation) {
@@ -86,6 +88,15 @@ function project(path, payload, pending) {
     return payload;
 }
 export function mountProvider(ctx) {
+    ctx.capabilities
+        .get("offline:assets")
+        .register(
+            [
+                "/static/gateways/social/emojis/common.json",
+                "/static/gateways/social/emojis/extended.json",
+            ],
+            { signal: ctx.signal },
+        );
     const request = registerOfflineHttpClient(ctx, {
         owner: "social.messages",
         describe,
@@ -93,6 +104,16 @@ export function mountProvider(ctx) {
         project,
     });
     ctx.capabilities.contribute("social:messagesRequest", request);
+    bindOfflineSnapshotRefresh(ctx, {
+        id: "messages:prepareOfflineSnapshot",
+        refresh: async () => {
+            await createMessagesI18n();
+            const response = await request(`${ROOT}/rooms`, {
+                signal: ctx.signal,
+            });
+            if (!response.ok) throw new Error("messages_rooms_unavailable");
+        },
+    });
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["social-messages-page"],
         ctx.signal,

@@ -1,5 +1,5 @@
 import { registerDrawingDelivery } from "./drawing-client.js";
-import { registerFavouriteDelivery } from "./reuse/favourites.js";
+import { registerFavouriteClient } from "./reuse/favourites-client.js";
 import {
     registerStudyNavigation,
     fetchStudyLanguages,
@@ -35,7 +35,7 @@ export function mountProvider(uiCtx) {
 
     const releases = [
         registerDrawingDelivery(uiCtx),
-        registerFavouriteDelivery(uiCtx),
+        registerFavouriteClient(uiCtx),
     ];
     return () => {
         for (const release of releases) release();

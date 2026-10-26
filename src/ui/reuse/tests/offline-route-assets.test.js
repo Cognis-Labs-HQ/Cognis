@@ -103,3 +103,27 @@ test("a separately loaded utility reuses the existing ctx flow and cache capabil
     assert.equal(imports, 1);
     assert.equal(ready(route), true);
 });
+
+test("prepared descriptors remain usable across loaders but a changed script requires preparation", async () => {
+    offline = false;
+    const route = {
+        id: "messages",
+        scriptUrl: "/assets/messages-ABCDEFGH.js",
+        stylesheets: ["/assets/messages-ABCDEFGH.css"],
+        load: async () => {},
+    };
+    await uiCtx.runFlow("offline:prepareRouteAssets", { routes: [route] });
+    const ready = uiCtx.capabilities.get("offline:areRouteAssetsReady");
+    assert.equal(ready({ ...route }), true);
+    assert.equal(
+        ready({ ...route, scriptUrl: "/assets/messages-12345678.js" }),
+        false,
+    );
+    assert.equal(
+        ready({
+            ...route,
+            capabilityScripts: ["/assets/provider-ABCDEFGH.js"],
+        }),
+        false,
+    );
+});

@@ -40,13 +40,6 @@
     line-height: 1.45;
 }
 
-.in-page-callout__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-}
-
 .in-page-callout--info {
     border-left-color: #3b82f6;
     border-color: rgba(59, 130, 246, 0.34);

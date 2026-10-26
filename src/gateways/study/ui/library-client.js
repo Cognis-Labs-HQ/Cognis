@@ -534,8 +534,8 @@ export function registerLibraryClient(ctx) {
                     signal.throwIfAborted();
                     const load = () =>
                         execute(
-                            (path, options = {}) =>
-                                apiFetch(path, {
+                            async (path, options = {}) => {
+                                const response = await apiFetch(path, {
                                     ...options,
                                     signal: AbortSignal.any([
                                         signal,
@@ -543,7 +543,14 @@ export function registerLibraryClient(ctx) {
                                             ? [options.signal]
                                             : []),
                                     ]),
-                                }),
+                                });
+                                if ([401, 403].includes(response.status))
+                                    throw Object.assign(
+                                        new Error("library_access_denied"),
+                                        { status: response.status },
+                                    );
+                                return response;
+                            },
                             ...input.args,
                         );
                     if (name === "markLibraryEntriesViewed")

@@ -10,28 +10,29 @@ let stallWorker = false;
 let autoRefreshes = 0;
 const popups = [];
 const workerRequests = [];
-const navigation = loadTestModule(
-    new URL("../offline-navigation.js", import.meta.url),
-    {
-        "./ui-ctx.js": { uiCtx },
-        "./escape-html.js": { escapeHtml },
-        "./offline-policy.js": { offlinePolicy: { allows: () => consented } },
-        "./offline-state.js": {
-            isOffline: () => offline,
-            enableOfflineAutoRefresh: () => autoRefreshes++,
-            offlineWorkerRequest: async (type) => {
-                workerRequests.push(type);
-                if (stallWorker) await new Promise(() => {});
-            },
-        },
-        "./i18n.js": {
-            createI18n: async () => ({ t: () => "Unavailable offline" }),
-        },
-        "./popup.js": { openPopup: async (popup) => popups.push(popup) },
-        "./runtime-error-popup.js": {
-            openRuntimeErrorPopup: async (popup) => popups.push(popup),
+const navigationImports = {
+    "./ui-ctx.js": { uiCtx },
+    "./escape-html.js": { escapeHtml },
+    "./offline-policy.js": { offlinePolicy: { allows: () => consented } },
+    "./offline-state.js": {
+        isOffline: () => offline,
+        enableOfflineAutoRefresh: () => autoRefreshes++,
+        offlineWorkerRequest: async (type) => {
+            workerRequests.push(type);
+            if (stallWorker) await new Promise(() => {});
         },
     },
+    "./i18n.js": {
+        createI18n: async () => ({ t: () => "Unavailable offline" }),
+    },
+    "./popup.js": { openPopup: async (popup) => popups.push(popup) },
+    "./runtime-error-popup.js": {
+        openRuntimeErrorPopup: async (popup) => popups.push(popup),
+    },
+};
+const navigation = loadTestModule(
+    new URL("../offline-navigation.js", import.meta.url),
+    navigationImports,
 );
 
 test("the registered offline navigation flow requires public opt-in and available assets", async () => {
@@ -210,6 +211,36 @@ test("session route availability checks its required snapshots when offline", as
     controller.abort();
     assert.equal(
         await navigation.allowOfflineRoute({ id: "snapshots" }, "/cached"),
+        false,
+    );
+});
+
+test("loading the navigation utility again preserves providers registered by another loader", async () => {
+    offline = true;
+    const controller = new AbortController();
+    const register = uiCtx.capabilities.get("offline:registerSessionRoutes");
+    register(["social-messages-page"], controller.signal);
+    const duplicate = loadTestModule(
+        new URL("../offline-navigation.js", import.meta.url),
+        navigationImports,
+    );
+    assert.equal(
+        uiCtx.capabilities.get("offline:registerSessionRoutes"),
+        register,
+    );
+    assert.equal(
+        await duplicate.allowOfflineRoute(
+            { id: "social-messages-page" },
+            "/messages",
+        ),
+        true,
+    );
+    controller.abort();
+    assert.equal(
+        await duplicate.allowOfflineRoute(
+            { id: "social-messages-page" },
+            "/messages",
+        ),
         false,
     );
 });

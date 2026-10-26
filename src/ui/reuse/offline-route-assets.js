@@ -7,12 +7,29 @@ const flow = "offline:prepareRouteAssets";
 if (!uiCtx.flowExists(flow)) {
     const prepared = new WeakSet();
     const preparing = new WeakSet();
-    uiCtx.capabilities.contribute("offline:areRouteAssetsReady", (route) =>
-        prepared.has(route),
-    );
-    uiCtx.capabilities.contribute("offline:recordRouteAssets", (route) => {
-        if (route) prepared.add(route);
-    });
+    const descriptors = new Map();
+    const signature = (route) =>
+        JSON.stringify([
+            route.ownerUuid,
+            route.scriptUrl,
+            route.stylesheets ?? [],
+            route.capabilityScripts ?? [],
+        ]);
+    const ready = (route) =>
+        Boolean(
+            route &&
+            (prepared.has(route) ||
+                (route.scriptUrl &&
+                    descriptors.get(route.id) === signature(route))),
+        );
+    const record = (route) => {
+        if (!route) return;
+        prepared.add(route);
+        if (route.id && route.scriptUrl)
+            descriptors.set(route.id, signature(route));
+    };
+    uiCtx.capabilities.contribute("offline:areRouteAssetsReady", ready);
+    uiCtx.capabilities.contribute("offline:recordRouteAssets", record);
     uiCtx.registerFlow(flow, ["select", "load"]);
     uiCtx.extendFlow(
         flow,
@@ -20,7 +37,7 @@ if (!uiCtx.flowExists(flow)) {
         { id: "ui:selectOfflineAssets" },
         ({ input, data }) => {
             data.routes = input.routes.filter(
-                (route) => !prepared.has(route) && !preparing.has(route),
+                (route) => !ready(route) && !preparing.has(route),
             );
             for (const route of data.routes) preparing.add(route);
         },
@@ -48,7 +65,7 @@ if (!uiCtx.flowExists(flow)) {
                                     await loadWithSpaImportGuard(() =>
                                         route.load(),
                                     );
-                                    prepared.add(route);
+                                    record(route);
                                 } finally {
                                     styles?.cancel();
                                 }

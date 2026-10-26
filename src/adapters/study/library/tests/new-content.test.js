@@ -26,6 +26,7 @@ test("relocated cards stay ordinary across private/shared oscillation while genu
             {
                 "/static/gateways/study/offline-content.js": {
                     isOfflineContentMiss: () => false,
+                    readStudySnapshot: (load) => load(),
                     showOfflineContentNotice: () =>
                         assert.fail("not an offline test"),
                 },

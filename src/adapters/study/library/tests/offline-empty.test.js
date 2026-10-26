@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 
-function fixture() {
+function fixture(overrides = {}) {
     const scheduled = [];
     const popups = [];
     const id = `test:emptyStudy:${crypto.randomUUID()}`;
@@ -39,6 +39,7 @@ function fixture() {
                 ),
             fetchLibraryEntries: () => assert.fail("no network request"),
             fetchViewedLibraryEntryIds: () => assert.fail("no network request"),
+            ...overrides,
         },
     });
     return {
@@ -84,6 +85,58 @@ test("an uncached Explore model is empty and schedules one targeted notice throu
         assert.equal(state.popups.length, 1);
     } finally {
         controller.abort();
+        state.dispose();
+    }
+});
+
+test("Explore retains cached characters when another collection and viewed markers are unavailable", async () => {
+    const state = fixture({
+        fetchLibrarySchemas: async () => [
+            { id: "characters" },
+            { id: "uncached" },
+        ],
+        fetchLibraryLocations: async () => ({
+            readable: [
+                { scope: "global" },
+                { scope: "user", scopeId: "learner" },
+            ],
+        }),
+        fetchLibraryEntries: async ({ schemaId, scope }) => {
+            if (schemaId !== "characters" || scope !== "global")
+                throw new Error("offline_read_unavailable");
+            return [{ id: "kanji", schemaId, label: "学" }];
+        },
+        fetchViewedLibraryEntryIds: async () => {
+            throw new Error("offline_read_unavailable");
+        },
+    });
+    try {
+        const model = await state.data.loadLibrary("ja", { t: (key) => key });
+        assert.equal(model.entries.length, 1);
+        assert.equal(model.entries[0].label, "学");
+        assert.equal(model.entries[0].isNew, undefined);
+        assert.equal(state.scheduled.length, 0);
+    } finally {
+        state.dispose();
+    }
+});
+
+test("a denied collection never falls back to a partially authorized Explore view", async () => {
+    const state = fixture({
+        fetchLibrarySchemas: async () => [{ id: "characters" }],
+        fetchLibraryLocations: async () => ({
+            readable: [{ scope: "global" }],
+        }),
+        fetchLibraryEntries: async () => {
+            throw new Error("offline_access_denied");
+        },
+    });
+    try {
+        await assert.rejects(
+            state.data.loadLibrary("ja", { t: (key) => key }),
+            /offline_access_denied/,
+        );
+    } finally {
         state.dispose();
     }
 });

@@ -49,3 +49,7 @@ Messages enables offline navigation only when the current account and session ha
 ## Durable Queued Results
 
 Encrypted messages clear their draft only after server acknowledgement or durable queuing. A later room-refresh failure cannot relabel that receipt as a failed send. Pending messages retain their stable operation identity for replay.
+
+## Offline Availability
+
+Messages prepares its room list, translations and emoji catalogs after verified sign-in. With prepared page assets and a cached room list, the page can open offline before its first online visit. Only rooms with cached metadata and threads open automatically; selecting an uncached thread shows a targeted information toast. Room registration and asset availability survive repeated bundled and directly served imports.

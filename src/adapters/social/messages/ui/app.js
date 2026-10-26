@@ -741,7 +741,8 @@ export async function mount(root, { signal } = {}) {
             const roomId = item.getAttribute("data-room-id");
             if (!roomId) return;
             roomState.queueTypingUpdate(false);
-            roomState.setSelectedRoomId(roomId);
+            await roomState.openRoom(roomId);
+            if (String(roomState.getSelectedRoomId()) !== roomId) return;
             roomsList
                 .querySelectorAll(".messages-room--active")
                 .forEach((activeItem) =>
@@ -753,7 +754,6 @@ export async function mount(root, { signal } = {}) {
                 "",
                 `/messages/${encodeURIComponent(roomId)}`,
             );
-            await roomState.openRoom(roomId);
             await roomState.refreshTypingIndicator();
             roomState.startTypingPolling();
             roomState.startLiveRefreshPolling();

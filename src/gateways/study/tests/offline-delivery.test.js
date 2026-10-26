@@ -1,3 +1,4 @@
+import { createFavouriteFixture } from "./reuse/favourites-fixture.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -47,23 +48,12 @@ test("drawing records queue the original attempt and replay through the owned cl
 
 test("favourite changes remain visible across offline remounts and replay in order", async () => {
     const requests = [];
-    const fixture = createOfflineClientFixture(async (path, options = {}) => {
+    const fixture = createFavouriteFixture(async (path, options = {}) => {
         if (options.method === "PUT") requests.push(JSON.parse(options.body));
         return { ok: true, json: async () => ({ data: [] }) };
     });
-    const toasts = [];
-    const client = loadTestModule(
-        new URL("../ui/reuse/favourites.js", import.meta.url),
-        {
-            ...fixture.imports,
-            "/static/reuse/escape-html.js": { escapeHtml: String },
-            "/static/reuse/toast.js": {
-                showToast: (message) => toasts.push(message),
-            },
-        },
-        fixture.globals,
-    );
-    client.registerFavouriteDelivery(fixture.ctx);
+    const toasts = fixture.notices;
+    const client = fixture.loadView();
     const favourites = await client.loadFavourites();
     let handler;
     const root = {
@@ -79,7 +69,10 @@ test("favourite changes remain visible across offline remounts and replay in ord
         disabled: false,
     };
     await handler({ target: { closest: () => button }, stopPropagation() {} });
-    assert.equal((await client.loadFavourites()).has("deck", "deck"), true);
+    assert.equal(
+        (await fixture.loadView().loadFavourites()).has("deck", "deck"),
+        true,
+    );
     assert.equal(requests.length, 0);
     assert.equal(toasts[0], "ui.reuse.offline_changes_queued");
     fixture.reconnect();
@@ -90,4 +83,24 @@ test("favourite changes remain visible across offline remounts and replay in ord
         favourite: true,
     });
     fixture.controller.abort();
+});
+
+test("an offline first visit can favourite cached content without a favourites snapshot", async (context) => {
+    const fixture = createFavouriteFixture(() =>
+        assert.fail("no offline HTTP request"),
+    );
+    context.after(() => fixture.controller.abort());
+    fixture.disconnect();
+    const first = await fixture.loadView().loadFavourites();
+    assert.equal(first.has("library", "card"), false);
+    await fixture.ctx.capabilities
+        .get("study:favourites")
+        .toggle({ kind: "library", id: "card", favourite: true });
+    const second = await fixture.loadView().loadFavourites();
+    assert.equal(second.has("library", "card"), true);
+    fixture.changeAccount("another-account");
+    assert.equal(second.has("library", "card"), false);
+    const next = await fixture.loadView().loadFavourites();
+    assert.equal(next.has("library", "card"), false);
+    assert.equal(fixture.notices.length, 0);
 });
