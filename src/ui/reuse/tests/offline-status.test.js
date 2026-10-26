@@ -9,6 +9,8 @@ let offline = false;
 let recovered = false;
 let enabled = true;
 let refreshes = 0;
+let rechecks = 0;
+let finishRecheck;
 const window = new EventTarget();
 const root = { querySelector: () => header };
 let current;
@@ -35,13 +37,15 @@ function element() {
             if (!this.innerHTML.includes(name)) return null;
             if (!buttons.has(name))
                 buttons.set(name, {
-                    addEventListener: (_type, listener) =>
-                        buttons.set(name, listener),
+                    addEventListener: (_type, listener) => {
+                        buttons.get(name).listener = listener;
+                    },
                 });
             return buttons.get(name);
         },
         click(name) {
-            buttons.get(name)();
+            const button = buttons.get(name);
+            return button.listener({ currentTarget: button });
         },
     };
 }
@@ -49,7 +53,21 @@ const { mountOfflineStatus } = loadTestModule(
     new URL("../offline-status.js", import.meta.url),
     {
         "./ui-ctx.js": { uiCtx },
+        "./button-loading.js": {
+            beginButtonLoading: (button) => {
+                button.disabled = true;
+                return () => {
+                    button.disabled = false;
+                };
+            },
+        },
         "./offline-state.js": {
+            recheckConnectivity: () => {
+                rechecks++;
+                return new Promise((resolve) => {
+                    finishRecheck = resolve;
+                });
+            },
             isOffline: () => offline,
             offlineEnabled: () => enabled,
             hasRecoveredConnection: () => recovered,
@@ -72,6 +90,7 @@ const i18n = {
             "ui.reuse.offline_mode_active": "You are in offline mode",
             "ui.reuse.offline_connection_restored": "Connection restored",
             "ui.reuse.refresh": "Refresh",
+            "ui.reuse.recheck_connectivity": "Recheck Connectivity",
             "ui.reuse.offline_page_unavailable":
                 "This page is not available offline",
         })[key],
@@ -83,7 +102,11 @@ test("one persistent header status survives remounts, offers styled guarded refr
     offline = true;
     window.dispatchEvent(new Event("cognis:connectivity-changed"));
     assert.match(current.innerHTML, /You are in offline mode/);
-    assert.equal((current.innerHTML.match(/<button/g) ?? []).length, 0);
+    assert.equal((current.innerHTML.match(/<button/g) ?? []).length, 1);
+    assert.match(
+        current.innerHTML,
+        /btn-neutral btn-animated.*data-offline-recheck/,
+    );
     assert.equal(liveNotices.size, 1);
     const previous = current;
     mountOfflineStatus(root, { i18n, signal: controller.signal });
@@ -128,4 +151,33 @@ test("the single header notice includes unavailable-page detail until recovery",
     assert.equal(liveNotices.size, 0);
     dispose();
     enabled = true;
+});
+
+test("manual recheck participates in its registered flow, stays busy across redraw and permits retry", async () => {
+    offline = true;
+    recovered = false;
+    const dispose = mountOfflineStatus(root, { i18n });
+    const checking = current.click("data-offline-recheck");
+    await new Promise(setImmediate);
+    assert.equal(rechecks, 1);
+    window.dispatchEvent(new Event("storage"));
+    assert.match(
+        current.innerHTML,
+        /button-loading.*data-offline-recheck disabled aria-busy="true"/,
+    );
+    await current.click("data-offline-recheck");
+    assert.equal(rechecks, 1);
+    finishRecheck(false);
+    await checking;
+    assert.doesNotMatch(current.innerHTML, /button-loading/);
+    const retry = current.click("data-offline-recheck");
+    await new Promise(setImmediate);
+    assert.equal(rechecks, 2);
+    offline = false;
+    recovered = true;
+    finishRecheck(true);
+    await retry;
+    assert.match(current.innerHTML, /data-offline-refresh/);
+    assert.doesNotMatch(current.innerHTML, /data-offline-recheck/);
+    dispose();
 });

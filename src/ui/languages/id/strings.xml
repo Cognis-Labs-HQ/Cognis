@@ -630,4 +630,5 @@
   <string name="ui.reuse.authentication_provider">Penyedia Autentikasi</string>
   <string name="ui.reuse.offline_mode_active">Anda sedang dalam mode offline</string>
   <string name="ui.reuse.offline_connection_restored">Koneksi ke server telah pulih. Muat ulang saat Anda siap.</string>
+  <string name="ui.reuse.recheck_connectivity">Periksa Ulang Koneksi</string>
 </resources>

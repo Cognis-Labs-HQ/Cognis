@@ -159,3 +159,29 @@ test("failed previous-page recovery arms automatic guarded refresh after server 
     resume();
     assert.equal(state.reloads(), 1);
 });
+
+test("manual recheck bypasses the fifteen-minute timer and coalesces checks before authorized recovery", async () => {
+    const state = fixture();
+    let recoveries = 0;
+    state.window.addEventListener("cognis:connection-restoring", (event) => {
+        event.detail.waitUntil(
+            Promise.resolve().then(() => {
+                recoveries++;
+            }),
+        );
+    });
+    state.module.setOffline(true);
+    assert.equal(await state.module.recheckConnectivity(), false);
+    assert.equal(state.module.isOffline(), true);
+    assert.equal(recoveries, 0);
+    state.recover();
+    const results = await Promise.all([
+        state.module.recheckConnectivity(),
+        state.module.recheckConnectivity(),
+    ]);
+    assert.deepEqual(results, [true, true]);
+    assert.equal(state.probes(), 2);
+    assert.equal(recoveries, 1);
+    assert.equal(state.module.isOffline(), false);
+    assert.equal(state.reloads(), 0);
+});

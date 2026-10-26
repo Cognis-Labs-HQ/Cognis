@@ -126,6 +126,12 @@ Nach erfolgreicher Passwort- oder TFA-Anmeldung ersetzt die vorhandene SPA-Navig
 
 Die Übertragung beginnt erst nach erfolgreicher Sitzungsautorisierung und erforderlicher Zustimmung im Hintergrund. Eine separate Browsersperre serialisiert die Übertragung zwischen Tabs; kurze Speichersperren schützen Schnappschüsse und Bestätigungen, ohne auf Netzwerkantworten zu warten. Lesen und neue gepufferte Änderungen bleiben während langsamer Übertragungen möglich. Bestätigungen lesen den Speicher erneut, damit gleichzeitige Änderungen erhalten bleiben. Leere Warteschlangen werden bei der Authentifizierung nicht neu geschrieben; nicht authentifizierte Seiten warnen nicht vor dem Puffer eines anderen Kontos.
 
+## Offline-Prüfung und Warnungen
+
+Der Offline-Hinweis bietet Verbindung erneut prüfen mit gemeinsamen Schaltflächenstilen und Ladeanzeige. Die Aktion ruft sofort `/api/v1/system/healthcheck` auf, bündelt gleichzeitige Prüfungen, autorisiert bei erreichbarem Server die Sitzung erneut und versucht die Übertragung der Warteschlange. Erforderliche Zustimmung bleibt Voraussetzung. Bei Fehlern bleibt der Offline-Modus ohne Fehlerdialog aktiv. Automatische Prüfungen bleiben auf einmal je fünfzehn Minuten begrenzt; die ausdrückliche Aktion darf früher prüfen. Nach Wiederherstellung bleibt Aktualisieren verfügbar.
+
+Hintergrundanalysen bleiben gespeichert, lösen aber keine Schließwarnung aus. Anbieter wählen `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; Benutzeränderungen bleiben standardmäßig geschützt. Jeder neue Datensatz speichert die Einstufung, damit Anbieterfreigabe und Neuladen Telemetrie nicht zu einer ungespeicherten Änderung machen. Ältere Einträge nutzen die Erklärung aktiver Anbieter; unbekannte Anbieter bleiben geschützt. Die automatische Zeitzonenerkennung nutzt `saveUiPreferences(patch, { bufferOffline: false })`; der gebundene HTTP-Client lehnt dies offline ab, statt es zu puffern. Ausdrückliche Einstellungen, Nachrichten und Kalenderänderungen werden weiterhin gepuffert und geschützt.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

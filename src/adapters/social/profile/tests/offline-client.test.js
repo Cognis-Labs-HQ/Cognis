@@ -127,3 +127,39 @@ test("account changes during media preparation cannot queue a previous account's
     assert.equal(fixture.values.size, 0);
     fixture.controller.abort();
 });
+
+test("automatic preference writes can require connectivity without buffering or reordering explicit user edits", async () => {
+    const calls = [];
+    const fixture = createOfflineClientFixture(async (path, options = {}) => {
+        calls.push({ path, options });
+        return Response.json({ data: {} });
+    });
+    const client = loadTestModule(
+        new URL("../ui/offline-client.js", import.meta.url),
+        fixture.imports,
+        fixture.globals,
+    );
+    client.registerProfileOfflineClient(fixture.ctx);
+    const path = "/api/v1/social/users/learner/preferences/ui-preferences";
+    const write = {
+        method: "PUT",
+        body: JSON.stringify({ layout: { detectedTimezone: "UTC" } }),
+        bufferOffline: false,
+    };
+    await client.profileFetch(path, write);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].options.bufferOffline, undefined);
+    fixture.disconnect();
+    await assert.rejects(
+        client.profileFetch(path, write),
+        /offline_operation_unavailable/,
+    );
+    assert.equal(fixture.outbox.hasBufferedChanges(), false);
+    assert.equal(calls.length, 1);
+    await client.profileFetch(path, {
+        method: "PUT",
+        body: JSON.stringify({ layout: { timezone: "UTC" } }),
+    });
+    assert.equal(fixture.outbox.hasBufferedChanges(), true);
+    fixture.controller.abort();
+});

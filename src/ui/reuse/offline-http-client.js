@@ -71,6 +71,13 @@ export function registerOfflineHttpClient(
                 new Headers(options.headers).has("authorization")
             )
                 return request(path, options);
+            if (options.bufferOffline === false) {
+                if (isOffline())
+                    throw new Error("offline_operation_unavailable");
+                const { bufferOffline: _bufferOffline, ...onlineOptions } =
+                    options;
+                return request(path, onlineOptions);
+            }
             const pending = () => outbox.pending(owner);
             if (method === "GET") {
                 const payload = await read(path, async () => {

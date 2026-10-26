@@ -1,9 +1,11 @@
 import { uiCtx } from "./ui-ctx.js";
+import { beginButtonLoading } from "./button-loading.js";
 import {
     isOffline,
     offlineEnabled,
     hasRecoveredConnection,
     refreshAfterOffline,
+    recheckConnectivity,
 } from "./offline-state.js";
 import { renderInPageCallout } from "./in-page-callout.js";
 import { escapeHtml } from "./escape-html.js";
@@ -28,6 +30,17 @@ if (!uiCtx.flowExists(refreshFlow)) {
     );
 }
 
+const recheckFlow = "offline:recheckConnectivity";
+if (!uiCtx.flowExists(recheckFlow)) {
+    uiCtx.registerFlow(recheckFlow, ["check"]);
+    uiCtx.extendFlow(
+        recheckFlow,
+        "check",
+        { id: "ui:recheckConnectivity" },
+        () => recheckConnectivity(),
+    );
+}
+
 /** Mount one host-header notice using the shared callout and guarded navigation. */
 export function mountOfflineStatus(
     root,
@@ -39,6 +52,7 @@ export function mountOfflineStatus(
     if (!header) return;
     const controller = new AbortController();
     let notice;
+    let checking = false;
     const render = () => {
         const mode = !offlineEnabled()
             ? ""
@@ -66,8 +80,32 @@ export function mountOfflineStatus(
             footerHtml:
                 mode === "recovered"
                     ? `<div class="in-page-callout__actions"><button type="button" class="btn-confirm btn-animated" data-offline-refresh>${escapeHtml(i18n.t("ui.reuse.refresh"))}</button></div>`
-                    : "",
+                    : `<div class="in-page-callout__actions"><button type="button" class="btn-neutral btn-animated${checking ? " button-loading" : ""}" data-offline-recheck${checking ? ' disabled aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.reuse.recheck_connectivity"))}</button></div>`,
         });
+        notice.querySelector("[data-offline-recheck]")?.addEventListener(
+            "click",
+            async (event) => {
+                if (checking || controller.signal.aborted) return;
+                checking = true;
+                const finish = beginButtonLoading(event.currentTarget);
+                try {
+                    await uiCtx.runFlow(recheckFlow, {});
+                } catch (error) {
+                    console.info(
+                        "[offline] connectivity recheck could not finish",
+                        {
+                            operation: "recheckConnectivity",
+                            errorName: error?.name,
+                        },
+                    );
+                } finally {
+                    finish();
+                    checking = false;
+                    render();
+                }
+            },
+            { signal: controller.signal },
+        );
         notice.querySelector("[data-offline-refresh]")?.addEventListener(
             "click",
             () => {

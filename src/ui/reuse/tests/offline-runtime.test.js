@@ -212,3 +212,43 @@ test("an unauthenticated login page does not warn about a previous account's buf
     );
     controller.abort();
 });
+
+test("connectivity recovery reauthorizes and attempts queued delivery, while consent still blocks replay", async () => {
+    const state = fixture({ browser: true });
+    const outbox = state.uiCtx.capabilities.get("offline:outbox");
+    const controller = new AbortController();
+    let sent = 0;
+    outbox.register(
+        "messages",
+        async () => {
+            sent++;
+        },
+        controller.signal,
+    );
+    await outbox.submit("messages", "message", { ciphertext: "encrypted" });
+    state.uiCtx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "auth:recheck" },
+        () => ({ authenticated: true }),
+    );
+    const recover = async () => {
+        const tasks = [];
+        state.window.dispatchEvent(
+            new CustomEvent("cognis:connection-restoring", {
+                detail: { waitUntil: (task) => tasks.push(task) },
+            }),
+        );
+        await Promise.all(tasks);
+    };
+    state.reconnect();
+    state.consent(false);
+    await recover();
+    assert.equal(sent, 0);
+    assert.equal(outbox.hasBufferedChanges(), true);
+    state.consent(true);
+    await recover();
+    assert.equal(sent, 1);
+    assert.equal(outbox.hasBufferedChanges(), false);
+    controller.abort();
+});

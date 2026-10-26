@@ -46,7 +46,9 @@ export function createOfflineOutbox({
                     typeof row.id !== "string" ||
                     !row.payload ||
                     typeof row.payload !== "object" ||
-                    !Number.isFinite(row.createdAt),
+                    !Number.isFinite(row.createdAt) ||
+                    (row.protectOnClose !== undefined &&
+                        typeof row.protectOnClose !== "boolean"),
             )
         )
             throw new Error("invalid_offline_outbox");
@@ -156,15 +158,16 @@ export function createOfflineOutbox({
         return flushing;
     }
     return {
-        register(owner, send, signal) {
+        register(owner, send, signal, { protectOnClose = true } = {}) {
             if (
                 !/^[a-zA-Z][a-zA-Z0-9:.]{0,100}$/.test(owner) ||
                 handlers.has(owner) ||
-                typeof send !== "function"
+                typeof send !== "function" ||
+                typeof protectOnClose !== "boolean"
             )
                 throw new Error("invalid_offline_handler");
             signal.throwIfAborted();
-            const registration = { send, signal };
+            const registration = { send, signal, protectOnClose };
             handlers.set(owner, registration);
             const dispose = () => {
                 if (handlers.get(owner) === registration)
@@ -209,6 +212,7 @@ export function createOfflineOutbox({
                         payload: structuredClone(payload),
                         account: actor.account,
                         createdAt: now(),
+                        protectOnClose: handlers.get(owner).protectOnClose,
                     });
                 write(rows);
             });
@@ -224,7 +228,13 @@ export function createOfflineOutbox({
             const actor = identity();
             if (!actor.account || !actor.session) return false;
             try {
-                return read().some((row) => row.account === identity().account);
+                return read().some(
+                    (row) =>
+                        row.account === actor.account &&
+                        (row.protectOnClose ??
+                            handlers.get(row.owner)?.protectOnClose ??
+                            true),
+                );
             } catch (error) {
                 log("error", "Pending activity could not be checked.", {
                     component: "ui",

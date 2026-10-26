@@ -226,3 +226,56 @@ test("separate delivery locks prevent two tabs from replaying the same queued ac
     );
     assert.equal(first.hasBufferedChanges(), false);
 });
+
+test("background records replay without arming the close warning, including after provider disposal or reload", async () => {
+    const state = fixture();
+    const first = state.create();
+    const controller = new AbortController();
+    first.register("telemetry", async () => {}, controller.signal, {
+        protectOnClose: false,
+    });
+    await first.submit("telemetry", "navigation", { action: "navigate" });
+    assert.equal(first.hasBufferedChanges(), false);
+    assert.equal((await first.pending("telemetry")).length, 1);
+    controller.abort();
+    assert.equal(first.hasBufferedChanges(), false);
+    const next = state.create();
+    let delivered = 0;
+    next.register(
+        "telemetry",
+        async () => {
+            delivered++;
+        },
+        new AbortController().signal,
+        { protectOnClose: false },
+    );
+    register(next, async () => {}, "messages");
+    await next.submit("messages", "message", { ciphertext: "encrypted" });
+    assert.equal(next.hasBufferedChanges(), true);
+    state.reconnect();
+    assert.equal((await next.flush()).sent, 2);
+    assert.equal(delivered, 1);
+    assert.equal(next.hasBufferedChanges(), false);
+});
+
+test("registered background owners classify existing records without weakening unknown user-data owners", async () => {
+    const state = fixture();
+    state.values.set(
+        "cognis_offline_outbox",
+        JSON.stringify([
+            {
+                account: "learner",
+                owner: "telemetry",
+                id: "legacy",
+                payload: {},
+                createdAt: 1_000_000,
+            },
+        ]),
+    );
+    const outbox = state.create();
+    assert.equal(outbox.hasBufferedChanges(), true);
+    outbox.register("telemetry", async () => {}, new AbortController().signal, {
+        protectOnClose: false,
+    });
+    assert.equal(outbox.hasBufferedChanges(), false);
+});

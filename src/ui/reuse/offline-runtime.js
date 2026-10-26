@@ -202,6 +202,7 @@ export function registerOfflineRuntime(ctx) {
                     force: true,
                 });
                 await ctx.runFlow("authenticate-session", {});
+                await ctx.runFlow("offline:flush", {});
             })(),
         ),
     );
@@ -211,11 +212,24 @@ export function registerOfflineRuntime(ctx) {
         event.returnValue = "";
     });
     window.addEventListener("cognis:offline-buffer-changed", () => {
-        if (outbox.hasBufferedChanges()) scheduleRetry();
-        else {
-            clearTimeout(retryTimer);
-            retryTimer = null;
-        }
+        void outbox
+            .hasPending()
+            .then((pending) => {
+                if (pending) scheduleRetry();
+                else {
+                    clearTimeout(retryTimer);
+                    retryTimer = null;
+                }
+            })
+            .catch((error) =>
+                console.error(
+                    "[offline] queued delivery state could not be read",
+                    {
+                        operation: "scheduleOutbox",
+                        errorName: error?.name,
+                    },
+                ),
+            );
     });
     let blocker;
     let dismissBlocker;

@@ -47,7 +47,7 @@ export async function loadUiPreferences() {
     }
 }
 
-export async function saveUiPreferences(patch) {
+export async function saveUiPreferences(patch, { bufferOffline = true } = {}) {
     const account = localStorage.getItem("cognis_account");
     if (!account || !hasPreferenceApiContext()) return;
     const assertAccount = captureAccountGuard();
@@ -58,6 +58,7 @@ export async function saveUiPreferences(patch) {
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
+            bufferOffline,
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ layout: merged }),
         },

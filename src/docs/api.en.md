@@ -192,3 +192,9 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 ## Login and queued delivery
 
 Outbox replay starts in the background only after successful session authorization and required consent. A separate browser delivery lock serializes replay across tabs; short storage locks protect snapshots and acknowledgements without waiting for network delivery. Reads and new queued writes remain usable during a slow replay, and acknowledgements re-read storage so concurrent writes survive. Empty queues are not rewritten during authentication; unauthenticated pages do not warn about another account’s buffer.
+
+## Offline checks and warnings
+
+The Offline Mode banner offers Recheck Connectivity with shared button styling and a busy state. It immediately calls `/api/v1/system/healthcheck`, coalesces simultaneous checks, then reauthorizes the session and attempts queued delivery when the server is reachable. Required consent still gates replay. Failure keeps Offline Mode active without an error popup. Automatic checks remain limited to once every fifteen minutes; this explicit action can run sooner. Refresh remains available after recovery.
+
+Background analytics stays queued but does not arm the browser close warning. Owners opt out with `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; the default remains true for user changes, and each new record stores its classification so provider disposal or reload cannot turn telemetry into an unsaved edit. Older records use an active owner’s declaration, with unknown owners protected. Automatic detected-timezone synchronization uses `saveUiPreferences(patch, { bufferOffline: false })`; the scoped HTTP client rejects that operation offline instead of queueing it. Explicit preference changes, messages and Calendar edits still buffer and warn.

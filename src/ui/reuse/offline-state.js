@@ -195,6 +195,67 @@ if (
 }
 
 let recoveryTimer;
+
+/** Probe immediately and reuse the authorized recovery path, coalescing simultaneous checks. */
+export function recheckConnectivity() {
+    if (state.recoveryCheck) return state.recoveryCheck;
+    state.recoveryCheck = restoreConnection().finally(() => {
+        state.recoveryCheck = null;
+    });
+    return state.recoveryCheck;
+}
+
+async function restoreConnection() {
+    let reachable = false;
+    try {
+        const response = await fetch("/api/v1/system/healthcheck", {
+            cache: "no-store",
+            signal: AbortSignal.timeout(4000),
+        });
+        if (response.ok) {
+            reachable = true;
+            clearTimeout(recoveryTimer);
+            recoveryTimer = null;
+            setOffline(false);
+            const tasks = [];
+            window.dispatchEvent(
+                new CustomEvent("cognis:connection-restoring", {
+                    detail: { waitUntil: (task) => tasks.push(task) },
+                }),
+            );
+            await Promise.all(tasks);
+            void offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES").catch(
+                (error) => {
+                    console.error(
+                        "[offline] recovery cache maintenance failed",
+                        {
+                            operation: "refreshAfterRecovery",
+                            code: error?.message,
+                        },
+                    );
+                },
+            );
+            window.dispatchEvent(new CustomEvent("cognis:connection-restored"));
+            if (state.autoRefresh) refreshAfterOffline();
+            return true;
+        }
+    } catch (error) {
+        if (reachable) {
+            console.error("[offline] session recovery failed", {
+                operation: "restoreSession",
+                errorName: error?.name,
+            });
+            return false;
+        }
+        console.info("[offline] server still unavailable", {
+            operation: "recoveryProbe",
+        });
+    }
+    setOffline(true);
+    scheduleRecovery();
+    return false;
+}
+
 function scheduleRecovery() {
     if (
         recoveryTimer ||
@@ -203,53 +264,6 @@ function scheduleRecovery() {
         return;
     recoveryTimer = setTimeout(async () => {
         recoveryTimer = null;
-        if (!isOffline()) return;
-        let reachable = false;
-        try {
-            const response = await fetch("/api/v1/system/healthcheck", {
-                cache: "no-store",
-                signal: AbortSignal.timeout(4000),
-            });
-            if (response.ok) {
-                reachable = true;
-                setOffline(false);
-                const tasks = [];
-                window.dispatchEvent(
-                    new CustomEvent("cognis:connection-restoring", {
-                        detail: { waitUntil: (task) => tasks.push(task) },
-                    }),
-                );
-                await Promise.all(tasks);
-                void offlineWorkerRequest(
-                    "COGNIS_REFRESH_OFFLINE_ROUTES",
-                ).catch((error) => {
-                    console.error(
-                        "[offline] recovery cache maintenance failed",
-                        {
-                            operation: "refreshAfterRecovery",
-                            code: error?.message,
-                        },
-                    );
-                });
-                window.dispatchEvent(
-                    new CustomEvent("cognis:connection-restored"),
-                );
-                if (state.autoRefresh) refreshAfterOffline();
-                return;
-            }
-        } catch (error) {
-            if (reachable) {
-                console.error("[offline] session recovery failed", {
-                    operation: "restoreSession",
-                    errorName: error?.name,
-                });
-                return;
-            }
-            setOffline(true);
-            console.info("[offline] server still unavailable", {
-                operation: "recoveryProbe",
-            });
-        }
-        scheduleRecovery();
+        if (isOffline()) await recheckConnectivity();
     }, 15 * 60_000);
 }

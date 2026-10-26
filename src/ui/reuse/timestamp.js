@@ -248,7 +248,10 @@ export async function syncTimezoneOnLogin(username) {
         applyTimezoneToLocalStorage(null, detected);
 
         if (prefs?.detectedTimezone !== detected) {
-            await saveUiPreferences({ detectedTimezone: detected });
+            await saveUiPreferences(
+                { detectedTimezone: detected },
+                { bufferOffline: false },
+            );
         }
     } catch {
         assertAccount();

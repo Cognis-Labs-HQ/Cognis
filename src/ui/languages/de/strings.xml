@@ -630,4 +630,5 @@
   <string name="ui.reuse.authentication_provider">Authentifizierungsanbieter</string>
   <string name="ui.reuse.offline_mode_active">Du bist im Offline-Modus</string>
   <string name="ui.reuse.offline_connection_restored">Die Verbindung zum Server wurde wiederhergestellt. Aktualisiere die Seite, wenn du bereit bist.</string>
+  <string name="ui.reuse.recheck_connectivity">Verbindung erneut prüfen</string>
 </resources>

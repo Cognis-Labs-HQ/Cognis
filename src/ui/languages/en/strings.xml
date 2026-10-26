@@ -630,4 +630,5 @@
   <string name="ui.reuse.authentication_provider">Authentication Provider</string>
   <string name="ui.reuse.offline_mode_active">You are in offline mode</string>
   <string name="ui.reuse.offline_connection_restored">Connection to the server is restored. Refresh when you are ready.</string>
+  <string name="ui.reuse.recheck_connectivity">Recheck Connectivity</string>
 </resources>

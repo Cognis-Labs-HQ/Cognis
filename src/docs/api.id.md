@@ -63,3 +63,9 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 ## Login dan pengiriman tertunda
 
 Pengiriman ulang dimulai di latar belakang hanya setelah otorisasi sesi dan persetujuan wajib berhasil. Kunci pengiriman browser terpisah mengurutkan pengiriman antar-tab; kunci penyimpanan singkat melindungi snapshot dan konfirmasi tanpa menunggu jaringan. Pembacaan dan perubahan tertunda baru tetap berjalan selama pengiriman lambat. Konfirmasi membaca ulang penyimpanan agar perubahan bersamaan tetap tersimpan. Antrean kosong tidak ditulis ulang saat autentikasi; halaman tanpa autentikasi tidak memperingatkan tentang buffer akun lain.
+
+## Pemeriksaan dan peringatan
+
+Tombol Periksa Ulang Koneksi pada banner Mode Luring segera memanggil `/api/v1/system/healthcheck`, menggabungkan pemeriksaan bersamaan, lalu mengotorisasi ulang sesi dan mencoba mengirim antrean jika server terjangkau. Persetujuan wajib tetap diperlukan. Kegagalan mempertahankan Mode Luring tanpa popup kesalahan. Tombol memakai gaya bersama dan indikator sibuk; Muat Ulang tersedia setelah pemulihan. Pemeriksaan otomatis tetap sekali setiap lima belas menit, sedangkan tindakan eksplisit dapat dilakukan lebih awal.
+
+Analitik latar belakang tetap diantrekan tetapi tidak mengaktifkan peringatan penutupan. Pemilik memilih `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; nilai bawaan tetap melindungi perubahan pengguna. Rekaman baru menyimpan klasifikasinya agar pelepasan penyedia dan muat ulang tidak menganggap telemetri sebagai edit. Rekaman lama memakai deklarasi pemilik aktif; pemilik tak dikenal tetap dilindungi. Sinkronisasi zona waktu otomatis memakai `saveUiPreferences(patch, { bufferOffline: false })`; klien HTTP berskop menolaknya saat luring alih-alih mengantrekannya. Pengaturan eksplisit, pesan, dan edit Kalender tetap diantrekan dan memicu peringatan.
