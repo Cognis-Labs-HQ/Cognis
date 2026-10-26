@@ -1,5 +1,5 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v12";
+const CACHE_VERSION = "v13";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const CONTROL_CACHE_NAME = `${CACHE_NAME}-control`;
@@ -289,7 +289,7 @@ self.addEventListener("message", (event) => {
     );
 });
 
-async function assetResponse(request, moduleAsset) {
+async function assetResponse(request, moduleAsset, event) {
     if (!(await offlineEnabled())) return fetch(request);
     const generation = catalogGeneration;
     if (request.headers?.has("authorization")) return fetch(request);
@@ -322,12 +322,14 @@ async function assetResponse(request, moduleAsset) {
                     response.headers.get("x-cognis-module-revision") ===
                         parameters.get("revision")))
         )
-            await cache.put(cacheKey, response.clone()).catch((error) => {
-                console.error(
-                    "[cognis-sw] public asset cache write failed",
-                    error,
-                );
-            });
+            event.waitUntil(
+                cache.put(cacheKey, response.clone()).catch((error) => {
+                    console.error(
+                        "[cognis-sw] public asset cache write failed",
+                        error,
+                    );
+                }),
+            );
         return response;
     } catch (error) {
         if (request.signal?.aborted) throw error;
@@ -376,7 +378,7 @@ self.addEventListener("fetch", (event) => {
                     ),
                 );
                 if (!allowed) return fetch(request, { cache: "no-store" });
-                return assetResponse(request, true);
+                return assetResponse(request, true, event);
             })(),
         );
         return;
@@ -386,6 +388,6 @@ self.addEventListener("fetch", (event) => {
         url.pathname.startsWith("/assets/") ||
         url.pathname === "/manifest.webmanifest"
     ) {
-        event.respondWith(assetResponse(request, false));
+        event.respondWith(assetResponse(request, false, event));
     }
 });

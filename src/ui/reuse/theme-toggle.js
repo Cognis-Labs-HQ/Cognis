@@ -10,6 +10,8 @@
  *   import { bindThemeToggle } from '../reuse/theme-toggle.js';
  *   bindThemeToggle({ onThemeChange: async (mode) => savePrefs({ mode }) });
  */
+import { ensurePersistentStylesheet } from "./page-styles.js";
+
 const THEME_KEY = "cognis_theme";
 const TOGGLE_HANDLER_KEY = "__cognisThemeToggleHandler";
 const TOGGLE_OPTIONS_KEY = "__cognisThemeToggleOptions";
@@ -38,6 +40,14 @@ export function getStoredTheme() {
 }
 
 export function applyTheme(mode) {
+    void ensurePersistentStylesheet("/static/styles/fonts.css").catch(
+        (error) => {
+            console.info("[theme] optional fonts unavailable", {
+                operation: "loadFonts",
+                errorName: error?.name,
+            });
+        },
+    );
     const normalized = mode === "light" ? "light" : "dark";
     document.body.setAttribute("data-theme", normalized);
 

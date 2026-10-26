@@ -12,6 +12,7 @@ function workerFixture() {
     let routes = [];
     let offlineGuards = [];
     let assetMaintenance = Promise.resolve();
+    let assetWrites = Promise.resolve();
     const origin = "https://cognis.test";
     const key = (request) =>
         new URL(typeof request === "string" ? request : request.url, origin)
@@ -25,6 +26,7 @@ function workerFixture() {
                     return store.get(key(request))?.clone();
                 },
                 async put(request, response) {
+                    if (!name.endsWith("-control")) await assetWrites;
                     store.set(key(request), response.clone());
                 },
                 async delete(request) {
@@ -120,6 +122,13 @@ function workerFixture() {
             });
             return release;
         },
+        pauseAssetWrites() {
+            let release;
+            assetWrites = new Promise((resolve) => {
+                release = resolve;
+            });
+            return release;
+        },
         beginMessage(type, options = {}) {
             const tasks = [];
             let reply;
@@ -141,8 +150,9 @@ function workerFixture() {
             await pending.finished;
             return pending.response;
         },
-        request(path, mode) {
+        beginRequest(path, mode) {
             let response;
+            const tasks = [];
             handlers.get("fetch")({
                 request: {
                     url: new URL(path, origin).href,
@@ -152,8 +162,22 @@ function workerFixture() {
                 respondWith(promise) {
                     response = promise;
                 },
+                waitUntil: (promise) => tasks.push(promise),
             });
-            return response;
+            return {
+                response,
+                async finished() {
+                    await response;
+                    for (const task of tasks) await task;
+                },
+            };
+        },
+        request(path, mode) {
+            const pending = this.beginRequest(path, mode);
+            return pending.response?.then(async (response) => {
+                await pending.finished();
+                return response;
+            });
         },
     };
 }
@@ -326,4 +350,35 @@ test("public static assets warmed with a build query are available through their
         ).text(),
         "public asset",
     );
+});
+
+test("cold scripts and styles reach the page without waiting for asset cache writes", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const release = fixture.pauseAssetWrites();
+    const assets = ["/assets/cold-ABCDEFGH.js", "/assets/style-ABCDEFGH.css"];
+    const pending = assets.map((path) => fixture.beginRequest(path));
+    try {
+        const responses = await Promise.all(
+            pending.map((request) => request.response),
+        );
+        assert.deepEqual(
+            await Promise.all(responses.map((response) => response.text())),
+            ["public asset", "public asset"],
+        );
+        assert.equal(
+            (await fixture.message("COGNIS_OFFLINE_ACCESS", { allowed: true }))
+                .result,
+            null,
+        );
+    } finally {
+        release();
+        await Promise.all(pending.map((request) => request.finished()));
+    }
+    fixture.unavailable = true;
+    for (const asset of assets)
+        assert.equal(
+            await (await fixture.request(asset)).text(),
+            "public asset",
+        );
 });

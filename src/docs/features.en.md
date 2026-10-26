@@ -124,3 +124,7 @@ Offline Mode and Broadcast now use one sticky stack at the very top of the docum
 ## Empty offline Study pages
 
 Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Direct Loads and Styles
+
+Direct loads and refreshes retain their route styles while offline assets prepare. Host and component builds preserve stylesheet source identity, and logical and emitted URLs share ownership. Asset responses no longer wait for background cache writes; failures are logged and do not delay delivery. Web fonts load separately from the theme, so an unavailable font server cannot block the page or loading wheel. The selected font still applies when available, with the existing browser fallback while it loads.

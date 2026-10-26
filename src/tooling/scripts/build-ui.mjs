@@ -1,4 +1,5 @@
 import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
+import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -177,17 +178,7 @@ await writeFile(
 for (const htmlPath of (await walk(path.join(outputRoot, "public"))).filter(
     (filePath) => filePath.endsWith(".html"),
 )) {
-    let html = await readFile(htmlPath, "utf8");
-    for (const [sourceUrl, emittedUrl] of Object.entries(manifest)) {
-        if (sourceUrl.endsWith(".css")) {
-            html = html.replaceAll(
-                `href="${sourceUrl}"`,
-                `href="${emittedUrl}" data-page-stylesheet-source="${sourceUrl}"`,
-            );
-        } else {
-            html = html.replaceAll(sourceUrl, emittedUrl);
-        }
-    }
+    const html = rewriteHtmlAssets(await readFile(htmlPath, "utf8"), manifest);
     await writeFile(htmlPath, html);
 }
 if (manifest["/static/app/offline/index.js"]) {

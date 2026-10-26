@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build } from "esbuild";
+import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
 
 async function walk(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
@@ -94,10 +95,10 @@ const uiManifest = JSON.parse(
 for (const htmlPath of (await walk(path.join(outputRoot, "src"))).filter(
     (filePath) => filePath.endsWith(".html"),
 )) {
-    let html = await readFile(htmlPath, "utf8");
-    for (const [sourceUrl, emittedUrl] of Object.entries(uiManifest)) {
-        html = html.replaceAll(sourceUrl, emittedUrl);
-    }
+    const html = rewriteHtmlAssets(
+        await readFile(htmlPath, "utf8"),
+        uiManifest,
+    );
     await writeFile(htmlPath, html);
 }
 for (const packagePath of (await walk(path.join(outputRoot, "src"))).filter(
