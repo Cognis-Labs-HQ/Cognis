@@ -183,3 +183,4 @@ Provider lifecycle failures now record the failing script path without query dat
 - [dde15f4](https://github.com/Cognis-Labs-HQ/Cognis/commit/dde15f4c898abb129a31228e0894272f0366f811)
 - [f6b4ede](https://github.com/Cognis-Labs-HQ/Cognis/commit/f6b4ede722b7a14cfe67f2eb758670bc28071fb3)
 - [341087c](https://github.com/Cognis-Labs-HQ/Cognis/commit/341087c11a97fa9cfdd578beffa9761cffcbf9db)
+- [d203bf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d203bf0cdc967809fc9adb9aad37b373d3c1620d)
