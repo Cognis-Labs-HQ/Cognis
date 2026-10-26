@@ -149,3 +149,4 @@ Background analytics stays queued but does not arm the browser close warning. Ow
 - [9cfab80](https://github.com/Cognis-Labs-HQ/Cognis/commit/9cfab806b213cc6b48525e22ddd6b7fee8677ed4)
 - [da5a324](https://github.com/Cognis-Labs-HQ/Cognis/commit/da5a324b48014feab2905dfc8a69a2cab4dd3599)
 - [d895d67](https://github.com/Cognis-Labs-HQ/Cognis/commit/d895d67d17cdc3888f665a5ea06395fe746d2e2b)
+- [b90e0cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/b90e0cda258130cc9b30db1f8c388385cdce4e1b)
