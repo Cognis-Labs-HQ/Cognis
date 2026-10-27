@@ -2,6 +2,10 @@
 
 **Feature Branch:** feature-offline-navigation
 
+## Banner Background
+
+Shared top banners retain an opaque, theme-aware background while scrolling. Restored-connection, warning and danger notices use the existing theme colors.
+
 ## Offline Contract
 
 Production builds prepare a neutral recovery shell. License and Error work offline; unavailable route links are disabled and unavailable direct navigation stays quiet. A real server connection failure activates fallback even when the browser reports an active network.

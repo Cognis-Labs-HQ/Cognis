@@ -2,6 +2,10 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Latar Banner
+
+Banner bersama di bagian atas mempertahankan latar buram yang mengikuti tema saat menggulir. Pemberitahuan koneksi pulih, peringatan, dan bahaya menggunakan warna tema yang tersedia.
+
 ## Kontrak Offline
 
 Build produksi menyiapkan halaman pemulihan netral. Lisensi dan halaman Kesalahan berfungsi offline; tautan rute yang tidak tersedia dinonaktifkan dan navigasi langsung yang tidak tersedia tidak menampilkan kesalahan. Kegagalan koneksi server mengaktifkan pengganti meskipun browser melaporkan jaringan aktif.

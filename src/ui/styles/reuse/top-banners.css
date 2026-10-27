@@ -2,6 +2,7 @@
     position: sticky;
     top: 0;
     z-index: 1250;
+    background: rgb(from var(--surface-2) r g b / 1);
 }
 
 .top-banner {
@@ -52,11 +53,23 @@
 }
 
 .top-banner--success {
-    background: color-mix(in srgb, var(--success) 14%, var(--surface-2));
+    background: color-mix(
+        in srgb,
+        var(--color-success-outline-text) 14%,
+        var(--surface-2)
+    );
 }
 .top-banner--warning {
-    background: color-mix(in srgb, var(--warning) 14%, var(--surface-2));
+    background: color-mix(
+        in srgb,
+        var(--color-warning-outline-text) 14%,
+        var(--surface-2)
+    );
 }
 .top-banner--danger {
-    background: color-mix(in srgb, var(--danger) 14%, var(--surface-2));
+    background: color-mix(
+        in srgb,
+        var(--color-danger-outline-text) 14%,
+        var(--surface-2)
+    );
 }

@@ -2,6 +2,10 @@
 
 **Feature-Zweig:** feature-offline-navigation
 
+## Bannerhintergrund
+
+Gemeinsame obere Banner behalten beim Scrollen einen undurchsichtigen, an das Design angepassten Hintergrund. Hinweise zu wiederhergestellter Verbindung, Warnungen und Gefahren verwenden die vorhandenen Designfarben.
+
 ## Offline-Vertrag
 
 Produktions-Builds bereiten eine neutrale Wiederherstellungsseite vor. Lizenz und Fehlerseite funktionieren offline; nicht verfügbare Routenlinks werden deaktiviert und nicht verfügbare direkte Aufrufe bleiben ohne Fehlermeldung. Ein tatsächlicher Server-Verbindungsfehler aktiviert den Ersatzbetrieb auch bei einer vom Browser gemeldeten Netzwerkverbindung.
