@@ -249,6 +249,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/notify/email-client.js",
+        providesCapabilities: ["notify:emailClient"],
+    });
     ctx.uiRegistry?.registerSettingsSection({
         id: "notifications",
         label: "Notifications",

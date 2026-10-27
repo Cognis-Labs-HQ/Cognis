@@ -2,6 +2,22 @@
 
 **Feature Branch:** feature-offline-navigation
 
+## Configurable Top Banners
+
+The `ui:broadcast.publish` descriptor accepts a CSS `background` color or gradient and a boolean `collapsible` flag, which defaults to false. Invalid descriptor types and declaration-breaking background values are rejected. A collapsible banner shrinks to a 2px patterned strip while scrolling down, expands while scrolling up and remains keyboard-focusable; hover or keyboard focus reveals its content and actions. The stack reserves its expanded document space to prevent scroll-anchor jumps, and its visible height offsets the sticky header and sidebar. Non-collapsible banners remain fully visible. Removing the last banner releases observers, scroll listeners and layout offsets. Offline Mode uses an orange-and-white warning pattern and opts into collapse; recovery keeps the guarded Refresh action.
+
+## Offline Personal Settings
+
+Verified sign-in prepares the account’s email list and trusted-domain policy without opening Settings. Email additions, removals and primary-address changes are projected locally and queued through `notify:emailClient` and the protected `notify.emails` outbox owner. Server validation remains authoritative. Email verification, resend and account lifecycle actions require connectivity; no codes, watch tokens or passwords enter the queue. Queued additions remain unverified until online verification. Successful delivery refreshes the email snapshot; optional refresh failure cannot turn a persisted write into a failed action. These bounded private snapshots remain tab/session-scoped.
+
+## Prepared Flashcards
+
+Flashcards prepares every visible deck in enrolled learning or teaching languages, with two workers and no 80-deck cutoff. The dedicated cache is bounded to 64 MB and 10,001 reads so the gallery and ordinary deck collections fit together; larger collections remain subject to that limit. Non-enrolled languages are excluded. The shared schema catalog prepares even without enrollment, and missing optional Library collections do not prevent a prepared deck from entering practice.
+
+## Offline Orbitron
+
+Orbitron is bundled from Google Fonts as a 400–900 variable font under the SIL Open Font License in `src/ui/styles/fonts/OFL.txt`. Its stylesheet and font file enter the public worker preparation set before an offline transition. Cached public assets are used first online and offline; the existing coalesced background revalidation keeps mutable assets current. Orbitron does not depend on a Google request at runtime. Other optional Google fonts load separately and cannot delay the local font.
+
 ## Banner Background
 
 Shared top banners retain an opaque, theme-aware background while scrolling. Restored-connection, warning and danger notices use the existing theme colors.

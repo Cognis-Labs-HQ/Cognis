@@ -23,7 +23,7 @@
     border-bottom-right-radius: 9px;
     overflow: visible;
     position: sticky;
-    top: 0;
+    top: var(--site-top-banner-height, 0px);
     z-index: 1200;
 }
 .global-topbar {

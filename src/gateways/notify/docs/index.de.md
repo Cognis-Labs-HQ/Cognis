@@ -63,3 +63,7 @@ SMTP-Verifizierung gilt für SSO-Konten und lokale Konten. Erneutes Senden verwe
 ## Gemeinsame obere Hinweise
 
 Offline-Modus und Broadcast verwenden einen gemeinsamen fixierten Stapel ganz oben im Dokument über dem App-Kopf. Offline-Modus hat Vorrang, ist nicht schließbar und behält Verbindungsprüfung und Aktualisieren nach Wiederherstellung. Das Entfernen einer Ankündigung entfernt Offline-Modus nicht. Broadcast überspringt Netzwerkanfragen ohne Verbindung; sein Anbieter entfernt beim Beenden Leiste und Timer.
+
+## Persönliche Offline-Optionen
+
+Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdiger Domains ohne Besuch der Einstellungen vor. Hinzufügen, Entfernen und Auswahl der primären Adresse werden lokal dargestellt und über `notify:emailClient` sowie den geschützten Warteschlangeneigentümer `notify.emails` gespeichert. Die Serverprüfung bleibt maßgeblich. E-Mail-Verifizierung, erneutes Senden und Kontolöschung oder -deaktivierung benötigen eine Verbindung; Codes, Beobachtungstoken und Passwörter gelangen nicht in die Warteschlange. Neue Adressen bleiben bis zur Online-Verifizierung unbestätigt. Erfolgreiche Zustellung aktualisiert den E-Mail-Schnappschuss; optionale Aktualisierungsfehler machen gespeicherte Änderungen nicht nachträglich zu Fehlern. Die begrenzten privaten Schnappschüsse sind an Tab und Sitzung gebunden.

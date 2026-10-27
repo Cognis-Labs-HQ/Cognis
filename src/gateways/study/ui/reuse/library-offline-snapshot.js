@@ -18,7 +18,6 @@ export function registerEnrolledLibrarySnapshots(ctx, actions) {
                     ...(prefs.teachingLanguages ?? []),
                 ]),
             ];
-            if (!codes.length) return;
             const access = await read("fetchLibraryLocations");
             await Promise.all([
                 read("fetchLibrarySchemas"),

@@ -84,7 +84,7 @@ Queued card reviews retain their successful result even if optional activity rec
 
 ## Enrolled Offline Workspace
 
-Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache.
+Flashcards prepares every visible deck in enrolled learning or teaching languages, with two workers and no 80-deck cutoff. The dedicated cache is bounded to 64 MB and 10,001 reads so the gallery and ordinary deck collections fit together; larger collections remain subject to that limit. Non-enrolled languages are excluded. The shared schema catalog prepares even without enrollment, and missing optional Library collections do not prevent a prepared deck from entering practice.
 
 ## Offline Study Practice
 

@@ -7,6 +7,7 @@ export function renderTopBanner({
     bodyHtml = "",
     actionsHtml = "",
     variant = "info",
+    background,
 }) {
     const variants = {
         info: "top-banner--info",
@@ -16,21 +17,77 @@ export function renderTopBanner({
     };
     if (!Object.hasOwn(variants, variant))
         throw new TypeError("invalid_banner_variant");
-    return `<section class="top-banner ${variants[variant]}" role="status" aria-live="polite"><div class="top-banner-content"><strong class="top-banner-title">${escapeHtml(title)}</strong>${bodyHtml ? `<div class="top-banner-message">${bodyHtml}</div>` : ""}</div>${actionsHtml ? `<div class="top-banner-actions">${actionsHtml}</div>` : ""}</section>`;
+    if (
+        background !== undefined &&
+        (typeof background !== "string" ||
+            !background.trim() ||
+            /[;{}]/.test(background))
+    )
+        throw new TypeError("invalid_banner_background");
+    return `<section ${background ? `style="--top-banner-background:${escapeHtml(background)}" ` : ""}class="top-banner ${variants[variant]}" role="status" aria-live="polite"><div class="top-banner-content"><strong class="top-banner-title">${escapeHtml(title)}</strong>${bodyHtml ? `<div class="top-banner-message">${bodyHtml}</div>` : ""}</div>${actionsHtml ? `<div class="top-banner-actions">${actionsHtml}</div>` : ""}</section>`;
 }
 
 export function createTopBanners() {
     const entries = new Map();
     let container;
+    let observer;
+    let scrollScope;
+    let collapsed = false;
+    let previousScroll = 0;
+    const updateLayout = () => {
+        if (!entries.size) return;
+        let expanded = 0;
+        let visible = 0;
+        for (const entry of entries.values()) {
+            const height = entry.element.getBoundingClientRect().height;
+            if (height > 2 || !entry.collapsible) entry.expandedHeight = height;
+            expanded += entry.expandedHeight ?? height;
+            visible += height;
+        }
+        if (container) container.style.height = `${expanded}px`;
+        document.documentElement.style.setProperty(
+            "--site-top-banner-height",
+            `${visible}px`,
+        );
+    };
+    const onScroll = () => {
+        const scroll = window.scrollY;
+        if (scroll > previousScroll) collapsed = true;
+        else if (scroll < previousScroll || scroll === 0) collapsed = false;
+        previousScroll = scroll;
+        for (const entry of entries.values())
+            entry.element.dataset.collapsed = String(
+                collapsed && entry.collapsible,
+            );
+        updateLayout();
+    };
     const render = () => {
         if (!entries.size) {
             container?.remove();
             container = null;
+            observer?.disconnect();
+            observer = null;
+            scrollScope?.abort();
+            scrollScope = null;
+            document.documentElement.style.removeProperty(
+                "--site-top-banner-height",
+            );
             return;
         }
         if (!container?.isConnected) {
             container = document.createElement("div");
             container.id = "site-top-banners";
+            scrollScope = new AbortController();
+            previousScroll = window.scrollY;
+            collapsed = false;
+            window.addEventListener("scroll", onScroll, {
+                passive: true,
+                signal: scrollScope.signal,
+            });
+            window.addEventListener("resize", updateLayout, {
+                signal: scrollScope.signal,
+            });
+            observer = new ResizeObserver(updateLayout);
         }
         document.body.prepend(container);
         container.replaceChildren(
@@ -38,6 +95,8 @@ export function createTopBanners() {
                 .sort((left, right) => left.priority - right.priority)
                 .map(({ element }) => element),
         );
+        for (const entry of entries.values()) observer.observe(entry.element);
+        updateLayout();
     };
     let stylesPromise;
     const prepare = () =>
@@ -54,23 +113,51 @@ export function createTopBanners() {
     return {
         prepare,
         publish(id, descriptor, { priority = 0, signal } = {}) {
+            if (
+                descriptor.collapsible !== undefined &&
+                typeof descriptor.collapsible !== "boolean"
+            )
+                throw new TypeError("invalid_banner_collapsible");
+            if (
+                descriptor.background !== undefined &&
+                typeof CSS !== "undefined" &&
+                !CSS.supports("background", descriptor.background)
+            )
+                throw new TypeError("invalid_banner_background");
             const element = document.createElement("div");
             element.dataset.broadcast = id;
             element.innerHTML = renderTopBanner(descriptor);
+            element.dataset.collapsible = String(
+                descriptor.collapsible === true,
+            );
+            element.dataset.collapsed = String(
+                collapsed && descriptor.collapsible === true,
+            );
+            if (descriptor.collapsible) {
+                element.tabIndex = 0;
+                element.setAttribute("aria-label", descriptor.title);
+            }
             if (!id || !element || !Number.isFinite(priority))
                 throw new TypeError("invalid_top_banner");
             signal?.throwIfAborted();
-            const entry = { element, priority };
+            const previous = entries.get(id);
+            if (previous) observer?.unobserve(previous.element);
+            const entry = {
+                element,
+                priority,
+                collapsible: descriptor.collapsible === true,
+            };
             entries.set(id, entry);
             render();
             const dispose = () => {
                 signal?.removeEventListener("abort", dispose);
                 if (entries.get(id) !== entry) return;
+                observer?.unobserve(element);
                 entries.delete(id);
                 render();
             };
             signal?.addEventListener("abort", dispose, { once: true });
-            void prepare();
+            void prepare().then(updateLayout);
             return { element, remove: dispose };
         },
     };

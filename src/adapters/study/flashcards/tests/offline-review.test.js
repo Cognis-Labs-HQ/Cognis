@@ -61,7 +61,7 @@ test("reviews queue idempotent attempts while offline content edits remain unava
     fixture.controller.abort();
 });
 
-test("enrolled decks and card details prepare after verified sign-in without opening Flashcards", async (context) => {
+test("all visible decks and card details prepare after verified sign-in without opening Flashcards", async (context) => {
     const requests = [];
     const fixture = createOfflineClientFixture(async (path) => {
         requests.push(path);
@@ -93,6 +93,7 @@ test("enrolled decks and card details prepare after verified sign-in without ope
         await new Promise((resolve) => setImmediate(resolve));
     assert.equal(read.has("/ja"), true);
     assert.equal(requests.includes("/api/v1/study/decks/fr"), false);
+    assert.equal(read.has(""), true);
     fixture.disconnect();
     assert.equal(
         (await client.fetchStudyDeck("ja")).cards[0].entry.label,
@@ -103,4 +104,39 @@ test("enrolled decks and card details prepare after verified sign-in without ope
         client.fetchStudyDeck("ja"),
         /offline_read_unavailable/,
     );
+});
+
+test("preparation keeps the gallery and more than eighty visible decks in enrolled languages", async (context) => {
+    const decks = Array.from({ length: 125 }, (_, index) => ({
+        id: String(index),
+        language: "ja",
+    }));
+    const fixture = createOfflineClientFixture(async (path) =>
+        Response.json({
+            data: path.endsWith("/decks")
+                ? decks
+                : {
+                      deck: decks.find((deck) => path.endsWith("/" + deck.id)),
+                      cards: [],
+                      schemas: [],
+                  },
+        }),
+    );
+    context.after(() => fixture.controller.abort());
+    const client = loadClient(fixture, { learningLanguages: ["ja"] });
+    await client.mountProvider(fixture.ctx);
+    fixture.ctx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "test:allDecks" },
+        () => ({ authenticated: true }),
+    );
+    await fixture.ctx.runFlow("authenticate-session", {});
+    const read = fixture.ctx.capabilities.get("study:decks:offlineRead");
+    for (let i = 0; i < 100 && !read.has("/124"); i++)
+        await new Promise((resolve) => setImmediate(resolve));
+    fixture.disconnect();
+    assert.equal((await client.fetchStudyDecks()).length, 125);
+    for (const deck of decks)
+        assert.equal((await client.fetchStudyDeck(deck.id)).deck.id, deck.id);
 });

@@ -84,7 +84,7 @@ Ulasan kartu dalam antrean mempertahankan hasil berhasil meskipun pencatatan akt
 
 ## Ruang Kerja Luring
 
-Flashcards menyiapkan daftar dan hingga 80 dek yang sesuai beserta detail kartu dalam batas cache yang ada.
+Flashcards menyiapkan setiap dek yang terlihat dalam bahasa belajar atau mengajar yang diikuti, menggunakan dua worker tanpa batas 80 dek. Cache khusus dibatasi 64 MB dan 10.001 pembacaan agar galeri dan koleksi dek biasa dapat disimpan bersama; koleksi lebih besar tetap tunduk pada batas tersebut. Bahasa yang tidak diikuti dikecualikan. Katalog skema bersama disiapkan meskipun belum mengikuti bahasa, dan koleksi Library opsional yang tidak tersedia tidak menghalangi latihan dek yang telah disiapkan.
 
 ## Latihan Study Luring
 

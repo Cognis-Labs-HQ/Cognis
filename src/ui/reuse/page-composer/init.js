@@ -784,7 +784,7 @@ export function createPageComposer(
                         // 24px accounts for the workspace's top margin gap.
                         toolbarEl.style.setProperty(
                             "--toolbar-max-height",
-                            `calc(100dvh - ${headerHeight}px - ${footerHeight}px - 24px)`,
+                            `calc(100dvh - ${headerHeight}px - ${footerHeight}px - var(--site-top-banner-height, 0px) - 24px)`,
                         );
                     }
                     syncToolbarPosition();

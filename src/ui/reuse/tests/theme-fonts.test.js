@@ -34,5 +34,8 @@ test("theme application completes while optional web fonts remain pending", () =
     applyTheme("light");
     assert.equal(attributes.get("data-theme"), "light");
     assert.deepEqual(events, ["cognis:themechange"]);
-    assert.deepEqual(requested, ["/static/styles/fonts.css"]);
+    assert.deepEqual(requested, [
+        "/static/styles/fonts.css",
+        "/static/styles/optional-fonts.css",
+    ]);
 });

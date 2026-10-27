@@ -288,7 +288,9 @@ code {
 }
 .main-window--with-toolbar .toolbar--scrollable {
     position: sticky;
-    top: var(--toolbar-sticky-top, 0px);
+    top: calc(
+        var(--toolbar-sticky-top, 0px) + var(--site-top-banner-height, 0px)
+    );
     max-height: var(--toolbar-max-height, 80dvh);
     overflow-y: auto;
     align-self: start;

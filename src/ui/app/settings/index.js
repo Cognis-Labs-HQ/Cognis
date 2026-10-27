@@ -168,6 +168,16 @@ export async function mount(root, { signal } = {}) {
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.settings");
     const refreshOnlineControls = bindOnlineSettingsControls(root, signal);
+    const reportGeneralFailure = (error) => {
+        if (signal?.aborted) return;
+        console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+            operation: "loadEmailSettings",
+            errorName: error.name,
+        });
+        showToast(i18n.t("ui.app.settings.emails_add_failed"), {
+            variant: "error",
+        });
+    };
 
     applyTimezoneToLocalStorage(
         loadedPrefs?.timezone ?? null,
@@ -394,14 +404,16 @@ export async function mount(root, { signal } = {}) {
                     const account =
                         localStorage.getItem("cognis_account") ?? "";
                     refreshOnlineControls();
-                    if (!isOffline() && !generalPrefs) {
+                    if (!generalPrefs) {
                         generalPrefs = initGeneralPrefs(root, {
                             i18n,
                             username: account,
+                            onRender: refreshOnlineControls,
+                            signal,
                         });
-                        generalPrefs.init();
-                    } else if (!isOffline()) {
-                        generalPrefs.refresh();
+                        void generalPrefs.init().catch(reportGeneralFailure);
+                    } else {
+                        void generalPrefs.refresh().catch(reportGeneralFailure);
                     }
                     if (!releaseNotesPrefs) {
                         releaseNotesPrefs = initReleaseChangelogPrefs(root, {

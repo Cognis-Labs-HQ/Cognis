@@ -16,10 +16,24 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
             element.isConnected = true;
         },
     };
+    const window = new EventTarget();
+    window.scrollY = 0;
+    const offsets = new Map();
     const document = {
+        documentElement: {
+            style: {
+                setProperty: (key, value) => offsets.set(key, value),
+                removeProperty: (key) => offsets.delete(key),
+            },
+        },
         body,
         createElement: () => ({
             dataset: {},
+            style: {},
+            setAttribute() {},
+            getBoundingClientRect() {
+                return { height: this.dataset.collapsed === "true" ? 2 : 40 };
+            },
             isConnected: false,
             replaceChildren(...children) {
                 this.children = children;
@@ -30,7 +44,7 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
             },
         }),
     };
-    const { createTopBanners } = loadTestModule(
+    const { createTopBanners, renderTopBanner } = loadTestModule(
         new URL("../top-banners.js", import.meta.url),
         {
             "./escape-html.js": { escapeHtml },
@@ -38,9 +52,39 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
                 ensurePersistentStylesheet: async (path) => styles.add(path),
             },
         },
-        { document, console },
+        {
+            document,
+            console,
+            window,
+            AbortController,
+            ResizeObserver: class {
+                observe() {}
+                unobserve() {}
+                disconnect() {}
+            },
+        },
     );
     const caller = createTopBanners();
+    assert.throws(
+        () =>
+            caller.publish("invalid", { title: "Notice", collapsible: "yes" }),
+        /invalid_banner_collapsible/,
+    );
+    assert.throws(
+        () =>
+            renderTopBanner({
+                title: "Notice",
+                background: "red;display:none",
+            }),
+        /invalid_banner_background/,
+    );
+    assert.match(
+        renderTopBanner({
+            title: "<unsafe>",
+            background: "linear-gradient(orange, white)",
+        }),
+        /&lt;unsafe&gt;/,
+    );
     const notice = caller.publish("notify.broadcast", {
         title: "Announcement",
         bodyHtml: "<p>News</p>",
@@ -48,7 +92,12 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     const scope = new AbortController();
     const offline = caller.publish(
         "ui.offline",
-        { title: "Offline", actionsHtml: "<button>Recheck</button>" },
+        {
+            title: "Offline",
+            collapsible: true,
+            background: "repeating-linear-gradient(135deg, orange, white 20px)",
+            actionsHtml: "<button>Recheck</button>",
+        },
         { priority: -100, signal: scope.signal },
     );
     assert.equal(body.children[1], page);
@@ -56,6 +105,16 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
         offline.element,
         notice.element,
     ]);
+    window.scrollY = 200;
+    window.dispatchEvent(new Event("scroll"));
+    assert.equal(offline.element.dataset.collapsed, "true");
+    assert.equal(notice.element.dataset.collapsed, "false");
+    assert.equal(offsets.get("--site-top-banner-height"), "42px");
+    window.scrollY = 100;
+    window.dispatchEvent(new Event("scroll"));
+    assert.equal(offline.element.dataset.collapsed, "false");
+    assert.equal(offsets.get("--site-top-banner-height"), "80px");
+    assert.match(offline.element.innerHTML, /repeating-linear-gradient/);
     const replacement = caller.publish(
         "ui.offline",
         { title: "Recovered", variant: "success" },
@@ -70,5 +129,9 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     assert.deepEqual(body.children[0].children, [replacement.element]);
     replacement.remove();
     assert.deepEqual(body.children, [page]);
+    assert.equal(offsets.has("--site-top-banner-height"), false);
+    window.scrollY = 300;
+    window.dispatchEvent(new Event("scroll"));
+    assert.equal(offsets.has("--site-top-banner-height"), false);
     assert.equal(styles.has("/static/styles/reuse/top-banners.css"), true);
 });

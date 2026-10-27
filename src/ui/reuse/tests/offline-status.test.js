@@ -60,6 +60,16 @@ const { mountOfflineStatus } = loadTestModule(
                             ? {
                                   prepare: async () => {},
                                   publish: (_id, descriptor) => {
+                                      current?.remove();
+                                      assert.equal(
+                                          descriptor.collapsible,
+                                          true,
+                                      );
+                                      if (offline)
+                                          assert.match(
+                                              descriptor.background,
+                                              /repeating-linear-gradient/,
+                                          );
                                       const notice = element();
                                       notice.innerHTML =
                                           renderTopBanner(descriptor);

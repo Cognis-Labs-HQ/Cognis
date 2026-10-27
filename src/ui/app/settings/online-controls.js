@@ -1,7 +1,6 @@
 import { isOffline } from "../../reuse/offline-state.js";
 
-const selector =
-    "#email-add-input, #email-add-btn, [data-account-action], [data-resend-verification], [data-set-primary], [data-remove-email]";
+const selector = "[data-account-action],[data-resend-verification]";
 
 /** Keep network-only account actions disabled through connectivity changes. @returns {Function} Apply to a fresh render. */
 export function bindOnlineSettingsControls(root, signal) {

@@ -62,13 +62,20 @@ export function mountOfflineStatus(
               : hasRecoveredConnection()
                 ? "recovered"
                 : "";
-        releaseBanner?.();
-        notice = null;
-        if (!mode || controller.signal.aborted) return;
+        if (!mode || controller.signal.aborted) {
+            releaseBanner?.();
+            notice = null;
+            return;
+        }
         const banner = banners.publish(
             "ui.offline",
             {
-                variant: mode === "offline" ? "info" : "success",
+                variant: mode === "offline" ? "warning" : "success",
+                collapsible: true,
+                background:
+                    mode === "offline"
+                        ? "repeating-linear-gradient(135deg, #f59e0b 0 10px, #fff7ed 10px 20px)"
+                        : undefined,
                 title: i18n.t(
                     mode === "offline"
                         ? "ui.reuse.offline_mode_active"

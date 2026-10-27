@@ -159,7 +159,7 @@ All built public page bundles, dynamic chunks, styles and emitted media are prep
 
 ## Enrolled Offline Workspace
 
-After verified sign-in, Study prepares schemas, readable locations, forms, viewed markers and opted-in lightweight collections for enrolled learning and teaching languages. Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache. Enrollment changes trigger preparation again. Two workers limit concurrent reads; provider disposal, account changes, access denial and cached legal consent remain enforced. Pages need no prior visit; private snapshots remain scoped to the verified tab/session.
+After verified sign-in, Study prepares schemas, readable locations, forms, viewed markers and opted-in lightweight collections for enrolled learning and teaching languages. Flashcards prepares every visible deck in enrolled learning or teaching languages, with two workers and no 80-deck cutoff. The dedicated cache is bounded to 64 MB and 10,001 reads so the gallery and ordinary deck collections fit together; larger collections remain subject to that limit. Non-enrolled languages are excluded. The shared schema catalog prepares even without enrollment, and missing optional Library collections do not prevent a prepared deck from entering practice. Enrollment changes trigger preparation again. Two workers limit concurrent reads; provider disposal, account changes, access denial and cached legal consent remain enforced. Pages need no prior visit; private snapshots remain scoped to the verified tab/session.
 
 Offline Profile access requires the complete prepared own-profile snapshot: text, posts, connections, preferences and bounded avatar/banner images. Other users’ profiles are blocked even if previously cached. Administration, Modules, Users and Shares remain unavailable offline. Settings opens its local core controls; saved font, theme, language, timezone and display preferences apply locally and queue for server delivery. Email verification, account actions and contributed settings requiring a server remain unavailable offline.
 
@@ -172,3 +172,19 @@ The host exposes `ui:languageCatalog.load` through ctx and prepares the shared l
 Library management and its edit/search/request pages require a connection. The Study hub and submenu hide those links offline, including immediately after disconnection; Explore remains available for cached browsing and drawing. The Library provider declares only Explore as an offline session route.
 
 Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.
+
+## Offline Personal Settings
+
+Verified sign-in prepares the account’s email list and trusted-domain policy without opening Settings. Email additions, removals and primary-address changes are projected locally and queued through `notify:emailClient` and the protected `notify.emails` outbox owner. Server validation remains authoritative. Email verification, resend and account lifecycle actions require connectivity; no codes, watch tokens or passwords enter the queue. Queued additions remain unverified until online verification. Successful delivery refreshes the email snapshot; optional refresh failure cannot turn a persisted write into a failed action. These bounded private snapshots remain tab/session-scoped.
+
+## Prepared Flashcards
+
+Flashcards prepares every visible deck in enrolled learning or teaching languages, with two workers and no 80-deck cutoff. The dedicated cache is bounded to 64 MB and 10,001 reads so the gallery and ordinary deck collections fit together; larger collections remain subject to that limit. Non-enrolled languages are excluded. The shared schema catalog prepares even without enrollment, and missing optional Library collections do not prevent a prepared deck from entering practice.
+
+## Offline Orbitron
+
+Orbitron is bundled from Google Fonts as a 400–900 variable font under the SIL Open Font License in `src/ui/styles/fonts/OFL.txt`. Its stylesheet and font file enter the public worker preparation set before an offline transition. Cached public assets are used first online and offline; the existing coalesced background revalidation keeps mutable assets current. Orbitron does not depend on a Google request at runtime. Other optional Google fonts load separately and cannot delay the local font.
+
+## Configurable Top Banners
+
+The `ui:broadcast.publish` descriptor accepts a CSS `background` color or gradient and a boolean `collapsible` flag, which defaults to false. Invalid descriptor types and declaration-breaking background values are rejected. A collapsible banner shrinks to a 2px patterned strip while scrolling down, expands while scrolling up and remains keyboard-focusable; hover or keyboard focus reveals its content and actions. The stack reserves its expanded document space to prevent scroll-anchor jumps, and its visible height offsets the sticky header and sidebar. Non-collapsible banners remain fully visible. Removing the last banner releases observers, scroll listeners and layout offsets. Offline Mode uses an orange-and-white warning pattern and opts into collapse; recovery keeps the guarded Refresh action.

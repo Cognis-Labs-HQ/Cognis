@@ -140,7 +140,6 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
-        signal,
         persistLayoutPreferences: false,
         elements,
         preferenceKey: "license-layout",

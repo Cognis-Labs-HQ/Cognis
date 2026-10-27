@@ -2,6 +2,22 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Banner Atas yang Dapat Diatur
+
+Deskriptor `ui:broadcast.publish` menerima warna atau gradien CSS melalui `background` dan flag boolean `collapsible` dengan nilai awal false. Tipe deskriptor tidak valid dan nilai latar yang merusak deklarasi ditolak. Banner yang dapat dilipat menyusut menjadi garis berpola setinggi 2 px saat menggulir turun, terbuka saat menggulir naik, dan tetap dapat difokuskan dengan papan ketik; sorotan penunjuk atau fokus papan ketik menampilkan isi dan tindakannya. Tumpukan mempertahankan ruang dokumen saat terbuka untuk mencegah lonjakan gulir, sementara tinggi yang terlihat menggeser header dan bilah samping lekat. Banner yang tidak dapat dilipat tetap terlihat penuh. Menghapus banner terakhir melepas observer, pendengar gulir, dan pergeseran tata letak. Mode Luring memakai pola peringatan oranye-putih dan mengaktifkan pelipatan; setelah koneksi pulih, tindakan Muat Ulang tetap terlindungi.
+
+## Pengaturan Pribadi Luring
+
+Proses masuk terverifikasi menyiapkan daftar email akun dan kebijakan domain tepercaya tanpa membuka Pengaturan. Penambahan, penghapusan, serta perubahan alamat utama ditampilkan secara lokal dan diantrekan melalui `notify:emailClient` serta pemilik antrean terlindungi `notify.emails`. Validasi server tetap menentukan hasil akhir. Verifikasi email, pengiriman ulang, dan tindakan siklus hidup akun memerlukan koneksi; kode, token pemantauan, dan kata sandi tidak masuk antrean. Alamat baru tetap belum terverifikasi hingga diverifikasi secara daring. Pengiriman berhasil memperbarui snapshot email; kegagalan penyegaran opsional tidak mengubah penulisan tersimpan menjadi tindakan gagal. Snapshot privat terbatas ini tetap terikat tab dan sesi.
+
+## Kartu Kilas Disiapkan
+
+Flashcards menyiapkan setiap dek yang terlihat dalam bahasa belajar atau mengajar yang diikuti, menggunakan dua worker tanpa batas 80 dek. Cache khusus dibatasi 64 MB dan 10.001 pembacaan agar galeri dan koleksi dek biasa dapat disimpan bersama; koleksi lebih besar tetap tunduk pada batas tersebut. Bahasa yang tidak diikuti dikecualikan. Katalog skema bersama disiapkan meskipun belum mengikuti bahasa, dan koleksi Library opsional yang tidak tersedia tidak menghalangi latihan dek yang telah disiapkan.
+
+## Orbitron Luring
+
+Orbitron disertakan dari Google Fonts sebagai font variabel berbobot 400–900 dengan SIL Open Font License di `src/ui/styles/fonts/OFL.txt`. Stylesheet dan berkas font masuk ke persiapan worker publik sebelum beralih luring. Aset publik tersimpan digunakan terlebih dahulu saat daring maupun luring; validasi ulang latar yang digabungkan menjaga aset yang dapat berubah tetap mutakhir. Orbitron tidak bergantung pada permintaan Google saat aplikasi berjalan. Font Google opsional lainnya dimuat terpisah sehingga tidak menunda font lokal.
+
 ## Latar Banner
 
 Banner bersama di bagian atas mempertahankan latar buram yang mengikuti tema saat menggulir. Pemberitahuan koneksi pulih, peringatan, dan bahaya menggunakan warna tema yang tersedia.

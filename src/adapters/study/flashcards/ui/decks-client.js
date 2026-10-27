@@ -1,6 +1,6 @@
-import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { fetchStudyPreferences } from "/static/gateways/study/navigation-client.js";
 import { deckMatchesLanguage } from "./app/language.js";
+import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { loadDeckTemplates } from "./app/markup.js";
@@ -16,7 +16,11 @@ import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 export async function mountProvider(ctx) {
-    const read = createOfflineReadCache({ signal: ctx.signal });
+    const read = createOfflineReadCache({
+        signal: ctx.signal,
+        maxEntries: 10_001,
+        maxBytes: 64_000_000,
+    });
     const outbox = ctx.capabilities.get("offline:outbox");
     if (!outbox) throw new Error("offline_delivery_unavailable");
     outbox.register(
@@ -32,23 +36,24 @@ export async function mountProvider(ctx) {
     );
     ctx.capabilities.contribute("study:decks:offlineRead", read);
     bindOfflineSnapshotRefresh(ctx, {
-        id: "flashcards:prepareEnrolledDecks",
+        id: "flashcards:prepareVisibleDecks",
         events: ["cognis:study-enrollment-changed"],
         refresh: async () => {
             const assertAccount = captureAccountGuard();
-            const prefs = await fetchStudyPreferences({ signal: ctx.signal });
-            const codes = [
-                ...new Set([
-                    ...(prefs.learningLanguages ?? []),
-                    ...(prefs.teachingLanguages ?? []),
-                ]),
-            ];
-            if (!codes.length) return;
-            const decks = (await request("", "GET", undefined, ctx.signal))
-                .filter((deck) =>
-                    codes.some((code) => deckMatchesLanguage(deck, code)),
-                )
-                .slice(0, 80);
+            const preferences = await fetchStudyPreferences({
+                signal: ctx.signal,
+            });
+            const languages = new Set([
+                ...(preferences.learningLanguages ?? []),
+                ...(preferences.teachingLanguages ?? []),
+            ]);
+            const decks = (
+                await request("", "GET", undefined, ctx.signal)
+            ).filter((deck) =>
+                [...languages].some((language) =>
+                    deckMatchesLanguage(deck, language),
+                ),
+            );
             let next = 0;
             await Promise.all(
                 Array.from({ length: Math.min(2, decks.length) }, async () => {

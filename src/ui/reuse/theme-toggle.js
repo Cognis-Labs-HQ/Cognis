@@ -40,14 +40,15 @@ export function getStoredTheme() {
 }
 
 export function applyTheme(mode) {
-    void ensurePersistentStylesheet("/static/styles/fonts.css").catch(
-        (error) => {
-            console.info("[theme] optional fonts unavailable", {
-                operation: "loadFonts",
-                errorName: error?.name,
-            });
-        },
-    );
+    void Promise.all([
+        ensurePersistentStylesheet("/static/styles/fonts.css"),
+        ensurePersistentStylesheet("/static/styles/optional-fonts.css"),
+    ]).catch((error) => {
+        console.info("[theme] optional fonts unavailable", {
+            operation: "loadFonts",
+            errorName: error?.name,
+        });
+    });
     const normalized = mode === "light" ? "light" : "dark";
     document.body.setAttribute("data-theme", normalized);
 

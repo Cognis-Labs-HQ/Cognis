@@ -1,12 +1,14 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
+import {
+    emailRequest,
+    emailTrustedDomains,
+} from "/static/gateways/notify/email-client.js";
+import { isOffline } from "../../reuse/offline-state.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
 import { showToast } from "../../reuse/toast.js";
-import {
-    loadTrustedDomains,
-    matchesTrustedDomain,
-} from "../../reuse/trusted-domains.js";
+import { matchesTrustedDomain } from "../../reuse/trusted-domains.js";
 
 /**
  * General preferences sub-module for the Settings page.
@@ -22,27 +24,31 @@ import {
  *   initGeneralPrefs(root, options) — initialises email management in the given root element.
  *
  * Usage:
- *   const generalPrefs = initGeneralPrefs(root, { i18n, username });
+ *   const generalPrefs = initGeneralPrefs(root, { i18n, username, signal, onRender = () => {} });
  *   await generalPrefs.init();
  *
  * @param {Element} root
  * @param {{ i18n: object, username: string }} options
  * @returns {{ init: () => Promise<void> }}
  */
-export function initGeneralPrefs(root, { i18n, username }) {
+export function initGeneralPrefs(
+    root,
+    { i18n, username, signal, onRender = () => {} },
+) {
     let emails = [];
 
     async function loadEmails() {
-        const res = await apiFetch(
+        const res = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
         if (!res.ok) return;
         const payload = await res.json();
+        signal?.throwIfAborted();
         emails = payload.data ?? [];
     }
 
     async function isDomainAllowed(address) {
-        const trustedDomains = await loadTrustedDomains(apiFetch);
+        const trustedDomains = await emailTrustedDomains();
         if (trustedDomains.length === 0) return true;
         const parts = address.split("@");
         if (parts.length !== 2) return false;
@@ -50,7 +56,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     async function addEmail(address) {
-        const res = await apiFetch(
+        const res = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
             {
                 method: "POST",
@@ -66,11 +72,11 @@ export function initGeneralPrefs(root, { i18n, username }) {
         if (res.status === 503) throw new Error("smtp_unavailable");
         if (!res.ok) throw new Error("add_failed");
         const payload = await res.json();
-        return payload.data ?? {};
+        return { ...payload.data, queued: payload.queued === true };
     }
 
     async function removeEmail(address) {
-        const res = await apiFetch(
+        const res = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
             { method: "DELETE" },
         );
@@ -80,17 +86,21 @@ export function initGeneralPrefs(root, { i18n, username }) {
             throw new Error(code);
         }
         if (!res.ok) throw new Error("remove_failed");
+        if ((await res.json()).queued)
+            showToast(i18n.t("ui.reuse.offline_changes_queued"), {
+                variant: "success",
+            });
     }
 
     async function forceRemoveUnverifiedEmail(address) {
-        await apiFetch(
+        await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
             { method: "DELETE" },
         );
     }
 
     async function resendVerification(address) {
-        const res = await apiFetch(
+        const res = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
             { method: "POST" },
         );
@@ -98,14 +108,19 @@ export function initGeneralPrefs(root, { i18n, username }) {
         if (res.status === 503) throw new Error("smtp_unavailable");
         if (!res.ok) throw new Error("resend_failed");
         const payload = await res.json();
-        return payload.data ?? {};
+        return { ...payload.data, queued: payload.queued === true };
     }
 
     async function setPrimaryEmail(address) {
-        await apiFetch(
+        const response = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/primary`,
             { method: "PUT" },
         );
+        if (!response.ok) throw new Error("primary_failed");
+        if ((await response.json()).queued)
+            showToast(i18n.t("ui.reuse.offline_changes_queued"), {
+                variant: "success",
+            });
     }
 
     async function submitAccountLifecycleAction(action, password) {
@@ -119,7 +134,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     async function submitVerificationCode(address, code) {
-        const res = await apiFetch(
+        const res = await emailRequest(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
             {
                 method: "POST",
@@ -136,6 +151,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
         if (!listEl) return;
         if (!emails.length) {
             listEl.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
+            onRender();
             return;
         }
         listEl.innerHTML = emails
@@ -153,6 +169,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                 return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeBtn}</li>`;
             })
             .join("");
+        onRender();
     }
 
     function showStatus(message, variant = "error") {
@@ -221,7 +238,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                         token: watchTokenValue,
                         apiFetch,
                         onConsumed() {
-                            apiFetch(
+                            emailRequest(
                                 `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
                             )
                                 .then((res) => (res.ok ? res.json() : null))
@@ -254,7 +271,18 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     async function checkDomainAndNotify(address) {
-        if (!(await isDomainAllowed(address))) {
+        let allowed;
+        try {
+            allowed = await isDomainAllowed(address);
+        } catch (error) {
+            console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+                operation: "loadEmailDomainPolicy",
+                errorName: error.name,
+            });
+            showStatus(i18n.t("ui.app.settings.emails_add_failed"));
+            return false;
+        }
+        if (!allowed) {
             showToast(i18n.t("ui.app.settings.emails_domain_blocked_body"), {
                 variant: "warning",
             });
@@ -264,15 +292,19 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     function bindEmailAddShortcut() {
-        root.addEventListener("keydown", (evt) => {
-            const target = evt.target;
-            if (!(target instanceof HTMLInputElement)) return;
-            if (target.id !== "email-add-input") return;
-            if (evt.key !== "Enter") return;
+        root.addEventListener(
+            "keydown",
+            (evt) => {
+                const target = evt.target;
+                if (!(target instanceof HTMLInputElement)) return;
+                if (target.id !== "email-add-input") return;
+                if (evt.key !== "Enter") return;
 
-            evt.preventDefault();
-            root.querySelector("#email-add-btn")?.click();
-        });
+                evt.preventDefault();
+                root.querySelector("#email-add-btn")?.click();
+            },
+            { signal },
+        );
     }
 
     async function openDangerActionPopup(action) {
@@ -344,133 +376,162 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     function bindEmailActions() {
-        root.addEventListener("click", async (evt) => {
-            const target = evt.target;
-            if (!(target instanceof HTMLElement)) return;
+        root.addEventListener(
+            "click",
+            async (evt) => {
+                const target = evt.target;
+                if (!(target instanceof HTMLElement)) return;
 
-            const removeAttr = target.dataset.removeEmail;
-            if (removeAttr) {
-                try {
-                    await removeEmail(removeAttr);
-                    await loadEmails();
-                    renderEmailList();
-                } catch (err) {
-                    const code =
-                        err instanceof Error ? err.message : "remove_failed";
-                    if (code === "cannot_remove_primary_email") {
-                        showToast(i18n.t("ui.reuse.remove_primary_body"), {
-                            variant: "warning",
-                        });
-                    } else {
-                        showStatus(i18n.t("ui.reuse.remove_failed"));
-                    }
-                }
-                return;
-            }
-
-            const setPrimaryAttr = target.dataset.setPrimary;
-            if (setPrimaryAttr) {
-                await setPrimaryEmail(setPrimaryAttr);
-                await loadEmails();
-                renderEmailList();
-                return;
-            }
-
-            const resendAttr = target.dataset.resendVerification;
-            if (resendAttr) {
-                const allowed = await checkDomainAndNotify(resendAttr);
-                if (!allowed) return;
-                try {
-                    const result = await resendVerification(resendAttr);
-                    await openVerifyPopup(resendAttr, result.watchToken);
-                    await loadEmails();
-                    renderEmailList();
-                } catch (err) {
-                    const code =
-                        err instanceof Error ? err.message : "resend_failed";
-                    if (code === "rate_limited") {
-                        showStatus(
-                            i18n.t(
-                                "ui.app.settings.emails_verify_rate_limited",
-                            ),
-                        );
-                    } else if (code === "smtp_unavailable") {
-                        showStatus(
-                            i18n.t("ui.app.settings.emails_verify_unavailable"),
-                        );
-                    } else {
-                        showStatus(i18n.t("ui.app.settings.emails_add_failed"));
-                    }
-                }
-                return;
-            }
-
-            const accountAction = target.dataset.accountAction;
-            if (accountAction) {
-                await openDangerActionPopup(accountAction);
-                return;
-            }
-
-            if (target.id === "email-add-btn") {
-                const input = root.querySelector("#email-add-input");
-                if (!(input instanceof HTMLInputElement)) return;
-                const address = input.value.trim().toLowerCase();
-                if (!address) {
-                    showToast(i18n.t("ui.reuse.email_required"), {
-                        variant: "warning",
-                    });
-                    return;
-                }
-                const allowed = await checkDomainAndNotify(address);
-                if (!allowed) return;
-                try {
-                    const result = await addEmail(address);
-                    input.value = "";
-                    await loadEmails();
-                    renderEmailList();
-                    if (result.pendingVerification) {
-                        const action = await openVerifyPopup(
-                            address,
-                            result.watchToken,
-                        );
-                        if (action !== "verified") {
-                            try {
-                                await forceRemoveUnverifiedEmail(address);
-                            } catch {
-                                /* ignore */
-                            }
-                        }
+                const removeAttr = target.dataset.removeEmail;
+                if (removeAttr) {
+                    try {
+                        await removeEmail(removeAttr);
                         await loadEmails();
                         renderEmailList();
+                    } catch (err) {
+                        const code =
+                            err instanceof Error
+                                ? err.message
+                                : "remove_failed";
+                        if (code === "cannot_remove_primary_email") {
+                            showToast(i18n.t("ui.reuse.remove_primary_body"), {
+                                variant: "warning",
+                            });
+                        } else {
+                            showStatus(i18n.t("ui.reuse.remove_failed"));
+                        }
                     }
-                } catch (err) {
-                    const code =
-                        err instanceof Error ? err.message : "add_failed";
-                    if (code === "already_verified") {
-                        showStatus(
-                            i18n.t("ui.app.settings.emails_already_verified"),
-                        );
-                    } else if (code === "email_taken") {
-                        showStatus(
-                            i18n.t("ui.app.settings.emails_email_taken"),
-                        );
-                    } else if (code === "rate_limited") {
-                        showStatus(
-                            i18n.t(
-                                "ui.app.settings.emails_verify_rate_limited",
-                            ),
-                        );
-                    } else if (code === "smtp_unavailable") {
-                        showStatus(
-                            i18n.t("ui.app.settings.emails_verify_unavailable"),
-                        );
-                    } else {
+                    return;
+                }
+
+                const setPrimaryAttr = target.dataset.setPrimary;
+                if (setPrimaryAttr) {
+                    try {
+                        await setPrimaryEmail(setPrimaryAttr);
+                        await loadEmails();
+                        renderEmailList();
+                    } catch (error) {
                         showStatus(i18n.t("ui.app.settings.emails_add_failed"));
                     }
+                    return;
                 }
-                return;
-            }
-        });
+
+                const resendAttr = target.dataset.resendVerification;
+                if (isOffline() && (resendAttr || target.dataset.accountAction))
+                    return;
+                if (resendAttr) {
+                    const allowed = await checkDomainAndNotify(resendAttr);
+                    if (!allowed) return;
+                    try {
+                        const result = await resendVerification(resendAttr);
+                        await openVerifyPopup(resendAttr, result.watchToken);
+                        await loadEmails();
+                        renderEmailList();
+                    } catch (err) {
+                        const code =
+                            err instanceof Error
+                                ? err.message
+                                : "resend_failed";
+                        if (code === "rate_limited") {
+                            showStatus(
+                                i18n.t(
+                                    "ui.app.settings.emails_verify_rate_limited",
+                                ),
+                            );
+                        } else if (code === "smtp_unavailable") {
+                            showStatus(
+                                i18n.t(
+                                    "ui.app.settings.emails_verify_unavailable",
+                                ),
+                            );
+                        } else {
+                            showStatus(
+                                i18n.t("ui.app.settings.emails_add_failed"),
+                            );
+                        }
+                    }
+                    return;
+                }
+
+                const accountAction = target.dataset.accountAction;
+                if (accountAction) {
+                    await openDangerActionPopup(accountAction);
+                    return;
+                }
+
+                if (target.id === "email-add-btn") {
+                    const input = root.querySelector("#email-add-input");
+                    if (!(input instanceof HTMLInputElement)) return;
+                    const address = input.value.trim().toLowerCase();
+                    if (!address) {
+                        showToast(i18n.t("ui.reuse.email_required"), {
+                            variant: "warning",
+                        });
+                        return;
+                    }
+                    const allowed = await checkDomainAndNotify(address);
+                    if (!allowed) return;
+                    try {
+                        const result = await addEmail(address);
+                        input.value = "";
+                        await loadEmails();
+                        renderEmailList();
+                        if (result.queued) {
+                            showToast(
+                                i18n.t("ui.reuse.offline_changes_queued"),
+                                { variant: "success" },
+                            );
+                        } else if (result.pendingVerification) {
+                            const action = await openVerifyPopup(
+                                address,
+                                result.watchToken,
+                            );
+                            if (action !== "verified") {
+                                try {
+                                    await forceRemoveUnverifiedEmail(address);
+                                } catch {
+                                    /* ignore */
+                                }
+                            }
+                            await loadEmails();
+                            renderEmailList();
+                        }
+                    } catch (err) {
+                        const code =
+                            err instanceof Error ? err.message : "add_failed";
+                        if (code === "already_verified") {
+                            showStatus(
+                                i18n.t(
+                                    "ui.app.settings.emails_already_verified",
+                                ),
+                            );
+                        } else if (code === "email_taken") {
+                            showStatus(
+                                i18n.t("ui.app.settings.emails_email_taken"),
+                            );
+                        } else if (code === "rate_limited") {
+                            showStatus(
+                                i18n.t(
+                                    "ui.app.settings.emails_verify_rate_limited",
+                                ),
+                            );
+                        } else if (code === "smtp_unavailable") {
+                            showStatus(
+                                i18n.t(
+                                    "ui.app.settings.emails_verify_unavailable",
+                                ),
+                            );
+                        } else {
+                            showStatus(
+                                i18n.t("ui.app.settings.emails_add_failed"),
+                            );
+                        }
+                    }
+                    return;
+                }
+            },
+            { signal },
+        );
     }
 
     return {

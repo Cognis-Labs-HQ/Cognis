@@ -370,15 +370,22 @@ export async function mount(root, { signal: routerSignal } = {}) {
     };
     const loadEntries = async () => {
         if (entries) return;
-        const { readable } = await fetchLibraryLocations();
+        const { readable } = await readStudySnapshot(
+            () => fetchLibraryLocations(),
+            { readable: [] },
+        );
         entries = (
             await Promise.all(
                 readable.flatMap((location) =>
                     schemas.map((schema) =>
-                        fetchLibraryEntries({
-                            ...location,
-                            schemaId: schema.id,
-                        }),
+                        readStudySnapshot(
+                            () =>
+                                fetchLibraryEntries({
+                                    ...location,
+                                    schemaId: schema.id,
+                                }),
+                            [],
+                        ),
                     ),
                 ),
             )

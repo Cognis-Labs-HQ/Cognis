@@ -2,6 +2,22 @@
 
 **Feature-Zweig:** feature-offline-navigation
 
+## Konfigurierbare obere Banner
+
+Der Deskriptor von `ui:broadcast.publish` akzeptiert eine CSS-Hintergrundfarbe oder einen Verlauf über `background` sowie das boolesche Flag `collapsible`, dessen Standardwert false ist. Ungültige Deskriptortypen und Hintergrundwerte, die Deklarationen aufbrechen, werden abgelehnt. Ein einklappbares Banner schrumpft beim Herunterscrollen auf einen gemusterten Streifen von 2 px, öffnet sich beim Hochscrollen und bleibt per Tastatur fokussierbar. Mauszeiger oder Tastaturfokus zeigen Inhalt und Aktionen. Der Stapel reserviert seinen aufgeklappten Platz im Dokument gegen Scrollsprünge; seine sichtbare Höhe verschiebt den fixierten Kopfbereich und die Seitenleiste. Nicht einklappbare Banner bleiben vollständig sichtbar. Beim Entfernen des letzten Banners werden Beobachter, Scrolllistener und Layoutversätze freigegeben. Der Offline-Modus verwendet ein orange-weißes Warnmuster und klappt ein; nach Wiederverbindung bleibt die geschützte Aktualisieren-Aktion erhalten.
+
+## Persönliche Offline-Optionen
+
+Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdiger Domains ohne Besuch der Einstellungen vor. Hinzufügen, Entfernen und Auswahl der primären Adresse werden lokal dargestellt und über `notify:emailClient` sowie den geschützten Warteschlangeneigentümer `notify.emails` gespeichert. Die Serverprüfung bleibt maßgeblich. E-Mail-Verifizierung, erneutes Senden und Kontolöschung oder -deaktivierung benötigen eine Verbindung; Codes, Beobachtungstoken und Passwörter gelangen nicht in die Warteschlange. Neue Adressen bleiben bis zur Online-Verifizierung unbestätigt. Erfolgreiche Zustellung aktualisiert den E-Mail-Schnappschuss; optionale Aktualisierungsfehler machen gespeicherte Änderungen nicht nachträglich zu Fehlern. Die begrenzten privaten Schnappschüsse sind an Tab und Sitzung gebunden.
+
+## Vorbereitete Lernkarten
+
+Flashcards bereitet jeden sichtbaren Stapel eingeschriebener Lern- und Unterrichtssprachen mit zwei Workern und ohne Grenze von 80 Stapeln vor. Der eigene Cache ist auf 64 MB und 10.001 Leseeinträge begrenzt, damit Galerie und übliche Stapelsammlungen zusammen hineinpassen; größere Sammlungen unterliegen weiterhin dieser Grenze. Nicht eingeschriebene Sprachen sind ausgeschlossen. Der gemeinsame Schemakatalog wird auch ohne Einschreibung vorbereitet. Fehlende optionale Library-Sammlungen verhindern nicht den Übungsstart eines vorbereiteten Stapels.
+
+## Orbitron offline
+
+Orbitron wird als variable Schrift mit Gewichten 400–900 von Google Fonts unter der SIL Open Font License in `src/ui/styles/fonts/OFL.txt` mitgeliefert. Stylesheet und Schriftdatei werden vor dem Offline-Wechsel vom öffentlichen Worker vorbereitet. Zwischengespeicherte öffentliche Ressourcen werden online und offline zuerst verwendet; bestehende gebündelte Hintergrundprüfungen aktualisieren veränderliche Ressourcen. Orbitron benötigt zur Laufzeit keine Google-Anfrage. Andere optionale Google-Schriften laden getrennt und verzögern die lokale Schrift nicht.
+
 ## Bannerhintergrund
 
 Gemeinsame obere Banner behalten beim Scrollen einen undurchsichtigen, an das Design angepassten Hintergrund. Hinweise zu wiederhergestellter Verbindung, Warnungen und Gefahren verwenden die vorhandenen Designfarben.

@@ -139,7 +139,7 @@ const result = await build({
     entryNames: "[name]-[hash]",
     chunkNames: "chunks/[name]-[hash]",
     assetNames: "media/[name]-[hash]",
-    loader: { ".png": "file", ".svg": "file", ".webp": "file" },
+    loader: { ".png": "file", ".svg": "file", ".webp": "file", ".ttf": "file" },
     plugins: [
         {
             name: "cognis-static-assets",
@@ -214,6 +214,7 @@ if (manifest["/static/app/offline/index.js"]) {
         includeOfflineOutput(outputPath);
     }
     for (const sourceUrl of [
+        "/static/styles/fonts.css",
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",
         "/static/styles/error.css",

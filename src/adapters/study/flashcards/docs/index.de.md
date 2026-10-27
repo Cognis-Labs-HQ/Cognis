@@ -84,7 +84,7 @@ Vorgemerkte Kartenbewertungen behalten ihr erfolgreiches Ergebnis, auch wenn opt
 
 ## Offline-Arbeitsbereich
 
-Flashcards bereitet seine Liste und bis zu 80 passende Stapel mit Kartendetails innerhalb des bestehenden begrenzten Caches vor.
+Flashcards bereitet jeden sichtbaren Stapel eingeschriebener Lern- und Unterrichtssprachen mit zwei Workern und ohne Grenze von 80 Stapeln vor. Der eigene Cache ist auf 64 MB und 10.001 Leseeinträge begrenzt, damit Galerie und übliche Stapelsammlungen zusammen hineinpassen; größere Sammlungen unterliegen weiterhin dieser Grenze. Nicht eingeschriebene Sprachen sind ausgeschlossen. Der gemeinsame Schemakatalog wird auch ohne Einschreibung vorbereitet. Fehlende optionale Library-Sammlungen verhindern nicht den Übungsstart eines vorbereiteten Stapels.
 
 ## Offline-Übungen
 
