@@ -49,6 +49,7 @@ test("a directly opened Explore card path opens the requested preview without hi
             import.meta.url,
         ),
         {
+            "/static/reuse/offline-state.js": { isOffline: () => false },
             "./navigation-client.js": {
                 fetchStudyPreferences: () => {
                     throw new Error("unexpected_study_preferences_read");

@@ -222,3 +222,4 @@ Library の管理画面と編集・検索・申請ページには接続が必要
 - [1118229](https://github.com/Cognis-Labs-HQ/Cognis/commit/1118229c6cb20351d6cb86282427e0ce3d96058b)
 - [070f1b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/070f1b7bf2e1d6ac2dfb1b58b1f50103adb72fb9)
 - [b38bc93](https://github.com/Cognis-Labs-HQ/Cognis/commit/b38bc93e45e269ae465e33e700110e116668f5df)
+- [41b573b](https://github.com/Cognis-Labs-HQ/Cognis/commit/41b573b56b646acaf3f9bb9064ca6211c6657e92)
