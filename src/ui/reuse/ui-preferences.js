@@ -53,6 +53,13 @@ export async function saveUiPreferences(patch, { bufferOffline = true } = {}) {
     const assertAccount = captureAccountGuard();
     const current = await loadUiPreferences();
     assertAccount();
+    if (
+        Object.entries(patch).every(
+            ([key, value]) =>
+                JSON.stringify(current?.[key]) === JSON.stringify(value),
+        )
+    )
+        return;
     const merged = { ...(current || {}), ...patch };
     const response = await preferenceRequest(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,

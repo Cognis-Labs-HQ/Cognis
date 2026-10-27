@@ -49,7 +49,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.39`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.2`    |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.3`    |
 | Messages (Social)          | `src/adapters/social/messages/`     | `2.7.28`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
@@ -57,7 +57,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.5`    |
 | Library (Study)            | `src/adapters/study/library/`       | `4.1.8`    |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.18`   |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.19`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.5`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -77,7 +77,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.41`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.4.0`    |
+| Study                 | `src/gateways/study/`         | `2.4.1`    |
 | Calendar              | `src/gateways/calendar/`      | `1.5.2`    |
 
 ## コア契約
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.10.3`   |
+| API Server     | `src/api/` | `0.10.4`   |
 
 ## ツール
 

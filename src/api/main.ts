@@ -252,6 +252,10 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:scopedActions"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/ui-language-catalog.js",
+    providesCapabilities: ["ui:languageCatalog"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
     providesCapabilities: [
         "ui:reuse",

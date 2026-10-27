@@ -1,5 +1,9 @@
 {
-    "../../reuse/ui-preferences.js": ["applyUiPreferences"],
+    "../../reuse/ui-preferences.js": [
+        "applyUiPreferences",
+        "loadUiPreferences",
+        "saveUiPreferences"
+    ],
     "../../reuse/api-client.js": ["apiFetch"],
     "../../reuse/i18n.js": [
         "applyDocumentTitle",
@@ -56,5 +60,7 @@
     "./setup-requirement.js": [
         "getSettingsShellOptions",
         "resolveSettingsSetupRedirect"
-    ]
+    ],
+    "../../reuse/offline-state.js": ["isOffline"],
+    "./online-controls.js": ["bindOnlineSettingsControls"]
 }

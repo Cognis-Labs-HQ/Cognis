@@ -1,3 +1,4 @@
+import { loadProfileOfflineClient } from "./reuse/offline-client.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
@@ -41,11 +42,7 @@ function fixture() {
         return id;
     };
     window.clearInterval = (id) => timers.delete(id);
-    const client = loadTestModule(
-        new URL("../ui/offline-client.js", import.meta.url),
-        host.imports,
-        host.globals,
-    );
+    const client = loadProfileOfflineClient(host);
     const globals = {
         ...host.globals,
         window,

@@ -258,7 +258,7 @@ test("background records replay without arming the close warning, including afte
     assert.equal(next.hasBufferedChanges(), false);
 });
 
-test("registered background owners classify existing records without weakening unknown user-data owners", async () => {
+test("a reloaded page replays persisted records without restoring the previous close warning", async () => {
     const state = fixture();
     state.values.set(
         "cognis_offline_outbox",
@@ -266,16 +266,34 @@ test("registered background owners classify existing records without weakening u
             {
                 account: "learner",
                 owner: "telemetry",
-                id: "legacy",
+                id: "previous",
                 payload: {},
                 createdAt: 1_000_000,
             },
         ]),
     );
     const outbox = state.create();
-    assert.equal(outbox.hasBufferedChanges(), true);
+    assert.equal(outbox.hasBufferedChanges(), false);
+    assert.equal((await outbox.pending("telemetry")).length, 1);
     outbox.register("telemetry", async () => {}, new AbortController().signal, {
         protectOnClose: false,
     });
     assert.equal(outbox.hasBufferedChanges(), false);
+});
+
+test("reload resets protected changes while keeping replay durable and new edits protected", async () => {
+    const state = fixture();
+    const first = state.create();
+    register(first, async () => {}, "messages");
+    await first.submit("messages", "one", { ciphertext: "encrypted" });
+    assert.equal(first.hasBufferedChanges(), true);
+    const reloaded = state.create();
+    register(reloaded, async () => {}, "messages");
+    assert.equal(reloaded.hasBufferedChanges(), false);
+    assert.equal((await reloaded.pending("messages")).length, 1);
+    await reloaded.submit("messages", "two", { ciphertext: "second" });
+    assert.equal(reloaded.hasBufferedChanges(), true);
+    state.reconnect();
+    assert.equal((await reloaded.flush()).sent, 2);
+    assert.equal(reloaded.hasBufferedChanges(), false);
 });

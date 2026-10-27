@@ -109,7 +109,7 @@ Outbox replay starts in the background only after successful session authorizati
 
 The Offline Mode banner offers Recheck Connectivity with shared button styling and a busy state. It immediately calls `/api/v1/system/healthcheck`, coalesces simultaneous checks, then reauthorizes the session and attempts queued delivery when the server is reachable. Required consent still gates replay. Failure keeps Offline Mode active without an error popup. Automatic checks remain limited to once every fifteen minutes; this explicit action can run sooner. Refresh remains available after recovery.
 
-Background analytics stays queued but does not arm the browser close warning. Owners opt out with `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; the default remains true for user changes, and each new record stores its classification so provider disposal or reload cannot turn telemetry into an unsaved edit. Older records use an active owner’s declaration, with unknown owners protected. Automatic detected-timezone synchronization uses `saveUiPreferences(patch, { bufferOffline: false })`; the scoped HTTP client rejects that operation offline instead of queueing it. Explicit preference changes, messages and Calendar edits still buffer and warn.
+The native close/reload guard covers protected records newly created in the current page and session. A real reload starts with that guard clear while preserving queued records for replay; new meaningful edits arm it again. Viewed Study markers and analytics are background activity and do not arm it. Other tabs’ records, previously persisted records and merely rendering pages do not create a warning. Provider disposal keeps current-page edits protected until delivery or removal.
 
 ## Refresh unlocks and module loading
 
@@ -156,3 +156,13 @@ Cached public assets return immediately. On-demand background checks are coalesc
 ## Persistent Asset Cache
 
 All built public page bundles, dynamic chunks, styles and emitted media are prepared by the worker without executing pages or fetching private data. Public responses fetched later are cached automatically. Worker activation carries complete public files into the new generation before retiring old storage; only current catalog-authorized module revisions can be carried over. A page visit is not required to download its public bundles. Private content still needs an authorized owner-prepared snapshot.
+
+## Enrolled Offline Workspace
+
+After verified sign-in, Study prepares schemas, readable locations, forms, viewed markers and opted-in lightweight collections for enrolled learning and teaching languages. Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache. Enrollment changes trigger preparation again. Two workers limit concurrent reads; provider disposal, account changes, access denial and cached legal consent remain enforced. Pages need no prior visit; private snapshots remain scoped to the verified tab/session.
+
+Offline Profile access requires the complete prepared own-profile snapshot: text, posts, connections, preferences and bounded avatar/banner images. Other users’ profiles are blocked even if previously cached. Administration, Modules, Users and Shares remain unavailable offline. Settings opens its local core controls; saved font, theme, language, timezone and display preferences apply locally and queue for server delivery. Email verification, account actions and contributed settings requiring a server remain unavailable offline.
+
+The native close/reload guard covers protected records newly created in the current page and session. A real reload starts with that guard clear while preserving queued records for replay; new meaningful edits arm it again. Viewed Study markers and analytics are background activity and do not arm it. Other tabs’ records, previously persisted records and merely rendering pages do not create a warning. Provider disposal keeps current-page edits protected until delivery or removal.
+
+The host exposes `ui:languageCatalog.load` through ctx and prepares the shared language catalog after verified sign-in. Core locale catalogs are included in the public boot set. Settings and the navbar use that same lifecycle-scoped read; saving a language preference offline keeps the working page open and applies the preference to later client navigation.

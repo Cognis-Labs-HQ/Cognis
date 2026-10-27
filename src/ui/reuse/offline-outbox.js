@@ -31,6 +31,8 @@ export function createOfflineOutbox({
     log = (level, message, meta) => console[level]?.(message, meta),
 }) {
     const handlers = new Map();
+    const pageChanges = new Map();
+    const recordKey = (row) => JSON.stringify([row.account, row.owner, row.id]);
     let flushing;
     function read() {
         const rows = JSON.parse(storage().getItem(STORAGE_KEY) ?? "[]");
@@ -63,6 +65,9 @@ export function createOfflineOutbox({
         if (rows.length > MAX_ITEMS || serialized.length * 2 > MAX_BYTES)
             throw new Error("offline_outbox_full");
         storage().setItem(STORAGE_KEY, serialized);
+        const retained = new Set(rows.map(recordKey));
+        for (const key of pageChanges.keys())
+            if (!retained.has(key)) pageChanges.delete(key);
         changed();
     }
     function current(expected) {
@@ -215,6 +220,11 @@ export function createOfflineOutbox({
                         protectOnClose: handlers.get(owner).protectOnClose,
                     });
                 write(rows);
+                if (!existing && handlers.get(owner).protectOnClose)
+                    pageChanges.set(
+                        recordKey({ account: actor.account, owner, id }),
+                        actor.session,
+                    );
             });
             log("info", "Activity queued for delivery.", {
                 component: "ui",
@@ -226,14 +236,13 @@ export function createOfflineOutbox({
         flush,
         hasBufferedChanges() {
             const actor = identity();
-            if (!actor.account || !actor.session) return false;
+            if (!actor.account || !actor.session || !pageChanges.size)
+                return false;
             try {
                 return read().some(
                     (row) =>
                         row.account === actor.account &&
-                        (row.protectOnClose ??
-                            handlers.get(row.owner)?.protectOnClose ??
-                            true),
+                        pageChanges.get(recordKey(row)) === actor.session,
                 );
             } catch (error) {
                 log("error", "Pending activity could not be checked.", {

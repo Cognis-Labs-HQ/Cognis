@@ -144,6 +144,9 @@ export function bindStudySubNavigation(
 export function clearStudySubNavCache() {
     SUB_NAV_CACHE.learningLanguages = null;
     uiCtx.capabilities.get("ui:subPages")?.invalidate("study");
+    globalThis.window?.dispatchEvent?.(
+        new CustomEvent("cognis:study-enrollment-changed"),
+    );
 }
 
 function resolveDefaultChildPageUrl(modules) {

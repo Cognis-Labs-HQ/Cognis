@@ -81,3 +81,7 @@ Prepared Study pages remain navigable in a verified, consented offline session e
 ## Durable Queued Results
 
 Queued card reviews retain their successful result even if optional activity recording fails. Activity capture runs without holding up the review receipt. The existing account, consent and queue limits still apply.
+
+## Enrolled Offline Workspace
+
+Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache.

@@ -12,7 +12,7 @@
  * @param {{ i18n: { t: (key: string) => string }, navigateTo: (url: string) => void, showToast: Function }} options
  * @returns {Promise<void>}
  */
-import { apiFetch } from "./api-client.js";
+import { loadUiLanguageCatalog } from "./ui-language-catalog.js";
 import { readPreferredLanguages, setPreferredLanguages } from "./i18n.js";
 import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
 
@@ -57,11 +57,7 @@ export async function bindLanguageToggle({
     );
 
     try {
-        const response = await apiFetch("/api/v1/system/languages");
-        if (!response.ok)
-            throw new Error(`language_catalog_${response.status}`);
-        const payload = await response.json();
-        const catalog = payload.data ?? [];
+        const catalog = await loadUiLanguageCatalog();
         const availableLanguages = preferredLanguages
             .map((isoCode) =>
                 catalog.find((language) => language.iso_code === isoCode),

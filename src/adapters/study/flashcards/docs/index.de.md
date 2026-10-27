@@ -81,3 +81,7 @@ Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gül
 ## Dauerhaft vorgemerkte Änderungen
 
 Vorgemerkte Kartenbewertungen behalten ihr erfolgreiches Ergebnis, auch wenn optionale Aktivitätserfassung fehlschlägt. Sie verzögert den Bewertungsbeleg nicht. Die bestehenden Konto-, Einwilligungs- und Puffergrenzen gelten weiter.
+
+## Offline-Arbeitsbereich
+
+Flashcards bereitet seine Liste und bis zu 80 passende Stapel mit Kartendetails innerhalb des bestehenden begrenzten Caches vor.

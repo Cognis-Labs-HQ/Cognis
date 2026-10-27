@@ -1,3 +1,4 @@
+import { registerEnrolledLibrarySnapshots } from "./reuse/library-offline-snapshot.js";
 import { readStudySnapshot } from "./offline-content.js";
 import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
@@ -511,6 +512,7 @@ export function registerLibraryClient(ctx) {
                 entryIds,
             ),
         ctx.signal,
+        { protectOnClose: false },
     );
     const actions = registerActions(
         ctx,
@@ -617,6 +619,7 @@ export function registerLibraryClient(ctx) {
         ),
     );
     ctx.capabilities.contribute("study:library:client", actions);
+    registerEnrolledLibrarySnapshots(ctx, actions);
 }
 
 export const {

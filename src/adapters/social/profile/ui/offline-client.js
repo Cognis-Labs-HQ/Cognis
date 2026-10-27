@@ -1,3 +1,4 @@
+import { registerOwnProfileOffline } from "./own-offline.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js";
@@ -112,10 +113,12 @@ export function registerProfileOfflineClient(ctx) {
         request: apiFetch,
         project,
     });
-    ctx.capabilities.contribute("social:profileRequest", request);
+    const own = registerOwnProfileOffline(ctx, request, apiFetch);
+    ctx.capabilities.contribute("social:profileRequest", own.fetch);
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["social-profile-page"],
         ctx.signal,
+        { available: own.available },
     );
 }
 export async function profileFetch(path, options = {}) {

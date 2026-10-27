@@ -1,3 +1,4 @@
+import { loadProfileOfflineClient as loadClient } from "./reuse/offline-client.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
@@ -12,11 +13,7 @@ test("profile flows retain text, posts and bounded media and replay updates in o
             data: path.endsWith("/posts") ? [] : { displayName: "Original" },
         });
     });
-    const client = loadTestModule(
-        new URL("../ui/offline-client.js", import.meta.url),
-        fixture.imports,
-        fixture.globals,
-    );
+    const client = loadClient(fixture);
     client.registerProfileOfflineClient(fixture.ctx);
     const activity = [];
     fixture.ctx.extendFlow(
@@ -95,11 +92,7 @@ test("profile flows retain text, posts and bounded media and replay updates in o
 
 test("account changes during media preparation cannot queue a previous account's image", async () => {
     const fixture = createOfflineClientFixture(() => assert.fail("transport"));
-    const client = loadTestModule(
-        new URL("../ui/offline-client.js", import.meta.url),
-        fixture.imports,
-        fixture.globals,
-    );
+    const client = loadClient(fixture);
     client.registerProfileOfflineClient(fixture.ctx);
     fixture.disconnect();
     let release;
@@ -134,11 +127,7 @@ test("automatic preference writes can require connectivity without buffering or 
         calls.push({ path, options });
         return Response.json({ data: {} });
     });
-    const client = loadTestModule(
-        new URL("../ui/offline-client.js", import.meta.url),
-        fixture.imports,
-        fixture.globals,
-    );
+    const client = loadClient(fixture);
     client.registerProfileOfflineClient(fixture.ctx);
     const path = "/api/v1/social/users/learner/preferences/ui-preferences";
     const write = {
@@ -162,4 +151,133 @@ test("automatic preference writes can require connectivity without buffering or 
     });
     assert.equal(fixture.outbox.hasBufferedChanges(), true);
     fixture.controller.abort();
+});
+
+test("own profile, connections, posts, preferences and images prepare before first offline visit and other profiles are blocked", async (context) => {
+    const paths = [];
+    const host = createOfflineClientFixture(async (path) => {
+        paths.push(path);
+        if (path.startsWith("/api/v1/files/"))
+            return new Response(new Uint8Array([1, 2, 3]), {
+                headers: { "content-type": "image/png" },
+            });
+        return Response.json({
+            data: path.endsWith("/profile")
+                ? {
+                      handle: "public-name",
+                      accountId: "learner",
+                      displayName: "Owner",
+                      avatarKey: "own.png",
+                  }
+                : path.includes("/preferences/")
+                  ? { layoutJson: JSON.stringify({ mode: "dark" }) }
+                  : [{ id: "item" }],
+        });
+    });
+    context.after(() => host.controller.abort());
+    let available;
+    host.ctx.capabilities.contribute(
+        "offline:registerSessionRoutes",
+        (_ids, _signal, options) => {
+            available = options.available;
+        },
+    );
+    const client = loadClient(host);
+    client.registerProfileOfflineClient(host.ctx);
+    host.ctx.extendFlow(
+        "authenticate-session",
+        "resolve-session",
+        { id: "test:ownProfile" },
+        () => ({ authenticated: true }),
+    );
+    await host.ctx.runFlow("authenticate-session", {});
+    for (let i = 0; i < 50 && !available({}, "/profile/public-name"); i++)
+        await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(available({}, "/profile/public-name"), true);
+    assert.equal(available({}, "/profile/other"), false);
+    await client.profileFetch("/api/v1/social/users/other/profile");
+    const count = paths.length;
+    host.disconnect();
+    assert.equal(
+        (await (await client.profileFetch("/api/v1/social/profile")).json())
+            .data.displayName,
+        "Owner",
+    );
+    assert.equal(
+        (await (await client.profileFetch("/api/v1/social/posts")).json())
+            .data[0].id,
+        "item",
+    );
+    assert.equal(
+        (
+            await (
+                await client.profileFetch("/api/v1/files/profile/own.png")
+            ).blob()
+        ).size,
+        3,
+    );
+    await assert.rejects(
+        client.profileFetch("/api/v1/social/users/other/profile"),
+        /offline_access_denied/,
+    );
+    assert.equal(paths.length, count);
+    assert.equal(host.outbox.hasBufferedChanges(), false);
+    await client.profileFetch(
+        "/api/v1/social/users/learner/preferences/ui-preferences",
+        { method: "PUT", body: JSON.stringify({ layout: { mode: "light" } }) },
+    );
+    assert.equal(host.outbox.hasBufferedChanges(), true);
+    assert.equal(
+        JSON.parse(
+            (
+                await (
+                    await client.profileFetch(
+                        "/api/v1/social/users/learner/preferences/ui-preferences",
+                    )
+                ).json()
+            ).data.layoutJson,
+        ).mode,
+        "light",
+    );
+});
+
+test("large profile images remain available online within the offline cache bound", async (context) => {
+    const host = createOfflineClientFixture(
+        async () =>
+            new Response(new Uint8Array(350_001), {
+                headers: { "content-type": "image/png" },
+            }),
+    );
+    context.after(() => host.controller.abort());
+    const client = loadClient(host);
+    client.registerProfileOfflineClient(host.ctx);
+    assert.equal(
+        (
+            await (
+                await client.profileFetch("/api/v1/files/profile/large.png")
+            ).blob()
+        ).size,
+        350_001,
+    );
+    host.disconnect();
+    await assert.rejects(
+        client.profileFetch("/api/v1/files/profile/large.png"),
+        /offline_read_unavailable/,
+    );
+});
+
+test("a delayed private profile image cannot cross an account switch", async (context) => {
+    let release;
+    const response = new Promise((resolve) => {
+        release = resolve;
+    });
+    const host = createOfflineClientFixture(() => response);
+    context.after(() => host.controller.abort());
+    const client = loadClient(host);
+    client.registerProfileOfflineClient(host.ctx);
+    const image = client.profileFetch("/api/v1/files/profile/own.png");
+    await new Promise((resolve) => setImmediate(resolve));
+    host.changeAccount("other");
+    release(new Response(new Uint8Array([1, 2, 3])));
+    await assert.rejects(image, /offline_account_changed/);
 });

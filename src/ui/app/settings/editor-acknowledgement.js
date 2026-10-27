@@ -12,7 +12,13 @@
  *
  * @returns {Promise<boolean>}
  */
-import { apiFetch } from "../../reuse/api-client.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
+
+function apiFetch(path, options) {
+    const request = uiCtx.capabilities.get("social:profileRequest");
+    if (!request) throw new Error("profile_client_unavailable");
+    return request(path, options);
+}
 
 const PREFERENCE_KEY = "preferences-editor-acknowledgement";
 

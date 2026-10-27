@@ -101,3 +101,7 @@ Die Offline-Routenregistrierung bleibt bei wiederholten gebündelten und direkt 
 ## Gemeinsame Lernfavoriten
 
 Der Study-Anbieter stellt `study:favourites` mit lebenszyklusgebundenen Operationen `load`, `toggle` und `has` bereit. Darstellungsfunktionen verwenden diese ctx-Funktion statt eines eigenen Caches pro Lader. Favoriten werden nach bestätigter Anmeldung vorbereitet, berücksichtigen vorgemerkte Änderungen und teilen konto- und sitzungsgebundenen Zustand zwischen Explore, Lernkarten und wiederholten Importen. Fehlt ein optionaler Favoriten-Snapshot, bleibt die Auswahl mit vorgemerkten Änderungen nutzbar; Inhalte werden nicht verborgen und kein Aktualisierungsfehler angezeigt. Ein Kontowechsel leert die sichtbare Auswahl. Zugriffsverweigerungen gelten niemals als Cache-Fehltreffer.
+
+## Offline-Arbeitsbereich
+
+Nach bestätigter Anmeldung bereitet Study Schemas, lesbare Speicherorte, Formulare, Gesehen-Markierungen und ausdrücklich erlaubte leichte Sammlungen für eingeschriebene Lern- und Unterrichtssprachen vor. Flashcards bereitet seine Liste und bis zu 80 passende Stapel mit Kartendetails innerhalb des bestehenden begrenzten Caches vor. Änderungen der Einschreibung starten die Vorbereitung erneut. Zwei Worker begrenzen gleichzeitige Lesevorgänge; Provider-Abbau, Kontowechsel, Zugriffsverweigerung und zwischengespeicherte rechtliche Zustimmung bleiben wirksam. Ein vorheriger Seitenbesuch ist nicht erforderlich. Private Schnappschüsse bleiben an den bestätigten Tab und die Sitzung gebunden.

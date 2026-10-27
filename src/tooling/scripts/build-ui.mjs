@@ -226,6 +226,10 @@ if (manifest["/static/app/offline/index.js"]) {
         offlineAssets.add(sourceUrl);
         if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);
     }
+    for (const url of logicalSourcePaths.keys()) {
+        if (/^\/static\/languages\/[^/]+\/strings\.xml$/.test(url))
+            offlineAssets.add(url);
+    }
     async function includeStyleDependencies(asset) {
         if (!asset.endsWith(".css")) return;
         const sourcePath = logicalSourcePaths.get(asset);

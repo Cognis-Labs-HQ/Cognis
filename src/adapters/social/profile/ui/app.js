@@ -1,3 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { saveProfileFields } from "./profile-save.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
@@ -692,8 +694,14 @@ export async function mount(rootEl, { signal } = {}) {
         window.location.pathname.split("/")[2] ?? "",
     );
     ownAccount = localStorage.getItem("cognis_account") ?? "";
-    isOwnProfile = !urlHandle || urlHandle === ownAccount; // empty handle means /profile with no path segment → own profile
+    isOwnProfile =
+        !urlHandle ||
+        urlHandle === ownAccount ||
+        uiCtx.capabilities.get("social:isOwnProfileRoute")?.(
+            window.location.pathname,
+        ) === true; // empty handle means /profile with no path segment → own profile
 
+    if (isOffline() && !isOwnProfile) throw new Error("offline_access_denied");
     stopFollowerCountPoller();
 
     profile = null;

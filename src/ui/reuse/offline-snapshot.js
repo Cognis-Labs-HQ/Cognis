@@ -5,7 +5,7 @@ import {
 } from "./offline-state.js";
 
 /** Refresh an owner's lightweight snapshots after verified authentication and cache invalidation. */
-export function bindOfflineSnapshotRefresh(ctx, { id, refresh }) {
+export function bindOfflineSnapshotRefresh(ctx, { id, refresh, events = [] }) {
     ctx.signal.throwIfAborted();
     let prepared;
     let authenticated = false;
@@ -34,6 +34,7 @@ export function bindOfflineSnapshotRefresh(ctx, { id, refresh }) {
         prepared = actor;
         try {
             await refresh();
+            if (isOffline() || ctx.signal.aborted) prepared = undefined;
         } catch (error) {
             if (prepared === actor) prepared = undefined;
             console.info("[offline] snapshot not prepared", {
@@ -52,6 +53,7 @@ export function bindOfflineSnapshotRefresh(ctx, { id, refresh }) {
         "cognis:offline-preference-changed",
         "cognis:offline-worker-reset",
         "cognis:module-lifecycle-changed",
+        ...events,
     ])
         globalThis.window?.addEventListener(
             type,

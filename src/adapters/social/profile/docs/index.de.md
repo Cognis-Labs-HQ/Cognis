@@ -101,3 +101,7 @@ Die Abfrage flüchtiger Präsenz- und Verfügbarkeitsdaten pausiert im Offline-M
 ## Dauerhaft vorgemerkte Änderungen
 
 Vorgemerkte Profiltexte, Beiträge und begrenzte Bild-Uploads behalten ihren abgeschlossenen Status bei Ansichtsfehlern. Profiltexte verwenden online die Serverantwort und offline eine ausdrückliche vorgemerkte Darstellung. Fehlgeschlagene Übermittlung erhält Entwürfe; ein Fehler beim anschließenden Aktualisieren fordert nicht zu doppelter Übermittlung auf.
+
+## Offline-Arbeitsbereich
+
+Offline-Profilzugriff erfordert einen vollständig vorbereiteten Schnappschuss des eigenen Profils: Text, Beiträge, Verbindungen, Einstellungen sowie begrenzte Avatar- und Bannerbilder. Fremde Profile sind auch bei vorhandenem Cache gesperrt.

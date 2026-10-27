@@ -1,4 +1,10 @@
-import { applyUiPreferences } from "../../reuse/ui-preferences.js";
+import { bindOnlineSettingsControls } from "./online-controls.js";
+import {
+    applyUiPreferences,
+    loadUiPreferences as loadPrefs,
+    saveUiPreferences as savePrefs,
+} from "../../reuse/ui-preferences.js";
+import { isOffline } from "../../reuse/offline-state.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -57,34 +63,8 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-async function loadPrefs() {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return null;
-    const response = await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-    );
-    if (!response.ok) return null;
-    const payload = await response.json();
-    const raw = payload?.data?.layoutJson;
-    return raw ? JSON.parse(raw) : null;
-}
-
-async function savePrefs(prefs) {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return;
-    const response = await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-        {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: prefs }),
-        },
-    );
-    if (!response.ok)
-        throw new Error(`ui_preferences_save_failed:${response.status}`);
-}
-
 async function loadSettingsSections() {
+    if (isOffline()) return [];
     try {
         const res = await apiFetch("/api/v1/ui/settings-sections");
         if (!res.ok) return [];
@@ -96,6 +76,7 @@ async function loadSettingsSections() {
 }
 
 async function loadAuthSetupRequirement() {
+    if (isOffline()) return false;
     try {
         const response = await apiFetch("/api/v1/auth/setup-status");
         if (!response.ok) {
@@ -186,6 +167,7 @@ export async function mount(root, { signal } = {}) {
     ]);
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.settings");
+    const refreshOnlineControls = bindOnlineSettingsControls(root, signal);
 
     applyTimezoneToLocalStorage(
         loadedPrefs?.timezone ?? null,
@@ -411,13 +393,14 @@ export async function mount(root, { signal } = {}) {
                 onRender: () => {
                     const account =
                         localStorage.getItem("cognis_account") ?? "";
-                    if (!generalPrefs) {
+                    refreshOnlineControls();
+                    if (!isOffline() && !generalPrefs) {
                         generalPrefs = initGeneralPrefs(root, {
                             i18n,
                             username: account,
                         });
                         generalPrefs.init();
-                    } else {
+                    } else if (!isOffline()) {
                         generalPrefs.refresh();
                     }
                     if (!releaseNotesPrefs) {
@@ -885,7 +868,7 @@ export async function mount(root, { signal } = {}) {
             });
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
-            if (hasLanguagePriorityChanged(prev, next)) {
+            if (hasLanguagePriorityChanged(prev, next) && !isOffline()) {
                 // Brief pause so the success toast is visible before the page
                 // reloads (see LANGUAGE_RELOAD_DELAY_MS).
                 await new Promise((resolve) =>

@@ -126,6 +126,7 @@ const STATIC_ROUTES = [
     },
     {
         id: "core.settings",
+        offline: { session: true },
         ownerUuid: CORE_COMPONENT_UUID,
         componentPage: componentPage(
             "ui.reuse.settings",

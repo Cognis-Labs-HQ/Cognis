@@ -174,3 +174,7 @@ Transient presence and availability polling stops when Offline Mode begins and r
 ## Durable Queued Results
 
 Queued profile text, posts and bounded image uploads retain their completed result if a view refresh fails. Profile text updates use the returned server data online and an explicit queued projection offline. Failed delivery still retains drafts; a failed follow-up refresh does not invite a duplicate submission.
+
+## Enrolled Offline Workspace
+
+Offline Profile access requires the complete prepared own-profile snapshot: text, posts, connections, preferences and bounded avatar/banner images. Other users’ profiles are blocked even if previously cached.

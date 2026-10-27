@@ -1,5 +1,6 @@
 import { createAdaptivePoller } from "/static/reuse/adaptive-poller.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 
 export async function loadSocialConnectionList(profileHandle, connectionKind) {
     const routeSegment =
@@ -22,6 +23,7 @@ export function createFollowerCountPoller({
 }) {
     return createAdaptivePoller({
         task: async () => {
+            if (isOffline()) return false;
             const { profileHandle, followers, following } = readState();
             if (!profileHandle) return false;
             const [latestFollowers, latestFollowing] = await Promise.all([

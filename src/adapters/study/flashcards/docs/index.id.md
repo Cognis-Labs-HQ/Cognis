@@ -81,3 +81,7 @@ Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverif
 ## Hasil Antrean Tersimpan
 
 Ulasan kartu dalam antrean mempertahankan hasil berhasil meskipun pencatatan aktivitas opsional gagal. Pencatatan tidak menghambat bukti ulasan. Batas akun, persetujuan, dan antrean yang sudah ada tetap berlaku.
+
+## Ruang Kerja Luring
+
+Flashcards menyiapkan daftar dan hingga 80 dek yang sesuai beserta detail kartu dalam batas cache yang ada.

@@ -130,7 +130,7 @@ Die Übertragung beginnt erst nach erfolgreicher Sitzungsautorisierung und erfor
 
 Der Offline-Hinweis bietet Verbindung erneut prüfen mit gemeinsamen Schaltflächenstilen und Ladeanzeige. Die Aktion ruft sofort `/api/v1/system/healthcheck` auf, bündelt gleichzeitige Prüfungen, autorisiert bei erreichbarem Server die Sitzung erneut und versucht die Übertragung der Warteschlange. Erforderliche Zustimmung bleibt Voraussetzung. Bei Fehlern bleibt der Offline-Modus ohne Fehlerdialog aktiv. Automatische Prüfungen bleiben auf einmal je fünfzehn Minuten begrenzt; die ausdrückliche Aktion darf früher prüfen. Nach Wiederherstellung bleibt Aktualisieren verfügbar.
 
-Hintergrundanalysen bleiben gespeichert, lösen aber keine Schließwarnung aus. Anbieter wählen `offline:outbox.register(owner, send, signal, { protectOnClose: false })`; Benutzeränderungen bleiben standardmäßig geschützt. Jeder neue Datensatz speichert die Einstufung, damit Anbieterfreigabe und Neuladen Telemetrie nicht zu einer ungespeicherten Änderung machen. Ältere Einträge nutzen die Erklärung aktiver Anbieter; unbekannte Anbieter bleiben geschützt. Die automatische Zeitzonenerkennung nutzt `saveUiPreferences(patch, { bufferOffline: false })`; der gebundene HTTP-Client lehnt dies offline ab, statt es zu puffern. Ausdrückliche Einstellungen, Nachrichten und Kalenderänderungen werden weiterhin gepuffert und geschützt.
+Die native Schließen-/Neuladen-Warnung schützt nur Datensätze, die in der aktuellen Seite und Sitzung neu erstellt wurden. Nach einem echten Neuladen ist die Warnung zurückgesetzt; gespeicherte Aufträge bleiben zur Wiederholung erhalten. Neue bewusste Änderungen aktivieren sie erneut. Study-Gesehen-Markierungen und Analysen sind Hintergrundaktivitäten ohne Warnung. Datensätze anderer Tabs, bereits gespeicherte Aufträge und bloßes Rendern lösen keine Warnung aus. Der Abbau eines Providers hebt den Schutz aktueller Seitenänderungen bis zur Übertragung oder Entfernung nicht auf.
 
 ## Entsperren und Modulladen
 
@@ -179,6 +179,16 @@ Gemeinsame Styles für Wiederverwendung, einschließlich Toasts und Sichtbarkeit
 ## Dauerhafter Ressourcen-Cache
 
 Der Worker bereitet alle gebauten öffentlichen Seiten-Bundles, dynamischen Chunks, Styles und ausgegebenen Medien vor, ohne Seiten auszuführen oder private Daten abzurufen. Später abgerufene öffentliche Antworten werden automatisch gespeichert. Bei der Aktivierung werden vollständige öffentliche Dateien in die neue Generation übernommen, bevor alter Speicher freigegeben wird. Modulrevisionen werden nur übernommen, wenn der aktuelle Katalog sie erlaubt. Für das Herunterladen öffentlicher Bundles ist kein Seitenbesuch erforderlich. Private Inhalte benötigen weiterhin einen autorisierten, vom zuständigen Provider vorbereiteten Schnappschuss.
+
+## Offline-Arbeitsbereich
+
+Nach bestätigter Anmeldung bereitet Study Schemas, lesbare Speicherorte, Formulare, Gesehen-Markierungen und ausdrücklich erlaubte leichte Sammlungen für eingeschriebene Lern- und Unterrichtssprachen vor. Flashcards bereitet seine Liste und bis zu 80 passende Stapel mit Kartendetails innerhalb des bestehenden begrenzten Caches vor. Änderungen der Einschreibung starten die Vorbereitung erneut. Zwei Worker begrenzen gleichzeitige Lesevorgänge; Provider-Abbau, Kontowechsel, Zugriffsverweigerung und zwischengespeicherte rechtliche Zustimmung bleiben wirksam. Ein vorheriger Seitenbesuch ist nicht erforderlich. Private Schnappschüsse bleiben an den bestätigten Tab und die Sitzung gebunden.
+
+Offline-Profilzugriff erfordert einen vollständig vorbereiteten Schnappschuss des eigenen Profils: Text, Beiträge, Verbindungen, Einstellungen sowie begrenzte Avatar- und Bannerbilder. Fremde Profile sind auch bei vorhandenem Cache gesperrt. Administration, Modules, Users und Shares bleiben offline nicht verfügbar. Settings öffnet seine lokalen Kernfunktionen. Gespeicherte Schrift-, Design-, Sprach-, Zeitzonen- und Anzeigeeinstellungen gelten lokal und werden zur Serverübertragung gepuffert. E-Mail-Verifizierung, Kontoaktionen und beitragende Einstellungen mit Serverbedarf bleiben offline nicht verfügbar.
+
+Die native Schließen-/Neuladen-Warnung schützt nur Datensätze, die in der aktuellen Seite und Sitzung neu erstellt wurden. Nach einem echten Neuladen ist die Warnung zurückgesetzt; gespeicherte Aufträge bleiben zur Wiederholung erhalten. Neue bewusste Änderungen aktivieren sie erneut. Study-Gesehen-Markierungen und Analysen sind Hintergrundaktivitäten ohne Warnung. Datensätze anderer Tabs, bereits gespeicherte Aufträge und bloßes Rendern lösen keine Warnung aus. Der Abbau eines Providers hebt den Schutz aktueller Seitenänderungen bis zur Übertragung oder Entfernung nicht auf.
+
+Der Host stellt `ui:languageCatalog.load` über ctx bereit und bereitet den gemeinsamen Sprachkatalog nach bestätigter Anmeldung vor. Die Kern-Sprachkataloge gehören zum öffentlichen Startbestand. Settings und die Navigationsleiste nutzen denselben lebenszyklusgebundenen Lesezugriff. Das Offline-Speichern einer Sprachpräferenz hält die nutzbare Seite offen und wendet die Präferenz bei späterer clientseitiger Navigation an.
 
 ## Commits
 

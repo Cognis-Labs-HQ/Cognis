@@ -1,3 +1,7 @@
+import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
+import { fetchStudyPreferences } from "/static/gateways/study/navigation-client.js";
+import { deckMatchesLanguage } from "./app/language.js";
+import { captureAccountGuard } from "/static/reuse/offline-identity.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { loadDeckTemplates } from "./app/markup.js";
 import { readStudySnapshot } from "/static/gateways/study/offline-content.js";
@@ -27,6 +31,41 @@ export async function mountProvider(ctx) {
         ctx.signal,
     );
     ctx.capabilities.contribute("study:decks:offlineRead", read);
+    bindOfflineSnapshotRefresh(ctx, {
+        id: "flashcards:prepareEnrolledDecks",
+        events: ["cognis:study-enrollment-changed"],
+        refresh: async () => {
+            const assertAccount = captureAccountGuard();
+            const prefs = await fetchStudyPreferences({ signal: ctx.signal });
+            const codes = [
+                ...new Set([
+                    ...(prefs.learningLanguages ?? []),
+                    ...(prefs.teachingLanguages ?? []),
+                ]),
+            ];
+            if (!codes.length) return;
+            const decks = (await request("", "GET", undefined, ctx.signal))
+                .filter((deck) =>
+                    codes.some((code) => deckMatchesLanguage(deck, code)),
+                )
+                .slice(0, 80);
+            let next = 0;
+            await Promise.all(
+                Array.from({ length: Math.min(2, decks.length) }, async () => {
+                    while (next < decks.length && !isOffline()) {
+                        ctx.signal.throwIfAborted();
+                        assertAccount();
+                        await request(
+                            `/${encodeURIComponent(decks[next++].id)}`,
+                            "GET",
+                            undefined,
+                            ctx.signal,
+                        );
+                    }
+                }),
+            );
+        },
+    });
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["adapter.study.flashcards"],
         ctx.signal,

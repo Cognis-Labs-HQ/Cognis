@@ -81,3 +81,9 @@ test("a delayed preference merge cannot write across an account switch", async (
     );
     assert.equal(state.writes.length, 0);
 });
+
+test("saving unchanged UI preferences leaves the buffered write contract idle", async () => {
+    const state = fixture();
+    await state.prefs.saveUiPreferences({ mode: "dark", timezone: "UTC" });
+    assert.equal(state.writes.length, 0);
+});

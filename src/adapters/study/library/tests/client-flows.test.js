@@ -1,3 +1,5 @@
+import { captureAccountGuard } from "../../../../ui/reuse/offline-identity.js";
+import { bindOfflineSnapshotRefresh } from "../../../../ui/reuse/offline-snapshot.js";
 import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
 import * as offlineDelivery from "../../../../ui/reuse/offline-delivery.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
@@ -26,6 +28,23 @@ async function session(testContext, request, dependencies = {}) {
         },
         { structuredClone, console },
     );
+    const snapshots = loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/reuse/library-offline-snapshot.js",
+            import.meta.url,
+        ),
+        {
+            "/static/reuse/offline-snapshot.js": { bindOfflineSnapshotRefresh },
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/offline-identity.js": {
+                captureAccountGuard,
+            },
+            "../navigation-client.js": {
+                fetchStudyPreferences: async () => ({ learningLanguages: [] }),
+            },
+        },
+    );
     const client = loadTestModule(
         new URL(
             "../../../../gateways/study/ui/library-client.js",
@@ -33,6 +52,7 @@ async function session(testContext, request, dependencies = {}) {
         ),
         {
             "./offline-content.js": offlineContent,
+            "./reuse/library-offline-snapshot.js": snapshots,
             "/static/reuse/offline-state.js":
                 dependencies.offlineState ?? offlineState,
             "/static/reuse/offline-read-cache.js":

@@ -1,14 +1,8 @@
-import { apiFetch } from "../../reuse/api-client.js";
+import { loadUiLanguageCatalog } from "../../reuse/ui-language-catalog.js";
 import {
     sanitizeLanguagePriority,
     readBrowserLocales,
 } from "../../reuse/i18n.js";
-
-async function loadLanguagesCatalog() {
-    const response = await apiFetch("/api/v1/system/languages");
-    const payload = await response.json();
-    return payload.data || [];
-}
 
 export function initLanguagePrefs(
     root,
@@ -275,9 +269,17 @@ export function initLanguagePrefs(
     }
 
     async function init() {
-        catalog = await loadLanguagesCatalog().catch(() => [
-            { iso_code: "en", name: "English" },
-        ]);
+        catalog = await loadUiLanguageCatalog().catch(() => {
+            const names = new Intl.DisplayNames(
+                [document.documentElement.lang || "en"],
+                { type: "language", fallback: "none" },
+            );
+            return [...new Set([...initialPriority, "en"])].map((iso_code) => {
+                const name = names.of(iso_code);
+                if (!name) throw new Error("language_label_unavailable");
+                return { iso_code, name };
+            });
+        });
         languagePriority = sanitizeLanguagePriority(
             languagePriority,
             getSupportedLanguageCodes(),
