@@ -183,9 +183,9 @@ for (const htmlPath of (await walk(path.join(outputRoot, "public"))).filter(
     await writeFile(htmlPath, html);
 }
 if (manifest["/static/app/offline/index.js"]) {
-    // The recovery entry's static dependency closure is prepared atomically. Page
-    // bundles outside this small boot set are cached passively when requested.
+    // Prepare public bundles without executing pages or fetching private data.
     const offlineAssets = new Set([
+        ...Object.values(manifest),
         "/static/languages/en/strings.xml",
         "/static/templates/dashboard-layout.html",
         "/static/assets/reuse/license.en.md",
@@ -210,15 +210,8 @@ if (manifest["/static/app/offline/index.js"]) {
                 includeOfflineOutput(dependency.path);
         }
     }
-    for (const [outputPath, metadata] of Object.entries(
-        result.metafile.outputs,
-    )) {
-        if (
-            /src\/ui\/app\/(?:offline|error|license)\/index\.js$/.test(
-                metadata.entryPoint ?? "",
-            )
-        )
-            includeOfflineOutput(outputPath);
+    for (const outputPath of Object.keys(result.metafile.outputs)) {
+        includeOfflineOutput(outputPath);
     }
     for (const sourceUrl of [
         "/static/styles/page-builder.css",

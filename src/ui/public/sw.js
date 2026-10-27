@@ -176,18 +176,46 @@ self.addEventListener("install", (event) => {
     );
 });
 
+// Carry complete public responses into the new generation before retiring old
+// storage. Controls and module access receipts always come from the new worker.
+async function preservePublicAssets() {
+    const destination = await caches.open(CACHE_NAME);
+    const allowedModules = new Set(
+        (await catalog()).flatMap(routeAssets).map(assetKey),
+    );
+    for (const name of (await caches.keys()).reverse()) {
+        if (
+            !name.startsWith(CACHE_PREFIX) ||
+            name === CACHE_NAME ||
+            name === CONTROL_CACHE_NAME
+        )
+            continue;
+        if (!name.endsWith("-control")) {
+            const source = await caches.open(name);
+            for (const request of await source.keys()) {
+                const url = new URL(request.url);
+                if (
+                    url.origin !== self.location.origin ||
+                    (!/^\/(?:static|assets)\//.test(url.pathname) &&
+                        url.pathname !== "/manifest.webmanifest") ||
+                    (url.pathname.startsWith("/static/modules/") &&
+                        !allowedModules.has(assetKey(request)))
+                )
+                    continue;
+                if (await destination.match(request)) continue;
+                const response = await source.match(request);
+                if (cacheable(response))
+                    await destination.put(request, response);
+            }
+        }
+        await caches.delete(name);
+    }
+}
+
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         (async () => {
-            for (const key of await caches.keys()) {
-                if (
-                    (key.startsWith(CACHE_PREFIX) &&
-                        key !== CACHE_NAME &&
-                        key !== CONTROL_CACHE_NAME) ||
-                    /^cognis-(shell|assets|app)-v\d+$/.test(key)
-                )
-                    await caches.delete(key);
-            }
+            await preservePublicAssets();
             await self.clients.claim();
         })(),
     );
@@ -289,6 +317,33 @@ self.addEventListener("message", (event) => {
     );
 });
 
+// Compare complete bodies before replacing a known-good response. Cache.put is
+// atomic: truncated downloads and failed writes leave the previous entry intact.
+async function replacePublicAsset(cache, key, response, previous) {
+    if (previous) {
+        const priorModified = Date.parse(
+            previous.headers.get("last-modified") ?? "",
+        );
+        const nextModified = Date.parse(
+            response.headers.get("last-modified") ?? "",
+        );
+        if (
+            Number.isFinite(priorModified) &&
+            Number.isFinite(nextModified) &&
+            nextModified < priorModified
+        )
+            return;
+        const next = new Uint8Array(await response.clone().arrayBuffer());
+        const prior = new Uint8Array(await previous.clone().arrayBuffer());
+        if (
+            next.length === prior.length &&
+            next.every((byte, index) => byte === prior[index])
+        )
+            return;
+    }
+    await cache.put(key, response);
+}
+
 // Revalidate mutable public resources only on demand, at most once per minute.
 // Bound metadata and coalesce overlapping reads; failed refreshes retain the snapshot.
 const assetRefreshes = new Map();
@@ -311,6 +366,7 @@ async function assetResponse(request, moduleAsset, event) {
             new URL(request.url).pathname,
         );
     if (cached && immutable) return cached;
+    const previousSnapshot = cached?.clone();
     const refresh = async () => {
         try {
             const response = await fetchAvailable(
@@ -321,7 +377,13 @@ async function assetResponse(request, moduleAsset, event) {
             );
             if ([502, 503, 504].includes(response.status))
                 throw new Error("server_unavailable");
-            if (!cacheable(response)) event.waitUntil(cache.delete(cacheKey));
+            if (
+                [401, 403].includes(response.status) ||
+                /private|no-store/i.test(
+                    response.headers.get("cache-control") ?? "",
+                )
+            )
+                event.waitUntil(cache.delete(cacheKey));
             if (
                 cacheable(response) &&
                 (!moduleAsset ||
@@ -331,7 +393,12 @@ async function assetResponse(request, moduleAsset, event) {
                             parameters.get("revision")))
             )
                 event.waitUntil(
-                    cache.put(cacheKey, response.clone()).catch((error) => {
+                    replacePublicAsset(
+                        cache,
+                        cacheKey,
+                        response.clone(),
+                        previousSnapshot,
+                    ).catch((error) => {
                         console.error(
                             "[cognis-sw] public asset cache write failed",
                             error,

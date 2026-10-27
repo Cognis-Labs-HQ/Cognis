@@ -42,6 +42,12 @@ const offlineAssets = new Set(
         ),
     ),
 );
+for (const asset of Object.values(manifest)) {
+    assert.ok(
+        offlineAssets.has(asset),
+        `Public bundle prepared offline: ${asset}`,
+    );
+}
 for (const name of COMMON_STYLESHEETS) {
     const logical = `/static/styles/reuse/${name}`;
     assert.ok(

@@ -174,7 +174,11 @@ Penyedia Study menyediakan `study:favourites` dengan operasi `load`, `toggle`, d
 
 Gaya bersama, termasuk toast dan kontrol visibilitas rahasia, disertakan dalam manifes awal worker dalam bentuk URL logis dan hasil build. Calendar menyiapkan lembar gaya status yang dimuat tertunda melalui penyedianya. Katalog rute SPA dibagikan melalui ctx antara impor bundel dan berkas langsung sehingga rute Study yang diizinkan tetap tersedia saat pemuat lain pertama kali membaca katalog secara luring. Cuplikan halaman privat tetap terikat akun dan sesi; pemeriksaan izin serta persetujuan tetap berlaku.
 
-Aset publik tersimpan langsung dikembalikan bahkan saat daring. Bundel dengan hash konten tetap tidak berubah; sumber daya publik yang dapat berubah diperbarui di latar belakang sesuai permintaan. Pembaruan bersamaan digabungkan dan dibatasi sekali per menit per sumber daya. Validasi bersyarat browser menghindari unduhan ulang berkas yang tidak berubah. Kegagalan pembaruan mempertahankan data tersimpan tanpa menganggap server luring. Respons penghapusan atau penolakan akses yang sah menghapus aset dari cache. Respons API dan dokumen terautentikasi tetap hanya melalui jaringan pada worker.
+Aset publik tersimpan langsung dikembalikan. Pemeriksaan latar belakang sesuai permintaan digabungkan dan dibatasi. Isi respons lengkap dibandingkan sebelum penggantian; data yang tidak berubah dipertahankan. Respons dengan tanggal Last-Modified lebih lama tidak dapat mengganti berkas yang lebih baru. Berkas hilang, kegagalan koneksi, isi terpotong, dan kegagalan penulisan cache mempertahankan berkas lengkap sebelumnya. Respons berubah menggantikannya hanya setelah penulisan cache atomik berhasil. Penolakan akses eksplisit, respons private/no-store, perubahan persetujuan, dan pencabutan akses modul tetap menerapkan kebijakan. Respons API dan dokumen terautentikasi tetap hanya melalui jaringan pada worker.
+
+## Cache Aset Persisten
+
+Worker menyiapkan seluruh bundel halaman publik, chunk dinamis, gaya, dan media hasil build tanpa menjalankan halaman atau mengambil data privat. Respons publik yang diambil kemudian disimpan otomatis. Aktivasi worker membawa berkas publik lengkap ke generasi baru sebelum menghapus penyimpanan lama; hanya revisi modul yang diizinkan katalog saat ini yang dapat dipertahankan. Bundel publik dapat diunduh tanpa kunjungan halaman. Konten privat tetap memerlukan cuplikan terotorisasi yang disiapkan penyedia pemiliknya.
 
 ## Komit
 

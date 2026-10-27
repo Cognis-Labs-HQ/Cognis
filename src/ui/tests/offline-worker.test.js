@@ -12,6 +12,8 @@ function workerFixture() {
     let routes = [];
     let clock = Date.now();
     let serveAsset;
+    let failWrites = false;
+    const writes = [];
     let offlineGuards = [];
     let assetMaintenance = Promise.resolve();
     let assetWrites = Promise.resolve();
@@ -29,6 +31,10 @@ function workerFixture() {
                 },
                 async put(request, response) {
                     if (!name.endsWith("-control")) await assetWrites;
+                    if (!name.endsWith("-control") && failWrites)
+                        throw new Error("quota_exceeded");
+                    await response.clone().arrayBuffer();
+                    writes.push({ name, url: key(request) });
                     store.set(key(request), response.clone());
                 },
                 async delete(request) {
@@ -51,7 +57,7 @@ function workerFixture() {
         readFileSync(new URL("../public/sw.js", import.meta.url), "utf8"),
         {
             URL,
-            Date: { now: () => clock },
+            Date: { now: () => clock, parse: Date.parse },
             AbortSignal,
             Response,
             console,
@@ -99,6 +105,10 @@ function workerFixture() {
     );
     return {
         caches,
+        writes,
+        failWrites: (value) => {
+            failWrites = value;
+        },
         advance: (ms) => {
             clock += ms;
         },
@@ -270,14 +280,36 @@ test("public module opt-in requires all assets and invalidation removes availabi
     await assert.rejects(fixture.request(scriptUrl), /server_unreachable/);
 });
 
-test("activation preserves unrelated application caches", async () => {
+test("activation carries prior public assets forward before retiring storage and preserves unrelated caches", async () => {
     const fixture = workerFixture();
     await fixture.caches.open("popup-styles");
-    await fixture.caches.open("cognis-shell-v6");
+    const earlier = await fixture.caches.open("cognis-offline-earlier-build");
+    await earlier.put(
+        "/static/lazy-styles.css",
+        new Response("outdated styles"),
+    );
+    const prior = await fixture.caches.open("cognis-offline-previous-build");
+    await prior.put("/static/lazy-styles.css", new Response("retained styles"));
+    await prior.put("/manifest.webmanifest", new Response("retained manifest"));
     await fixture.lifecycle("install");
+    fixture.failWrites(true);
+    await assert.rejects(fixture.lifecycle("activate"), /quota_exceeded/);
+    assert.equal(
+        await (await prior.match("/static/lazy-styles.css")).text(),
+        "retained styles",
+    );
+    fixture.failWrites(false);
     await fixture.lifecycle("activate");
+    fixture.unavailable = true;
+    assert.equal(
+        await (await fixture.request("/static/lazy-styles.css")).text(),
+        "retained styles",
+    );
+    assert.equal(
+        await (await fixture.request("/manifest.webmanifest")).text(),
+        "retained manifest",
+    );
     assert.ok((await fixture.caches.keys()).includes("popup-styles"));
-    assert.ok(!(await fixture.caches.keys()).includes("cognis-shell-v6"));
 });
 
 test("disabled offline behavior uses the network and never serves cached documents or assets", async () => {
@@ -439,4 +471,82 @@ test("an authoritative public asset denial replaces cached access with the curre
     fixture.serve(() => new Response("denied", { status: 403 }));
     assert.equal((await fixture.request(path)).status, 200);
     assert.equal((await fixture.request(path)).status, 403);
+});
+
+test("unchanged and unavailable replacements retain a complete cached file until a changed response commits", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/lazy.js";
+    await fixture.request(path);
+    const writes = () =>
+        fixture.writes.filter((entry) => entry.url.endsWith(path)).length;
+    const originalWrites = writes();
+    await fixture.request(path);
+    assert.equal(writes(), originalWrites);
+    fixture.advance(60_001);
+    fixture.serve(() => new Response("missing", { status: 404 }));
+    await fixture.request(path);
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+    fixture.advance(60_001);
+    fixture.serve(() => new Response("new complete file"));
+    fixture.failWrites(true);
+    await fixture.request(path);
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+    fixture.advance(60_001);
+    fixture.failWrites(false);
+    await fixture.request(path);
+    assert.equal(
+        await (await fixture.request(path)).text(),
+        "new complete file",
+    );
+    assert.equal(writes(), originalWrites + 1);
+});
+
+test("a truncated replacement cannot overwrite complete cached bytes", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/complete.css";
+    await fixture.request(path);
+    fixture.serve(
+        () =>
+            new Response(
+                new ReadableStream({
+                    start(controller) {
+                        controller.error(new Error("truncated_transfer"));
+                    },
+                }),
+            ),
+    );
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+});
+
+test("an older server representation cannot replace a newer cached file", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/versioned.css";
+    fixture.serve(
+        () =>
+            new Response("current", {
+                headers: { "last-modified": "Tue, 27 Oct 2026 00:00:00 GMT" },
+            }),
+    );
+    await fixture.request(path);
+    fixture.serve(
+        () =>
+            new Response("older", {
+                headers: { "last-modified": "Mon, 26 Oct 2026 00:00:00 GMT" },
+            }),
+    );
+    await fixture.request(path);
+    assert.equal(await (await fixture.request(path)).text(), "current");
+    fixture.advance(60_001);
+    fixture.serve(
+        () =>
+            new Response("newer", {
+                headers: { "last-modified": "Wed, 28 Oct 2026 00:00:00 GMT" },
+            }),
+    );
+    await fixture.request(path);
+    assert.equal(await (await fixture.request(path)).text(), "newer");
 });
