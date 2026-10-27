@@ -85,3 +85,7 @@ Vorgemerkte Kartenbewertungen behalten ihr erfolgreiches Ergebnis, auch wenn opt
 ## Offline-Arbeitsbereich
 
 Flashcards bereitet seine Liste und bis zu 80 passende Stapel mit Kartendetails innerhalb des bestehenden begrenzten Caches vor.
+
+## Offline-Übungen
+
+Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog zusätzlich zu den sprachspezifischen Katalogen. Zeichnen und Flashcards können ihre üblichen Schemaabfragen ohne vorherigen Online-Seitenbesuch nutzen. Flashcards bereitet Share- und Study-Übersetzungen sowie die Galerievorlage vor und liest Sammlungen der ausgewählten Sprache mit denselben schemaqualifizierten Anfragen wie die Einschreibungsvorbereitung. Vorbereitete Stapel öffnen Galerie und Übungen offline. Audio, Wörterbuchabrufe, Inhaltsbearbeitung sowie Zugriffs- und Zustimmungsprüfungen behalten ihre bisherigen Beschränkungen.

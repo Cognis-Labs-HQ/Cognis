@@ -76,6 +76,7 @@ test("verified enrollment prepares opted-in collections without visiting Explore
         false,
     );
     host.disconnect();
+    assert.equal((await library.fetchLibrarySchemas())[0].id, "light");
     assert.equal(
         (
             await library.fetchLibraryEntries({

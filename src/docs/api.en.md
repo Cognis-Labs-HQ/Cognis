@@ -258,3 +258,9 @@ Offline Profile access requires the complete prepared own-profile snapshot: text
 The native close/reload guard covers protected records newly created in the current page and session. A real reload starts with that guard clear while preserving queued records for replay; new meaningful edits arm it again. Viewed Study markers and analytics are background activity and do not arm it. Other tabs’ records, previously persisted records and merely rendering pages do not create a warning. Provider disposal keeps current-page edits protected until delivery or removal.
 
 The host exposes `ui:languageCatalog.load` through ctx and prepares the shared language catalog after verified sign-in. Core locale catalogs are included in the public boot set. Settings and the navbar use that same lifecycle-scoped read; saving a language preference offline keeps the working page open and applies the preference to later client navigation.
+
+## Offline Study Practice
+
+Library management and its edit/search/request pages require a connection. The Study hub and submenu hide those links offline, including immediately after disconnection; Explore remains available for cached browsing and drawing. The Library provider declares only Explore as an offline session route.
+
+Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.

@@ -75,6 +75,7 @@ export async function mountProvider(ctx) {
             componentStringBaseUrls: [
                 "/static/gateways/study/languages",
                 "/static/adapters/study/flashcards/languages",
+                "/static/gateways/share/languages",
             ],
         }),
         loadDeckTemplates(ctx.signal),

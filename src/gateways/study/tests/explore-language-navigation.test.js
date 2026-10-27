@@ -1,3 +1,4 @@
+import { replaceMountScope } from "../../../ui/reuse/mount-scope.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -66,10 +67,16 @@ test("English and Japanese resolve the same Explore roles through their provider
     assert.equal(languageExploreUrl(schemas, "unavailable"), null);
 });
 
-function navigationContext({ locale = "en", routes, pending = [] } = {}) {
+function navigationContext({
+    locale = "en",
+    routes,
+    pending = [],
+    admin = false,
+} = {}) {
     const context = vm.createContext({
         languageExploreUrl,
         languageFlashcardsUrl,
+        replaceMountScope,
         document: { documentElement: { lang: locale } },
         window: { location: { pathname: "/study/explore/ja/kanji" } },
         history: { state: {} },
@@ -83,7 +90,7 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
         fetchSearchableDictionaryProviders: async () => [],
         escapeHtml: String,
         buildLibraryUrl: () => "/study/library",
-        isAdminScope: () => false,
+        isAdminScope: () => admin,
         loadSpaRoutes: async () =>
             routes ??
             [
@@ -112,6 +119,9 @@ function navigationContext({ locale = "en", routes, pending = [] } = {}) {
             new URL("../ui/sub-navigation.js", import.meta.url),
             {
                 "./navigation-client.js": context,
+                "/static/reuse/offline-state.js": {
+                    isOffline: () => context.offline === true,
+                },
                 "./reuse/explore.js": context,
                 "/static/reuse/mount-scope.js": context,
                 "/static/reuse/toast.js": context,
@@ -218,3 +228,70 @@ function localeStrings(locale) {
         ),
     );
 }
+
+test("Study management links follow connectivity while Explore remains available", async () => {
+    const context = navigationContext({
+        admin: true,
+        routes: [
+            {
+                base: "/study/library",
+                id: "study-library-page",
+                navigationLabels: { en: "Library" },
+            },
+            { base: "/study/explore" },
+        ],
+    });
+    const model = await context.loadStudySubNavigationModel({
+        fallbackLanguageCode: "ja",
+    });
+    const english = localeStrings("en");
+    const slot = context.createStudySubNavigationSlot(model, {
+        t: (key) => {
+            const text = english.get(key);
+            assert.ok(text, key);
+            return text;
+        },
+    });
+    assert.match(slot.render(), /href="\/study\/library"/);
+    context.offline = true;
+    assert.equal(
+        [...slot.render().matchAll(/href="([^"]+)"/g)].some(
+            (match) => match[1] === "/study/library",
+        ),
+        false,
+    );
+    assert.match(slot.render(), /href="\/study\/explore"/);
+    const offline = await context.loadStudySubNavigationModel({
+        fallbackLanguageCode: "ja",
+    });
+    assert.deepEqual(
+        Array.from(offline.modules, (page) => page.id),
+        ["explore"],
+    );
+    context.offline = false;
+    assert.match(slot.render(), /href="\/study\/library"/);
+});
+
+test("an already mounted Study menu hides management links on disconnect and cleans up its listener", () => {
+    const context = navigationContext();
+    const events = new EventTarget();
+    context.window.addEventListener = events.addEventListener.bind(events);
+    const root = new EventTarget();
+    const item = { hidden: false };
+    root.querySelectorAll = () => [
+        { getAttribute: () => "/study/library", closest: () => item },
+    ];
+    const scope = new AbortController();
+    context.bindStudySubNavigation(root, { signal: scope.signal });
+    assert.equal(item.hidden, false);
+    context.offline = true;
+    events.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(item.hidden, true);
+    context.offline = false;
+    events.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(item.hidden, false);
+    scope.abort();
+    context.offline = true;
+    events.dispatchEvent(new Event("cognis:connectivity-changed"));
+    assert.equal(item.hidden, false);
+});

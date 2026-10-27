@@ -21,7 +21,7 @@ export async function mountProvider(ctx) {
         );
     registerLibraryClient(ctx);
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
-        ["study-library-page", "study-library-layer-page"],
+        ["study-library-layer-page"],
         ctx.signal,
     );
     await createI18n({

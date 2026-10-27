@@ -85,3 +85,7 @@ Queued card reviews retain their successful result even if optional activity rec
 ## Enrolled Offline Workspace
 
 Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache.
+
+## Offline Study Practice
+
+Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.

@@ -190,6 +190,12 @@ Die native Schließen-/Neuladen-Warnung schützt nur Datensätze, die in der akt
 
 Der Host stellt `ui:languageCatalog.load` über ctx bereit und bereitet den gemeinsamen Sprachkatalog nach bestätigter Anmeldung vor. Die Kern-Sprachkataloge gehören zum öffentlichen Startbestand. Settings und die Navigationsleiste nutzen denselben lebenszyklusgebundenen Lesezugriff. Das Offline-Speichern einer Sprachpräferenz hält die nutzbare Seite offen und wendet die Präferenz bei späterer clientseitiger Navigation an.
 
+## Offline-Übungen
+
+Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötigen eine Verbindung. Study-Startseite und Untermenü blenden diese Links offline aus, auch unmittelbar nach einem Verbindungsabbruch. Explore bleibt zum Lesen gespeicherter Inhalte und zum Zeichnen verfügbar. Der Library-Provider meldet nur Explore als Offline-Sitzungsroute an.
+
+Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog zusätzlich zu den sprachspezifischen Katalogen. Zeichnen und Flashcards können ihre üblichen Schemaabfragen ohne vorherigen Online-Seitenbesuch nutzen. Flashcards bereitet Share- und Study-Übersetzungen sowie die Galerievorlage vor und liest Sammlungen der ausgewählten Sprache mit denselben schemaqualifizierten Anfragen wie die Einschreibungsvorbereitung. Vorbereitete Stapel öffnen Galerie und Übungen offline. Audio, Wörterbuchabrufe, Inhaltsbearbeitung sowie Zugriffs- und Zustimmungsprüfungen behalten ihre bisherigen Beschränkungen.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

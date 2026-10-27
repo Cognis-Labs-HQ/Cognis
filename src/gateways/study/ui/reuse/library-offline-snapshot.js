@@ -21,6 +21,7 @@ export function registerEnrolledLibrarySnapshots(ctx, actions) {
             if (!codes.length) return;
             const access = await read("fetchLibraryLocations");
             await Promise.all([
+                read("fetchLibrarySchemas"),
                 read("fetchLibraryForms"),
                 read("fetchViewedLibraryEntryIds"),
             ]);

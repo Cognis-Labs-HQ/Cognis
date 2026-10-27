@@ -144,3 +144,9 @@ Akses Profil luring memerlukan cuplikan profil sendiri yang lengkap: teks, posti
 Peringatan tutup atau muat ulang bawaan hanya melindungi catatan baru dari halaman dan sesi saat ini. Setelah muat ulang sebenarnya, peringatan direset sementara antrean tetap disimpan untuk pengiriman ulang. Perubahan nyata yang baru mengaktifkannya lagi. Penanda Study yang dilihat dan analitik adalah aktivitas latar belakang tanpa peringatan. Catatan tab lain, catatan tersimpan sebelumnya, dan sekadar merender halaman tidak memicu peringatan. Penghentian penyedia tetap melindungi perubahan halaman saat ini sampai terkirim atau dihapus.
 
 Host menyediakan `ui:languageCatalog.load` melalui ctx dan menyiapkan katalog bahasa bersama setelah masuk terverifikasi. Katalog bahasa inti disertakan dalam kumpulan awal publik. Settings dan bilah navigasi memakai pembacaan yang sama dengan lingkup siklus hidup. Menyimpan preferensi bahasa secara luring mempertahankan halaman yang berfungsi dan menerapkan preferensi pada navigasi klien berikutnya.
+
+## Latihan Study Luring
+
+Pengelolaan Library serta halaman pengeditan, pencarian, dan permintaannya memerlukan koneksi. Beranda Study dan submenu menyembunyikan tautan tersebut saat luring, termasuk segera setelah koneksi terputus. Explore tetap tersedia untuk membaca konten tersimpan dan menggambar. Penyedia Library hanya mendaftarkan Explore sebagai rute sesi luring.
+
+Persiapan bahasa yang diikuti menyimpan katalog skema bersama selain katalog tiap bahasa. Menggambar dan Flashcards dapat memakai pembacaan skema biasa tanpa kunjungan halaman daring sebelumnya. Flashcards menyiapkan terjemahan Share dan Study serta templat galeri, lalu membaca koleksi bahasa terpilih dengan permintaan berskema yang sama seperti persiapan keikutsertaan. Dek yang disiapkan dapat membuka galeri dan latihan luring. Audio, pengambilan kamus, pengeditan konten, serta pemeriksaan akses dan persetujuan tetap mengikuti pembatasan yang ada.

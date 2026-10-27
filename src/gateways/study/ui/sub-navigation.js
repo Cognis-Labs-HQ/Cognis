@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { fetchStudyPreferences } from "./navigation-client.js";
 import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
@@ -41,6 +42,10 @@ export function readSelectedStudyLanguageCode() {
     );
 }
 
+const isManagementPage = (path) => /^\/study\/library(?:\/|$)/.test(path ?? "");
+const offlineVisible = (component) =>
+    !isOffline() || !isManagementPage(component?.pageUrl);
+
 const navigationScopes = new WeakMap();
 
 export function bindStudySubNavigation(
@@ -53,6 +58,18 @@ export function bindStudySubNavigation(
     );
     navigationScopes.set(root, controller);
     const signal = controller.signal;
+    const updateManagementLinks = () => {
+        for (const link of root.querySelectorAll('a[href^="/study/library"]')) {
+            if (isManagementPage(link.getAttribute("href")))
+                (link.closest("li") ?? link).hidden = isOffline();
+        }
+    };
+    updateManagementLinks();
+    window.addEventListener(
+        "cognis:connectivity-changed",
+        updateManagementLinks,
+        { signal },
+    );
     window.addEventListener(
         "cognis:route-will-change",
         () => controller.abort(),
@@ -245,12 +262,19 @@ export async function loadStudySubNavigationModel({
         ? requestedLanguageCode
         : activeLanguageCodes[0];
 
-    const modulesByLanguage = requestedModel.pagesByGroup;
+    const modulesByLanguage = new Map(
+        [...requestedModel.pagesByGroup].map(([language, pages]) => [
+            language,
+            pages.filter(offlineVisible),
+        ]),
+    );
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
     const schemas = await fetchLibrarySchemas().catch(() => []);
     const activeLocale = document.documentElement.lang;
-    const spaRoutes = await loadSpaRoutes();
+    const spaRoutes = (await loadSpaRoutes()).filter(
+        (route) => !isOffline() || !isManagementPage(route.base),
+    );
     if (spaRoutes.some((route) => route.base === "/study/explore"))
         modules.push({
             id: "explore",
@@ -410,6 +434,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
+        .filter(offlineVisible)
         .map((component) => {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
@@ -436,7 +461,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
     const libraryLink =
-        isAdminScope() && !hasLibraryModule
+        !isOffline() && isAdminScope() && !hasLibraryModule
             ? `
             <li>
                 <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
