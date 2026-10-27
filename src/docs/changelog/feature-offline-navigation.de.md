@@ -245,3 +245,4 @@ Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatal
 - [41b573b](https://github.com/Cognis-Labs-HQ/Cognis/commit/41b573b56b646acaf3f9bb9064ca6211c6657e92)
 - [bb3fbfd](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb3fbfd7ea7e3cf4f021c2a3cafab7f58bc7fe2c)
 - [b10ab85](https://github.com/Cognis-Labs-HQ/Cognis/commit/b10ab85f93ee48a37fb1b13152a14686db2ae2eb)
+- [a2f8c21](https://github.com/Cognis-Labs-HQ/Cognis/commit/a2f8c21bf2a8f51ef30bf73ef88e0782b249117e)
