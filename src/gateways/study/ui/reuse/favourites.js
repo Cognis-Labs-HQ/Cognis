@@ -54,7 +54,7 @@ export async function loadFavourites({ signal } = {}) {
                         const kind = button.dataset.studyFavouriteKind;
                         const id = button.dataset.studyFavourite;
                         const selected = !client.has(kind, id);
-                        const result = await client.toggle({
+                        await client.toggle({
                             kind,
                             id,
                             favourite: selected,
@@ -64,11 +64,9 @@ export async function loadFavourites({ signal } = {}) {
                         refresh(root);
                         showToast(
                             i18n.t(
-                                result?.queued
-                                    ? "ui.reuse.offline_changes_queued"
-                                    : selected
-                                      ? "gateway.study.favourite_added"
-                                      : "gateway.study.favourite_removed",
+                                selected
+                                    ? "gateway.study.favourite_added"
+                                    : "gateway.study.favourite_removed",
                             ),
                             { variant: "success" },
                         );

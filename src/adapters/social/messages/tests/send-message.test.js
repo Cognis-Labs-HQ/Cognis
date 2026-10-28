@@ -67,7 +67,7 @@ test("a queued message keeps its successful receipt when refreshing the room fai
     await state.submit();
     assert.equal(state.input.value, "");
     assert.deepEqual(state.cleared, ["room"]);
-    assert.deepEqual(state.toasts, ["ui.reuse.offline_changes_queued"]);
+    assert.deepEqual(state.toasts, []);
 });
 
 test("the draft remains until durable submission finishes and repeated submit cannot duplicate it", async () => {
@@ -101,7 +101,7 @@ test("the draft remains until durable submission finishes and repeated submit ca
     assert.equal(state.input.value, "");
     assert.deepEqual(state.cleared, ["room"]);
     assert.deepEqual(state.opened, ["room"]);
-    assert.deepEqual(state.toasts, ["ui.reuse.offline_changes_queued"]);
+    assert.deepEqual(state.toasts, []);
 });
 
 test("a full buffer retains the message draft and allows retry after recovery", async () => {
@@ -118,4 +118,14 @@ test("a full buffer retains the message draft and allows retry after recovery", 
     await state.submit();
     assert.equal(state.input.value, "");
     assert.deepEqual(state.cleared, ["room"]);
+});
+
+test("acknowledged and durably buffered messages clear drafts with identical user feedback", async () => {
+    for (const queued of [false, true]) {
+        const state = fixture(async () => Response.json({ queued }));
+        await state.submit();
+        assert.equal(state.input.value, "");
+        assert.deepEqual(state.toasts, []);
+        assert.deepEqual(state.opened, ["room"]);
+    }
 });

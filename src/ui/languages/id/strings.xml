@@ -623,8 +623,7 @@
     <string name="ui.reuse.offline_access_required">Akses Offline Perlu Peninjauan</string>
     <string name="ui.reuse.offline_access_required_body">Sambungkan kembali untuk meninjau dan menyetujui dokumen wajib terbaru sebelum memakai mode offline.</string>
     <string name="ui.reuse.retry">Coba lagi</string>
-    <string name="ui.reuse.offline_changes_queued">Perubahan Diantrekan untuk Koneksi Berikutnya</string>
-    <string name="ui.reuse.offline_sync_rejected">Sebagian aktivitas antrean tidak dapat diterapkan.</string>
+    <string name="ui.reuse.offline_sync_rejected">Sebagian Perubahan Tidak Dapat Diterapkan.</string>
     <string name="ui.reuse.offline_buffer_full_body">Buffer offline penuh. Sambungkan kembali dan kirim perubahan tertunda sebelum menambah lagi.</string>
   <string name="ui.reuse.account_id">ID Akun</string>
   <string name="ui.reuse.authentication_provider">Penyedia Autentikasi</string>

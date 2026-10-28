@@ -81,14 +81,7 @@ export function createSubmitEvent({
         }
         setSelectedCalendarId(targetCalendarId);
         syncRouteSelection();
-        showToast(
-            i18n.t(
-                payload?.queued
-                    ? "ui.reuse.offline_changes_queued"
-                    : "gateway.calendar.create_event_success",
-            ),
-            "success",
-        );
+        showToast(i18n.t("gateway.calendar.create_event_success"), "success");
         return createdEventId !== "" ? createdEventId : true;
     }
     return (input) => {

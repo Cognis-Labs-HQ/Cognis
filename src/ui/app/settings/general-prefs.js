@@ -86,10 +86,6 @@ export function initGeneralPrefs(
             throw new Error(code);
         }
         if (!res.ok) throw new Error("remove_failed");
-        if ((await res.json()).queued)
-            showToast(i18n.t("ui.reuse.offline_changes_queued"), {
-                variant: "success",
-            });
     }
 
     async function forceRemoveUnverifiedEmail(address) {
@@ -117,10 +113,6 @@ export function initGeneralPrefs(
             { method: "PUT" },
         );
         if (!response.ok) throw new Error("primary_failed");
-        if ((await response.json()).queued)
-            showToast(i18n.t("ui.reuse.offline_changes_queued"), {
-                variant: "success",
-            });
     }
 
     async function submitAccountLifecycleAction(action, password) {
@@ -476,12 +468,7 @@ export function initGeneralPrefs(
                         input.value = "";
                         await loadEmails();
                         renderEmailList();
-                        if (result.queued) {
-                            showToast(
-                                i18n.t("ui.reuse.offline_changes_queued"),
-                                { variant: "success" },
-                            );
-                        } else if (result.pendingVerification) {
+                        if (!result.queued && result.pendingVerification) {
                             const action = await openVerifyPopup(
                                 address,
                                 result.watchToken,

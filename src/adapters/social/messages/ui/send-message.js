@@ -92,10 +92,6 @@ export function createMessageSender({
             }
             const receipt = await response.json();
             delivered = true;
-            if (receipt.queued)
-                showToast(i18n.t("ui.reuse.offline_changes_queued"), {
-                    variant: "info",
-                });
             if (composerInput instanceof HTMLTextAreaElement) {
                 clearPersistedFormState(selectedRoomId);
                 composerInput.value = "";

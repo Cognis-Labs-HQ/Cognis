@@ -65,11 +65,14 @@ const { mountOfflineStatus } = loadTestModule(
                                           descriptor.collapsible,
                                           true,
                                       );
-                                      if (offline)
-                                          assert.match(
-                                              descriptor.background,
-                                              /repeating-linear-gradient/,
-                                          );
+                                      assert.equal(
+                                          descriptor.variant,
+                                          offline ? "warning" : "success",
+                                      );
+                                      assert.equal(
+                                          descriptor.background,
+                                          undefined,
+                                      );
                                       const notice = element();
                                       notice.innerHTML =
                                           renderTopBanner(descriptor);

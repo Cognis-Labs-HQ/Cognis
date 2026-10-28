@@ -16,14 +16,7 @@ export async function saveProfileFields(
         if (!response.ok) throw new Error("profile_save_failed");
         const receipt = await response.json();
         delivered = true;
-        showToast(
-            i18n.t(
-                receipt.queued
-                    ? "ui.reuse.offline_changes_queued"
-                    : "ui.app.profile.saved",
-            ),
-            { variant: receipt.queued ? "info" : "success" },
-        );
+        showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
         localStorage.setItem("cognis_display_name", fields.displayName);
         setState({
             profile: receipt.queued

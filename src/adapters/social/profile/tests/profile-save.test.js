@@ -47,7 +47,7 @@ test("a queued profile is retained when refreshing its rendered cards fails", as
     await state.save({ displayName: "Queued" });
     assert.equal(state.profile().displayName, "Queued");
     assert.equal(state.profile().queued, true);
-    assert.deepEqual(state.notices, ["ui.reuse.offline_changes_queued"]);
+    assert.deepEqual(state.notices, ["ui.app.profile.saved"]);
 });
 
 test("acknowledged profile edits repaint from the authoritative mutation response", async () => {
@@ -57,4 +57,13 @@ test("acknowledged profile edits repaint from the authoritative mutation respons
     assert.deepEqual(state.profile(), profile);
     assert.deepEqual(state.refreshed, ["hero", "social-links", "posts-new"]);
     assert.deepEqual(state.notices, ["ui.app.profile.saved"]);
+});
+
+test("durably buffered and acknowledged profiles keep the same success feedback", async () => {
+    for (const queued of [false, true]) {
+        const state = fixture({ queued, data: { displayName: "Saved" } });
+        await state.save({ displayName: "Saved" });
+        assert.deepEqual(state.notices, ["ui.app.profile.saved"]);
+        assert.equal(state.profile().displayName, "Saved");
+    }
 });

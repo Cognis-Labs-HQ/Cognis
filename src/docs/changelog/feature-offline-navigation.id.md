@@ -2,6 +2,14 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Umpan Balik Luring Konsisten
+
+Penyimpanan luring memakai pesan keberhasilan dan varian yang sama dengan penyimpanan saat terhubung. Pesan, kiriman, unggahan gambar, serta perubahan email tidak menambah pemberitahuan khusus antrean; tanda penerimaan pesan memakai tampilan normal. Kegagalan penyimpanan nyata dan perubahan yang ditolak tetap ditampilkan. Banner peringatan bersama memakai palet semantik terang dan gelap untuk permukaan amber buram, teks, batas, kontrol, serta aksen garis yang halus. Mode Luring tidak lagi menyisipkan gaya latarnya sendiri. Animasi pelipatan, perluasan melalui papan ketik, serta dukungan pengurangan gerakan tetap tersedia.
+
+## Pembaruan Katalog Atomik
+
+Pembaruan bursa menyiapkan catatan modul terpisah dan menyelesaikan pemuatan terjemahan milik setiap modul sebelum mengganti katalog yang terlihat. Pembaruan satu modul dapat menggambar ulang halaman dengan aman saat terjemahan modul lain masih dimuat; tag diselesaikan dari modul pemiliknya, bukan dari terjemahan host. Terjemahan yang hilang tetap menghasilkan kegagalan eksplisit dan katalog lengkap terakhir tetap terlihat. Tindakan siklus hidup membatalkan hasil pembaruan lama; polling berkala berhenti sementara saat tindakan atau pemeriksaan dependensi berlangsung. Metadata katalog mempertahankan terjemahan yang sesuai ketika metadata terpasang berbeda.
+
 ## Transisi dan Navigasi Lancar
 
 Pemberitahuan luring memakai garis oranye-putih tipis di atas permukaan tema buram. Banner yang dapat dilipat menganimasikan tinggi pembungkus yang terpotong serta opasitas isi sambil mempertahankan ruang alaminya dalam dokumen. Ekspansi papan ketik tetap tersedia dan preferensi pengurangan gerakan menonaktifkan transisi. Aset publik, termasuk manifes web yang disiapkan saat awal, dapat memakai cache sebelum persetujuan hukum; dokumen privat dan data API tetap mengikuti otorisasi. Jika Mode Luring dinonaktifkan secara eksplisit, jaringan tetap digunakan. Kegagalan satu sumber daya memerlukan pemeriksaan kesehatan yang gagal sebelum mengumumkan Mode Luring. Setelah terkonfirmasi, worker berhenti memeriksa hingga pemulihan menyegarkan katalognya. Navigasi Study langsung memakai snapshot sesi terverifikasi, dengan validasi gabungan paling sering setiap tiga puluh detik. Permintaan metadata awal dibatasi lima detik dan penemuan kamus opsional tiga detik. Penolakan akses resmi membatalkan snapshot, perubahan keikutsertaan atau modul membatalkan data navigasi, dan penemuan subhalaman yang gagal dapat dicoba ulang.

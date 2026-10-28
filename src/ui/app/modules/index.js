@@ -1,4 +1,8 @@
 import { formatModuleTag } from "./filters.js";
+import {
+    prepareInstalledCatalog,
+    prepareDiscoveredCatalog,
+} from "./catalog.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import {
@@ -47,7 +51,6 @@ import {
     detailModuleUuid,
     formatVersion,
     hasModuleUpdate,
-    localizeModulePresentation,
     moduleChangeDirection,
     resolveModuleRepositoryUrl,
     resolveLocalizedReadme,
@@ -56,10 +59,7 @@ import {
 import { openModulePreferences } from "./preferences.js";
 import { confirmModuleUninstall } from "./uninstall.js";
 import { openMarketplaceSettings } from "./source-settings.js";
-import {
-    loadAuthenticatedModuleAssets,
-    resolveModuleAssetUrl,
-} from "./assets.js";
+import { resolveModuleAssetUrl } from "./assets.js";
 import {
     confirmModuleDependencies,
     resolveInstallDependencies,
@@ -117,7 +117,10 @@ const reportSourceFailures = (failures) =>
     });
 
 const startMarketplacePolling = createModulesPagePolling({
-    isRefreshPending: () => marketplaceRefreshPending,
+    isRefreshPending: () =>
+        marketplaceRefreshPending ||
+        pendingModuleActions.size > 0 ||
+        pendingDependencyChecks.size > 0,
     loadKnownModules: (signal) => loadKnownModules(false, signal, false),
     discoverSources: (signal) => discoverConfiguredSources(false, signal),
     log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
@@ -520,6 +523,7 @@ async function loadKnownModules(
     signal = pageMountController?.signal,
     refreshWhenReady = true,
 ) {
+    const sequence = ++discoverySequence;
     const selectedModuleUuid =
         selectedModule?.uuid ??
         (restoreDetailRoute ? detailModuleUuid() : null);
@@ -528,37 +532,12 @@ async function loadKnownModules(
         loadInstalledModules(),
         loadCachedModules(),
     ]);
-    sources = loadedSources;
-    modules = [...cached];
-    await loadAuthenticatedModuleAssets(modules, { signal });
-    if (signal?.aborted) return;
-    installed.forEach((installedModule) => {
-        const known = modules.find(
-            (module) => module.uuid === installedModule.uuid,
-        );
-        if (known) {
-            const catalogPresentation = {
-                name: known.name,
-                summary: known.summary,
-                description: known.description,
-                categories: known.categories,
-                tags: known.tags,
-                assets: known.assets,
-            };
-            const catalogUi = known.ui;
-            Object.assign(known, installedModule, {
-                installed: true,
-                catalogPresentation: { ...catalogPresentation, ui: catalogUi },
-            });
-            Object.assign(known, catalogPresentation);
-        } else {
-            modules.push(installedModule);
-        }
+    const prepared = await prepareInstalledCatalog(cached, installed, i18n, {
+        signal,
     });
-    await Promise.all(
-        modules.map((module) => localizeModulePresentation(module, i18n)),
-    );
-    if (signal?.aborted) return;
+    if (sequence !== discoverySequence || signal?.aborted) return;
+    sources = loadedSources;
+    modules = prepared;
     selectedModule = selectedModuleUuid
         ? (modules.find(
               (module) =>
@@ -603,31 +582,15 @@ async function discoverConfiguredSources(
     );
     if (sequence !== discoverySequence || signal?.aborted) return;
     reportSourceFailures(sourceFailures);
-    await loadAuthenticatedModuleAssets(discovered, { signal });
-    if (signal?.aborted) return;
-    {
-        const knownUuids = new Set(modules.map((module) => module.uuid));
-        discovered.forEach((module) => {
-            const known = modules.find((entry) => entry.uuid === module.uuid);
-            if (known) {
-                const status = known.status;
-                Object.assign(known, module);
-                delete known.catalogPresentation;
-                if (status) known.status = status;
-            } else if (!knownUuids.has(module.uuid)) {
-                modules.push(module);
-            }
-        });
-        await Promise.all(
-            modules.map((module) => localizeModulePresentation(module, i18n)),
-        );
-        if (sequence !== discoverySequence || signal?.aborted) return;
-        selectedModule = selectedModuleUuid
-            ? (modules.find((module) => module.uuid === selectedModuleUuid) ??
-              null)
-            : null;
-        refreshMarketplace();
-    }
+    const prepared = await prepareDiscoveredCatalog(modules, discovered, i18n, {
+        signal,
+    });
+    if (sequence !== discoverySequence || signal?.aborted) return;
+    modules = prepared;
+    selectedModule = selectedModuleUuid
+        ? (modules.find((module) => module.uuid === selectedModuleUuid) ?? null)
+        : null;
+    refreshMarketplace();
 }
 
 async function refreshMarketplaceData() {
@@ -815,6 +778,7 @@ function bindInteractions(root, signal) {
                     }
                     if (!dependenciesReady) return;
                 }
+                discoverySequence += 1;
                 pendingModuleActions.set(module.uuid, action);
                 const finishLoading = target.dataset.moduleMenu
                     ? null

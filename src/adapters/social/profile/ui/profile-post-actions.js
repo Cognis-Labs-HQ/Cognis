@@ -48,10 +48,6 @@ export function createProfilePostActions({
                         ? [receipt.data, ...(getState().posts ?? [])]
                         : await loadOwnPosts(),
                 });
-                if (receipt.queued)
-                    showToast(i18n.t("ui.reuse.offline_changes_queued"), {
-                        variant: "info",
-                    });
                 const postFormElement = root?.querySelector("#new-post-form");
                 if (postFormElement instanceof HTMLFormElement) {
                     postFormElement.reset();

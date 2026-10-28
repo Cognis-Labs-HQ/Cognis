@@ -60,7 +60,10 @@ test("a queued event remains successful and readable when optional activity and 
     assert.equal(repeated, id);
     assert.equal(typeof id, "string");
     assert.deepEqual(notices, [
-        { message: "ui.reuse.offline_changes_queued", variant: "success" },
+        {
+            message: "gateway.calendar.create_event_success",
+            variant: "success",
+        },
     ]);
     assert.equal((await host.outbox.pending("calendar.events")).length, 1);
     const details = await (

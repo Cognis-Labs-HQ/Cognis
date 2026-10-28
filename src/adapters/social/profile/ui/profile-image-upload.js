@@ -133,10 +133,6 @@ export function createProfileImageUploadActions({
             try {
                 const receipt = await response.json();
                 responseData = receipt?.data ?? {};
-                if (receipt.queued)
-                    showToast(i18n.t("ui.reuse.offline_changes_queued"), {
-                        variant: "info",
-                    });
             } catch (error) {
                 console.error(
                     "[profile] unable to read optional upload response",

@@ -72,10 +72,6 @@ export function mountOfflineStatus(
             {
                 variant: mode === "offline" ? "warning" : "success",
                 collapsible: true,
-                background:
-                    mode === "offline"
-                        ? "linear-gradient(180deg, transparent 0 2px, rgb(from var(--surface-2) r g b / 1) 2px 100%), repeating-linear-gradient(135deg, #f59e0b 0 10px, #fff7ed 10px 20px)"
-                        : undefined,
                 title: i18n.t(
                     mode === "offline"
                         ? "ui.reuse.offline_mode_active"

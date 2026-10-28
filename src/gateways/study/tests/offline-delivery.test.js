@@ -74,7 +74,7 @@ test("favourite changes remain visible across offline remounts and replay in ord
         true,
     );
     assert.equal(requests.length, 0);
-    assert.equal(toasts[0], "ui.reuse.offline_changes_queued");
+    assert.equal(toasts[0], "gateway.study.favourite_added");
     fixture.reconnect();
     assert.equal((await fixture.outbox.flush()).sent, 1);
     assert.deepEqual(requests[0], {

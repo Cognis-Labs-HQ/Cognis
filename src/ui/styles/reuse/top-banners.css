@@ -66,7 +66,27 @@
     --top-banner-tint: var(--color-success-outline-text);
 }
 .top-banner--warning {
+    position: relative;
     --top-banner-tint: var(--color-warning-outline-text);
+    --top-banner-background: var(--color-warning-surface);
+    --text: var(--color-warning-text);
+    --text-muted: var(--color-warning-muted);
+    --border: var(--color-warning-border);
+    --border-strong: var(--color-warning-outline-text);
+    --surface-soft: var(--color-warning-hover-bg);
+}
+
+.top-banner--warning::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: repeating-linear-gradient(
+        135deg,
+        var(--color-warning-stripe) 0 8px,
+        var(--color-warning-stripe-contrast) 8px 16px
+    );
+    pointer-events: none;
 }
 .top-banner--danger {
     --top-banner-tint: var(--color-danger-outline-text);

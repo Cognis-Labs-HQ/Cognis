@@ -195,8 +195,6 @@ function renderMessageStatus(
     i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
-    if (message.queued)
-        return `<span class="messages-message-status">${escapeHtml(i18n.t("ui.reuse.offline_changes_queued"))}</span>`;
     if (readersHere.length > 0) {
         const readerPayload = escapeHtml(
             encodeURIComponent(

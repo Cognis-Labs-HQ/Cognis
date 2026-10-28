@@ -49,8 +49,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.39`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.3`    |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.28`   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.4`    |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.29`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
@@ -77,8 +77,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.1.41`   |
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.4.4`    |
-| Calendar              | `src/gateways/calendar/`      | `1.5.2`    |
+| Study                 | `src/gateways/study/`         | `2.4.5`    |
+| Calendar              | `src/gateways/calendar/`      | `1.5.3`    |
 
 ## コア契約
 
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.10.7`   |
+| API Server     | `src/api/` | `0.10.8`   |
 
 ## ツール
 
