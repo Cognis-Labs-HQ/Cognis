@@ -8,9 +8,22 @@ function fixture() {
         ["cognis_access_token", "session"],
     ]);
     const writes = [];
+    const events = [];
+    const window = new EventTarget();
+    window.addEventListener("cognis:offline-preference-changed", () =>
+        events.push("offline"),
+    );
     let duringRead = () => {};
     const globals = {
-        localStorage: { getItem: (key) => values.get(key) ?? null },
+        localStorage: {
+            getItem: (key) => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value),
+        },
+        window,
+        CustomEvent: Event,
+        document: {
+            documentElement: { dataset: {}, style: { setProperty() {} } },
+        },
         JSON,
         Error,
     };
@@ -58,6 +71,7 @@ function fixture() {
         prefs,
         values,
         writes,
+        events,
         duringRead: (callback) => {
             duringRead = callback;
         },
@@ -86,4 +100,19 @@ test("saving unchanged UI preferences leaves the buffered write contract idle", 
     const state = fixture();
     await state.prefs.saveUiPreferences({ mode: "dark", timezone: "UTC" });
     assert.equal(state.writes.length, 0);
+});
+
+test("binding the first same-account offline preference preserves already prepared snapshots", () => {
+    const state = fixture();
+    state.prefs.applyUiPreferences({ offlineEnabled: true });
+    assert.equal(
+        state.values.get("cognis_offline_preference_account"),
+        "learner",
+    );
+    assert.equal(state.events.length, 0);
+    state.prefs.applyUiPreferences({ offlineEnabled: false });
+    assert.equal(state.events.length, 1);
+    state.values.set("cognis_account", "another-user");
+    state.prefs.applyUiPreferences({ offlineEnabled: true });
+    assert.equal(state.events.length, 2);
 });

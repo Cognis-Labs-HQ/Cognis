@@ -125,3 +125,25 @@ test("Study prepares an unvisited hub after authentication and refreshes invalid
     assert.equal(requests.length, 6);
     host.controller.abort();
 });
+
+test("Study serves prepared online navigation immediately and invalidates it on enrollment changes", async (context) => {
+    const window = new EventTarget();
+    let requests = 0;
+    const host = createOfflineClientFixture(
+        async (_path, options) => {
+            assert.equal(options.timeoutMs, 5000);
+            return Response.json({ data: { revision: ++requests } });
+        },
+        { window },
+    );
+    context.after(() => host.controller.abort());
+    const client = loadClient(host);
+    client.registerStudyNavigation(host.ctx);
+    assert.equal((await client.fetchStudyPreferences()).revision, 1);
+    assert.equal((await client.fetchStudyPreferences()).revision, 1);
+    assert.equal(requests, 1);
+    window.dispatchEvent(new Event("cognis:study-enrollment-changed"));
+    assert.equal((await client.fetchStudyPreferences()).revision, 2);
+    window.dispatchEvent(new Event("cognis:module-lifecycle-changed"));
+    assert.equal((await client.fetchStudyPreferences()).revision, 3);
+});

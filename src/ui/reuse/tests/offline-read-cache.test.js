@@ -187,3 +187,45 @@ test("snapshot readiness rejects uncached, expired and cross-account reads", asy
     state.values.set("cognis_session_expires_at", "2000-01-01T00:00:00Z");
     assert.equal(state.read.has("page"), false);
 });
+
+test("opted-in cached reads finish while one fresh validation is pending and adopt its completed result", async () => {
+    const state = fixture({ preferCached: true, refreshIntervalMs: 0 });
+    await state.read("catalog", async () => ({ version: 1 }));
+    let release;
+    const pending = new Promise((resolve) => {
+        release = resolve;
+    });
+    let requests = 0;
+    const load = () => {
+        requests++;
+        return pending;
+    };
+    assert.equal((await state.read("catalog", load)).version, 1);
+    assert.equal((await state.read("catalog", load)).version, 1);
+    assert.equal(requests, 1);
+    release({ version: 2 });
+    await new Promise((resolve) => setImmediate(resolve));
+    state.disconnect();
+    assert.equal((await state.read("catalog", load)).version, 2);
+    state.connect();
+    state.read.invalidate();
+    assert.equal(
+        (await state.read("catalog", async () => ({ version: 3 }))).version,
+        3,
+    );
+});
+
+test("an authoritative denial during cached validation invalidates the private snapshot", async () => {
+    const state = fixture({ preferCached: true, refreshIntervalMs: 0 });
+    await state.read("catalog", async () => ({ version: 1 }));
+    await state.read("catalog", async () => {
+        throw Object.assign(new Error("denied"), { status: 403 });
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(state.read.has("catalog"), false);
+    state.disconnect();
+    await assert.rejects(
+        state.read("catalog", async () => ({})),
+        /offline_read_unavailable/,
+    );
+});

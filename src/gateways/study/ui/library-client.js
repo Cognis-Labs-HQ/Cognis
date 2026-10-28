@@ -123,11 +123,21 @@ async function executeFetchLibraryPushRequests(request, { status } = {}) {
 }
 
 async function executeFetchSearchableDictionaryProviders(request, language) {
-    const response = await request(
-        `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
-    );
-    if (!response.ok) throw new Error("lookup_providers_failed");
-    return (await response.json()).data;
+    try {
+        const response = await request(
+            `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
+            { timeoutMs: 3000 },
+        );
+        if (!response.ok) throw new Error("lookup_providers_failed");
+        return (await response.json()).data;
+    } catch (error) {
+        if (error?.name !== "TimeoutError") throw error;
+        console.error("[study] dictionary discovery timed out", {
+            operation: "loadDictionaryProviders",
+            errorName: error.name,
+        });
+        return [];
+    }
 }
 
 async function executeSearchLibraryDictionary(request, input) {

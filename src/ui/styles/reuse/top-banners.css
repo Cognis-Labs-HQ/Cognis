@@ -3,6 +3,7 @@
     top: 0;
     z-index: 1250;
     pointer-events: none;
+    overflow-anchor: none;
 }
 
 .top-banner {
@@ -26,9 +27,6 @@
 }
 
 .top-banner-content {
-    background: rgb(from var(--surface-2) r g b / 1);
-    border-radius: 4px;
-    padding: 4px 8px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -74,14 +72,20 @@
     --top-banner-tint: var(--color-danger-outline-text);
 }
 
-#site-top-banners
-    [data-collapsed="true"]:not(:hover):not(:focus-within)
-    .top-banner {
-    height: 2px;
-    min-height: 2px;
-    padding: 0;
-    border: 0;
+#site-top-banners [data-collapsible="true"] {
+    height: var(--top-banner-expanded-height);
     overflow: hidden;
+    transition: height 240ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+#site-top-banners [data-collapsed="true"]:not(:hover):not(:focus-within) {
+    height: 2px;
+}
+
+.top-banner-content,
+.top-banner-actions {
+    opacity: 1;
+    transition: opacity 160ms ease;
 }
 
 #site-top-banners
@@ -90,7 +94,15 @@
 #site-top-banners
     [data-collapsed="true"]:not(:hover):not(:focus-within)
     .top-banner-actions {
-    visibility: hidden;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #site-top-banners [data-collapsible="true"],
+    .top-banner-content,
+    .top-banner-actions {
+        transition: none;
+    }
 }
 
 #site-top-banners [data-collapsible="true"]:focus-visible {

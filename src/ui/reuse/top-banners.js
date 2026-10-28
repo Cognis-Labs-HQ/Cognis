@@ -34,14 +34,21 @@ export function createTopBanners() {
     let scrollScope;
     let collapsed = false;
     let previousScroll = 0;
+    let previousDocumentHeight = 0;
     const updateLayout = () => {
         if (!entries.size) return;
         let expanded = 0;
         let visible = 0;
         for (const entry of entries.values()) {
             const height = entry.element.getBoundingClientRect().height;
-            if (height > 2 || !entry.collapsible) entry.expandedHeight = height;
-            expanded += entry.expandedHeight ?? height;
+            const naturalHeight = entry.element
+                .querySelector(".top-banner")
+                .getBoundingClientRect().height;
+            entry.element.style.setProperty(
+                "--top-banner-expanded-height",
+                `${naturalHeight}px`,
+            );
+            expanded += naturalHeight;
             visible += height;
         }
         if (container) container.style.height = `${expanded}px`;
@@ -52,9 +59,19 @@ export function createTopBanners() {
     };
     const onScroll = () => {
         const scroll = window.scrollY;
-        if (scroll > previousScroll) collapsed = true;
-        else if (scroll < previousScroll || scroll === 0) collapsed = false;
+        const documentHeight = document.documentElement.scrollHeight;
+        // Sticky offsets can move the scroll anchor while the banner animates.
+        // Ignore that movement when deciding the user's scroll direction.
+        const scrollDelta = scroll - previousScroll;
+        const heightDelta = documentHeight - previousDocumentHeight;
+        const movement =
+            collapsed && scrollDelta < 0 && heightDelta < 0
+                ? scrollDelta - heightDelta
+                : scrollDelta;
+        if (movement > 1) collapsed = true;
+        else if (movement < -1 || scroll === 0) collapsed = false;
         previousScroll = scroll;
+        previousDocumentHeight = documentHeight;
         for (const entry of entries.values())
             entry.element.dataset.collapsed = String(
                 collapsed && entry.collapsible,
@@ -79,6 +96,7 @@ export function createTopBanners() {
             container.id = "site-top-banners";
             scrollScope = new AbortController();
             previousScroll = window.scrollY;
+            previousDocumentHeight = document.documentElement.scrollHeight;
             collapsed = false;
             window.addEventListener("scroll", onScroll, {
                 passive: true,

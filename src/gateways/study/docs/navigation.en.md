@@ -104,10 +104,14 @@ The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `
 
 ## Enrolled Offline Workspace
 
-After verified sign-in, Study prepares schemas, readable locations, forms, viewed markers and opted-in lightweight collections for enrolled learning and teaching languages. Flashcards prepares its list and up to 80 matching decks with card details, within its existing bounded cache. Enrollment changes trigger preparation again. Two workers limit concurrent reads; provider disposal, account changes, access denial and cached legal consent remain enforced. Pages need no prior visit; private snapshots remain scoped to the verified tab/session.
+After verified sign-in, Study prepares schemas, readable locations, forms, viewed markers and opted-in lightweight collections for enrolled learning and teaching languages. Flashcards prepares its list and all visible matching decks with card details, within its existing bounded cache. Enrollment changes trigger preparation again. Two workers limit concurrent reads; provider disposal, account changes, access denial and cached legal consent remain enforced. Pages need no prior visit; private snapshots remain scoped to the verified tab/session.
 
 ## Offline Study Practice
 
 Library management and its edit/search/request pages require a connection. The Study hub and submenu hide those links offline, including immediately after disconnection; Explore remains available for cached browsing and drawing. The Library provider declares only Explore as an offline session route.
 
 Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.
+
+## Smooth Recovery and Navigation
+
+Study navigation uses verified session snapshots immediately, with coalesced validation at most once per thirty seconds. Cold metadata requests are bounded to five seconds; optional dictionary discovery stops after three seconds. Authoritative read denials invalidate snapshots, enrollment/module changes invalidate navigation data, and failed sub-page discovery can retry.

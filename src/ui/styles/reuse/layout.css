@@ -17,6 +17,7 @@
     padding-bottom: 0;
 }
 .site-header {
+    overflow-anchor: none;
     width: 98%;
     margin: 0 auto;
     border-bottom-left-radius: 9px;

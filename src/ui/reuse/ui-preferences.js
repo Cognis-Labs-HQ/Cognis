@@ -86,7 +86,7 @@ export function applyUiPreferences(prefs) {
         localStorage.setItem("cognis_offline_preference_account", account);
         if (
             previousEnabled !== (prefs.offlineEnabled !== false) ||
-            previousOwner !== account
+            (previousOwner && previousOwner !== account)
         )
             window.dispatchEvent(
                 new CustomEvent("cognis:offline-preference-changed"),

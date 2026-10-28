@@ -21,6 +21,7 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     const offsets = new Map();
     const document = {
         documentElement: {
+            scrollHeight: 2000,
             style: {
                 setProperty: (key, value) => offsets.set(key, value),
                 removeProperty: (key) => offsets.delete(key),
@@ -29,7 +30,10 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
         body,
         createElement: () => ({
             dataset: {},
-            style: {},
+            style: { setProperty() {} },
+            querySelector: () => ({
+                getBoundingClientRect: () => ({ height: 40 }),
+            }),
             setAttribute() {},
             getBoundingClientRect() {
                 return { height: this.dataset.collapsed === "true" ? 2 : 40 };
@@ -110,6 +114,10 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     assert.equal(offline.element.dataset.collapsed, "true");
     assert.equal(notice.element.dataset.collapsed, "false");
     assert.equal(offsets.get("--site-top-banner-height"), "42px");
+    document.documentElement.scrollHeight = 1962;
+    window.scrollY = 162;
+    window.dispatchEvent(new Event("scroll"));
+    assert.equal(offline.element.dataset.collapsed, "true");
     window.scrollY = 100;
     window.dispatchEvent(new Event("scroll"));
     assert.equal(offline.element.dataset.collapsed, "false");

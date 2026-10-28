@@ -60,6 +60,7 @@ function workerFixture() {
             Date: { now: () => clock, parse: Date.parse },
             AbortSignal,
             Response,
+            Request,
             console,
             caches,
             self: {
@@ -307,7 +308,7 @@ test("activation carries prior public assets forward before retiring storage and
     );
     assert.equal(
         await (await fixture.request("/manifest.webmanifest")).text(),
-        "retained manifest",
+        "public asset",
     );
     assert.ok((await fixture.caches.keys()).includes("popup-styles"));
 });
@@ -347,8 +348,12 @@ test("required legal guards deny cached fallback until a current access receipt 
         "public asset",
     );
     await fixture.message("COGNIS_OFFLINE_ACCESS", { allowed: false });
+    assert.equal(
+        await (await fixture.request("/assets/entry-ABCDEFGH.js")).text(),
+        "public asset",
+    );
     await assert.rejects(
-        fixture.request("/assets/entry-ABCDEFGH.js"),
+        fixture.request("/private", "navigate"),
         /server_unreachable/,
     );
 });
@@ -549,4 +554,54 @@ test("an older server representation cannot replace a newer cached file", async 
     );
     await fixture.request(path);
     assert.equal(await (await fixture.request(path)).text(), "newer");
+});
+
+test("a cached public manifest remains available before legal acceptance without allowing private navigation", async () => {
+    const fixture = workerFixture();
+    fixture.guards = ["terms-of-service"];
+    await fixture.lifecycle("install");
+    fixture.unavailable = true;
+    assert.equal(
+        await (await fixture.request("/manifest.webmanifest")).text(),
+        "public asset",
+    );
+    await assert.rejects(
+        fixture.request("/private", "navigate"),
+        /server_unreachable/,
+    );
+});
+
+test("an unavailable individual resource cannot declare a healthy server offline", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    fixture.serve(
+        (url) =>
+            new Response("temporary", {
+                status: url.endsWith("/missing.css") ? 503 : 200,
+            }),
+    );
+    await assert.rejects(
+        fixture.request("/static/missing.css"),
+        /server_unavailable/,
+    );
+    assert.equal(fixture.messages.length, 0);
+    assert.ok(
+        fixture.requests.some(({ url }) =>
+            url.endsWith("/api/v1/system/healthcheck"),
+        ),
+    );
+});
+
+test("worker resource misses do not repeat connectivity probes after a confirmed outage", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    fixture.unavailable = true;
+    await assert.rejects(fixture.request("/static/missing-one.css"));
+    await assert.rejects(fixture.request("/static/missing-two.css"));
+    assert.equal(
+        fixture.requests.filter(({ url }) =>
+            url.endsWith("/api/v1/system/healthcheck"),
+        ).length,
+        1,
+    );
 });

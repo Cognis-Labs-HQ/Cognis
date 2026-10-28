@@ -7,9 +7,14 @@ test("verified enrollment prepares opted-in collections without visiting Explore
     const requested = [];
     const window = new EventTarget();
     let enrolled = ["ja"];
+    let dictionaryError;
     const host = createOfflineClientFixture(
-        async (path) => {
+        async (path, options) => {
             requested.push(path);
+            if (path.includes("/dictionary/providers")) {
+                assert.equal(options.timeoutMs, 3000);
+                if (dictionaryError) throw dictionaryError;
+            }
             let data = [];
             if (path.includes("/schemas"))
                 data = [
@@ -75,6 +80,16 @@ test("verified enrollment prepares opted-in collections without visiting Explore
         requested.some((path) => path.includes("schemaId=heavy")),
         false,
     );
+    dictionaryError = new DOMException("timed out", "TimeoutError");
+    assert.equal(
+        (await library.fetchSearchableDictionaryProviders("ja")).length,
+        0,
+    );
+    dictionaryError = Object.assign(new Error("denied"), { status: 403 });
+    await assert.rejects(library.fetchSearchableDictionaryProviders("ja"), {
+        status: 403,
+    });
+    dictionaryError = null;
     host.disconnect();
     assert.equal((await library.fetchLibrarySchemas())[0].id, "light");
     assert.equal(

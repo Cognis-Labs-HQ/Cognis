@@ -4,8 +4,8 @@ import { offlinePolicy } from "./offline-policy.js";
  * Public exports: createOfflineReadCache — create a component-owned read cache.
  * @example const read = createOfflineReadCache({ signal });
  * const data = await read('schemas', () => fetchSchemas());
- * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number}} options
- * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean}} Cached read executor and snapshot readiness.
+ * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number, preferCached?: boolean, refreshIntervalMs?: number}} options
+ * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void}} Cached read executor and snapshot readiness.
  */
 import {
     isOffline,
@@ -17,12 +17,15 @@ export function createOfflineReadCache({
     signal,
     maxBytes = 4_000_000,
     maxEntries = 100,
+    preferCached = false,
+    refreshIntervalMs = 30_000,
 } = {}) {
     const snapshots = new Map();
     let identity;
     let size = 0;
     let generation = 0;
     const pending = new Map();
+    const checkedAt = new Map();
     const readIdentity = () =>
         JSON.stringify([
             offlineCacheGeneration(),
@@ -35,9 +38,15 @@ export function createOfflineReadCache({
         size = 0;
         generation += 1;
         pending.clear();
+        checkedAt.clear();
     }
     signal?.addEventListener("abort", clear, { once: true });
-    const execute = async (key, load, canCache = () => true) => {
+    const execute = async (
+        key,
+        load,
+        canCache = () => true,
+        refresh = false,
+    ) => {
         signal?.throwIfAborted();
         const currentIdentity = readIdentity();
         const expiry = globalThis.localStorage?.getItem(
@@ -57,12 +66,35 @@ export function createOfflineReadCache({
                 throw new Error("offline_access_denied");
             return restore();
         }
+        if (
+            preferCached &&
+            !refresh &&
+            snapshots.has(key) &&
+            offlinePolicy.allows()
+        ) {
+            if (
+                !pending.has(key) &&
+                Date.now() - (checkedAt.get(key) ?? 0) >= refreshIntervalMs
+            ) {
+                checkedAt.set(key, Date.now());
+                void execute(key, load, canCache, true).catch((error) => {
+                    if (signal?.aborted || error?.name === "AbortError") return;
+                    console.error("[offline] cached read revalidation failed", {
+                        operation: "revalidateRead",
+                        errorName: error.name,
+                    });
+                });
+            }
+            return restore();
+        }
         const loadGeneration = generation;
         let result;
+        let loadPromise;
         try {
             if (!pending.has(key))
                 pending.set(key, Promise.resolve().then(load));
-            result = await pending.get(key);
+            loadPromise = pending.get(key);
+            result = await loadPromise;
         } catch (error) {
             if ([401, 403].includes(error?.status)) clear();
             if (
@@ -80,7 +112,7 @@ export function createOfflineReadCache({
                 throw new Error("offline_access_denied");
             return restore();
         } finally {
-            pending.delete(key);
+            if (pending.get(key) === loadPromise) pending.delete(key);
         }
         signal?.throwIfAborted();
         if (
@@ -104,8 +136,10 @@ export function createOfflineReadCache({
                 const oldest = snapshots.keys().next().value;
                 size -= snapshots.get(oldest).length * 2;
                 snapshots.delete(oldest);
+                checkedAt.delete(oldest);
             }
             snapshots.set(key, snapshot);
+            checkedAt.set(key, Date.now());
             size += snapshot.length * 2;
             if (changed && typeof globalThis.CustomEvent === "function")
                 globalThis.window?.dispatchEvent(
@@ -114,6 +148,7 @@ export function createOfflineReadCache({
         }
         return result;
     };
+    execute.invalidate = clear;
     execute.has = (key) => {
         const expiry = globalThis.localStorage?.getItem(
             "cognis_session_expires_at",

@@ -121,7 +121,23 @@ async function refreshCatalog(waitUntil) {
     return routes;
 }
 
+let connectionProbe;
+let connectionUnavailable = false;
 async function announceOffline() {
+    if (connectionUnavailable) return;
+    connectionProbe ??= fetchAvailable(
+        new Request(`${self.location.origin}/api/v1/system/healthcheck`),
+        { cache: "no-store" },
+    )
+        .then(
+            (response) => [502, 503, 504].includes(response.status),
+            () => true,
+        )
+        .finally(() => {
+            connectionProbe = null;
+        });
+    if (!(await connectionProbe)) return;
+    connectionUnavailable = true;
     for (const client of await self.clients.matchAll()) {
         client.postMessage({ type: "COGNIS_OFFLINE" });
     }
@@ -144,6 +160,7 @@ self.addEventListener("install", (event) => {
             const bootAssets = [
                 ...new Set([
                     SHELL_URL,
+                    "/manifest.webmanifest",
                     "/static/assets/icons/cognis-icon-192.png",
                     "/static/assets/icons/cognis-icon-384.png",
                     "/static/assets/icons/cognis-icon-512.png",
@@ -300,8 +317,10 @@ self.addEventListener("message", (event) => {
             );
             return [];
         }
-        if (event.data?.type === "COGNIS_REFRESH_OFFLINE_ROUTES")
+        if (event.data?.type === "COGNIS_REFRESH_OFFLINE_ROUTES") {
+            connectionUnavailable = false;
             return refreshCatalog((task) => event.waitUntil(task));
+        }
         return null;
     })();
     event.waitUntil(
@@ -351,7 +370,10 @@ const ASSET_REFRESH_INTERVAL = 60_000;
 const MAX_ASSET_REFRESHES = 256;
 
 async function assetResponse(request, moduleAsset, event) {
-    if (!(await offlineEnabled())) return fetch(request);
+    const control = await caches.open(CONTROL_CACHE_NAME);
+    const preference = await control.match(PREFERENCE_URL);
+    if (preference && (await preference.json()).enabled === false)
+        return fetch(request);
     const generation = catalogGeneration;
     if (request.headers?.has("authorization")) return fetch(request);
     const parameters = new URL(request.url).searchParams;

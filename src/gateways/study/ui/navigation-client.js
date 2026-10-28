@@ -8,7 +8,17 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 /** Study owns the lightweight metadata needed to reopen its hub and child navigation. */
 export function registerStudyNavigation(ctx) {
-    const read = createOfflineReadCache({ signal: ctx.signal });
+    const read = createOfflineReadCache({
+        signal: ctx.signal,
+        preferCached: true,
+    });
+    for (const event of [
+        "cognis:study-enrollment-changed",
+        "cognis:module-lifecycle-changed",
+    ])
+        globalThis.window?.addEventListener(event, () => read.invalidate(), {
+            signal: ctx.signal,
+        });
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("scoped_actions_unavailable");
     const load = async (path, signal) => {
@@ -17,6 +27,7 @@ export function registerStudyNavigation(ctx) {
             () =>
                 read(path, async () => {
                     const response = await apiFetch(path, {
+                        timeoutMs: 5000,
                         signal: AbortSignal.any([
                             ctx.signal,
                             ...(signal ? [signal] : []),
