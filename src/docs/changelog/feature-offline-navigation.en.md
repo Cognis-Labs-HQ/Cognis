@@ -236,6 +236,8 @@ Library management and its edit/search/request pages require a connection. The S
 
 Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.
 
+After Save completes, the scheduled redraw still checks for newer unsaved edits. Edits made during the two-second delay retain their discard confirmation; repeated saves coalesce, and leaving Settings cancels pending redraws.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

@@ -236,6 +236,8 @@ Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötige
 
 Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog zusätzlich zu den sprachspezifischen Katalogen. Zeichnen und Flashcards können ihre üblichen Schemaabfragen ohne vorherigen Online-Seitenbesuch nutzen. Flashcards bereitet Share- und Study-Übersetzungen sowie die Galerievorlage vor und liest Sammlungen der ausgewählten Sprache mit denselben schemaqualifizierten Anfragen wie die Einschreibungsvorbereitung. Vorbereitete Stapel öffnen Galerie und Übungen offline. Audio, Wörterbuchabrufe, Inhaltsbearbeitung sowie Zugriffs- und Zustimmungsprüfungen behalten ihre bisherigen Beschränkungen.
 
+Nach Abschluss des Speicherns prüft der geplante Neuaufbau weiterhin auf neue ungespeicherte Änderungen. Während der zweisekündigen Wartezeit vorgenommene Änderungen behalten ihre Verwerfungsbestätigung; wiederholtes Speichern wird zusammengefasst, und beim Verlassen der Einstellungen wird ein ausstehender Neuaufbau abgebrochen.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

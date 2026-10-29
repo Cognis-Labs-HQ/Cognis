@@ -1,4 +1,4 @@
-import { changeUiLanguage } from "../../reuse/ui-language-catalog.js";
+import { createLanguageRedraw } from "./language-redraw.js";
 import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
 import { bindOnlineSettingsControls } from "./online-controls.js";
 import {
@@ -127,7 +127,6 @@ function resolveLanguagePriorityMode(
     return storedMode;
 }
 
-const LANGUAGE_REDRAW_DELAY_MS = 2000;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
@@ -169,6 +168,7 @@ export async function mount(root, { signal } = {}) {
     ]);
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.settings");
+    const scheduleLanguageRedraw = createLanguageRedraw({ i18n, signal });
     const refreshOnlineControls = bindOnlineSettingsControls(root, signal);
     const reportGeneralFailure = (error) => {
         if (signal?.aborted) return;
@@ -905,13 +905,9 @@ export async function mount(root, { signal } = {}) {
             });
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
-            if (hasLanguagePriorityChanged(prev, next)) {
-                await new Promise((resolve) =>
-                    setTimeout(resolve, LANGUAGE_REDRAW_DELAY_MS),
-                );
-                if (!signal?.aborted)
-                    await changeUiLanguage(next[0], { bypassGuard: true });
-            }
+            languagePriority = [...next];
+            if (hasLanguagePriorityChanged(prev, next))
+                scheduleLanguageRedraw(next[0]);
         },
         onDiscard: () => {
             fontPrefs?.discard();

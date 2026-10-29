@@ -236,6 +236,8 @@ Pengelolaan Library serta halaman pengeditan, pencarian, dan permintaannya memer
 
 Persiapan bahasa yang diikuti menyimpan katalog skema bersama selain katalog tiap bahasa. Menggambar dan Flashcards dapat memakai pembacaan skema biasa tanpa kunjungan halaman daring sebelumnya. Flashcards menyiapkan terjemahan Share dan Study serta templat galeri, lalu membaca koleksi bahasa terpilih dengan permintaan berskema yang sama seperti persiapan keikutsertaan. Dek yang disiapkan dapat membuka galeri dan latihan luring. Audio, pengambilan kamus, pengeditan konten, serta pemeriksaan akses dan persetujuan tetap mengikuti pembatasan yang ada.
 
+Setelah penyimpanan selesai, penggambaran ulang terjadwal tetap memeriksa perubahan baru yang belum disimpan. Perubahan selama jeda dua detik tetap memerlukan konfirmasi pembuangan; penyimpanan berulang digabungkan, dan meninggalkan Pengaturan membatalkan penggambaran ulang yang tertunda.
+
 ## Komit
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)
