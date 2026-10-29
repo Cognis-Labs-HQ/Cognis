@@ -473,3 +473,27 @@ for (const previousAvailable of [true, false]) {
         );
     });
 }
+
+test("disabled menu destinations ignore activation before resolving or loading routes", async () => {
+    for (const href of [
+        "/terms-of-service",
+        "/administration/modules",
+        "/study/library",
+    ]) {
+        const router = createRouter({
+            allowOfflineRoute: () =>
+                assert.fail("disabled link must not start recovery"),
+        });
+        const event = click();
+        event.target.closest = () => ({
+            target: "",
+            hasAttribute: () => false,
+            getAttribute: (name) => (name === "aria-disabled" ? "true" : href),
+        });
+        await router.listeners.get("click")(event);
+        assert.equal(event.defaultPrevented, true);
+        assert.deepEqual(router.mounted, []);
+        assert.deepEqual(router.assigned, []);
+        assert.deepEqual(router.navigationEvents, []);
+    }
+});

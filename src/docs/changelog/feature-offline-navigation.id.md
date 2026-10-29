@@ -2,6 +2,10 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Tujuan Luring Tetap Terlihat
+
+Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada navigasi utama, menu pengguna, dan submenu Study. Library serta tautan pengelolaan dan permintaan tetap tercantum tetapi nonaktif saat luring, lalu aktif kembali setelah terhubung. Izin Study tetap menentukan entri yang tersedia. Tautan nonaktif tidak memuat rute atau membuka pemberitahuan pemulihan, termasuk navigasi bahasa dan pengaturan Study yang membawa status halaman. Explore dan Flashcards yang tersimpan tetap dapat diakses.
+
 ## Umpan Balik Luring Konsisten
 
 Penyimpanan luring memakai pesan keberhasilan dan varian yang sama dengan penyimpanan saat terhubung. Pesan, kiriman, unggahan gambar, serta perubahan email tidak menambah pemberitahuan khusus antrean; tanda penerimaan pesan memakai tampilan normal. Kegagalan penyimpanan nyata dan perubahan yang ditolak tetap ditampilkan. Banner peringatan bersama memakai palet semantik terang dan gelap untuk permukaan amber buram, teks, batas, kontrol, serta aksen garis yang halus. Mode Luring tidak lagi menyisipkan gaya latarnya sendiri. Animasi pelipatan, perluasan melalui papan ketik, serta dukungan pengurangan gerakan tetap tersedia.

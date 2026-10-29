@@ -2,6 +2,10 @@
 
 **Feature-Zweig:** feature-offline-navigation
 
+## Sichtbare Offline-Ziele
+
+Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im Study-Untermenü mit derselben deaktivierten Darstellung sichtbar. Library sowie Verwaltungs- und Anfragelinks bleiben offline aufgeführt, sind aber deaktiviert und werden nach Wiederherstellung der Verbindung wieder aktiv. Die Study-Berechtigungen bestimmen weiterhin, welche Einträge vorhanden sind. Deaktivierte Links laden keine Routen und öffnen keine Wiederherstellungshinweise, auch nicht bei der zustandsgebundenen Sprach- und Einstellungsnavigation von Study. Zwischengespeicherte Explore- und Flashcards-Inhalte bleiben erreichbar.
+
 ## Einheitliche Offline-Rückmeldung
 
 Offline gespeicherte Änderungen verwenden dieselben Erfolgsmeldungen und Varianten wie bei bestehender Verbindung. Nachrichten, Beiträge, Bild-Uploads und E-Mail-Änderungen erzeugen keine zusätzlichen Warteschlangenhinweise; Nachrichtenbestätigungen behalten ihre normale Darstellung. Tatsächliche Speicherfehler und abgelehnte Änderungen bleiben sichtbar. Das gemeinsame Warnbanner verwendet semantische helle und dunkle Farbpaletten für seine undurchsichtige bernsteinfarbene Fläche, Texte, Rahmen, Bedienelemente und den dezenten gestreiften Akzent. Der Offline-Modus fügt keine eigene Hintergrundgestaltung mehr ein. Einklappanimation, Tastaturbedienung und Unterstützung für reduzierte Bewegung bleiben erhalten.

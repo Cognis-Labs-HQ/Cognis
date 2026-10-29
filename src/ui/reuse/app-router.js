@@ -722,6 +722,10 @@ export function initRouter(root) {
             (link.target && link.target !== "_self")
         )
             return;
+        if (link.getAttribute("aria-disabled") === "true") {
+            event.preventDefault();
+            return;
+        }
         const routePath = internalNavigationPath(link.getAttribute("href"));
         if (routePath === null) return;
         event.preventDefault();
@@ -734,7 +738,6 @@ export function initRouter(root) {
             window.location.assign(routePath);
             return;
         }
-        if (link.getAttribute("aria-disabled") === "true") return;
         await navigateTo(routePath);
     });
 

@@ -254,44 +254,89 @@ test("Study management links follow connectivity while Explore remains available
     });
     assert.match(slot.render(), /href="\/study\/library"/);
     context.offline = true;
-    assert.equal(
-        [...slot.render().matchAll(/href="([^"]+)"/g)].some(
-            (match) => match[1] === "/study/library",
-        ),
-        false,
-    );
+    assert.match(slot.render(), /href="\/study\/library" aria-disabled="true"/);
+    assert.doesNotMatch(slot.render(), /href="\/study\/explore" aria-disabled/);
     assert.match(slot.render(), /href="\/study\/explore"/);
     const offline = await context.loadStudySubNavigationModel({
         fallbackLanguageCode: "ja",
     });
     assert.deepEqual(
         Array.from(offline.modules, (page) => page.id),
-        ["explore"],
+        Array.from(model.modules, (page) => page.id),
     );
     context.offline = false;
     assert.match(slot.render(), /href="\/study\/library"/);
+    assert.doesNotMatch(slot.render(), /aria-disabled="true"/);
 });
 
-test("an already mounted Study menu hides management links on disconnect and cleans up its listener", () => {
+test("an already mounted Study menu disables management links on disconnect and cleans up its listener", () => {
     const context = navigationContext();
     const events = new EventTarget();
     context.window.addEventListener = events.addEventListener.bind(events);
     const root = new EventTarget();
-    const item = { hidden: false };
-    root.querySelectorAll = () => [
-        { getAttribute: () => "/study/library", closest: () => item },
-    ];
+    const attributes = new Map();
+    const link = {
+        dataset: {},
+        hidden: false,
+        getAttribute: (name) =>
+            name === "href" ? "/study/library" : attributes.get(name),
+        setAttribute: (name, value) => attributes.set(name, value),
+        removeAttribute: (name) => attributes.delete(name),
+    };
+    root.querySelectorAll = () => [link];
     const scope = new AbortController();
     context.bindStudySubNavigation(root, { signal: scope.signal });
-    assert.equal(item.hidden, false);
+    assert.equal(attributes.has("aria-disabled"), false);
     context.offline = true;
     events.dispatchEvent(new Event("cognis:connectivity-changed"));
-    assert.equal(item.hidden, true);
+    assert.equal(attributes.get("aria-disabled"), "true");
+    assert.equal(link.hidden, false);
     context.offline = false;
     events.dispatchEvent(new Event("cognis:connectivity-changed"));
-    assert.equal(item.hidden, false);
+    assert.equal(attributes.has("aria-disabled"), false);
     scope.abort();
     context.offline = true;
     events.dispatchEvent(new Event("cognis:connectivity-changed"));
-    assert.equal(item.hidden, false);
+    assert.equal(attributes.has("aria-disabled"), false);
+});
+
+test("disabled Study language links cannot bypass the router through their stateful navigation handler", () => {
+    const context = navigationContext();
+    const events = new EventTarget();
+    context.window.addEventListener = events.addEventListener.bind(events);
+    const listeners = new Map();
+    const root = {
+        querySelectorAll: () => [],
+        addEventListener: (name, listener) => listeners.set(name, listener),
+    };
+    const navigated = [];
+    context.uiCtx.capabilities.get =
+        () =>
+        (...args) =>
+            navigated.push(args);
+    const scope = new AbortController();
+    context.bindStudySubNavigation(root, { signal: scope.signal });
+    let disabled = true;
+    const link = {
+        dataset: { languageCode: "ja" },
+        getAttribute: (name) =>
+            name === "aria-disabled"
+                ? String(disabled)
+                : "/study/explore/ja/kanji",
+    };
+    const event = {
+        target: {
+            closest: (selector) =>
+                selector === "a[data-language-code]" ? link : null,
+        },
+        preventDefault() {},
+        stopPropagation() {},
+    };
+    listeners.get("click")(event);
+    assert.equal(navigated.length, 0);
+    disabled = false;
+    listeners.get("click")(event);
+    assert.equal(navigated.length, 1);
+    assert.equal(navigated[0][0], "/study/explore/ja/kanji");
+    scope.abort();
 });

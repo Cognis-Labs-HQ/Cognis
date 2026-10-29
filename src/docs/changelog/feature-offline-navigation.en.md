@@ -2,6 +2,10 @@
 
 **Feature Branch:** feature-offline-navigation
 
+## Visible Offline Destinations
+
+Unavailable destinations stay visible with the same disabled styling in the primary navigation, user dropdown and Study submenu. Library and its management/request links remain listed but disabled offline and reactivate after reconnection. Study permissions still control which entries exist. Disabled links do not load routes or open recovery feedback, including Study’s stateful language/settings navigation. Cached Explore and Flashcards remain accessible.
+
 ## Consistent Offline Feedback
 
 Offline saves keep the same success messages and variants as connected saves. Messages, posts, image uploads and email changes do not add queue-specific notices, and message receipts use their normal presentation. Real persistence failures and rejected changes remain visible. The shared warning banner uses semantic light/dark palettes for its opaque amber surface, text, border, controls and restrained striped accent; Offline Mode no longer injects its own background styling. Collapse animation, keyboard expansion and reduced-motion support remain available.

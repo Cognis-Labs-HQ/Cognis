@@ -108,10 +108,14 @@ Nach bestätigter Anmeldung bereitet Study Schemas, lesbare Speicherorte, Formul
 
 ## Offline-Übungen
 
-Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötigen eine Verbindung. Study-Startseite und Untermenü blenden diese Links offline aus, auch unmittelbar nach einem Verbindungsabbruch. Explore bleibt zum Lesen gespeicherter Inhalte und zum Zeichnen verfügbar. Der Library-Provider meldet nur Explore als Offline-Sitzungsroute an.
+Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötigen eine Verbindung. Das Study-Untermenü behält diese Links offline bei, deaktiviert sie jedoch auch unmittelbar nach einem Verbindungsabbruch. Explore bleibt zum Lesen gespeicherter Inhalte und zum Zeichnen verfügbar. Der Library-Provider meldet nur Explore als Offline-Sitzungsroute an.
 
 Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog zusätzlich zu den sprachspezifischen Katalogen. Zeichnen und Flashcards können ihre üblichen Schemaabfragen ohne vorherigen Online-Seitenbesuch nutzen. Flashcards bereitet Share- und Study-Übersetzungen sowie die Galerievorlage vor und liest Sammlungen der ausgewählten Sprache mit denselben schemaqualifizierten Anfragen wie die Einschreibungsvorbereitung. Vorbereitete Stapel öffnen Galerie und Übungen offline. Audio, Wörterbuchabrufe, Inhaltsbearbeitung sowie Zugriffs- und Zustimmungsprüfungen behalten ihre bisherigen Beschränkungen.
 
 ## Sanfte Übergänge und Navigation
 
 Study verwendet bestätigte Sitzungsschnappschüsse sofort und prüft sie gebündelt höchstens alle dreißig Sekunden neu. Neue Metadatenanfragen sind auf fünf Sekunden begrenzt, optionale Wörterbucherkennung auf drei Sekunden. Verbindliche Zugriffsverweigerungen löschen Schnappschüsse; Einschreibungs- und Moduländerungen verwerfen Navigationsdaten, und fehlgeschlagene Unterseitenerkennung kann erneut versucht werden.
+
+## Sichtbare Offline-Ziele
+
+Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im Study-Untermenü mit derselben deaktivierten Darstellung sichtbar. Library sowie Verwaltungs- und Anfragelinks bleiben offline aufgeführt, sind aber deaktiviert und werden nach Wiederherstellung der Verbindung wieder aktiv. Die Study-Berechtigungen bestimmen weiterhin, welche Einträge vorhanden sind. Deaktivierte Links laden keine Routen und öffnen keine Wiederherstellungshinweise, auch nicht bei der zustandsgebundenen Sprach- und Einstellungsnavigation von Study. Zwischengespeicherte Explore- und Flashcards-Inhalte bleiben erreichbar.

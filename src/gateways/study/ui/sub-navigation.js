@@ -43,8 +43,8 @@ export function readSelectedStudyLanguageCode() {
 }
 
 const isManagementPage = (path) => /^\/study\/library(?:\/|$)/.test(path ?? "");
-const offlineVisible = (component) =>
-    !isOffline() || !isManagementPage(component?.pageUrl);
+const managementDisabledAttributes = () =>
+    isOffline() ? ' aria-disabled="true" data-offline-disabled="true"' : "";
 
 const navigationScopes = new WeakMap();
 
@@ -60,8 +60,14 @@ export function bindStudySubNavigation(
     const signal = controller.signal;
     const updateManagementLinks = () => {
         for (const link of root.querySelectorAll('a[href^="/study/library"]')) {
-            if (isManagementPage(link.getAttribute("href")))
-                (link.closest("li") ?? link).hidden = isOffline();
+            if (!isManagementPage(link.getAttribute("href"))) continue;
+            if (isOffline()) {
+                link.setAttribute("aria-disabled", "true");
+                link.dataset.offlineDisabled = "true";
+            } else if (link.dataset.offlineDisabled) {
+                link.removeAttribute("aria-disabled");
+                delete link.dataset.offlineDisabled;
+            }
         }
     };
     updateManagementLinks();
@@ -135,6 +141,7 @@ export function bindStudySubNavigation(
             event.preventDefault();
             event.stopPropagation();
             const destination = link ?? settingsLink;
+            if (destination.getAttribute("aria-disabled") === "true") return;
             const currentPageUrl = resolveRememberedStudyPageUrl(
                 window.location.pathname,
             );
@@ -262,19 +269,12 @@ export async function loadStudySubNavigationModel({
         ? requestedLanguageCode
         : activeLanguageCodes[0];
 
-    const modulesByLanguage = new Map(
-        [...requestedModel.pagesByGroup].map(([language, pages]) => [
-            language,
-            pages.filter(offlineVisible),
-        ]),
-    );
+    const modulesByLanguage = requestedModel.pagesByGroup;
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
     const schemas = await fetchLibrarySchemas().catch(() => []);
     const activeLocale = document.documentElement.lang;
-    const spaRoutes = (await loadSpaRoutes()).filter(
-        (route) => !isOffline() || !isManagementPage(route.base),
-    );
+    const spaRoutes = await loadSpaRoutes();
     if (spaRoutes.some((route) => route.base === "/study/explore"))
         modules.push({
             id: "explore",
@@ -434,7 +434,6 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
-        .filter(offlineVisible)
         .map((component) => {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
             if (!rawPageUrl) return "";
@@ -453,7 +452,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}"${isManagementPage(pageUrl) ? managementDisabledAttributes() : ""} data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                         ${escapeHtml(label)}
                     </a>
                 </li>
@@ -461,10 +460,10 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
     const libraryLink =
-        !isOffline() && isAdminScope() && !hasLibraryModule
+        isAdminScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}"${managementDisabledAttributes()} data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
