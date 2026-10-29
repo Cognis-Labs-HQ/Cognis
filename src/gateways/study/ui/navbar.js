@@ -47,6 +47,7 @@ export async function mountProvider(ctx) {
             stage.data.releaseLink = navbar.contribute("study", {
                 href: "/study",
                 label: i18n.t("ui.reuse.study"),
+                labelKey: "ui.reuse.study",
                 disabled: !languagesAvailable,
                 title: languagesAvailable
                     ? ""

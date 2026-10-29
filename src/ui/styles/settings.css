@@ -329,3 +329,8 @@ body[data-theme="light"] .email-badge-unverified {
     color: var(--danger-text, #dc2626);
     font-weight: 600;
 }
+
+.language-table[aria-disabled="true"] {
+    opacity: 0.38;
+    pointer-events: none;
+}

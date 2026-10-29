@@ -2,6 +2,10 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Perubahan Bahasa UI Langsung
+
+Pintasan bahasa hanya beralih di antara bahasa UI yang diaktifkan dan menerapkan pilihan terakhir setelah dua detik melalui alur bertahap `ui:languageCatalog:select` dan `ui:redraw`. Dokumen browser, URL, riwayat, serta cache luring privat tetap dipertahankan. Edit yang belum disimpan tetap memakai penjagaan navigasi; pekerjaan usang dan kegagalan pemuatan tidak menetapkan bahasa lain. Pilihan hanya berlaku pada tab dan sesi akun aktif, tanpa mengubah keanggotaan atau urutan bahasa yang dikonfigurasi. Pengaturan tetap memakai Simpan/Buang; perubahan prioritas tersimpan juga menggambar ulang setelah dua detik. Saat luring, tabel bahasa tersedia, perpindahan antartabel, serta sinkronisasi browser dikunci; bahasa terpilih tetap dapat diurutkan dan disimpan melalui buffer preferensi normal. Terjemahan inti dan komponen publik disiapkan untuk bahasa aktif. Bahasa Inggris tetap menjadi cadangan per kunci dan kunci yang benar-benar hilang tetap gagal secara eksplisit. Worker menyiapkan seluruh XML bahasa komponen host serta SVG bendera bahasa agar halaman yang sudah disiapkan dapat digambar ulang luring tanpa kunjungan sebelumnya. Shell yang digunakan kembali dan label navigasi inti diterjemahkan ulang tanpa membongkar penyedia. Pengatur waktu dilepas bersama halaman atau penggantian pengikatnya.
+
 ## Tujuan Luring Tetap Terlihat
 
 Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada navigasi utama, menu pengguna, dan submenu Study. Library serta tautan pengelolaan dan permintaan tetap tercantum tetapi nonaktif saat luring, lalu aktif kembali setelah terhubung. Izin Study tetap menentukan entri yang tersedia. Tautan nonaktif tidak memuat rute atau membuka pemberitahuan pemulihan, termasuk navigasi bahasa dan pengaturan Study yang membawa status halaman. Explore dan Flashcards yang tersimpan tetap dapat diakses.

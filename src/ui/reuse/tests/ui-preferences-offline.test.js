@@ -14,6 +14,7 @@ function fixture() {
         events.push("offline"),
     );
     let duringRead = () => {};
+    let offline = false;
     const globals = {
         localStorage: {
             getItem: (key) => values.get(key) ?? null,
@@ -35,7 +36,15 @@ function fixture() {
     const prefs = loadTestModule(
         new URL("../ui-preferences.js", import.meta.url),
         {
-            "./offline-state.js": { offlineEnabled: () => true },
+            "./offline-state.js": {
+                offlineEnabled: () => true,
+                isOffline: () => offline,
+            },
+            "./ui-language-state.js": loadTestModule(
+                new URL("../ui-language-state.js", import.meta.url),
+                {},
+                globals,
+            ),
             "./offline-identity.js": guard,
             "./message-style-options.js": {
                 normalizeMessageStyle: (value) => value,
@@ -72,6 +81,9 @@ function fixture() {
         values,
         writes,
         events,
+        disconnect: () => {
+            offline = true;
+        },
         duringRead: (callback) => {
             duringRead = callback;
         },
@@ -115,4 +127,23 @@ test("binding the first same-account offline preference preserves already prepar
     state.values.set("cognis_account", "another-user");
     state.prefs.applyUiPreferences({ offlineEnabled: true });
     assert.equal(state.events.length, 2);
+});
+
+test("offline UI preferences accept reordering but reject enabled-language membership changes", async () => {
+    const state = fixture();
+    state.values.set(
+        "cognis_ui_preferences",
+        JSON.stringify({ languagePriority: ["en", "de"] }),
+    );
+    state.disconnect();
+    await state.prefs.saveUiPreferences({
+        languagePriority: ["de", "en"],
+        languagePriorityMode: "manual",
+    });
+    assert.equal(state.writes.length, 1);
+    await assert.rejects(
+        state.prefs.saveUiPreferences({ languagePriority: ["en", "ja"] }),
+        /offline_language_settings_readonly/,
+    );
+    assert.equal(state.writes.length, 1);
 });

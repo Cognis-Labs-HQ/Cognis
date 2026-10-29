@@ -1,3 +1,4 @@
+import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 /**
  * Lightweight i18n layer backed by per-locale strings.xml files.
  *
@@ -290,7 +291,10 @@ async function loadLocaleStrings(locale) {
 }
 
 async function loadLocalizedStrings(activeLocale, pathForLocale) {
-    const locales = [...new Set([DEFAULT_LOCALE, activeLocale])];
+    const resolutionLocales = [...new Set([DEFAULT_LOCALE, activeLocale])];
+    const locales = [
+        ...new Set([...resolutionLocales, ...enabledUiLanguages()]),
+    ];
     const bundles = await Promise.all(
         locales.map(async (locale) => {
             const path = pathForLocale(locale);
@@ -310,7 +314,7 @@ async function loadLocalizedStrings(activeLocale, pathForLocale) {
         }),
     );
     const collected = new Map();
-    for (const bundle of bundles) {
+    for (const bundle of bundles.slice(0, resolutionLocales.length)) {
         for (const [key, value] of bundle) {
             if (value.trim()) collected.set(key, value);
         }
@@ -358,10 +362,15 @@ function requireTranslation(value, key) {
 
 export async function createI18n(options = {}) {
     const requested = detectLocale();
-    const preferredLanguages = options.preferredLanguages || [
+    const configuredPriority = options.preferredLanguages || [
+        ...readPreferredLanguages(),
         requested,
         DEFAULT_LOCALE,
     ];
+    const selected = options.persistLocale !== false && activeUiLanguage();
+    const preferredLanguages = selected
+        ? [selected, ...configuredPriority]
+        : configuredPriority;
     const normalizedPriority = [
         ...new Set(
             preferredLanguages
@@ -419,9 +428,9 @@ export async function createI18n(options = {}) {
     componentStrings.forEach((value, key) => strings.set(key, value));
 
     if (options.persistLocale !== false) {
-        const persistedLocales = normalizedPriority.filter(
-            (locale) => !unsupportedLocales.has(locale),
-        );
+        const persistedLocales = normalizeLanguagePriority(
+            configuredPriority,
+        ).filter((locale) => !unsupportedLocales.has(locale));
         setPreferredLanguages(
             persistedLocales.length ? persistedLocales : [DEFAULT_LOCALE],
         );
@@ -502,4 +511,11 @@ export async function extendI18n(baseI18n, stringsBaseUrl) {
 export function applyDocumentTitle(i18n, key) {
     const value = i18n.t(key);
     if (value) document.title = value;
+}
+
+/** Warm configured core locale bundles before a local display-language change. */
+export async function prepareUiLanguages(languages = enabledUiLanguages()) {
+    await Promise.all(
+        [...new Set([...languages, DEFAULT_LOCALE])].map(loadLocaleStrings),
+    );
 }

@@ -1,3 +1,4 @@
+import { registerPageRedraw } from "./page-redraw.js";
 /**
  * Client-side application router for the Cognis dashboard shell.
  *
@@ -639,6 +640,13 @@ async function restoreAfterOfflineFailure(
 }
 
 uiCtx.capabilities.contribute("ui:navigate", navigateTo);
+registerPageRedraw(uiCtx, {
+    currentPath: getCurrentRoutePath,
+    resolveRoute,
+    allowOfflineRoute,
+    requestNavigation: requestRouteNavigation,
+    mount: loadRoute,
+});
 uiCtx.capabilities.contribute(
     "router:invalidateRoutes",
     invalidateSpaRouteCache,

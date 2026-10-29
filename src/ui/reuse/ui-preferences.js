@@ -1,3 +1,4 @@
+import { uiLanguageMembershipChanged } from "./ui-language-state.js";
 /**
  * Loads and applies persisted UI preferences (font, size, message style).
  *
@@ -12,7 +13,7 @@
  *   applyUiPreferences(prefs);
  *   await saveUiPreferences({ font: 'system-ui' });
  */
-import { offlineEnabled } from "./offline-state.js";
+import { offlineEnabled, isOffline } from "./offline-state.js";
 import { uiCtx } from "./ui-ctx.js";
 import { captureAccountGuard } from "./offline-identity.js";
 import { apiFetch } from "./api-client.js";
@@ -61,6 +62,8 @@ export async function saveUiPreferences(patch, { bufferOffline = true } = {}) {
     )
         return;
     const merged = { ...(current || {}), ...patch };
+    if (isOffline() && uiLanguageMembershipChanged(current, merged))
+        throw new Error("offline_language_settings_readonly");
     const response = await preferenceRequest(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {

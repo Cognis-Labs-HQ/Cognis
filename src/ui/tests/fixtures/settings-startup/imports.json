@@ -62,5 +62,7 @@
         "resolveSettingsSetupRedirect"
     ],
     "../../reuse/offline-state.js": ["isOffline"],
-    "./online-controls.js": ["bindOnlineSettingsControls"]
+    "./online-controls.js": ["bindOnlineSettingsControls"],
+    "../../reuse/ui-language-catalog.js": ["changeUiLanguage"],
+    "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"]
 }

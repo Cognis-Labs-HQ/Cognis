@@ -130,6 +130,26 @@ export function createUiRoutes(
             return true;
         }
 
+        const builtTranslation =
+            IS_PRODUCTION_BUILD &&
+            /\/languages\/[^/]+\/strings\.xml$/.test(url.pathname)
+                ? uiRegistry?.resolveAssetUrl(url.pathname)
+                : undefined;
+        if (
+            builtTranslation &&
+            /^\/assets\/locale-[A-Z0-9]{8}\.xml$/.test(builtTranslation)
+        ) {
+            await serveVersionedAsset(
+                req,
+                res,
+                url,
+                path.join(PRODUCTION_UI_ROOT, builtTranslation.slice(1)),
+                "application/xml; charset=utf-8",
+                ctx,
+            );
+            return true;
+        }
+
         if (url.pathname === "/manifest.webmanifest" && req.method === "GET") {
             await serveStaticAsset(
                 req,

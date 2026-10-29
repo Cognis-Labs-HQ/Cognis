@@ -2,7 +2,9 @@ import { uiCtx } from "./ui-ctx.js";
 
 const links = new Map();
 
-function renderLinks() {
+let currentI18n;
+function renderLinks(i18n) {
+    if (typeof i18n?.t === "function") currentI18n = i18n;
     const navbar = document.querySelector(".topnav");
     if (!navbar) return;
     for (const [id, link] of links) {
@@ -24,7 +26,10 @@ function renderLinks() {
         }
         if (link.title) element.setAttribute("title", link.title);
         else element.removeAttribute("title");
-        element.textContent = link.label;
+        element.textContent =
+            link.labelKey && currentI18n
+                ? currentI18n.t(link.labelKey)
+                : link.label;
         element.hidden = link.visible === false;
     }
 }

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
 import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
@@ -162,6 +163,22 @@ for (const [outputPath, metadata] of Object.entries(result.metafile.outputs)) {
         manifest[logicalUrl] = emittedUrl;
     }
 }
+for (const sourcePath of resolvableFiles.filter(
+    (file) =>
+        /\/languages\/[^/]+\/strings\.xml$/.test(file) &&
+        !file.includes("/tests/"),
+)) {
+    const bytes = await readFile(sourcePath);
+    const digest = createHash("sha256")
+        .update(bytes)
+        .digest("hex")
+        .slice(0, 8)
+        .toUpperCase();
+    const emittedUrl = `/assets/locale-${digest}.xml`;
+    await writeFile(path.join(outputRoot, emittedUrl), bytes);
+    for (const logicalUrl of logicalUrls(sourcePath))
+        manifest[logicalUrl] = emittedUrl;
+}
 await cp(
     path.join(repositoryRoot, "src", "ui", "public"),
     path.join(outputRoot, "public"),
@@ -228,8 +245,14 @@ if (manifest["/static/app/offline/index.js"]) {
         if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);
     }
     for (const url of logicalSourcePaths.keys()) {
-        if (/^\/static\/languages\/[^/]+\/strings\.xml$/.test(url))
+        if (/\/languages\/[^/]+\/strings\.xml$/.test(url))
             offlineAssets.add(url);
+    }
+    for (const flag of await walk(
+        path.join(repositoryRoot, "src", "ui", "public", "assets", "flags"),
+    )) {
+        if (flag.endsWith(".svg"))
+            offlineAssets.add(`/static/assets/flags/${path.basename(flag)}`);
     }
     async function includeStyleDependencies(asset) {
         if (!asset.endsWith(".css")) return;

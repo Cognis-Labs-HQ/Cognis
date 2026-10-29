@@ -1,6 +1,7 @@
 import { isOffline } from "../../reuse/offline-state.js";
 
-const selector = "[data-account-action],[data-resend-verification]";
+const selector =
+    "[data-account-action],[data-resend-verification],[data-ui-language-online]";
 
 /** Keep network-only account actions disabled through connectivity changes. @returns {Function} Apply to a fresh render. */
 export function bindOnlineSettingsControls(root, signal) {

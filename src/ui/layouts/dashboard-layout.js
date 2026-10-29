@@ -644,10 +644,8 @@ export async function renderDashboardLayout(root, slots = {}) {
         } else {
             existingThemeToggle?.removeAttribute("hidden");
         }
-        applyStaticTranslations(
-            i18n,
-            existingShell.querySelector(".main-window") ?? existingShell,
-        );
+        applyStaticTranslations(i18n, existingShell);
+        uiCtx.capabilities.get("ui:navbarLinks")?.render?.(i18n);
         mountFooterLinks(existingShell, { i18n });
         applyActiveNavigation();
         if (
@@ -667,7 +665,13 @@ export async function renderDashboardLayout(root, slots = {}) {
             initRouter(root);
             const preferences = usePreferenceApi ? loadUiPreferences() : null;
             bindThemeToggle({ usePreferenceApi, preferences });
-            bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
+            bindLanguageToggle({
+                i18n,
+                navigateTo,
+                showToast,
+                preferences,
+                signal: slots.signal,
+            });
             bindSwitcherSettingsLinks(root);
         }
         return;
@@ -727,7 +731,13 @@ export async function renderDashboardLayout(root, slots = {}) {
         initRouter(root);
         const preferences = usePreferenceApi ? loadUiPreferences() : null;
         bindThemeToggle({ usePreferenceApi, preferences });
-        bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
+        bindLanguageToggle({
+            i18n,
+            navigateTo,
+            showToast,
+            preferences,
+            signal: slots.signal,
+        });
         bindSwitcherSettingsLinks(root);
     }
     registerServiceWorker();

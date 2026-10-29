@@ -1,3 +1,5 @@
+import { uiCtx as flowEngine } from "../ui-ctx.js";
+import { registerPageRedraw } from "../page-redraw.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import { isMountSignal, replaceMountScope } from "../mount-scope.js";
@@ -15,6 +17,7 @@ function createRouter({
     offline = false,
     allowOfflineRoute = async () => true,
 } = {}) {
+    const flowPrefix = `test:${crypto.randomUUID()}:`;
     const listeners = new Map();
     const capabilities = new Map();
     const assigned = [];
@@ -61,7 +64,14 @@ function createRouter({
             }
         },
         uiCtx: {
-            runFlow,
+            registerFlow: (id, stages) =>
+                flowEngine.registerFlow(flowPrefix + id, stages),
+            extendFlow: (id, stage, hook, callback) =>
+                flowEngine.extendFlow(flowPrefix + id, stage, hook, callback),
+            runFlow: (id, input) =>
+                id === "ui:redraw"
+                    ? flowEngine.runFlow(flowPrefix + id, input)
+                    : runFlow?.(id, input),
             capabilities: {
                 contribute: (name, value) => capabilities.set(name, value),
                 get: (name) => capabilities.get(name),
@@ -109,6 +119,7 @@ function createRouter({
     sandbox.router = loadTestModule(
         new URL("../app-router.js", import.meta.url),
         {
+            "./page-redraw.js": { registerPageRedraw },
             "./offline-state.js": sandbox,
             "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
             "./offline-unavailable.js": {

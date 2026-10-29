@@ -18,6 +18,17 @@ test("the host language catalog prepares after authentication and serves Setting
     const client = loadTestModule(
         new URL("../ui-language-catalog.js", import.meta.url),
         {
+            "./offline-identity.js":
+                host.imports["/static/reuse/offline-identity.js"],
+            "./ui-language-state.js": {
+                enabledUiLanguages: () => ["en", "de"],
+                selectUiLanguage: () =>
+                    assert.fail("catalog loading must not change locale"),
+            },
+            "./i18n.js": {
+                prepareUiLanguages: async (languages) =>
+                    assert.deepEqual(Array.from(languages), ["en", "de"]),
+            },
             "./ui-ctx.js": host.imports["/static/reuse/ui-ctx.js"],
             "./api-client.js": host.imports["/static/reuse/api-client.js"],
             "./offline-read-cache.js":

@@ -384,7 +384,7 @@ async function assetResponse(request, moduleAsset, event) {
     const cached = await cache.match(cacheKey);
     // Only content-hashed production files are immutable, never arbitrary ?v= URLs.
     const immutable =
-        /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp)$/.test(
+        /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp|xml)$/.test(
             new URL(request.url).pathname,
         );
     if (cached && immutable) return cached;

@@ -631,4 +631,5 @@
   <string name="ui.reuse.offline_connection_restored">Connection to the server is restored. Refresh when you are ready.</string>
   <string name="ui.reuse.recheck_connectivity">Recheck Connectivity</string>
   <string name="ui.reuse.offline_no_cached_content">No offline cached content available.</string>
+  <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
 </resources>

@@ -36,7 +36,14 @@ export async function loadSettingsMount({
     const preferences = loadTestModule(
         new URL("../../../reuse/ui-preferences.js", import.meta.url),
         {
-            "./offline-state.js": { offlineEnabled: () => true },
+            "./offline-state.js": {
+                offlineEnabled: () => true,
+                isOffline: () => false,
+            },
+            "./ui-language-state.js": {
+                uiLanguageMembershipChanged: () =>
+                    assert.fail("startup must not save language settings"),
+            },
             "./ui-ctx.js": {
                 uiCtx: { capabilities: { get: () => undefined } },
             },

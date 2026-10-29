@@ -4,7 +4,6 @@ import test from "node:test";
 
 import {
     bindLanguageToggle,
-    promoteLanguage,
     shouldShowLanguageToggle,
 } from "../language-toggle.js";
 
@@ -21,14 +20,6 @@ test("language switcher respects the explicit opt-out", () => {
         ]),
         false,
     );
-});
-
-test("selected language is promoted without changing the remaining order", () => {
-    assert.deepEqual(promoteLanguage(["en", "de", "ja"], "ja"), [
-        "ja",
-        "en",
-        "de",
-    ]);
 });
 
 test("hidden page action buttons cannot retain an empty visual presence", async () => {

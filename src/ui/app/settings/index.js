@@ -1,3 +1,5 @@
+import { changeUiLanguage } from "../../reuse/ui-language-catalog.js";
+import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
 import { bindOnlineSettingsControls } from "./online-controls.js";
 import {
     applyUiPreferences,
@@ -125,7 +127,7 @@ function resolveLanguagePriorityMode(
     return storedMode;
 }
 
-const LANGUAGE_RELOAD_DELAY_MS = 400;
+const LANGUAGE_REDRAW_DELAY_MS = 2000;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
@@ -526,7 +528,7 @@ export async function mount(root, { signal } = {}) {
               <div class="settings-language-switcher-preference">
                 <h3>${i18n.t("ui.app.settings.always_show_language_switcher")}</h3>
                 <label class="switch">
-                  <input id="pref-always-show-language-switcher" type="checkbox" />
+                  <input id="pref-always-show-language-switcher" data-ui-language-online type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -540,7 +542,7 @@ export async function mount(root, { signal } = {}) {
                 <div>
                   <div class="settings-language-heading-row components-section-heading">
                     <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-                    <button id="pref-language-sync-from-browser" type="button" class="btn-neutral btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+                    <button id="pref-language-sync-from-browser" data-ui-language-online type="button" class="btn-neutral btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
                   </div>
                   <table id="preferred-languages" class="language-table"></table>
                 </div>
@@ -565,11 +567,13 @@ export async function mount(root, { signal } = {}) {
                         });
                     }
                     languageSwitcherPrefs.bind();
+                    refreshOnlineControls();
                     if (!languagePrefs) {
                         languagePrefs = initLanguagePrefs(
                             root,
                             languagePriority,
                             {
+                                signal,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language", dirty),
                             },
@@ -848,6 +852,18 @@ export async function mount(root, { signal } = {}) {
                         selectedPrefs.alwaysShowLanguageSwitcher;
                 }
             }
+            if (
+                isOffline() &&
+                uiLanguageMembershipChanged(
+                    { ...loadedPrefs, languagePriority },
+                    prefs,
+                )
+            ) {
+                showToast(i18n.t("ui.app.settings.language_offline_locked"), {
+                    variant: "warning",
+                });
+                throw new Error("offline_language_settings_readonly");
+            }
             await savePrefs(prefs);
             loadedPrefs = prefs;
             const appliedMode = prefs.mode ?? mode;
@@ -862,7 +878,16 @@ export async function mount(root, { signal } = {}) {
                 "cognis_ui_preferences",
                 JSON.stringify(prefs),
             );
-            applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
+            applyUiPreferences(prefs);
+            if (
+                hasLanguagePriorityChanged(
+                    languagePriority,
+                    prefs.languagePriority ?? [],
+                )
+            )
+                window.dispatchEvent(
+                    new CustomEvent("cognis:ui-language-settings-changed"),
+                );
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();
@@ -880,13 +905,12 @@ export async function mount(root, { signal } = {}) {
             });
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
-            if (hasLanguagePriorityChanged(prev, next) && !isOffline()) {
-                // Brief pause so the success toast is visible before the page
-                // reloads (see LANGUAGE_RELOAD_DELAY_MS).
+            if (hasLanguagePriorityChanged(prev, next)) {
                 await new Promise((resolve) =>
-                    setTimeout(resolve, LANGUAGE_RELOAD_DELAY_MS),
+                    setTimeout(resolve, LANGUAGE_REDRAW_DELAY_MS),
                 );
-                window.location.reload();
+                if (!signal?.aborted)
+                    await changeUiLanguage(next[0], { bypassGuard: true });
             }
         },
         onDiscard: () => {

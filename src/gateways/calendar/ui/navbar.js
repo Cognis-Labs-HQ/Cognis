@@ -52,6 +52,7 @@ export async function mountProvider(ctx) {
     const releaseLink = navbar.contribute("calendar", {
         href: "/calendar",
         label: i18n.t("ui.reuse.calendar"),
+        labelKey: "ui.reuse.calendar",
     });
     try {
         const releaseSearch = registerSearchIndex(
