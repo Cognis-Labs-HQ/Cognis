@@ -153,3 +153,7 @@ Setelah login kata sandi atau TFA berhasil, kapabilitas navigasi SPA yang sudah 
 ## Batas Sesi dan Komponen
 
 Auth menyediakan `session:isOfflineValid` sebagai otoritas sinkron tanpa jaringan untuk akses luring terverifikasi. Pemeriksaan mencakup penyiapan yang selesai, akun dan token aktif, serta kedaluwarsa sesi. Pemilik antrean memakai kontrak ini alih-alih menafsirkan penyimpanan autentikasi sendiri. Penyiapan akun melewati sesi tamu alternatif; endpoint setup-status di server memakai kapabilitas klasifikasi Share sebelum meminta integrasi TFA atau email. Akun lokal dan SSO biasa tetap wajib menyelesaikan penyiapan.
+
+## Antrean Terikat Akun
+
+Catatan antrean menyertakan pengenal instans akun yang diverifikasi server. Auth mengembalikan `accountInstanceId` kanonis dalam status penyiapan terautentikasi dan hanya menyediakan `session:getOfflineIdentity` untuk sesi akun yang terverifikasi, selesai disiapkan, dan belum kedaluwarsa. Ketiadaan metadata otoritatif mencabut izin luring. Tampilan antrean serta pemeriksaan penyimpanan dan pengiriman terikat pada instans ini; catatan instans lama atau tanpa ikatan ditolak sebelum dikirim, termasuk setelah akun lokal dibuat ulang dengan ID akun yang sama. ID operasi tidak bertabrakan antarinstans akun. Token Bearer tidak pernah disimpan dalam antrean.

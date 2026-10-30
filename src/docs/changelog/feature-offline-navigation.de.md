@@ -250,6 +250,26 @@ Abmelden bleibt im Offline-Modus sichtbar, ist jedoch wie andere nicht verfügba
 
 Nur eine unmittelbar aufeinanderfolgende identische Änderung desselben Zustellungsanbieters wird unterdrückt. Andere Methoden, Pfade, Medientypen und dazwischenliegende Vorgänge behalten ihre Reihenfolge. Offline-Pufferung und erneute Zustellung erfordern neben der aktuellen Zustimmung die Auth-Fähigkeit `session:isOfflineValid`. Sie prüft bestätigte Einrichtungsbereitschaft, Konto, Token und Sitzungsablauf ohne Netzwerkanfrage, auch nach Wartezeiten auf Speichersperren. Fehlt der Auth-Vertrag, wird der Zugriff verweigert. Einstellungen binden Kontosteuerungen vor dem optionalen Laden der E-Mails. Bei deaktiviertem Notify wird die E-Mail-Verwaltung ausgeblendet; Archivieren, Deaktivieren und Löschen bleiben nutzbar. Benutzerverwaltung und Administration verwenden bereichsgebundene Notify-Fähigkeiten statt konkreter UI-Importe. Notify stellt administrative E-Mail-Abfragen, erneuten Versand nur bei Verbindung und SMTP-Verfügbarkeit bereit. Fehlende E-Mail-Metadaten werden als unbekannt angezeigt. Auth überspringt normale Kontoeinrichtung für alternative Gastsitzungen und verwendet Shares Klassifizierungsfähigkeit zur Gastprüfung an der Servergrenze. E-Mail- und TFA-Einrichtung echter Konten bleiben verbindlich.
 
+## Kontogebundene Warteschlangen
+
+Gepufferte Einträge enthalten die vom Server bestätigte Kontoinstanzkennung. Auth liefert die kanonische `accountInstanceId` im authentifizierten Einrichtungsstatus und veröffentlicht `session:getOfflineIdentity` nur für bestätigte, vollständig eingerichtete und nicht abgelaufene Kontositzungen. Fehlende verbindliche Metadaten widerrufen die Offline-Berechtigung. Warteschlangenansichten sowie Speicher- und Zustellungsprüfungen sind an diese Instanz gebunden. Einträge alter oder unbestätigter Instanzen werden vor der Übertragung abgewiesen, auch wenn ein lokales Konto mit derselben Konto-ID neu erstellt wurde. Vorgangskennungen können nicht zwischen Kontoinstanzen kollidieren. Bearer-Token werden niemals in der Warteschlange gespeichert.
+
+## Bestätigte Favoriten
+
+Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen ersetzen Studys begrenzte Offline-Momentaufnahme durch die Serverantwort. Eine überholte laufende Abfrage kann sie nicht überschreiben. Erneuter Seitenaufbau offline erhält bestätigte Ergänzungen und Entfernungen; noch gepufferte Absichten werden weiterhin darübergelegt.
+
+## Unabhängige Emoji-Nutzung
+
+Die wiederverwendbare Reaktionsauswahl in Nachrichten erfasst die Emoji-Häufigkeit unabhängig von Reaktionsänderungen. Nur die Nachrichtenreaktion enthält den abschließenden Aktivzustand. Fehler bei der Nutzungserfassung werden protokolliert und verhindern weder die gewählte Reaktion noch ihre Aktualisierungsfunktion.
+
+## Kontobezogene Benutzermenüs
+
+Aktionsmenüs der Benutzerverwaltung lösen Zeilen anhand der unveränderlichen Konto-ID statt des öffentlichen Benutzernamens auf. SSO-Konten behalten TFA-Zurücksetzung und Gründerstatus; Zurücksetzungen extern verwalteter Passwörter bleiben gesperrt. Veraltete oder unbekannte Auswahlen öffnen keine Kontoaktionen.
+
+## Vollständige Cache-Ressourcen
+
+Bereichsanfragen umgehen den Cache für vollständige Dateien. Nur vollständige HTTP-200-Antworten können öffentliche Ressourcen darin anlegen oder ersetzen. Teilantworten lassen vorhandene vollständige Dateien unverändert. Schriftdateien mit Inhaltshash nutzen dieselbe unveränderliche Zwischenspeicherung und generationenübergreifende Wiederverwendung wie gehashte Skripte und Bilder, wodurch unnötige Downloads nach Worker-Updates entfallen.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

@@ -50,7 +50,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.39` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `3.0.4`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.29` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.30` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
@@ -68,7 +68,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13` |
-| Authentication (auth) | `src/gateways/auth/`          | `2.0.3`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.0.4`  |
 | Share                 | `src/gateways/share/`         | `1.7.49` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.18` |
@@ -77,7 +77,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/`  | `1.1.41` |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.4.8`  |
+| Study                 | `src/gateways/study/`         | `2.4.9`  |
 | Calendar              | `src/gateways/calendar/`      | `1.5.4`  |
 
 ## Kernverträge
@@ -90,7 +90,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.10.14` |
+| API Server | `src/api/` | `0.10.15` |
 
 ## Werkzeuge
 

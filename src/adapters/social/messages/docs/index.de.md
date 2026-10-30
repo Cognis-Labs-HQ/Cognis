@@ -53,3 +53,7 @@ Verschlüsselte Nachrichten löschen ihren Entwurf erst nach Serverbestätigung 
 ## Offline-Verfügbarkeit
 
 Messages bereitet Raumliste, Übersetzungen und Emoji-Kataloge nach bestätigter Anmeldung vor. Mit vorbereiteten Seitenressourcen und einer zwischengespeicherten Raumliste lässt sich die Seite vor dem ersten Onlinebesuch offline öffnen. Nur Räume mit zwischengespeicherten Metadaten und Nachrichtenverläufen öffnen sich automatisch; die Auswahl eines nicht gespeicherten Verlaufs zeigt einen gezielten Informationshinweis. Raumregistrierung und Ressourcenverfügbarkeit bleiben bei wiederholten gebündelten und direkt bereitgestellten Importen erhalten.
+
+## Unabhängige Emoji-Nutzung
+
+Die wiederverwendbare Reaktionsauswahl in Nachrichten erfasst die Emoji-Häufigkeit unabhängig von Reaktionsänderungen. Nur die Nachrichtenreaktion enthält den abschließenden Aktivzustand. Fehler bei der Nutzungserfassung werden protokolliert und verhindern weder die gewählte Reaktion noch ihre Aktualisierungsfunktion.

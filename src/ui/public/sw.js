@@ -9,7 +9,7 @@ const REQUIREMENTS_URL = "/__cognis_offline_requirements__";
 const ACCESS_URL = "/__cognis_offline_access__";
 const PREFERENCE_URL = "/__cognis_offline_preference__";
 const IMMUTABLE_ASSET =
-    /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp|xml)$/;
+    /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp|xml|ttf)$/;
 
 async function offlineEnabled() {
     const cache = await caches.open(CONTROL_CACHE_NAME);
@@ -35,7 +35,7 @@ function fetchAvailable(request, options = {}) {
 
 function cacheable(response) {
     return (
-        response?.ok &&
+        response?.status === 200 &&
         !response.redirected &&
         !/private|no-store/i.test(response.headers.get("cache-control") ?? "")
     );
@@ -401,6 +401,8 @@ const MAX_ASSET_REFRESHES = 256;
 const assetLoads = new Map();
 
 async function assetResponse(request, moduleAsset, event) {
+    if (request.headers?.has("range"))
+        return fetch(request, { cache: "no-store" });
     const control = await caches.open(CONTROL_CACHE_NAME);
     const preference = await control.match(PREFERENCE_URL);
     if (preference && (await preference.json()).enabled === false)

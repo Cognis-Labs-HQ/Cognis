@@ -119,3 +119,7 @@ Navigasi Study langsung memakai snapshot sesi terverifikasi, dengan validasi gab
 ## Tujuan Luring Tetap Terlihat
 
 Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada navigasi utama, menu pengguna, dan submenu Study. Library serta tautan pengelolaan dan permintaan tetap tercantum tetapi nonaktif saat luring, lalu aktif kembali setelah terhubung. Izin Study tetap menentukan entri yang tersedia. Tautan nonaktif tidak memuat rute atau membuka pemberitahuan pemulihan, termasuk navigasi bahasa dan pengaturan Study yang membawa status halaman. Explore dan Flashcards yang tersimpan tetap dapat diakses.
+
+## Favorit yang Dikonfirmasi
+
+Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.

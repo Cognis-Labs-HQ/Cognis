@@ -32,7 +32,8 @@ export function createOfflineOutbox({
 }) {
     const handlers = new Map();
     const pageChanges = new Map();
-    const recordKey = (row) => JSON.stringify([row.account, row.owner, row.id]);
+    const recordKey = (row) =>
+        JSON.stringify([row.account, row.instance, row.owner, row.id]);
     let flushing;
     function read() {
         const rows = JSON.parse(storage().getItem(STORAGE_KEY) ?? "[]");
@@ -74,7 +75,10 @@ export function createOfflineOutbox({
         const actual = identity();
         return (
             actual.account &&
+            typeof actual.instance === "string" &&
+            actual.instance.length > 0 &&
             actual.account === expected.account &&
+            actual.instance === expected.instance &&
             actual.session === expected.session
         );
     }
@@ -87,6 +91,7 @@ export function createOfflineOutbox({
                     (row) =>
                         !(
                             row.account === item.account &&
+                            row.instance === item.instance &&
                             row.owner === item.owner &&
                             row.id === item.id
                         ),
@@ -97,7 +102,7 @@ export function createOfflineOutbox({
     async function flush() {
         if (flushing) return flushing;
         const actor = identity();
-        if (!actor.account || !actor.session || offline() || !allowed())
+        if (!current(actor) || !actor.session || offline() || !allowed())
             return { sent: 0, rejected: 0 };
         flushing = withDeliveryLock(async () => {
             const result = { sent: 0, rejected: 0 };
@@ -106,6 +111,20 @@ export function createOfflineOutbox({
             const blockedOwners = new Set();
             for (const item of [...rows]) {
                 if (item.account !== actor.account) continue;
+                if (!current(actor) || offline() || !allowed()) break;
+                if (item.instance !== actor.instance) {
+                    log(
+                        "warn",
+                        "Queued action belongs to a retired account instance.",
+                        {
+                            operation: "rejectOutboxInstance",
+                            owner: item.owner,
+                        },
+                    );
+                    await acknowledge(item, actor);
+                    result.rejected++;
+                    continue;
+                }
                 const registration = handlers.get(item.owner);
                 if (!registration || blockedOwners.has(item.owner)) continue;
                 if (!current(actor) || offline() || !allowed()) break;
@@ -113,6 +132,7 @@ export function createOfflineOutbox({
                     read().some(
                         (row) =>
                             row.account === item.account &&
+                            row.instance === item.instance &&
                             row.owner === item.owner &&
                             row.id === item.id,
                     ),
@@ -187,6 +207,7 @@ export function createOfflineOutbox({
                 !enabled() ||
                 !actor.account ||
                 !actor.session ||
+                !current(actor) ||
                 actor.account.startsWith("share:") ||
                 !allowed() ||
                 !handlers.has(owner)
@@ -202,6 +223,7 @@ export function createOfflineOutbox({
                 const existing = rows.find(
                     (row) =>
                         row.account === actor.account &&
+                        row.instance === actor.instance &&
                         row.owner === owner &&
                         row.id === id,
                 );
@@ -216,13 +238,19 @@ export function createOfflineOutbox({
                         id,
                         payload: structuredClone(payload),
                         account: actor.account,
+                        instance: actor.instance,
                         createdAt: now(),
                         protectOnClose: handlers.get(owner).protectOnClose,
                     });
                 write(rows);
                 if (!existing && handlers.get(owner).protectOnClose)
                     pageChanges.set(
-                        recordKey({ account: actor.account, owner, id }),
+                        recordKey({
+                            account: actor.account,
+                            instance: actor.instance,
+                            owner,
+                            id,
+                        }),
                         actor.session,
                     );
             });
@@ -242,6 +270,7 @@ export function createOfflineOutbox({
                 return read().some(
                     (row) =>
                         row.account === actor.account &&
+                        row.instance === actor.instance &&
                         pageChanges.get(recordKey(row)) === actor.session,
                 );
             } catch (error) {
@@ -261,21 +290,25 @@ export function createOfflineOutbox({
                 read().some(
                     (row) =>
                         row.account === actor.account &&
-                        handlers.has(row.owner),
+                        (row.instance !== actor.instance ||
+                            handlers.has(row.owner)),
                 ),
             );
         },
         async pending(owner) {
             const actor = identity();
-            if (!actor.account) return [];
+            if (!current(actor)) return [];
             return withLock(() =>
-                structuredClone(
-                    read().filter(
-                        (row) =>
-                            row.account === actor.account &&
-                            row.owner === owner,
-                    ),
-                ),
+                current(actor)
+                    ? structuredClone(
+                          read().filter(
+                              (row) =>
+                                  row.account === actor.account &&
+                                  row.instance === actor.instance &&
+                                  row.owner === owner,
+                          ),
+                      )
+                    : [],
             );
         },
         async clear(account = identity().account) {

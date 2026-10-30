@@ -69,6 +69,7 @@ export function createMessageReactionsController({
     maxEmojiDisplayCount = MAX_EMOJI_PICKER_DISPLAY_COUNT,
     onReactionUpdated,
 } = {}) {
+    const log = console.error.bind(console);
     const stateCache = {
         emojiList: null,
         emojiUsage: [],
@@ -164,13 +165,22 @@ export function createMessageReactionsController({
         stateCache.emojiUsage.sort(
             (left, right) => right.usageCount - left.usageCount,
         );
-        apiFetch("/api/v1/social/messages/emoji-usage", {
-            method: "POST",
-            body: JSON.stringify({
-                emoji: normalizedEmoji,
-                active: nextReactionState(messageId, normalizedEmoji),
-            }),
-        }).catch(() => undefined);
+        void Promise.resolve()
+            .then(() =>
+                apiFetch("/api/v1/social/messages/emoji-usage", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        emoji: normalizedEmoji,
+                    }),
+                }),
+            )
+            .catch((error) => {
+                log("[messages] emoji usage recording failed", {
+                    component: "messages",
+                    operation: "recordEmojiUsage",
+                    errorName: error?.name,
+                });
+            });
     }
 
     function getQuickReactionEmojis() {

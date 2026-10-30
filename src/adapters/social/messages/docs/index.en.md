@@ -53,3 +53,7 @@ Encrypted messages clear their draft only after server acknowledgement or durabl
 ## Offline Availability
 
 Messages prepares its room list, translations and emoji catalogs after verified sign-in. With prepared page assets and a cached room list, the page can open offline before its first online visit. Only rooms with cached metadata and threads open automatically; selecting an uncached thread shows a targeted information toast. Room registration and asset availability survive repeated bundled and directly served imports.
+
+## Independent Emoji Usage
+
+The reusable Messages reaction picker records emoji frequency independently of reaction changes. Only the message-reaction request includes the final active state. Usage-recording failures are logged without preventing the selected reaction or its update callback.

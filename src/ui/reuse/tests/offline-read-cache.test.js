@@ -285,3 +285,31 @@ test("expired online metadata coalesces fresh reads and never conceals server de
     );
     assert.equal(state.read.has("metadata"), false);
 });
+
+test("acknowledged snapshot replacement wins over an in-flight stale read and retains cache bounds", async () => {
+    const state = fixture({ maxEntries: 1 });
+    let complete;
+    const stale = state.read(
+        "favourites",
+        () =>
+            new Promise((resolve) => {
+                complete = resolve;
+            }),
+    );
+    await Promise.resolve();
+    state.read.set("favourites", [{ id: "acknowledged" }]);
+    complete([]);
+    assert.deepEqual(JSON.parse(JSON.stringify(await stale)), [
+        { id: "acknowledged" },
+    ]);
+    state.disconnect();
+    assert.equal(
+        (await state.read("favourites", () => assert.fail()))[0].id,
+        "acknowledged",
+    );
+    state.read.set("another", []);
+    assert.equal(state.read.has("favourites"), false);
+    assert.equal(state.read.has("another"), true);
+    state.values.set("cognis_account", "replacement");
+    assert.equal(state.read.has("another"), false);
+});

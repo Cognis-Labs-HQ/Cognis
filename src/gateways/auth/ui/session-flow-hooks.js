@@ -66,6 +66,8 @@ function isOfflineSessionValid() {
     const expiry = localStorage.getItem("cognis_session_expires_at");
     return Boolean(
         !isGuestSession() &&
+        typeof verifiedOfflineSession?.instance === "string" &&
+        verifiedOfflineSession.instance.length > 0 &&
         verifiedOfflineSession?.ready === true &&
         verifiedOfflineSession.setupKnown === true &&
         verifiedOfflineSession.token ===
@@ -77,6 +79,15 @@ function isOfflineSessionValid() {
 }
 
 uiCtx.capabilities.contribute("session:isOfflineValid", isOfflineSessionValid);
+uiCtx.capabilities.contribute("session:getOfflineIdentity", () =>
+    isOfflineSessionValid()
+        ? {
+              account: verifiedOfflineSession.account,
+              instance: verifiedOfflineSession.instance,
+              session: verifiedOfflineSession.token,
+          }
+        : null,
+);
 uiCtx.capabilities.contribute(
     "session:isAuthenticated",
     () =>
@@ -210,6 +221,7 @@ uiCtx.extendFlow(
                     result,
                     ready: previous?.ready === true,
                     setupKnown: previous?.setupKnown === true,
+                    instance: previous?.instance,
                 };
                 return result;
             }
@@ -266,9 +278,26 @@ uiCtx.extendFlow(
             return { requiresSetup: false, redirectTo: null };
         }
         try {
+            const snapshot = verifiedOfflineSession;
             const response = await apiFetch("/api/v1/auth/setup-status");
             if (!response.ok) throw new Error("setup_status_unavailable");
             const data = (await response.json())?.data;
+            if (
+                snapshot &&
+                (snapshot.token !== verifiedOfflineSession?.token ||
+                    snapshot.account !== verifiedOfflineSession?.account ||
+                    snapshot.token !==
+                        localStorage.getItem("cognis_access_token") ||
+                    snapshot.account !== localStorage.getItem("cognis_account"))
+            )
+                throw new Error("setup_session_changed");
+            if (
+                typeof data?.accountInstanceId !== "string" ||
+                !data.accountInstanceId.trim()
+            )
+                throw new Error("account_instance_unavailable");
+            if (verifiedOfflineSession)
+                verifiedOfflineSession.instance = data.accountInstanceId;
             if (
                 verifiedOfflineSession &&
                 (data?.requiresSetup || data?.integrations?.length)
@@ -309,6 +338,10 @@ uiCtx.extendFlow(
                 operation: "enforceSetup",
                 error,
             });
+            if (verifiedOfflineSession) {
+                verifiedOfflineSession.ready = false;
+                verifiedOfflineSession.setupKnown = false;
+            }
             authSetupRequiredCached = true;
             return { requiresSetup: true, redirectTo: "/login" };
         }

@@ -153,3 +153,7 @@ Successful password and TFA login use the existing SPA navigation capability to 
 ## Session and Component Boundaries
 
 Auth publishes `session:isOfflineValid` as the synchronous, network-free authority for verified offline access. It checks completed setup, the current account/token and session expiry. Queue owners consume this contract rather than interpreting auth storage. Account setup skips alternate guest sessions; server setup-status uses Share’s classification capability before requesting TFA or email integrations. Normal local and SSO accounts retain required setup enforcement.
+
+## Account-bound Queues
+
+Queued records include the server-verified account-instance identifier. Auth returns its canonical `accountInstanceId` in authenticated setup status and exposes `session:getOfflineIdentity` only for a verified, setup-ready, unexpired account session. Missing authoritative metadata revokes offline authorization. Queue views and storage/delivery checks bind to this instance; retired or unbound records are rejected before transport, including after recreating a local account with the same account ID. Operation IDs cannot collide across account instances. Bearer tokens are never persisted in the queue.

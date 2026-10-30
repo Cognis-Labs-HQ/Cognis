@@ -119,3 +119,7 @@ Study verwendet bestätigte Sitzungsschnappschüsse sofort und prüft sie gebün
 ## Sichtbare Offline-Ziele
 
 Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im Study-Untermenü mit derselben deaktivierten Darstellung sichtbar. Library sowie Verwaltungs- und Anfragelinks bleiben offline aufgeführt, sind aber deaktiviert und werden nach Wiederherstellung der Verbindung wieder aktiv. Die Study-Berechtigungen bestimmen weiterhin, welche Einträge vorhanden sind. Deaktivierte Links laden keine Routen und öffnen keine Wiederherstellungshinweise, auch nicht bei der zustandsgebundenen Sprach- und Einstellungsnavigation von Study. Zwischengespeicherte Explore- und Flashcards-Inhalte bleiben erreichbar.
+
+## Bestätigte Favoriten
+
+Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen ersetzen Studys begrenzte Offline-Momentaufnahme durch die Serverantwort. Eine überholte laufende Abfrage kann sie nicht überschreiben. Erneuter Seitenaufbau offline erhält bestätigte Ergänzungen und Entfernungen; noch gepufferte Absichten werden weiterhin darübergelegt.

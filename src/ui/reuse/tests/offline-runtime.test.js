@@ -67,6 +67,11 @@ function fixture({ browser = false } = {}) {
         "./sub-page-registry.js": { createSubPageRegistry },
     });
     uiCtx.capabilities.contribute("session:isOfflineValid", () => true);
+    uiCtx.capabilities.contribute("session:getOfflineIdentity", () => ({
+        account: values.get("cognis_account"),
+        session: values.get("cognis_access_token"),
+        instance: "instance:learner",
+    }));
     return {
         uiCtx,
         values,

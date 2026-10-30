@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-function workerFixture() {
+function workerFixture({ bootAssets = ["/assets/entry-ABCDEFGH.js"] } = {}) {
     const handlers = new Map();
     const stores = new Map();
     const requests = [];
@@ -86,7 +86,7 @@ function workerFixture() {
                 requests.push({ url, options });
                 if (unavailable) throw new TypeError("server_unreachable");
                 if (url.endsWith("/static/offline-manifest.json"))
-                    return Response.json(["/assets/entry-ABCDEFGH.js"]);
+                    return Response.json(bootAssets);
                 if (url.endsWith("/api/v1/ui/offline-routes"))
                     return Response.json({ data: routes, offlineGuards });
                 if (serveAsset) return serveAsset(url, options);
@@ -171,7 +171,7 @@ function workerFixture() {
             await pending.finished;
             return pending.response;
         },
-        beginRequest(path, mode) {
+        beginRequest(path, mode, options = {}) {
             let response;
             const tasks = [];
             handlers.get("fetch")({
@@ -179,6 +179,7 @@ function workerFixture() {
                     url: new URL(path, origin).href,
                     method: "GET",
                     mode,
+                    ...options,
                 },
                 respondWith(promise) {
                     response = promise;
@@ -193,8 +194,8 @@ function workerFixture() {
                 },
             };
         },
-        request(path, mode) {
-            const pending = this.beginRequest(path, mode);
+        request(path, mode, options) {
+            const pending = this.beginRequest(path, mode, options);
             return pending.response?.then(async (response) => {
                 await pending.finished();
                 return response;
@@ -675,5 +676,49 @@ test("concurrent first-use public assets share a download until its complete cac
     assert.equal(
         await (await fixture.request("/static/cold.svg")).text(),
         "shared asset",
+    );
+});
+
+test("partial transfers bypass full-file caches and cannot replace a complete public snapshot", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    const path = "/static/complete.css";
+    await fixture.request(path);
+    const writes = fixture.writes.length;
+    fixture.serve(
+        () =>
+            new Response("part", {
+                status: 206,
+                headers: { "content-range": "bytes 0-3/12" },
+            }),
+    );
+    const partial = await fixture.request(path, undefined, {
+        headers: new Headers({ range: "bytes=0-3" }),
+    });
+    assert.equal(partial.status, 206);
+    assert.equal(await partial.text(), "part");
+    assert.equal(fixture.requests.at(-1).options.cache, "no-store");
+    assert.equal(fixture.writes.length, writes);
+    fixture.advance(60_001);
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+    assert.equal(fixture.writes.length, writes);
+    fixture.unavailable = true;
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+});
+
+test("content-hashed fonts survive worker upgrades and do not revalidate unchanged bytes", async () => {
+    const path = "/assets/media/orbitron-ABCDEFGH.ttf";
+    const fixture = workerFixture({ bootAssets: [path] });
+    await (
+        await fixture.caches.open("cognis-offline-previous")
+    ).put(path, new Response("font bytes"));
+    await fixture.lifecycle("install");
+    const requests = fixture.requests.length;
+    fixture.advance(60_001);
+    assert.equal(await (await fixture.request(path)).text(), "font bytes");
+    assert.equal(fixture.requests.length, requests);
+    assert.equal(
+        fixture.requests.some(({ url }) => url.endsWith(".ttf")),
+        false,
     );
 });

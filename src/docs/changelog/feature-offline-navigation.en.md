@@ -250,6 +250,26 @@ Logout remains visible but disabled in Offline Mode, using the same disabled sty
 
 Only an identical consecutive mutation from the same delivery owner is suppressed; changes to methods, paths, media types or intervening operations retain their order. Offline enqueueing and replay require Auth’s `session:isOfflineValid` capability as well as current consent. The capability checks verified setup readiness, account, token and session expiry without network requests, including when storage locks delay persistence. An unavailable Auth contract fails closed. Settings binds account controls before optional email loading; disabling Notify hides email management and leaves Archive, Deactivate and Delete usable. Users and Administration consume Notify through scoped capabilities instead of concrete UI imports. Notify supplies administrator email reads, online-only resend and SMTP availability; absent email metadata is shown as unknown. Auth skips normal account setup for alternate guest sessions and uses Share’s classification capability to exempt share guests at the server boundary. Real account email/TFA setup remains enforced.
 
+## Account-bound Queues
+
+Queued records include the server-verified account-instance identifier. Auth returns its canonical `accountInstanceId` in authenticated setup status and exposes `session:getOfflineIdentity` only for a verified, setup-ready, unexpired account session. Missing authoritative metadata revokes offline authorization. Queue views and storage/delivery checks bind to this instance; retired or unbound records are rejected before transport, including after recreating a local account with the same account ID. Operation IDs cannot collide across account instances. Bearer tokens are never persisted in the queue.
+
+## Acknowledged Favourites
+
+Successful online favourite changes and replay acknowledgements replace Study’s bounded offline snapshot with the server response. A superseded in-flight read cannot overwrite that snapshot. Offline page remounts preserve acknowledged additions and removals while remaining queued intent stays projected over the snapshot.
+
+## Independent Emoji Usage
+
+The reusable Messages reaction picker records emoji frequency independently of reaction changes. Only the message-reaction request includes the final active state. Usage-recording failures are logged without preventing the selected reaction or its update callback.
+
+## Account-aware User Menus
+
+Users action menus resolve rows by immutable account ID rather than public username. SSO accounts retain their TFA reset entry and founder state, and externally managed password resets remain disabled. A stale or unknown selection cannot open account actions.
+
+## Complete Cached Assets
+
+Range requests bypass the whole-file cache, and only complete HTTP 200 responses can populate or replace public assets. Partial responses leave existing complete bytes intact. Content-hashed font files use the same immutable caching and cross-generation reuse as hashed scripts and images, avoiding unnecessary downloads after worker updates.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

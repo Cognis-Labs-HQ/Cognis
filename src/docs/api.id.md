@@ -177,3 +177,23 @@ Pembacaan aset publik berbagi unduhan yang sedang berlangsung hingga penulisan c
 ## Batas Sesi dan Komponen
 
 Hanya mutasi identik yang berurutan dari pemilik pengiriman yang sama yang diabaikan. Perbedaan metode, jalur, jenis media, atau operasi di antaranya tetap mempertahankan urutan. Antrean luring dan pengiriman ulang memerlukan kapabilitas Auth `session:isOfflineValid` serta persetujuan terkini. Kapabilitas ini memeriksa kesiapan penyiapan yang telah diverifikasi, akun, token, dan kedaluwarsa sesi tanpa permintaan jaringan, termasuk setelah menunggu kunci penyimpanan. Jika kontrak Auth tidak tersedia, akses ditolak. Pengaturan memasang kontrol akun sebelum memuat email opsional; menonaktifkan Notify menyembunyikan pengelolaan email tanpa mengganggu Arsipkan, Nonaktifkan, dan Hapus. Pengguna dan Administrasi memakai kapabilitas Notify dengan cakupan siklus hidup, bukan impor UI konkret. Notify menyediakan pembacaan email administratif, pengiriman ulang khusus daring, dan ketersediaan SMTP; metadata email yang tidak tersedia ditampilkan sebagai tidak diketahui. Auth melewati penyiapan akun biasa untuk sesi tamu alternatif dan menggunakan kapabilitas klasifikasi Share untuk mengecualikan tamu berbagi pada batas server. Penyiapan email dan TFA untuk akun nyata tetap diwajibkan.
+
+## Antrean Terikat Akun
+
+Catatan antrean menyertakan pengenal instans akun yang diverifikasi server. Auth mengembalikan `accountInstanceId` kanonis dalam status penyiapan terautentikasi dan hanya menyediakan `session:getOfflineIdentity` untuk sesi akun yang terverifikasi, selesai disiapkan, dan belum kedaluwarsa. Ketiadaan metadata otoritatif mencabut izin luring. Tampilan antrean serta pemeriksaan penyimpanan dan pengiriman terikat pada instans ini; catatan instans lama atau tanpa ikatan ditolak sebelum dikirim, termasuk setelah akun lokal dibuat ulang dengan ID akun yang sama. ID operasi tidak bertabrakan antarinstans akun. Token Bearer tidak pernah disimpan dalam antrean.
+
+## Favorit yang Dikonfirmasi
+
+Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.
+
+## Penggunaan Emoji Terpisah
+
+Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji secara terpisah dari perubahan reaksi. Hanya permintaan reaksi pesan yang menyertakan keadaan aktif akhir. Kegagalan pencatatan penggunaan dicatat tanpa menghalangi reaksi yang dipilih atau fungsi pembaruannya.
+
+## Menu Pengguna Berbasis Akun
+
+Menu tindakan Pengguna menemukan baris melalui ID akun yang tidak berubah, bukan nama pengguna publik. Akun SSO mempertahankan entri reset TFA dan status pendiri; reset kata sandi yang dikelola eksternal tetap dinonaktifkan. Pilihan lama atau tidak dikenal tidak dapat membuka tindakan akun.
+
+## Aset Cache Lengkap
+
+Permintaan rentang melewati cache berkas utuh, dan hanya respons HTTP 200 lengkap yang dapat mengisi atau mengganti aset publik. Respons parsial tidak mengubah data lengkap yang sudah tersedia. Berkas font dengan hash konten memakai cache tetap dan penggunaan ulang lintas generasi seperti skrip dan gambar berhash, sehingga pembaruan worker tidak mengunduh ulang berkas yang sama.

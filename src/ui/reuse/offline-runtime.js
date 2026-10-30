@@ -18,10 +18,8 @@ export function registerOfflineRuntime(ctx) {
     registerOfflineAssets(ctx);
     if (ctx.capabilities.get("offline:outbox")) return;
     const outbox = createOfflineOutbox({
-        identity: () => ({
-            account: globalThis.localStorage?.getItem("cognis_account"),
-            session: globalThis.localStorage?.getItem("cognis_access_token"),
-        }),
+        identity: () =>
+            ctx.capabilities.get("session:getOfflineIdentity")?.() ?? {},
         enabled: offlineEnabled,
         offline: isOffline,
         allowed: () =>
@@ -189,7 +187,9 @@ export function registerOfflineRuntime(ctx) {
             clearTimeout(retryTimer);
             retryTimer = null;
             try {
-                await outbox.clear();
+                await outbox.clear(
+                    globalThis.localStorage?.getItem("cognis_account"),
+                );
             } catch (error) {
                 console.error("[offline] queued activity cleanup failed", {
                     operation: "clearOutbox",

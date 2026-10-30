@@ -15,6 +15,10 @@ import {
 test("setup status supplies owner integrations for SSO sessions after limited TFA setup", async () => {
     const db = makeInMemoryDb();
     const capabilities = new CapabilityStore();
+    capabilities.contribute(
+        "auth:getAccountInstanceId",
+        async () => "instance:person",
+    );
     let tfaPending = false;
     let verified = false;
     let calls = 0;
@@ -63,7 +67,9 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
     }
     assert.equal((await status(false)).status, 401);
     assert.equal(calls, 0);
-    assert.equal((await status()).data.integrations.length, 1);
+    const ready = await status();
+    assert.equal(ready.data.integrations.length, 1);
+    assert.equal(ready.data.accountInstanceId, "instance:person");
     tfaPending = true;
     const limited = await status();
     assert.equal(limited.data.requiresSetup, true);

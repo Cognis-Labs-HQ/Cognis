@@ -561,7 +561,8 @@ function bindUsersInteractions() {
         btn.addEventListener("click", async () => {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
-            const user = users.find((entry) => entry.username === username);
+            const user = users.find((entry) => entry.accountId === username);
+            if (!user) return;
             const emails = smtpAdapterActive
                 ? ((await uiCtx.capabilities
                       .get("notify:emailClient")

@@ -8,7 +8,11 @@ import { loadTestModule } from "./test-module.ts";
 export function createOfflineClientFixture(send, { window } = {}) {
     let disconnected = false;
     let cacheGeneration = 0;
-    let actor = { account: "learner", session: "fixture-token" };
+    let actor = {
+        account: "learner",
+        instance: "instance:learner",
+        session: "fixture-token",
+    };
     const values = new Map();
     const capabilities = new Map([
         ["ui:scopedActions", registerScopedUiActions],
@@ -134,7 +138,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
             cacheGeneration++;
         },
         changeAccount: (account, session = "new-token") => {
-            actor = { account, session };
+            actor = { account, instance: `instance:${account}`, session };
         },
         controller,
         ctx,

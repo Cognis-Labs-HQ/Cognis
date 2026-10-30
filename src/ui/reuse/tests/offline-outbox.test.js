@@ -4,7 +4,11 @@ import { createOfflineOutbox } from "../offline-outbox.js";
 
 function fixture() {
     const values = new Map();
-    let actor = { account: "learner", session: "test-token" };
+    let actor = {
+        account: "learner",
+        instance: "instance:learner",
+        session: "test-token",
+    };
     let disconnected = true;
     let allowed = true;
     let clock = 1_000_000;
@@ -42,7 +46,14 @@ function fixture() {
             disconnected = true;
         },
         changeAccount: (account) => {
-            actor = { account, session: "new-token" };
+            actor = {
+                account,
+                instance: `instance:${account}`,
+                session: "new-token",
+            };
+        },
+        changeInstance: (instance) => {
+            actor = { ...actor, instance };
         },
         deny: () => {
             allowed = false;
@@ -265,6 +276,7 @@ test("a reloaded page replays persisted records without restoring the previous c
         JSON.stringify([
             {
                 account: "learner",
+                instance: "instance:learner",
                 owner: "telemetry",
                 id: "previous",
                 payload: {},
@@ -296,4 +308,72 @@ test("reload resets protected changes while keeping replay durable and new edits
     state.reconnect();
     assert.equal((await reloaded.flush()).sent, 2);
     assert.equal(reloaded.hasBufferedChanges(), false);
+});
+
+test("recreated accounts cannot project or replay a deleted instance's records even with the same operation ID", async () => {
+    const state = fixture();
+    const outbox = state.create();
+    const delivered = [];
+    register(outbox, async (payload) => delivered.push(payload));
+    await outbox.submit("practice", "same-id", { value: "deleted account" });
+    state.changeInstance("replacement-instance");
+    assert.deepEqual(await outbox.pending("practice"), []);
+    assert.equal(outbox.hasBufferedChanges(), false);
+    await outbox.submit("practice", "same-id", {
+        value: "replacement account",
+    });
+    state.reconnect();
+    const result = await outbox.flush();
+    assert.deepEqual(result, { sent: 1, rejected: 1 });
+    assert.deepEqual(delivered, [{ value: "replacement account" }]);
+    assert.equal(
+        JSON.parse(state.values.get("cognis_offline_outbox")).length,
+        0,
+    );
+});
+
+test("unverified queue ownership is rejected instead of being adopted by a verified account", async () => {
+    const state = fixture();
+    state.values.set(
+        "cognis_offline_outbox",
+        JSON.stringify([
+            {
+                account: "learner",
+                owner: "unavailable",
+                id: "unbound",
+                payload: {},
+                createdAt: 1_000_000,
+            },
+        ]),
+    );
+    const outbox = state.create();
+    assert.deepEqual(await outbox.pending("unavailable"), []);
+    assert.equal(await outbox.hasPending(), true);
+    state.reconnect();
+    assert.deepEqual(await outbox.flush(), { sent: 0, rejected: 1 });
+});
+
+test("instance changes during storage and replay waits cannot commit or acknowledge another incarnation's changes", async () => {
+    const state = fixture();
+    const outbox = state.create();
+    let release;
+    const delivery = new Promise((resolve) => {
+        release = resolve;
+    });
+    register(outbox, () => delivery);
+    const submit = outbox.submit("practice", "delayed", {});
+    state.changeInstance("changed-before-storage");
+    await assert.rejects(submit, /offline_account_changed/);
+    await outbox.submit("practice", "valid", {});
+    state.reconnect();
+    const flush = outbox.flush();
+    await new Promise(setImmediate);
+    state.changeInstance("changed-during-delivery");
+    release();
+    assert.equal((await flush).sent, 0);
+    assert.equal(
+        JSON.parse(state.values.get("cognis_offline_outbox")).length,
+        1,
+    );
+    assert.deepEqual(await outbox.flush(), { sent: 0, rejected: 1 });
 });

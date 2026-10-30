@@ -21,6 +21,7 @@ function fixture() {
     let status = 200;
     let clockOffset = 0;
     let loseSetupConnection = false;
+    let instance = "instance:learner";
     const { uiCtx } = loadTestModule(
         new URL("../../../ui/reuse/ui-ctx.js", import.meta.url),
         {
@@ -33,7 +34,7 @@ function fixture() {
     );
     const window = new EventTarget();
     window.location = { pathname: "/study/explore", hash: "" };
-    loadTestModule(
+    const auth = loadTestModule(
         new URL("../ui/session-flow-hooks.js", import.meta.url),
         {
             "./external-profile-sync.js": {},
@@ -57,7 +58,11 @@ function fixture() {
                         ok: status === 200,
                         status,
                         json: async () => ({
-                            data: { enabled: true, requiresSetup: false },
+                            data: {
+                                enabled: true,
+                                requiresSetup: false,
+                                accountInstanceId: instance,
+                            },
                         }),
                     };
                 },
@@ -81,6 +86,10 @@ function fixture() {
     return {
         uiCtx,
         values,
+        resetSetup: auth.invalidateAuthSetupCache,
+        setInstance: (value) => {
+            instance = value;
+        },
         disconnect: () => {
             offline = true;
         },
@@ -186,4 +195,37 @@ test("authenticated alternate guest sessions do not fetch normal account setup o
         state.uiCtx.capabilities.get("session:isOfflineValid")(),
         false,
     );
+});
+
+test("offline identity comes only from server-verified account instances and is replaced on a new login", async () => {
+    const state = fixture();
+    const identity = state.uiCtx.capabilities.get("session:getOfflineIdentity");
+    assert.equal(identity(), null);
+    await authenticate(state);
+    assert.equal(identity().instance, "instance:learner");
+    state.values.set("cognis_account_instance", "unverified-browser-value");
+    assert.equal(identity().instance, "instance:learner");
+    state.setInstance("recreated-instance");
+    state.values.set("cognis_access_token", "replacement-session");
+    assert.equal(identity(), null);
+    await authenticate(state);
+    assert.equal(identity().instance, "recreated-instance");
+    state.disconnect();
+    assert.equal(identity().instance, "recreated-instance");
+    state.values.set("cognis_session_expires_at", "2000-01-01T00:00:00Z");
+    assert.equal(identity(), null);
+});
+
+test("missing authoritative instance metadata revokes an earlier offline authorization", async () => {
+    const state = fixture();
+    await authenticate(state);
+    state.setInstance(undefined);
+    state.resetSetup();
+    assert.equal((await authenticate(state)).authenticated, false);
+    assert.equal(
+        state.uiCtx.capabilities.get("session:getOfflineIdentity")(),
+        null,
+    );
+    state.disconnect();
+    await assert.rejects(authenticate(state), /offline_operation_unavailable/);
 });

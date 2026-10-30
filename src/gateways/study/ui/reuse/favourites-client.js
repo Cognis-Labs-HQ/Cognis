@@ -27,6 +27,7 @@ export function registerFavouriteClient(ctx) {
         actor === identity() &&
         active.has(key(kind, id));
     const save = async (input, signal = ctx.signal) => {
+        const assertAccount = captureAccountGuard();
         const response = await apiFetch("/api/v1/study/favourites", {
             method: "PUT",
             signal,
@@ -37,7 +38,13 @@ export function registerFavouriteClient(ctx) {
             throw Object.assign(new Error("favourites_failed"), {
                 status: response.status,
             });
-        return (await response.json()).data;
+        const items = (await response.json()).data;
+        assertAccount();
+        ctx.signal.throwIfAborted();
+        if (!Array.isArray(items))
+            throw new Error("invalid_favourites_response");
+        read.set("favourites", items);
+        return items;
     };
     const actions = registerActions(ctx, "study:favourites", {
         load: async ({ signal } = {}) => {

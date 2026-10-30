@@ -119,3 +119,7 @@ Study navigation uses verified session snapshots immediately, with coalesced val
 ## Visible Offline Destinations
 
 Unavailable destinations stay visible with the same disabled styling in the primary navigation, user dropdown and Study submenu. Library and its management/request links remain listed but disabled offline and reactivate after reconnection. Study permissions still control which entries exist. Disabled links do not load routes or open recovery feedback, including Study’s stateful language/settings navigation. Cached Explore and Flashcards remain accessible.
+
+## Acknowledged Favourites
+
+Successful online favourite changes and replay acknowledgements replace Study’s bounded offline snapshot with the server response. A superseded in-flight read cannot overwrite that snapshot. Offline page remounts preserve acknowledged additions and removals while remaining queued intent stays projected over the snapshot.

@@ -153,3 +153,7 @@ Nach erfolgreicher Passwort- oder TFA-Anmeldung ersetzt die vorhandene SPA-Navig
 ## Sitzungs- und Modulgrenzen
 
 Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Instanz für bestätigten Offline-Zugriff. Geprüft werden abgeschlossene Einrichtung, aktuelles Konto und Token sowie der Sitzungsablauf. Warteschlangen verwenden diesen Vertrag statt eigener Auswertung des Auth-Speichers. Die Kontoeinrichtung überspringt alternative Gastsitzungen. Der Server-Endpunkt setup-status verwendet Shares Klassifizierungsfähigkeit vor TFA- oder E-Mail-Integrationen. Für normale lokale und SSO-Konten bleibt die vorgeschriebene Einrichtung verbindlich.
+
+## Kontogebundene Warteschlangen
+
+Gepufferte Einträge enthalten die vom Server bestätigte Kontoinstanzkennung. Auth liefert die kanonische `accountInstanceId` im authentifizierten Einrichtungsstatus und veröffentlicht `session:getOfflineIdentity` nur für bestätigte, vollständig eingerichtete und nicht abgelaufene Kontositzungen. Fehlende verbindliche Metadaten widerrufen die Offline-Berechtigung. Warteschlangenansichten sowie Speicher- und Zustellungsprüfungen sind an diese Instanz gebunden. Einträge alter oder unbestätigter Instanzen werden vor der Übertragung abgewiesen, auch wenn ein lokales Konto mit derselben Konto-ID neu erstellt wurde. Vorgangskennungen können nicht zwischen Kontoinstanzen kollidieren. Bearer-Token werden niemals in der Warteschlange gespeichert.

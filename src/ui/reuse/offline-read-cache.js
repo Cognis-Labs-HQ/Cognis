@@ -5,7 +5,7 @@ import { offlinePolicy } from "./offline-policy.js";
  * @example const read = createOfflineReadCache({ signal });
  * const data = await read('schemas', () => fetchSchemas());
  * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number, preferCached?: boolean, refreshIntervalMs?: number, onlineMaxAgeMs?: number}} options
- * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void}} Cached read executor and snapshot readiness.
+ * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void, set: (key: string, value: unknown) => void}} Cached read executor and snapshot readiness.
  */
 import {
     isOffline,
@@ -43,6 +43,33 @@ export function createOfflineReadCache({
         pending.clear();
         checkedAt.clear();
     }
+    function store(key, result) {
+        const snapshot = JSON.stringify(result);
+        if (snapshot !== undefined && snapshot.length * 2 <= maxBytes) {
+            let changed = !snapshots.has(key);
+            size -= (snapshots.get(key)?.length ?? 0) * 2;
+            snapshots.delete(key);
+            while (
+                snapshots.size &&
+                (size + snapshot.length * 2 > maxBytes ||
+                    snapshots.size >= maxEntries)
+            ) {
+                changed = true;
+                const oldest = snapshots.keys().next().value;
+                size -= snapshots.get(oldest).length * 2;
+                snapshots.delete(oldest);
+                checkedAt.delete(oldest);
+            }
+            snapshots.set(key, snapshot);
+            checkedAt.set(key, Date.now());
+            size += snapshot.length * 2;
+            if (changed && typeof globalThis.CustomEvent === "function")
+                globalThis.window?.dispatchEvent(
+                    new CustomEvent("cognis:offline-data-changed"),
+                );
+        }
+    }
+
     signal?.addEventListener("abort", clear, { once: true });
     const execute = async (
         key,
@@ -104,6 +131,7 @@ export function createOfflineReadCache({
         const loadGeneration = generation;
         let result;
         let loadPromise;
+        let replaced = false;
         try {
             if (!pending.has(key))
                 pending.set(key, Promise.resolve().then(load));
@@ -126,9 +154,17 @@ export function createOfflineReadCache({
                 throw new Error("offline_access_denied");
             return restore();
         } finally {
+            replaced = pending.get(key) !== loadPromise;
             if (pending.get(key) === loadPromise) pending.delete(key);
         }
         signal?.throwIfAborted();
+        if (
+            replaced &&
+            loadGeneration === generation &&
+            readIdentity() === currentIdentity &&
+            snapshots.has(key)
+        )
+            return restore();
         if (
             loadGeneration !== generation ||
             (!offlineEnabled() && !onlineMaxAgeMs) ||
@@ -136,31 +172,25 @@ export function createOfflineReadCache({
             !canCache(result)
         )
             return result;
-        const snapshot = JSON.stringify(result);
-        if (snapshot !== undefined && snapshot.length * 2 <= maxBytes) {
-            let changed = !snapshots.has(key);
-            size -= (snapshots.get(key)?.length ?? 0) * 2;
-            snapshots.delete(key);
-            while (
-                snapshots.size &&
-                (size + snapshot.length * 2 > maxBytes ||
-                    snapshots.size >= maxEntries)
-            ) {
-                changed = true;
-                const oldest = snapshots.keys().next().value;
-                size -= snapshots.get(oldest).length * 2;
-                snapshots.delete(oldest);
-                checkedAt.delete(oldest);
-            }
-            snapshots.set(key, snapshot);
-            checkedAt.set(key, Date.now());
-            size += snapshot.length * 2;
-            if (changed && typeof globalThis.CustomEvent === "function")
-                globalThis.window?.dispatchEvent(
-                    new CustomEvent("cognis:offline-data-changed"),
-                );
-        }
+        store(key, result);
         return result;
+    };
+    execute.set = (key, value) => {
+        signal?.throwIfAborted();
+        const currentIdentity = readIdentity();
+        if (identity !== currentIdentity) clear();
+        identity = currentIdentity;
+        const expiry = globalThis.localStorage?.getItem(
+            "cognis_session_expires_at",
+        );
+        if (
+            (!offlineEnabled() && !onlineMaxAgeMs) ||
+            (expiry && !(Date.parse(expiry) > Date.now())) ||
+            (isOffline() && !offlinePolicy.allows())
+        )
+            return;
+        pending.delete(key);
+        store(key, value);
     };
     execute.invalidate = clear;
     execute.has = (key) => {

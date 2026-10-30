@@ -833,10 +833,17 @@ export function createSessionRoutes({
                 getIntegrations && status?.requiresSetup !== true
                     ? await getIntegrations(claims.sub, claims.role)
                     : [];
+            const getAccountInstanceId = capabilities.get<
+                (accountId: string) => Promise<string>
+            >("auth:getAccountInstanceId");
+            if (!getAccountInstanceId)
+                throw new Error("account_instance_unavailable");
+            const accountInstanceId = await getAccountInstanceId(claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
+                        accountInstanceId,
                         integrations,
                         requiresSetup: status?.requiresSetup === true,
                     },
