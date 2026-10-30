@@ -73,4 +73,4 @@ Kapabilitas `notify:emailClient` yang mengikuti siklus hidup menyediakan permint
 
 ## Notifikasi Berdasarkan ID Akun
 
-Notifikasi berdasarkan peran serta notifikasi permintaan dan konten Study Library menggunakan `accountId` yang tetap. Pengiriman tetap menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama; nama pengguna publik tetap menjadi data tampilan.
+Notifikasi berdasarkan peran menggunakan `accountId` yang tetap agar menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. `notify:dispatchToRole` mengembalikan ID penerima kanonis; nama pengguna publik tetap menjadi data tampilan.

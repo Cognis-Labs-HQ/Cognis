@@ -1,5 +1,9 @@
 # API
 
+## Penggantian Salinan Terbatas
+
+Penggantian yang berhasil tetapi melebihi batas byte cache baca atau tidak memiliki nilai yang dapat diserialkan menghapus salinan lama agar data usang tidak tersedia saat luring. Pembacaan gabungan yang terlambat tidak dapat mengisi ulang salinan tersebut. Kunci cache lain tetap tersedia, dan respons terlalu besar tetap dapat digunakan daring tanpa disimpan.
+
 ## Notifikasi Berdasarkan ID Akun
 
 Notifikasi berdasarkan peran serta notifikasi permintaan dan konten Study Library menggunakan `accountId` yang tetap. Pengiriman tetap menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama; nama pengguna publik tetap menjadi data tampilan.

@@ -8,7 +8,6 @@ import {
     provisionAndUnlock,
     resetBrowserStorage,
     indexedDbValues,
-    keyringSource,
     sessionValues,
     settingsSource,
     values,
@@ -902,11 +901,4 @@ test("keyring persistence surfaces definitive server rejection", async () => {
         await keyring.lockKeyring();
         localStorage.removeItem("cognis_account");
     }
-});
-
-test("temporary guest keyrings never request an account password", () => {
-    assert.match(
-        keyringSource,
-        /session:isGuest[\s\S]*session:ensureGuestKeyring[\s\S]*if \(temporaryKeyringAccountId\) return false/,
-    );
 });

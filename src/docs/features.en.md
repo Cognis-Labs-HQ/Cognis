@@ -1,5 +1,9 @@
 # Platform Features
 
+## Bounded Snapshot Replacements
+
+A successful replacement that exceeds the read-cache byte limit, or has no serializable value, retires its old snapshot instead of leaving obsolete data available offline. A late coalesced read cannot repopulate that retired snapshot. Other cached keys remain available, and oversized responses remain usable online without being cached.
+
 ## Account ID Notification Delivery
 
 Role-targeted notifications and Study Library request/content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID; public usernames remain display data.

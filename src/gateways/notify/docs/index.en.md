@@ -94,4 +94,4 @@ The lifecycle-scoped `notify:emailClient` capability provides own-account reques
 
 ## Account ID Notification Delivery
 
-Role-targeted notifications and Study Library request/content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID; public usernames remain display data.
+Role-targeted notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. `notify:dispatchToRole` returns the canonical recipient IDs; public usernames remain display data.

@@ -313,3 +313,59 @@ test("acknowledged snapshot replacement wins over an in-flight stale read and re
     state.values.set("cognis_account", "replacement");
     assert.equal(state.read.has("another"), false);
 });
+
+for (const replacement of [undefined, { content: "x".repeat(100) }]) {
+    test(`uncacheable replacement retires an old snapshot (${replacement ? "oversized" : "undefined"})`, async () => {
+        const state = fixture({ maxBytes: 100 });
+        await state.read("preferences", async () => ({ mode: "dark" }));
+        await state.read("unrelated", async () => ({ value: 1 }));
+        let complete;
+        const stale = state.read(
+            "preferences",
+            () =>
+                new Promise((resolve) => {
+                    complete = resolve;
+                }),
+        );
+        await Promise.resolve();
+        state.read.set("preferences", replacement);
+        assert.equal(state.read.has("preferences"), false);
+        complete({ mode: "dark" });
+        await stale;
+        state.disconnect();
+        await assert.rejects(
+            state.read("preferences", () => assert.fail("offline transport")),
+            /offline_read_unavailable/,
+        );
+        assert.equal(
+            (await state.read("unrelated", () => assert.fail())).value,
+            1,
+        );
+        state.read.set("preferences", { mode: "light" });
+        assert.equal(
+            (await state.read("preferences", () => assert.fail())).mode,
+            "light",
+        );
+    });
+}
+
+test("coalesced oversized reads remain usable online without entering the offline cache", async () => {
+    const state = fixture({ maxBytes: 20 });
+    let complete;
+    let calls = 0;
+    const load = () => {
+        calls++;
+        return new Promise((resolve) => {
+            complete = resolve;
+        });
+    };
+    const first = state.read("content", load);
+    const second = state.read("content", load);
+    await Promise.resolve();
+    const result = { content: "x".repeat(100) };
+    complete(result);
+    assert.equal((await first).content, result.content);
+    assert.equal((await second).content, result.content);
+    assert.equal(calls, 1);
+    assert.equal(state.read.has("content"), false);
+});

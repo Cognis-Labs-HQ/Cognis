@@ -43,31 +43,44 @@ export function createOfflineReadCache({
         pending.clear();
         checkedAt.clear();
     }
+
+    function notifyReadiness() {
+        if (typeof globalThis.CustomEvent === "function")
+            globalThis.window?.dispatchEvent(
+                new CustomEvent("cognis:offline-data-changed"),
+            );
+    }
+
+    function removeSnapshot(key) {
+        size -= (snapshots.get(key)?.length ?? 0) * 2;
+        snapshots.delete(key);
+        checkedAt.delete(key);
+    }
+
     function store(key, result) {
         const snapshot = JSON.stringify(result);
-        if (snapshot !== undefined && snapshot.length * 2 <= maxBytes) {
-            let changed = !snapshots.has(key);
-            size -= (snapshots.get(key)?.length ?? 0) * 2;
-            snapshots.delete(key);
-            while (
-                snapshots.size &&
-                (size + snapshot.length * 2 > maxBytes ||
-                    snapshots.size >= maxEntries)
-            ) {
-                changed = true;
-                const oldest = snapshots.keys().next().value;
-                size -= snapshots.get(oldest).length * 2;
-                snapshots.delete(oldest);
-                checkedAt.delete(oldest);
+        if (snapshot === undefined || snapshot.length * 2 > maxBytes) {
+            if (snapshots.has(key)) {
+                removeSnapshot(key);
+                notifyReadiness();
             }
-            snapshots.set(key, snapshot);
-            checkedAt.set(key, Date.now());
-            size += snapshot.length * 2;
-            if (changed && typeof globalThis.CustomEvent === "function")
-                globalThis.window?.dispatchEvent(
-                    new CustomEvent("cognis:offline-data-changed"),
-                );
+            return;
         }
+        let changed = !snapshots.has(key);
+        removeSnapshot(key);
+        while (
+            snapshots.size &&
+            (size + snapshot.length * 2 > maxBytes ||
+                snapshots.size >= maxEntries)
+        ) {
+            changed = true;
+            const oldest = snapshots.keys().next().value;
+            removeSnapshot(oldest);
+        }
+        snapshots.set(key, snapshot);
+        checkedAt.set(key, Date.now());
+        size += snapshot.length * 2;
+        if (changed) notifyReadiness();
     }
 
     signal?.addEventListener("abort", clear, { once: true });
@@ -161,10 +174,9 @@ export function createOfflineReadCache({
         if (
             replaced &&
             loadGeneration === generation &&
-            readIdentity() === currentIdentity &&
-            snapshots.has(key)
+            readIdentity() === currentIdentity
         )
-            return restore();
+            return snapshots.has(key) ? restore() : result;
         if (
             loadGeneration !== generation ||
             (!offlineEnabled() && !onlineMaxAgeMs) ||

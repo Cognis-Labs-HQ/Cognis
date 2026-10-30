@@ -74,4 +74,4 @@ Die lebenszyklusgebundene Fähigkeit `notify:emailClient` bietet Anfragen für d
 
 ## Benachrichtigungen per Konto-ID
 
-Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.
+Rollenbasierte Benachrichtigungen verwenden die unveränderliche `accountId` und erreichen dadurch auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. `notify:dispatchToRole` gibt die kanonischen Empfänger-IDs zurück; öffentliche Benutzernamen bleiben Anzeigedaten.

@@ -2,6 +2,10 @@
 
 **Feature-Zweig:** feature-offline-navigation
 
+## Begrenzte Kopien ersetzen
+
+Eine erfolgreiche Ersetzung oberhalb des Byte-Limits oder ohne serialisierbaren Wert entfernt die alte Lesekopie, statt veraltete Daten offline anzubieten. Eine verspätete gebündelte Leseabfrage kann diese Kopie nicht wiederherstellen. Andere gespeicherte Schlüssel bleiben verfügbar; zu große Antworten bleiben online ohne Zwischenspeicherung nutzbar.
+
 ## Benachrichtigungen per Konto-ID
 
 Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.
