@@ -149,6 +149,7 @@ test("service worker installation retains install icons within its precache imag
                     handlers.set(type, handler),
             },
             caches: {
+                keys: async () => [],
                 open: async () => ({
                     put: async () => {},
                     keys: async () => [],

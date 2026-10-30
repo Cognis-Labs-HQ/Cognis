@@ -6,6 +6,7 @@ function fixture(options = {}) {
     let offline = false;
     let enabled = true;
     let generation = 0;
+    let clock = Date.now();
     const values = new Map([
         ["cognis_account", "first"],
         ["cognis_access_token", "session"],
@@ -23,11 +24,15 @@ function fixture(options = {}) {
         {
             localStorage: { getItem: (key) => values.get(key) ?? null },
             console,
+            Date: { now: () => clock, parse: Date.parse },
         },
     );
     return {
         read: module.createOfflineReadCache(options),
         values,
+        advance: (ms) => {
+            clock += ms;
+        },
         disconnect: () => {
             offline = true;
         },
@@ -228,4 +233,55 @@ test("an authoritative denial during cached validation invalidates the private s
         state.read("catalog", async () => ({})),
         /offline_read_unavailable/,
     );
+});
+
+test("online metadata freshness avoids repeated reads with Offline Mode disabled and expires on demand", async () => {
+    const state = fixture({ onlineMaxAgeMs: 30_000 });
+    state.disable();
+    let calls = 0;
+    const load = async () => ({ version: ++calls });
+    assert.equal((await state.read("metadata", load)).version, 1);
+    state.advance(29_999);
+    const cached = await state.read("metadata", load);
+    cached.version = 99;
+    assert.equal((await state.read("metadata", load)).version, 1);
+    assert.equal(calls, 1);
+    state.advance(1);
+    assert.equal((await state.read("metadata", load)).version, 2);
+    state.read.invalidate();
+    assert.equal((await state.read("metadata", load)).version, 3);
+    state.values.set("cognis_access_token", "replacement");
+    assert.equal((await state.read("metadata", load)).version, 4);
+    state.values.set("cognis_session_expires_at", "2000-01-01T00:00:00Z");
+    assert.equal((await state.read("metadata", load)).version, 5);
+    assert.equal((await state.read("metadata", load)).version, 6);
+});
+
+test("expired online metadata coalesces fresh reads and never conceals server denials", async () => {
+    const state = fixture({ onlineMaxAgeMs: 30_000 });
+    await state.read("metadata", async () => ({ version: 1 }));
+    state.advance(30_000);
+    let complete,
+        calls = 0;
+    const load = () => {
+        calls++;
+        return new Promise((resolve) => {
+            complete = resolve;
+        });
+    };
+    const first = state.read("metadata", load),
+        second = state.read("metadata", load);
+    await Promise.resolve();
+    assert.equal(calls, 1);
+    complete({ version: 2 });
+    assert.equal((await first).version, 2);
+    assert.equal((await second).version, 2);
+    state.advance(30_000);
+    await assert.rejects(
+        state.read("metadata", async () => {
+            throw Object.assign(new Error("denied"), { status: 403 });
+        }),
+        /denied/,
+    );
+    assert.equal(state.read.has("metadata"), false);
 });

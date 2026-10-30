@@ -11,6 +11,7 @@ export function registerStudyNavigation(ctx) {
     const read = createOfflineReadCache({
         signal: ctx.signal,
         preferCached: true,
+        onlineMaxAgeMs: 30_000,
     });
     for (const event of [
         "cognis:study-enrollment-changed",

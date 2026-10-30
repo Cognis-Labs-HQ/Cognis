@@ -231,6 +231,9 @@ test("unvisited assets fail honestly and mutable assets refresh online", async (
     await fixture.request("/static/template.html");
     const count = fixture.requests.length;
     await fixture.request("/static/template.html");
+    assert.equal(fixture.requests.length, count);
+    fixture.advance(60_001);
+    await fixture.request("/static/template.html");
     assert.equal(fixture.requests.length, count + 1);
     fixture.unavailable = true;
     assert.equal(
@@ -435,6 +438,7 @@ test("mutable public assets return cached bytes immediately, coalesce refreshes 
     await fixture.lifecycle("install");
     const path = "/static/styles/reuse/toast.css";
     await fixture.request(path);
+    fixture.advance(60_001);
     let release;
     let calls = 0;
     fixture.serve(async (_url, options) => {
@@ -474,6 +478,7 @@ test("an authoritative public asset denial replaces cached access with the curre
     const path = "/static/styles/reuse/toast.css";
     assert.equal((await fixture.request(path)).status, 200);
     fixture.serve(() => new Response("denied", { status: 403 }));
+    fixture.advance(60_001);
     assert.equal((await fixture.request(path)).status, 200);
     assert.equal((await fixture.request(path)).status, 403);
 });
@@ -486,6 +491,7 @@ test("unchanged and unavailable replacements retain a complete cached file until
     const writes = () =>
         fixture.writes.filter((entry) => entry.url.endsWith(path)).length;
     const originalWrites = writes();
+    fixture.advance(60_001);
     await fixture.request(path);
     assert.equal(writes(), originalWrites);
     fixture.advance(60_001);
@@ -512,6 +518,7 @@ test("a truncated replacement cannot overwrite complete cached bytes", async () 
     await fixture.lifecycle("install");
     const path = "/static/complete.css";
     await fixture.request(path);
+    fixture.advance(60_001);
     fixture.serve(
         () =>
             new Response(
@@ -537,6 +544,7 @@ test("an older server representation cannot replace a newer cached file", async 
             }),
     );
     await fixture.request(path);
+    fixture.advance(60_001);
     fixture.serve(
         () =>
             new Response("older", {
@@ -603,5 +611,69 @@ test("worker resource misses do not repeat connectivity probes after a confirmed
             url.endsWith("/api/v1/system/healthcheck"),
         ).length,
         1,
+    );
+});
+
+test("worker installation reuses complete content-hashed assets from prior generations without downloading them", async () => {
+    const fixture = workerFixture();
+    const prior = await fixture.caches.open("cognis-offline-previous");
+    await prior.put(
+        "/assets/entry-ABCDEFGH.js",
+        new Response("retained immutable code"),
+    );
+    await prior.put(
+        "/manifest.webmanifest",
+        new Response("stale mutable manifest"),
+    );
+    await fixture.lifecycle("install");
+    assert.equal(
+        fixture.requests.filter(({ url }) =>
+            url.endsWith("/assets/entry-ABCDEFGH.js"),
+        ).length,
+        0,
+    );
+    assert.equal(
+        await (await fixture.request("/assets/entry-ABCDEFGH.js")).text(),
+        "retained immutable code",
+    );
+    assert.ok(
+        fixture.requests.some(({ url }) =>
+            url.endsWith("/manifest.webmanifest"),
+        ),
+    );
+});
+
+test("concurrent first-use public assets share a download until its complete cache write settles", async () => {
+    const fixture = workerFixture();
+    await fixture.lifecycle("install");
+    let complete;
+    let calls = 0;
+    fixture.serve(() => {
+        calls++;
+        return new Promise((resolve) => {
+            complete = resolve;
+        });
+    });
+    const releaseWrites = fixture.pauseAssetWrites();
+    const first = fixture.beginRequest("/static/cold.svg?v=one");
+    const second = fixture.beginRequest("/static/cold.svg?v=two");
+    await new Promise(setImmediate);
+    assert.equal(calls, 1);
+    complete(new Response("shared asset"));
+    assert.equal(await (await first.response).text(), "shared asset");
+    assert.equal(await (await second.response).text(), "shared asset");
+    const duringWrite = fixture.beginRequest("/static/cold.svg");
+    assert.equal(await (await duringWrite.response).text(), "shared asset");
+    assert.equal(calls, 1);
+    releaseWrites();
+    await Promise.all([
+        first.finished(),
+        second.finished(),
+        duringWrite.finished(),
+    ]);
+    fixture.unavailable = true;
+    assert.equal(
+        await (await fixture.request("/static/cold.svg")).text(),
+        "shared asset",
     );
 });

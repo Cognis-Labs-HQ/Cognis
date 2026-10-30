@@ -238,6 +238,10 @@ Enrollment preparation caches the shared schema catalog as well as each enrolled
 
 After Save completes, the scheduled redraw still checks for newer unsaved edits. Edits made during the two-second delay retain their discard confirmation; repeated saves coalesce, and leaving Settings cancels pending redraws.
 
+## Fewer Online Requests
+
+Public asset reads share an in-flight download until its cache write finishes, so concurrent pages and providers do not download the same resource repeatedly. A worker update reuses complete content-hashed host assets from earlier cache generations; mutable assets still refresh from the server. Existing cache-first responses, conditional background revalidation, module revision checks and Offline Mode opt-out behavior remain in effect. The language catalog and Study navigation metadata use a thirty-second online freshness window, including when Offline Mode is disabled. Online freshness expires on demand rather than polling; concurrent refreshes coalesce. Study retains its existing consent-gated background revalidation. Account/session changes, expiry, component lifecycle changes and explicit invalidation clear the relevant snapshots. Other private reads and writes keep their existing transport and authorization checks.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

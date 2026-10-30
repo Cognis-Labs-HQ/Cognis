@@ -4,7 +4,7 @@ import { offlinePolicy } from "./offline-policy.js";
  * Public exports: createOfflineReadCache — create a component-owned read cache.
  * @example const read = createOfflineReadCache({ signal });
  * const data = await read('schemas', () => fetchSchemas());
- * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number, preferCached?: boolean, refreshIntervalMs?: number}} options
+ * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number, preferCached?: boolean, refreshIntervalMs?: number, onlineMaxAgeMs?: number}} options
  * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void}} Cached read executor and snapshot readiness.
  */
 import {
@@ -19,7 +19,10 @@ export function createOfflineReadCache({
     maxEntries = 100,
     preferCached = false,
     refreshIntervalMs = 30_000,
+    onlineMaxAgeMs = 0,
 } = {}) {
+    if (!Number.isFinite(onlineMaxAgeMs) || onlineMaxAgeMs < 0)
+        throw new TypeError("invalid_online_cache_age");
     const snapshots = new Map();
     let identity;
     let size = 0;
@@ -53,7 +56,11 @@ export function createOfflineReadCache({
             "cognis_session_expires_at",
         );
         if (expiry && !(Date.parse(expiry) > Date.now())) clear();
-        if (identity !== currentIdentity || !offlineEnabled()) clear();
+        if (
+            identity !== currentIdentity ||
+            (!offlineEnabled() && !onlineMaxAgeMs)
+        )
+            clear();
         identity = currentIdentity;
         const restore = () => {
             const snapshot = snapshots.get(key);
@@ -66,6 +73,13 @@ export function createOfflineReadCache({
                 throw new Error("offline_access_denied");
             return restore();
         }
+        if (
+            !refresh &&
+            snapshots.has(key) &&
+            onlineMaxAgeMs > 0 &&
+            Date.now() - checkedAt.get(key) < onlineMaxAgeMs
+        )
+            return restore();
         if (
             preferCached &&
             !refresh &&
@@ -117,7 +131,7 @@ export function createOfflineReadCache({
         signal?.throwIfAborted();
         if (
             loadGeneration !== generation ||
-            !offlineEnabled() ||
+            (!offlineEnabled() && !onlineMaxAgeMs) ||
             readIdentity() !== currentIdentity ||
             !canCache(result)
         )

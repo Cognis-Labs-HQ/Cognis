@@ -8,7 +8,10 @@ import { bindOfflineSnapshotRefresh } from "./offline-snapshot.js";
 
 /** Prepare the host language catalog without visiting Settings or opening its picker. @returns {void} */
 export function mountProvider(ctx) {
-    const read = createOfflineReadCache({ signal: ctx.signal });
+    const read = createOfflineReadCache({
+        signal: ctx.signal,
+        onlineMaxAgeMs: 30_000,
+    });
     const actions = ctx.capabilities.get("ui:scopedActions");
     if (!actions) throw new Error("scoped_actions_unavailable");
     const prepare = async () => {

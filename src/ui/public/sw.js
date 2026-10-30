@@ -8,6 +8,8 @@ const CATALOG_URL = "/__cognis_offline_catalog__";
 const REQUIREMENTS_URL = "/__cognis_offline_requirements__";
 const ACCESS_URL = "/__cognis_offline_access__";
 const PREFERENCE_URL = "/__cognis_offline_preference__";
+const IMMUTABLE_ASSET =
+    /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp|xml)$/;
 
 async function offlineEnabled() {
     const cache = await caches.open(CONTROL_CACHE_NAME);
@@ -157,6 +159,15 @@ self.addEventListener("install", (event) => {
                 throw new Error("offline_boot_manifest_unavailable");
             const assets = await response.json();
             const cache = await caches.open(CACHE_NAME);
+            const previousCaches = await Promise.all(
+                (await caches.keys())
+                    .filter(
+                        (name) =>
+                            name.startsWith(CACHE_PREFIX) &&
+                            !name.endsWith("-control"),
+                    )
+                    .map((name) => caches.open(name)),
+            );
             const bootAssets = [
                 ...new Set([
                     SHELL_URL,
@@ -175,10 +186,29 @@ self.addEventListener("install", (event) => {
                     async () => {
                         while (nextAsset < bootAssets.length) {
                             const asset = bootAssets[nextAsset++];
-                            const resource = await fetchAvailable(asset, {
-                                credentials: "omit",
-                                cache: "reload",
-                            });
+                            let retained;
+                            if (
+                                IMMUTABLE_ASSET.test(
+                                    new URL(asset, self.location.origin)
+                                        .pathname,
+                                )
+                            ) {
+                                for (const previous of previousCaches) {
+                                    const response = await previous.match(
+                                        assetKey(asset),
+                                    );
+                                    if (cacheable(response)) {
+                                        retained = response;
+                                        break;
+                                    }
+                                }
+                            }
+                            const resource =
+                                retained ??
+                                (await fetchAvailable(asset, {
+                                    credentials: "omit",
+                                    cache: "reload",
+                                }));
                             if (!cacheable(resource))
                                 throw new Error(
                                     "offline_boot_asset_unavailable",
@@ -368,6 +398,7 @@ async function replacePublicAsset(cache, key, response, previous) {
 const assetRefreshes = new Map();
 const ASSET_REFRESH_INTERVAL = 60_000;
 const MAX_ASSET_REFRESHES = 256;
+const assetLoads = new Map();
 
 async function assetResponse(request, moduleAsset, event) {
     const control = await caches.open(CONTROL_CACHE_NAME);
@@ -383,16 +414,16 @@ async function assetResponse(request, moduleAsset, event) {
     const cacheKey = assetKey(request);
     const cached = await cache.match(cacheKey);
     // Only content-hashed production files are immutable, never arbitrary ?v= URLs.
-    const immutable =
-        /^\/assets\/(?:chunks\/|media\/)?[^/]+-[A-Z0-9]{8}\.(?:js|css|svg|png|webp|xml)$/.test(
-            new URL(request.url).pathname,
-        );
+    const immutable = IMMUTABLE_ASSET.test(new URL(request.url).pathname);
     if (cached && immutable) return cached;
     const previousSnapshot = cached?.clone();
+    let cacheWrite;
     const refresh = async () => {
         try {
             const response = await fetchAvailable(
-                request,
+                cached
+                    ? request
+                    : new Request(request.url, { headers: request.headers }),
                 moduleAsset
                     ? { cache: "no-store", credentials: "omit" }
                     : { cache: "no-cache", credentials: "omit" },
@@ -413,20 +444,20 @@ async function assetResponse(request, moduleAsset, event) {
                         parameters.has("revision") &&
                         response.headers.get("x-cognis-module-revision") ===
                             parameters.get("revision")))
-            )
-                event.waitUntil(
-                    replacePublicAsset(
-                        cache,
-                        cacheKey,
-                        response.clone(),
-                        previousSnapshot,
-                    ).catch((error) => {
-                        console.error(
-                            "[cognis-sw] public asset cache write failed",
-                            error,
-                        );
-                    }),
-                );
+            ) {
+                cacheWrite = replacePublicAsset(
+                    cache,
+                    cacheKey,
+                    response.clone(),
+                    previousSnapshot,
+                ).catch((error) => {
+                    console.error(
+                        "[cognis-sw] public asset cache write failed",
+                        error,
+                    );
+                });
+                event.waitUntil(cacheWrite);
+            }
             return response;
         } catch (error) {
             if (request.signal?.aborted) throw error;
@@ -440,7 +471,45 @@ async function assetResponse(request, moduleAsset, event) {
             throw error;
         }
     };
-    if (!cached) return refresh();
+    if (!cached) {
+        const loadKey = JSON.stringify([
+            cacheKey,
+            generation,
+            [...(request.headers ?? [])],
+        ]);
+        let pending = assetLoads.get(loadKey);
+        if (!pending) {
+            if (assetLoads.size >= MAX_ASSET_REFRESHES) return refresh();
+            pending = refresh();
+            assetLoads.set(loadKey, pending);
+            const release = () => {
+                if (assetLoads.get(loadKey) === pending)
+                    assetLoads.delete(loadKey);
+            };
+            event.waitUntil(
+                pending
+                    .then(() => cacheWrite)
+                    .then(() => {
+                        if (
+                            !assetRefreshes.has(cacheKey) &&
+                            assetRefreshes.size < MAX_ASSET_REFRESHES
+                        )
+                            assetRefreshes.set(cacheKey, {
+                                at: Date.now(),
+                                pending: false,
+                            });
+                    })
+                    .finally(release)
+                    .catch((error) => {
+                        console.info(
+                            "[cognis-sw] shared public asset load failed",
+                            { errorName: error?.name },
+                        );
+                    }),
+            );
+        }
+        return (await pending).clone();
+    }
     const previous = assetRefreshes.get(cacheKey);
     if (
         !previous ||

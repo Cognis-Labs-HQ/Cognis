@@ -58,6 +58,9 @@ test("the host language catalog prepares after authentication and serves Setting
     for (let i = 0; i < 50 && !prepared; i++)
         await new Promise((resolve) => setImmediate(resolve));
     assert.equal(prepared, true);
+    assert.equal((await client.loadUiLanguageCatalog())[0].iso_code, "en");
+    assert.equal((await client.loadUiLanguageCatalog())[1].iso_code, "de");
+    assert.equal(requests, 1);
     host.disconnect();
     assert.equal((await client.loadUiLanguageCatalog())[1].iso_code, "de");
     assert.equal(requests, 1);
