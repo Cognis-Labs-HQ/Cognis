@@ -49,13 +49,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.39` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.22` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.4`  |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.5`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.7.30` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.37` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.9`  |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.10` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
 | Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.21` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
@@ -71,7 +71,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Authentication (auth) | `src/gateways/auth/`          | `2.0.4`  |
 | Share                 | `src/gateways/share/`         | `1.7.49` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.18` |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.19` |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
 | Registration          | `src/gateways/registration/`  | `1.1.41` |
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.10.15` |
+| API Server | `src/api/` | `0.10.16` |
 
 ## Tooling
 

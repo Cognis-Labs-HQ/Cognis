@@ -91,3 +91,7 @@ Verified sign-in prepares the account’s email list and trusted-domain policy w
 ## Session and Component Boundaries
 
 The lifecycle-scoped `notify:emailClient` capability provides own-account requests and trusted domains, administrator `listUserEmails`, online-only `resendUserEmail`, and `smtpAvailable`. Each action runs through registered stages and stops when its provider is disposed. Core Settings, Users and Administration resolve these methods through ctx; they do not import Notify UI implementations. Missing Notify hides email management while leaving unrelated account controls usable.
+
+## Account ID Notification Delivery
+
+Role-targeted notifications and Study Library request/content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID; public usernames remain display data.

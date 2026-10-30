@@ -16,8 +16,16 @@ test("new content and deletion notifications carry localized catalogs through th
         flow: createLibraryFlow((id) => runs.push(id)),
         accounts: {
             list: async () => [
-                { username: "learner", enabled: true },
-                { username: "disabled", enabled: false },
+                {
+                    accountId: "learner",
+                    username: "public-learner",
+                    enabled: true,
+                },
+                {
+                    accountId: "disabled",
+                    username: "public-disabled",
+                    enabled: false,
+                },
             ],
         },
         dispatch: async (envelope) => {

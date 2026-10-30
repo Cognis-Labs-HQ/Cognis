@@ -70,3 +70,7 @@ Proses masuk terverifikasi menyiapkan daftar email akun dan kebijakan domain tep
 ## Batas Sesi dan Komponen
 
 Kapabilitas `notify:emailClient` yang mengikuti siklus hidup menyediakan permintaan akun sendiri dan domain tepercaya, `listUserEmails` administratif, `resendUserEmail` khusus daring, serta `smtpAvailable`. Setiap tindakan melewati tahapan terdaftar dan berhenti saat penyedianya dilepas. Pengaturan, Pengguna, dan Administrasi mengambil metode melalui ctx tanpa mengimpor implementasi UI Notify. Jika Notify tidak tersedia, pengelolaan email disembunyikan sementara kontrol akun lain tetap dapat digunakan.
+
+## Notifikasi Berdasarkan ID Akun
+
+Notifikasi berdasarkan peran serta notifikasi permintaan dan konten Study Library menggunakan `accountId` yang tetap. Pengiriman tetap menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama; nama pengguna publik tetap menjadi data tampilan.

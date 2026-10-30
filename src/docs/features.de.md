@@ -1,5 +1,13 @@
 # Plattform-Features
 
+## Benachrichtigungen per Konto-ID
+
+Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.
+
+## Bestätigte Einstellungskopien
+
+Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Lesezugriffen ihre begrenzte, anbietereigene Lesekopie, auch bei erneuter Übertragung und reinem Online-Speichern. Offline-Zusammenführungen behalten bestätigte Felder und berücksichtigen verbleibende Änderungen. Verzögerte Lesezugriffe überschreiben keine neueren bestätigten Daten; Kontowechsel, Anbieterabbau und fehlgeschlagene Schreibvorgänge veröffentlichen keine veralteten Daten.
+
 ## Überblick
 
 Cognis ist eine selbst gehostete Sprachlernplattform, die strukturierte Lerninhalte mit sozialen Features, pluggbarer Authentifizierung, flexibler Persistenz und einer Echtzeit-Kollaborationsbereitschaftsschicht kombiniert.

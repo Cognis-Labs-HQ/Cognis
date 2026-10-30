@@ -71,3 +71,7 @@ Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdig
 ## Sitzungs- und Modulgrenzen
 
 Die lebenszyklusgebundene Fähigkeit `notify:emailClient` bietet Anfragen für das eigene Konto und vertrauenswürdige Domänen sowie administrative E-Mail-Abfragen mit `listUserEmails`, erneuten Versand nur bei Verbindung mit `resendUserEmail` und `smtpAvailable`. Jede Aktion durchläuft registrierte Stufen und endet bei Entsorgung des Providers. Einstellungen, Benutzerverwaltung und Administration lösen diese Methoden über ctx auf, ohne Notify-UI-Implementierungen zu importieren. Fehlt Notify, wird die E-Mail-Verwaltung ausgeblendet; unabhängige Kontosteuerungen bleiben nutzbar.
+
+## Benachrichtigungen per Konto-ID
+
+Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.

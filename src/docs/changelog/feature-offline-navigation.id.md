@@ -2,6 +2,14 @@
 
 **Cabang Fitur:** feature-offline-navigation
 
+## Notifikasi Berdasarkan ID Akun
+
+Notifikasi berdasarkan peran serta notifikasi permintaan dan konten Study Library menggunakan `accountId` yang tetap. Pengiriman tetap menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama; nama pengguna publik tetap menjadi data tampilan.
+
+## Salinan Preferensi Terkonfirmasi
+
+Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas milik penyedia sebelum pembacaan berikutnya, termasuk pengiriman ulang dan penyimpanan khusus daring. Penggabungan preferensi luring mempertahankan bidang terkonfirmasi dan menerapkan perubahan yang masih tertunda. Pembacaan terlambat tidak menimpa salinan terkonfirmasi yang lebih baru; pergantian akun, penghentian penyedia, dan penulisan gagal tidak menerbitkan data usang.
+
 ## Perubahan Bahasa UI Langsung
 
 Pintasan bahasa hanya beralih di antara bahasa UI yang diaktifkan dan menerapkan pilihan terakhir setelah dua detik melalui alur bertahap `ui:languageCatalog:select` dan `ui:redraw`. Dokumen browser, URL, riwayat, serta cache luring privat tetap dipertahankan. Edit yang belum disimpan tetap memakai penjagaan navigasi; pekerjaan usang dan kegagalan pemuatan tidak menetapkan bahasa lain. Pilihan hanya berlaku pada tab dan sesi akun aktif, tanpa mengubah keanggotaan atau urutan bahasa yang dikonfigurasi. Pengaturan tetap memakai Simpan/Buang; perubahan prioritas tersimpan juga menggambar ulang setelah dua detik. Saat luring, tabel bahasa tersedia, perpindahan antartabel, serta sinkronisasi browser dikunci; bahasa terpilih tetap dapat diurutkan dan disimpan melalui buffer preferensi normal. Terjemahan inti dan komponen publik disiapkan untuk bahasa aktif. Bahasa Inggris tetap menjadi cadangan per kunci dan kunci yang benar-benar hilang tetap gagal secara eksplisit. Worker menyiapkan seluruh XML bahasa komponen host serta SVG bendera bahasa agar halaman yang sudah disiapkan dapat digambar ulang luring tanpa kunjungan sebelumnya. Shell yang digunakan kembali dan label navigasi inti diterjemahkan ulang tanpa membongkar penyedia. Pengatur waktu dilepas bersama halaman atau penggantian pengikatnya.

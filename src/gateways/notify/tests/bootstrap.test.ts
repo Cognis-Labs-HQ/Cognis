@@ -135,6 +135,64 @@ test("notify dispatch resolves profile handles to canonical account IDs", async 
     assert.equal(received[0]?.recipientUsername, "sso-account-id");
 });
 
+for (const [role, expected] of [
+    ["admin", ["u_admin", "u_owner"]],
+    ["teacher", ["u_teacher"]],
+    ["user", ["local-user"]],
+] as const) {
+    test(`role notifications deliver to immutable ${role} account IDs`, async () => {
+        const context = await makeCtx();
+        context.capabilities.contribute("auth:accountStore", {
+            list: async () => [
+                {
+                    accountId: "u_admin",
+                    username: "admin-handle",
+                    role: "admin",
+                },
+                {
+                    accountId: "u_owner",
+                    username: "owner-handle",
+                    role: "owner",
+                },
+                {
+                    accountId: "u_teacher",
+                    username: "teacher-handle",
+                    role: "teacher",
+                },
+                {
+                    accountId: "local-user",
+                    username: "local-user",
+                    role: "user",
+                },
+            ],
+        });
+        await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
+        const received: string[] = [];
+        const gateway = context.capabilities.require<any>("notify:gateway");
+        gateway.registerSender({
+            senderId: "capture",
+            async send(envelope: { recipientUsername: string }) {
+                received.push(envelope.recipientUsername);
+            },
+        });
+        gateway.registerAlwaysOnSender("capture");
+        const dispatch = context.capabilities.require<any>(
+            "notify:dispatchToRole",
+        );
+        const result = await dispatch(role, {
+            category: "study",
+            subject: "Request",
+            body: "Review request",
+        });
+        assert.deepEqual(result.recipients, expected);
+        assert.deepEqual(received, expected);
+        assert.deepEqual(
+            result.dispatched.map((item: any) => item.recipientUsername),
+            expected,
+        );
+    });
+}
+
 test("bootstrap registers routes with RouteRegistry", async () => {
     const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();

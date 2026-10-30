@@ -1,5 +1,13 @@
 # Platform Features
 
+## Account ID Notification Delivery
+
+Role-targeted notifications and Study Library request/content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID; public usernames remain display data.
+
+## Acknowledged Preference Snapshots
+
+Successful Profile preference writes update their bounded, provider-owned read snapshot before later reads, including replay and online-only saves. Offline preference merges retain acknowledged fields and project remaining pending changes. Delayed reads cannot overwrite a newer acknowledged snapshot; account changes, provider disposal and failed writes cannot publish stale data.
+
 ## Overview
 
 Cognis is a self-hosted language-study platform that combines structured learning content with social features, pluggable authentication, flexible persistence, and a real-time collaboration readiness layer. This document describes the capabilities available out of the box and the adapter coverage for each area.

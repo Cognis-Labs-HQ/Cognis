@@ -1,5 +1,13 @@
 # API
 
+## Account ID Notification Delivery
+
+Role-targeted notifications and Study Library request/content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID; public usernames remain display data.
+
+## Acknowledged Preference Snapshots
+
+Successful Profile preference writes update their bounded, provider-owned read snapshot before later reads, including replay and online-only saves. Offline preference merges retain acknowledged fields and project remaining pending changes. Delayed reads cannot overwrite a newer acknowledged snapshot; account changes, provider disposal and failed writes cannot publish stale data.
+
 ## Overview
 
 `src/api/` is the HTTP layer of Cognis. It hosts the Express-compatible Node.js server, the route registry, authentication middleware, and all the thin route handler modules that map incoming HTTP requests to gateway operations. The API layer is intentionally kept thin: route handlers parse and validate input, delegate to gateways, and return a stable response envelope. No route handler holds a direct reference to a database driver or external service SDK.

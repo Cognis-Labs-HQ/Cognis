@@ -22,7 +22,14 @@ test("Study request delivery resolves late notification capabilities and forward
     const feed: unknown[] = [];
     const categories: string[] = [];
     capabilities.contribute("auth:accountStore", {
-        list: async () => [{ username: "admin", role: "admin", enabled: true }],
+        list: async () => [
+            {
+                accountId: "admin",
+                username: "public-admin",
+                role: "admin",
+                enabled: true,
+            },
+        ],
     });
     capabilities.contribute("notify:registerCategory", (id: string) =>
         categories.push(id),
@@ -75,7 +82,14 @@ test("an administrator receives their incoming request but not their own review 
     const capabilities = new CapabilityStore();
     const feed: Array<{ metadata: { status: string } }> = [];
     capabilities.contribute("auth:accountStore", {
-        list: async () => [{ username: "admin", role: "admin", enabled: true }],
+        list: async () => [
+            {
+                accountId: "admin",
+                username: "public-admin",
+                role: "admin",
+                enabled: true,
+            },
+        ],
     });
     capabilities.contribute("notify:dispatch", async (envelope) => {
         feed.push(envelope);

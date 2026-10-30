@@ -2,6 +2,14 @@
 
 **Feature-Zweig:** feature-offline-navigation
 
+## Benachrichtigungen per Konto-ID
+
+Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.
+
+## Bestätigte Einstellungskopien
+
+Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Lesezugriffen ihre begrenzte, anbietereigene Lesekopie, auch bei erneuter Übertragung und reinem Online-Speichern. Offline-Zusammenführungen behalten bestätigte Felder und berücksichtigen verbleibende Änderungen. Verzögerte Lesezugriffe überschreiben keine neueren bestätigten Daten; Kontowechsel, Anbieterabbau und fehlgeschlagene Schreibvorgänge veröffentlichen keine veralteten Daten.
+
 ## Direkter UI-Sprachwechsel
 
 Der Sprachschalter wechselt nur zwischen aktivierten UI-Sprachen und übernimmt die letzte Auswahl nach zwei Sekunden über die gestuften Abläufe `ui:languageCatalog:select` und `ui:redraw`. Browserdokument, URL, Verlauf und private Offline-Caches bleiben erhalten. Ungespeicherte Änderungen behalten ihren Navigationsschutz; veraltete Vorgänge und fehlgeschlagene Seitenaufbauten übernehmen keine andere Sprache. Die Auswahl gilt nur für den aktuellen Tab und die aktive Kontositzung, ohne konfigurierte Sprachmitgliedschaft oder Reihenfolge zu ändern. Einstellungen behalten Speichern/Verwerfen bei; gespeicherte Prioritätsänderungen zeichnen die Oberfläche nach ebenfalls zwei Sekunden neu. Offline sind die verfügbaren Sprachen, Tabellenwechsel und Browsersynchronisierung gesperrt; ausgewählte Sprachen können weiterhin umgeordnet und über den normalen Einstellungspuffer gespeichert werden. Kern- und öffentliche Komponentenübersetzungen werden für aktivierte Sprachen vorbereitet. Englisch bleibt die Ausweichsprache pro Schlüssel; wirklich fehlende Schlüssel führen weiterhin zu Fehlern. Der Worker bereitet alle Sprach-XML-Dateien der Host-Komponenten und Sprachflaggen als SVG vor, damit vorbereitete Seiten ohne vorherigen Besuch offline neu gezeichnet werden können. Wiederverwendete Oberfläche und beigetragene Kernnavigation werden ohne Provider-Abbau neu übersetzt. Zeitgeber werden mit ihrer Seite oder einer ersetzten Bindung freigegeben.

@@ -413,6 +413,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const accountStore = ctx.capabilities.get<{
                 list(): Promise<
                     Array<{
+                        accountId: string;
                         username: string;
                         role?: string;
                     }>
@@ -428,7 +429,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     if (role === "teacher") return userRole === "teacher";
                     return userRole === "user";
                 })
-                .map((user) => user.username);
+                .map((user) => user.accountId);
             const dispatched: Array<{
                 recipientUsername: string;
                 result: Awaited<ReturnType<typeof gateway.dispatch>>;

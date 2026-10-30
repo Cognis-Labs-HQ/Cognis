@@ -35,7 +35,19 @@ function describe(path, method) {
     )
         return { write: true };
     if (/^users\/[^/]+\/preferences\/[^/]+$/.test(relative) && method === "PUT")
-        return { write: true };
+        return {
+            write: true,
+            readSnapshot: ({ body }) => {
+                const [, accountId, , pageId] = relative.split("/");
+                return {
+                    data: {
+                        accountId: decodeURIComponent(accountId),
+                        pageId: decodeURIComponent(pageId),
+                        layoutJson: JSON.stringify(body.layout ?? {}),
+                    },
+                };
+            },
+        };
     if (relative === "availability" && method === "PUT") return { write: true };
     return null;
 }

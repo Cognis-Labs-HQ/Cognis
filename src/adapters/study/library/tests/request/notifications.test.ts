@@ -14,11 +14,36 @@ test("new requests notify all enabled administrators; decisions exclude the acto
         flow: createLibraryFlow((id) => flowRuns.push(id)),
         accounts: {
             list: async () => [
-                { username: "actor", role: "admin", enabled: true },
-                { username: "other", role: "admin", enabled: true },
-                { username: "founder", isFounder: true, enabled: true },
-                { username: "disabled", role: "admin", enabled: false },
-                { username: "learner", role: "user", enabled: true },
+                {
+                    accountId: "actor",
+                    username: "public-actor",
+                    role: "admin",
+                    enabled: true,
+                },
+                {
+                    accountId: "other",
+                    username: "public-other",
+                    role: "admin",
+                    enabled: true,
+                },
+                {
+                    accountId: "founder",
+                    username: "public-founder",
+                    isFounder: true,
+                    enabled: true,
+                },
+                {
+                    accountId: "disabled",
+                    username: "public-disabled",
+                    role: "admin",
+                    enabled: false,
+                },
+                {
+                    accountId: "learner",
+                    username: "public-learner",
+                    role: "user",
+                    enabled: true,
+                },
             ],
         },
         dispatch: async (input) => {
@@ -66,7 +91,12 @@ test("request identifiers and actor text are interpolated once as data", async (
         flow: createLibraryFlow(),
         accounts: {
             list: async () => [
-                { username: "recipient", enabled: true, role: "admin" },
+                {
+                    accountId: "recipient",
+                    username: "public-recipient",
+                    enabled: true,
+                    role: "admin",
+                },
             ],
         },
         dispatch: async (input) => {
@@ -114,7 +144,12 @@ test("notification catalogs coalesce reads and retry a failed resource load", as
         flow: createLibraryFlow(),
         accounts: {
             list: async () => [
-                { username: "admin", enabled: true, role: "admin" },
+                {
+                    accountId: "admin",
+                    username: "public-admin",
+                    enabled: true,
+                    role: "admin",
+                },
             ],
         },
         dispatch: async (input: unknown) => {

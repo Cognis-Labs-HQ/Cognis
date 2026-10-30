@@ -105,3 +105,7 @@ Vorgemerkte Profiltexte, Beiträge und begrenzte Bild-Uploads behalten ihren abg
 ## Offline-Arbeitsbereich
 
 Offline-Profilzugriff erfordert einen vollständig vorbereiteten Schnappschuss des eigenen Profils: Text, Beiträge, Verbindungen, Einstellungen sowie begrenzte Avatar- und Bannerbilder. Fremde Profile sind auch bei vorhandenem Cache gesperrt.
+
+## Bestätigte Einstellungskopien
+
+Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Lesezugriffen ihre begrenzte, anbietereigene Lesekopie, auch bei erneuter Übertragung und reinem Online-Speichern. Offline-Zusammenführungen behalten bestätigte Felder und berücksichtigen verbleibende Änderungen. Verzögerte Lesezugriffe überschreiben keine neueren bestätigten Daten; Kontowechsel, Anbieterabbau und fehlgeschlagene Schreibvorgänge veröffentlichen keine veralteten Daten.

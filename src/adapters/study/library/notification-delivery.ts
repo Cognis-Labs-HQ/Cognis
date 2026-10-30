@@ -14,6 +14,7 @@ export function createNotificationDelivery(
                 const accounts = ctx.capabilities.get<{
                     list(): Promise<
                         Array<{
+                            accountId: string;
                             username: string;
                             enabled: boolean;
                             role?: string;

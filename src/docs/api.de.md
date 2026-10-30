@@ -1,5 +1,13 @@
 # API
 
+## Benachrichtigungen per Konto-ID
+
+Rollenbasierte Benachrichtigungen sowie Anfrage- und Inhaltsbenachrichtigungen der Study Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen; öffentliche Benutzernamen bleiben Anzeigedaten.
+
+## Bestätigte Einstellungskopien
+
+Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Lesezugriffen ihre begrenzte, anbietereigene Lesekopie, auch bei erneuter Übertragung und reinem Online-Speichern. Offline-Zusammenführungen behalten bestätigte Felder und berücksichtigen verbleibende Änderungen. Verzögerte Lesezugriffe überschreiben keine neueren bestätigten Daten; Kontowechsel, Anbieterabbau und fehlgeschlagene Schreibvorgänge veröffentlichen keine veralteten Daten.
+
 ## Übersicht
 
 `src/api/` ist die HTTP-Schicht von Cognis. Sie beherbergt den Express-kompatiblen Node.js-Server, die Routen-Registry, Authentifizierungs-Middleware und alle schlanken Routen-Handler-Module, die eingehende HTTP-Anfragen auf Gateway-Operationen abbilden. Die API-Schicht ist bewusst dünn gehalten: Routen-Handler verarbeiten und validieren Eingaben, delegieren an Gateways und geben einen stabilen Antwort-Umschlag zurück. Kein Routen-Handler hält einen direkten Verweis auf einen Datenbanktreiber oder ein externes Dienst-SDK.

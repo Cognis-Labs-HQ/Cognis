@@ -9,6 +9,7 @@ interface RequestNotificationPorts {
     accounts: {
         list(): Promise<
             Array<{
+                accountId: string;
                 username: string;
                 enabled: boolean;
                 role?: string;
@@ -57,17 +58,17 @@ export function createRequestNotifier({
                             (account) =>
                                 account.enabled &&
                                 (request.status === "pending" ||
-                                    account.username !== actor.accountId) &&
+                                    account.accountId !== actor.accountId) &&
                                 (account.isFounder ||
                                     ["admin", "owner"].includes(
                                         account.role ?? "",
                                     )),
                         );
                         const results = await Promise.allSettled(
-                            recipients.map(({ username }) =>
+                            recipients.map(({ accountId }) =>
                                 dispatch({
                                     category: "study",
-                                    recipientUsername: username,
+                                    recipientUsername: accountId,
                                     subject: localizedText.en.subject,
                                     body: localizedText.en.body,
                                     actionUrl: "/study/library/requests",

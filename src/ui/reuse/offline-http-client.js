@@ -32,7 +32,17 @@ export function registerOfflineHttpClient(
             throw new Error("offline_delivery_unavailable");
     };
     const read = createOfflineReadCache({ signal: ctx.signal });
+    function rememberAcknowledgedRead(operation, assertAccount) {
+        assertAccount();
+        ctx.signal.throwIfAborted();
+        const snapshot = describe(
+            operation.path,
+            operation.method,
+        )?.readSnapshot;
+        if (snapshot) read.set(operation.path, snapshot(operation));
+    }
     const send = async (operation, signal = ctx.signal) => {
+        const assertAccount = captureAccountGuard();
         const descriptor = describe(operation.path, operation.method);
         if (!descriptor?.write) throw new Error("invalid_offline_action");
         const body = operation.binary
@@ -66,10 +76,12 @@ export function registerOfflineHttpClient(
                 { status: response.status, payload },
             );
         }
-        return {
+        const result = {
             status: response.status,
             payload: response.status === 204 ? null : await response.json(),
         };
+        rememberAcknowledgedRead(operation, assertAccount);
+        return result;
     };
     outbox.register(owner, (operation) => send(operation), ctx.signal);
     const actions = registerScopedUiActions(ctx, owner.replaceAll(".", ":"), {
@@ -89,7 +101,20 @@ export function registerOfflineHttpClient(
                     throw new Error("offline_operation_unavailable");
                 const { bufferOffline: _bufferOffline, ...onlineOptions } =
                     options;
-                return request(path, onlineOptions);
+                const response = await request(path, onlineOptions);
+                if (response.ok && descriptor.readSnapshot)
+                    rememberAcknowledgedRead(
+                        {
+                            path,
+                            method,
+                            body:
+                                typeof options.body === "string"
+                                    ? JSON.parse(options.body)
+                                    : options.body,
+                        },
+                        assertAccount,
+                    );
+                return response;
             }
             const pending = () => outbox.pending(owner);
             if (method === "GET") {

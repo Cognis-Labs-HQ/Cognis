@@ -178,3 +178,7 @@ Queued profile text, posts and bounded image uploads retain their completed resu
 ## Enrolled Offline Workspace
 
 Offline Profile access requires the complete prepared own-profile snapshot: text, posts, connections, preferences and bounded avatar/banner images. Other users’ profiles are blocked even if previously cached.
+
+## Acknowledged Preference Snapshots
+
+Successful Profile preference writes update their bounded, provider-owned read snapshot before later reads, including replay and online-only saves. Offline preference merges retain acknowledged fields and project remaining pending changes. Delayed reads cannot overwrite a newer acknowledged snapshot; account changes, provider disposal and failed writes cannot publish stale data.
