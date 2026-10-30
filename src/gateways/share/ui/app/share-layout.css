@@ -1,0 +1,85 @@
+.share-window {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    min-height: 32rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 1.5rem;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(22px);
+    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.36);
+}
+
+.share-app-mount {
+    display: block;
+    width: 100%;
+    min-height: 100%;
+}
+
+.share-window-body {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-unlock-brand {
+    align-self: flex-start;
+}
+
+.share-loading-state,
+.share-empty-state,
+.share-meeting-card {
+    width: min(100%, 40rem);
+}
+
+.share-loading-state,
+.share-empty-state {
+    display: grid;
+    gap: 0.875rem;
+    justify-items: center;
+    text-align: center;
+}
+
+.share-spinner {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    animation: share-spin 0.9s linear infinite;
+}
+
+.share-meeting-card {
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.56);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.share-meeting-card h2,
+.share-empty-state h2 {
+    margin: 0;
+}
+
+.share-meeting-meta {
+    display: grid;
+    gap: 0.625rem;
+    color: rgba(226, 232, 240, 0.88);
+}
+
+.share-meeting-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+@keyframes share-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

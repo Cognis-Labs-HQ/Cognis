@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="adapter.study.flashcards.page_title">Kartu Latihan</string>
+  <string name="adapter.study.flashcards.deck_edit">Edit kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_create">Buat kumpulan kartu</string>
+  <string name="adapter.study.flashcards.deck_layer">Lapisan kartu</string>
+  <string name="adapter.study.flashcards.deck_saved">Kumpulan kartu disimpan.</string>
+  <string name="adapter.study.flashcards.deck_deleted">Kumpulan kartu dihapus.</string>
+  <string name="adapter.study.flashcards.deck_save_error">Kumpulan kartu tidak dapat disimpan. Periksa kartu yang dipilih dan format catatan impor.</string>
+  <string name="adapter.study.flashcards.deck_load_error">Kumpulan kartu atau kartu pustaka tidak dapat dimuat.</string>
+  <string name="adapter.study.flashcards.deck_empty">Tidak ada dek kartu belajar</string>
+  <string name="adapter.study.flashcards.deck_finished">Bagus! Anda telah menyelesaikan dek ini.</string>
+  <string name="adapter.study.flashcards.deck_review_error">Hasil tinjauan tidak dapat disimpan. Silakan coba lagi.</string>
+  <string name="adapter.study.flashcards.deck_unavailable">{{ count }} kartu tidak lagi tersedia dan dilewati.</string>
+  <string name="adapter.study.flashcards.page_subtitle">Jelajahi Dek Kartu Belajar yang Terlihat</string>
+  <string name="adapter.study.flashcards.deck_import">Impor Dek</string>
+  <string name="adapter.study.flashcards.deck_cards">Kartu</string>
+  <string name="adapter.study.flashcards.deck_starter">Dek Pemula</string>
+  <string name="adapter.study.flashcards.deck_yours">Dek Anda</string>
+  <string name="adapter.study.flashcards.deck_shared">Dek Bersama</string>
+  <string name="adapter.study.flashcards.deck_due_count">{{ count }} Baru atau Jatuh Tempo</string>
+  <string name="adapter.study.flashcards.deck_search">Cari Dek</string>
+  <string name="adapter.study.flashcards.practice_total">Total</string>
+  <string name="adapter.study.flashcards.practice_due">Jatuh Tempo</string>
+  <string name="adapter.study.flashcards.practice_new">Baru</string>
+  <string name="adapter.study.flashcards.practice_writing">Menulis</string>
+  <string name="adapter.study.flashcards.practice_reading">Membaca</string>
+  <string name="adapter.study.flashcards.practice_next">Kartu Berikutnya</string>
+  <string name="adapter.study.flashcards.practice_unavailable">Latihan tidak tersedia untuk kartu ini.</string>
+  <string name="adapter.study.flashcards.practice_leave">Keluar dari latihan?</string>
+  <string name="adapter.study.flashcards.practice_leave_body">Buka kartu ini di Jelajahi dan tinggalkan sesi latihan saat ini?</string>
+  <string name="adapter.study.flashcards.practice_show_answer">Tampilkan Jawaban</string>
+  <string name="adapter.study.flashcards.practice_previous">Kartu sebelumnya</string>
+  <string name="adapter.study.flashcards.practice_reveal">Tampilkan karakter</string>
+  <string name="adapter.study.flashcards.practice_choose_mode">Pilih Membaca atau Menulis</string>
+  <string name="adapter.study.flashcards.practice_correct">Bacaan benar.</string>
+  <string name="adapter.study.flashcards.practice_incorrect">Bacaan salah. Pelajari jawabannya dan coba lagi pada tinjauan berikutnya.</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">Mengubah mode latihan akan memulai ulang sesi serta membuang posisi dan jawaban saat ini. Ulasan yang telah dikirim tetap tersimpan.</string>
+  <string name="adapter.study.flashcards.practice_hint">Tampilkan Jawaban Benar</string>
+  <string name="adapter.study.flashcards.practice_hint_answer">Jawaban benar: {{ answer }}</string>
+</resources>

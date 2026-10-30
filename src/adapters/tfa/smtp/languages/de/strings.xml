@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.tfa.smtp.setup_prompt">Ein Bestätigungscode wurde an Ihre primäre E-Mail-Adresse gesendet. Geben Sie den Code ein, um die Einrichtung abzuschließen.</string>
+  <string name="ui.app.login.tfa.code_placeholder_smtp">E-Mail-Code</string>
+</resources>

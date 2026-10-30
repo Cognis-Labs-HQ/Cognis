@@ -1,0 +1,211 @@
+# API
+
+## Penggantian Salinan Terbatas
+
+Penggantian yang berhasil tetapi melebihi batas byte cache baca atau tidak memiliki nilai yang dapat diserialkan menghapus salinan lama agar data usang tidak tersedia saat luring. Pembacaan gabungan yang terlambat tidak dapat mengisi ulang salinan tersebut. Kunci cache lain tetap tersedia, dan respons terlalu besar tetap dapat digunakan daring tanpa disimpan.
+
+## Notifikasi Berdasarkan ID Akun
+
+Notifikasi berdasarkan peran serta notifikasi permintaan dan konten Study Library menggunakan `accountId` yang tetap. Pengiriman tetap menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama; nama pengguna publik tetap menjadi data tampilan.
+
+## Salinan Preferensi Terkonfirmasi
+
+Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas milik penyedia sebelum pembacaan berikutnya, termasuk pengiriman ulang dan penyimpanan khusus daring. Penggabungan preferensi luring mempertahankan bidang terkonfirmasi dan menerapkan perubahan yang masih tertunda. Pembacaan terlambat tidak menimpa salinan terkonfirmasi yang lebih baru; pergantian akun, penghentian penyedia, dan penulisan gagal tidak menerbitkan data usang.
+
+## Ikhtisar
+
+`src/api/` adalah lapisan HTTP Cognis. Di sini terdapat server Node.js yang kompatibel dengan Express, registry route, middleware autentikasi, dan semua modul route handler tipis yang memetakan permintaan HTTP ke operasi gateway. Lapisan API sengaja dijaga tipis: route handler mengurai dan memvalidasi input, mendelegasikan ke gateway, dan mengembalikan amplop respons yang stabil.
+
+Server dirakit dari apa yang ada saat startup, bukan dari daftar komponen yang dikodekan secara keras. Gateway mendaftarkan route mereka sendiri selama bootstrap melalui `ctx.routeRegistry.register(...)`.
+
+## Tanggung Jawab
+
+- Menjalankan server HTTP dan menghubungkan registry route ke penanganan permintaan.
+- Menyediakan middleware `requireAuth` dan `getAuthClaims` untuk semua route handler yang dilindungi.
+- Menegakkan konvensi amplop respons `{ data }` / `{ error }`.
+- Mem-bootstrap semua gateway sesuai urutan dependensi.
+- Menginisialisasi skema database saat startup.
+
+## Arsitektur
+
+### Amplop Respons
+
+Semua respons API menggunakan salah satu dari dua bentuk ini:
+
+```json
+{ "data": { ... } }
+```
+
+```json
+{ "error": { "code": "forbidden", "message": "Membutuhkan scope admin" } }
+```
+
+### Model Autentikasi
+
+Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authorization: Bearer <token>`. Masa berlaku token dikendalikan oleh `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200`, dua belas jam).
+
+### Lokasi Sumber Utama
+
+| Path                              | Tujuan                                           |
+| --------------------------------- | ------------------------------------------------ |
+| `src/api/main.ts`                 | Titik masuk server                               |
+| `src/api/server.ts`               | Setup server HTTP dan dispatch route             |
+| `src/api/reuse/route-registry.ts` | Registry route untuk pendaftaran mandiri gateway |
+| `src/api/bootstrap/gateway.ts`    | Konteks bootstrap gateway dan kontrak bootstrap  |
+| `src/gateways/auth/guard.ts`      | Middleware `requireAuth`, `getAuthClaims`        |
+
+## Konfigurasi
+
+| Variabel                          | Default                      | Keterangan                                          |
+| --------------------------------- | ---------------------------- | --------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                 | Backend database: `postgresql` atau `mariadb`       |
+| `DATABASE_URL`                    | —                            | String koneksi untuk PostgreSQL atau MariaDB        |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                      | Masa berlaku token Bearer dalam detik               |
+| `COGNIS_MODULE_SOURCES_PATH`      | `config/module-sources.json` | Path persisten untuk konfigurasi sumber bursa modul |
+| `PORT`                            | `3000`                       | Port HTTP                                           |
+
+## Keterjangkauan
+
+`GET /api/v1/system/healthcheck` segera mengembalikan `{ "data": { "status": "ok" } }` tanpa menjalankan pemeriksaan komponen. Endpoint ini dipakai untuk deteksi koneksi. `GET /api/v1/system/health` tetap menyediakan kesehatan komponen terperinci, cap waktu, dan waktu aktif. Komponen opsional yang lambat tidak boleh membuat server yang tersedia dianggap luring.
+
+## Kesiapan rute luring
+
+`offline:registerSessionRoutes(ids, signal, { available })` menerima predikat pemilik opsional yang dipanggil dengan rute dan jalur saat luring. Pembatalan sinyal menghapus deklarasi. Host menyiapkan kode publik dan gaya halaman secara terpisah melalui `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` melaporkan penyelesaian. `createOfflineReadCache` menyediakan `read.has(key)`, dan klien HTTP tercakup menyediakan `request.hasCachedRead(path)`, tanpa mengembalikan data privat. Pemeriksaan mencakup identitas akun/sesi, kedaluwarsa, generasi cache, dan siklus hidup penyedia. Pemeriksaan ini tidak memberikan otorisasi atau menggantikan persetujuan dokumen hukum tersimpan.
+
+## Login dan pengiriman tertunda
+
+Pengiriman ulang dimulai di latar belakang hanya setelah otorisasi sesi dan persetujuan wajib berhasil. Kunci pengiriman browser terpisah mengurutkan pengiriman antar-tab; kunci penyimpanan singkat melindungi snapshot dan konfirmasi tanpa menunggu jaringan. Pembacaan dan perubahan tertunda baru tetap berjalan selama pengiriman lambat. Konfirmasi membaca ulang penyimpanan agar perubahan bersamaan tetap tersimpan. Antrean kosong tidak ditulis ulang saat autentikasi; halaman tanpa autentikasi tidak memperingatkan tentang buffer akun lain.
+
+## Pemeriksaan dan peringatan
+
+Tombol Periksa Ulang Koneksi pada banner Mode Luring segera memanggil `/api/v1/system/healthcheck`, menggabungkan pemeriksaan bersamaan, lalu mengotorisasi ulang sesi dan mencoba mengirim antrean jika server terjangkau. Persetujuan wajib tetap diperlukan. Kegagalan mempertahankan Mode Luring tanpa popup kesalahan. Tombol memakai gaya bersama dan indikator sibuk; Muat Ulang tersedia setelah pemulihan. Pemeriksaan otomatis tetap sekali setiap lima belas menit, sedangkan tindakan eksplisit dapat dilakukan lebih awal.
+
+Peringatan tutup atau muat ulang bawaan hanya melindungi catatan baru dari halaman dan sesi saat ini. Setelah muat ulang sebenarnya, peringatan direset sementara antrean tetap disimpan untuk pengiriman ulang. Perubahan nyata yang baru mengaktifkannya lagi. Penanda Study yang dilihat dan analitik adalah aktivitas latar belakang tanpa peringatan. Catatan tab lain, catatan tersimpan sebelumnya, dan sekadar merender halaman tidak memicu peringatan. Penghentian penyedia tetap melindungi perubahan halaman saat ini sampai terkirim atau dihapus.
+
+## Buka kunci dan pemuatan modul
+
+Status terbuka bertahan saat halaman dimuat ulang dalam tab dan sesi terautentikasi yang sama. Kata sandi tetap mengenkripsi brankas; kata sandi maupun kunci dekripsi dalam teks biasa tidak disimpan. Penyimpanan sesi hanya memuat data buka kunci terenkripsi AES-GCM, dibungkus dengan kunci HKDF dari rahasia sesi aktif dan diikat pada origin, akun, instans akun server, serta identitas sesi. Server harus memverifikasi ikatan itu sebelum pemulihan. Batas waktu penguncian diautentikasi dan tetap absolut saat muat ulang. Kunci eksplisit, logout, perubahan akun/instans/sesi, dan kedaluwarsa membatalkan pemulihan. Menutup tab atau memulai sesi baru memerlukan buka kunci lagi. Cache IndexedDB lama yang menyimpan kunci tanpa enkripsi tetap dinonaktifkan.
+
+Persiapan aset rute host mendaftarkan alur dan kapabilitas cache sekali per ctx bersama. Skrip bundel dan impor sumber dari modul eksternal memakai registrasi serta status rute yang sama, sehingga membuka Meetings tidak lagi gagal akibat duplikasi alur `offline:prepareRouteAssets`.
+
+## Banner atas bersama
+
+Host menyediakan `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` sebelum halaman atau penyedia dipasang. Deskriptor menerima `title` berupa teks biasa, `bodyHtml` yang disanitasi, `actionsHtml` tepercaya, serta varian `info`, `success`, `warning`, atau `danger`. Hasilnya memiliki `element` dan `remove()`. ID yang sama hanya mengganti pemberitahuan pemiliknya; pembersih lama tidak menghapus penggantinya. Ikat masa hidup dengan `signal`; prioritas lebih kecil tampil dahulu. Judul di-escape dan pemanggil wajib menyanitasi teks kaya. Banner bersama di bagian atas mempertahankan latar buram yang mengikuti tema saat menggulir. Pemberitahuan koneksi pulih, peringatan, dan bahaya menggunakan warna tema yang tersedia.
+
+Mode Luring dan Broadcast memakai satu tumpukan lengket di bagian paling atas dokumen, di atas header aplikasi. Mode Luring mendapat prioritas, tidak dapat ditutup, dan tetap menyediakan Periksa Ulang Koneksi serta Muat Ulang setelah pulih. Menghapus pengumuman tidak menghapus Mode Luring. Broadcast melewati permintaan jaringan saat terputus; penyedianya membersihkan banner dan pengatur waktu ketika dilepas.
+
+## Halaman Study luring kosong
+
+Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverifikasi dengan persetujuan wajib meskipun snapshot konten privat belum ada. Metadata bahasa atau preferensi yang hilang menghasilkan navigasi kosong. Explore memasang tampilan kosong normal dan menampilkan “Tidak ada konten luring tersimpan yang tersedia” alih-alih kesalahan rute atau toast kesalahan. Flashcards juga mempertahankan halaman kosong jika data dek atau sumber tampilan wajib belum tersedia. Pemberitahuan terikat halaman saat ini dan tidak diduplikasi. Kekurangan cache tidak menyembunyikan penolakan akses atau persetujuan. Library dan Flashcards menyiapkan terjemahan publik serta templat ringan saat daring; data privat tetap berada dalam cache tab yang dibatasi.
+
+## Pemuatan Langsung dan Gaya
+
+Pemuatan langsung dan penyegaran mempertahankan gaya halaman saat aset luring disiapkan. Build host dan komponen mempertahankan identitas sumber lembar gaya, dan URL logis serta URL hasil build berbagi kepemilikan. Respons aset tidak lagi menunggu penulisan cache di latar belakang; kegagalan dicatat tanpa menunda pengiriman. Font web dimuat terpisah dari tema, sehingga server font yang tidak tersedia tidak menghalangi halaman atau indikator pemuatan. Font pilihan tetap diterapkan saat tersedia, dengan font pengganti browser yang sudah ada selama pemuatan.
+
+## Persiapan Aset Publik
+
+Host menyediakan `ctx.capabilities.get("offline:assets")` dengan `prepare(paths, { signal })` dan `register(paths, { signal })`. Keduanya menggunakan alur bertahap `offline:prepareAssets`. Pendaftaran memulai persiapan latar belakang, mencoba kembali saat koneksi atau preferensi berubah, dan mengembalikan fungsi coba lagi. Hanya jalur publik relatif akar `/static/` atau `/assets/` yang diterima; permintaan tidak mengirim kredensial dan menolak respons private/no-store. Empat pekerja membaca isi respons. Permintaan bersamaan digabung per sinyal pemilik, kegagalan dapat dicoba kembali, dan pembatalan pemilik menghentikan pekerjaan serta pendengar. Fasilitas ini tidak menyimpan data API pribadi dan tidak memberikan akses luring. Callback `restoreRead` pada klien HTTP luring hanya berjalan setelah cache tidak ditemukan dengan akses yang sah dan menggunakan pembaca snapshot terlindungi yang sama. Penolakan akses tidak pernah diubah menjadi tampilan kosong atau antrean.
+
+Persiapan tetap diam ketika Mode Luring dinonaktifkan, koneksi terputus, atau persetujuan wajib belum dipenuhi. Pendaftaran juga mencoba kembali setelah pembaruan persetujuan dan perubahan pengendali worker. Pekerjaan berhasil dibatasi pada pemilik dan worker saat ini; persiapan tanpa pengendali tidak menghalangi persiapan ulang ketika worker mengambil kendali.
+
+## Hasil Antrean Tersimpan
+
+Setelah perubahan disimpan dalam antrean, kegagalan pencatatan aktivitas opsional atau penyegaran tampilan tidak mengubahnya menjadi perubahan gagal. Kalender membuka detail dari daftar acara tersimpan, termasuk acara baru dalam antrean dan suntingan berikutnya. Pengiriman acara bersamaan berbagi satu permintaan. Pesan hanya menghapus draf setelah pengakuan server atau penyimpanan; kegagalan penyegaran ruang tidak membatalkan bukti tersebut. Teks profil, postingan, dan gambar juga mempertahankan hasilnya jika penyegaran tampilan gagal. Penyegaran ketersediaan tidak menghambat perubahan Kalender yang sudah selesai.
+
+Kegagalan siklus hidup penyedia kini mencatat jalur skrip tanpa data kueri dan tahap impor atau pemasangan yang gagal. Kegagalan aktivitas opsional dicatat terpisah dari tindakan pengguna yang telah disimpan.
+
+## Ketersediaan Luring
+
+Registri rute luring bertahan pada impor berulang dari bundel maupun berkas langsung. Deskriptor rute yang dibentuk ulang mempertahankan ketersediaan jika skrip, gaya, dan penyedia kapabilitas tetap sama; aset yang berubah harus disiapkan ulang. Pesan menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah login terverifikasi. Halaman dapat dibuka luring sebelum kunjungan daring pertama. Hanya ruang dan riwayat tersimpan yang dibuka otomatis; memilih riwayat yang belum tersimpan menampilkan toast informasi khusus. Explore mempertahankan koleksi tersimpan yang tersedia jika koleksi lain atau penanda sudah dilihat tidak ditemukan. Penolakan akses dan persetujuan tetap diteruskan. Tindakan banner ditempatkan langsung dalam baris tindakan bersama sehingga pergeseran vertikal bawaan hilang.
+
+## Favorit Study Bersama
+
+Penyedia Study menyediakan `study:favourites` dengan operasi `load`, `toggle`, dan `has` yang mengikuti masa hidup penyedia. Utilitas tampilan memakai kapabilitas ctx ini, bukan cache terpisah per pemuat. Favorit disiapkan setelah autentikasi terverifikasi, menerapkan perubahan tertunda, dan berbagi keadaan terikat akun/sesi antara Explore, kartu belajar, dan impor berulang. Jika snapshot favorit opsional belum tersedia, pilihan kosong tetap menerapkan perubahan dalam antrean tanpa menyembunyikan konten atau menampilkan toast gagal memperbarui. Pergantian akun mengosongkan pilihan yang terlihat. Penolakan akses tidak pernah dianggap sebagai cache yang tidak ditemukan.
+
+## Sumber Daya Publik Tersimpan
+
+Gaya bersama, termasuk toast dan kontrol visibilitas rahasia, disertakan dalam manifes awal worker dalam bentuk URL logis dan hasil build. Calendar menyiapkan lembar gaya status yang dimuat tertunda melalui penyedianya. Katalog rute SPA dibagikan melalui ctx antara impor bundel dan berkas langsung sehingga rute Study yang diizinkan tetap tersedia saat pemuat lain pertama kali membaca katalog secara luring. Cuplikan halaman privat tetap terikat akun dan sesi; pemeriksaan izin serta persetujuan tetap berlaku.
+
+Aset publik tersimpan langsung dikembalikan. Pemeriksaan latar belakang sesuai permintaan digabungkan dan dibatasi. Isi respons lengkap dibandingkan sebelum penggantian; data yang tidak berubah dipertahankan. Respons dengan tanggal Last-Modified lebih lama tidak dapat mengganti berkas yang lebih baru. Berkas hilang, kegagalan koneksi, isi terpotong, dan kegagalan penulisan cache mempertahankan berkas lengkap sebelumnya. Respons berubah menggantikannya hanya setelah penulisan cache atomik berhasil. Penolakan akses eksplisit, respons private/no-store, perubahan persetujuan, dan pencabutan akses modul tetap menerapkan kebijakan. Respons API dan dokumen terautentikasi tetap hanya melalui jaringan pada worker.
+
+## Cache Aset Persisten
+
+Worker menyiapkan seluruh bundel halaman publik, chunk dinamis, gaya, dan media hasil build tanpa menjalankan halaman atau mengambil data privat. Respons publik yang diambil kemudian disimpan otomatis. Aktivasi worker membawa berkas publik lengkap ke generasi baru sebelum menghapus penyimpanan lama; hanya revisi modul yang diizinkan katalog saat ini yang dapat dipertahankan. Bundel publik dapat diunduh tanpa kunjungan halaman. Konten privat tetap memerlukan cuplikan terotorisasi yang disiapkan penyedia pemiliknya.
+
+## Ruang Kerja Luring
+
+Setelah masuk terverifikasi, Study menyiapkan skema, lokasi yang dapat dibaca, formulir, penanda dilihat, dan koleksi ringan yang diizinkan untuk bahasa belajar serta mengajar yang diikuti. Flashcards menyiapkan setiap dek yang terlihat dalam bahasa belajar atau mengajar yang diikuti, menggunakan dua worker tanpa batas 80 dek. Cache khusus dibatasi 64 MB dan 10.001 pembacaan agar galeri dan koleksi dek biasa dapat disimpan bersama; koleksi lebih besar tetap tunduk pada batas tersebut. Bahasa yang tidak diikuti dikecualikan. Katalog skema bersama disiapkan meskipun belum mengikuti bahasa, dan koleksi Library opsional yang tidak tersedia tidak menghalangi latihan dek yang telah disiapkan. Perubahan keikutsertaan memicu persiapan ulang. Dua worker membatasi pembacaan bersamaan; penghentian penyedia, pergantian akun, penolakan akses, dan persetujuan hukum tersimpan tetap diberlakukan. Halaman tidak perlu dikunjungi sebelumnya; cuplikan privat tetap terikat tab dan sesi terverifikasi.
+
+Akses Profil luring memerlukan cuplikan profil sendiri yang lengkap: teks, postingan, koneksi, preferensi, serta gambar avatar dan banner terbatas. Profil pengguna lain diblokir meskipun pernah tersimpan. Administration, Modules, Users, dan Shares tetap tidak tersedia luring. Settings membuka kontrol inti lokal; perubahan font, tema, bahasa, zona waktu, dan tampilan diterapkan lokal dan diantrekan untuk server. Verifikasi email, tindakan akun, serta pengaturan tambahan yang memerlukan server tetap tidak tersedia luring.
+
+Peringatan tutup atau muat ulang bawaan hanya melindungi catatan baru dari halaman dan sesi saat ini. Setelah muat ulang sebenarnya, peringatan direset sementara antrean tetap disimpan untuk pengiriman ulang. Perubahan nyata yang baru mengaktifkannya lagi. Penanda Study yang dilihat dan analitik adalah aktivitas latar belakang tanpa peringatan. Catatan tab lain, catatan tersimpan sebelumnya, dan sekadar merender halaman tidak memicu peringatan. Penghentian penyedia tetap melindungi perubahan halaman saat ini sampai terkirim atau dihapus.
+
+Host menyediakan `ui:languageCatalog.load` melalui ctx dan menyiapkan katalog bahasa bersama setelah masuk terverifikasi. Katalog bahasa inti disertakan dalam kumpulan awal publik. Settings dan bilah navigasi memakai pembacaan yang sama dengan lingkup siklus hidup. Menyimpan preferensi bahasa secara luring mempertahankan halaman yang berfungsi dan menerapkan preferensi pada navigasi klien berikutnya.
+
+## Latihan Study Luring
+
+Pengelolaan Library serta halaman pengeditan, pencarian, dan permintaannya memerlukan koneksi. Beranda Study dan submenu menyembunyikan tautan tersebut saat luring, termasuk segera setelah koneksi terputus. Explore tetap tersedia untuk membaca konten tersimpan dan menggambar. Penyedia Library hanya mendaftarkan Explore sebagai rute sesi luring.
+
+Persiapan bahasa yang diikuti menyimpan katalog skema bersama selain katalog tiap bahasa. Menggambar dan Flashcards dapat memakai pembacaan skema biasa tanpa kunjungan halaman daring sebelumnya. Flashcards menyiapkan terjemahan Share dan Study serta templat galeri, lalu membaca koleksi bahasa terpilih dengan permintaan berskema yang sama seperti persiapan keikutsertaan. Dek yang disiapkan dapat membuka galeri dan latihan luring. Audio, pengambilan kamus, pengeditan konten, serta pemeriksaan akses dan persetujuan tetap mengikuti pembatasan yang ada.
+
+## Pengaturan Pribadi Luring
+
+Proses masuk terverifikasi menyiapkan daftar email akun dan kebijakan domain tepercaya tanpa membuka Pengaturan. Penambahan, penghapusan, serta perubahan alamat utama ditampilkan secara lokal dan diantrekan melalui `notify:emailClient` serta pemilik antrean terlindungi `notify.emails`. Validasi server tetap menentukan hasil akhir. Verifikasi email, pengiriman ulang, dan tindakan siklus hidup akun memerlukan koneksi; kode, token pemantauan, dan kata sandi tidak masuk antrean. Alamat baru tetap belum terverifikasi hingga diverifikasi secara daring. Pengiriman berhasil memperbarui snapshot email; kegagalan penyegaran opsional tidak mengubah penulisan tersimpan menjadi tindakan gagal. Snapshot privat terbatas ini tetap terikat tab dan sesi.
+
+## Kartu Kilas Disiapkan
+
+Flashcards menyiapkan setiap dek yang terlihat dalam bahasa belajar atau mengajar yang diikuti, menggunakan dua worker tanpa batas 80 dek. Cache khusus dibatasi 64 MB dan 10.001 pembacaan agar galeri dan koleksi dek biasa dapat disimpan bersama; koleksi lebih besar tetap tunduk pada batas tersebut. Bahasa yang tidak diikuti dikecualikan. Katalog skema bersama disiapkan meskipun belum mengikuti bahasa, dan koleksi Library opsional yang tidak tersedia tidak menghalangi latihan dek yang telah disiapkan.
+
+## Orbitron Luring
+
+Orbitron disertakan dari Google Fonts sebagai font variabel berbobot 400–900 dengan SIL Open Font License di `src/ui/styles/fonts/OFL.txt`. Stylesheet dan berkas font masuk ke persiapan worker publik sebelum beralih luring. Aset publik tersimpan digunakan terlebih dahulu saat daring maupun luring; validasi ulang latar yang digabungkan menjaga aset yang dapat berubah tetap mutakhir. Orbitron tidak bergantung pada permintaan Google saat aplikasi berjalan. Font Google opsional lainnya dimuat terpisah sehingga tidak menunda font lokal.
+
+## Banner Atas yang Dapat Diatur
+
+Deskriptor `ui:broadcast.publish` menerima warna atau gradien CSS melalui `background` dan flag boolean `collapsible` dengan nilai awal false. Tipe deskriptor tidak valid dan nilai latar yang merusak deklarasi ditolak. Banner yang dapat dilipat menyusut menjadi garis berpola setinggi 2 px saat menggulir turun, terbuka saat menggulir naik, dan tetap dapat difokuskan dengan papan ketik; sorotan penunjuk atau fokus papan ketik menampilkan isi dan tindakannya. Tumpukan mempertahankan ruang dokumen saat terbuka untuk mencegah lonjakan gulir, sementara tinggi yang terlihat menggeser header dan bilah samping lekat. Banner yang tidak dapat dilipat tetap terlihat penuh. Menghapus banner terakhir melepas observer, pendengar gulir, dan pergeseran tata letak. Mode Luring memakai pola peringatan oranye-putih dan mengaktifkan pelipatan; setelah koneksi pulih, tindakan Muat Ulang tetap terlindungi.
+
+## Transisi dan Navigasi Lancar
+
+Pemberitahuan luring memakai garis oranye-putih tipis di atas permukaan tema buram. Banner yang dapat dilipat menganimasikan tinggi pembungkus yang terpotong serta opasitas isi sambil mempertahankan ruang alaminya dalam dokumen. Ekspansi papan ketik tetap tersedia dan preferensi pengurangan gerakan menonaktifkan transisi. Aset publik, termasuk manifes web yang disiapkan saat awal, dapat memakai cache sebelum persetujuan hukum; dokumen privat dan data API tetap mengikuti otorisasi. Jika Mode Luring dinonaktifkan secara eksplisit, jaringan tetap digunakan. Kegagalan satu sumber daya memerlukan pemeriksaan kesehatan yang gagal sebelum mengumumkan Mode Luring. Setelah terkonfirmasi, worker berhenti memeriksa hingga pemulihan menyegarkan katalognya. Navigasi Study langsung memakai snapshot sesi terverifikasi, dengan validasi gabungan paling sering setiap tiga puluh detik. Permintaan metadata awal dibatasi lima detik dan penemuan kamus opsional tiga detik. Penolakan akses resmi membatalkan snapshot, perubahan keikutsertaan atau modul membatalkan data navigasi, dan penemuan subhalaman yang gagal dapat dicoba ulang.
+
+## Pembaruan Katalog Atomik
+
+Pembaruan bursa menyiapkan catatan modul terpisah dan menyelesaikan pemuatan terjemahan milik setiap modul sebelum mengganti katalog yang terlihat. Pembaruan satu modul dapat menggambar ulang halaman dengan aman saat terjemahan modul lain masih dimuat; tag diselesaikan dari modul pemiliknya, bukan dari terjemahan host. Terjemahan yang hilang tetap menghasilkan kegagalan eksplisit dan katalog lengkap terakhir tetap terlihat. Tindakan siklus hidup membatalkan hasil pembaruan lama; polling berkala berhenti sementara saat tindakan atau pemeriksaan dependensi berlangsung. Metadata katalog mempertahankan terjemahan yang sesuai ketika metadata terpasang berbeda.
+
+## Umpan Balik Luring Konsisten
+
+Penyimpanan luring memakai pesan keberhasilan dan varian yang sama dengan penyimpanan saat terhubung. Pesan, kiriman, unggahan gambar, serta perubahan email tidak menambah pemberitahuan khusus antrean; tanda penerimaan pesan memakai tampilan normal. Kegagalan penyimpanan nyata dan perubahan yang ditolak tetap ditampilkan. Banner peringatan bersama memakai palet semantik terang dan gelap untuk permukaan amber buram, teks, batas, kontrol, serta aksen garis yang halus. Mode Luring tidak lagi menyisipkan gaya latarnya sendiri. Animasi pelipatan, perluasan melalui papan ketik, serta dukungan pengurangan gerakan tetap tersedia.
+
+## Perubahan Bahasa UI Langsung
+
+Pintasan bahasa hanya beralih di antara bahasa UI yang diaktifkan dan menerapkan pilihan terakhir setelah dua detik melalui alur bertahap `ui:languageCatalog:select` dan `ui:redraw`. Dokumen browser, URL, riwayat, serta cache luring privat tetap dipertahankan. Edit yang belum disimpan tetap memakai penjagaan navigasi; pekerjaan usang dan kegagalan pemuatan tidak menetapkan bahasa lain. Pilihan hanya berlaku pada tab dan sesi akun aktif, tanpa mengubah keanggotaan atau urutan bahasa yang dikonfigurasi. Pengaturan tetap memakai Simpan/Buang; perubahan prioritas tersimpan juga menggambar ulang setelah dua detik. Saat luring, tabel bahasa tersedia, perpindahan antartabel, serta sinkronisasi browser dikunci; bahasa terpilih tetap dapat diurutkan dan disimpan melalui buffer preferensi normal. Terjemahan inti dan komponen publik disiapkan untuk bahasa aktif. Bahasa Inggris tetap menjadi cadangan per kunci dan kunci yang benar-benar hilang tetap gagal secara eksplisit. Worker menyiapkan seluruh XML bahasa komponen host serta SVG bendera bahasa agar halaman yang sudah disiapkan dapat digambar ulang luring tanpa kunjungan sebelumnya. Shell yang digunakan kembali dan label navigasi inti diterjemahkan ulang tanpa membongkar penyedia. Pengatur waktu dilepas bersama halaman atau penggantian pengikatnya.
+
+Setelah penyimpanan selesai, penggambaran ulang terjadwal tetap memeriksa perubahan baru yang belum disimpan. Perubahan selama jeda dua detik tetap memerlukan konfirmasi pembuangan; penyimpanan berulang digabungkan, dan meninggalkan Pengaturan membatalkan penggambaran ulang yang tertunda.
+
+## Lebih Sedikit Permintaan
+
+Pembacaan aset publik berbagi unduhan yang sedang berlangsung hingga penulisan cache selesai, sehingga halaman dan penyedia yang berjalan bersamaan tidak mengunduh sumber daya yang sama berulang kali. Pembaruan worker menggunakan kembali aset host lengkap dengan hash konten dari generasi cache sebelumnya; aset yang dapat berubah tetap diperbarui dari server. Respons yang mengutamakan cache, validasi ulang bersyarat di latar belakang, pemeriksaan revisi modul, dan perilaku penonaktifan Mode Offline tetap berlaku. Katalog bahasa dan metadata navigasi Study menggunakan masa kesegaran daring tiga puluh detik, termasuk ketika Mode Offline dinonaktifkan. Setelah kedaluwarsa, data diperbarui saat dibutuhkan tanpa polling; pembaruan bersamaan digabungkan. Study mempertahankan validasi ulang latar belakang yang bergantung pada persetujuan. Pergantian akun atau sesi, kedaluwarsa, perubahan siklus hidup komponen, dan invalidasi eksplisit menghapus snapshot terkait. Pembacaan dan penulisan data pribadi lainnya tetap menggunakan pemeriksaan transportasi dan otorisasi yang ada.
+
+## Batas Sesi dan Komponen
+
+Hanya mutasi identik yang berurutan dari pemilik pengiriman yang sama yang diabaikan. Perbedaan metode, jalur, jenis media, atau operasi di antaranya tetap mempertahankan urutan. Antrean luring dan pengiriman ulang memerlukan kapabilitas Auth `session:isOfflineValid` serta persetujuan terkini. Kapabilitas ini memeriksa kesiapan penyiapan yang telah diverifikasi, akun, token, dan kedaluwarsa sesi tanpa permintaan jaringan, termasuk setelah menunggu kunci penyimpanan. Jika kontrak Auth tidak tersedia, akses ditolak. Pengaturan memasang kontrol akun sebelum memuat email opsional; menonaktifkan Notify menyembunyikan pengelolaan email tanpa mengganggu Arsipkan, Nonaktifkan, dan Hapus. Pengguna dan Administrasi memakai kapabilitas Notify dengan cakupan siklus hidup, bukan impor UI konkret. Notify menyediakan pembacaan email administratif, pengiriman ulang khusus daring, dan ketersediaan SMTP; metadata email yang tidak tersedia ditampilkan sebagai tidak diketahui. Auth melewati penyiapan akun biasa untuk sesi tamu alternatif dan menggunakan kapabilitas klasifikasi Share untuk mengecualikan tamu berbagi pada batas server. Penyiapan email dan TFA untuk akun nyata tetap diwajibkan.
+
+## Antrean Terikat Akun
+
+Catatan antrean menyertakan pengenal instans akun yang diverifikasi server. Auth mengembalikan `accountInstanceId` kanonis dalam status penyiapan terautentikasi dan hanya menyediakan `session:getOfflineIdentity` untuk sesi akun yang terverifikasi, selesai disiapkan, dan belum kedaluwarsa. Ketiadaan metadata otoritatif mencabut izin luring. Tampilan antrean serta pemeriksaan penyimpanan dan pengiriman terikat pada instans ini; catatan instans lama atau tanpa ikatan ditolak sebelum dikirim, termasuk setelah akun lokal dibuat ulang dengan ID akun yang sama. ID operasi tidak bertabrakan antarinstans akun. Token Bearer tidak pernah disimpan dalam antrean.
+
+## Favorit yang Dikonfirmasi
+
+Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.
+
+## Penggunaan Emoji Terpisah
+
+Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji secara terpisah dari perubahan reaksi. Hanya permintaan reaksi pesan yang menyertakan keadaan aktif akhir. Kegagalan pencatatan penggunaan dicatat tanpa menghalangi reaksi yang dipilih atau fungsi pembaruannya.
+
+## Menu Pengguna Berbasis Akun
+
+Menu tindakan Pengguna menemukan baris melalui ID akun yang tidak berubah, bukan nama pengguna publik. Akun SSO mempertahankan entri reset TFA dan status pendiri; reset kata sandi yang dikelola eksternal tetap dinonaktifkan. Pilihan lama atau tidak dikenal tidak dapat membuka tindakan akun.
+
+## Aset Cache Lengkap
+
+Permintaan rentang melewati cache berkas utuh, dan hanya respons HTTP 200 lengkap yang dapat mengisi atau mengganti aset publik. Respons parsial tidak mengubah data lengkap yang sudah tersedia. Berkas font dengan hash konten memakai cache tetap dan penggunaan ulang lintas generasi seperti skrip dan gambar berhash, sehingga pembaruan worker tidak mengunduh ulang berkas yang sama.

@@ -1,0 +1,306 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
+import { stableJson } from "./message-utils.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const getInitialsText = (label) => profileAvatars().getInitials(label);
+const pickInitialsColor = (seed) => profileAvatars().getInitialsColor(seed);
+const isProfileAvatarUnavailable = (key) => profileAvatars().isUnavailable(key);
+
+export function messageRenderSignature(messages, pendingRequest) {
+    return stableJson({
+        pendingRequest: pendingRequest
+            ? {
+                  id: pendingRequest.id,
+                  direction: pendingRequest.direction,
+                  canRespond: pendingRequest.canRespond,
+              }
+            : null,
+        messages: messages.map((message) => ({
+            id: message.id,
+            createdAt: message.createdAt,
+            senderId: message.senderId,
+            contentType: message.contentType,
+            ciphertext: message.ciphertext,
+            iv: message.iv,
+            authTag: message.authTag,
+            deliveredToCount: message.deliveredToCount,
+            reactions: (message.reactions ?? []).map((reaction) => ({
+                emoji: reaction.emoji,
+                count: reaction.count,
+                reactedByMe: reaction.reactedByMe,
+            })),
+            readBy: (message.readBy ?? []).map((reader) => ({
+                accountId: reader.accountId,
+            })),
+        })),
+    });
+}
+
+export function roomListRenderSignature(rooms, selectedRoomId) {
+    return stableJson({
+        selectedRoomId,
+        rooms: rooms.map((room) => ({
+            id: room.id,
+            title: room.title,
+            kind: room.kind,
+            unread: room.unread,
+            isArchived: room.isArchived,
+            canSend: room.canSend,
+            pendingRequest: room.pendingRequest
+                ? {
+                      id: room.pendingRequest.id,
+                      direction: room.pendingRequest.direction,
+                      canRespond: room.pendingRequest.canRespond,
+                  }
+                : null,
+            lastMessagePreview: room.lastMessagePreview,
+            lastMessage: room.lastMessage
+                ? {
+                      id: room.lastMessage.id,
+                      createdAt: room.lastMessage.createdAt,
+                      senderId: room.lastMessage.senderId,
+                      senderDisplayName: room.lastMessage.senderDisplayName,
+                      senderHandle: room.lastMessage.senderHandle,
+                      contentType: room.lastMessage.contentType,
+                      ciphertext: room.lastMessage.ciphertext,
+                      iv: room.lastMessage.iv,
+                  }
+                : null,
+            avatarKey: room.avatarKey,
+            members: (room.members ?? []).map((member) => ({
+                accountId: member.accountId,
+                handle: member.handle,
+                displayName: member.displayName,
+                username: member.username,
+                avatarKey: member.avatarKey,
+            })),
+        })),
+    });
+}
+
+export function profileHref(handle) {
+    if (!handle) return "";
+    return `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
+}
+
+export function selectedRoomTitle(room, currentAccountId) {
+    if (!room) return "";
+    const otherMembers = (room.members ?? []).filter(
+        (member) => member.accountId !== currentAccountId,
+    );
+    if (room.kind === "dm") {
+        return (
+            otherMembers.map(resolveMemberDisplayName).join(", ") ||
+            room.title ||
+            room.id
+        );
+    }
+    return (
+        room.title ||
+        otherMembers.map(resolveMemberDisplayName).join(", ") ||
+        room.id
+    );
+}
+
+function renderMemberCountControl(room, members, i18n) {
+    const label = `${String(members.length)} ${i18n.t("module.social.messages.members")}`;
+    if (room?.kind !== "group") {
+        return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
+    }
+    return `<span class="messages-thread-subtitle messages-thread-subtitle-action" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
+}
+
+function randomRank() {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0];
+}
+
+function randomSample(values, count) {
+    return values
+        .map((value) => ({ value, rank: randomRank() }))
+        .sort((entryA, entryB) => entryA.rank - entryB.rank)
+        .slice(0, count)
+        .map((item) => item.value);
+}
+
+function renderMemberAvatar(member) {
+    const label = resolveMemberDisplayName(member);
+    const color = pickInitialsColor(member.handle || member.accountId || label);
+    return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+function renderRoomAvatar(room, currentAccountId) {
+    if (!room) return "";
+    const members = room.members ?? [];
+    if (room.kind === "classroom") {
+        if (room.avatarKey && !isProfileAvatarUnavailable(room.avatarKey)) {
+            const label = room.title || room.id;
+            return buildProfileAvatarMarkup({
+                avatarKey: room.avatarKey,
+                label,
+                colorSeed: room.id || label,
+                avatarClass: "messages-thread-avatar",
+                imageClass: "messages-thread-avatar-img",
+                fallbackClass: "messages-thread-initials",
+                showAvailability: false,
+            });
+        }
+        const picked = randomSample(members, 4);
+        while (picked.length < 4) {
+            picked.push({ handle: "", displayName: "" });
+        }
+        return `<div class="messages-classroom-collage">${picked.map(renderMemberAvatar).join("")}</div>`;
+    }
+    const other =
+        members.find((member) => member.accountId !== currentAccountId) ??
+        members[0];
+    const label = other
+        ? resolveMemberDisplayName(other)
+        : room.title || room.id;
+    return buildProfileAvatarMarkup({
+        avatarKey: room.avatarKey || other?.avatarKey || null,
+        label,
+        colorSeed: other?.handle || other?.accountId || label,
+        avatarClass: "messages-thread-avatar",
+        imageClass: "messages-thread-avatar-img",
+        fallbackClass: "messages-thread-initials",
+        profileHandle: other?.handle || null,
+        linkClass: "messages-avatar-link",
+        showAvailability: false,
+    });
+}
+
+export function renderThreadHeader(
+    room,
+    currentAccountId,
+    i18n,
+    { actions = [] } = {},
+) {
+    if (!room) return "";
+    const members = room.members ?? [];
+    const currentMember = members.find(
+        (member) => member.accountId === currentAccountId,
+    );
+    const leaveHandle = currentMember?.handle || "";
+    const canSetAvatar =
+        room.kind === "classroom" &&
+        ["teacher", "admin", "owner"].includes(
+            localStorage.getItem("cognis_role") ?? "",
+        );
+    const bannerActions = actions.filter(
+        (action) => action.placement === "after-header",
+    );
+    const headerActions = actions.filter(
+        (action) => action.placement !== "after-header",
+    );
+    const renderActionButton = (action) =>
+        `<button id="${escapeHtml(action.elementId ?? `messages-room-action-${action.id}`)}" class="${escapeHtml(action.className ?? "messages-room-action-btn btn-neutral")}${action.active ? " active" : ""}" data-room-action="${escapeHtml(action.id)}" type="button" aria-pressed="${action.active ? "true" : "false"}" title="${escapeHtml(action.label)}" aria-label="${escapeHtml(action.label)}">${action.iconSvg ?? ""}</button>`;
+    return `
+    <header class="messages-thread-header" id="messages-thread-header">
+      ${renderRoomAvatar(room, currentAccountId)}
+      <div class="messages-thread-title-wrap">
+        <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
+        ${renderMemberCountControl(room, members, i18n)}
+      </div>
+      <div class="messages-thread-actions">
+        ${headerActions.map(renderActionButton).join("")}
+        ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
+        ${
+            leaveHandle
+                ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn btn-cancel" type="button" data-leave-handle="${escapeHtml(leaveHandle)}">${escapeHtml(i18n.t("module.social.messages.leave_room"))}</button>`
+                : ""
+        }
+      </div>
+    </header>
+    ${bannerActions
+        .map(
+            (action) =>
+                `<div class="messages-room-action-banner"><span>${escapeHtml(action.label)}</span><span class="messages-room-action-banner__actions">${(action.actions ?? []).map(renderActionButton).join("")}</span></div>`,
+        )
+        .join("")}
+  `;
+}
+
+export function renderRoomList({
+    rooms,
+    currentAccountId,
+    selectedRoomId,
+    i18n,
+    formatRoomListAvatar,
+}) {
+    if (!rooms.length) {
+        return `<div class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</div>`;
+    }
+    const renderRoomItems = (roomItems) =>
+        roomItems
+            .map((room) => {
+                const titleSource = selectedRoomTitle(room, currentAccountId);
+                const members = Array.isArray(room.members) ? room.members : [];
+                const preferredOtherMember = members.find(
+                    (member) => member.accountId !== currentAccountId,
+                );
+                const displayedMember =
+                    preferredOtherMember ?? members[0] ?? null;
+                const avatar = formatRoomListAvatar(
+                    room,
+                    displayedMember,
+                    titleSource,
+                );
+                const previewSource =
+                    room.lastMessagePreview ||
+                    room.lastMessage?.senderDisplayName ||
+                    room.lastMessage?.senderHandle ||
+                    i18n.t("module.social.messages.preview_encrypted");
+                const preview = String(previewSource)
+                    .replace(/\s+/g, " ")
+                    .trim();
+                const isActive = room.id === selectedRoomId;
+                const unreadBadge =
+                    room.unread > 0 && !isActive
+                        ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
+                        : "";
+                const unreadClass = unreadBadge ? " messages-room--unread" : "";
+                const archivedClass = room.isArchived
+                    ? " messages-room--archived"
+                    : "";
+                const archivedHint = room.isArchived
+                    ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
+                    : "";
+                return `
+          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}${unreadClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
+            ${avatar}
+            <span class="messages-room-meta">
+              <span class="messages-room-title" title="${escapeHtml(titleSource)}">${escapeHtml(titleSource)}</span>
+              <span class="messages-room-preview">${escapeHtml(preview)}</span>
+              ${archivedHint}
+            </span>
+            ${unreadBadge}
+          </li>
+        `;
+            })
+            .join("");
+    const requestRooms = rooms.filter(
+        (room) => !room.isArchived && Boolean(room.pendingRequest),
+    );
+    const activeRooms = rooms.filter(
+        (room) => !room.isArchived && !room.pendingRequest,
+    );
+    const archivedRooms = rooms.filter((room) => room.isArchived);
+    const activeHtml = renderRoomItems(activeRooms);
+    const requestsHtml = requestRooms.length
+        ? `<li class="messages-room-section-label">${escapeHtml(i18n.t("module.social.messages.requests_section"))}</li>${renderRoomItems(requestRooms)}`
+        : "";
+    const archivedHtml = archivedRooms.length
+        ? `<li class="messages-room-section-label">${escapeHtml(i18n.t("module.social.messages.archived_section"))}</li>${renderRoomItems(archivedRooms)}`
+        : "";
+    return `${requestsHtml}${activeHtml}${archivedHtml}`;
+}

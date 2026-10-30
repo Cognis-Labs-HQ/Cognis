@@ -1,0 +1,109 @@
+# Integrasi Pendaftaran
+
+**Cabang Fitur:** feature-add-support-for-pr-1-changes
+
+## Penyimpanan dokumen berversi
+
+Core kini menyediakan penyimpanan versi dokumen netral berbasis basis data yang hanya dapat ditambahkan untuk modul yang dikirimkan secara mandiri. Arsip Dokumentasi dan Catatan Perubahan yang ada tetap menggunakan snapshot sistem berkas multibahasa berversi komponen karena mengubah sumber statis tersebut menjadi rekaman basis data hanya akan menggandakan penyimpanan tanpa memperbaiki model versinya.
+
+## Ekstensi pendaftaran
+
+Alur pendaftaran milik host kini menyusun bidang modul, memvalidasi nilainya, dan menyelesaikan pekerjaan pendaftaran terautentikasi sebelum navigasi.
+
+## Fallback gambar modul
+
+Ikon dan banner modul yang rusak atau tidak valid kini beralih ke gambar standar modul tidak dikenal tanpa membuka popup galat runtime.
+
+## Kapabilitas navigasi host
+
+Siklus hidup modul kini mengenali router aplikasi sebagai penyedia `ui:navigate`, sehingga modul yang memerlukan navigasi host dapat diaktifkan.
+
+## Pemuatan kontribusi yang aman
+
+Administrasi kini mengimpor modul UI kontribusi di bawah pelindung SPA, sehingga titik masuk halaman tidak memasang dirinya sendiri pada URL Administrasi.
+
+## Fallback gambar yang tangguh
+
+Gambar modul kini menggunakan rute aset fallback publik kanonis; fallback yang tidak tersedia disembunyikan tanpa membuka popup galat runtime.
+
+## Komposisi pendaftaran yang andal
+
+Alur pendaftaran kini mengikuti aturan penamaan camel case untuk ctx, mengisolasi hook integrasi yang rusak agar pendaftaran dasar tetap tersedia, serta mendokumentasikan label HTML tepercaya bagi kontributor.
+
+## Edit terlindungi dan bagian lipat pakai ulang
+
+Pelacak perubahan kini melindungi keluar dari peramban serta navigasi SPA, pengamat sub-composer yang usang berhenti setelah pelepasan, dan composer bagian lipat berbasis payload menyediakan baris tindakan selebar sama bagi Administrasi dan modul eksternal.
+
+## Popup wajib dan alur keluar bersama
+
+Popup kini dapat memilih interaksi wajib tanpa tombol tutup, penutupan melalui latar, atau tombol Escape. ctx peramban juga menyediakan alur keluar bertahap yang mencabut sesi, mengunci keyring, membersihkan status akun lokal, dan mengalihkan ke halaman masuk.
+
+## Tautan footer halaman yang dapat diperluas
+
+Shell halaman kini menyediakan `ui:footerLinks` agar kontribusi tautan berskop dapat ditempatkan di sisi kiri atau kanan footer; host memakai registri yang sama untuk Lisensi dan Catatan Perubahan.
+
+## Paginasi terstruktur yang dapat digunakan ulang
+
+Riwayat peristiwa Keyring kini memakai paginator bersama dengan ukuran halaman pilihan pemanggil, hasil halaman terstruktur, kontrol yang dilokalkan, pembaruan data, dan kapabilitas ctx `ui:pagination` yang tersedia bagi modul.
+
+## Isolasi navigasi dan pendaftaran yang lengkap
+
+Edit yang belum disimpan kini melindungi penelusuran riwayat Mundur dan Maju serta memulihkan entri aktif ketika navigasi ditolak. Factory bidang pendaftaran gagal secara terisolasi, hook penyelesaian menerima nilai terkirim dan konteks integrasi, serta Keyring menyelesaikan paginasi melalui ctx.
+
+## Cakupan regresi rangkaian pengujian lengkap
+
+Pemeriksaan regresi Keyring dan router diperbarui agar sesuai dengan kontrol paginasi bersama dan status riwayat SPA berindeks, sehingga seluruh rangkaian pengujian kembali berjalan tanpa kegagalan.
+
+## Tautan footer aktif dan menu samping bersama
+
+Tautan footer kini menandai rute aktif beserta turunannya. Navigasi dokumentasi dan catatan perubahan sekarang menggunakan pembuat menu samping terstruktur yang dapat digunakan kembali dan tersedia bagi modul runtime melalui kapabilitas ctx `ui:sideMenu`.
+
+## Panah pengungkapan adapter sebaris
+
+Baris adapter Administrasi kini menyediakan kolom ringkasan terpisah untuk kontrol tindakan dan panah pengungkapan. Penghapusan kolom kontrol lama selebar panah membuat panah tetap berada tepat setelah sakelar daya pada baris yang sama.
+
+## Gulir menu samping sejajar judul
+
+Item menu samping kini dapat menentukan judul tujuan. Saat dipilih, halaman bergulir dengan halus dan sejajar ke awal, sehingga judul yang diminta berada di bagian atas alih-alih di tengah kontennya.
+
+## Perbandingan dokumen berversi
+
+Penyimpanan versi kini dapat membandingkan dua hash yang tidak dapat diubah dan menghasilkan baris tidak berubah, ditambahkan, diubah, serta dihapus secara berurutan. Renderer browser yang tersedia melalui ctx menyajikan perbedaan dengan aman menggunakan warna hijau untuk tambahan, oranye untuk perubahan, dan merah untuk penghapusan agar modul hukum dapat menjelaskan dokumen terbaru sebelum meminta persetujuan.
+
+## Ikhtisar perubahan dokumen
+
+Perbandingan dokumen kini menampilkan bilah ikhtisar ringkas berkode warna di samping bilah gulir diff. Setiap penanda hijau, oranye, atau merah tertaut langsung ke baris yang ditambahkan, diubah, atau dihapus agar pembaca dapat menelusuri revisi panjang dengan cepat.
+
+## Perbandingan dokumen Markdown
+
+Kapabilitas diff dokumen kini dapat merender dokumen Markdown lengkap dengan tipografi normalnya sekaligus menerapkan overlay hijau, oranye, dan merah pada konten yang ditambahkan, diubah, dan dihapus. Dengan demikian, tautan persetujuan dapat membuka perbandingan ukuran penuh tanpa mengubah tautan dokumen biasa.
+
+## Perbaikan keandalan hasil tinjauan
+
+Kegagalan validator pendaftaran diisolasi dari alur pendaftaran dasar, navigasi SPA dengan perubahan yang belum disimpan kini memakai permukaan keputusan popup yang dilokalkan, pengungkapan yang dapat diciutkan mewajibkan label yang dilokalkan, dan perbandingan Markdown mempertahankan konteks blok bersama di seluruh baris yang berubah.
+
+## Commit
+
+- [2f77a92](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f77a92c78df6da12b4c000b47b2c787ab517695)
+- [8b480faf](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b480fafbceca1dd52b9c693dc1f0d4381d473b8)
+- [84f84a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/84f84a43659185eb65e48004cc9a898b69aa4458)
+- [2ad50da](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ad50dacc8f0a73aa965b85410054a881a05cd17)
+- [1b13f90](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b13f90326737588d470ac1e4919e36ed9fba4dd)
+- [082e5f2](https://github.com/Cognis-Labs-HQ/Cognis/commit/082e5f2ab7fc36c948c2da97539d1b56cd7fdae0)
+- [2be280e](https://github.com/Cognis-Labs-HQ/Cognis/commit/2be280efacce0abf81d80ad3aae9bd23c8db921a)
+- [fb19c34e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb19c34e1ad6b7de4b7c0dd2c6bb8e0fad171484)
+- [3f80ad56](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f80ad56eb500d81031d7c3001bc1b5c246f84a1)
+- [8f67ef9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/8f67ef9eb42910f9597f694d2d7b819b1ab00940)
+- [f7cfe49a](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7cfe49a74f4e104348eae5938747f0d601b2b60)
+- [7c16485f](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c16485f5abf7b260cf6bf6311dbf80725e4fb05)
+- [e240270a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e240270a5a597aeb07cd3e905343be1f2c2ef4f5)
+- [c63e7c8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c63e7c8f0aab5c4e1e38d5963fd64ab7036a40e5)
+- [672104a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/672104a008171509ff08eb522d85c90dc70ac045)
+- [957a4c49](https://github.com/Cognis-Labs-HQ/Cognis/commit/957a4c4987bbac8d259942e134c33b783e8eb4e5)
+- [182a22ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/182a22ef86b98848185f6a73e622bf31845aee2f)
+- [5a67fcd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5a67fcd2562b01e10cf7907158de6d657bd3ec5d)
+- [3885aa11](https://github.com/Cognis-Labs-HQ/Cognis/commit/3885aa1123f324422fe756b150957f2a00b6a305)
+- [ea7bf233](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea7bf23385e3e32b39f42533c169eb2d483be775)
+- [b9b8eb2f](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9b8eb2f9210e59397552d936853f434861c4f16)
+- [c07485bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c07485bc1e502bda3d5f28050a3495825a777707)
+- [36047ecc](https://github.com/Cognis-Labs-HQ/Cognis/commit/36047ecc834677d8db2bb7da057d7ea982067463)

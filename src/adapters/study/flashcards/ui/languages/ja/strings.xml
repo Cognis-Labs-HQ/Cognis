@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="adapter.study.flashcards.page_title">フラッシュカード</string>
+  <string name="adapter.study.flashcards.deck_edit">デッキを編集</string>
+  <string name="adapter.study.flashcards.deck_create">デッキを作成</string>
+  <string name="adapter.study.flashcards.deck_layer">カードの層</string>
+  <string name="adapter.study.flashcards.deck_saved">デッキを保存しました。</string>
+  <string name="adapter.study.flashcards.deck_deleted">デッキを削除しました。</string>
+  <string name="adapter.study.flashcards.deck_save_error">デッキを保存できませんでした。選択したカードとインポート形式を確認してください。</string>
+  <string name="adapter.study.flashcards.deck_load_error">デッキまたはライブラリーのカードを読み込めませんでした。</string>
+  <string name="adapter.study.flashcards.deck_empty">フラッシュカードデッキが見つかりません</string>
+  <string name="adapter.study.flashcards.deck_finished">よくできました！このデッキの学習を完了しました。</string>
+  <string name="adapter.study.flashcards.deck_review_error">復習結果を保存できませんでした。もう一度お試しください。</string>
+  <string name="adapter.study.flashcards.deck_unavailable">利用できなくなった {{ count }} 枚のカードをスキップしました。</string>
+  <string name="adapter.study.flashcards.page_subtitle">閲覧可能なフラッシュカードデッキ</string>
+  <string name="adapter.study.flashcards.deck_import">デッキをインポート</string>
+  <string name="adapter.study.flashcards.deck_cards">カード</string>
+  <string name="adapter.study.flashcards.deck_starter">スターターデッキ</string>
+  <string name="adapter.study.flashcards.deck_yours">自分のデッキ</string>
+  <string name="adapter.study.flashcards.deck_shared">共有デッキ</string>
+  <string name="adapter.study.flashcards.deck_due_count">新規または復習予定 {{ count }} 件</string>
+  <string name="adapter.study.flashcards.deck_search">デッキを検索</string>
+  <string name="adapter.study.flashcards.practice_total">合計</string>
+  <string name="adapter.study.flashcards.practice_due">復習</string>
+  <string name="adapter.study.flashcards.practice_new">新規</string>
+  <string name="adapter.study.flashcards.practice_writing">書く</string>
+  <string name="adapter.study.flashcards.practice_reading">読む</string>
+  <string name="adapter.study.flashcards.practice_next">次のカード</string>
+  <string name="adapter.study.flashcards.practice_unavailable">このカードで利用できる練習はありません。</string>
+  <string name="adapter.study.flashcards.practice_leave">練習を終了しますか？</string>
+  <string name="adapter.study.flashcards.practice_leave_body">このカードを探索で開き、現在の練習を終了しますか？</string>
+  <string name="adapter.study.flashcards.practice_show_answer">答えを表示</string>
+  <string name="adapter.study.flashcards.practice_previous">前のカード</string>
+  <string name="adapter.study.flashcards.practice_reveal">文字を表示</string>
+  <string name="adapter.study.flashcards.practice_choose_mode">読み取りか書き取りを選択</string>
+  <string name="adapter.study.flashcards.practice_correct">正しい読み方です。</string>
+  <string name="adapter.study.flashcards.practice_incorrect">読み方が違います。答えを確認し、次の復習で再挑戦しましょう。</string>
+  <string name="adapter.study.flashcards.practice_restart_warning">練習モードを変更すると、このセッションの位置と回答を破棄して最初からやり直します。送信済みの復習記録は保持されます。</string>
+  <string name="adapter.study.flashcards.practice_hint">正解を表示</string>
+  <string name="adapter.study.flashcards.practice_hint_answer">正解：{{ answer }}</string>
+</resources>

@@ -1,0 +1,11 @@
+{
+    "name": "@cognis/adapter-social-profile",
+    "version": "3.0.5",
+    "description": "Profiles, social graph, and posts.",
+    "type": "module",
+    "main": "index.ts",
+    "private": true,
+    "dependencies": {
+        "@cognis/gateways": "<=0.2.0"
+    }
+}

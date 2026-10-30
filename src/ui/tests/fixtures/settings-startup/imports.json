@@ -1,0 +1,68 @@
+{
+    "../../reuse/ui-preferences.js": [
+        "applyUiPreferences",
+        "loadUiPreferences",
+        "saveUiPreferences"
+    ],
+    "../../reuse/api-client.js": ["apiFetch"],
+    "../../reuse/i18n.js": [
+        "applyDocumentTitle",
+        "createI18n",
+        "extendI18n",
+        "readLanguagePriorityMode",
+        "readPreferredLanguages",
+        "setPreferredLanguages"
+    ],
+    "../../reuse/theme-toggle.js": [
+        "applyTheme",
+        "persistTheme",
+        "getStoredTheme"
+    ],
+    "../../reuse/font-prefs.js": [
+        "toFontFamilyValue",
+        "initFontPrefs",
+        "DEFAULT_FONT_SIZE"
+    ],
+    "./language-prefs.js": ["initLanguagePrefs"],
+    "./checkbox-prefs.js": ["initCheckboxPrefs"],
+    "./general-prefs.js": ["initGeneralPrefs"],
+    "./datetime-prefs.js": ["initDateTimePrefs"],
+    "./release-changelog-prefs.js": [
+        "initReleaseChangelogPrefs",
+        "shouldShowReleaseChangelog"
+    ],
+    "../../reuse/timestamp.js": [
+        "applyTimeFormatToLocalStorage",
+        "applyTimezoneToLocalStorage"
+    ],
+    "../../reuse/unsaved-changes.js": ["createUnsavedChangesBar"],
+    "./advanced-prefs.js": ["initAdvancedPrefs"],
+    "./editor-acknowledgement.js": [
+        "loadEditorAcknowledgement",
+        "saveEditorAcknowledgement"
+    ],
+    "../../reuse/search-util/popup.js": ["registerSearchIndex"],
+    "../../reuse/page-composer/index.js": ["createPageComposer"],
+    "../../reuse/page-entry.js": ["mountWhenDirect"],
+    "../../reuse/toast.js": ["showToast"],
+    "../../reuse/escape-html.js": ["escapeHtml"],
+    "../../reuse/info-tooltip.js": ["renderInfoTooltip"],
+    "../../reuse/message-style-options.js": [
+        "isValidMessageStyle",
+        "normalizeMessageStyle"
+    ],
+    "../../reuse/dynamic-contribution-loader.js": ["loadDynamicContributions"],
+    "../../reuse/structured-content.js": ["renderStructuredContent"],
+    "./search-index.js": [
+        "collectSettingsSearchGroups",
+        "renderAccountOperationButton"
+    ],
+    "./setup-requirement.js": [
+        "getSettingsShellOptions",
+        "resolveSettingsSetupRedirect"
+    ],
+    "../../reuse/offline-state.js": ["isOffline"],
+    "./online-controls.js": ["bindOnlineSettingsControls"],
+    "./language-redraw.js": ["createLanguageRedraw"],
+    "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"]
+}
