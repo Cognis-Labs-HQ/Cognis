@@ -242,6 +242,10 @@ After Save completes, the scheduled redraw still checks for newer unsaved edits.
 
 Public asset reads share an in-flight download until its cache write finishes, so concurrent pages and providers do not download the same resource repeatedly. A worker update reuses complete content-hashed host assets from earlier cache generations; mutable assets still refresh from the server. Existing cache-first responses, conditional background revalidation, module revision checks and Offline Mode opt-out behavior remain in effect. The language catalog and Study navigation metadata use a thirty-second online freshness window, including when Offline Mode is disabled. Online freshness expires on demand rather than polling; concurrent refreshes coalesce. Study retains its existing consent-gated background revalidation. Account/session changes, expiry, component lifecycle changes and explicit invalidation clear the relevant snapshots. Other private reads and writes keep their existing transport and authorization checks.
 
+## Offline Logout Protection
+
+Logout remains visible but disabled in Offline Mode, using the same disabled styling as unavailable menu destinations. It becomes available again when connectivity is restored. Activating the control while offline cannot start logout or discard the local session before server-side token invalidation is possible.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

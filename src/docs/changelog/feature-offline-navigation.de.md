@@ -242,6 +242,10 @@ Nach Abschluss des Speicherns prüft der geplante Neuaufbau weiterhin auf neue u
 
 Öffentliche Ressourcen teilen einen laufenden Download, bis das Schreiben in den Cache abgeschlossen ist. Gleichzeitig ladende Seiten und Provider laden dieselbe Ressource dadurch nicht mehrfach herunter. Worker-Updates übernehmen vollständige, inhaltsadressierte Host-Ressourcen aus früheren Cache-Generationen; veränderliche Ressourcen werden weiterhin vom Server aktualisiert. Cache-bevorzugte Antworten, bedingte Hintergrundvalidierung, Modulversionsprüfungen und das Abschalten des Offline-Modus bleiben erhalten. Sprachkatalog und Study-Navigationsmetadaten nutzen ein Online-Frischefenster von dreißig Sekunden, auch bei deaktiviertem Offline-Modus. Nach Ablauf wird erst bei Bedarf neu geladen; parallele Aktualisierungen werden zusammengefasst. Study behält seine bestehende, zustimmungsabhängige Hintergrundvalidierung. Konto- und Sitzungswechsel, Ablauf, Komponentenänderungen und ausdrückliche Invalidierung löschen die betreffenden Momentaufnahmen. Andere private Lese- und Schreibzugriffe behalten ihre bisherigen Transport- und Berechtigungsprüfungen.
 
+## Abmeldung im Offline-Modus
+
+Abmelden bleibt im Offline-Modus sichtbar, ist jedoch wie andere nicht verfügbare Menüeinträge deaktiviert. Nach Wiederherstellung der Verbindung ist die Aktion wieder verfügbar. Eine Offline-Aktivierung kann weder die Abmeldung starten noch die lokale Sitzung verwerfen, bevor das Sitzungstoken auf dem Server widerrufen werden kann.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

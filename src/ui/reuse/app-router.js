@@ -841,18 +841,20 @@ function installOfflineNavigation() {
         try {
             const routes = await loadAllRoutes();
             for (const link of document.querySelectorAll(
-                "a[href], button[data-navigation-path]",
+                "a[href], button[data-navigation-path], [data-online-only]",
             )) {
+                const onlineOnly = link.hasAttribute("data-online-only");
                 const path = internalNavigationPath(
                     link.getAttribute("href") ?? link.dataset.navigationPath,
                 );
-                if (path === null) continue;
+                if (path === null && !onlineOnly) continue;
                 const disabled =
                     isOffline() &&
-                    !offlineRouteAvailable(
-                        findMatchingRoute(routes, path),
-                        path,
-                    );
+                    (onlineOnly ||
+                        !offlineRouteAvailable(
+                            findMatchingRoute(routes, path),
+                            path,
+                        ));
                 if (disabled && !link.dataset.offlineDisabled) {
                     link.setAttribute("aria-disabled", "true");
                     link.dataset.offlineDisabled = "true";

@@ -16,6 +16,7 @@ function createRouter({
     runFlow,
     offline = false,
     allowOfflineRoute = async () => true,
+    navigationItems = [],
 } = {}) {
     const flowPrefix = `test:${crypto.randomUUID()}:`;
     const listeners = new Map();
@@ -54,7 +55,7 @@ function createRouter({
         console,
         document: {
             querySelector: () => root,
-            querySelectorAll: () => [],
+            querySelectorAll: () => navigationItems,
             addEventListener: (type, callback) => listeners.set(type, callback),
         },
         CustomEvent: class {
@@ -506,5 +507,44 @@ test("disabled menu destinations ignore activation before resolving or loading r
         assert.deepEqual(router.mounted, []);
         assert.deepEqual(router.assigned, []);
         assert.deepEqual(router.navigationEvents, []);
+    }
+});
+
+test("online-only Logout stays visible, disables on cold or sudden disconnection and re-enables on recovery", async () => {
+    for (const initiallyOffline of [false, true]) {
+        let offline = initiallyOffline;
+        const attributes = new Map([["data-online-only", ""]]);
+        const logout = {
+            tagName: "BUTTON",
+            dataset: {},
+            disabled: false,
+            hidden: false,
+            hasAttribute: (name) => attributes.has(name),
+            getAttribute: (name) => attributes.get(name) ?? null,
+            setAttribute: (name, value) => attributes.set(name, value),
+            removeAttribute: (name) => attributes.delete(name),
+        };
+        const router = createRouter({
+            offline: () => offline,
+            navigationItems: [logout],
+        });
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, initiallyOffline);
+        assert.equal(
+            attributes.get("aria-disabled"),
+            initiallyOffline ? "true" : undefined,
+        );
+        offline = true;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, true);
+        assert.equal(logout.hidden, false);
+        assert.equal(attributes.get("aria-disabled"), "true");
+        offline = false;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, false);
+        assert.equal(attributes.has("aria-disabled"), false);
+        assert.equal(logout.dataset.offlineDisabled, undefined);
     }
 });

@@ -188,3 +188,7 @@ Setelah penyimpanan selesai, penggambaran ulang terjadwal tetap memeriksa peruba
 ## Lebih Sedikit Permintaan
 
 Pembacaan aset publik berbagi unduhan yang sedang berlangsung hingga penulisan cache selesai, sehingga halaman dan penyedia yang berjalan bersamaan tidak mengunduh sumber daya yang sama berulang kali. Pembaruan worker menggunakan kembali aset host lengkap dengan hash konten dari generasi cache sebelumnya; aset yang dapat berubah tetap diperbarui dari server. Respons yang mengutamakan cache, validasi ulang bersyarat di latar belakang, pemeriksaan revisi modul, dan perilaku penonaktifan Mode Offline tetap berlaku. Katalog bahasa dan metadata navigasi Study menggunakan masa kesegaran daring tiga puluh detik, termasuk ketika Mode Offline dinonaktifkan. Setelah kedaluwarsa, data diperbarui saat dibutuhkan tanpa polling; pembaruan bersamaan digabungkan. Study mempertahankan validasi ulang latar belakang yang bergantung pada persetujuan. Pergantian akun atau sesi, kedaluwarsa, perubahan siklus hidup komponen, dan invalidasi eksplisit menghapus snapshot terkait. Pembacaan dan penulisan data pribadi lainnya tetap menggunakan pemeriksaan transportasi dan otorisasi yang ada.
+
+## Perlindungan Keluar Luring
+
+Tombol Keluar tetap terlihat tetapi dinonaktifkan dalam Mode Offline, dengan gaya yang sama seperti tujuan menu yang tidak tersedia. Tombol kembali aktif setelah koneksi pulih. Aktivasi saat luring tidak dapat memulai proses keluar atau menghapus sesi lokal sebelum token sesi dapat dibatalkan di server.

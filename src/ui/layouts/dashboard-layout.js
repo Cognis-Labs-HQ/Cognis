@@ -304,6 +304,7 @@ function bindTopbarActions() {
     });
 
     logout?.addEventListener("click", async () => {
+        if (isOffline()) return;
         await uiCtx.runFlow("logout", { reason: "userRequested" });
     });
 }
