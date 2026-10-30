@@ -323,3 +323,4 @@ Range requests bypass the whole-file cache, and only complete HTTP 200 responses
 - [5ff328a](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ff328a40f18ede18fff9d768220acb3cd5ad4fb)
 - [685936a](https://github.com/Cognis-Labs-HQ/Cognis/commit/685936ab25a5fa235b22eb448b07b84acf1f8a25)
 - [6a7ff6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a7ff6b372c109e1588b0ea6a0dfc0ae8923c888)
+- [bfcdf9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfcdf9b5025f2f418c8187dc13745ee10e6e0c5f)
