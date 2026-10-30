@@ -318,3 +318,4 @@ Bereichsanfragen umgehen den Cache für vollständige Dateien. Nur vollständige
 - [e78d442](https://github.com/Cognis-Labs-HQ/Cognis/commit/e78d442dd40c03bddd37fed0a083569061d36c88)
 - [5ff328a](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ff328a40f18ede18fff9d768220acb3cd5ad4fb)
 - [685936a](https://github.com/Cognis-Labs-HQ/Cognis/commit/685936ab25a5fa235b22eb448b07b84acf1f8a25)
+- [6a7ff6b](https://github.com/Cognis-Labs-HQ/Cognis/commit/6a7ff6b372c109e1588b0ea6a0dfc0ae8923c888)
