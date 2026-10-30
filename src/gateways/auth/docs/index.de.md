@@ -149,3 +149,7 @@ Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätz
 ## Anmeldung und Übertragung
 
 Nach erfolgreicher Passwort- oder TFA-Anmeldung ersetzt die vorhandene SPA-Navigationsfunktion die Anmeldeseite durch das Dashboard. Der bestätigte Tab und gepufferte Arbeit bleiben dadurch erhalten, ohne die Schließwarnung des Browsers auszulösen. Die Ladeanzeige bleibt bis zum Abschluss der Navigation sichtbar; die optionale Zeitzonensynchronisierung folgt danach und verwirft Kontowechsel. Tatsächlich gepufferte Änderungen bleiben beim Schließen oder Neuladen eines authentifizierten Tabs durch die Warnung geschützt.
+
+## Sitzungs- und Modulgrenzen
+
+Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Instanz für bestätigten Offline-Zugriff. Geprüft werden abgeschlossene Einrichtung, aktuelles Konto und Token sowie der Sitzungsablauf. Warteschlangen verwenden diesen Vertrag statt eigener Auswertung des Auth-Speichers. Die Kontoeinrichtung überspringt alternative Gastsitzungen. Der Server-Endpunkt setup-status verwendet Shares Klassifizierungsfähigkeit vor TFA- oder E-Mail-Integrationen. Für normale lokale und SSO-Konten bleibt die vorgeschriebene Einrichtung verbindlich.

@@ -24,7 +24,9 @@ export function registerOfflineRuntime(ctx) {
         }),
         enabled: offlineEnabled,
         offline: isOffline,
-        allowed: offlinePolicy.allows,
+        allowed: () =>
+            offlinePolicy.allows() &&
+            ctx.capabilities.get("session:isOfflineValid")?.() === true,
         changed: () =>
             globalThis.window?.dispatchEvent(
                 new CustomEvent("cognis:offline-buffer-changed"),

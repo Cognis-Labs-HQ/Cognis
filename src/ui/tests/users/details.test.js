@@ -6,10 +6,20 @@ import { getRoleLabel } from "../../reuse/access-role.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 
-test("account details execute registered stages, escape email/provider values, reject non-admins and clean up", async () => {
+test("account details execute registered stages, escape email/provider values, reject non-admins and clean up", async (context) => {
     let admin = true;
     let calls = 0;
     const controller = new AbortController();
+    const emailClient = {
+        listUserEmails: async () => [
+            { email: "<private>@example.com", verified: false, primary: true },
+        ],
+    };
+    uiCtx.capabilities.contribute("notify:emailClient", emailClient);
+    context.after(() => {
+        controller.abort();
+        uiCtx.capabilities.remove("notify:emailClient", emailClient);
+    });
     const { createUserDetailsReader } = loadTestModule(
         new URL("../../app/users/details.js", import.meta.url),
         {
@@ -36,15 +46,6 @@ test("account details execute registered stages, escape email/provider values, r
             },
             "../../reuse/escape-html.js": { escapeHtml },
             "../../reuse/timestamp.js": { formatDateTime },
-            "/static/gateways/notify/email-client.js": {
-                loadUserEmails: async () => [
-                    {
-                        email: "<private>@example.com",
-                        verified: false,
-                        primary: true,
-                    },
-                ],
-            },
         },
     );
     const reader = createUserDetailsReader({
@@ -57,12 +58,20 @@ test("account details execute registered stages, escape email/provider values, r
     assert.match(html, /emails_unverified/);
     assert.match(html, /member_since/);
     assert.equal(calls, 1);
+    uiCtx.capabilities.remove("notify:emailClient", emailClient);
+    const withoutNotify = await reader({
+        accountId: "u_account",
+        username: "person",
+    });
+    assert.match(withoutNotify, /&lt;provider&gt;/);
+    assert.match(withoutNotify, /ui.reuse.unknown/);
+    assert.equal(calls, 2);
     admin = false;
     await assert.rejects(
         reader({ accountId: "u_account", username: "person" }),
         /admin_required/,
     );
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
     controller.abort();
     await assert.rejects(
         reader({ accountId: "u_account", username: "person" }),

@@ -5,6 +5,7 @@ import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js";
 import { loadTrustedDomains } from "/static/reuse/trusted-domains.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
+import { isSmtpAdapterActive } from "./smtp-adapter.js";
 
 function emailRoot() {
     return `/api/v1/notify/users/${encodeURIComponent(localStorage.getItem("cognis_account") ?? "")}/emails`;
@@ -85,6 +86,19 @@ export function mountProvider(ctx) {
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("email_client_unavailable");
     const actions = registerActions(ctx, "notify:emailPolicy", {
+        listUserEmails: ({ accountId, signal }) =>
+            loadUserEmails(accountId, { signal }),
+        smtpAvailable: () => isSmtpAdapterActive(apiFetch),
+        resendUserEmail: ({ accountId, email }) => {
+            if (isOffline()) throw new Error("offline_operation_unavailable");
+            return apiFetch(
+                `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(email)}/resend`,
+                {
+                    method: "POST",
+                    signal: ctx.signal,
+                },
+            );
+        },
         trustedDomains: async () => {
             const assertAccount = captureAccountGuard();
             if (!isOffline())
@@ -136,11 +150,13 @@ export function emailTrustedDomains() {
 
 /** Read administrator-authorized metadata; other-account reads are never cached. */
 export async function loadUserEmails(accountId, { signal } = {}) {
+    const assertAccount = captureAccountGuard();
     const response = await apiFetch(
         `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails`,
         { signal },
     );
     if (!response.ok) throw new Error("user_email_metadata_unavailable");
     const payload = await response.json();
+    assertAccount();
     return Array.isArray(payload?.data) ? payload.data : [];
 }

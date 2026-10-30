@@ -214,3 +214,7 @@ Public asset reads share an in-flight download until its cache write finishes, s
 ## Offline Logout Protection
 
 Logout remains visible but disabled in Offline Mode, using the same disabled styling as unavailable menu destinations. It becomes available again when connectivity is restored. Activating the control while offline cannot start logout or discard the local session before server-side token invalidation is possible.
+
+## Session and Component Boundaries
+
+Only an identical consecutive mutation from the same delivery owner is suppressed; changes to methods, paths, media types or intervening operations retain their order. Offline enqueueing and replay require Auth’s `session:isOfflineValid` capability as well as current consent. The capability checks verified setup readiness, account, token and session expiry without network requests, including when storage locks delay persistence. An unavailable Auth contract fails closed. Settings binds account controls before optional email loading; disabling Notify hides email management and leaves Archive, Deactivate and Delete usable. Users and Administration consume Notify through scoped capabilities instead of concrete UI imports. Notify supplies administrator email reads, online-only resend and SMTP availability; absent email metadata is shown as unknown. Auth skips normal account setup for alternate guest sessions and uses Share’s classification capability to exempt share guests at the server boundary. Real account email/TFA setup remains enforced.

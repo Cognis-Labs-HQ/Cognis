@@ -246,6 +246,10 @@ Nach Abschluss des Speicherns prüft der geplante Neuaufbau weiterhin auf neue u
 
 Abmelden bleibt im Offline-Modus sichtbar, ist jedoch wie andere nicht verfügbare Menüeinträge deaktiviert. Nach Wiederherstellung der Verbindung ist die Aktion wieder verfügbar. Eine Offline-Aktivierung kann weder die Abmeldung starten noch die lokale Sitzung verwerfen, bevor das Sitzungstoken auf dem Server widerrufen werden kann.
 
+## Sitzungs- und Modulgrenzen
+
+Nur eine unmittelbar aufeinanderfolgende identische Änderung desselben Zustellungsanbieters wird unterdrückt. Andere Methoden, Pfade, Medientypen und dazwischenliegende Vorgänge behalten ihre Reihenfolge. Offline-Pufferung und erneute Zustellung erfordern neben der aktuellen Zustimmung die Auth-Fähigkeit `session:isOfflineValid`. Sie prüft bestätigte Einrichtungsbereitschaft, Konto, Token und Sitzungsablauf ohne Netzwerkanfrage, auch nach Wartezeiten auf Speichersperren. Fehlt der Auth-Vertrag, wird der Zugriff verweigert. Einstellungen binden Kontosteuerungen vor dem optionalen Laden der E-Mails. Bei deaktiviertem Notify wird die E-Mail-Verwaltung ausgeblendet; Archivieren, Deaktivieren und Löschen bleiben nutzbar. Benutzerverwaltung und Administration verwenden bereichsgebundene Notify-Fähigkeiten statt konkreter UI-Importe. Notify stellt administrative E-Mail-Abfragen, erneuten Versand nur bei Verbindung und SMTP-Verfügbarkeit bereit. Fehlende E-Mail-Metadaten werden als unbekannt angezeigt. Auth überspringt normale Kontoeinrichtung für alternative Gastsitzungen und verwendet Shares Klassifizierungsfähigkeit zur Gastprüfung an der Servergrenze. E-Mail- und TFA-Einrichtung echter Konten bleiben verbindlich.
+
 ## Commits
 
 - [bfc96cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/bfc96cbe42c045aa334dedb15f9991c41fa146a2)

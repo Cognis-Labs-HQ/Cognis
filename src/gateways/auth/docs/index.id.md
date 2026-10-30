@@ -149,3 +149,7 @@ Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup
 ## Login dan pengiriman tertunda
 
 Setelah login kata sandi atau TFA berhasil, kapabilitas navigasi SPA yang sudah ada mengganti halaman login dengan Dashboard. Tab terverifikasi dan perubahan tertunda tetap tersedia tanpa memicu peringatan penutupan halaman dari browser. Indikator pemuatan tetap terlihat sampai navigasi selesai; sinkronisasi zona waktu opsional berjalan sesudahnya dan menolak pergantian akun. Peringatan tetap melindungi perubahan yang benar-benar tertunda saat tab terautentikasi ditutup atau dimuat ulang.
+
+## Batas Sesi dan Komponen
+
+Auth menyediakan `session:isOfflineValid` sebagai otoritas sinkron tanpa jaringan untuk akses luring terverifikasi. Pemeriksaan mencakup penyiapan yang selesai, akun dan token aktif, serta kedaluwarsa sesi. Pemilik antrean memakai kontrak ini alih-alih menafsirkan penyimpanan autentikasi sendiri. Penyiapan akun melewati sesi tamu alternatif; endpoint setup-status di server memakai kapabilitas klasifikasi Share sebelum meminta integrasi TFA atau email. Akun lokal dan SSO biasa tetap wajib menyelesaikan penyiapan.

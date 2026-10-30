@@ -803,6 +803,18 @@ export function createSessionRoutes({
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
+            const guest = capabilities.get<
+                (claims: { sub: string }) => string | null
+            >("share:resolveGuestId")?.(claims);
+            if (guest) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: { integrations: [], requiresSetup: false },
+                    }),
+                );
+                return true;
+            }
             const getTfaUserStatus =
                 capabilities.get<
                     (accountId: string) => Promise<{ requiresSetup: boolean }>

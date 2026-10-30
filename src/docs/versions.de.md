@@ -68,10 +68,10 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13` |
-| Authentication (auth) | `src/gateways/auth/`          | `2.0.2`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.0.3`  |
 | Share                 | `src/gateways/share/`         | `1.7.49` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.17` |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.18` |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
 | Registration          | `src/gateways/registration/`  | `1.1.41` |
@@ -90,7 +90,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.10.13` |
+| API Server | `src/api/` | `0.10.14` |
 
 ## Werkzeuge
 

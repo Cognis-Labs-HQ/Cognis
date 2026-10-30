@@ -66,6 +66,7 @@ function fixture({ browser = false } = {}) {
         "./top-banners.js": { createTopBanners },
         "./sub-page-registry.js": { createSubPageRegistry },
     });
+    uiCtx.capabilities.contribute("session:isOfflineValid", () => true);
     return {
         uiCtx,
         values,
@@ -254,5 +255,26 @@ test("connectivity recovery reauthorizes and attempts queued delivery, while con
     await recover();
     assert.equal(sent, 1);
     assert.equal(outbox.hasBufferedChanges(), false);
+    controller.abort();
+});
+
+test("enqueue checks the current Auth capability, fails closed if missing and rechecks after storage lock waits", async () => {
+    const state = fixture();
+    const outbox = state.uiCtx.capabilities.get("offline:outbox");
+    const controller = new AbortController();
+    outbox.register("practice", async () => {}, controller.signal);
+    const original = state.uiCtx.capabilities.get("session:isOfflineValid");
+    state.uiCtx.capabilities.remove("session:isOfflineValid", original);
+    await assert.rejects(
+        outbox.submit("practice", "unverified", {}),
+        /offline_delivery_unavailable/,
+    );
+    let valid = true;
+    state.uiCtx.capabilities.contribute("session:isOfflineValid", () => valid);
+    await outbox.submit("practice", "verified", {});
+    const waiting = outbox.submit("practice", "expired-during-lock", {});
+    valid = false;
+    await assert.rejects(waiting, /offline_delivery_unavailable/);
+    assert.equal((await outbox.pending("practice")).length, 1);
     controller.abort();
 });

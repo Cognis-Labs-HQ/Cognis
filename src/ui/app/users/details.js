@@ -3,7 +3,6 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { getRoleLabel, isAdminScope } from "../../reuse/access-role.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
-import { loadUserEmails } from "/static/gateways/notify/email-client.js";
 
 /** Creates an admin-only, page-scoped account-details reader backed by real ctx stages. */
 export function createUserDetailsReader({ i18n, signal }) {
@@ -23,7 +22,9 @@ export function createUserDetailsReader({ i18n, signal }) {
             apiFetch(`/api/v1/users/${encodeURIComponent(accountId)}/info`, {
                 signal,
             }),
-            loadUserEmails(accountId, { signal }),
+            uiCtx.capabilities
+                .get("notify:emailClient")
+                ?.listUserEmails({ accountId, signal }) ?? null,
         ]);
         if (!response.ok) throw new Error("user_metadata_unavailable");
         active();
@@ -64,12 +65,13 @@ export function createUserDetailsReader({ i18n, signal }) {
                 formatDateTime(info.lastLogin, unknown),
             ],
         ];
-        const emails = stage.data.emails
-            .map(
-                (email) =>
-                    `<div class="users-email-row"><span>${escapeHtml(email.email)}</span><span class="users-email-badges">${email.primary ? `<span class="state-pill pill-available">${escapeHtml(i18n.t("ui.app.settings.emails_primary"))}</span>` : ""}<span class="state-pill ${email.verified ? "pill-active" : "pill-disabled"}">${escapeHtml(i18n.t(email.verified ? "ui.app.settings.emails_verified" : "ui.app.settings.emails_unverified"))}</span></span></div>`,
-            )
-            .join("");
+        const emails =
+            stage.data.emails
+                ?.map(
+                    (email) =>
+                        `<div class="users-email-row"><span>${escapeHtml(email.email)}</span><span class="users-email-badges">${email.primary ? `<span class="state-pill pill-available">${escapeHtml(i18n.t("ui.app.settings.emails_primary"))}</span>` : ""}<span class="state-pill ${email.verified ? "pill-active" : "pill-disabled"}">${escapeHtml(i18n.t(email.verified ? "ui.app.settings.emails_verified" : "ui.app.settings.emails_unverified"))}</span></span></div>`,
+                )
+                .join("") ?? escapeHtml(unknown);
         return `<dl class="users-details-grid">${fields.map(([key, value]) => `<div class="users-detail-field"><dt>${escapeHtml(i18n.t(key))}</dt><dd>${escapeHtml(value ?? unknown)}</dd></div>`).join("")}<div class="users-detail-field users-detail-emails"><dt>${escapeHtml(i18n.t("ui.app.settings.emails"))}</dt><dd class="users-email-list">${emails || escapeHtml(i18n.t("ui.app.settings.emails_none"))}</dd></div></dl>`;
     });
     signal.addEventListener(

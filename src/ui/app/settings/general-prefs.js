@@ -1,8 +1,5 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
-import {
-    emailRequest,
-    emailTrustedDomains,
-} from "/static/gateways/notify/email-client.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { isOffline } from "../../reuse/offline-state.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -36,9 +33,19 @@ export function initGeneralPrefs(
     { i18n, username, signal, onRender = () => {} },
 ) {
     let emails = [];
+    const emailClient = () => uiCtx.capabilities.get("notify:emailClient");
+
+    function updateEmailAvailability() {
+        const available = Boolean(emailClient());
+        const section = root
+            .querySelector("#email-list")
+            ?.closest(".components-section");
+        if (section) section.hidden = !available;
+        return available;
+    }
 
     async function loadEmails() {
-        const res = await emailRequest(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
         if (!res.ok) return;
@@ -48,7 +55,7 @@ export function initGeneralPrefs(
     }
 
     async function isDomainAllowed(address) {
-        const trustedDomains = await emailTrustedDomains();
+        const trustedDomains = await emailClient().trustedDomains();
         if (trustedDomains.length === 0) return true;
         const parts = address.split("@");
         if (parts.length !== 2) return false;
@@ -56,7 +63,7 @@ export function initGeneralPrefs(
     }
 
     async function addEmail(address) {
-        const res = await emailRequest(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
             {
                 method: "POST",
@@ -76,7 +83,7 @@ export function initGeneralPrefs(
     }
 
     async function removeEmail(address) {
-        const res = await emailRequest(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
             { method: "DELETE" },
         );
@@ -89,14 +96,14 @@ export function initGeneralPrefs(
     }
 
     async function forceRemoveUnverifiedEmail(address) {
-        await emailRequest(
+        await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
             { method: "DELETE" },
         );
     }
 
     async function resendVerification(address) {
-        const res = await emailRequest(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
             { method: "POST" },
         );
@@ -108,7 +115,7 @@ export function initGeneralPrefs(
     }
 
     async function setPrimaryEmail(address) {
-        const response = await emailRequest(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/primary`,
             { method: "PUT" },
         );
@@ -126,7 +133,7 @@ export function initGeneralPrefs(
     }
 
     async function submitVerificationCode(address, code) {
-        const res = await emailRequest(
+        const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
             {
                 method: "POST",
@@ -230,9 +237,10 @@ export function initGeneralPrefs(
                         token: watchTokenValue,
                         apiFetch,
                         onConsumed() {
-                            emailRequest(
-                                `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
-                            )
+                            emailClient()
+                                .request(
+                                    `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
+                                )
                                 .then((res) => (res.ok ? res.json() : null))
                                 .then((payload) => {
                                     const entry = (payload?.data ?? []).find(
@@ -523,12 +531,14 @@ export function initGeneralPrefs(
 
     return {
         async init() {
-            await loadEmails();
-            renderEmailList();
             bindEmailAddShortcut();
             bindEmailActions();
+            if (!updateEmailAvailability()) return;
+            await loadEmails();
+            renderEmailList();
         },
         async refresh() {
+            if (!updateEmailAvailability()) return;
             await loadEmails();
             renderEmailList();
         },

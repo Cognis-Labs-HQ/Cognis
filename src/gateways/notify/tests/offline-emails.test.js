@@ -8,6 +8,7 @@ function clientFor(fixture) {
         new URL("../ui/email-client.js", import.meta.url),
         {
             ...fixture.imports,
+            "./smtp-adapter.js": { isSmtpAdapterActive: async () => true },
             "/static/reuse/trusted-domains.js": {
                 loadTrustedDomains: async () => ["example.org"],
             },
@@ -112,4 +113,51 @@ test("email settings prepare without a visit, project queued changes and replay 
         client.emailRequest("/api/v1/notify/users/another/emails"),
         /offline_read_unavailable/,
     );
+});
+
+test("Notify's scoped administration methods own email discovery, resend and SMTP availability and stop on disposal", async (context) => {
+    const requests = [];
+    const fixture = createOfflineClientFixture(async (path, options = {}) => {
+        requests.push({ path, method: options.method ?? "GET" });
+        return Response.json({
+            data: [
+                { email: "other@example.org", primary: true, verified: false },
+            ],
+        });
+    });
+    context.after(() => fixture.controller.abort());
+    clientFor(fixture).mountProvider(fixture.ctx);
+    const client = fixture.ctx.capabilities.get("notify:emailClient");
+    assert.equal(await client.smtpAvailable(), true);
+    const emails = await client.listUserEmails({ accountId: "other" });
+    assert.equal(emails[0].email, "other@example.org");
+    assert.equal(
+        (
+            await client.resendUserEmail({
+                accountId: "other",
+                email: emails[0].email,
+            })
+        ).status,
+        200,
+    );
+    assert.deepEqual(requests, [
+        { path: "/api/v1/notify/users/other/emails", method: "GET" },
+        {
+            path: "/api/v1/notify/users/other/emails/other%40example.org/resend",
+            method: "POST",
+        },
+    ]);
+    assert.equal((await fixture.outbox.pending("notify.emails")).length, 0);
+    fixture.disconnect();
+    await assert.rejects(
+        client.resendUserEmail({ accountId: "other", email: emails[0].email }),
+        /offline_operation_unavailable/,
+    );
+    assert.equal(requests.length, 2);
+    fixture.controller.abort();
+    await assert.rejects(client.listUserEmails({ accountId: "other" }), {
+        name: "AbortError",
+    });
+    await assert.rejects(client.smtpAvailable(), { name: "AbortError" });
+    assert.equal(requests.length, 2);
 });

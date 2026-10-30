@@ -24,6 +24,13 @@ export function registerOfflineHttpClient(
 ) {
     const outbox = ctx.capabilities.get("offline:outbox");
     if (!outbox) throw new Error("offline_delivery_unavailable");
+    const assertDeliveryAccess = () => {
+        if (
+            ctx.capabilities.get("session:isOfflineValid")?.() !== true ||
+            ctx.capabilities.get("offline:accessPolicy")?.allows() !== true
+        )
+            throw new Error("offline_delivery_unavailable");
+    };
     const read = createOfflineReadCache({ signal: ctx.signal });
     const send = async (operation, signal = ctx.signal) => {
         const descriptor = describe(operation.path, operation.method);
@@ -115,6 +122,7 @@ export function registerOfflineHttpClient(
                     await project(path, payload, await pending(), ctx),
                 );
             }
+            if (isOffline()) assertDeliveryAccess();
             const id = crypto.randomUUID();
             let body = options.body == null ? null : options.body;
             if (descriptor.binary) {
@@ -142,25 +150,29 @@ export function registerOfflineHttpClient(
             } else if (typeof body === "string") body = JSON.parse(body);
             if (descriptor.create)
                 body = { ...body, operationId: body?.operationId ?? id };
+            const contentType =
+                new Headers(options.headers).get("content-type") ??
+                "application/json";
             if (!descriptor.create) {
-                const last = (await pending()).findLast(
-                    ({ payload }) =>
-                        payload.path === path && payload.method === method,
-                );
+                const last = (await pending()).at(-1);
                 if (
-                    last &&
+                    last?.payload.path === path &&
+                    last.payload.method === method &&
+                    last.payload.binary === Boolean(descriptor.binary) &&
+                    last.payload.contentType === contentType &&
                     JSON.stringify(last.payload.body) === JSON.stringify(body)
-                )
+                ) {
+                    assertAccount();
+                    assertDeliveryAccess();
                     return Response.json({ queued: true, data: null });
+                }
             }
             const operation = {
                 path,
                 method,
                 body,
                 binary: Boolean(descriptor.binary),
-                contentType:
-                    new Headers(options.headers).get("content-type") ??
-                    "application/json",
+                contentType,
                 createdAt: new Date().toISOString(),
             };
             assertAccount();

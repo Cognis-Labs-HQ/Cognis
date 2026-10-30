@@ -145,3 +145,45 @@ test("a verified session stays offline when connectivity is lost during its setu
     assert.equal((await authenticate(state)).authenticated, true);
     assert.equal((await authenticate(state)).authenticated, true);
 });
+
+test("Auth exposes offline session validity without network calls and revokes it on expiry, identity changes", async () => {
+    const state = fixture();
+    const valid = state.uiCtx.capabilities.get("session:isOfflineValid");
+    assert.equal(valid(), false);
+    await authenticate(state);
+    const calls = state.calls();
+    assert.equal(valid(), true);
+    assert.equal(state.calls(), calls);
+    state.values.set("cognis_session_expires_at", "2000-01-01T00:00:00Z");
+    assert.equal(valid(), false);
+    state.values.set(
+        "cognis_session_expires_at",
+        new Date(Date.now() + 60_000).toISOString(),
+    );
+    state.values.set("cognis_access_token", "other-session");
+    assert.equal(valid(), false);
+});
+
+test("authenticated alternate guest sessions do not fetch normal account setup or run email integrations", async () => {
+    const state = fixture();
+    state.values.set("cognis_account", "share:resource:guest");
+    state.uiCtx.extendFlow(
+        "authenticate-session",
+        "apply-alternate-auth",
+        { id: "guest:fixture" },
+        () => ({
+            authenticated: true,
+            isGuestSession: true,
+            accountId: "share:resource:guest",
+            role: "user",
+        }),
+    );
+    const session = await authenticate(state);
+    assert.equal(session.authenticated, true);
+    assert.equal(session.isGuestSession, true);
+    assert.equal(state.calls(), 0);
+    assert.equal(
+        state.uiCtx.capabilities.get("session:isOfflineValid")(),
+        false,
+    );
+});

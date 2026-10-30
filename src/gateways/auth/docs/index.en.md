@@ -149,3 +149,7 @@ Existing local accounts continue to work when legacy SSO records are present. St
 ## Login and queued delivery
 
 Successful password and TFA login use the existing SPA navigation capability to replace the login page with Dashboard. Login therefore keeps the verified tab and buffered work alive without invoking the browser’s page-close warning. Loading remains visible until navigation finishes; optional timezone synchronization runs afterward and rejects account switches. The warning still protects actual buffered changes when closing or reloading an authenticated tab.
+
+## Session and Component Boundaries
+
+Auth publishes `session:isOfflineValid` as the synchronous, network-free authority for verified offline access. It checks completed setup, the current account/token and session expiry. Queue owners consume this contract rather than interpreting auth storage. Account setup skips alternate guest sessions; server setup-status uses Share’s classification capability before requesting TFA or email integrations. Normal local and SSO accounts retain required setup enforcement.

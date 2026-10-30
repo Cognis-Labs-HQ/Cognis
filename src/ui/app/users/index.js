@@ -1,7 +1,6 @@
 import { ensurePageStylesheet } from "../../reuse/page-styles.js";
 import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
 import { createUserDetailsReader } from "./details.js";
-import { loadUserEmails as fetchUserEmails } from "/static/gateways/notify/email-client.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -12,7 +11,6 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { loadLoginMethods } from "/static/gateways/auth/login-client.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
-import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     ACCESS_ROLES,
@@ -265,7 +263,7 @@ async function promptStorageQuotas(username) {
 async function refreshData() {
     const [loadedUsers, isSmtpActive, loginMethods] = await Promise.all([
         loadUsers(),
-        isSmtpAdapterActive(apiFetch),
+        uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ?? false,
         loadLoginMethods(),
     ]);
     const providerNames = new Map(
@@ -374,9 +372,12 @@ async function runUserMenuAction(action, username) {
 
     if (action === "resend") {
         if (!smtpAdapterActive) return;
-        const emails = await fetchUserEmails(username);
+        const emails =
+            (await uiCtx.capabilities
+                .get("notify:emailClient")
+                ?.listUserEmails({ accountId: username })) ?? [];
         const unverifiedEmail =
-            emails.find((e) => e.isPrimary && !e.verified) ??
+            emails.find((e) => e.primary && !e.verified) ??
             emails.find((e) => !e.verified);
         if (!unverifiedEmail) {
             showToast(i18n.t("ui.app.users.no_unverified_email"), {
@@ -384,10 +385,12 @@ async function runUserMenuAction(action, username) {
             });
             return;
         }
-        const res = await apiFetch(
-            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
-            { method: "POST" },
-        );
+        const res = await uiCtx.capabilities
+            .get("notify:emailClient")
+            .resendUserEmail({
+                accountId: username,
+                email: unverifiedEmail.email,
+            });
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.verification_resent")
@@ -560,7 +563,9 @@ function bindUsersInteractions() {
             if (!username || !(btn instanceof HTMLButtonElement)) return;
             const user = users.find((entry) => entry.username === username);
             const emails = smtpAdapterActive
-                ? await fetchUserEmails(username)
+                ? ((await uiCtx.capabilities
+                      .get("notify:emailClient")
+                      ?.listUserEmails({ accountId: username })) ?? [])
                 : [];
             const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [

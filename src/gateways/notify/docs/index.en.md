@@ -87,3 +87,7 @@ Offline Mode and Broadcast now use one sticky stack at the very top of the docum
 ## Offline Personal Settings
 
 Verified sign-in prepares the account’s email list and trusted-domain policy without opening Settings. Email additions, removals and primary-address changes are projected locally and queued through `notify:emailClient` and the protected `notify.emails` outbox owner. Server validation remains authoritative. Email verification, resend and account lifecycle actions require connectivity; no codes, watch tokens or passwords enter the queue. Queued additions remain unverified until online verification. Successful delivery refreshes the email snapshot; optional refresh failure cannot turn a persisted write into a failed action. These bounded private snapshots remain tab/session-scoped.
+
+## Session and Component Boundaries
+
+The lifecycle-scoped `notify:emailClient` capability provides own-account requests and trusted domains, administrator `listUserEmails`, online-only `resendUserEmail`, and `smtpAvailable`. Each action runs through registered stages and stops when its provider is disposed. Core Settings, Users and Administration resolve these methods through ctx; they do not import Notify UI implementations. Missing Notify hides email management while leaving unrelated account controls usable.

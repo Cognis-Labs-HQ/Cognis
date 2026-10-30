@@ -67,3 +67,7 @@ Offline-Modus und Broadcast verwenden einen gemeinsamen fixierten Stapel ganz ob
 ## Persönliche Offline-Optionen
 
 Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdiger Domains ohne Besuch der Einstellungen vor. Hinzufügen, Entfernen und Auswahl der primären Adresse werden lokal dargestellt und über `notify:emailClient` sowie den geschützten Warteschlangeneigentümer `notify.emails` gespeichert. Die Serverprüfung bleibt maßgeblich. E-Mail-Verifizierung, erneutes Senden und Kontolöschung oder -deaktivierung benötigen eine Verbindung; Codes, Beobachtungstoken und Passwörter gelangen nicht in die Warteschlange. Neue Adressen bleiben bis zur Online-Verifizierung unbestätigt. Erfolgreiche Zustellung aktualisiert den E-Mail-Schnappschuss; optionale Aktualisierungsfehler machen gespeicherte Änderungen nicht nachträglich zu Fehlern. Die begrenzten privaten Schnappschüsse sind an Tab und Sitzung gebunden.
+
+## Sitzungs- und Modulgrenzen
+
+Die lebenszyklusgebundene Fähigkeit `notify:emailClient` bietet Anfragen für das eigene Konto und vertrauenswürdige Domänen sowie administrative E-Mail-Abfragen mit `listUserEmails`, erneuten Versand nur bei Verbindung mit `resendUserEmail` und `smtpAvailable`. Jede Aktion durchläuft registrierte Stufen und endet bei Entsorgung des Providers. Einstellungen, Benutzerverwaltung und Administration lösen diese Methoden über ctx auf, ohne Notify-UI-Implementierungen zu importieren. Fehlt Notify, wird die E-Mail-Verwaltung ausgeblendet; unabhängige Kontosteuerungen bleiben nutzbar.

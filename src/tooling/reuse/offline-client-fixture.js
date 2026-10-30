@@ -12,6 +12,8 @@ export function createOfflineClientFixture(send, { window } = {}) {
     const values = new Map();
     const capabilities = new Map([
         ["ui:scopedActions", registerScopedUiActions],
+        ["session:isOfflineValid", () => true],
+        ["offline:accessPolicy", { allows: () => true }],
     ]);
     const controller = new AbortController();
     const state = {

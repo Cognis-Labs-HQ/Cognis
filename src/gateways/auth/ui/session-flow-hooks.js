@@ -62,6 +62,21 @@ function isGuestSession() {
 }
 
 uiCtx.capabilities.contribute("session:isGuest", isGuestSession);
+function isOfflineSessionValid() {
+    const expiry = localStorage.getItem("cognis_session_expires_at");
+    return Boolean(
+        !isGuestSession() &&
+        verifiedOfflineSession?.ready === true &&
+        verifiedOfflineSession.setupKnown === true &&
+        verifiedOfflineSession.token ===
+            localStorage.getItem("cognis_access_token") &&
+        verifiedOfflineSession.account ===
+            localStorage.getItem("cognis_account") &&
+        (!expiry || Date.parse(expiry) > Date.now()),
+    );
+}
+
+uiCtx.capabilities.contribute("session:isOfflineValid", isOfflineSessionValid);
 uiCtx.capabilities.contribute(
     "session:isAuthenticated",
     () =>
@@ -158,11 +173,7 @@ uiCtx.extendFlow(
             return { valid: false, reason: "session_expired" };
         }
         const offlineSession = () => {
-            const expiry = localStorage.getItem("cognis_session_expires_at");
-            return verifiedOfflineSession?.ready === true &&
-                verifiedOfflineSession?.token === token &&
-                verifiedOfflineSession?.account === account &&
-                (!expiry || Date.parse(expiry) > Date.now())
+            return isOfflineSessionValid()
                 ? verifiedOfflineSession.result
                 : { valid: false, reason: null };
         };
@@ -233,6 +244,8 @@ uiCtx.extendFlow(
             stageCtx.stageResults,
             "apply-alternate-auth",
         );
+        if (alternateResult?.isGuestSession === true)
+            return { requiresSetup: false, redirectTo: null };
         if (!tokenResult?.valid && !alternateResult?.authenticated) {
             return { requiresSetup: false, redirectTo: null };
         }
