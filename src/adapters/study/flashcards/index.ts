@@ -94,6 +94,11 @@ export async function bootstrapStudyAdapter(
         "flashcards",
         `${ctx.adapterRoot}/ui`,
     );
+    ctx.registerCapabilityProvider({
+        scriptUrl: "/static/adapters/study/flashcards/decks-client.js",
+        providesCapabilities: ["study:decks:offlineRead"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     ctx.registerSpaRoute?.({
         id: "adapter.study.flashcards",
         pattern: "^/study(?:/flashcards|/[^/]+/flashcards(?:/[^/]+)?)$",
@@ -106,6 +111,7 @@ export async function bootstrapStudyAdapter(
             "/static/adapters/study/flashcards/flashcards.css",
         ],
         requiredCapabilities: [
+            "study:decks:offlineRead",
             "study:subPages",
             "study:library:client",
             "study:library:presentation",

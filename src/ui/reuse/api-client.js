@@ -1,3 +1,4 @@
+import { isOffline, offlineEnabled, setOffline } from "./offline-state.js";
 /**
  * Authenticated fetch wrapper. Reads the Bearer token from localStorage
  * and attaches it as an Authorization header on every request.
@@ -64,6 +65,7 @@ function getConnectionRecoveryState() {
             didShowToast: false,
             lastSignalAt: 0,
             pollTimer: null,
+            pollDelayMs: CONNECTION_RECOVERY_POLL_INTERVAL_MS,
         });
     }
     return connectionRecoveryStates.get(origin);
@@ -89,6 +91,7 @@ function showConnectionRestoredToast() {
 }
 
 async function checkConnectionRecovery(state) {
+    if (isOffline()) return;
     try {
         const response = await fetch("/api/v1/system/healthcheck", {
             cache: "no-store",
@@ -98,21 +101,32 @@ async function checkConnectionRecovery(state) {
             return;
         }
     } catch {}
+    state.pollDelayMs = Math.min(15 * 60_000, state.pollDelayMs * 2);
     scheduleConnectionRecoveryCheck(state);
 }
 
 function scheduleConnectionRecoveryCheck(state) {
-    if (!state.didShowToast || state.pollTimer !== null) return;
+    if (isOffline() || !state.didShowToast || state.pollTimer !== null) return;
     state.pollTimer = setTimeout(() => {
         state.pollTimer = null;
         void checkConnectionRecovery(state);
-    }, CONNECTION_RECOVERY_POLL_INTERVAL_MS);
+    }, state.pollDelayMs);
 }
 
-async function confirmConnectionFailure() {
+let connectionConfirmation;
+function confirmConnectionFailure() {
+    if (connectionConfirmation) return connectionConfirmation;
+    connectionConfirmation = probeConnectionFailure().finally(() => {
+        connectionConfirmation = null;
+    });
+    return connectionConfirmation;
+}
+
+async function probeConnectionFailure() {
     try {
         const response = await fetch("/api/v1/system/healthcheck", {
             cache: "no-store",
+            signal: globalThis.AbortSignal?.timeout?.(4000),
         });
         return isRetryableServerStatusCode(response.status);
     } catch {
@@ -121,7 +135,17 @@ async function confirmConnectionFailure() {
 }
 
 async function signalConnectionFailure(error) {
-    if (!(await confirmConnectionFailure())) return;
+    if (typeof window === "undefined") return;
+    if (!isOffline() && !(await confirmConnectionFailure())) return;
+    markConnectionRecoveryFailure(error);
+    if (offlineEnabled()) {
+        setOffline(true);
+        console.info("[offline] connection lost", {
+            component: "ui",
+            operation: "enterOffline",
+        });
+        return;
+    }
     const state = getConnectionRecoveryState();
     showConnectionRecoveryToast(state);
     markConnectionRecoveryFailure(error);
@@ -179,6 +203,20 @@ function isMarkedConnectionRecoveryFailure(value) {
 }
 
 export function shouldSuppressConnectionRecoveryPopup(error) {
+    if (
+        isOffline() &&
+        (["offline_operation_unavailable", "offline_read_unavailable"].includes(
+            error?.message,
+        ) ||
+            (error?.name === "TypeError" &&
+                /fetch|network|import|module/i.test(error?.message ?? "")) ||
+            isMarkedConnectionRecoveryFailure(error) ||
+            isRetryableServerStatusCode(error?.status) ||
+            isRetryableServerStatusCode(
+                parseRetryableStatusCodeFromMessage(error?.message),
+            ))
+    )
+        return true;
     if (!isRecentConnectionRecoverySignal()) return false;
     if (isMarkedConnectionRecoveryFailure(error)) return true;
     if (isRetryableServerStatusCode(error?.status)) return true;
@@ -209,6 +247,11 @@ export async function apiFetch(path, options = {}) {
               timeoutSignal,
           ]) ?? requestOptions.signal)
         : timeoutSignal;
+    if (isOffline() && requestTargetsApi(path)) {
+        throw markConnectionRecoveryFailure(
+            new Error("offline_operation_unavailable"),
+        );
+    }
     try {
         const response = await fetch(path, {
             ...requestOptions,
@@ -228,8 +271,8 @@ export async function apiFetch(path, options = {}) {
             );
         }
         if (
-            token &&
             !suppressConnectionRecoveryToast &&
+            (offlineEnabled() || token) &&
             requestTargetsApi(path) &&
             RETRYABLE_SERVER_STATUS_CODES.has(response.status)
         ) {
@@ -238,12 +281,13 @@ export async function apiFetch(path, options = {}) {
         return response;
     } catch (error) {
         if (
-            token &&
             !suppressConnectionRecoveryToast &&
+            (offlineEnabled() || token) &&
             requestTargetsApi(path) &&
             error?.name !== "AbortError"
         ) {
-            await signalConnectionFailure(error);
+            if (!requestOptions.signal?.aborted)
+                await signalConnectionFailure(error);
         }
         throw error;
     }

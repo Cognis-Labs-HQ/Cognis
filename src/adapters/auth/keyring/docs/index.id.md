@@ -52,9 +52,9 @@ const password = await keyring.resolve("meeting:123:password", {
 
 Saat masuk, adapter hanya mencoba mendekripsi brankas yang ada dengan kata sandi akun. Percobaan yang gagal membiarkan brankas terkunci, tidak membuka dialog buka kunci, dan tidak menghambat navigasi ke dasbor. Dialog buka kunci kontekstual baru diminta saat komponen menyelesaikan konten yang didukung keyring.
 
-## Pemulihan buka kunci sesi peramban
+## Privasi akun dan isolasi keyring
 
-Setelah berhasil dibuka, adapter menyimpan kunci Web Crypto yang tidak dapat diekstrak di penyimpanan kunci sesi IndexedDB dan hanya menulis penanda nonrahasia ke `sessionStorage`. Batas penguncian terbatas mencatat satu tenggat absolut saat keyring dibuka; pembacaan, penulisan, pemuatan ulang halaman, dan mulai ulang server tidak memperpanjang atau memperpendeknya. “Saat Keluar” tidak menyimpan tenggat dan mempertahankan keyring terbuka sampai sesi terautentikasi berakhir secara eksplisit. Penguncian eksplisit, keluar, ketidakcocokan instans akun, dan tenggat yang berlalu membatalkan pemulihan. Komponen tetap meminta akses melalui lingkup keyring beratribusi yang mencoba pemulihan lebih dahulu dan hanya membuka dialog kontekstual saat diperlukan.
+Status terbuka bertahan saat halaman dimuat ulang dalam tab dan sesi terautentikasi yang sama. Kata sandi tetap mengenkripsi brankas; kata sandi maupun kunci dekripsi dalam teks biasa tidak disimpan. Penyimpanan sesi hanya memuat data buka kunci terenkripsi AES-GCM, dibungkus dengan kunci HKDF dari rahasia sesi aktif dan diikat pada origin, akun, instans akun server, serta identitas sesi. Server harus memverifikasi ikatan itu sebelum pemulihan. Batas waktu penguncian diautentikasi dan tetap absolut saat muat ulang. Kunci eksplisit, logout, perubahan akun/instans/sesi, dan kedaluwarsa membatalkan pemulihan. Menutup tab atau memulai sesi baru memerlukan buka kunci lagi. Cache IndexedDB lama yang menyimpan kunci tanpa enkripsi tetap dinonaktifkan.
 
 ## Akses yang dibatalkan dan pemulihan manual
 

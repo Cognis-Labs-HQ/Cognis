@@ -500,3 +500,17 @@ test("host UI capability providers satisfy module routes and supply their script
         ["/static/reuse/feedback-capabilities.js"],
     );
 });
+
+test("production route descriptors resolve script and stylesheet URLs inside arrays", () => {
+    const registry = new UIRegistry(
+        new URL("./fixtures/asset-manifest.json", import.meta.url).pathname,
+    );
+    const descriptor = registry.resolveDescriptor({
+        capabilityScripts: ["/static/adapters/example/sample/ui/provider.js"],
+        stylesheets: ["/static/adapters/example/sample/ui/styles.css"],
+    });
+    assert.deepEqual(descriptor.capabilityScripts, [
+        "/assets/provider-ABC123.js",
+    ]);
+    assert.deepEqual(descriptor.stylesheets, ["/assets/styles-ABC123.css"]);
+});

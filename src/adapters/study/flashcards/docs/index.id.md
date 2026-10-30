@@ -73,3 +73,19 @@ Mode membaca memakai normalisasi isi jawaban yang sama untuk pemilihan pengecoh,
 Menu samping dek bergulir sendiri dalam tinggi halaman yang terlihat. Daftar dek panjang tidak memperpanjang halaman atau mendorong latihan ke bawah layar.
 
 Membuka dek lain langsung menampilkan kontennya; kembali dari Explore mempertahankan posisi latihan tersimpan.
+
+## Halaman Study luring kosong
+
+Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverifikasi dengan persetujuan wajib meskipun snapshot konten privat belum ada. Metadata bahasa atau preferensi yang hilang menghasilkan navigasi kosong. Explore memasang tampilan kosong normal dan menampilkan “Tidak ada konten luring tersimpan yang tersedia” alih-alih kesalahan rute atau toast kesalahan. Flashcards juga mempertahankan halaman kosong jika data dek atau sumber tampilan wajib belum tersedia. Pemberitahuan terikat halaman saat ini dan tidak diduplikasi. Kekurangan cache tidak menyembunyikan penolakan akses atau persetujuan. Library dan Flashcards menyiapkan terjemahan publik serta templat ringan saat daring; data privat tetap berada dalam cache tab yang dibatasi.
+
+## Hasil Antrean Tersimpan
+
+Ulasan kartu dalam antrean mempertahankan hasil berhasil meskipun pencatatan aktivitas opsional gagal. Pencatatan tidak menghambat bukti ulasan. Batas akun, persetujuan, dan antrean yang sudah ada tetap berlaku.
+
+## Ruang Kerja Luring
+
+Flashcards menyiapkan setiap dek yang terlihat dalam bahasa belajar atau mengajar yang diikuti, menggunakan dua worker tanpa batas 80 dek. Cache khusus dibatasi 64 MB dan 10.001 pembacaan agar galeri dan koleksi dek biasa dapat disimpan bersama; koleksi lebih besar tetap tunduk pada batas tersebut. Bahasa yang tidak diikuti dikecualikan. Katalog skema bersama disiapkan meskipun belum mengikuti bahasa, dan koleksi Library opsional yang tidak tersedia tidak menghalangi latihan dek yang telah disiapkan.
+
+## Latihan Study Luring
+
+Persiapan bahasa yang diikuti menyimpan katalog skema bersama selain katalog tiap bahasa. Menggambar dan Flashcards dapat memakai pembacaan skema biasa tanpa kunjungan halaman daring sebelumnya. Flashcards menyiapkan terjemahan Share dan Study serta templat galeri, lalu membaca koleksi bahasa terpilih dengan permintaan berskema yang sama seperti persiapan keikutsertaan. Dek yang disiapkan dapat membuka galeri dan latihan luring. Audio, pengambilan kamus, pengeditan konten, serta pemeriksaan akses dan persetujuan tetap mengikuti pembatasan yang ada.

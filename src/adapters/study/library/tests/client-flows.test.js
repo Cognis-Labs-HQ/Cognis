@@ -1,3 +1,9 @@
+import { captureAccountGuard } from "../../../../ui/reuse/offline-identity.js";
+import { bindOfflineSnapshotRefresh } from "../../../../ui/reuse/offline-snapshot.js";
+import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
+import * as offlineDelivery from "../../../../ui/reuse/offline-delivery.js";
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
+import * as offlineReadCache from "../../../../ui/reuse/offline-read-cache.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -5,17 +11,58 @@ import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { mountProvider as mountScopedActions } from "../../../../ui/reuse/scoped-actions.js";
 import { createProviderLifecycle } from "../../../../ui/reuse/provider-lifecycle.js";
 
-async function session(testContext, request) {
+async function session(testContext, request, dependencies = {}) {
+    const offlineContent = loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/offline-content.js",
+            import.meta.url,
+        ),
+        {
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/popup.js": {
+                openPopup: () => assert.fail("no popup without a page"),
+            },
+            "/static/reuse/escape-html.js": { escapeHtml: String },
+        },
+        { structuredClone, console },
+    );
+    const snapshots = loadTestModule(
+        new URL(
+            "../../../../gateways/study/ui/reuse/library-offline-snapshot.js",
+            import.meta.url,
+        ),
+        {
+            "/static/reuse/offline-snapshot.js": { bindOfflineSnapshotRefresh },
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/offline-identity.js": {
+                captureAccountGuard,
+            },
+            "../navigation-client.js": {
+                fetchStudyPreferences: async () => ({ learningLanguages: [] }),
+            },
+        },
+    );
     const client = loadTestModule(
         new URL(
             "../../../../gateways/study/ui/library-client.js",
             import.meta.url,
         ),
         {
+            "./offline-content.js": offlineContent,
+            "./reuse/library-offline-snapshot.js": snapshots,
+            "/static/reuse/offline-state.js":
+                dependencies.offlineState ?? offlineState,
+            "/static/reuse/offline-read-cache.js":
+                dependencies.offlineReadCache ?? offlineReadCache,
             "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/offline-delivery.js":
+                dependencies.offlineDelivery ?? offlineDelivery,
             "/static/reuse/api-client.js": { apiFetch: request },
         },
-        { AbortSignal, URL, Blob, URLSearchParams },
+        { AbortSignal, URL, Blob, URLSearchParams, crypto },
     );
     const scoped = { scriptUrl: "/scoped.js" };
     const provider = { scriptUrl: "/library.js" };
@@ -23,6 +70,7 @@ async function session(testContext, request) {
         new URL("../ui/provider.js", import.meta.url),
         {
             "/static/gateways/study/library-client.js": client,
+            "/static/reuse/i18n.js": { createI18n: async () => ({}) },
             "./app/presentation.js": {
                 headingCompositionReferences: (detail) => detail.composition,
             },
@@ -33,7 +81,20 @@ async function session(testContext, request) {
         importProvider: async (url) =>
             url === scoped.scriptUrl
                 ? { mountProvider: mountScopedActions }
-                : { mountProvider: owner.mountProvider },
+                : {
+                      mountProvider: (ctx) =>
+                          owner.mountProvider({
+                              ...ctx,
+                              capabilities: {
+                                  ...ctx.capabilities,
+                                  get: (id) =>
+                                      id === "offline:outbox" &&
+                                      dependencies.outbox
+                                          ? dependencies.outbox
+                                          : ctx.capabilities.get(id),
+                              },
+                          }),
+                  },
     });
     await providers.reconcile([scoped, provider]);
     testContext.after(() => providers.reconcile([]));
@@ -303,4 +364,96 @@ test("extensions and callers can cancel Library work through their own signals",
         { name: "AbortError" },
     );
     assert.equal(requests, 1);
+});
+
+test("registered Library flows restore opted-in character data and stop media, dictionary and writes offline", async (testContext) => {
+    let disconnected = false;
+    let requests = 0;
+    const state = {
+        isOffline: () => disconnected,
+        offlineEnabled: () => true,
+        offlineCacheGeneration: () => 0,
+    };
+    const cache = loadTestModule(
+        new URL("../../../../ui/reuse/offline-read-cache.js", import.meta.url),
+        {
+            "./offline-state.js": state,
+            "./offline-policy.js": { offlinePolicy: { allows: () => true } },
+        },
+        { console },
+    );
+    const schema = {
+        id: "writing",
+        metadata: { offline: { cache: "lightweight" } },
+    };
+    const entries = [
+        {
+            id: "character",
+            schemaId: "writing",
+            label: "a",
+            fields: { stroke_pattern: { strokes: [] } },
+        },
+    ];
+    const { client } = await session(
+        testContext,
+        async (path) => {
+            requests++;
+            return {
+                ok: true,
+                json: async () => ({
+                    data: path.includes("schemas") ? [schema] : entries,
+                }),
+            };
+        },
+        { offlineState: state, offlineReadCache: cache },
+    );
+    await client.fetchLibrarySchemas();
+    await client.fetchLibraryEntries({ scope: "global", schemaId: "writing" });
+    const count = requests;
+    disconnected = true;
+    const restored = await client.fetchLibraryEntries({
+        scope: "global",
+        schemaId: "writing",
+    });
+    assert.equal(restored[0].id, "character");
+    assert.equal(
+        (await client.fetchSearchableDictionaryProviders("en")).length,
+        0,
+    );
+    for (const action of [
+        () => client.fetchLibraryAudioUrl("character", "audio"),
+        () => client.searchLibraryDictionary({ query: "word" }),
+        () => client.createLibraryEntry({ scope: "personal" }, {}),
+    ])
+        await assert.rejects(action(), /offline_operation_unavailable/);
+    assert.equal(requests, count);
+});
+
+test("viewed-card updates queue through their registered flow and deliver on reconnect", async (testContext) => {
+    const requests = [];
+    const fixture = createOfflineClientFixture(async (path, options) => {
+        requests.push({ path, body: JSON.parse(options.body) });
+        return { ok: true };
+    });
+    const { client } = await session(
+        testContext,
+        fixture.imports["/static/reuse/api-client.js"].apiFetch,
+        {
+            outbox: fixture.outbox,
+            offlineState: fixture.imports["/static/reuse/offline-state.js"],
+            offlineReadCache:
+                fixture.imports["/static/reuse/offline-read-cache.js"],
+            offlineDelivery:
+                fixture.imports["/static/reuse/offline-delivery.js"],
+        },
+    );
+    fixture.disconnect();
+    assert.equal(
+        (await client.markLibraryEntriesViewed(["character"])).queued,
+        true,
+    );
+    assert.equal(requests.length, 0);
+    fixture.reconnect();
+    assert.equal((await fixture.outbox.flush()).sent, 1);
+    assert.deepEqual(requests[0].body, { entryIds: ["character"] });
 });

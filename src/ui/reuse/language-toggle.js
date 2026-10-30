@@ -4,7 +4,6 @@
  * - bindLanguageToggle(options) — shows and binds the switcher when enabled and
  *   at least two preferred languages are available.
  * - shouldShowLanguageToggle(preferences, languages) — evaluates visibility.
- * - promoteLanguage(languages, selectedCode) — moves a language to first place.
  *
  * Usage:
  *   bindLanguageToggle({ i18n, navigateTo, showToast });
@@ -12,13 +11,17 @@
  * @param {{ i18n: { t: (key: string) => string }, navigateTo: (url: string) => void, showToast: Function }} options
  * @returns {Promise<void>}
  */
-import { apiFetch } from "./api-client.js";
-import { readPreferredLanguages, setPreferredLanguages } from "./i18n.js";
-import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
+import {
+    loadUiLanguageCatalog,
+    changeUiLanguage,
+} from "./ui-language-catalog.js";
+import { activeUiLanguage } from "./ui-language-state.js";
+import { readPreferredLanguages } from "./i18n.js";
+import { loadUiPreferences } from "./ui-preferences.js";
 
-const COMMIT_DELAY_MS = 5000;
-const HANDLERS_BOUND_KEY = "__cognisLanguageToggleBound";
-const VISIBILITY_HANDLER_KEY = "__cognisLanguageToggleVisibilityHandler";
+const COMMIT_DELAY_MS = 2000;
+const bindings = (globalThis[Symbol.for("cognis.languageToggleBindings")] ??=
+    new WeakMap());
 
 export function shouldShowLanguageToggle(preferences, languages) {
     return (
@@ -27,22 +30,24 @@ export function shouldShowLanguageToggle(preferences, languages) {
     );
 }
 
-export function promoteLanguage(languages, selectedCode) {
-    return [
-        selectedCode,
-        ...languages.filter((isoCode) => isoCode !== selectedCode),
-    ];
-}
-
 export async function bindLanguageToggle({
     i18n,
     navigateTo,
     showToast,
     preferences: suppliedPreferences,
+    signal,
 }) {
     const toggle = document.querySelector("#language-toggle");
     if (!toggle) return;
 
+    bindings.get(toggle)?.abort();
+    const scope = new AbortController();
+    bindings.set(toggle, scope);
+    if (signal?.aborted) {
+        scope.abort();
+        return;
+    }
+    signal?.addEventListener("abort", () => scope.abort(), { once: true });
     const preferences = await (suppliedPreferences ?? loadUiPreferences());
     const preferredLanguages = Array.isArray(preferences?.languagePriority)
         ? preferences.languagePriority
@@ -57,11 +62,7 @@ export async function bindLanguageToggle({
     );
 
     try {
-        const response = await apiFetch("/api/v1/system/languages");
-        if (!response.ok)
-            throw new Error(`language_catalog_${response.status}`);
-        const payload = await response.json();
-        const catalog = payload.data ?? [];
+        const catalog = await loadUiLanguageCatalog();
         const availableLanguages = preferredLanguages
             .map((isoCode) =>
                 catalog.find((language) => language.iso_code === isoCode),
@@ -69,7 +70,17 @@ export async function bindLanguageToggle({
             .filter(Boolean);
         if (availableLanguages.length < 2) return;
 
-        let selectedIndex = 0;
+        scope.signal.throwIfAborted();
+        const currentIndex = () =>
+            Math.max(
+                0,
+                availableLanguages.findIndex(
+                    (language) =>
+                        language.iso_code ===
+                        (activeUiLanguage() ?? i18n.locale),
+                ),
+            );
+        let selectedIndex = currentIndex();
         let commitTimer;
         const render = () => {
             const language = availableLanguages[selectedIndex];
@@ -89,51 +100,61 @@ export async function bindLanguageToggle({
 
         render();
         toggle.hidden = !shouldShow;
-        if (!toggle[VISIBILITY_HANDLER_KEY]) {
-            const visibilityHandler = (event) => {
+        window.addEventListener(
+            "cognis:language-switcher-visibility",
+            (event) => {
                 toggle.hidden = event.detail?.visible !== true;
-            };
-            toggle[VISIBILITY_HANDLER_KEY] = visibilityHandler;
-            window.addEventListener(
-                "cognis:language-switcher-visibility",
-                visibilityHandler,
-            );
-        }
-        if (toggle[HANDLERS_BOUND_KEY]) return;
-        toggle[HANDLERS_BOUND_KEY] = true;
-        toggle.addEventListener("click", () => {
-            selectedIndex = (selectedIndex + 1) % availableLanguages.length;
-            render();
-            clearTimeout(commitTimer);
-            commitTimer = setTimeout(async () => {
-                const selectedCode = availableLanguages[selectedIndex].iso_code;
-                const nextPriority = promoteLanguage(
-                    preferredLanguages,
-                    selectedCode,
-                );
-                try {
-                    setPreferredLanguages(nextPriority, { mode: "manual" });
-                    await saveUiPreferences({
-                        languagePriority: nextPriority,
-                        languagePriorityMode: "manual",
-                    });
-                    console.info("[language-toggle]:language-selected", {
-                        selectedCode,
-                    });
-                    window.location.reload();
-                } catch (error) {
-                    console.error("[language-toggle]:language-save-failed", {
-                        error,
-                    });
-                    showToast(i18n.t("ui.reuse.error"), { variant: "error" });
-                }
-            }, COMMIT_DELAY_MS);
-        });
-        toggle.addEventListener("contextmenu", (event) => {
-            event.preventDefault();
-            navigateTo("/settings#language");
-        });
+            },
+            { signal: scope.signal },
+        );
+        scope.signal.addEventListener(
+            "abort",
+            () => clearTimeout(commitTimer),
+            { once: true },
+        );
+        toggle.addEventListener(
+            "click",
+            () => {
+                selectedIndex = (selectedIndex + 1) % availableLanguages.length;
+                render();
+                clearTimeout(commitTimer);
+                commitTimer = setTimeout(async () => {
+                    const selectedCode =
+                        availableLanguages[selectedIndex].iso_code;
+                    try {
+                        const applied = await changeUiLanguage(selectedCode);
+                        if (!applied && !scope.signal.aborted) {
+                            selectedIndex = currentIndex();
+                            render();
+                        }
+                    } catch (error) {
+                        if (scope.signal.aborted) return;
+                        selectedIndex = currentIndex();
+                        render();
+                        console.error(
+                            "[language-toggle]:language-save-failed",
+                            {
+                                error,
+                            },
+                        );
+                        showToast(i18n.t("ui.reuse.error"), {
+                            variant: "error",
+                        });
+                    }
+                }, COMMIT_DELAY_MS);
+            },
+            { signal: scope.signal },
+        );
+        toggle.addEventListener(
+            "contextmenu",
+            (event) => {
+                event.preventDefault();
+                navigateTo("/settings#language");
+            },
+            { signal: scope.signal },
+        );
     } catch (error) {
+        if (scope.signal.aborted) return;
         toggle.hidden = true;
         console.error("[language-toggle]:catalog-load-failed", { error });
         showToast(i18n.t("ui.reuse.error"), { variant: "error" });

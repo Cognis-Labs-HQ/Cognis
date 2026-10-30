@@ -310,6 +310,7 @@ export function createProfileRoutes(
                 }
                 updates.visibility = visibility as AccountVisibility;
             }
+            const previous = await profileStore.getProfile(claims!.sub);
             const updated = await profileStore.updateProfile(
                 claims!.sub,
                 updates,
@@ -319,10 +320,11 @@ export function createProfileRoutes(
                     accountId: updated.accountId,
                     handle: updated.handle,
                     displayName: updated.displayName,
-                    displayNameChanged: Object.prototype.hasOwnProperty.call(
-                        updates,
-                        "displayName",
-                    ),
+                    displayNameChanged:
+                        Object.prototype.hasOwnProperty.call(
+                            updates,
+                            "displayName",
+                        ) && previous?.displayName !== updated.displayName,
                 });
             }
             log?.("info", "Updated profile.", {

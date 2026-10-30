@@ -1,3 +1,4 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
     loadTestModule,
     importTestModule,
@@ -158,11 +159,16 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             import.meta.url,
         ),
         {
+            "/static/reuse/offline-state.js": offlineState,
+            "./navigation-client.js": {
+                fetchStudyPreferences: () => {
+                    throw new Error("unexpected_study_preferences_read");
+                },
+            },
             "./reuse/explore.js": environment,
             "/static/reuse/mount-scope.js": environment,
             "/static/reuse/toast.js": environment,
             "/static/reuse/form-builder.js": environment,
-            "/static/reuse/api-client.js": environment,
             "/static/reuse/escape-html.js": environment,
             "/static/reuse/ui-ctx.js": environment,
             "/static/reuse/spa-route-registry.js": environment,
@@ -178,7 +184,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                 "../../../../gateways/study/ui/reuse/action-flows.js",
                 import.meta.url,
             ),
-            { "/static/reuse/ui-ctx.js": environment },
+            {
+                "/static/reuse/ui-ctx.js": environment,
+            },
             environment,
         ),
     );
@@ -186,7 +194,9 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         environment,
         loadTestModule(
             new URL("../ui/app/actions.js", import.meta.url),
-            { "/static/gateways/study/reuse/action-flows.js": environment },
+            {
+                "/static/gateways/study/reuse/action-flows.js": environment,
+            },
             environment,
         ),
     );
@@ -204,6 +214,17 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         await importTestModule(
             new URL("../ui/app/index.js", import.meta.url),
             {
+                "/static/reuse/offline-state.js": offlineState,
+                "/static/gateways/study/offline-page.js": {
+                    mountOfflineStudyPage: () =>
+                        assert.fail("cached content must mount normally"),
+                },
+                "/static/gateways/study/offline-content.js": {
+                    readStudySnapshot: (load) => load(),
+                    showOfflineContentNotice: () =>
+                        assert.fail("unexpected cache miss"),
+                    isOfflineContentMiss: () => false,
+                },
                 "./deck-editor.js": { editDeck: environment.editDeck },
                 "/static/reuse/collection-view.js": {
                     sortItems: environment.sortItems,

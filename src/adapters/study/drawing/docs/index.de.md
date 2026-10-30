@@ -19,3 +19,7 @@ Das gemeinsame Schreibfeld lädt seine eigene HTML-Vorlage einmal je Browsermodu
 ## Schreibantworten verbergen
 
 Die Überschrift des Zeichenfelds verbirgt zunächst das Zeichen hinter einer normalen Schaltfläche zum Aufdecken. Ein anderes Zeichen wird erneut verborgen. Schwebende Sitzungen melden ihre aktuelle Karte über die entfernbare Fähigkeit `study:drawing:observe`. Die passende Bibliotheksvorschau bleibt geöffnet, unscharf und nicht bedienbar, bis das Feld ein anderes Zeichen lädt oder geschlossen wird; Lesung und Bedeutung bleiben im Zeichenfeld verfügbar. Eingebettetes Schreiben nutzt dieselbe Verdeckung und meldet Aufdecken als unterstützten Versuch.
+
+## Offline-Lernressourcen
+
+Der Anbieter bereitet Zeichenvorlage, Stile und Schließen-Symbole online vor, damit ein zwischengespeichertes Zeichen das Zeichenfeld erstmals offline öffnen kann. Vorbereitung, Aktionen, Kartenbeobachter und Stile folgen seinem Lebenszyklus. Das Schließen entfernt den Lebenszyklus-Listener des Zeichenfelds. Audio- und Wörterbuchdaten werden dabei nicht geladen.

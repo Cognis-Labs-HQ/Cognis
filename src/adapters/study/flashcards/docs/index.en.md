@@ -73,3 +73,19 @@ Reading compares answer content using one shared normalization for distractor se
 The deck sidebar scrolls independently within the visible page height, keeping long deck lists from expanding the page or pushing practice below the fold.
 
 Opening another deck brings its content into view immediately; returning from Explore preserves the saved practice position.
+
+## Empty offline Study pages
+
+Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Durable Queued Results
+
+Queued card reviews retain their successful result even if optional activity recording fails. Activity capture runs without holding up the review receipt. The existing account, consent and queue limits still apply.
+
+## Enrolled Offline Workspace
+
+Flashcards prepares every visible deck in enrolled learning or teaching languages, with two workers and no 80-deck cutoff. The dedicated cache is bounded to 64 MB and 10,001 reads so the gallery and ordinary deck collections fit together; larger collections remain subject to that limit. Non-enrolled languages are excluded. The shared schema catalog prepares even without enrollment, and missing optional Library collections do not prevent a prepared deck from entering practice.
+
+## Offline Study Practice
+
+Enrollment preparation caches the shared schema catalog as well as each enrolled language’s catalog. Drawing and Flashcards can use their normal schema reads without a prior online page visit. Flashcards prepares its Share translations alongside its Study translations and gallery template, and reads selected-language collections using the same schema-qualified requests as the enrollment warmer. Prepared decks can open gallery and practice views offline. Audio, dictionary fetching, content edits and access/consent checks keep their existing restrictions.

@@ -72,7 +72,7 @@ Browser-facing OAuth redirects may use `/sso/<routeNamespace>/<path>`. Cognis fo
 
 A provider may declare `routeNamespace` and `registerRoutes(router)` on its adapter. The router accepts `GET` and `POST` paths relative to `/api/v1/auth/<routeNamespace>` so OAuth callbacks can live under the Authentication gateway without granting the contributing module direct access to protected core routes. Namespaces are restricted to safe URL segments, core Authentication namespaces are reserved, duplicate routes are rejected, and provider disposal removes every contributed route.
 
-External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. When open registration is disabled, Cognis stores an unknown authenticated identity behind an opaque, expiring attempt ID and returns `account_creation_required` with a `registrationUrl`. Providers redirect to that URL rather than rendering authorization UI. The Registration Token adapter contributes the authorization form to the standard registration shell and resumes the held identity without exposing provider callback state. Public registration bypasses token authorization.
+External-provider sessions pass through `gateAccountCreation` before `ensureExternalAccount`. An enabled public registration adapter authorizes SSO account provisioning independently of the public native signup policy. Otherwise Cognis stores an unknown authenticated identity behind an opaque, expiring attempt ID and returns `account_creation_required` with a `registrationUrl`. Providers redirect to that URL. The Registration Token adapter contributes authorization to the standard registration shell and resumes the held identity without exposing provider callback state.
 
 ## API Routes
 
@@ -131,3 +131,29 @@ Authenticated pages permit media from same-origin routes and browser-generated `
 ### Module lifecycle integration
 
 `auth:registerKeyringDataOwner(ownerId, purge)` is a public server capability. It rejects duplicate owner IDs and returns an identity-checked disposer. A module uses its stable `module:<id>` owner and registers the disposer with `ctx.registerDisposer`; purge receives the normalized account ID. Purge only keyring-dependent state, preserving account identity and unrelated shared resources.
+
+## Session Setup
+
+Every authenticated session checks `/api/v1/auth/setup-status`, including sessions restored after an SSO redirect. The notification owner contributes required email setup through `auth:getSetupIntegrations(accountId, role)`, returning same-origin setup scripts that export `enforceSetup({ accountId })`. Setup finishes before the session is approved for navigation or offline use. SMTP delivery outages do not waive required verification; the initial founder administrator remains exempt.
+
+## Login Feedback
+
+Credential, TFA-code and SSO authorization requests show the shared loading wheel and release it before interactive setup. Duplicate credential submissions are ignored while pending. Public offline-cache cleanup and refresh run in the background after login. Last-login timestamps are recorded for SSO even when the local authentication adapter is disabled.
+
+## Account privacy and keyring isolation
+
+SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
+
+Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.
+
+## Login and queued delivery
+
+Successful password and TFA login use the existing SPA navigation capability to replace the login page with Dashboard. Login therefore keeps the verified tab and buffered work alive without invoking the browser’s page-close warning. Loading remains visible until navigation finishes; optional timezone synchronization runs afterward and rejects account switches. The warning still protects actual buffered changes when closing or reloading an authenticated tab.
+
+## Session and Component Boundaries
+
+Auth publishes `session:isOfflineValid` as the synchronous, network-free authority for verified offline access. It checks completed setup, the current account/token and session expiry. Queue owners consume this contract rather than interpreting auth storage. Account setup skips alternate guest sessions; server setup-status uses Share’s classification capability before requesting TFA or email integrations. Normal local and SSO accounts retain required setup enforcement.
+
+## Account-bound Queues
+
+Queued records include the server-verified account-instance identifier. Auth returns its canonical `accountInstanceId` in authenticated setup status and exposes `session:getOfflineIdentity` only for a verified, setup-ready, unexpired account session. Missing authoritative metadata revokes offline authorization. Queue views and storage/delivery checks bind to this instance; retired or unbound records are rejected before transport, including after recreating a local account with the same account ID. Operation IDs cannot collide across account instances. Bearer tokens are never persisted in the queue.

@@ -80,18 +80,65 @@ function createSearchCapability() {
     }
 
     async function runAvenue(avenue, providerContext) {
-        return avenue.provider({
-            ...providerContext,
-            componentId: avenue.componentId,
-            categoryId: avenue.categoryId,
-            avenueId: avenue.id,
-            stageId: avenue.stageId,
-        });
+        const controller = new AbortController();
+        const parentSignal = providerContext?.signal;
+        const abort = () => controller.abort(parentSignal.reason);
+        if (parentSignal?.aborted) abort();
+        else parentSignal?.addEventListener("abort", abort, { once: true });
+        let timeout;
+        let onAbort;
+        try {
+            const deadline = new Promise((_, reject) => {
+                onAbort = () =>
+                    reject(
+                        controller.signal.reason ??
+                            new DOMException("Search cancelled", "AbortError"),
+                    );
+                controller.signal.addEventListener("abort", onAbort, {
+                    once: true,
+                });
+                if (controller.signal.aborted) onAbort();
+                timeout = setTimeout(
+                    () =>
+                        controller.abort(
+                            new DOMException(
+                                "Search provider timed out",
+                                "TimeoutError",
+                            ),
+                        ),
+                    3_000,
+                );
+            });
+            return await Promise.race([
+                Promise.resolve().then(() => {
+                    controller.signal.throwIfAborted();
+                    return avenue.provider({
+                        ...providerContext,
+                        signal: controller.signal,
+                        onResults: (results) => {
+                            if (!controller.signal.aborted)
+                                providerContext?.onResults?.(results);
+                        },
+                        componentId: avenue.componentId,
+                        categoryId: avenue.categoryId,
+                        avenueId: avenue.id,
+                        stageId: avenue.stageId,
+                    });
+                }),
+                deadline,
+            ]);
+        } finally {
+            controller.abort();
+            clearTimeout(timeout);
+            parentSignal?.removeEventListener("abort", abort);
+            controller.signal.removeEventListener("abort", onAbort);
+        }
     }
 
     async function runStage(stageContext) {
         const providerContext = {
             query: stageContext?.input?.query ?? "",
+            signal: stageContext?.input?.signal,
             searchOptions: normalizeSearchOptions(
                 stageContext?.input?.searchOptions,
             ),

@@ -135,6 +135,64 @@ test("notify dispatch resolves profile handles to canonical account IDs", async 
     assert.equal(received[0]?.recipientUsername, "sso-account-id");
 });
 
+for (const [role, expected] of [
+    ["admin", ["u_admin", "u_owner"]],
+    ["teacher", ["u_teacher"]],
+    ["user", ["local-user"]],
+] as const) {
+    test(`role notifications deliver to immutable ${role} account IDs`, async () => {
+        const context = await makeCtx();
+        context.capabilities.contribute("auth:accountStore", {
+            list: async () => [
+                {
+                    accountId: "u_admin",
+                    username: "admin-handle",
+                    role: "admin",
+                },
+                {
+                    accountId: "u_owner",
+                    username: "owner-handle",
+                    role: "owner",
+                },
+                {
+                    accountId: "u_teacher",
+                    username: "teacher-handle",
+                    role: "teacher",
+                },
+                {
+                    accountId: "local-user",
+                    username: "local-user",
+                    role: "user",
+                },
+            ],
+        });
+        await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
+        const received: string[] = [];
+        const gateway = context.capabilities.require<any>("notify:gateway");
+        gateway.registerSender({
+            senderId: "capture",
+            async send(envelope: { recipientUsername: string }) {
+                received.push(envelope.recipientUsername);
+            },
+        });
+        gateway.registerAlwaysOnSender("capture");
+        const dispatch = context.capabilities.require<any>(
+            "notify:dispatchToRole",
+        );
+        const result = await dispatch(role, {
+            category: "study",
+            subject: "Request",
+            body: "Review request",
+        });
+        assert.deepEqual(result.recipients, expected);
+        assert.deepEqual(received, expected);
+        assert.deepEqual(
+            result.dispatched.map((item: any) => item.recipientUsername),
+            expected,
+        );
+    });
+}
+
 test("bootstrap registers routes with RouteRegistry", async () => {
     const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();
@@ -323,4 +381,40 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
     );
+});
+
+test("SSO restored sessions require primary email verification, including when SMTP is unavailable", async () => {
+    const { InMemoryTestExecutor } =
+        await import("../../db/tests/in-memory-test-executor.js");
+    const context = await makeCtx();
+    context.capabilities.contribute("db:executor", new InMemoryTestExecutor());
+    let mode = "smtp";
+    context.capabilities.contribute("preferences:store", {
+        get: async () => JSON.stringify({ userValidationMode: mode }),
+    });
+    context.capabilities.contribute("auth:accountStore", {
+        isFounder: async (id: string) => id === "founder",
+    });
+    await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
+    const setup = context.capabilities.require<
+        (id: string, role: string) => Promise<Array<{ scriptUrl: string }>>
+    >("auth:getSetupIntegrations");
+    const provision = context.capabilities.require<
+        (id: string, emails: string[]) => Promise<void>
+    >("notify:provisionUserEmails");
+    const verify = context.capabilities.require<
+        (id: string, email: string) => Promise<void>
+    >("notify:upsertVerifiedPrimaryEmail");
+    await provision("x:person", ["person@example.com"]);
+    assert.equal(
+        (await setup("x:person", "user"))[0].scriptUrl,
+        "/static/gateways/notify/login-required-email-flow.js",
+    );
+    assert.equal((await setup("x:no-email", "user")).length, 1);
+    assert.deepEqual(await setup("founder", "owner"), []);
+    assert.equal((await setup("founder", "user")).length, 1);
+    await verify("x:person", "person@example.com");
+    assert.deepEqual(await setup("x:person", "user"), []);
+    mode = "none";
+    assert.deepEqual(await setup("x:no-email", "user"), []);
 });

@@ -109,6 +109,8 @@ export function createRegistrationRoutes(
             if (!authenticatedClaims) return true;
             const body = await readJson(req);
             await gateway.setInvitationPolicy({
+                publicRegistrationEnabled:
+                    body.publicRegistrationEnabled === true,
                 founderInvitesEnabled: body.founderInvitesEnabled !== false,
                 adminInvitesEnabled: body.adminInvitesEnabled !== false,
             });

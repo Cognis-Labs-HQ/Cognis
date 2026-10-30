@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { validateOperationId } from "../../../api/reuse/operation-id.js";
 import { hasMinRole } from "@cognis/core";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
@@ -539,9 +540,10 @@ export function createCalendarCoreRoutes({
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
             const inviteEmails = normalizeStringList(body.inviteEmails);
-            const reminderOffsetsMinutes = normalizeReminderOffsets(
-                body.reminderOffsetsMinutes,
-            );
+            const reminderOffsetsMinutes =
+                body.reminderOffsetsMinutes === undefined
+                    ? undefined
+                    : normalizeReminderOffsets(body.reminderOffsetsMinutes);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (!title || !startAt || !endAt) {
                 sendCalendarError(
@@ -610,8 +612,15 @@ export function createCalendarCoreRoutes({
                           shared.ownerCalendarId,
                       )
                     : attendees;
+                const operationId = validateOperationId(body.operationId);
+                const replayed = operationId
+                    ? gateway
+                          .resolveGlobalEventId(operationId)
+                          .some((event) => event.id === operationId)
+                    : false;
                 const createdEvent = shared
                     ? gateway.addEventToCalendar({
+                          operationId,
                           calendarId: targetCalendarId,
                           title,
                           description:
@@ -641,6 +650,7 @@ export function createCalendarCoreRoutes({
                                   : "none",
                       })
                     : gateway.addEvent({
+                          operationId,
                           ownerAccountId: claims.sub,
                           calendarId,
                           title,
@@ -669,6 +679,11 @@ export function createCalendarCoreRoutes({
                                   ? body.recurrence
                                   : "none",
                       });
+                if (replayed) {
+                    await gateway.flushStore();
+                    sendJson(res, 201, { data: createdEvent, replayed: true });
+                    return true;
+                }
                 const createdSeries = resolveCreatedSeries(
                     gateway,
                     targetCalendarId,
@@ -694,6 +709,18 @@ export function createCalendarCoreRoutes({
                 sendJson(res, 201, { data: createdEvent });
             } catch (error) {
                 const message = errorMessage(error);
+                if (
+                    message === "invalid_operation_id" ||
+                    message === "calendar_operation_conflict"
+                ) {
+                    sendCalendarError(
+                        res,
+                        message,
+                        message,
+                        message === "invalid_operation_id" ? 400 : 409,
+                    );
+                    return true;
+                }
                 if (message === "calendar_not_found") {
                     sendCalendarError(
                         res,

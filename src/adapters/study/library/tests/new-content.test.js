@@ -24,6 +24,12 @@ test("relocated cards stay ordinary across private/shared oscillation while genu
         loadTestModule(
             new URL("../ui/app/data.js", import.meta.url),
             {
+                "/static/gateways/study/offline-content.js": {
+                    isOfflineContentMiss: () => false,
+                    readStudySnapshot: (load) => load(),
+                    showOfflineContentNotice: () =>
+                        assert.fail("not an offline test"),
+                },
                 "/static/reuse/toast.js": context,
                 "/static/gateways/study/library-client.js": context,
             },

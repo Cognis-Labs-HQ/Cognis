@@ -12,66 +12,6 @@
 .content-panel th {
     background: var(--surface-soft);
 }
-.users-row {
-    cursor: pointer;
-}
-.users-row:hover {
-    background: var(--surface-soft);
-}
-.users-table-wrap {
-    width: 100%;
-    overflow-x: auto;
-}
-.users-table {
-    width: 100%;
-    min-width: 760px;
-    border-collapse: collapse;
-}
-.users-actions-cell {
-    white-space: nowrap;
-}
-.users-identity {
-    align-items: center;
-    display: inline-flex;
-    gap: 0.45rem;
-}
-.users-provider-icon {
-    height: 1rem;
-    object-fit: contain;
-    width: 1rem;
-}
-.users-role-select {
-    padding: 4px 8px;
-    border: 1px solid var(--border, #ccc);
-    border-radius: 6px;
-    background: var(--input-bg, #fff);
-    color: var(--text, #111);
-    font: inherit;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-.users-role-select:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.users-toggle-btn,
-.users-menu-btn {
-    margin-right: 6px;
-}
-
-.users-delete-btn {
-    margin-right: 6px;
-    background: var(--color-danger);
-    color: var(--color-danger-text);
-    border: 1px solid var(--color-danger-border);
-    line-height: 1;
-}
-
-.users-delete-btn:hover:not(:disabled) {
-    background: var(--color-danger-border);
-    border-color: var(--color-danger-border);
-    color: var(--color-danger-text);
-}
 .content-panel a {
     color: var(--link-docs);
 }

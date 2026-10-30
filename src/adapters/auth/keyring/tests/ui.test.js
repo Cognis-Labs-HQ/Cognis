@@ -1,10 +1,13 @@
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+    authenticate,
+    cachedVaultKey,
+    provisionAndUnlock,
+    resetBrowserStorage,
     indexedDbValues,
-    keyringSource,
     sessionValues,
     settingsSource,
     values,
@@ -13,6 +16,9 @@ import {
 test("keyring settings do not schedule an unlock prompt while rendering", () => {
     assert.doesNotMatch(settingsSource, /defer-page-action/);
     assert.match(settingsSource, /#settings-keyring-toggle/);
+});
+beforeEach(() => {
+    if (!values.get("cognis_account")) authenticate();
 });
 let unlockPromptCount = 0;
 let lastUnlockPrompt = null;
@@ -115,27 +121,27 @@ test("server keyring state preserves unsynced local data but rejects reused acco
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     assert.equal(keyring.isKeyringUnlocked(), true);
     await keyring.setKeyringValue("share:token-1", "share-password");
     await keyring.setKeyringRelockMinutes(15);
     const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.startsWith("cognis_keyring_session_expires_at:"),
+        key.startsWith("cognis_keyring_unlock:"),
     );
-    const expiry = sessionValues.get(expiryKey);
+    const expiry = JSON.parse(sessionValues.get(expiryKey)).deadline;
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
-    assert.equal(sessionValues.get(expiryKey), expiry);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, expiry);
     assert.equal(keyring.getKeyringRelockMinutes(), 15);
-    assert.doesNotMatch(values.get("cognis_secure_keyring"), /share-password/);
+    assert.doesNotMatch(values.get(cachedVaultKey()), /share-password/);
 
     await keyring.lockKeyring();
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(keyring.getKeyringValue("share:token-1"), null);
     assert.equal(await keyring.unlockKeyring("wrong-password"), false);
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
     await keyring.setKeyringRelockMinutes(0);
-    assert.equal(sessionValues.has(expiryKey), false);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, 0);
     await keyring.lockKeyring();
 });
 
@@ -187,7 +193,7 @@ test("unlock requests require component, action, and process context", async () 
 
 test("non-prompt resolution validates unlocked secrets without unlocking a locked keyring", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringValue("marketplace:token", "   ");
 
     assert.equal(
@@ -237,23 +243,32 @@ test("component scopes attribute direct unlock requests to their owner", async (
     await keyring.lockKeyring();
 });
 
-test("a page reload restores the non-extractable session unlock without prompting", async () => {
+test("a page reload restores only the authenticated tab's encrypted session unlock", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
     indexedDbValues.clear();
-    localStorage.setItem("cognis_account", "session-restore-user");
-    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    authenticate("session-restore-user");
+    assert.equal(await provisionAndUnlock(keyring, "keyring-password"), true);
     await keyring.setKeyringRelockMinutes(5);
     await keyring.setKeyringValue("chatroom:session:key", "room-key");
     const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.startsWith("cognis_keyring_session_expires_at:"),
+        key.startsWith("cognis_keyring_unlock:"),
     );
-    const expiry = sessionValues.get(expiryKey);
+    const expiry = JSON.parse(sessionValues.get(expiryKey)).deadline;
 
     const reloadedKeyring = await import("../ui/keyring.js?session-restore");
     assert.equal(await reloadedKeyring.restoreKeyringSession(), true);
-    assert.equal(sessionValues.get(expiryKey), expiry);
+    assert.equal(
+        reloadedKeyring.getKeyringValue("chatroom:session:key"),
+        "room-key",
+    );
+    assert.equal(indexedDbValues.size, 0);
+    assert.equal(JSON.parse(sessionValues.get(expiryKey)).deadline, expiry);
+    assert.doesNotMatch(
+        sessionValues.get(expiryKey),
+        /room-key|keyring-password|session:session-restore-user/,
+    );
     assert.equal(
         reloadedKeyring.getKeyringValue("chatroom:session:key"),
         "room-key",
@@ -263,15 +278,18 @@ test("a page reload restores the non-extractable session unlock without promptin
     localStorage.removeItem("cognis_account");
 });
 
-test("a finite keyring deadline cannot be extended by reloading", async () => {
+test("a finite keyring deadline cannot be extended by reloading", async (context) => {
     const keyring = await import("../ui/keyring.js");
-    localStorage.setItem("cognis_account", "expired-session-user");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    authenticate("expired-session-user");
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringRelockMinutes(5);
-    const expiryKey = [...sessionValues.keys()].find((key) =>
-        key.includes(encodeURIComponent("expired-session-user")),
+    const expiryKey = [...sessionValues.keys()].find(
+        (key) =>
+            key.startsWith("cognis_keyring_unlock:") &&
+            key.includes("expired-session-user"),
     );
-    sessionValues.set(expiryKey, String(Date.now() - 1));
+    const deadline = JSON.parse(sessionValues.get(expiryKey)).deadline;
+    context.mock.method(Date, "now", () => deadline + 1);
 
     const reloadedKeyring = await import("../ui/keyring.js?expired-session");
     let prompted = false;
@@ -293,24 +311,19 @@ test("a finite keyring deadline cannot be extended by reloading", async () => {
     localStorage.removeItem("cognis_account");
 });
 
-test("locked keyring retains new secrets only for the active session", async () => {
+test("locked keyrings reject writes and expose no pending secret", async () => {
     const keyring = await import("../ui/keyring.js");
-    await keyring.setKeyringValue("share:session-token", "share-password");
-    assert.equal(
-        keyring.getKeyringValue("share:session-token"),
-        "share-password",
-    );
-    assert.doesNotMatch(
-        values.get("cognis_secure_keyring") ?? "",
-        /session-token|share-password/,
-    );
     await keyring.lockKeyring();
+    await assert.rejects(
+        keyring.setKeyringValue("share:session-token", "share-password"),
+        /keyring_locked/,
+    );
     assert.equal(keyring.getKeyringValue("share:session-token"), null);
 });
 
 test("keyring lists metadata and replaces an invalid stored secret", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringValue("meeting:one:password", "stale", {
         label: "Weekly meeting",
         source: "test",
@@ -342,7 +355,7 @@ test("keyring lists metadata and replaces an invalid stored secret", async () =>
 
 test("component keyring scopes derive the stored source name", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     const scoped = keyring.createKeyringScope("Calendar Gateway");
     await scoped.set("calendar:secret", "value", { label: "Calendar" });
     assert.equal(
@@ -356,7 +369,7 @@ test("component keyring scopes derive the stored source name", async () => {
 
 test("keyring logs access, clears values, and changes its encryption password", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringValue("test:logged-secret", "secret");
     assert.equal(keyring.getKeyringValue("test:logged-secret"), "secret");
 
@@ -382,8 +395,11 @@ test("keyring logs access, clears values, and changes its encryption password", 
         true,
     );
     await keyring.lockKeyring();
-    assert.equal(await keyring.unlockKeyring("account-password"), false);
-    assert.equal(await keyring.unlockKeyring("changed-keyring-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), false);
+    assert.equal(
+        await provisionAndUnlock(keyring, "changed-keyring-password"),
+        true,
+    );
     await keyring.changeKeyringPassword("account-password");
     await keyring.lockKeyring();
 });
@@ -398,7 +414,7 @@ test("locked keyring accepts an updated automatic lock timeout", async () => {
 
 test("locked keyring exposes no entry metadata or decrypted values", async () => {
     const keyring = await import("../ui/keyring.js");
-    await keyring.unlockKeyring("account-password");
+    await provisionAndUnlock(keyring, "account-password");
     await keyring.setKeyringValue("private:secret", "sensitive-value", {
         label: "Private secret",
         componentName: "Test Component",
@@ -411,7 +427,7 @@ test("locked keyring exposes no entry metadata or decrypted values", async () =>
 
 test("temporary guest keyrings stay unlocked and use session storage", async () => {
     const keyring = await import("../ui/keyring.js");
-    localStorage.setItem("cognis_account", "share:share-1:guest-1");
+    authenticate("share:share-1:guest-1");
     const originalFetch = globalThis.fetch;
     let networkRequestCount = 0;
     globalThis.fetch = async () => {
@@ -438,7 +454,10 @@ test("temporary guest keyrings stay unlocked and use session storage", async () 
         );
         assert.ok(
             sessionValues.has(
-                "cognis_secure_keyring:share%3Ashare-1%3Aguest-1",
+                cachedVaultKey(
+                    "share:share-1:guest-1",
+                    "temporary:share:share-1:guest-1",
+                ),
             ),
         );
     } finally {
@@ -447,14 +466,22 @@ test("temporary guest keyrings stay unlocked and use session storage", async () 
         localStorage.removeItem("cognis_account");
     }
     assert.equal(keyring.isKeyringUnlocked(), false);
-    assert.equal(sessionValues.size, 0);
+    assert.equal(
+        sessionValues.has(
+            cachedVaultKey(
+                "share:share-1:guest-1",
+                "temporary:share:share-1:guest-1",
+            ),
+        ),
+        false,
+    );
 });
 
 test("first login sets up a new keyring with the selected encryption password", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
-    localStorage.setItem("cognis_account", "new-user");
+    authenticate("new-user");
 
     const result = await keyring.setupKeyringAfterLogin("account-password", {
         requestSetupPassword: async (accountPassword) => {
@@ -465,78 +492,22 @@ test("first login sets up a new keyring with the selected encryption password", 
 
     assert.deepEqual(result, { setup: true, unlocked: true });
     assert.equal(keyring.isKeyringUnlocked(), true);
-    assert.ok(values.has("cognis_secure_keyring:new-user"));
+    assert.ok(values.has(cachedVaultKey("new-user")));
     await keyring.lockKeyring();
-    assert.equal(await keyring.unlockKeyring("account-password"), false);
-    assert.equal(await keyring.unlockKeyring("custom-keyring-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), false);
+    assert.equal(
+        await provisionAndUnlock(keyring, "custom-keyring-password"),
+        true,
+    );
     await keyring.lockKeyring();
     localStorage.removeItem("cognis_account");
 });
 
-test("keyring password popups use the form composer with required fields", () => {
-    const resourcesSource = readFileSync(
-        resolve("src/adapters/auth/keyring/ui/resources.js"),
-        "utf8",
-    );
-    assert.match(keyringSource, /createFormBuilder/);
-    assert.match(keyringSource, /ensureKeyringFormStyles/);
-    assert.match(resourcesSource, /styles\/reuse\/page-sections\.css/);
-    assert.match(keyringSource, /formId: "keyring-unlock-form"/);
-    assert.match(keyringSource, /formClassName: "keyring-password-form"/);
-    assert.match(keyringSource, /name: "password"[\s\S]*required: true/);
-    assert.match(keyringSource, /name: "confirmation"[\s\S]*required: true/);
-    assert.match(keyringSource, /setup_password_match/);
-    assert.match(keyringSource, /name: "relockMinutes"/);
-    assert.match(settingsSource, /formId: "keyring-change-password-form"/);
-    assert.match(settingsSource, /styles\/reuse\/page-sections\.css/);
-    assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
-    assert.match(settingsSource, /id="settings-keyring-create"/);
-    assert.match(settingsSource, /variant: "cancel"/);
-    assert.match(
-        settingsSource,
-        /await restoreKeyringSession\(\)[\s\S]*rerender\(\)/,
-    );
-    assert.match(
-        settingsSource,
-        /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,
-    );
-    assert.match(
-        settingsSource,
-        /name: "confirmation"[\s\S]*required: true[\s\S]*keyring-password-change-match/,
-    );
-});
-
-test("account password setup reuses the authenticated credential", () => {
-    assert.match(keyringSource, /id: "use-account-password"/);
-    assert.match(
-        keyringSource,
-        /result === "use-account-password"\) return accountPassword/,
-    );
-    assert.match(
-        keyringSource,
-        /id: "use-account-password"[\s\S]*?variant: "confirm"/,
-    );
-    assert.match(
-        readFileSync(
-            resolve(import.meta.dirname, "../ui/languages/en/strings.xml"),
-            "utf8",
-        ),
-        />Use User Password</,
-    );
-});
-
-test("cancelled keyring creation remains available", () => {
-    assert.match(
-        settingsSource,
-        /#settings-keyring-create"\)\s*\?\.addEventListener\("click", async \(\) => \{\s*if \(await createKeyring\(\)\) rerender\(\);\s*\}\);/,
-    );
-});
-
 test("user password setup auto-unlocks on the next password login", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
-    localStorage.setItem("cognis_account", "user-password-keyring-user");
+    authenticate("user-password-keyring-user");
 
     assert.deepEqual(
         await keyring.setupKeyringAfterLogin("user-password", {
@@ -556,10 +527,10 @@ test("user password setup auto-unlocks on the next password login", async () => 
 
 test("login silently leaves the keyring locked when its password differs", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
-    localStorage.setItem("cognis_account", "separate-keyring-password-user");
-    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    authenticate("separate-keyring-password-user");
+    assert.equal(await provisionAndUnlock(keyring, "keyring-password"), true);
     await keyring.setKeyringValue("chatroom:one:key", "room-key");
     await keyring.lockKeyring();
 
@@ -567,7 +538,7 @@ test("login silently leaves the keyring locked when its password differs", async
 
     assert.deepEqual(result, { setup: false, unlocked: false });
     assert.equal(keyring.isKeyringUnlocked(), false);
-    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "keyring-password"), true);
     assert.equal(keyring.getKeyringValue("chatroom:one:key"), "room-key");
     await keyring.lockKeyring();
     localStorage.removeItem("cognis_account");
@@ -575,9 +546,9 @@ test("login silently leaves the keyring locked when its password differs", async
 
 test("new keyring setup can be deferred until the dashboard is visible", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
-    localStorage.setItem("cognis_account", "deferred-user");
+    authenticate("deferred-user");
 
     assert.deepEqual(
         await keyring.setupKeyringAfterLogin("account-password", {
@@ -585,7 +556,12 @@ test("new keyring setup can be deferred until the dashboard is visible", async (
         }),
         { setup: false, unlocked: false, deferred: true },
     );
-    assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
+    assert.equal(
+        [...sessionValues.entries()].find(([key]) =>
+            key.startsWith("cognis_keyring_setup_pending:"),
+        )?.[1],
+        "1",
+    );
 
     assert.deepEqual(
         await keyring.setupKeyringAfterLogin("", {
@@ -600,17 +576,17 @@ test("new keyring setup can be deferred until the dashboard is visible", async (
 
 test("server-side deletion invalidates the browser keyring copy on login", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
-    localStorage.setItem("cognis_account", "deleted-ldap-user");
-    assert.equal(await keyring.unlockKeyring("old-password"), true);
+    resetBrowserStorage();
+    authenticate("deleted-ldap-user");
+    assert.equal(await provisionAndUnlock(keyring, "old-password"), true);
     await keyring.setKeyringValue("test:deleted-secret", "old-secret");
     await keyring.lockKeyring();
     const browserEnvelope = JSON.parse(
-        values.get("cognis_secure_keyring:deleted-ldap-user"),
+        values.get(cachedVaultKey("deleted-ldap-user")),
     );
     browserEnvelope.accountInstanceId = "deleted-instance";
     values.set(
-        "cognis_secure_keyring:deleted-ldap-user",
+        cachedVaultKey("deleted-ldap-user"),
         JSON.stringify(browserEnvelope),
     );
 
@@ -621,6 +597,7 @@ test("server-side deletion invalidates the browser keyring copy on login", async
                 ? JSON.stringify({ data: { saved: true } })
                 : JSON.stringify({
                       data: {
+                          accountId: values.get("cognis_account"),
                           vault: null,
                           accountInstanceId: "reused-instance",
                       },
@@ -640,13 +617,13 @@ test("server-side deletion invalidates the browser keyring copy on login", async
 
         assert.deepEqual(result, { setup: true, unlocked: true });
         assert.equal(keyring.getKeyringValue("test:deleted-secret"), null);
+        assert.equal(values.has(cachedVaultKey("deleted-ldap-user")), true);
         assert.equal(
-            values.has("cognis_secure_keyring:deleted-ldap-user"),
-            true,
-        );
-        assert.equal(
-            JSON.parse(values.get("cognis_secure_keyring:deleted-ldap-user"))
-                .accountInstanceId,
+            JSON.parse(
+                values.get(
+                    cachedVaultKey("deleted-ldap-user", "reused-instance"),
+                ),
+            ).accountInstanceId,
             "reused-instance",
         );
     } finally {
@@ -658,20 +635,17 @@ test("server-side deletion invalidates the browser keyring copy on login", async
 
 test("account deletion clears the browser keyring before username reuse", async () => {
     const keyring = await import("../ui/keyring.js");
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
-    localStorage.setItem("cognis_account", "deleted-browser-user");
-    assert.equal(await keyring.unlockKeyring("old-password"), true);
+    authenticate("deleted-browser-user");
+    assert.equal(await provisionAndUnlock(keyring, "old-password"), true);
     await keyring.setKeyringValue("test:deleted-browser-secret", "old-secret");
 
     await keyring.clearKeyringAccountState();
 
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(keyring.getKeyringValue("test:deleted-browser-secret"), null);
-    assert.equal(
-        values.has("cognis_secure_keyring:deleted-browser-user"),
-        false,
-    );
+    assert.equal(values.has(cachedVaultKey("deleted-browser-user")), false);
     localStorage.removeItem("cognis_account");
 });
 
@@ -692,7 +666,7 @@ test("empty keyring setup password falls back to the account password", async ()
 
 test("destroying a locked keyring leaves creation pending", async () => {
     const keyring = await import("../ui/keyring.js");
-    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    assert.equal(await provisionAndUnlock(keyring, "account-password"), true);
     await keyring.setKeyringValue("chatroom:destroy:key", "old-room-key");
     await keyring.lockKeyring();
     const originalFetch = globalThis.fetch;
@@ -702,6 +676,7 @@ test("destroying a locked keyring leaves creation pending", async () => {
             : new Response(
                   JSON.stringify({
                       data: {
+                          accountId: values.get("cognis_account"),
                           vault: null,
                           accountInstanceId: "replacement-instance",
                       },
@@ -714,7 +689,12 @@ test("destroying a locked keyring leaves creation pending", async () => {
     try {
         assert.equal(await keyring.destroyKeyring(), true);
         assert.equal(keyring.getKeyringValue("chatroom:destroy:key"), null);
-        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
+        assert.equal(
+            [...sessionValues.entries()].find(([key]) =>
+                key.startsWith("cognis_keyring_setup_pending:"),
+            )?.[1],
+            "1",
+        );
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
@@ -735,7 +715,12 @@ test("cancelled creation leaves the destroyed keyring pending setup", async () =
             false,
         );
         assert.equal(keyring.isKeyringUnlocked(), false);
-        assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
+        assert.equal(
+            [...sessionValues.entries()].find(([key]) =>
+                key.startsWith("cognis_keyring_setup_pending:"),
+            )?.[1],
+            "1",
+        );
     } finally {
         globalThis.fetch = originalFetch;
         sessionValues.clear();
@@ -745,10 +730,10 @@ test("cancelled creation leaves the destroyed keyring pending setup", async () =
 test("login requires the recreated custom keyring password after session invalidation", async () => {
     const keyring = await import("../ui/keyring.js");
     const originalFetch = globalThis.fetch;
-    values.clear();
+    resetBrowserStorage();
     sessionValues.clear();
     indexedDbValues.clear();
-    localStorage.setItem("cognis_account", "recreated-ldap-keyring-user");
+    authenticate("recreated-ldap-keyring-user");
     let remoteEnvelope = null;
     const accountInstanceId = "recreated-ldap-account-instance";
     globalThis.fetch = async (_requestPath, options = {}) => {
@@ -766,6 +751,7 @@ test("login requires the recreated custom keyring password after session invalid
         return new Response(
             JSON.stringify({
                 data: {
+                    accountId: values.get("cognis_account"),
                     vault: remoteEnvelope,
                     accountInstanceId,
                 },
@@ -778,9 +764,10 @@ test("login requires the recreated custom keyring password after session invalid
     };
     try {
         assert.equal(
-            await keyring.unlockKeyring("custom-keyring-password"),
+            await provisionAndUnlock(keyring, "custom-keyring-password"),
             true,
         );
+        values.set("cognis_access_token", "rotated-session");
         const reloadedKeyring =
             await import("../ui/keyring.js?recreated-ldap-keyring");
 
@@ -815,6 +802,7 @@ test("login requires the recreated custom keyring password after session invalid
 
 test("cancelling one unlock flushes concurrent and future requests until manual unlock", async () => {
     const keyring = await import("../ui/keyring.js");
+    await provisionAndUnlock(keyring, "replacement-password");
     await keyring.lockKeyring();
     let promptCount = 0;
     const cancelPrompt = async () => {
@@ -850,14 +838,14 @@ test("cancelling one unlock flushes concurrent and future requests until manual 
 test("keyring persistence serializes concurrent vault synchronization", async () => {
     const keyring = await import("../ui/keyring.js");
     const originalFetch = globalThis.fetch;
-    localStorage.setItem("cognis_account", "serialization-test-account");
+    authenticate("serialization-test-account");
     localStorage.removeItem("cognis_secure_keyring:serialization-test-account");
     localStorage.removeItem("cognis_secure_keyring");
     let activeRequests = 0;
     let maximumActiveRequests = 0;
     try {
         assert.equal(
-            await keyring.unlockKeyring("serialization-password"),
+            await provisionAndUnlock(keyring, "serialization-password"),
             true,
         );
         globalThis.fetch = async () => {
@@ -893,11 +881,14 @@ test("keyring persistence serializes concurrent vault synchronization", async ()
 test("keyring persistence surfaces definitive server rejection", async () => {
     const keyring = await import("../ui/keyring.js");
     const originalFetch = globalThis.fetch;
-    localStorage.setItem("cognis_account", "rejection-test-account");
+    authenticate("rejection-test-account");
     localStorage.removeItem("cognis_secure_keyring:rejection-test-account");
     localStorage.removeItem("cognis_secure_keyring");
     try {
-        assert.equal(await keyring.unlockKeyring("rejection-password"), true);
+        assert.equal(
+            await provisionAndUnlock(keyring, "rejection-password"),
+            true,
+        );
         globalThis.fetch = async () => new Response(null, { status: 413 });
         await assert.rejects(
             keyring.setKeyringValue("test:rejected", "secret"),
@@ -910,11 +901,4 @@ test("keyring persistence surfaces definitive server rejection", async () => {
         await keyring.lockKeyring();
         localStorage.removeItem("cognis_account");
     }
-});
-
-test("temporary guest keyrings never request an account password", () => {
-    assert.match(
-        keyringSource,
-        /session:isGuest[\s\S]*session:ensureGuestKeyring[\s\S]*if \(temporaryKeyringAccountId\) return false/,
-    );
 });

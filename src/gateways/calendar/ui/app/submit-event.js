@@ -10,6 +10,7 @@ export function createSubmitEvent({
     setSelectedCalendarId,
     syncRouteSelection,
 }) {
+    let pending;
     async function submitEvent({
         calendarId,
         title,
@@ -70,11 +71,23 @@ export function createSubmitEvent({
         }
         const payload = await response.json().catch(() => ({}));
         const createdEventId = String(payload?.data?.id ?? "");
-        await reloadState();
+        try {
+            await reloadState();
+        } catch (error) {
+            console.error("[calendar] saved event view refresh failed", {
+                operation: "refreshAfterCreate",
+                errorName: error?.name,
+            });
+        }
         setSelectedCalendarId(targetCalendarId);
         syncRouteSelection();
         showToast(i18n.t("gateway.calendar.create_event_success"), "success");
         return createdEventId !== "" ? createdEventId : true;
     }
-    return submitEvent;
+    return (input) => {
+        pending ??= submitEvent(input).finally(() => {
+            pending = undefined;
+        });
+        return pending;
+    };
 }

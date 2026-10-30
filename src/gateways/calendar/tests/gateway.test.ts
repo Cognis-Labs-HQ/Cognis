@@ -60,7 +60,6 @@ test("calendar gateway applies calendar default reminders when event reminders a
         title: "Standup",
         startAt: "2026-06-10T09:00:00.000Z",
         endAt: "2026-06-10T09:30:00.000Z",
-        reminderOffsetsMinutes: [],
     });
     assert.deepEqual(event.reminderOffsetsMinutes, [10, 60]);
 });
@@ -637,4 +636,37 @@ test("upcoming event projection returns every match unless caller supplies a lim
 
     assert.equal(gateway.listUpcomingEvents("alice").length, 3);
     assert.equal(gateway.listUpcomingEvents("alice", 2).length, 2);
+});
+
+test("calendar creations retain a stable operation ID across retries without duplicating a series", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.ensureDefaultCalendar("alice");
+    const input = {
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        operationId: "40b40c54-5301-4edc-81ba-16fa41883846",
+        title: "Offline planning",
+        startAt: "2027-01-02T10:00:00Z",
+        endAt: "2027-01-02T11:00:00Z",
+        recurrence: "weekly" as const,
+    };
+    const first = gateway.addEvent(input);
+    const count = gateway.listEvents(calendar.id).length;
+    assert.equal(gateway.addEvent(input).id, first.id);
+    assert.equal(first.id, input.operationId);
+    assert.equal(gateway.listEvents(calendar.id).length, count);
+    assert.throws(
+        () => gateway.addEvent({ ...input, title: "Different content" }),
+        /calendar_operation_conflict/,
+    );
+    const another = gateway.ensureDefaultCalendar("bob");
+    assert.throws(
+        () =>
+            gateway.addEvent({
+                ...input,
+                ownerAccountId: "bob",
+                calendarId: another.id,
+            }),
+        /calendar_operation_conflict/,
+    );
 });

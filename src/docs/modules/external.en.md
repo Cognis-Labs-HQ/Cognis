@@ -192,3 +192,55 @@ Deploy the matching Core host before updating callback modules, including the ho
 ## Component isolation and lifecycle
 
 The API delegates extension namespaces through active gateway-owned policies; Study owns the language namespace rules. Library provider capabilities withdraw when the adapter or its Study dependencies are disabled, reject retained handles, and return when enabled. Study adapter bootstrap exposes `onAvailabilityChange(listener)` for lifecycle-bound contributions; failed bootstrap withdraws them.
+
+## Offline Navigation
+
+Declare `public: true` and `offline: { assets: [...] }` on a SPA route. List every public runtime dependency, including locale catalogs and data files. Pages must work without API requests, private account data or host-wide provider discovery. Private routes cannot opt in. Use route links for navigation controls. Unknown or unvisited dependencies remain unavailable.
+
+The service worker does not cache API responses, credentials or authenticated HTML. Module invalidation clears the public route catalog and module assets; revision-qualified assets must match the current catalog. Remote changes cannot be observed while disconnected: only the last known public revision is available. Recovery refreshes the catalog and reloads through the dirty-page guard, restoring fresh server authorization. Worker updates wait for existing tabs to close and prepare the recovery set before activation. A first visit without an installed worker cannot start offline.
+
+Use anchors or buttons with `data-navigation-path="/route"`; Cognis disables unsupported destinations without enabling controls already disabled by their owner.
+
+### Offline Study
+
+Offline Mode is enabled by default in Settings. Turning it off restores the existing connection warning and error behavior and disables worker fallback. With it enabled, connection loss quietly enters offline mode; unavailable navigation is blocked without an error popup.
+
+Study keeps bounded lightweight JSON snapshots in the current tab: schemas, permitted character/card data, locations, viewed IDs, favourites and previously opened decks. Language schemas opt in with `metadata.offline: { cache: "lightweight" }`. The Library cache holds at most 16 MB and 100 reads; other read caches hold at most 4 MB and 100 reads. No audio bytes, dictionary responses, credentials or authenticated documents are persisted.
+
+Private Study requires the same previously verified, unexpired account session in the same tab. Reloads and first visits retain the public-only offline contract. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
+
+## Queued Delivery and Consent
+
+The host exposes `offline:outbox`, `offline:state` and `offline:accessPolicy` through ctx. Components register delivery handlers for their provider lifetime and submit stable operation IDs through `offline:enqueue`; `offline:flush` authorizes and delivers. The durable account-bound queue holds at most 1,000 records and 1 MB for seven days, without tokens. It preserves original IDs and timestamps, retries transient failures and removes acknowledged or permanently rejected records. A localized warning reports rejected records. Logout clears the account queue; changing accounts never replays another account’s data. Disabling Offline Mode stops new queued writes. Pending writes may still deliver online.
+
+Recovery refreshes providers and runs `authenticate-session` before the final `afterSession` stage can replay activity. Required providers declare `offlineAccessGuard` in the server catalog. Unknown requirements or missing consent fail closed. Terms of Service caches the latest fetched document versions and server-confirmed acceptance per account. A new unaccepted version immediately blocks offline reads, navigation and queued writes, and prevents replay until online consent succeeds. Offline acceptance is unavailable. Private content snapshots remain tab-local; only the bounded operation queue and legal snapshots survive reload. The initial `beforeSession` stage clears prior delivery verification before each authentication pass.
+
+## Offline Social Changes
+
+Profile and Messages providers now register lifecycle-scoped HTTP actions through ctx. Previously loaded profiles, posts, room lists and encrypted threads remain available in the verified tab. Profile text, availability, follow/block state, banner layout, post creation/deletion, existing-room encrypted messages, final reaction states and read receipts use the account-bound offline buffer. Later online edits wait behind buffered edits from the same owner. Account or session changes during preparation or buffer waits cancel the action. Message/post creation uses stable `operationId` UUIDs; changed or cross-account retries are rejected, and message replay does not repeat notifications. Read receipts retain the original read time.
+
+Chat is encrypted before buffering: plaintext, room keys and credentials are never added to the queue. Profile text and post content are stored in browser storage for the current account. Avatar/banner uploads up to 350,000 binary bytes may share the existing 1 MB/1,000-record/seven-day queue; larger images require connectivity. A full buffer reports a localized error; message and post drafts are cleared only after durable submission succeeds. These limits apply to the complete buffer, not each component separately.
+
+Queued changes remain pending until server acknowledgement. Messages show a queued status; profile/post/media actions use the standard queued toast. Browser close and reload trigger the native unsaved-changes confirmation whenever the current account has buffered records, including records owned by disabled providers. The warning clears after acknowledgement or explicit account cleanup. Browsers control the confirmation wording and may require user interaction before showing it. Pending records still survive reload; the warning protects unacknowledged work and does not discard it.
+
+Cached social content remains tab-local and consent-gated. First visits, private offline reloads, creating rooms, membership/key management, calls and large uploads require connectivity. Typing and presence are transient and are not replayed. Current server authorization is checked on replay; offline snapshots cannot reveal remote revocations. ToS consent is still mandatory before access and replay.
+
+## Shared top banners
+
+The host exposes `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` before providers or pages mount. Descriptors accept a plain-text `title`, sanitized `bodyHtml`, trusted `actionsHtml` and an `info`, `success`, `warning` or `danger` variant. The returned handle has `element` and `remove()`. Reusing an ID replaces only that owner’s notice; an older disposer cannot remove its replacement. Bind provider/page lifetimes with `signal`. Lower priorities appear first. Titles are escaped; callers must sanitize rich text. Call `prepare()` while online to preload shared banner and button styles before the first notice.
+
+Offline Mode and Broadcast now use one sticky stack at the very top of the document, above the app header. Offline Mode has priority, cannot be dismissed, and retains Recheck Connectivity and the recovered Refresh action. Removing or dismissing an announcement does not remove Offline Mode. Broadcast polling skips disconnected requests and its provider disposes its bar and timer.
+
+## Empty offline Study pages
+
+Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Public Asset Preparation
+
+The host exposes `ctx.capabilities.get("offline:assets")` with `prepare(paths, { signal })` and `register(paths, { signal })`. Both use the staged `offline:prepareAssets` flow. Registration starts background preparation, retries on connectivity/preference changes and returns a retry function. Only root-relative public `/static/` or `/assets/` paths are accepted; requests omit credentials and reject private/no-store responses. Four workers consume response bodies, concurrent requests coalesce per owner signal, failures remain retryable, and aborting the owner cancels work and listeners. This facility caches no private API data and grants no offline access. Component `restoreRead` callbacks in the offline HTTP client run only after an authorized cache miss and use the same guarded snapshot reader. Access denials are never converted into empty or queued views.
+
+Preparation remains idle while Offline Mode is disabled, disconnected or blocked by required consent. Registration also retries after consent updates and worker controller changes. Successful work is scoped to the current owner and worker; preparing with no controller does not prevent rewarming when the worker takes control.
+
+## Shared Study Favourites
+
+The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.

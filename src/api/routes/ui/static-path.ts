@@ -8,6 +8,8 @@ export function uiStaticPath(
     const publicAsset =
         relative.startsWith("assets/") ||
         relative.startsWith("templates/") ||
-        relative === "recommended-modules.json";
+        relative === "recommended-modules.json" ||
+        relative === "offline-manifest.json" ||
+        relative === "pages/offline.html";
     return path.join(publicAsset ? publicRoot : staticRoot, relative);
 }

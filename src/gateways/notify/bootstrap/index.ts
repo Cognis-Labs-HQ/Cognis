@@ -1,4 +1,5 @@
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
+import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
 import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
@@ -248,6 +249,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/notify/email-client.js",
+        providesCapabilities: ["notify:emailClient"],
+    });
     ctx.uiRegistry?.registerSettingsSection({
         id: "notifications",
         label: "Notifications",
@@ -291,6 +296,39 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
         );
     }
+    // SSO redirects also establish sessions without visiting the login form.
+    ctx.capabilities.contribute(
+        "auth:getSetupIntegrations",
+        async (accountId: string, role: string) => {
+            const settings = parseSecuritySettings(
+                (await preferenceStore?.get(
+                    "__system__",
+                    SECURITY_SETTINGS_KEY,
+                )) ?? null,
+            );
+            const accounts = ctx.capabilities.get<{
+                isFounder(id: string): Promise<boolean>;
+            }>("auth:accountStore");
+            const founder =
+                (role === "admin" || role === "owner") &&
+                (await accounts?.isFounder(accountId));
+            if (
+                !isGatewayEnabled() ||
+                settings?.userValidationMode !== "smtp" ||
+                founder
+            )
+                return [];
+            const emails = await notifStore.getUserEmails(accountId);
+            if (emails.some((email) => email.primary && email.verified))
+                return [];
+            return [
+                {
+                    scriptUrl:
+                        "/static/gateways/notify/login-required-email-flow.js",
+                },
+            ];
+        },
+    );
     if (ctx.flow.exists("login")) {
         ctx.flow.extend(
             "login",
@@ -320,9 +358,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     isGatewayEnabled() &&
                     sessionResult.userValidationMode === "smtp" &&
                     !isInitialAdmin &&
-                    !hasVerifiedEmail
-                        ? gateway.canSendVerificationEmail()
-                        : false;
+                    !hasVerifiedEmail;
                 const nextSessionResult = {
                     ...sessionResult,
                     requiredUserValidation: requiresUserValidation,
@@ -377,6 +413,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const accountStore = ctx.capabilities.get<{
                 list(): Promise<
                     Array<{
+                        accountId: string;
                         username: string;
                         role?: string;
                     }>
@@ -392,7 +429,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     if (role === "teacher") return userRole === "teacher";
                     return userRole === "user";
                 })
-                .map((user) => user.username);
+                .map((user) => user.accountId);
             const dispatched: Array<{
                 recipientUsername: string;
                 result: Awaited<ReturnType<typeof gateway.dispatch>>;
@@ -605,7 +642,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 !primaryIsVerified &&
                 gateway.canSendVerificationEmail()
             ) {
-                const key = `${accountId}:${primaryEmail}`;
+                const key = emailVerificationKey(accountId, primaryEmail);
                 const code = tfaService.issueOrGet(
                     key,
                     15 * 60 * 1000,

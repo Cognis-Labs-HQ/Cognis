@@ -1,3 +1,4 @@
+import { uiLanguageMembershipChanged } from "./ui-language-state.js";
 /**
  * Loads and applies persisted UI preferences (font, size, message style).
  *
@@ -12,8 +13,16 @@
  *   applyUiPreferences(prefs);
  *   await saveUiPreferences({ font: 'system-ui' });
  */
+import { offlineEnabled, isOffline } from "./offline-state.js";
+import { uiCtx } from "./ui-ctx.js";
+import { captureAccountGuard } from "./offline-identity.js";
 import { apiFetch } from "./api-client.js";
 import { normalizeMessageStyle } from "./message-style-options.js";
+
+function preferenceRequest(path, options) {
+    const request = uiCtx.capabilities.get("social:profileRequest") ?? apiFetch;
+    return request(path, options);
+}
 
 function hasPreferenceApiContext() {
     return Boolean(
@@ -26,7 +35,7 @@ export async function loadUiPreferences() {
     const account = localStorage.getItem("cognis_account");
     if (!account || !hasPreferenceApiContext()) return null;
     try {
-        const response = await apiFetch(
+        const response = await preferenceRequest(
             `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         );
         if (!response.ok) return null;
@@ -39,15 +48,27 @@ export async function loadUiPreferences() {
     }
 }
 
-export async function saveUiPreferences(patch) {
+export async function saveUiPreferences(patch, { bufferOffline = true } = {}) {
     const account = localStorage.getItem("cognis_account");
     if (!account || !hasPreferenceApiContext()) return;
+    const assertAccount = captureAccountGuard();
     const current = await loadUiPreferences();
+    assertAccount();
+    if (
+        Object.entries(patch).every(
+            ([key, value]) =>
+                JSON.stringify(current?.[key]) === JSON.stringify(value),
+        )
+    )
+        return;
     const merged = { ...(current || {}), ...patch };
-    const response = await apiFetch(
+    if (isOffline() && uiLanguageMembershipChanged(current, merged))
+        throw new Error("offline_language_settings_readonly");
+    const response = await preferenceRequest(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
+            bufferOffline,
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ layout: merged }),
         },
@@ -58,6 +79,22 @@ export async function saveUiPreferences(patch) {
 }
 
 export function applyUiPreferences(prefs) {
+    if (prefs) {
+        const previousEnabled = offlineEnabled();
+        const previousOwner = localStorage.getItem(
+            "cognis_offline_preference_account",
+        );
+        const account = localStorage.getItem("cognis_account") ?? "";
+        localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
+        localStorage.setItem("cognis_offline_preference_account", account);
+        if (
+            previousEnabled !== (prefs.offlineEnabled !== false) ||
+            (previousOwner && previousOwner !== account)
+        )
+            window.dispatchEvent(
+                new CustomEvent("cognis:offline-preference-changed"),
+            );
+    }
     const messageStyle = normalizeMessageStyle(prefs?.messageStyle);
     document.documentElement.dataset.messageStyle = messageStyle;
     if (!prefs) return;

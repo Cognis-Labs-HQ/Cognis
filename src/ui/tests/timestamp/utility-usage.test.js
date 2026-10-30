@@ -6,25 +6,15 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("users popup formats member and login timestamps via timestamp utility", () => {
+test("account disclosures format creation and login dates through the shared timestamp utility", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/users/index.js"),
+        resolve(ROOT, "src/ui/app/users/details.js"),
         "utf8",
     );
-
-    assert.ok(
-        source.includes(
-            'import { formatDate, formatDateTime } from "../../reuse/timestamp.js";',
-        ),
-    );
     assert.match(
         source,
-        /function formatMemberSince\(iso\)\s*\{\s*return formatDate\(iso,\s*i18n\.t\("ui\.app\.dashboard\.never"\)\);/,
+        /import \{ formatDateTime \} from "..\/..\/reuse\/timestamp.js"/,
     );
-    assert.match(
-        source,
-        /function formatLastLogin\(iso\)\s*\{\s*return formatDateTime\(iso,\s*i18n\.t\("ui\.app\.dashboard\.never"\)\);/,
-    );
-    assert.match(source, /formatMemberSince\(info\?\.createdAt \?\? null\)/);
-    assert.match(source, /formatLastLogin\(info\?\.lastLogin \?\? null\)/);
+    assert.match(source, /formatDateTime\(info.createdAt, unknown\)/);
+    assert.match(source, /formatDateTime\(info.lastLogin, unknown\)/);
 });

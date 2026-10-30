@@ -1,3 +1,5 @@
+import { uiCtx as flowEngine } from "../ui-ctx.js";
+import { registerPageRedraw } from "../page-redraw.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import { isMountSignal, replaceMountScope } from "../mount-scope.js";
@@ -12,7 +14,11 @@ function createRouter({
     beginLoading,
     prepareProviders,
     runFlow,
+    offline = false,
+    allowOfflineRoute = async () => true,
+    navigationItems = [],
 } = {}) {
+    const flowPrefix = `test:${crypto.randomUUID()}:`;
     const listeners = new Map();
     const capabilities = new Map();
     const assigned = [];
@@ -49,6 +55,7 @@ function createRouter({
         console,
         document: {
             querySelector: () => root,
+            querySelectorAll: () => navigationItems,
             addEventListener: (type, callback) => listeners.set(type, callback),
         },
         CustomEvent: class {
@@ -58,7 +65,14 @@ function createRouter({
             }
         },
         uiCtx: {
-            runFlow,
+            registerFlow: (id, stages) =>
+                flowEngine.registerFlow(flowPrefix + id, stages),
+            extendFlow: (id, stage, hook, callback) =>
+                flowEngine.extendFlow(flowPrefix + id, stage, hook, callback),
+            runFlow: (id, input) =>
+                id === "ui:redraw"
+                    ? flowEngine.runFlow(flowPrefix + id, input)
+                    : runFlow?.(id, input),
             capabilities: {
                 contribute: (name, value) => capabilities.set(name, value),
                 get: (name) => capabilities.get(name),
@@ -96,6 +110,9 @@ function createRouter({
         },
         isGuestAllowedPath: () => false,
         installComponentPageBroker() {},
+        isOffline: () => (typeof offline === "function" ? offline() : offline),
+        offlineWorkerRequest: async () => [],
+        createI18n: async () => ({ t: (key) => key }),
         observePerformance() {},
         recordRouteMount() {},
     };
@@ -103,6 +120,23 @@ function createRouter({
     sandbox.router = loadTestModule(
         new URL("../app-router.js", import.meta.url),
         {
+            "./page-redraw.js": { registerPageRedraw },
+            "./offline-state.js": sandbox,
+            "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
+            "./offline-unavailable.js": {
+                showOfflineUnavailable: async () => {
+                    root.textContent = "Offline unavailable";
+                },
+            },
+            "./offline-navigation.js": {
+                allowOfflineRoute,
+                recoverOfflineNavigation: async ({ restore, fallback }) => {
+                    const restored = await restore();
+                    if (!restored) await fallback?.();
+                    return restored;
+                },
+                offlineRouteAvailable: () => false,
+            },
             "./page-styles.js": sandbox,
             "./mount-scope.js": sandbox,
             "./page-entry.js": sandbox,
@@ -386,4 +420,131 @@ test("entry failure releases loading before presenting its error popup", async (
     });
     assert.equal(await router.navigateTo("/broken"), false);
     assert.equal(active, false);
+});
+
+test("absolute same-origin links stay in the SPA when offline", async () => {
+    const router = createRouter({
+        offline: true,
+        prepareProviders: () =>
+            assert.fail("offline navigation must not fetch providers"),
+    });
+    let prevented = false;
+    const link = {
+        hasAttribute: () => false,
+        target: "",
+        getAttribute: (name) =>
+            name === "href" ? "https://cognis.test/terms-of-service" : null,
+    };
+    await router.listeners.get("click")({
+        defaultPrevented: false,
+        button: 0,
+        target: { closest: () => link },
+        preventDefault() {
+            prevented = true;
+        },
+    });
+    assert.equal(prevented, true);
+    assert.equal(router.root.textContent, "Terms");
+    assert.deepEqual(router.assigned, []);
+});
+
+for (const previousAvailable of [true, false]) {
+    test(`sudden offline transition stops an unsupported page and recovers gracefully (previous available: ${previousAvailable})`, async () => {
+        let offline = false;
+        let stopped = false;
+        const router = createRouter({
+            offline: () => offline,
+            allowOfflineRoute: async (route) =>
+                !offline || route?.base === "/usable",
+            routes: [
+                routeFixture("/usable", async (root) => {
+                    root.textContent = "Usable";
+                }),
+                routeFixture("/unsupported", async (root, { signal }) => {
+                    root.textContent = "Unsupported";
+                    signal.addEventListener("abort", () => {
+                        stopped = true;
+                    });
+                }),
+            ],
+        });
+        if (previousAvailable) await router.navigateTo("/usable");
+        await router.navigateTo("/unsupported");
+        offline = true;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.equal(stopped, true);
+        assert.equal(
+            router.root.textContent,
+            previousAvailable ? "Usable" : "Offline unavailable",
+        );
+        assert.ok(
+            router.navigationEvents.some(
+                (event) => event.type === "cognis:route-will-change",
+            ),
+        );
+    });
+}
+
+test("disabled menu destinations ignore activation before resolving or loading routes", async () => {
+    for (const href of [
+        "/terms-of-service",
+        "/administration/modules",
+        "/study/library",
+    ]) {
+        const router = createRouter({
+            allowOfflineRoute: () =>
+                assert.fail("disabled link must not start recovery"),
+        });
+        const event = click();
+        event.target.closest = () => ({
+            target: "",
+            hasAttribute: () => false,
+            getAttribute: (name) => (name === "aria-disabled" ? "true" : href),
+        });
+        await router.listeners.get("click")(event);
+        assert.equal(event.defaultPrevented, true);
+        assert.deepEqual(router.mounted, []);
+        assert.deepEqual(router.assigned, []);
+        assert.deepEqual(router.navigationEvents, []);
+    }
+});
+
+test("online-only Logout stays visible, disables on cold or sudden disconnection and re-enables on recovery", async () => {
+    for (const initiallyOffline of [false, true]) {
+        let offline = initiallyOffline;
+        const attributes = new Map([["data-online-only", ""]]);
+        const logout = {
+            tagName: "BUTTON",
+            dataset: {},
+            disabled: false,
+            hidden: false,
+            hasAttribute: (name) => attributes.has(name),
+            getAttribute: (name) => attributes.get(name) ?? null,
+            setAttribute: (name, value) => attributes.set(name, value),
+            removeAttribute: (name) => attributes.delete(name),
+        };
+        const router = createRouter({
+            offline: () => offline,
+            navigationItems: [logout],
+        });
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, initiallyOffline);
+        assert.equal(
+            attributes.get("aria-disabled"),
+            initiallyOffline ? "true" : undefined,
+        );
+        offline = true;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, true);
+        assert.equal(logout.hidden, false);
+        assert.equal(attributes.get("aria-disabled"), "true");
+        offline = false;
+        router.listeners.get("cognis:connectivity-changed")();
+        await new Promise(setImmediate);
+        assert.equal(logout.disabled, false);
+        assert.equal(attributes.has("aria-disabled"), false);
+        assert.equal(logout.dataset.offlineDisabled, undefined);
+    }
 });

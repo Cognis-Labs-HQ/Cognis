@@ -6,6 +6,7 @@ import { formatTemplate } from "/static/reuse/format-template.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createActionRunner } from "./action-flows.js";
 import { showToast } from "/static/reuse/toast.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { drawingViewport } from "./drawing-viewport.js";
@@ -19,10 +20,6 @@ import {
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/gateways/study/languages"],
 });
-const stylesheet = document.createElement("link");
-stylesheet.rel = "stylesheet";
-stylesheet.href = "/static/gateways/study/reuse/drawing.css";
-document.head.append(stylesheet);
 
 const runDrawingAction = createActionRunner("study:drawing", [
     "open",
@@ -231,6 +228,9 @@ async function createDrawingPad({
 }) {
     if (!card?.id || !strokePattern?.strokes?.length)
         throw new Error("drawing_card_required");
+    await ensurePageStylesheet("/static/gateways/study/reuse/drawing.css", {
+        signal,
+    });
     if (!container && activeDrawingSession) {
         await activeDrawingSession.load({
             card,
@@ -339,6 +339,7 @@ async function createDrawingPad({
         pendingCompletion = request;
         try {
             const saved = await request;
+            if (saved?.queued) return progress;
             if (attempt === attemptNumber && sequence === loadSequence)
                 progress = saved;
             return saved;
@@ -730,6 +731,7 @@ async function createDrawingPad({
     let closing = false;
     let closed = false;
     const finishClose = () => {
+        signal?.removeEventListener("abort", finishClose);
         if (closed) return;
         closed = true;
         controller.abort();

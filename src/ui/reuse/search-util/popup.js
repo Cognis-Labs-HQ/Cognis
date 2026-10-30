@@ -67,6 +67,7 @@ import {
 export { search } from "./capability.js";
 
 let latestSearchRunId = 0;
+let activeSearchController = null;
 
 async function runSearch({
     endpoint,
@@ -88,6 +89,9 @@ async function runSearch({
         return;
     }
 
+    activeSearchController?.abort();
+    const requestController = new AbortController();
+    activeSearchController = requestController;
     const searchRunId = ++latestSearchRunId;
     renderSearchStatus(resultsContainer, categoriesContainer, searchingText);
     const isMultiSelect = Boolean(multiSelectState);
@@ -151,7 +155,7 @@ async function runSearch({
     filterLocalGroupsIncrementally(
         localGroups,
         query,
-        searchOptions,
+        { ...searchOptions, signal: requestController.signal },
         (matchedLocalGroups) => {
             const typedLocalGroups = filterSearchGroupsForType(
                 matchedLocalGroups,
@@ -176,7 +180,6 @@ async function runSearch({
 
     const token = localStorage.getItem("cognis_access_token");
     const headers = token ? { authorization: `Bearer ${token}` } : {};
-    const requestController = new AbortController();
     const requestTimeout = window.setTimeout(
         () => requestController.abort(),
         10_000,
@@ -536,6 +539,8 @@ export function openSearchPopup({
     const closeOverlay = () => {
         if (closeStarted) return;
         closeStarted = true;
+        latestSearchRunId += 1;
+        activeSearchController?.abort();
         clearTimeout(debounceTimer);
         clearPageFindHighlights(pageFindState);
         eventController.abort();
@@ -565,6 +570,8 @@ export function openSearchPopup({
     };
 
     const runCurrentSearch = () => {
+        latestSearchRunId += 1;
+        activeSearchController?.abort();
         clearTimeout(debounceTimer);
         if (searchOptions.onThisPage) {
             renderPageFindHighlights(

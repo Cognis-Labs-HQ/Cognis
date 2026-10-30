@@ -15,20 +15,15 @@ export function createAdminSection({
     let policyChangeHandler = null;
     const isOwner = localStorage.getItem("cognis_role") === "owner";
 
-    const dataReady = Promise.all([
-        apiFetch("/api/v1/registration/policy"),
-        apiFetch("/api/v1/gateways/registration/adapters"),
-    ]).then(async ([policyResponse, adaptersResponse]) => {
-        if (policyResponse.ok) {
-            invitationPolicy = (await policyResponse.json())?.data ?? null;
-        }
-        if (adaptersResponse.ok) {
-            const adapters = (await adaptersResponse.json())?.data ?? [];
-            publicRegistrationEnabled =
-                adapters.find((adapter) => adapter.id === "public")?.enabled ===
-                true;
-        }
-    });
+    const dataReady = apiFetch("/api/v1/registration/policy").then(
+        async (response) => {
+            if (response.ok) {
+                invitationPolicy = (await response.json())?.data ?? null;
+                publicRegistrationEnabled =
+                    invitationPolicy?.publicRegistrationEnabled === true;
+            }
+        },
+    );
 
     function createPolicyForm() {
         const booleanOptions = (enabled) => [
@@ -142,24 +137,12 @@ export function createAdminSection({
         async save() {
             if (!policyForm || !policyTracker?.isAnyDirty()) return;
             const nextPolicy = readPolicyForm();
-            if (
-                nextPolicy.publicRegistrationEnabled !==
-                publicRegistrationEnabled
-            ) {
-                const action = nextPolicy.publicRegistrationEnabled
-                    ? "enable"
-                    : "disable";
-                const adapterResponse = await apiFetch(
-                    `/api/v1/gateways/registration/adapters/public/${action}`,
-                    { method: "POST" },
-                );
-                if (!adapterResponse.ok)
-                    throw new Error("public_registration_save_failed");
-            }
             const response = await apiFetch("/api/v1/registration/policy", {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
+                    publicRegistrationEnabled:
+                        nextPolicy.publicRegistrationEnabled,
                     founderInvitesEnabled: nextPolicy.founderInvitesEnabled,
                     adminInvitesEnabled: nextPolicy.adminInvitesEnabled,
                 }),

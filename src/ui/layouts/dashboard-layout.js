@@ -1,3 +1,5 @@
+import { mountOfflineStatus } from "../reuse/offline-status.js";
+import { isOffline } from "../reuse/offline-state.js";
 import { updateNavbarAvatar } from "./navbar-avatar.js";
 export { updateNavbarAvatar } from "./navbar-avatar.js";
 import { apiFetch } from "../reuse/api-client.js";
@@ -205,9 +207,6 @@ async function bindThemeToggle({ usePreferenceApi = true, preferences } = {}) {
     applyTimeFormatToLocalStorage(prefs?.timeFormat ?? "auto");
     const storedMode = getStoredTheme();
     const initialMode = storedMode || prefs?.mode || "dark";
-    if (prefs?.mode !== initialMode) {
-        await saveUiPreferences({ mode: initialMode });
-    }
     bindSharedThemeToggle({
         readInitialTheme: () => initialMode,
         onThemeChange: async (mode) => {
@@ -305,6 +304,7 @@ function bindTopbarActions() {
     });
 
     logout?.addEventListener("click", async () => {
+        if (isOffline()) return;
         await uiCtx.runFlow("logout", { reason: "userRequested" });
     });
 }
@@ -535,7 +535,9 @@ export async function renderDashboardLayout(root, slots = {}) {
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
-        usePreferenceApi = showTopbar || showNavbar,
+        usePreferenceApi = (showTopbar || showNavbar) &&
+            (!isOffline() ||
+                Boolean(uiCtx.capabilities.get("social:profileRequest"))),
         // Pages that manage their own auth/session flow (e.g. the Share
         // gateway's anonymous-guest landing page) can render the topbar
         // chrome without a full account session. For those pages,
@@ -643,10 +645,8 @@ export async function renderDashboardLayout(root, slots = {}) {
         } else {
             existingThemeToggle?.removeAttribute("hidden");
         }
-        applyStaticTranslations(
-            i18n,
-            existingShell.querySelector(".main-window") ?? existingShell,
-        );
+        applyStaticTranslations(i18n, existingShell);
+        uiCtx.capabilities.get("ui:navbarLinks")?.render?.(i18n);
         mountFooterLinks(existingShell, { i18n });
         applyActiveNavigation();
         if (
@@ -660,11 +660,19 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
+        if (!componentWindow)
+            mountOfflineStatus(root, { i18n, signal: slots.signal });
         if (!componentWindow) {
             initRouter(root);
             const preferences = usePreferenceApi ? loadUiPreferences() : null;
             bindThemeToggle({ usePreferenceApi, preferences });
-            bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
+            bindLanguageToggle({
+                i18n,
+                navigateTo,
+                showToast,
+                preferences,
+                signal: slots.signal,
+            });
             bindSwitcherSettingsLinks(root);
         }
         return;
@@ -718,11 +726,19 @@ export async function renderDashboardLayout(root, slots = {}) {
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
+    if (!componentWindow)
+        mountOfflineStatus(root, { i18n, signal: slots.signal });
     if (!componentWindow) {
         initRouter(root);
         const preferences = usePreferenceApi ? loadUiPreferences() : null;
         bindThemeToggle({ usePreferenceApi, preferences });
-        bindLanguageToggle({ i18n, navigateTo, showToast, preferences });
+        bindLanguageToggle({
+            i18n,
+            navigateTo,
+            showToast,
+            preferences,
+            signal: slots.signal,
+        });
         bindSwitcherSettingsLinks(root);
     }
     registerServiceWorker();

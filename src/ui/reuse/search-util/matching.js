@@ -340,8 +340,14 @@ export function collectBrowserPreferenceSearchGroups() {
     return items.length ? [{ category: "Settings", items }] : [];
 }
 
-export async function collectGlobalSettingsSearchGroups() {
-    const payload = await searchFetchJson("/api/v1/ui/settings-sections");
+export async function collectGlobalSettingsSearchGroups({ signal } = {}) {
+    const token = localStorage.getItem("cognis_access_token");
+    const response = await fetch("/api/v1/ui/settings-sections", {
+        credentials: "same-origin",
+        signal,
+        headers: token ? { authorization: `Bearer ${token}` } : {},
+    });
+    const payload = response.ok ? await response.json() : null;
     const sections = Array.isArray(payload?.data) ? payload.data : [];
     const items = [
         {
@@ -376,112 +382,7 @@ export async function collectGlobalSettingsSearchGroups() {
     return [{ category: "Settings", items }];
 }
 
-const GLOBAL_DOCS_SEARCH_CONTENT = new Map();
-let GLOBAL_DOCS_INDEX_PROMISE = null;
-
-function searchFetchJson(path) {
-    const token = localStorage.getItem("cognis_access_token");
-    const headers = token ? { authorization: `Bearer ${token}` } : {};
-    return fetch(path, { credentials: "same-origin", headers }).then(
-        (response) => (response.ok ? response.json() : null),
-    );
-}
-
-function markdownHtmlToSearchText(html) {
-    const template = document.createElement("template");
-    template.innerHTML = String(html ?? "");
-    template.content
-        .querySelectorAll("script, style")
-        .forEach((node) => node.remove());
-    return String(template.content.textContent ?? "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function docSearchTitle(item) {
-    return String(item?.title ?? item?.slug ?? "")
-        .split("/")
-        .pop()
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ");
-}
-
-function isSearchChangelogDoc(item) {
-    return String(item?.slug ?? "").startsWith("changelog/");
-}
-
-function changelogSearchRoute(slug) {
-    return `/changelogs/${String(slug).replace(/^changelog\//, "")}`;
-}
-
-async function loadGlobalDocsSearchGroups() {
-    const payload = await searchFetchJson("/api/v1/docs");
-    const docs = Array.isArray(payload?.data) ? payload.data : [];
-    const langs = String(
-        localStorage.getItem("cognis_language_priority") ?? "",
-    );
-    const docsItems = [];
-    const changelogItems = [];
-    const indexedDocs = await Promise.all(
-        docs.map(async (item) => {
-            const slug = String(item?.slug ?? "").trim();
-            if (!slug) return null;
-            const title = docSearchTitle(item);
-            let bodyText = GLOBAL_DOCS_SEARCH_CONTENT.get(slug) ?? "";
-            if (!bodyText) {
-                const htmlResponse = await fetch(
-                    `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
-                    { credentials: "same-origin" },
-                ).catch(() => null);
-                bodyText = htmlResponse?.ok
-                    ? markdownHtmlToSearchText(await htmlResponse.text())
-                    : "";
-                GLOBAL_DOCS_SEARCH_CONTENT.set(slug, bodyText);
-            }
-            const changelog = isSearchChangelogDoc(item);
-            return {
-                changelog,
-                item: {
-                    id: `global-docs:${slug}`,
-                    label: title,
-                    description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
-                    url: changelog
-                        ? changelogSearchRoute(slug)
-                        : `/docs/${slug}`,
-                    resultClass: "page",
-                    searchText: [
-                        title,
-                        slug,
-                        item.group,
-                        item.description,
-                        bodyText,
-                    ]
-                        .filter(Boolean)
-                        .join(" "),
-                    visible: true,
-                },
-            };
-        }),
-    );
-    for (const indexedDoc of indexedDocs.filter(Boolean)) {
-        if (indexedDoc.changelog) changelogItems.push(indexedDoc.item);
-        else docsItems.push(indexedDoc.item);
-    }
-    return [
-        docsItems.length ? { category: "Docs", items: docsItems } : null,
-        changelogItems.length
-            ? { category: "Changelogs", items: changelogItems }
-            : null,
-    ].filter(Boolean);
-}
-
-export function collectGlobalDocsSearchGroups() {
-    GLOBAL_DOCS_INDEX_PROMISE ??= loadGlobalDocsSearchGroups().finally(() => {
-        GLOBAL_DOCS_INDEX_PROMISE = null;
-    });
-    return GLOBAL_DOCS_INDEX_PROMISE;
-}
+export { collectGlobalDocsSearchGroups } from "./docs-index.js";
 
 export function collectVisibleNavigationSearchGroups() {
     const items = [];
@@ -673,6 +574,7 @@ async function resolveSearchProviderContribution(
             );
         }
     } catch (error) {
+        if (options.signal?.aborted) return;
         console.warn("[search-bar]:category-provider-failed", {
             categoryId,
             error,
@@ -798,6 +700,7 @@ export async function filterLocalGroupsIncrementally(
     if (baseGroups.length) onGroups(baseGroups);
     const providerContext = {
         query,
+        signal: options.signal,
         searchOptions: normalizeSearchOptions(options),
     };
     const sortedAvenues = [...search.getAvenues()].sort(
@@ -806,8 +709,7 @@ export async function filterLocalGroupsIncrementally(
             left.categoryId.localeCompare(right.categoryId),
     );
     const avenueTasks = sortedAvenues.map(async (avenue) => {
-        try {
-            const result = await search.runAvenue(avenue, providerContext);
+        const contribute = (result) => {
             const groups = [];
             const contributions = Array.isArray(result) ? result : [result];
             for (const contribution of contributions) {
@@ -822,8 +724,18 @@ export async function filterLocalGroupsIncrementally(
                 query,
                 options,
             );
-            if (filteredGroups.length) onGroups(filteredGroups);
+            if (!options.signal?.aborted && filteredGroups.length)
+                onGroups(filteredGroups);
+        };
+        try {
+            contribute(
+                await search.runAvenue(avenue, {
+                    ...providerContext,
+                    onResults: contribute,
+                }),
+            );
         } catch (error) {
+            if (options.signal?.aborted) return;
             console.warn("[search-bar]:category-provider-failed", {
                 categoryId: avenue.categoryId,
                 error,

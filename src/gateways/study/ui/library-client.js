@@ -1,3 +1,8 @@
+import { registerEnrolledLibrarySnapshots } from "./reuse/library-offline-snapshot.js";
+import { readStudySnapshot } from "./offline-content.js";
+import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
+import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
@@ -60,7 +65,10 @@ async function executeMarkLibraryEntriesViewed(request, entryIds) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ entryIds }),
     });
-    if (!response.ok) throw new Error("mark_viewed_failed");
+    if (!response.ok)
+        throw Object.assign(new Error("mark_viewed_failed"), {
+            status: response.status,
+        });
 }
 
 async function executeFetchLibraryAudioUrl(
@@ -115,11 +123,21 @@ async function executeFetchLibraryPushRequests(request, { status } = {}) {
 }
 
 async function executeFetchSearchableDictionaryProviders(request, language) {
-    const response = await request(
-        `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
-    );
-    if (!response.ok) throw new Error("lookup_providers_failed");
-    return (await response.json()).data;
+    try {
+        const response = await request(
+            `/api/v1/study/library/dictionary/providers?${new URLSearchParams({ language })}`,
+            { timeoutMs: 3000 },
+        );
+        if (!response.ok) throw new Error("lookup_providers_failed");
+        return (await response.json()).data;
+    } catch (error) {
+        if (error?.name !== "TimeoutError") throw error;
+        console.error("[study] dictionary discovery timed out", {
+            operation: "loadDictionaryProviders",
+            errorName: error.name,
+        });
+        return [];
+    }
 }
 
 async function executeSearchLibraryDictionary(request, input) {
@@ -480,6 +498,32 @@ const operations = {
 export function registerLibraryClient(ctx) {
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("scoped_actions_unavailable");
+    const read = createOfflineReadCache({
+        signal: ctx.signal,
+        maxBytes: 16_000_000,
+    });
+    const offlineSchemas = new Set();
+    const offlineReads = new Set([
+        "fetchLibrarySchemas",
+        "fetchLibraryLocations",
+        "fetchLibraryForms",
+        "fetchLibraryEntries",
+        "fetchLibraryEntry",
+        "fetchViewedLibraryEntryIds",
+    ]);
+    const outbox = ctx.capabilities.get("offline:outbox");
+    if (!outbox) throw new Error("offline_delivery_unavailable");
+    outbox.register(
+        "study.viewed",
+        ({ entryIds }) =>
+            executeMarkLibraryEntriesViewed(
+                (path, options) =>
+                    apiFetch(path, { ...options, signal: ctx.signal }),
+                entryIds,
+            ),
+        ctx.signal,
+        { protectOnClose: false },
+    );
     const actions = registerActions(
         ctx,
         "study:library",
@@ -500,22 +544,92 @@ export function registerLibraryClient(ctx) {
                     ]);
                     input.signal = signal;
                     signal.throwIfAborted();
-                    return execute(
-                        (path, options = {}) =>
-                            apiFetch(path, {
-                                ...options,
-                                signal: AbortSignal.any([
-                                    signal,
-                                    ...(options.signal ? [options.signal] : []),
-                                ]),
-                            }),
-                        ...input.args,
-                    );
+                    const load = () =>
+                        execute(
+                            async (path, options = {}) => {
+                                const response = await apiFetch(path, {
+                                    ...options,
+                                    signal: AbortSignal.any([
+                                        signal,
+                                        ...(options.signal
+                                            ? [options.signal]
+                                            : []),
+                                    ]),
+                                });
+                                if ([401, 403].includes(response.status))
+                                    throw Object.assign(
+                                        new Error("library_access_denied"),
+                                        { status: response.status },
+                                    );
+                                return response;
+                            },
+                            ...input.args,
+                        );
+                    if (name === "markLibraryEntriesViewed")
+                        return deliverOrQueue(
+                            ctx,
+                            "study.viewed",
+                            crypto.randomUUID(),
+                            { entryIds: input.args[0] },
+                            load,
+                        );
+                    if (offlineReads.has(name)) {
+                        const cached = () =>
+                            read(
+                                JSON.stringify([name, input.args]),
+                                load,
+                                (data) => {
+                                    if (name === "fetchLibraryEntries")
+                                        return (
+                                            Array.isArray(data) &&
+                                            data.every((entry) =>
+                                                offlineSchemas.has(
+                                                    entry.schemaId,
+                                                ),
+                                            )
+                                        );
+                                    if (name === "fetchLibraryEntry")
+                                        return offlineSchemas.has(
+                                            data?.entry?.schemaId,
+                                        );
+                                    return true;
+                                },
+                            );
+                        const result =
+                            name === "fetchLibraryForms"
+                                ? await readStudySnapshot(cached, [])
+                                : await cached();
+                        if (name === "fetchLibrarySchemas") {
+                            for (const schema of Array.isArray(result)
+                                ? result
+                                : []) {
+                                if (
+                                    schema.metadata?.offline?.cache ===
+                                    "lightweight"
+                                )
+                                    offlineSchemas.add(schema.id);
+                                else offlineSchemas.delete(schema.id);
+                            }
+                        }
+                        return result;
+                    }
+                    if (isOffline()) {
+                        if (
+                            [
+                                "fetchSearchableDictionaryProviders",
+                                "fetchLibraryLookupProviders",
+                            ].includes(name)
+                        )
+                            return [];
+                        throw new Error("offline_operation_unavailable");
+                    }
+                    return load();
                 },
             ]),
         ),
     );
     ctx.capabilities.contribute("study:library:client", actions);
+    registerEnrolledLibrarySnapshots(ctx, actions);
 }
 
 export const {

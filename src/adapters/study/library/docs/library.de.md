@@ -606,3 +606,25 @@ Lesezugriffe auf den Wörterbuchsuchkontext verwenden `study:library:readSearchC
 ## Benachrichtigungen und Speicherung
 
 Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deutsche, indonesische und japanische Texte aus XML-Katalogen, nutzen Englisch als Ersatz und durchlaufen `study:library:notifyContent`. Kartenbeschriftungen werden bei der Ersetzung nicht erneut interpretiert. Auch privilegierte Schreibvorgänge benötigen eine vorhandene Klasse. Leaderboard-Beobachtungen werden bei Speicherfehlern zurückgesetzt; der Saisonwechsel berechnet nach einem Neustart die endgültige Rangliste neu und stellt bei Speicherfehlern den Zustand wieder her. Verifizierte Administratoren können passende Integrationsbindungen ohne Raummitgliedschaft lösen.
+
+## Leere Offline-Lernseiten
+
+Vorbereitete Study-Seiten bleiben in einer bestätigten Offline-Sitzung mit gültiger Zustimmung auch ohne private Inhalte erreichbar. Fehlende Sprach- und Präferenzdaten ergeben eine leere Navigation. Explore zeigt seine normale leere Ansicht und den gezielten Hinweis „Keine offline gespeicherten Inhalte verfügbar“ statt einer nicht verfügbaren Route oder Fehlermeldungen. Flashcards behält eine leere Seite, wenn Kartendaten oder notwendige Ansichtsressourcen fehlen. Hinweise sind an die Seite gebunden und werden nicht doppelt angezeigt. Cache-Fehler verbergen keine Zugriffs- oder Zustimmungsverweigerung. Library und Flashcards bereiten öffentliche Übersetzungen und kleine Vorlagen online vor; private Daten bleiben in begrenzten tablokalen Caches.
+
+## Offline-Lernressourcen
+
+Beide Designvarianten der Popup-Symbole werden über die lebenszyklusgebundene Offline-Asset-Funktion des Hosts vorbereitet. Zwischengespeicherte Inhalte bleiben durchsuchbar und Zeichenübungen verfügbar. Bearbeiten ist offline deaktiviert, auch in bereits geöffneten Popups bei Verbindungsverlust. Fehlende dekorative Symbole zeigen die übersetzte Aktionsbeschriftung.
+
+## Offline-Verfügbarkeit
+
+Die Offline-Routenregistrierung bleibt bei wiederholten gebündelten und direkt ausgelieferten Importen erhalten. Vorbereitete Routen behalten ihre Verfügbarkeit bei neu erzeugten Beschreibungen mit denselben Skripten, Stilen und Funktionsanbietern; geänderte Assets müssen erneut vorbereitet werden. Nachrichten bereitet Chatlisten, Übersetzungen und Emoji-Kataloge nach bestätigter Anmeldung vor. Die Seite kann vor dem ersten Online-Besuch offline geöffnet werden. Automatisch öffnen nur zwischengespeicherte Chats mit zwischengespeichertem Verlauf; ein nicht gespeicherter Verlauf zeigt einen gezielten Informationstoast. Explore behält verfügbare Sammlungen, wenn eine andere Sammlung oder der Gelesen-Status fehlt. Zugriffs- und Einwilligungsverweigerungen werden weiterhin weitergegeben. Banneraktionen stehen direkt in der gemeinsamen Aktionszeile und verlieren den geerbten vertikalen Versatz.
+
+## Gemeinsame Lernfavoriten
+
+Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötigen eine Verbindung. Die berechtigten Navigationslinks bleiben offline sichtbar, sind aber deaktiviert, auch unmittelbar nach einem Verbindungsabbruch. Explore bleibt zum Lesen gespeicherter Inhalte und zum Zeichnen verfügbar. Der Library-Provider meldet nur Explore als Offline-Sitzungsroute an.
+
+Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog, die sprachspezifischen Kataloge und zulässige kleine Sammlungen über die Study-Verträge. Verbraucher nutzen diese vorbereiteten Schemas und Sammlungsabfragen ohne vorherigen Seitenbesuch. Zeichenressourcen werden vor der ersten Verwendung vorbereitet. Audio, Wörterbuchabrufe, Inhaltsbearbeitung und Zugriffsprüfungen behalten ihre bisherigen Beschränkungen.
+
+## Benachrichtigungen per Konto-ID
+
+Anfrage- und Inhaltsbenachrichtigungen der Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen.

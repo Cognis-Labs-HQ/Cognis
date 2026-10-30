@@ -17,13 +17,14 @@
     padding-bottom: 0;
 }
 .site-header {
+    overflow-anchor: none;
     width: 98%;
     margin: 0 auto;
     border-bottom-left-radius: 9px;
     border-bottom-right-radius: 9px;
     overflow: visible;
     position: sticky;
-    top: 0;
+    top: var(--site-top-banner-height, 0px);
     z-index: 1200;
 }
 .global-topbar {
@@ -303,7 +304,9 @@
     opacity: 1;
     border-bottom: 2px solid var(--accent-2);
 }
-.topnav a[aria-disabled="true"] {
+.topnav a[aria-disabled="true"],
+.nav-drawer-nav a[aria-disabled="true"],
+.dropdown-item[aria-disabled="true"] {
     opacity: 0.38;
     pointer-events: none;
 }
@@ -427,6 +430,9 @@
 .dropdown-item:focus-visible {
     transform: translateX(3px);
 }
+.dropdown-item[aria-disabled="true"] {
+    transform: none;
+}
 .app-shell .dropdown-item.active {
     border-bottom: 2px solid var(--accent-2);
     border-radius: 0;
@@ -484,11 +490,16 @@
     color: var(--text);
     background: var(--surface-soft);
 }
+.workspace:has(> .main-window > [data-offline-unavailable]:empty),
+.main-window:has(> [data-offline-unavailable]:empty) {
+    display: none;
+}
+
 .content-grid {
     display: grid;
     gap: 14px;
 }
-.app-shell button,
+.app-shell button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)),
 .app-shell select,
 .app-shell input,
 .app-shell textarea {

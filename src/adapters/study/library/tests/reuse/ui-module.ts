@@ -1,3 +1,5 @@
+import * as entryGraph from "../../ui/reuse/entry-graph.js";
+import * as offlineState from "../../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 
 const CONTRACTS = {
@@ -66,6 +68,7 @@ const CONTRACTS = {
         "/static/reuse/escape-html.js",
     ],
     "app/requests.js": [
+        "/static/reuse/offline-state.js",
         "./request-preview.js",
         "/static/reuse/popup.js",
         "/static/reuse/ui-ctx.js",
@@ -119,9 +122,16 @@ export function loadLibraryUiModule(
         throw new Error("Unknown Library UI fixture");
     return loadTestModule(
         new URL(`../../ui/${path}`, import.meta.url),
-        Object.fromEntries(
-            CONTRACTS[path].map((specifier) => [specifier, dependencies]),
-        ),
+        {
+            ...Object.fromEntries(
+                CONTRACTS[path].map((specifier) => [specifier, dependencies]),
+            ),
+            "/static/reuse/offline-state.js": offlineState,
+            "/static/gateways/study/offline-content.js": {
+                isOfflineContentMiss: () => false,
+            },
+            "../reuse/entry-graph.js": entryGraph,
+        },
         dependencies,
     );
 }

@@ -1,3 +1,5 @@
+import { offlineRouteAvailable } from "./offline-navigation.js";
+import { uiCtx } from "./ui-ctx.js";
 /**
  * Loads and caches dynamic SPA route descriptors from the UI API so the app
  * router can discover gateway/adapter-provided pages without hardcoding their
@@ -15,11 +17,15 @@
  * ```
  */
 
+import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
 
-let cachedSpaRoutes = null;
-let activeLoadPromise = null;
-let cacheGeneration = 0;
+const catalog = uiCtx.capabilities.get("navigation:routeCatalog") ?? {
+    routes: null,
+    loading: null,
+    generation: 0,
+};
+uiCtx.capabilities.contribute("navigation:routeCatalog", catalog);
 
 function normalizeRoute(rawRoute) {
     const patternSource = String(rawRoute?.pattern ?? "").trim();
@@ -59,9 +65,13 @@ function normalizeRoute(rawRoute) {
                       )
                     : {},
             public: rawRoute.public === true,
+            offline: rawRoute.offline,
+            offlineAvailable: rawRoute.offlineAvailable === true,
             pattern: routePattern,
             base: basePath,
             stylesheets,
+            scriptUrl,
+            capabilityScripts,
             load: async () => {
                 await Promise.all(
                     capabilityScripts.map(
@@ -124,19 +134,28 @@ export async function resolveComponentPage({ componentUuid, routeId, mode }) {
  * @returns {Promise<Array<{pattern: RegExp, base: string, stylesheets: string[], load: (path?: string) => Promise<unknown>}>>}
  */
 export async function loadSpaRoutes() {
-    if (cachedSpaRoutes) {
-        return cachedSpaRoutes;
+    if (isOffline()) {
+        if (catalog.routes)
+            return catalog.routes.filter((route) =>
+                offlineRouteAvailable(route),
+            );
+        return (await offlineWorkerRequest("COGNIS_OFFLINE_ROUTES"))
+            .map(normalizeRoute)
+            .filter(Boolean);
     }
-    if (activeLoadPromise) {
-        return activeLoadPromise;
+    if (catalog.routes) {
+        return catalog.routes;
     }
-    const loadGeneration = cacheGeneration;
+    if (catalog.loading) {
+        return catalog.loading;
+    }
+    const loadGeneration = catalog.generation;
     const loadPromise = (async () => {
         try {
             const response = await apiFetch("/api/v1/ui/app-routes");
             if (!response.ok) {
-                if (loadGeneration === cacheGeneration) {
-                    cachedSpaRoutes = [];
+                if (loadGeneration === catalog.generation) {
+                    catalog.routes = [];
                 }
                 return [];
             }
@@ -144,22 +163,25 @@ export async function loadSpaRoutes() {
             const normalizedRoutes = Array.isArray(payload?.data)
                 ? payload.data.map(normalizeRoute).filter(Boolean)
                 : [];
-            if (loadGeneration === cacheGeneration) {
-                cachedSpaRoutes = normalizedRoutes;
+            if (loadGeneration === catalog.generation) {
+                catalog.routes = normalizedRoutes;
+                void offlineWorkerRequest(
+                    "COGNIS_REFRESH_OFFLINE_ROUTES",
+                ).catch(console.error);
             }
             return normalizedRoutes;
         } catch {
-            if (loadGeneration === cacheGeneration) {
-                cachedSpaRoutes = [];
+            if (loadGeneration === catalog.generation) {
+                catalog.routes = [];
             }
             return [];
         } finally {
-            if (activeLoadPromise === loadPromise) {
-                activeLoadPromise = null;
+            if (catalog.loading === loadPromise) {
+                catalog.loading = null;
             }
         }
     })();
-    activeLoadPromise = loadPromise;
+    catalog.loading = loadPromise;
     return loadPromise;
 }
 
@@ -170,7 +192,7 @@ export async function loadSpaRoutes() {
  * @returns {void}
  */
 export function clearSpaRouteCache() {
-    cacheGeneration += 1;
-    cachedSpaRoutes = null;
-    activeLoadPromise = null;
+    catalog.generation += 1;
+    catalog.routes = null;
+    catalog.loading = null;
 }

@@ -27,6 +27,8 @@
  * ```
  */
 
+import { createTopBanners } from "./top-banners.js";
+import { registerOfflineRuntime } from "./offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
 import { createSubPageRegistry } from "./sub-page-registry.js";
@@ -171,11 +173,16 @@ export const uiCtx =
     globalThis[UI_CTX_KEY] ?? (globalThis[UI_CTX_KEY] = createFlowEngine());
 
 uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
-uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
+if (!uiCtx.capabilities.get("ui:broadcast"))
+    uiCtx.capabilities.contribute("ui:broadcast", createTopBanners());
+if (!uiCtx.capabilities.get("ui:subPages"))
+    uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
     if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);
 }
+
+registerOfflineRuntime(uiCtx);
 
 export const { registerFlow, extendFlow, removeFlowHook, runFlow, flowExists } =
     uiCtx;

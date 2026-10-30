@@ -46,15 +46,11 @@ export function createRegistrationPageRoutes(
             res.end();
             return true;
         }
-        if (session.role === "admin") {
-            res.writeHead(302, { location: "/users" });
-            res.end();
-            return true;
-        }
+        const privileged = session.role === "admin" || session.role === "owner";
         if (
             !isGatewayEnabled() ||
-            !accountStore ||
-            !(await accountStore.isFounder(session.sub))
+            (!privileged &&
+                (!accountStore || !(await accountStore.isFounder(session.sub))))
         ) {
             res.writeHead(302, { location: "/dashboard" });
             res.end();

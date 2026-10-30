@@ -1,5 +1,6 @@
+import { nextReactionState } from "./reaction-state.js";
 import { fetchEmojiCatalog } from "./emoji-catalog.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
@@ -68,6 +69,7 @@ export function createMessageReactionsController({
     maxEmojiDisplayCount = MAX_EMOJI_PICKER_DISPLAY_COUNT,
     onReactionUpdated,
 } = {}) {
+    const log = console.error.bind(console);
     const stateCache = {
         emojiList: null,
         emojiUsage: [],
@@ -163,10 +165,22 @@ export function createMessageReactionsController({
         stateCache.emojiUsage.sort(
             (left, right) => right.usageCount - left.usageCount,
         );
-        apiFetch("/api/v1/social/messages/emoji-usage", {
-            method: "POST",
-            body: JSON.stringify({ emoji: normalizedEmoji }),
-        }).catch(() => undefined);
+        void Promise.resolve()
+            .then(() =>
+                apiFetch("/api/v1/social/messages/emoji-usage", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        emoji: normalizedEmoji,
+                    }),
+                }),
+            )
+            .catch((error) => {
+                log("[messages] emoji usage recording failed", {
+                    component: "messages",
+                    operation: "recordEmojiUsage",
+                    errorName: error?.name,
+                });
+            });
     }
 
     function getQuickReactionEmojis() {
@@ -275,7 +289,10 @@ export function createMessageReactionsController({
             `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
             {
                 method: "POST",
-                body: JSON.stringify({ emoji: normalizedEmoji }),
+                body: JSON.stringify({
+                    emoji: normalizedEmoji,
+                    active: nextReactionState(messageId, normalizedEmoji),
+                }),
             },
         );
         if (!response.ok) return;

@@ -331,9 +331,15 @@ export async function bootstrapSocialAdapter(
             role?: string,
             displayName?: string,
         ): Promise<void> => {
+            const getUsername =
+                ctx.capabilities.get<
+                    (accountId: string) => Promise<string | null>
+                >("auth:getUsername");
+            const username = await getUsername?.(accountId);
+            if (!username) throw new Error("account_username_unavailable");
             await profileStore.createProfile(
                 accountId,
-                handle,
+                username,
                 (role as AccountRole) ?? "user",
                 displayName,
             );
@@ -413,7 +419,15 @@ export async function bootstrapSocialAdapter(
             const handle = String(externalProfile.handle ?? "")
                 .trim()
                 .replace(/^@/, "");
-            if (handle) updates.handle = handle;
+            if (handle) {
+                const getUsername =
+                    ctx.capabilities.get<
+                        (accountId: string) => Promise<string | null>
+                    >("auth:getUsername");
+                const username = await getUsername?.(accountId);
+                if (!username) throw new Error("account_username_unavailable");
+                updates.handle = username;
+            }
             if (
                 externalProfile.profileVisibility === "hidden" ||
                 externalProfile.profileVisibility === "private" ||
@@ -560,6 +574,7 @@ export async function bootstrapSocialAdapter(
     ctx.registerAdapterStaticDir?.("social", "profile", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-profile-page",
+        requiredCapabilities: ["social:profileRequest"],
         pattern: "^/profile(?:/[^/]+)?$",
         base: "/profile",
         scriptUrl: "/static/adapters/social/profile/app.js",
@@ -577,6 +592,7 @@ export async function bootstrapSocialAdapter(
         providesCapabilities: [
             "ui:profileAvatarRenderer",
             "social:profileUiClient",
+            "social:profileRequest",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });

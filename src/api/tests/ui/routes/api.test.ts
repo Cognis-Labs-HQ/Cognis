@@ -374,7 +374,7 @@ test("GET registered SPA route serves the dashboard shell on refresh", async () 
     );
     assert.match(
         recorder.body,
-        /href="\/static\/gateways\/share\/ui\/app\/shares\/index\.css"/,
+        /href="\/static\/gateways\/share\/ui\/app\/shares\/index\.css\?v=development"/,
     );
 });
 

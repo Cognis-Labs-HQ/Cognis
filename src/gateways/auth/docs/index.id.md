@@ -72,7 +72,7 @@ Pengalihan OAuth yang menghadap browser dapat menggunakan `/sso/<routeNamespace>
 
 Penyedia dapat mendeklarasikan `routeNamespace` dan `registerRoutes(router)` pada adapternya. Router menerima jalur `GET` dan `POST` relatif terhadap `/api/v1/auth/<routeNamespace>` agar callback OAuth dapat berada di bawah gateway Autentikasi tanpa memberi modul kontributor akses langsung ke rute inti yang dilindungi. Namespace dibatasi pada segmen URL yang aman, namespace inti Autentikasi dicadangkan, rute duplikat ditolak, dan penghapusan penyedia menghapus semua rute kontribusinya.
 
-Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Saat pendaftaran publik dinonaktifkan, sesi harus membawa token pendaftaran dan email penyedia yang cocok. Sesi yang ditahan mengembalikan `account_creation_required` dengan `emailRequired`, `registrationTokenRequired`, dan `retryEndpoint`. UI penyedia mengirim token dan email yang diminta ke endpoint tersebut dengan ID penyedia yang sama; Cognis meneruskan nilai itu ke gerbang pembuatan akun walaupun adapter penyedia hanya mengembalikan identitas terautentikasinya. Membatalkan alih-alih mencoba kembali menghentikan login tanpa membuat akun.
+Sesi penyedia eksternal melewati `gateAccountCreation` sebelum `ensureExternalAccount`. Adapter pendaftaran publik yang aktif mengizinkan pembuatan akun SSO secara terpisah dari kebijakan pendaftaran akun lokal publik. Jika tidak, Cognis menyimpan identitas terautentikasi yang belum dikenal di balik ID percobaan buram yang kedaluwarsa dan mengembalikan `account_creation_required` dengan `registrationUrl`. Penyedia mengalihkan pengguna ke URL itu. Adapter Token Pendaftaran menambahkan otorisasi pada kerangka pendaftaran standar dan melanjutkan identitas yang ditahan tanpa mengekspos status panggilan balik penyedia.
 
 ## Route API
 
@@ -131,3 +131,29 @@ Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL
 ### Integrasi siklus hidup modul
 
 `auth:registerKeyringDataOwner(ownerId, purge)` adalah kapabilitas server publik. ID pemilik duplikat ditolak dan disposer memeriksa identitas registrasinya. Modul memakai `module:<id>` dan memasang disposer dengan `ctx.registerDisposer`; purge menerima ID akun ternormalisasi. Bersihkan hanya keadaan yang bergantung pada keyring sambil mempertahankan identitas akun serta sumber daya bersama lainnya.
+
+## Penyiapan Sesi
+
+Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi setelah pengalihan SSO. Pemilik notifikasi menyediakan penyiapan email wajib melalui `auth:getSetupIntegrations(accountId, role)`, yang mengembalikan skrip dari asal yang sama dengan ekspor `enforceSetup({ accountId })`. Penyiapan selesai sebelum sesi diizinkan bernavigasi atau digunakan luring. Gangguan SMTP tidak membatalkan kewajiban verifikasi; administrator pendiri awal tetap dikecualikan.
+
+## Indikator Login
+
+Permintaan kredensial, kode TFA, dan otorisasi SSO menampilkan roda pemuatan bersama dan menutupnya sebelum penyiapan interaktif. Pengiriman kredensial ganda diabaikan selama permintaan berlangsung. Pembersihan dan penyegaran cache luring publik berjalan di latar belakang setelah login. Waktu login terakhir tetap dicatat untuk SSO meskipun adapter autentikasi lokal dinonaktifkan.
+
+## Privasi akun dan isolasi keyring
+
+Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
+
+Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup tidak memerlukan reset basis data. Login dan provisi akun SSO lama ditolak secara individual sampai akun tersebut dibuat ulang dengan ID opak. ID akun, hubungan, dan rapat tidak dimigrasikan atau dihapus secara otomatis.
+
+## Login dan pengiriman tertunda
+
+Setelah login kata sandi atau TFA berhasil, kapabilitas navigasi SPA yang sudah ada mengganti halaman login dengan Dashboard. Tab terverifikasi dan perubahan tertunda tetap tersedia tanpa memicu peringatan penutupan halaman dari browser. Indikator pemuatan tetap terlihat sampai navigasi selesai; sinkronisasi zona waktu opsional berjalan sesudahnya dan menolak pergantian akun. Peringatan tetap melindungi perubahan yang benar-benar tertunda saat tab terautentikasi ditutup atau dimuat ulang.
+
+## Batas Sesi dan Komponen
+
+Auth menyediakan `session:isOfflineValid` sebagai otoritas sinkron tanpa jaringan untuk akses luring terverifikasi. Pemeriksaan mencakup penyiapan yang selesai, akun dan token aktif, serta kedaluwarsa sesi. Pemilik antrean memakai kontrak ini alih-alih menafsirkan penyimpanan autentikasi sendiri. Penyiapan akun melewati sesi tamu alternatif; endpoint setup-status di server memakai kapabilitas klasifikasi Share sebelum meminta integrasi TFA atau email. Akun lokal dan SSO biasa tetap wajib menyelesaikan penyiapan.
+
+## Antrean Terikat Akun
+
+Catatan antrean menyertakan pengenal instans akun yang diverifikasi server. Auth mengembalikan `accountInstanceId` kanonis dalam status penyiapan terautentikasi dan hanya menyediakan `session:getOfflineIdentity` untuk sesi akun yang terverifikasi, selesai disiapkan, dan belum kedaluwarsa. Ketiadaan metadata otoritatif mencabut izin luring. Tampilan antrean serta pemeriksaan penyimpanan dan pengiriman terikat pada instans ini; catatan instans lama atau tanpa ikatan ditolak sebelum dikirim, termasuk setelah akun lokal dibuat ulang dengan ID akun yang sama. ID operasi tidak bertabrakan antarinstans akun. Token Bearer tidak pernah disimpan dalam antrean.

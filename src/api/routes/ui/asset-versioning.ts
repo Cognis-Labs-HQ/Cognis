@@ -1,4 +1,6 @@
 export function versionDescriptor<T>(descriptor: T, assetVersion: string): T {
+    if (typeof descriptor === "string")
+        return versionAssetUrl(descriptor, assetVersion) as T;
     if (Array.isArray(descriptor)) {
         return descriptor.map((value) =>
             versionDescriptor(value, assetVersion),

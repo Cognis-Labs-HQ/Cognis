@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";

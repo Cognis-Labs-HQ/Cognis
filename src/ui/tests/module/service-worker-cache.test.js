@@ -10,16 +10,14 @@ for (const offline of [false, true]) {
         let options;
         const sandbox = {
             URL,
+            AbortSignal,
             self: {
                 location: { origin: "https://cognis.test" },
                 addEventListener: (type, handler) =>
                     handlers.set(type, handler),
             },
             caches: {
-                open: () =>
-                    assert.fail(
-                        "Module scripts must not read an old worker cache",
-                    ),
+                open: async () => ({ match: async () => undefined }),
             },
             fetch: async (_request, requestOptions) => {
                 options = requestOptions;

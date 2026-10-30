@@ -1,3 +1,5 @@
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
+import * as entryGraph from "../ui/reuse/entry-graph.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import {
     createClassificationResolver,
@@ -349,6 +351,16 @@ test("transformed previews keep the selected heading and identify the base card 
     context.open = loadTestModule(
         new URL("../ui/app/entry-popup.js", import.meta.url),
         {
+            "./entry-data.js": loadTestModule(
+                new URL("../ui/app/entry-data.js", import.meta.url),
+                {
+                    "/static/reuse/offline-state.js": offlineState,
+                    "/static/gateways/study/library-client.js": context,
+                    "../reuse/entry-graph.js": entryGraph,
+                },
+            ),
+            "../reuse/entry-graph.js": entryGraph,
+            "/static/reuse/offline-state.js": offlineState,
             "./viewed-entries.js": context,
             "./detail-layout.js": context,
             "/static/reuse/popup.js": context,

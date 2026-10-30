@@ -75,3 +75,23 @@ Key source locations:
 | `POST` | `/api/v1/users/email/verify`                | Complete email verification         | Bearer |
 | `GET`  | `/api/v1/users/:username/email`             | Get primary email for a user        | Bearer |
 | `PUT`  | `/api/v1/users/:username/email`             | Set primary email for a user        | Bearer |
+
+## Email Verification
+
+SMTP verification applies to SSO accounts as well as native accounts. Resending uses the configured notification delivery service. Codes and one-click links bind the complete account ID and email as an opaque tuple, including namespaced SSO IDs. Cancelling verification from Settings preserves the existing email address.
+
+## Shared top banners
+
+Offline Mode and Broadcast now use one sticky stack at the very top of the document, above the app header. Offline Mode has priority, cannot be dismissed, and retains Recheck Connectivity and the recovered Refresh action. Removing or dismissing an announcement does not remove Offline Mode. Broadcast polling skips disconnected requests and its provider disposes its bar and timer.
+
+## Offline Personal Settings
+
+Verified sign-in prepares the account’s email list and trusted-domain policy without opening Settings. Email additions, removals and primary-address changes are projected locally and queued through `notify:emailClient` and the protected `notify.emails` outbox owner. Server validation remains authoritative. Email verification, resend and account lifecycle actions require connectivity; no codes, watch tokens or passwords enter the queue. Queued additions remain unverified until online verification. Successful delivery refreshes the email snapshot; optional refresh failure cannot turn a persisted write into a failed action. These bounded private snapshots remain tab/session-scoped.
+
+## Session and Component Boundaries
+
+The lifecycle-scoped `notify:emailClient` capability provides own-account requests and trusted domains, administrator `listUserEmails`, online-only `resendUserEmail`, and `smtpAvailable`. Each action runs through registered stages and stops when its provider is disposed. Core Settings, Users and Administration resolve these methods through ctx; they do not import Notify UI implementations. Missing Notify hides email management while leaving unrelated account controls usable.
+
+## Account ID Notification Delivery
+
+Role-targeted notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. `notify:dispatchToRole` returns the canonical recipient IDs; public usernames remain display data.

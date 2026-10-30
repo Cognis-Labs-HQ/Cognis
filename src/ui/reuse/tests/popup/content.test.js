@@ -1,6 +1,29 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPopupContentApi } from "../../popup/content.js";
+import {
+    createPopupContentApi,
+    bindPopupActionIcons,
+} from "../../popup/content.js";
+
+test("missing decorative icons preserve the localized action label", () => {
+    let failed;
+    const button = {
+        getAttribute: () => "Zeichnen",
+        classList: {
+            add: (name) => assert.equal(name, "popup-header-action--text"),
+        },
+    };
+    const image = {
+        closest: () => button,
+        addEventListener: (type, callback) => {
+            assert.equal(type, "error");
+            failed = callback;
+        },
+    };
+    bindPopupActionIcons({ querySelectorAll: () => [image] });
+    failed();
+    assert.equal(button.textContent, "Zeichnen");
+});
 
 function contentElement({ inert = false, ariaHidden = null } = {}) {
     const classes = new Set();

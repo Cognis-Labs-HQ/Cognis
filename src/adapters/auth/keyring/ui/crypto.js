@@ -30,7 +30,12 @@ export function normalizeEntry(value, id) {
     };
 }
 
-export async function deriveKey(password, salt, iterations) {
+export async function deriveKey(
+    password,
+    salt,
+    iterations,
+    extractable = false,
+) {
     const material = await crypto.subtle.importKey(
         "raw",
         new TextEncoder().encode(password),
@@ -42,7 +47,7 @@ export async function deriveKey(password, salt, iterations) {
         { name: "PBKDF2", hash: "SHA-256", salt, iterations },
         material,
         { name: "AES-GCM", length: 256 },
-        false,
+        extractable,
         ["encrypt", "decrypt"],
     );
 }
@@ -57,17 +62,23 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
         localEnvelope?.accountInstanceId ?? "",
     );
     const remoteAccountInstanceId = String(remoteState.accountInstanceId ?? "");
-    if (
-        remoteState.resolved &&
-        localAccountInstanceId &&
-        remoteAccountInstanceId &&
-        localAccountInstanceId !== remoteAccountInstanceId
-    ) {
-        return null;
-    }
+    if (!remoteAccountInstanceId) return null;
+    if (localAccountInstanceId !== remoteAccountInstanceId)
+        localEnvelope = null;
     if (!remoteState.resolved) return localEnvelope;
     return envelopeTimestamp(remoteState.envelope) >
         envelopeTimestamp(localEnvelope)
         ? remoteState.envelope
         : localEnvelope;
+}
+
+export async function decryptVault(key, stored) {
+    if (!stored?.cipher)
+        return { values: {}, preferences: { relockMinutes: 0 } };
+    const plaintext = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: decodeBytes(stored.iv) },
+        key,
+        decodeBytes(stored.cipher),
+    );
+    return JSON.parse(new TextDecoder().decode(plaintext));
 }

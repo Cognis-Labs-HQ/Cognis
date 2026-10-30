@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import "./provider.js";
@@ -165,7 +166,9 @@ uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
     });
     let fallback = fallbackFor(storedDisplayName);
     try {
-        const pingRes = await apiFetch("/api/v1/social/profile/ping");
+        const pingRes = isOffline()
+            ? { ok: true }
+            : await apiFetch("/api/v1/social/profile/ping");
         if (!pingRes.ok) return { ...fallback, profileAvailable: false };
     } catch {
         return { ...fallback, profileAvailable: false };

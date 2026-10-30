@@ -1,3 +1,6 @@
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
+import { captureAccountGuard } from "../../../reuse/offline-identity.js";
+import * as messageStyles from "../../../reuse/message-style-options.js";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
@@ -30,7 +33,35 @@ export async function loadSettingsMount({
             },
         },
     });
+    const preferences = loadTestModule(
+        new URL("../../../reuse/ui-preferences.js", import.meta.url),
+        {
+            "./offline-state.js": {
+                offlineEnabled: () => true,
+                isOffline: () => false,
+            },
+            "./ui-language-state.js": {
+                uiLanguageMembershipChanged: () =>
+                    assert.fail("startup must not save language settings"),
+            },
+            "./ui-ctx.js": {
+                uiCtx: { capabilities: { get: () => undefined } },
+            },
+            "./offline-identity.js": { captureAccountGuard },
+            "./api-client.js": { apiFetch },
+            "./message-style-options.js": messageStyles,
+        },
+        {
+            localStorage: {
+                getItem: (key) =>
+                    key === "cognis_account" ? account() : "fixture-token",
+            },
+        },
+    );
     const overrides = {
+        loadUiPreferences: preferences.loadUiPreferences,
+        saveUiPreferences: preferences.saveUiPreferences,
+        isOffline: () => false,
         apiFetch,
         loadEditorAcknowledgement,
         createI18n,

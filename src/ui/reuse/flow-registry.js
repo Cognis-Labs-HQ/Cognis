@@ -10,8 +10,8 @@
  * `authenticate-session` (owner: auth-gateway)
  *   Validates the stored browser session and produces a normalised session
  *   descriptor used by page-entry and the SPA router.
- *   Stages: validate-stored-token → apply-alternate-auth →
- *           enforce-setup-requirements → resolve-session
+ *   Stages: beforeSession → validate-stored-token → apply-alternate-auth →
+ *           enforce-setup-requirements → resolve-session → afterSession
  *
  * `navigate-to` (owner: ui)
  *   Drives a full SPA navigation: route resolution, auth enforcement, asset

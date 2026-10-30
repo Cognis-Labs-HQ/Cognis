@@ -1,5 +1,5 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";

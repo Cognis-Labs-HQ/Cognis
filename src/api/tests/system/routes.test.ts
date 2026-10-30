@@ -19,8 +19,14 @@ const healthService = {
     },
 };
 
-test("system route handles healthcheck endpoint", async () => {
-    const route = createSystemRoutes(healthService as any);
+test("reachability responds without waiting for component health probes", async () => {
+    let probes = 0;
+    const route = createSystemRoutes({
+        status: () => {
+            probes++;
+            return new Promise(() => {});
+        },
+    } as any);
     let status = 0;
     let body = "";
 
@@ -39,7 +45,8 @@ test("system route handles healthcheck endpoint", async () => {
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /uptimeMs/);
+    assert.equal(JSON.parse(body).data.status, "ok");
+    assert.equal(probes, 0);
 });
 
 test("owner can list every registered capability", async () => {

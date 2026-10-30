@@ -52,9 +52,9 @@ const password = await keyring.resolve("meeting:123:password", {
 
 Während der Anmeldung versucht der Adapter lediglich, einen vorhandenen Tresor mit dem Kontopasswort zu entschlüsseln. Ein fehlgeschlagener Versuch lässt den Tresor gesperrt und öffnet weder einen Entsperrdialog noch blockiert er die Navigation zum Dashboard. Der kontextbezogene Entsperrdialog wird erst angefordert, wenn eine Komponente durch das Schlüsselbund geschützte Inhalte auflöst.
 
-## Wiederherstellung der Entsperrung in der Browsersitzung
+## Kontodatenschutz und Schlüsselbund-Isolation
 
-Nach erfolgreicher Entsperrung speichert der Adapter den nicht exportierbaren Web-Crypto-Schlüssel in seinem IndexedDB-Sitzungsschlüsselspeicher und schreibt nur eine nicht geheime Markierung in `sessionStorage`. Eine endliche Sperrfrist erzeugt beim Entsperren genau einen absoluten Zeitpunkt; Lese- und Schreibvorgänge, Seitenneuladungen und Serverneustarts verlängern oder verkürzen ihn nicht. „Bei Abmeldung“ speichert keine Frist und hält den Schlüsselbund bis zum ausdrücklichen Ende der authentifizierten Sitzung offen. Explizites Sperren, Abmeldung, eine abweichende Kontoinstanz und eine abgelaufene Frist verhindern die Wiederherstellung. Komponenten fordern Zugriff weiterhin über ihren zugeordneten Schlüsselbundbereich an, der zuerst die Wiederherstellung versucht und nur bei Bedarf den kontextbezogenen Dialog öffnet.
+Die Entsperrung bleibt beim Neuladen im selben authentifizierten Tab und derselben Sitzung erhalten. Das Passwort verschlüsselt weiterhin den Tresor; weder Passwort noch unverschlüsselter Entschlüsselungsschlüssel werden gespeichert. Der Sitzungsspeicher enthält nur eine mit AES-GCM verschlüsselte Entsperrung, deren Schlüssel mit HKDF aus dem aktiven Sitzungsgeheimnis abgeleitet und an Ursprung, Konto, serverseitige Kontoinstanz und Sitzung gebunden ist. Vor Wiederherstellung muss der Server diese Bindung bestätigen. Endliche Sperrfristen sind authentifiziert und bleiben beim Neuladen absolut. Sperren, Abmelden, Konto-, Instanz- oder Sitzungswechsel und Ablauf verhindern die Wiederherstellung. Nach Schließen des Tabs oder Beginn einer neuen Sitzung ist erneutes Entsperren nötig. Der alte unverschlüsselte IndexedDB-Cache bleibt stillgelegt.
 
 ## Abgebrochener Zugriff und manuelle Wiederherstellung
 

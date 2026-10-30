@@ -1,3 +1,4 @@
+import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -25,13 +26,53 @@ assert.ok(
 );
 for (const [sourceUrl, emittedUrl] of Object.entries(manifest)) {
     assert.match(sourceUrl, /^\/static\//);
-    assert.match(emittedUrl, /^\/assets\/.+-[A-Z0-9]+\.(?:css|js)$/i);
+    assert.match(emittedUrl, /^\/assets\/.+-[A-Z0-9]+\.(?:css|js|xml)$/i);
     const emittedPath = path.join(outputRoot, emittedUrl);
     await Promise.all([
         access(emittedPath),
         access(`${emittedPath}.br`),
         access(`${emittedPath}.gz`),
     ]);
+}
+const offlineAssets = new Set(
+    JSON.parse(
+        await readFile(
+            path.join(outputRoot, "public/offline-manifest.json"),
+            "utf8",
+        ),
+    ),
+);
+for (const asset of Object.values(manifest)) {
+    assert.ok(
+        offlineAssets.has(asset),
+        `Public bundle prepared offline: ${asset}`,
+    );
+}
+for (const name of COMMON_STYLESHEETS) {
+    const logical = `/static/styles/reuse/${name}`;
+    assert.ok(
+        offlineAssets.has(logical),
+        `Shared offline stylesheet: ${logical}`,
+    );
+    assert.ok(
+        offlineAssets.has(manifest[logical]),
+        `Built shared offline stylesheet: ${logical}`,
+    );
+}
+for (const locale of await readdir(path.resolve("src", "ui", "languages"))) {
+    assert.ok(
+        offlineAssets.has(`/static/languages/${locale}/strings.xml`),
+        `Offline UI strings: ${locale}`,
+    );
+}
+for (const flag of await readdir(
+    path.join(outputRoot, "public", "assets", "flags"),
+)) {
+    if (flag.endsWith(".svg"))
+        assert.ok(
+            offlineAssets.has(`/static/assets/flags/${flag}`),
+            `Offline language flag: ${flag}`,
+        );
 }
 const publicPages = await readdir(path.join(outputRoot, "public", "pages"));
 for (const publicAssetPath of await walk(

@@ -387,7 +387,7 @@ test("visible search indexes calendar notifications and posts", () => {
     assert.match(calendarSource, /data-search-description/);
     assert.match(
         calendarNavbarSource,
-        /registerSearchIndex\("calendar-events"/,
+        /registerSearchIndex\(\s*"calendar-events"/,
     );
     assert.match(calendarNavbarSource, /fetchCalendarState/);
     assert.match(calendarNavbarSource, /fetchEvents/);

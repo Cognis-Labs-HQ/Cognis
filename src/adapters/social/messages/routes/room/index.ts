@@ -1,3 +1,5 @@
+import { jsonError } from "../../../../../api/reuse/json-responses.js";
+import { readMessageInput, readReceiptTime } from "./input.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import { readJson } from "../../../../../api/reuse/read-json.js";
@@ -524,27 +526,16 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                const body = (await readJson(req)) as {
-                    ciphertext?: unknown;
-                    iv?: unknown;
-                    authTag?: unknown;
-                    contentType?: unknown;
-                };
-                if (
-                    typeof body.ciphertext !== "string" ||
-                    typeof body.iv !== "string"
-                ) {
-                    res.writeHead(400, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "bad_request",
-                                message: "ciphertext and iv required.",
-                            },
-                        }),
-                    );
+                let messageInput: ReturnType<typeof readMessageInput>;
+                try {
+                    messageInput = readMessageInput(await readJson(req));
+                } catch (error) {
+                    const code =
+                        error instanceof Error &&
+                        error.message === "invalid_operation_id"
+                            ? "invalid_operation_id"
+                            : "bad_request";
+                    jsonError(res, 400, code, "Invalid encrypted message.");
                     return true;
                 }
                 if (!flow?.exists("send-message")) {
@@ -561,18 +552,29 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     return true;
                 }
-                const flowResult = await flow.run("send-message", {
-                    roomId,
-                    senderId: accountId,
-                    ciphertext: body.ciphertext,
-                    iv: body.iv,
-                    authTag:
-                        typeof body.authTag === "string" ? body.authTag : "",
-                    contentType:
-                        typeof body.contentType === "string"
-                            ? body.contentType
-                            : "text/plain",
-                });
+                const flowResult = await flow
+                    .run("send-message", {
+                        ...messageInput,
+                        roomId,
+                        senderId: accountId,
+                    })
+                    .catch((error: unknown) => {
+                        if (
+                            !(error instanceof Error) ||
+                            error.message !== "delivery_conflict"
+                        )
+                            throw error;
+                        res.writeHead(409, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: { code: "delivery_conflict" },
+                            }),
+                        );
+                        return null;
+                    });
+                if (!flowResult) return true;
                 const persistResult = (flowResult.stageResults[
                     "persist-message"
                 ] ?? [])[0] as
@@ -608,7 +610,15 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 res.end(JSON.stringify({ data: { ok: true } }));
                 return true;
             }
-            await messagesStore.markRead(roomId, accountId);
+            const body = await readJson(req);
+            let readAt: string | undefined;
+            try {
+                readAt = readReceiptTime(body.readAt);
+            } catch {
+                jsonError(res, 400, "invalid_read_time", "Invalid read time.");
+                return true;
+            }
+            await messagesStore.markRead(roomId, accountId, readAt);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
@@ -804,7 +814,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const body = (await readJson(req)) as { emoji?: unknown };
+            const body = (await readJson(req)) as {
+                emoji?: unknown;
+                active?: unknown;
+            };
             const emoji = normalizeReactionEmoji(
                 typeof body.emoji === "string" ? body.emoji : "",
             );
@@ -820,20 +833,36 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
+            if (body.active !== undefined && typeof body.active !== "boolean") {
+                jsonError(
+                    res,
+                    400,
+                    "invalid_reaction_state",
+                    "Reaction state must be boolean.",
+                );
+                return true;
+            }
             const hasReaction = await messagesStore.hasMessageReaction(
                 roomId,
                 subArg,
                 accountId,
                 emoji,
             );
+            const active =
+                typeof body.active === "boolean" ? body.active : !hasReaction;
             await messagesStore.setMessageReaction(
                 roomId,
                 subArg,
                 accountId,
                 emoji,
-                !hasReaction,
+                active,
             );
-            if (dispatch && !hasReaction && message.senderId !== accountId) {
+            if (
+                dispatch &&
+                active &&
+                !hasReaction &&
+                message.senderId !== accountId
+            ) {
                 const pendingIncomingForMessageSender =
                     await messagesStore.getPendingIncomingRoomMessageRequest(
                         roomId,
@@ -843,7 +872,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     res.writeHead(200, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
-                            data: { active: !hasReaction },
+                            data: { active },
                         }),
                     );
                     return true;
@@ -870,7 +899,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 }
             }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { active: !hasReaction } }));
+            res.end(JSON.stringify({ data: { active } }));
             return true;
         }
 

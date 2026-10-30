@@ -1,3 +1,10 @@
+import { mountOfflineStudyPage } from "/static/gateways/study/offline-page.js";
+import {
+    readStudySnapshot,
+    showOfflineContentNotice,
+    isOfflineContentMiss,
+} from "/static/gateways/study/offline-content.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { editDeck } from "./deck-editor.js";
 import { sortItems, filterItems } from "/static/reuse/collection-view.js";
 import { createPracticeModePreference } from "../reuse/practice-mode.js";
@@ -102,18 +109,34 @@ export async function mount(root, { signal: routerSignal } = {}) {
                             route.language ?? readSelectedStudyLanguageCode(),
                     }),
                     fetchStudyDecks(),
-                    fetchLibrarySchemas(),
+                    readStudySnapshot(() => fetchLibrarySchemas(), []),
                     loadDeckTemplates(signal),
                 ]),
             signal,
         );
-    } catch {
+    } catch (error) {
         if (signal.aborted) return;
+        if (
+            isOfflineContentMiss(error) ||
+            (isOffline() &&
+                (error?.message === "deck_template_failed" ||
+                    (error?.name === "TypeError" &&
+                        /fetch/i.test(error.message))))
+        ) {
+            await mountOfflineStudyPage(root, {
+                i18n,
+                signal,
+                title: i18n.t("adapter.study.flashcards.page_title"),
+            });
+            return;
+        }
         showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
             variant: "error",
         });
         return;
     }
+    if (isOffline() && decks.length === 0)
+        showOfflineContentNotice(i18n, signal);
     const languageCode = model.selectedLanguageCode;
     if (route.language !== languageCode && languageCode) {
         await navigateTo(languageFlashcardsUrl(languageCode));
@@ -127,7 +150,18 @@ export async function mount(root, { signal: routerSignal } = {}) {
         name: deck.names?.[document.documentElement.lang] ?? deck.name,
     }));
     let selected = decks.find((deck) => requestedId?.endsWith(`--${deck.id}`));
-    const favourites = await loadFavourites();
+    let favourites;
+    try {
+        favourites = await loadFavourites();
+    } catch (error) {
+        if (!isOfflineContentMiss(error)) throw error;
+        await mountOfflineStudyPage(root, {
+            i18n,
+            signal,
+            title: i18n.t("adapter.study.flashcards.page_title"),
+        });
+        return;
+    }
     let sortOrder = "default";
     let favouritesOnly = false;
     let deckQuery = "";
@@ -267,8 +301,10 @@ export async function mount(root, { signal: routerSignal } = {}) {
                         grade,
                         attempt,
                     );
-                    reviewedDeck.deck = updated;
-                    if (session === reviewedDeck) selected = updated;
+                    if (!updated?.queued) {
+                        reviewedDeck.deck = updated;
+                        if (session === reviewedDeck) selected = updated;
+                    }
                     reviewedSession.record(grade, detail.entry.id);
                     if (!signal.aborted && current === generation)
                         persistSession();
@@ -334,10 +370,24 @@ export async function mount(root, { signal: routerSignal } = {}) {
     };
     const loadEntries = async () => {
         if (entries) return;
-        const { readable } = await fetchLibraryLocations();
+        const { readable } = await readStudySnapshot(
+            () => fetchLibraryLocations(),
+            { readable: [] },
+        );
         entries = (
             await Promise.all(
-                readable.map((location) => fetchLibraryEntries(location)),
+                readable.flatMap((location) =>
+                    schemas.map((schema) =>
+                        readStudySnapshot(
+                            () =>
+                                fetchLibraryEntries({
+                                    ...location,
+                                    schemaId: schema.id,
+                                }),
+                            [],
+                        ),
+                    ),
+                ),
             )
         ).flat();
     };
@@ -695,10 +745,13 @@ export async function mount(root, { signal: routerSignal } = {}) {
     if (selected) {
         try {
             await runDeckAction("load", loadSession, signal);
-        } catch {
-            showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
-                variant: "error",
-            });
+        } catch (error) {
+            if (isOfflineContentMiss(error))
+                showOfflineContentNotice(i18n, signal);
+            else
+                showToast(i18n.t("adapter.study.flashcards.deck_load_error"), {
+                    variant: "error",
+                });
         }
     }
 }

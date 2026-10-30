@@ -1,3 +1,12 @@
+import {
+    prepareUsernames,
+    readUsername,
+    reserveUsername,
+} from "./usernames.js";
+import {
+    createAccountId,
+    isPrivateAccountId,
+} from "../../../gateways/auth/reuse/usernames.js";
 /**
  * DB-backed implementation of LocalAccountStore for the local auth adapter.
  *
@@ -62,16 +71,20 @@ export class DbLocalAccountStore implements LocalAccountStore {
     async ensureExternalAccount(identity: {
         accountId: string;
         accountNamespace?: string;
+        username?: string;
         provider: string;
         externalUserId: string;
         email?: string;
         displayName?: string;
         role?: string;
     }): Promise<string> {
-        let normalizedAccountId = normalizeExternalAccountId(
-            identity.accountNamespace ?? identity.provider,
-            identity.accountId,
-        );
+        const proposedUsername =
+            identity.username ??
+            normalizeExternalAccountId(
+                identity.accountNamespace ?? identity.provider,
+                identity.accountId,
+            );
+        let normalizedAccountId = "";
         const now = new Date().toISOString();
         const role =
             identity.role === "teacher" ||
@@ -95,7 +108,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
             });
             const accountId = identityResult.rows?.[0]?.account_id
                 ? normalizeUsername(String(identityResult.rows[0].account_id))
-                : normalizedAccountId;
+                : isPrivateAccountId(identity.accountId)
+                  ? identity.accountId
+                  : createAccountId();
+            if (!isPrivateAccountId(accountId)) {
+                throw new Error("legacy_sso_account_requires_recreation");
+            }
             if (!identityResult.rows?.[0]?.account_id) {
                 const accountResult = await txDb.executeCommand({
                     option: "SELECT",
@@ -159,6 +177,19 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 },
                 conflict: { action: "ignore" },
             });
+            const username = await reserveUsername(
+                txDb,
+                accountId,
+                identity.provider,
+                proposedUsername,
+            );
+            if (!identity.displayName?.trim())
+                await txDb.executeCommand({
+                    option: "UPDATE",
+                    table: "accounts",
+                    set: { display_name: username },
+                    where: [{ column: "id", value: accountId }],
+                });
             normalizedAccountId = accountId;
         });
         this.writeLog("info", "Ensured external account identity.", {
@@ -251,6 +282,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
         return accountIds;
     }
 
+    async getUsername(accountId: string): Promise<string | null> {
+        return readUsername(this.db, normalizeUsername(accountId));
+    }
+
     async ensureSchema() {
         await this.db.ensureTable({
             name: "auth_identities",
@@ -305,6 +340,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             ],
             indexes: [{ columns: ["account_id"] }],
         });
+        await prepareUsernames(this.db);
     }
 
     async register(
@@ -333,6 +369,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                         updated_at: new Date().toISOString(),
                     },
                 });
+                await reserveUsername(txDb, username, "local", username);
                 await txDb.executeCommand({
                     option: "INSERT",
                     table: "local_auth_credentials",
@@ -476,16 +513,19 @@ export class DbLocalAccountStore implements LocalAccountStore {
             ],
             orderBy: [{ column: "accounts.id", direction: "ASC" }],
         });
-        return (result.rows ?? []).map((row) => ({
-            username: String(row.username),
-            enabled: Boolean(row.enabled),
-            isFounder: Boolean(row.is_founder),
-            role:
-                (row.role as string | undefined) ??
-                (row.profile_role as string | undefined) ??
-                (Boolean(row.is_admin) ? "admin" : "user"),
-            provider: row.provider ? String(row.provider) : "local",
-        }));
+        return Promise.all(
+            (result.rows ?? []).map(async (row) => ({
+                accountId: String(row.username),
+                username: (await this.getUsername(String(row.username)))!,
+                enabled: Boolean(row.enabled),
+                isFounder: Boolean(row.is_founder),
+                role:
+                    (row.role as string | undefined) ??
+                    (row.profile_role as string | undefined) ??
+                    (Boolean(row.is_admin) ? "admin" : "user"),
+                provider: row.provider ? String(row.provider) : "local",
+            })),
+        );
     }
 
     async setRole(
@@ -774,6 +814,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async getInfo(username: string): Promise<{
+        accountId: string;
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
@@ -810,7 +851,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const row = result.rows?.[0];
         if (!row) return null;
         return {
-            username: String(row.id),
+            accountId: String(row.id),
+            username: (await this.getUsername(String(row.id)))!,
             createdAt: row.created_at ? String(row.created_at) : null,
             lastLogin: row.last_login ? String(row.last_login) : null,
             enabled: Boolean(row.enabled),

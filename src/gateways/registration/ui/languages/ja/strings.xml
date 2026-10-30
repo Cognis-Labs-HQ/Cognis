@@ -30,7 +30,7 @@
   <string name="gateway.registration.invite.revoke_success">招待を取り消しました。</string>
   <string name="gateway.registration.invite.revoke_failed">招待の取り消しに失敗しました。</string>
   <string name="gateway.registration.invite.method">方式</string>
-  <string name="gateway.registration.public_registration_enabled">公開登録</string>
+  <string name="gateway.registration.public_registration_enabled">ローカルアカウントの公開登録を許可</string>
   <string name="ui.page.title.register">Cognis - 登録招待</string>
   <string name="ui.app.register.form_title">アカウント作成</string>
   <string name="ui.app.register.page_subtitle">Cognisにアクセスするための新しいアカウントを作成します。</string>

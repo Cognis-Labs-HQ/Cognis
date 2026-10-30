@@ -6,9 +6,8 @@
  *   service worker can control every page (login, dashboard, etc.) in the
  *   installed PWA. Safe to call from any page entry point; it no-ops when
  *   service workers are not supported (e.g. non-secure contexts, older
- *   browsers, automated test runs without `navigator.serviceWorker`). When a
- *   waiting worker is detected it triggers an immediate `SKIP_WAITING` so a
- *   fresh `/sw.js` rolls out on the next page load.
+ *   browsers, automated test runs without `navigator.serviceWorker`). Updates wait until existing controlled tabs close so a release does not
+ *   replace the asset cache underneath a running page.
  * - capturePwaInstallPrompt() — buffers the `beforeinstallprompt` event so
  *   that a future "Install Cognis" UI control can call `prompt()` on it.
  *
@@ -18,6 +17,8 @@
  *
  * @returns {void}
  */
+
+import { offlineEnabled } from "./offline-state.js";
 
 let deferredInstallPrompt = null;
 
@@ -42,21 +43,16 @@ export async function registerServiceWorker(options = {}) {
     const registrationPromise = navigator.serviceWorker
         .register(scriptUrl, { scope })
         .then((registration) => {
-            if (registration.waiting) {
-                registration.waiting.postMessage({ type: "SKIP_WAITING" });
-            }
-            registration.addEventListener("updatefound", () => {
-                const installing = registration.installing;
-                if (!installing) return;
-                installing.addEventListener("statechange", () => {
-                    if (
-                        installing.state === "installed" &&
-                        navigator.serviceWorker.controller
-                    ) {
-                        installing.postMessage({ type: "SKIP_WAITING" });
-                    }
+            const syncPreference = () =>
+                navigator.serviceWorker.controller?.postMessage({
+                    type: "COGNIS_OFFLINE_PREFERENCE",
+                    enabled: offlineEnabled(),
                 });
-            });
+            syncPreference();
+            navigator.serviceWorker.addEventListener?.(
+                "controllerchange",
+                syncPreference,
+            );
             return registration;
         })
         .catch((error) => {

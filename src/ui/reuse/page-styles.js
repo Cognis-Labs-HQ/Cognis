@@ -29,8 +29,15 @@ function acquire(href) {
         ...document.head.querySelectorAll('link[rel="stylesheet"][href]'),
     ].find(
         (link) =>
+            keyFor(link.href) === key ||
             keyFor(link.dataset.pageStylesheetSource || link.href) === key,
     );
+    if (existing) {
+        const managed = [...state.entries.values()].find(
+            (entry) => entry.link === existing,
+        );
+        if (managed) return managed;
+    }
     const link = existing || document.createElement("link");
     const entry = {
         key,
@@ -56,6 +63,7 @@ function acquire(href) {
                   { once: true },
               );
           });
+    link.dataset.resourceErrorHandled = "true";
     state.entries.set(key, entry);
     if (!existing) {
         link.rel = "stylesheet";
@@ -74,7 +82,12 @@ export function adoptPageStylesheets(hrefs = []) {
         'link[rel="stylesheet"][href]',
     )) {
         const source = link.dataset.pageStylesheetSource;
-        if (!source && !declared.has(keyFor(link.href))) continue;
+        if (
+            !source &&
+            link.dataset.pageStylesheet !== "true" &&
+            !declared.has(keyFor(link.href))
+        )
+            continue;
         const entry = acquire(source || link.href);
         if (!entry.owners.size) {
             entry.owners.add(state.route);

@@ -1,3 +1,4 @@
+import { isOfflineContentMiss } from "/static/gateways/study/offline-content.js";
 import { bindDrawingGridPreviews } from "./drawing-grid-preview.js";
 import { bindViewedEntries } from "./viewed-entries.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
@@ -70,8 +71,8 @@ export function bindLibraryInteractions(root, context) {
             locations = value;
             updateSelectionActions(root, entries, requests, locations);
         })
-        .catch(() => {
-            if (signal.aborted) return;
+        .catch((error) => {
+            if (signal.aborted || isOfflineContentMiss(error)) return;
             showToast(i18n.t("gateway.study.library_load_error"), {
                 variant: "error",
             });

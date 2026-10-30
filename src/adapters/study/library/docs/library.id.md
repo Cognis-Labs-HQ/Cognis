@@ -606,3 +606,25 @@ Pembacaan konteks pencarian kamus memakai `study:library:readSearchContext` deng
 ## Notifikasi dan penyimpanan
 
 Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, Indonesia, dan Jepang dari katalog XML, memakai bahasa Inggris sebagai cadangan, serta melalui `study:library:notifyContent`. Label kartu tidak ditafsirkan ulang saat substitusi. Penulisan kelas dengan hak istimewa tetap membutuhkan kelas tujuan yang ada. Observasi papan peringkat dibatalkan saat penyimpanan gagal; pergantian musim menghitung ulang hasil akhir setelah proses dimulai ulang dan memulihkan keadaan jika gagal disimpan. Administrator terverifikasi dapat melepas ikatan sumber integrasi yang cocok tanpa menjadi anggota ruang.
+
+## Halaman Study luring kosong
+
+Halaman Study yang sudah disiapkan tetap dapat dibuka dalam sesi luring terverifikasi dengan persetujuan wajib meskipun snapshot konten privat belum ada. Metadata bahasa atau preferensi yang hilang menghasilkan navigasi kosong. Explore memasang tampilan kosong normal dan menampilkan “Tidak ada konten luring tersimpan yang tersedia” alih-alih kesalahan rute atau toast kesalahan. Flashcards juga mempertahankan halaman kosong jika data dek atau sumber tampilan wajib belum tersedia. Pemberitahuan terikat halaman saat ini dan tidak diduplikasi. Kekurangan cache tidak menyembunyikan penolakan akses atau persetujuan. Library dan Flashcards menyiapkan terjemahan publik serta templat ringan saat daring; data privat tetap berada dalam cache tab yang dibatasi.
+
+## Aset Study Luring
+
+Kedua varian tema ikon popup disiapkan melalui kapabilitas aset luring host yang mengikuti masa hidup penyedia. Penelusuran tersimpan dan menggambar tetap tersedia. Penyuntingan konten dinonaktifkan saat luring, termasuk Sunting pada popup terbuka ketika koneksi hilang. Ikon dekoratif yang tidak tersedia menampilkan label tindakan terjemahannya.
+
+## Ketersediaan Luring
+
+Registri rute luring bertahan pada impor berulang dari bundel maupun berkas langsung. Deskriptor rute yang dibentuk ulang mempertahankan ketersediaan jika skrip, gaya, dan penyedia kapabilitas tetap sama; aset yang berubah harus disiapkan ulang. Pesan menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah login terverifikasi. Halaman dapat dibuka luring sebelum kunjungan daring pertama. Hanya ruang dan riwayat tersimpan yang dibuka otomatis; memilih riwayat yang belum tersimpan menampilkan toast informasi khusus. Explore mempertahankan koleksi tersimpan yang tersedia jika koleksi lain atau penanda sudah dilihat tidak ditemukan. Penolakan akses dan persetujuan tetap diteruskan. Tindakan banner ditempatkan langsung dalam baris tindakan bersama sehingga pergeseran vertikal bawaan hilang.
+
+## Favorit Study Bersama
+
+Pengelolaan Library serta halaman pengeditan, pencarian, dan permintaannya memerlukan koneksi. Tautan navigasi yang diizinkan tetap terlihat tetapi dinonaktifkan saat luring, termasuk segera setelah koneksi terputus. Explore tetap tersedia untuk membaca konten tersimpan dan menggambar. Penyedia Library hanya mendaftarkan Explore sebagai rute sesi luring.
+
+Persiapan bahasa yang diikuti menyimpan katalog skema bersama, katalog tiap bahasa, dan koleksi ringan yang diizinkan melalui kontrak Study. Konsumen menggunakan skema dan pembacaan koleksi tersebut tanpa kunjungan halaman sebelumnya. Sumber daya menggambar disiapkan sebelum penggunaan pertama. Audio, pengambilan kamus, pengeditan konten, dan pemeriksaan akses tetap mengikuti pembatasan yang ada.
+
+## Notifikasi Berdasarkan ID Akun
+
+Notifikasi permintaan dan konten Library menggunakan `accountId` yang tetap agar menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama.

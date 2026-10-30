@@ -27,3 +27,23 @@ Beim Verlassen des Kalenders wird überholte Initialisierung vor Änderungen an 
 ## Kalender schneller laden
 
 Der Kalender lädt Einladungen gleichzeitig mit der Kalenderliste und startet Ereignisabfragen, sobald die Liste bereitsteht. Der Seitenaufbau wartet weiterhin auf die erforderlichen Abfragen. Bei Fehlern der Einladungsabfrage bleibt die bisherige leere Einladungsliste erhalten. Jede Navigation lädt aktuelle Daten. Abbruchprüfungen verhindern den Aufbau überholter Seiten durch verspätete Antworten.
+
+## Erinnerungen auswählen
+
+Mehrere Erinnerungen lassen sich mit den üblichen sichtbaren Kontrollkästchen auswählen und gemeinsam speichern. Werden alle abgewählt, bleiben Erinnerungen auch bei Kalenderstandardwerten deaktiviert. Bestehende benutzerdefinierte Zeitabstände bleiben beim Bearbeiten verfügbar.
+
+Beim Erstellen verwendet ein fehlendes `reminderOffsetsMinutes` die Kalenderstandardwerte; ein ausdrücklich leeres Array deaktiviert Erinnerungen. Änderungen ohne dieses Feld erhalten die bestehende Auswahl.
+
+## Offline-Assets und Kalender
+
+Nach bestätigter Anmeldung speichert Calendar Kalenderlisten, Einladungen und eigene Termine mit höchstens zwei gleichzeitigen Hintergrundanfragen. Eine Cache-Invalidierung erneuert diese Schnappschüsse, ohne die Anmeldung aufzuhalten. Gespeicherte Termine bleiben lesbar; neue Termine, Änderungen, Löschungen, Antworten, Statuspräferenzen und Kalenderänderungen werden gepuffert. Neue und geänderte Termine erscheinen in den zwischengespeicherten Listen. Neue Termine nutzen eine stabile Vorgangs-UUID; Wiederholungen liefern den vorhandenen Termin ohne weitere Serie oder erneuten Einladungsversand. Geänderte oder kontofremde Wiederverwendung wird abgelehnt. Beim Übertragen prüft der Server erneut die Berechtigung.
+
+Kalender-Schnappschüsse bleiben im Tab und sind auf 4 MB und 100 Lesevorgänge begrenzt. Für die gemeinsame Warteschlange gelten weiterhin 1 MB, 1.000 Einträge und sieben Tage. Neue Serientermine zeigen bis zur serverseitigen Erweiterung den ersten Termin. Neue Kalender, Meetings, Freigaben, Passwortverwaltung und Gastzugänge benötigen eine Verbindung; Freigabepasswörter werden niemals gepuffert. Messages benötigt eine gespeicherte Raumliste, Study gespeicherte Sprach- und Präferenzdaten, bevor Offline-Navigation freigegeben wird.
+
+## Dauerhaft vorgemerkte Änderungen
+
+Vorgemerkte neue Termine und spätere Änderungen erscheinen in zwischengespeicherten Listen und Detailfenstern. Gleichzeitige Übermittlungen teilen sich eine Anfrage. Fehler optionaler Aktivitätserfassung, Verfügbarkeitsanzeige oder Ansichtsaktualisierung machen einen gespeicherten Termin nicht zu einer fehlgeschlagenen Erstellung. Die Übertragung verwendet dieselbe Termin-UUID und die aktuellen Serverberechtigungen.
+
+## Offline-Statusdarstellung
+
+Der Calendar-Provider bereitet das verzögert geladene Stylesheet für Ereignisstatus vor der ersten Offlineverwendung vor. Gemeinsame Popup-, Toast- und Geheimnis-Sichtbarkeitsstile bereitet der Host vor. Dadurch lassen sich gespeicherte Ereignisse öffnen, ohne ihre Details zuvor online geöffnet zu haben.

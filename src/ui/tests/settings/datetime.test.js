@@ -163,3 +163,41 @@ test("UTC selection discards or persists and formats after preferences reload", 
     );
     assert.equal(writes, 1);
 });
+
+test("a delayed login timezone read cannot apply another account's preferences", async (context) => {
+    const originalStorage = globalThis.localStorage;
+    const storage = new Map([
+        ["cognis_account", "first-account"],
+        ["cognis_access_token", "first-token"],
+        ["cognis_timezone", "UTC"],
+    ]);
+    globalThis.localStorage = {
+        getItem: (key) => storage.get(key) ?? null,
+        setItem: (key, value) => storage.set(key, String(value)),
+        removeItem: (key) => storage.delete(key),
+    };
+    context.after(() => {
+        globalThis.localStorage = originalStorage;
+    });
+    let release;
+    const response = new Promise((resolve) => {
+        release = resolve;
+    });
+    context.mock.method(globalThis, "fetch", () => response);
+    const synchronization = syncTimezoneOnLogin("first-account");
+    storage.set("cognis_account", "second-account");
+    storage.set("cognis_access_token", "second-token");
+    release(
+        Response.json({
+            data: {
+                layoutJson: JSON.stringify({
+                    timezone: "Asia/Tokyo",
+                    timeFormat: "12h",
+                }),
+            },
+        }),
+    );
+    await assert.rejects(synchronization, /offline_account_changed/);
+    assert.equal(storage.get("cognis_timezone"), "UTC");
+    assert.equal(storage.has("cognis_time_format"), false);
+});

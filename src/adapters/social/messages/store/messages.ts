@@ -13,6 +13,7 @@ export async function appendMessage(
         iv: string;
         authTag?: string;
         contentType?: string;
+        operationId?: string;
     },
 ): Promise<MessageRow> {
     return db.transaction((executor) => insertMessage(executor, input));
@@ -27,13 +28,15 @@ async function insertMessage(
         iv: string;
         authTag?: string;
         contentType?: string;
+        operationId?: string;
     },
 ): Promise<MessageRow> {
-    const id = randomUUID();
+    const id = input.operationId ?? randomUUID();
     const nowIso = new Date().toISOString();
-    await db.executeCommand({
+    const inserted = await db.executeCommand({
         option: "INSERT",
         table: "chat_messages",
+        conflict: { action: "ignore", target: ["id"] },
         values: {
             id,
             chatroom_id: input.roomId,
@@ -45,18 +48,29 @@ async function insertMessage(
             created_at: nowIso,
         },
     });
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "chat_messages",
+        where: [{ column: "id", value: id }],
+    });
+    const message = rowToMessage(result.rows![0]);
+    if (
+        message.chatroomId !== input.roomId ||
+        message.senderId !== input.senderId ||
+        message.ciphertext !== input.ciphertext ||
+        message.iv !== input.iv ||
+        message.authTag !== (input.authTag ?? "") ||
+        message.contentType !== (input.contentType ?? "text/plain")
+    )
+        throw Object.assign(new Error("delivery_conflict"), { status: 409 });
+    if (inserted.rowCount === 0) return { ...message, replayed: true };
     await db.executeCommand({
         option: "UPDATE",
         table: "chatrooms",
         set: { updated_at: nowIso },
         where: [{ column: "id", value: input.roomId }],
     });
-    const result = await db.executeCommand({
-        option: "SELECT",
-        table: "chat_messages",
-        where: [{ column: "id", value: id }],
-    });
-    return rowToMessage(result.rows![0]);
+    return message;
 }
 
 export async function appendRoomEvent(
@@ -147,15 +161,25 @@ export async function markRead(
     db: DbExecutor,
     roomId: string,
     accountId: string,
+    readAt = new Date().toISOString(),
 ): Promise<void> {
-    await db.executeCommand({
-        option: "UPDATE",
-        table: "chatroom_members",
-        set: { last_read_at: new Date().toISOString() },
-        where: [
-            { column: "chatroom_id", value: roomId },
-            { column: "account_id", value: accountId },
-        ],
+    await db.transaction(async (executor) => {
+        const member = await getMember(executor, roomId, accountId);
+        if (
+            !member ||
+            (member.lastReadAt &&
+                Date.parse(member.lastReadAt) >= Date.parse(readAt))
+        )
+            return;
+        await executor.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { last_read_at: readAt },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
     });
 }
 

@@ -21,6 +21,7 @@ function preloadHostProviders(urls) {
         .filter((url) => url.startsWith("/assets/") && !/[?#]/.test(url))
         .map((url) => {
             const link = document.createElement("link");
+            link.dataset.resourceErrorHandled = "true";
             link.rel = "modulepreload";
             link.href = url;
             document.head.appendChild(link);
@@ -35,6 +36,7 @@ export function createProviderLifecycle({
 }) {
     const active = new Map();
     const catalogs = new Map();
+    const failures = new WeakMap();
     let pending = Promise.resolve();
 
     async function reconcile(providers, preload) {
@@ -56,7 +58,20 @@ export function createProviderLifecycle({
         try {
             for (const [url] of desired) {
                 if (active.has(url)) continue;
-                const provider = await importProvider(url);
+                const details = {
+                    providerScript: url.startsWith("/")
+                        ? url.split(/[?#]/)[0]
+                        : "external",
+                    providerPhase: "import",
+                };
+                let provider;
+                try {
+                    provider = await importProvider(url);
+                } catch (error) {
+                    if (error && typeof error === "object")
+                        failures.set(error, details);
+                    throw error;
+                }
                 const removers = [];
                 const controller = new AbortController();
                 const release = async () => {
@@ -97,10 +112,13 @@ export function createProviderLifecycle({
                     },
                 };
                 try {
+                    details.providerPhase = "mount";
                     const dispose = await provider.mountProvider?.(scopedCtx);
                     if (typeof dispose === "function") removers.push(dispose);
                     active.set(url, release);
                 } catch (error) {
+                    if (error && typeof error === "object")
+                        failures.set(error, details);
                     await release();
                     throw error;
                 }
@@ -127,6 +145,7 @@ export function createProviderLifecycle({
                             error instanceof Error
                                 ? error.name
                                 : "UnknownError",
+                        ...failures.get(error),
                     },
                 );
             });

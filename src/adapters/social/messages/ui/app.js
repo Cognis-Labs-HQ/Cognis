@@ -9,7 +9,7 @@
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
-import { apiFetch } from "/static/reuse/api-client.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { applyDocumentTitle } from "/static/reuse/i18n.js";
@@ -27,7 +27,6 @@ import {
 } from "./emoji-helpers.js";
 import { createMessageTemplatesUi } from "./template-ui.js";
 import {
-    encryptMessage,
     normalizeReactionEmoji,
     resolveMessageStyle,
 } from "./message-utils.js";
@@ -45,6 +44,7 @@ import {
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
+import { createMessageSender } from "./send-message.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
@@ -674,103 +674,18 @@ export async function mount(root, { signal } = {}) {
                     passiveEventOptions,
                 );
 
-                form?.addEventListener("submit", async (event) => {
-                    event.preventDefault();
-                    const selectedRoomId = roomState.getSelectedRoomId();
-                    if (!selectedRoomId) return;
-                    const currentRoom = roomState.getSelectedRoom();
-                    if (
-                        currentRoom?.canSend === false ||
-                        currentRoom?.isArchived
-                    ) {
-                        showToast(
-                            i18n.t(
-                                "module.social.messages.archived_cannot_send",
-                            ),
-                            {
-                                variant: "error",
-                            },
-                        );
-                        return;
-                    }
-                    const text = resolveMessageTemplateVariables(
-                        composerInput instanceof HTMLTextAreaElement
-                            ? composerInput.value
-                            : "",
-                        currentRoom,
+                form?.addEventListener(
+                    "submit",
+                    createMessageSender({
+                        roomState,
+                        composerInput,
                         currentAccountId,
-                    ).trim();
-                    if (!text) return;
-                    roomState.queueTypingUpdate(false);
-                    let key = null;
-                    try {
-                        key = await requireRoomKey(selectedRoomId);
-                    } catch (error) {
-                        console.error(
-                            "[messages] requireRoomKey failed",
-                            error,
-                        );
-                        key = null;
-                    }
-                    if (!key) {
-                        showToast(
-                            i18n.t("module.social.messages.key_unavailable"),
-                            {
-                                variant: "error",
-                            },
-                        );
-                        return;
-                    }
-                    const { iv, ciphertext } = await encryptMessage(key, text);
-                    const response = await apiFetch(
-                        `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages`,
-                        {
-                            method: "POST",
-                            body: JSON.stringify({ ciphertext, iv }),
-                        },
-                    );
-                    if (!response.ok) {
-                        const payload = await response.json().catch(() => null);
-                        const code = payload?.error?.code;
-                        if (code === "not_member") {
-                            showToast(
-                                i18n.t(
-                                    "module.social.messages.not_member_cannot_send",
-                                ),
-                                {
-                                    variant: "error",
-                                },
-                            );
-                            await roomState.reloadRoomsList();
-                            return;
-                        }
-                        if (code === "chat_archived") {
-                            showToast(
-                                i18n.t(
-                                    "module.social.messages.archived_cannot_send",
-                                ),
-                                {
-                                    variant: "error",
-                                },
-                            );
-                            await roomState.reloadRoomsList();
-                            return;
-                        }
-                        showToast(
-                            i18n.t("module.social.messages.send_failed"),
-                            { variant: "error" },
-                        );
-                        return;
-                    }
-                    if (composerInput instanceof HTMLTextAreaElement) {
-                        clearPersistedFormState(selectedRoomId);
-                        composerInput.value = "";
-                    }
-                    renderComposerPreview();
-                    await roomState.openRoom(selectedRoomId);
-                    await roomState.refreshTypingIndicator();
-                    roomState.startLiveRefreshPolling();
-                });
+                        requireRoomKey,
+                        clearPersistedFormState,
+                        renderComposerPreview,
+                        i18n,
+                    }),
+                );
 
                 composerInput?.addEventListener("input", () => {
                     const hasText = Boolean((composerInput.value ?? "").trim());
@@ -826,7 +741,8 @@ export async function mount(root, { signal } = {}) {
             const roomId = item.getAttribute("data-room-id");
             if (!roomId) return;
             roomState.queueTypingUpdate(false);
-            roomState.setSelectedRoomId(roomId);
+            await roomState.openRoom(roomId);
+            if (String(roomState.getSelectedRoomId()) !== roomId) return;
             roomsList
                 .querySelectorAll(".messages-room--active")
                 .forEach((activeItem) =>
@@ -838,7 +754,6 @@ export async function mount(root, { signal } = {}) {
                 "",
                 `/messages/${encodeURIComponent(roomId)}`,
             );
-            await roomState.openRoom(roomId);
             await roomState.refreshTypingIndicator();
             roomState.startTypingPolling();
             roomState.startLiveRefreshPolling();

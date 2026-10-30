@@ -55,3 +55,23 @@ export interface NotificationGateway {
 | `POST`  | `/api/v1/users/email/verify`                | E-Mail-Verifizierung abschließen                    | Bearer            |
 | `GET`   | `/api/v1/users/:username/email`             | Primäre E-Mail-Adresse eines Benutzers abrufen      | Bearer            |
 | `PUT`   | `/api/v1/users/:username/email`             | Primäre E-Mail-Adresse eines Benutzers setzen       | Bearer            |
+
+## E-Mail-Verifizierung
+
+SMTP-Verifizierung gilt für SSO-Konten und lokale Konten. Erneutes Senden verwendet den konfigurierten Benachrichtigungsdienst. Codes und Bestätigungslinks binden die vollständige Konto-ID und E-Mail als undurchsichtiges Tupel, einschließlich SSO-Namensräumen. Abbrechen der Verifizierung in den Einstellungen erhält die vorhandene E-Mail-Adresse.
+
+## Gemeinsame obere Hinweise
+
+Offline-Modus und Broadcast verwenden einen gemeinsamen fixierten Stapel ganz oben im Dokument über dem App-Kopf. Offline-Modus hat Vorrang, ist nicht schließbar und behält Verbindungsprüfung und Aktualisieren nach Wiederherstellung. Das Entfernen einer Ankündigung entfernt Offline-Modus nicht. Broadcast überspringt Netzwerkanfragen ohne Verbindung; sein Anbieter entfernt beim Beenden Leiste und Timer.
+
+## Persönliche Offline-Optionen
+
+Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdiger Domains ohne Besuch der Einstellungen vor. Hinzufügen, Entfernen und Auswahl der primären Adresse werden lokal dargestellt und über `notify:emailClient` sowie den geschützten Warteschlangeneigentümer `notify.emails` gespeichert. Die Serverprüfung bleibt maßgeblich. E-Mail-Verifizierung, erneutes Senden und Kontolöschung oder -deaktivierung benötigen eine Verbindung; Codes, Beobachtungstoken und Passwörter gelangen nicht in die Warteschlange. Neue Adressen bleiben bis zur Online-Verifizierung unbestätigt. Erfolgreiche Zustellung aktualisiert den E-Mail-Schnappschuss; optionale Aktualisierungsfehler machen gespeicherte Änderungen nicht nachträglich zu Fehlern. Die begrenzten privaten Schnappschüsse sind an Tab und Sitzung gebunden.
+
+## Sitzungs- und Modulgrenzen
+
+Die lebenszyklusgebundene Fähigkeit `notify:emailClient` bietet Anfragen für das eigene Konto und vertrauenswürdige Domänen sowie administrative E-Mail-Abfragen mit `listUserEmails`, erneuten Versand nur bei Verbindung mit `resendUserEmail` und `smtpAvailable`. Jede Aktion durchläuft registrierte Stufen und endet bei Entsorgung des Providers. Einstellungen, Benutzerverwaltung und Administration lösen diese Methoden über ctx auf, ohne Notify-UI-Implementierungen zu importieren. Fehlt Notify, wird die E-Mail-Verwaltung ausgeblendet; unabhängige Kontosteuerungen bleiben nutzbar.
+
+## Benachrichtigungen per Konto-ID
+
+Rollenbasierte Benachrichtigungen verwenden die unveränderliche `accountId` und erreichen dadurch auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. `notify:dispatchToRole` gibt die kanonischen Empfänger-IDs zurück; öffentliche Benutzernamen bleiben Anzeigedaten.

@@ -10,7 +10,10 @@ test("registration administration owns policy and invite navigation", async () =
     assert.match(source, /createFormBuilder/);
     assert.match(source, /createFormDirtyTracker/);
     assert.match(source, /publicRegistrationEnabled/);
-    assert.match(source, /gateways\/registration\/adapters\/public/);
+    assert.match(
+        source,
+        /publicRegistrationEnabled:\s*nextPolicy.publicRegistrationEnabled/,
+    );
     assert.match(source, /class="btn-neutral btn-animated" href="\/invite"/);
 });
 

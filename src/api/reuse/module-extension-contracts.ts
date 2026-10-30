@@ -59,6 +59,7 @@ export interface ModuleUiRegistrationContext {
             | string,
     ): void;
     registerCapabilityProvider(provider: {
+        offlineAccessGuard?: string;
         scriptUrl: string;
         providesCapabilities: string[];
     }): void;
@@ -70,6 +71,8 @@ export interface ModuleUiRegistrationContext {
         stylesheets?: string[];
         access?: RoleAccessPolicy;
         public?: boolean;
+        /** Public, server-independent page; list every runtime asset it needs. */
+        offline?: { assets: string[] };
         requiredCapabilities?: string[];
         componentPage?: {
             labelKey: string;

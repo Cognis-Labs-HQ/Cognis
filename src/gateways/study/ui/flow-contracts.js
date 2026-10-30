@@ -1,32 +1,43 @@
-import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import { registerDrawingDelivery } from "./drawing-client.js";
+import { registerFavouriteClient } from "./reuse/favourites-client.js";
+import {
+    registerStudyNavigation,
+    fetchStudyLanguages,
+    fetchStudyModules,
+} from "./navigation-client.js";
 
-async function fetchList(path) {
-    const response = await apiFetch(path);
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
+export function mountProvider(uiCtx) {
+    registerStudyNavigation(uiCtx);
+    const subPages = uiCtx.capabilities.get("ui:subPages");
+    subPages?.register("study", {
+        listGroups: () => fetchStudyLanguages(),
+        listPages: (languageCode) => fetchStudyModules(languageCode),
+    });
+    uiCtx.signal.addEventListener(
+        "abort",
+        () => subPages?.unregister("study"),
+        { once: true },
+    );
+
+    uiCtx.capabilities.contribute("study:subPages", subPages);
+
+    const DETAIL_FLOW = "study:library:composeEntryDetail";
+    if (!uiCtx.flowExists(DETAIL_FLOW)) {
+        uiCtx.registerFlow(DETAIL_FLOW, [
+            "beforeCore",
+            "core",
+            "afterCore",
+            "actions",
+        ]);
+    }
+
+    uiCtx.capabilities.contribute("study:library:detailFlow", DETAIL_FLOW);
+
+    const releases = [
+        registerDrawingDelivery(uiCtx),
+        registerFavouriteClient(uiCtx),
+    ];
+    return () => {
+        for (const release of releases) release();
+    };
 }
-
-const subPages = uiCtx.capabilities.get("ui:subPages");
-subPages?.register("study", {
-    listGroups: () => fetchList("/api/v1/study/registered-languages"),
-    listPages: (languageCode) =>
-        fetchList(
-            `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-        ),
-});
-
-uiCtx.capabilities.contribute("study:subPages", subPages);
-
-const DETAIL_FLOW = "study:library:composeEntryDetail";
-if (!uiCtx.flowExists(DETAIL_FLOW)) {
-    uiCtx.registerFlow(DETAIL_FLOW, [
-        "beforeCore",
-        "core",
-        "afterCore",
-        "actions",
-    ]);
-}
-
-uiCtx.capabilities.contribute("study:library:detailFlow", DETAIL_FLOW);

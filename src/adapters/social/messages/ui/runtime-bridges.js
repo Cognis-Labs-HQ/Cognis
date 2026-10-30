@@ -1,14 +1,6 @@
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
-import { createI18n } from "/static/reuse/i18n.js";
-
-export const createMessagesI18n = () =>
-    createI18n({
-        componentStringBaseUrls: [
-            "/static/adapters/social/messages/languages",
-            "/static/gateways/social/languages",
-        ],
-    });
+export { createMessagesI18n } from "./i18n.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");

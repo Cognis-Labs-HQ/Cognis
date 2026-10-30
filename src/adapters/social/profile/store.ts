@@ -585,26 +585,44 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async createPost(
         accountId: string,
-        input: { title?: string; content: string; visibility: PostVisibility },
+        input: {
+            title?: string;
+            content: string;
+            visibility: PostVisibility;
+            operationId?: string;
+        },
     ): Promise<Post> {
-        const id = randomUUID();
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "posts",
-            values: {
-                id,
-                account_id: accountId,
-                title: input.title ?? null,
-                content: input.content,
-                visibility: input.visibility,
-            },
+        return this.db.transaction(async (executor) => {
+            const id = input.operationId ?? randomUUID();
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "posts",
+                conflict: { action: "ignore", target: ["id"] },
+                values: {
+                    id,
+                    account_id: accountId,
+                    title: input.title ?? null,
+                    content: input.content,
+                    visibility: input.visibility,
+                },
+            });
+            const result = await executor.executeCommand({
+                option: "SELECT",
+                table: "posts",
+                where: [{ column: "id", value: id }],
+            });
+            const post = rowToPost(result.rows![0]);
+            if (
+                post.accountId !== accountId ||
+                post.title !== (input.title ?? null) ||
+                post.content !== input.content ||
+                post.visibility !== input.visibility
+            )
+                throw Object.assign(new Error("delivery_conflict"), {
+                    status: 409,
+                });
+            return post;
         });
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "posts",
-            where: [{ column: "id", value: id }],
-        });
-        return rowToPost(result.rows![0]);
     }
 
     async getPostsByAccount(accountId: string): Promise<Post[]> {

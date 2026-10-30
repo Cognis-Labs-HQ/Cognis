@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { messagesFetch as apiFetch } from "./offline-client.js";
 
 export const messagesUiClient = Object.freeze({
     listRoomMessages(roomId, options = {}) {

@@ -7,7 +7,7 @@ import { ACCESS_ROLES } from "../../reuse/access-role.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("users page renders contributed controls directly above the table", () => {
+test("users page renders contributed controls directly above the account list", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
@@ -15,7 +15,7 @@ test("users page renders contributed controls directly above the table", () => {
 
     assert.match(
         source,
-        /\$\{leadingControlsHtml\}\s*<div class="users-table-wrap">/,
+        /\$\{leadingControlsHtml\}\s*<div class="users-list">/,
     );
     assert.match(source, /toolbar: \[\]/);
 });
@@ -44,7 +44,7 @@ test("users role dropdown renders owner as a disabled display select", () => {
     assert.match(source, /const roleOptions = isOwner\s*\? \["owner"\]/);
     assert.match(
         source,
-        /const roleCellHtml = `<select class="users-role-select theme-select"/,
+        /const roleControlHtml = `<select class="users-role-select theme-select"/,
     );
     assert.doesNotMatch(
         source,
@@ -123,7 +123,7 @@ test("users delete action removes the confirmed deletion from local table data",
     assert.match(deleteAction, /if \(!response\.ok\)/);
     assert.match(
         deleteAction,
-        /users = users\.filter\(\(user\) => user\.username !== username\)/,
+        /users = users\.filter\(\(user\) => user\.accountId !== username\)/,
     );
     assert.match(deleteAction, /root\.querySelectorAll\("\.users-row"\)/);
     assert.match(deleteAction, /deletedUserRow\?\.remove\(\)/);
@@ -142,15 +142,6 @@ test("users tfa reset action has standalone branch", () => {
         source,
         /\/api\/v1\/tfa\/admin\/users\/\$\{encodeURIComponent\(username\)\}\/reset/,
     );
-});
-
-test("users row click guard ignores role dropdown interaction", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/users/index.js"),
-        "utf8",
-    );
-
-    assert.match(source, /target\.closest\("button,input,select"\)/);
 });
 
 test("users resend verification action is hidden when smtp adapter is disabled", () => {

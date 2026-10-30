@@ -30,7 +30,7 @@
   <string name="gateway.registration.invite.revoke_success">Einladung widerrufen.</string>
   <string name="gateway.registration.invite.revoke_failed">Einladung konnte nicht widerrufen werden.</string>
   <string name="gateway.registration.invite.method">Methode</string>
-  <string name="gateway.registration.public_registration_enabled">Öffentliche Registrierung</string>
+  <string name="gateway.registration.public_registration_enabled">Öffentliche Registrierung lokaler Konten erlauben</string>
   <string name="ui.page.title.register">Cognis - Registrierungseinladung</string>
   <string name="ui.app.register.form_title">Konto erstellen</string>
   <string name="ui.app.register.page_subtitle">Erstellen Sie ein neues Konto, um auf Cognis zuzugreifen.</string>

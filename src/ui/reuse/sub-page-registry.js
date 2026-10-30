@@ -47,12 +47,15 @@ export function createSubPageRegistry() {
 
     function loadGroups(providerId, provider) {
         if (!groupPromises.has(providerId)) {
-            groupPromises.set(
-                providerId,
-                Promise.resolve(provider.listGroups()).then((groups) =>
-                    Array.isArray(groups) ? groups : [],
-                ),
-            );
+            const pending = Promise.resolve()
+                .then(() => provider.listGroups())
+                .then((groups) => (Array.isArray(groups) ? groups : []))
+                .catch((error) => {
+                    if (groupPromises.get(providerId) === pending)
+                        groupPromises.delete(providerId);
+                    throw error;
+                });
+            groupPromises.set(providerId, pending);
         }
         return groupPromises.get(providerId);
     }
@@ -60,12 +63,15 @@ export function createSubPageRegistry() {
     function loadPages(providerId, provider, groupId) {
         const cacheKey = `${providerId}:${groupId}`;
         if (!pagePromises.has(cacheKey)) {
-            pagePromises.set(
-                cacheKey,
-                Promise.resolve(provider.listPages(groupId)).then((pages) =>
-                    Array.isArray(pages) ? pages : [],
-                ),
-            );
+            const pending = Promise.resolve()
+                .then(() => provider.listPages(groupId))
+                .then((pages) => (Array.isArray(pages) ? pages : []))
+                .catch((error) => {
+                    if (pagePromises.get(cacheKey) === pending)
+                        pagePromises.delete(cacheKey);
+                    throw error;
+                });
+            pagePromises.set(cacheKey, pending);
         }
         return pagePromises.get(cacheKey);
     }

@@ -194,4 +194,5 @@
   <string name="gateway.calendar.share_acknowledge_message">このカレンダーがカレンダーページに追加されます。</string>
   <string name="gateway.calendar.share_acknowledge_action">カレンダーを追加</string>
   <string name="gateway.calendar.delete_shared_calendar_confirm">この共有カレンダーがカレンダーページから削除されます。</string>
+  <string name="gateway.calendar.reminder_minutes">{minutes}分前</string>
 </resources>

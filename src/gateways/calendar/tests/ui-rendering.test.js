@@ -328,14 +328,14 @@ test("successful event updates refresh availability through ui ctx", () => {
     );
     assert.match(
         CALENDAR_API_SOURCE,
-        /async function updateEvent[\s\S]*response\.ok[\s\S]*await refreshUserAvailability\(\)/,
+        /async function updateEvent[\s\S]*response\.ok[\s\S]*void refreshUserAvailability\(\)/,
     );
 });
 
 test("active event creation and event boundaries refresh availability", () => {
     assert.match(
         CALENDAR_API_SOURCE,
-        /async function createEvent[\s\S]*Date\.parse\(payload\.startAt\) <= now[\s\S]*Date\.parse\(payload\.endAt\) > now[\s\S]*await refreshUserAvailability\(\)/,
+        /async function createEvent[\s\S]*Date\.parse\(payload\.startAt\) <= now[\s\S]*Date\.parse\(payload\.endAt\) > now[\s\S]*void refreshUserAvailability\(\)/,
     );
     assert.match(
         APP_SOURCE,
@@ -363,7 +363,7 @@ test("calendar composer supports multiple reminders and remembers selected view"
         /name="calendar-popup-reminder-offset"/,
     );
     assert.doesNotMatch(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
-    assert.match(POPUP_REMINDERS_SOURCE, /calendar-reminder-option-check/);
+    assert.match(POPUP_REMINDERS_SOURCE, /choice-checkbox/);
     assert.match(
         POPUP_REMINDERS_SOURCE,
         /gateway\.calendar\.reminders_default_tooltip/,

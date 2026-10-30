@@ -38,6 +38,7 @@ export async function mount(root, { signal } = {}) {
     const { schemas, entries: loadedEntries } = await loadLibrary(
         languageCode,
         i18n,
+        { signal },
     );
     let entries = loadedEntries;
     const requests = await loadLibraryRequests(i18n);

@@ -803,6 +803,18 @@ export function createSessionRoutes({
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
+            const guest = capabilities.get<
+                (claims: { sub: string }) => string | null
+            >("share:resolveGuestId")?.(claims);
+            if (guest) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: { integrations: [], requiresSetup: false },
+                    }),
+                );
+                return true;
+            }
             const getTfaUserStatus =
                 capabilities.get<
                     (accountId: string) => Promise<{ requiresSetup: boolean }>
@@ -810,10 +822,29 @@ export function createSessionRoutes({
             const status = getTfaUserStatus
                 ? await getTfaUserStatus(claims.sub).catch(() => null)
                 : null;
+            const getIntegrations = capabilities.get<
+                (
+                    accountId: string,
+                    role: string,
+                ) => Promise<Array<{ scriptUrl: string }>>
+            >("auth:getSetupIntegrations");
+            // Limited TFA setup tokens cannot access other owners' setup APIs.
+            const integrations =
+                getIntegrations && status?.requiresSetup !== true
+                    ? await getIntegrations(claims.sub, claims.role)
+                    : [];
+            const getAccountInstanceId = capabilities.get<
+                (accountId: string) => Promise<string>
+            >("auth:getAccountInstanceId");
+            if (!getAccountInstanceId)
+                throw new Error("account_instance_unavailable");
+            const accountInstanceId = await getAccountInstanceId(claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
+                        accountInstanceId,
+                        integrations,
                         requiresSetup: status?.requiresSetup === true,
                     },
                 }),

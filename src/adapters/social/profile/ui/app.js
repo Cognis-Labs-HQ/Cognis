@@ -1,4 +1,7 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isOffline } from "/static/reuse/offline-state.js";
+import { saveProfileFields } from "./profile-save.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -41,13 +44,7 @@ import {
     createFollowerCountPoller,
     loadSocialConnectionList,
 } from "./follower-poller.js";
-import {
-    AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
-    PROFILE_BIO_MAX_CHARACTERS,
-    PROFILE_DISPLAY_NAME_MAX_CHARACTERS,
-    PROFILE_LOCATION_MAX_CHARACTERS,
-    PROFILE_WEBSITE_MAX_CHARACTERS,
-} from "./profile-config.js";
+import { AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO } from "./profile-config.js";
 import {
     bindExternalProfileSync,
     resolveExternalProfileProvider,
@@ -214,7 +211,32 @@ const {
     bannerFileInput,
     clearPendingSelection,
     requestSelection,
-} = createProfileImageSelection();
+} = createProfileImageSelection({
+    onFileSelected: (kind, file) =>
+        profileImageActions?.handleProfileImageUpload({
+            kind,
+            file,
+            aspectRatio:
+                kind === "avatar"
+                    ? AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO
+                    : pendingBannerAspectRatio,
+        }),
+    onError: (error) => {
+        console.error("[profile] image selection failed", {
+            component: "social-profile",
+            operation: "selectImage",
+            errorName: error.name,
+        });
+        showToast(
+            i18n.t(
+                error.message === "offline_outbox_full"
+                    ? "ui.reuse.offline_buffer_full_body"
+                    : "ui.app.profile.upload_failed",
+            ),
+            { variant: "error" },
+        );
+    },
+});
 
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
@@ -361,89 +383,24 @@ async function openEditPopup() {
 
     if (result === "save") {
         const fieldValues = profileEditFormController?.getValues() ?? {};
-        const displayName = fieldValues.displayName ?? currentDisplayName;
-        const bio = fieldValues.bio ?? currentBio;
-        const location = fieldValues.location ?? currentLocation;
-        const website = fieldValues.website ?? currentWebsite;
-        const visibility = fieldValues.visibility ?? currentVisibility;
-        try {
-            const response = await apiFetch("/api/v1/social/profile", {
-                method: "PATCH",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    displayName,
-                    bio,
-                    location,
-                    website,
-                    visibility,
-                }),
-            });
-            if (!response.ok) {
-                const responseBody = await response.json().catch(() => null);
-                const responseMessage =
-                    responseBody?.error?.message ??
-                    i18n.t("ui.app.profile.save_failed");
-                throw new Error(responseMessage);
-            }
-            const responseBody = await response.json();
-            localStorage.setItem("cognis_display_name", displayName);
-            setState({ profile: responseBody.data });
-            refreshProfileCards(["hero", "social-links", "posts-new"]);
-            bindProfileHeroEvents();
-            updateNavbarAvatar().catch(() => {});
-            showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
-        } catch (error) {
-            showToast(
-                error instanceof Error
-                    ? error.message
-                    : i18n.t("ui.app.profile.save_failed"),
-                {
-                    variant: "error",
-                },
-            );
-        }
+        await saveProfileFields(
+            {
+                displayName: fieldValues.displayName ?? currentDisplayName,
+                bio: fieldValues.bio ?? currentBio,
+                location: fieldValues.location ?? currentLocation,
+                website: fieldValues.website ?? currentWebsite,
+                visibility: fieldValues.visibility ?? currentVisibility,
+            },
+            {
+                getState,
+                setState,
+                refreshProfileCards,
+                bindProfileHeroEvents,
+                i18n,
+            },
+        );
     }
 }
-
-avatarFileInput.addEventListener("change", async () => {
-    const file = avatarFileInput.files?.[0];
-    if (!file) {
-        avatarFileInput.value = "";
-        clearPendingSelection("avatar");
-        return;
-    }
-    try {
-        await profileImageActions?.handleProfileImageUpload({
-            kind: "avatar",
-            file,
-            aspectRatio: AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO,
-        });
-    } catch {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
-    }
-    avatarFileInput.value = "";
-    clearPendingSelection("avatar");
-});
-
-bannerFileInput.addEventListener("change", async () => {
-    const file = bannerFileInput.files?.[0];
-    if (!file) {
-        bannerFileInput.value = "";
-        clearPendingSelection("banner");
-        return;
-    }
-    try {
-        await profileImageActions?.handleProfileImageUpload({
-            kind: "banner",
-            file,
-            aspectRatio: pendingBannerAspectRatio,
-        });
-    } catch {
-        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
-    }
-    bannerFileInput.value = "";
-    clearPendingSelection("banner");
-});
 
 function bindProfileHeroEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
@@ -737,8 +694,14 @@ export async function mount(rootEl, { signal } = {}) {
         window.location.pathname.split("/")[2] ?? "",
     );
     ownAccount = localStorage.getItem("cognis_account") ?? "";
-    isOwnProfile = !urlHandle || urlHandle === ownAccount; // empty handle means /profile with no path segment → own profile
+    isOwnProfile =
+        !urlHandle ||
+        urlHandle === ownAccount ||
+        uiCtx.capabilities.get("social:isOwnProfileRoute")?.(
+            window.location.pathname,
+        ) === true; // empty handle means /profile with no path segment → own profile
 
+    if (isOffline() && !isOwnProfile) throw new Error("offline_access_denied");
     stopFollowerCountPoller();
 
     profile = null;

@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { calendarFetch as apiFetch } from "./offline-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
@@ -19,9 +19,17 @@ export function calendarEventStatusClasses(status) {
 }
 
 export async function refreshUserAvailability() {
-    await uiCtx.capabilities
-        .get("ui:availabilityRenderer")
-        ?.refresh?.(document);
+    if (uiCtx.capabilities.get("offline:state")?.isOffline()) return;
+    try {
+        await uiCtx.capabilities
+            .get("ui:availabilityRenderer")
+            ?.refresh?.(document);
+    } catch (error) {
+        console.error("[calendar] availability refresh failed", {
+            operation: "refreshAvailability",
+            errorName: error?.name,
+        });
+    }
 }
 
 export async function fetchStatusPreference() {
@@ -163,7 +171,7 @@ async function createEvent(calendarId, payload) {
         Date.parse(payload.startAt) <= now &&
         Date.parse(payload.endAt) > now
     ) {
-        await refreshUserAvailability();
+        void refreshUserAvailability();
     }
     return response;
 }
@@ -185,7 +193,7 @@ async function updateEvent(calendarId, eventId, payload) {
         ),
     );
     if (response.ok) {
-        await refreshUserAvailability();
+        void refreshUserAvailability();
     }
     return response;
 }
@@ -253,11 +261,11 @@ async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
 
-uiCtx.capabilities.contribute("calendar:dashboardEvents", {
+export const calendarDashboardEvents = {
     fetchUpcomingEvents,
     loadEventStatusStyles: loadCalendarEventStatusStyles,
     eventStatusClasses: calendarEventStatusClasses,
-});
+};
 
 export {
     fetchCalendarState,

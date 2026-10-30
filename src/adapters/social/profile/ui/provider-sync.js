@@ -1,7 +1,9 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 function resolveExternalProfileSync() {
+    if (isOffline()) return null;
     const providerId = localStorage.getItem("cognis_provider_id");
     const registry = uiCtx.capabilities.get("auth:externalProfileSync");
     return providerId &&

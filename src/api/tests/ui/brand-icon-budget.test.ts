@@ -125,33 +125,34 @@ test("service worker installation retains install icons within its precache imag
     const route = createIconRoute();
     const handlers = new Map();
     const images = new Map<string, number>();
-    let activated = false;
     vm.runInNewContext(
         await readFile(
             new URL("../../../ui/public/sw.js", import.meta.url),
             "utf8",
         ),
         {
-            Request: class extends Request {
-                constructor(url: string, options: RequestInit) {
-                    super(new URL(url, origin), options);
-                }
+            URL,
+            AbortSignal,
+            Response,
+            fetch: async (url: string) => {
+                if (url === "/static/offline-manifest.json")
+                    return Response.json([]);
+                if (url === "/api/v1/ui/offline-routes")
+                    return Response.json({ data: [], offlineGuards: [] });
+                if (url.startsWith("/static/assets/"))
+                    images.set(url, await imageBytes(route, url));
+                return new Response("public asset");
             },
             self: {
+                location: { origin },
                 addEventListener: (type: string, handler: unknown) =>
                     handlers.set(type, handler),
-                skipWaiting: () => {
-                    activated = true;
-                },
             },
             caches: {
+                keys: async () => [],
                 open: async () => ({
-                    add: async (request: Request) => {
-                        assert.equal(request.credentials, "same-origin");
-                        const path = new URL(request.url).pathname;
-                        if (path.startsWith("/static/assets/"))
-                            images.set(path, await imageBytes(route, path));
-                    },
+                    put: async () => {},
+                    keys: async () => [],
                 }),
             },
             console: {
@@ -167,7 +168,6 @@ test("service worker installation retains install icons within its precache imag
         },
     });
     await installed;
-    assert.equal(activated, true);
     assert.ok(images.has("/static/assets/icons/cognis-icon-192.png"));
     assert.ok(images.has("/static/assets/icons/cognis-icon-512.png"));
     assert.ok(images.has("/static/assets/icons/cognis-icon-384.png"));

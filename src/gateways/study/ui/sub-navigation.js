@@ -1,8 +1,9 @@
+import { isOffline } from "/static/reuse/offline-state.js";
+import { fetchStudyPreferences } from "./navigation-client.js";
 import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { showToast } from "/static/reuse/toast.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadSpaRoutes } from "/static/reuse/spa-route-registry.js";
@@ -21,17 +22,10 @@ import {
 const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 
 async function loadLearningLanguages() {
-    try {
-        const response = await apiFetch("/api/v1/study/preferences");
-        if (!response.ok) return [];
-        const payload = await response.json();
-        if (!Array.isArray(payload?.data?.learningLanguages)) {
-            return [];
-        }
-        return [...new Set(payload.data.learningLanguages)];
-    } catch {
-        return [];
-    }
+    const preferences = await fetchStudyPreferences();
+    return Array.isArray(preferences?.learningLanguages)
+        ? [...new Set(preferences.learningLanguages)]
+        : [];
 }
 
 const SUB_NAV_CACHE = {
@@ -48,6 +42,10 @@ export function readSelectedStudyLanguageCode() {
     );
 }
 
+const isManagementPage = (path) => /^\/study\/library(?:\/|$)/.test(path ?? "");
+const managementDisabledAttributes = () =>
+    isOffline() ? ' aria-disabled="true" data-offline-disabled="true"' : "";
+
 const navigationScopes = new WeakMap();
 
 export function bindStudySubNavigation(
@@ -60,6 +58,24 @@ export function bindStudySubNavigation(
     );
     navigationScopes.set(root, controller);
     const signal = controller.signal;
+    const updateManagementLinks = () => {
+        for (const link of root.querySelectorAll('a[href^="/study/library"]')) {
+            if (!isManagementPage(link.getAttribute("href"))) continue;
+            if (isOffline()) {
+                link.setAttribute("aria-disabled", "true");
+                link.dataset.offlineDisabled = "true";
+            } else if (link.dataset.offlineDisabled) {
+                link.removeAttribute("aria-disabled");
+                delete link.dataset.offlineDisabled;
+            }
+        }
+    };
+    updateManagementLinks();
+    window.addEventListener(
+        "cognis:connectivity-changed",
+        updateManagementLinks,
+        { signal },
+    );
     window.addEventListener(
         "cognis:route-will-change",
         () => controller.abort(),
@@ -125,6 +141,7 @@ export function bindStudySubNavigation(
             event.preventDefault();
             event.stopPropagation();
             const destination = link ?? settingsLink;
+            if (destination.getAttribute("aria-disabled") === "true") return;
             const currentPageUrl = resolveRememberedStudyPageUrl(
                 window.location.pathname,
             );
@@ -151,6 +168,9 @@ export function bindStudySubNavigation(
 export function clearStudySubNavCache() {
     SUB_NAV_CACHE.learningLanguages = null;
     uiCtx.capabilities.get("ui:subPages")?.invalidate("study");
+    globalThis.window?.dispatchEvent?.(
+        new CustomEvent("cognis:study-enrollment-changed"),
+    );
 }
 
 function resolveDefaultChildPageUrl(modules) {
@@ -432,7 +452,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                     : "";
             return `
                 <li>
-                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                    <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}"${isManagementPage(pageUrl) ? managementDisabledAttributes() : ""} data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                         ${escapeHtml(label)}
                     </a>
                 </li>
@@ -443,7 +463,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         isAdminScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}"${managementDisabledAttributes()} data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>

@@ -617,4 +617,19 @@
     <string name="ui.app.modules.config_action_failed">設定操作に失敗しました。設定を確認するか、音声IDを手動で入力してください。</string>
     <string name="ui.reuse.home">ホーム</string>
     <string name="ui.reuse.try_again">もう一度</string>
+    <string name="ui.reuse.offline_page_unavailable">このページはオフラインでは利用できません。再接続してから続行してください。</string>
+    <string name="ui.app.settings.offline_enabled">オフラインモード</string>
+    <string name="ui.app.settings.offline_enabled_hint">対応するキャッシュ内容を利用し、対応する変更を再接続まで保留します。音声・辞書要求・大容量アップロードには接続が必要です。最後に取得した規約への同意が必要です。無効にすると従来の接続エラー通知を使います。</string>
+    <string name="ui.reuse.offline_access_required">オフライン利用には確認が必要です</string>
+    <string name="ui.reuse.offline_access_required_body">再接続し、必要な文書の最新版を確認して同意してからオフラインモードを利用してください。</string>
+    <string name="ui.reuse.retry">再試行</string>
+    <string name="ui.reuse.offline_sync_rejected">一部の変更を適用できませんでした。</string>
+    <string name="ui.reuse.offline_buffer_full_body">オフラインバッファーがいっぱいです。再接続して保留中の変更を送信してから追加してください。</string>
+  <string name="ui.reuse.account_id">アカウント ID</string>
+  <string name="ui.reuse.authentication_provider">認証プロバイダー</string>
+  <string name="ui.reuse.offline_mode_active">オフラインモードです</string>
+  <string name="ui.reuse.offline_connection_restored">サーバーへの接続が復旧しました。準備ができたらページを更新してください。</string>
+  <string name="ui.reuse.recheck_connectivity">接続を再確認</string>
+  <string name="ui.reuse.offline_no_cached_content">オフライン用に保存されたコンテンツはありません。</string>
+  <string name="ui.app.settings.language_offline_locked">UI の言語を追加・削除するには接続してください。選択済みの言語の並べ替えは引き続きできます。</string>
 </resources>

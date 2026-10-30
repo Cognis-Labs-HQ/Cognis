@@ -1,4 +1,12 @@
-import { applyUiPreferences } from "../../reuse/ui-preferences.js";
+import { createLanguageRedraw } from "./language-redraw.js";
+import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
+import { bindOnlineSettingsControls } from "./online-controls.js";
+import {
+    applyUiPreferences,
+    loadUiPreferences as loadPrefs,
+    saveUiPreferences as savePrefs,
+} from "../../reuse/ui-preferences.js";
+import { isOffline } from "../../reuse/offline-state.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -19,7 +27,7 @@ import {
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
-import { initLanguageSwitcherPrefs } from "./language-switcher-prefs.js";
+import { initCheckboxPrefs } from "./checkbox-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
 import {
@@ -57,32 +65,8 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-async function loadPrefs() {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return null;
-    const response = await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-    );
-    if (!response.ok) return null;
-    const payload = await response.json();
-    const raw = payload?.data?.layoutJson;
-    return raw ? JSON.parse(raw) : null;
-}
-
-async function savePrefs(prefs) {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return;
-    await apiFetch(
-        `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-        {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: prefs }),
-        },
-    );
-}
-
 async function loadSettingsSections() {
+    if (isOffline()) return [];
     try {
         const res = await apiFetch("/api/v1/ui/settings-sections");
         if (!res.ok) return [];
@@ -94,6 +78,7 @@ async function loadSettingsSections() {
 }
 
 async function loadAuthSetupRequirement() {
+    if (isOffline()) return false;
     try {
         const response = await apiFetch("/api/v1/auth/setup-status");
         if (!response.ok) {
@@ -142,7 +127,6 @@ function resolveLanguagePriorityMode(
     return storedMode;
 }
 
-const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
@@ -184,6 +168,18 @@ export async function mount(root, { signal } = {}) {
     ]);
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.page.title.settings");
+    const scheduleLanguageRedraw = createLanguageRedraw({ i18n, signal });
+    const refreshOnlineControls = bindOnlineSettingsControls(root, signal);
+    const reportGeneralFailure = (error) => {
+        if (signal?.aborted) return;
+        console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+            operation: "loadEmailSettings",
+            errorName: error.name,
+        });
+        showToast(i18n.t("ui.app.settings.emails_add_failed"), {
+            variant: "error",
+        });
+    };
 
     applyTimezoneToLocalStorage(
         loadedPrefs?.timezone ?? null,
@@ -200,6 +196,7 @@ export async function mount(root, { signal } = {}) {
     let themePrefs;
     let messageStylePrefs;
     let releaseNotesPrefs;
+    let offlinePrefs;
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
@@ -221,6 +218,7 @@ export async function mount(root, { signal } = {}) {
                     i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
                     root,
                     markDirty,
+                    signal,
                 }),
                 onError: (error, descriptor) => {
                     console.warn(
@@ -378,6 +376,18 @@ export async function mount(root, { signal } = {}) {
                 </label>
               </div>
             </div>
+            <div class="components-section">
+              <h3 class="components-section-heading">
+                ${escapeHtml(i18n.t("ui.app.settings.offline_enabled"))}
+                ${renderInfoTooltip(i18n.t("ui.app.settings.offline_enabled_hint"), tooltipAria)}
+              </h3>
+              <div class="components-section-body">
+                <label class="switch">
+                  <input id="pref-offline-enabled" type="checkbox" aria-label="${escapeHtml(i18n.t("ui.app.settings.offline_enabled"))}" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
             ${renderContributedSections(generalContributions)}
             <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
               <h3 id="settings-danger-zone-title" class="components-section-heading">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
@@ -395,14 +405,17 @@ export async function mount(root, { signal } = {}) {
                 onRender: () => {
                     const account =
                         localStorage.getItem("cognis_account") ?? "";
+                    refreshOnlineControls();
                     if (!generalPrefs) {
                         generalPrefs = initGeneralPrefs(root, {
                             i18n,
                             username: account,
+                            onRender: refreshOnlineControls,
+                            signal,
                         });
-                        generalPrefs.init();
+                        void generalPrefs.init().catch(reportGeneralFailure);
                     } else {
-                        generalPrefs.refresh();
+                        void generalPrefs.refresh().catch(reportGeneralFailure);
                     }
                     if (!releaseNotesPrefs) {
                         releaseNotesPrefs = initReleaseChangelogPrefs(root, {
@@ -413,6 +426,16 @@ export async function mount(root, { signal } = {}) {
                     } else {
                         releaseNotesPrefs.refresh();
                     }
+                    if (!offlinePrefs) {
+                        offlinePrefs = initCheckboxPrefs(root, {
+                            existingPrefs: loadedPrefs,
+                            preference: "offlineEnabled",
+                            selector: "#pref-offline-enabled",
+                            onDirtyChange: (dirty) =>
+                                markDirty("offline", dirty),
+                        });
+                    }
+                    offlinePrefs.bind();
                     for (const section of generalContributions) {
                         section.onRender();
                     }
@@ -505,7 +528,7 @@ export async function mount(root, { signal } = {}) {
               <div class="settings-language-switcher-preference">
                 <h3>${i18n.t("ui.app.settings.always_show_language_switcher")}</h3>
                 <label class="switch">
-                  <input id="pref-always-show-language-switcher" type="checkbox" />
+                  <input id="pref-always-show-language-switcher" data-ui-language-online type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -519,7 +542,7 @@ export async function mount(root, { signal } = {}) {
                 <div>
                   <div class="settings-language-heading-row components-section-heading">
                     <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-                    <button id="pref-language-sync-from-browser" type="button" class="btn-neutral btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+                    <button id="pref-language-sync-from-browser" data-ui-language-online type="button" class="btn-neutral btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
                   </div>
                   <table id="preferred-languages" class="language-table"></table>
                 </div>
@@ -530,28 +553,27 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     if (!languageSwitcherPrefs) {
-                        languageSwitcherPrefs = initLanguageSwitcherPrefs(
-                            root,
-                            {
-                                existingPrefs: loadedPrefs,
-                                onDirtyChange: (dirty) =>
-                                    markDirty("language-switcher", dirty),
-                                onCommit: (visible) =>
-                                    window.dispatchEvent(
-                                        new CustomEvent(
-                                            "cognis:language-switcher-visibility",
-                                            { detail: { visible } },
-                                        ),
+                        languageSwitcherPrefs = initCheckboxPrefs(root, {
+                            existingPrefs: loadedPrefs,
+                            onDirtyChange: (dirty) =>
+                                markDirty("language-switcher", dirty),
+                            onCommit: (visible) =>
+                                window.dispatchEvent(
+                                    new CustomEvent(
+                                        "cognis:language-switcher-visibility",
+                                        { detail: { visible } },
                                     ),
-                            },
-                        );
+                                ),
+                        });
                     }
                     languageSwitcherPrefs.bind();
+                    refreshOnlineControls();
                     if (!languagePrefs) {
                         languagePrefs = initLanguagePrefs(
                             root,
                             languagePriority,
                             {
+                                signal,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language", dirty),
                             },
@@ -785,6 +807,10 @@ export async function mount(root, { signal } = {}) {
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
+                offlineEnabled:
+                    offlinePrefs?.getValue() ??
+                    loadedPrefs?.offlineEnabled ??
+                    true,
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
                     shouldShowReleaseChangelog(loadedPrefs),
@@ -815,6 +841,8 @@ export async function mount(root, { signal } = {}) {
                 if (messageStylePrefs?.isDirty()) {
                     prefs.messageStyle = selectedPrefs.messageStyle;
                 }
+                if (offlinePrefs?.isDirty())
+                    prefs.offlineEnabled = selectedPrefs.offlineEnabled;
                 if (releaseNotesPrefs?.isDirty()) {
                     prefs.releaseChangelogShow =
                         selectedPrefs.releaseChangelogShow;
@@ -823,6 +851,18 @@ export async function mount(root, { signal } = {}) {
                     prefs.alwaysShowLanguageSwitcher =
                         selectedPrefs.alwaysShowLanguageSwitcher;
                 }
+            }
+            if (
+                isOffline() &&
+                uiLanguageMembershipChanged(
+                    { ...loadedPrefs, languagePriority },
+                    prefs,
+                )
+            ) {
+                showToast(i18n.t("ui.app.settings.language_offline_locked"), {
+                    variant: "warning",
+                });
+                throw new Error("offline_language_settings_readonly");
             }
             await savePrefs(prefs);
             loadedPrefs = prefs;
@@ -838,10 +878,20 @@ export async function mount(root, { signal } = {}) {
                 "cognis_ui_preferences",
                 JSON.stringify(prefs),
             );
-            applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
+            applyUiPreferences(prefs);
+            if (
+                hasLanguagePriorityChanged(
+                    languagePriority,
+                    prefs.languagePriority ?? [],
+                )
+            )
+                window.dispatchEvent(
+                    new CustomEvent("cognis:ui-language-settings-changed"),
+                );
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();
+            offlinePrefs?.commit();
             releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
@@ -855,14 +905,9 @@ export async function mount(root, { signal } = {}) {
             });
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
-            if (hasLanguagePriorityChanged(prev, next)) {
-                // Brief pause so the success toast is visible before the page
-                // reloads (see LANGUAGE_RELOAD_DELAY_MS).
-                await new Promise((resolve) =>
-                    setTimeout(resolve, LANGUAGE_RELOAD_DELAY_MS),
-                );
-                window.location.reload();
-            }
+            languagePriority = [...next];
+            if (hasLanguagePriorityChanged(prev, next))
+                scheduleLanguageRedraw(next[0]);
         },
         onDiscard: () => {
             fontPrefs?.discard();
@@ -870,6 +915,7 @@ export async function mount(root, { signal } = {}) {
             languageSwitcherPrefs?.discard();
             themePrefs?.discard();
             messageStylePrefs?.discard();
+            offlinePrefs?.discard();
             releaseNotesPrefs?.discard();
             datetimePrefs?.discard();
             advancedPrefs?.discard();

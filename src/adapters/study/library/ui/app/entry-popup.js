@@ -1,7 +1,8 @@
 import { markEntryViewed } from "./viewed-entries.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { bindEntryDetail, releaseEntryMedia } from "./detail-layout.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { fetchLibraryEntry } from "/static/gateways/study/library-client.js";
+import { loadEntryDetail } from "./entry-data.js";
 import { composeDetail } from "./detail.js";
 import { isMeaningLayer, layerForEntry } from "./presentation.js";
 import {
@@ -55,10 +56,11 @@ export async function openEntryPopup(
                   options.transformation,
               );
     while (selectedEntry && !signal?.aborted) {
-        const detail =
-            options.detail?.entry.id === selectedEntry.id
-                ? options.detail
-                : await fetchLibraryEntry(selectedEntry.id);
+        const detail = await loadEntryDetail(
+            selectedEntry.id,
+            entries,
+            options.detail,
+        );
         signal?.throwIfAborted();
         const layer = layerForEntry(schemas, detail.entry);
         const titleReferences = detailTitleReferences(
@@ -67,11 +69,9 @@ export async function openEntryPopup(
             entries,
             selectedTransformation,
         );
-        const editMode = popupEntryEditMode(
-            selectedEntry,
-            initialEntry,
-            options,
-        );
+        const editMode =
+            !isOffline() &&
+            popupEntryEditMode(selectedEntry, initialEntry, options);
         const handleSaved = (updated) => {
             if (editMode !== "direct") return;
             Object.assign(selectedEntry, updated);
@@ -273,7 +273,7 @@ export async function openEntryPopup(
             sourceDefinition = "";
             continue;
         }
-        if (result === "edit" && editMode) {
+        if (result === "edit" && editMode && !isOffline()) {
             await openLibraryEntryEditor({
                 entry: detail.entry,
                 entries,

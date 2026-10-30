@@ -1,5 +1,9 @@
 {
-    "../../reuse/ui-preferences.js": ["applyUiPreferences"],
+    "../../reuse/ui-preferences.js": [
+        "applyUiPreferences",
+        "loadUiPreferences",
+        "saveUiPreferences"
+    ],
     "../../reuse/api-client.js": ["apiFetch"],
     "../../reuse/i18n.js": [
         "applyDocumentTitle",
@@ -20,7 +24,7 @@
         "DEFAULT_FONT_SIZE"
     ],
     "./language-prefs.js": ["initLanguagePrefs"],
-    "./language-switcher-prefs.js": ["initLanguageSwitcherPrefs"],
+    "./checkbox-prefs.js": ["initCheckboxPrefs"],
     "./general-prefs.js": ["initGeneralPrefs"],
     "./datetime-prefs.js": ["initDateTimePrefs"],
     "./release-changelog-prefs.js": [
@@ -56,5 +60,9 @@
     "./setup-requirement.js": [
         "getSettingsShellOptions",
         "resolveSettingsSetupRedirect"
-    ]
+    ],
+    "../../reuse/offline-state.js": ["isOffline"],
+    "./online-controls.js": ["bindOnlineSettingsControls"],
+    "./language-redraw.js": ["createLanguageRedraw"],
+    "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"]
 }

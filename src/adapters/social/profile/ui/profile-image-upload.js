@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
@@ -95,6 +95,7 @@ export function createProfileImageUploadActions({
     async function handleProfileImageUpload({ kind, file, aspectRatio }) {
         if (pendingUploads.has(kind)) return false;
         pendingUploads.add(kind);
+        let delivered = false;
         try {
             const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
             const cropResult = await openImageCropPopup({
@@ -128,8 +129,10 @@ export function createProfileImageUploadActions({
                 return false;
             }
             let responseData = {};
+            delivered = true;
             try {
-                responseData = (await response.json())?.data ?? {};
+                const receipt = await response.json();
+                responseData = receipt?.data ?? {};
             } catch (error) {
                 console.error(
                     "[profile] unable to read optional upload response",
@@ -200,6 +203,13 @@ export function createProfileImageUploadActions({
             if (kind === "avatar") {
                 updateNavbarAvatar().catch(() => {});
             }
+            return true;
+        } catch (error) {
+            if (!delivered) throw error;
+            console.error("[profile] uploaded image view refresh failed", {
+                operation: "refreshAfterUpload",
+                errorName: error?.name,
+            });
             return true;
         } finally {
             pendingUploads.delete(kind);

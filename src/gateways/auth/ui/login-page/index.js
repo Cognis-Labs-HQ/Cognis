@@ -1,3 +1,4 @@
+import { createLoginSubmitHandler } from "./submit.js";
 import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
     loadAuthFooterPlugins,
@@ -6,7 +7,7 @@ import {
 } from "/static/reuse/auth-footer.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
-import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { beginPageLoading, mountWhenDirect } from "/static/reuse/page-entry.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { showToast as showGlobalToast } from "/static/reuse/toast.js";
@@ -19,7 +20,7 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "/static/reuse/auth-layout.js";
-import { syncTimezoneOnLogin } from "/static/reuse/timestamp.js";
+import { navigateAfterLogin } from "./navigation.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
 import { reportClientError } from "/static/reuse/error-reporting.js";
@@ -354,8 +355,7 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
         }
-        await syncTimezoneOnLogin(data.accountId);
-        window.location.href = "/dashboard";
+        await navigateAfterLogin(data.accountId);
     }
 
     async function handleAuthResult(data, password = "") {
@@ -833,110 +833,22 @@ export async function mount(root, { signal } = {}) {
                             permanent: true,
                         });
                     });
-                    document
-                        .querySelector("#login-form")
-                        ?.addEventListener("submit", async (event) => {
-                            event.preventDefault();
-                            if (isPasswordResetMode) {
-                                try {
-                                    await submitPasswordReset?.();
-                                } catch {
-                                    showToast(
-                                        i18n.t("ui.app.login.error.generic"),
-                                        {
-                                            variant: "error",
-                                        },
-                                    );
-                                }
-                                return;
-                            }
-                            const form = event.target;
-                            const tfaFields =
-                                form.querySelector("#login-tfa-fields");
-                            const isTfaMode =
-                                tfaFields instanceof HTMLElement &&
-                                !tfaFields.hidden;
-                            if (isTfaMode) {
-                                const tfaMethodEl =
-                                    form.querySelector("#login-tfa-method");
-                                const tfaCodeEl =
-                                    form.querySelector("#login-tfa-code");
-                                const payload = {
-                                    loginAttemptId: currentTfaLoginAttemptId,
-                                    methodId:
-                                        tfaMethodEl instanceof HTMLInputElement
-                                            ? tfaMethodEl.value
-                                            : "",
-                                    code:
-                                        tfaCodeEl instanceof HTMLInputElement
-                                            ? tfaCodeEl.value.trim()
-                                            : "",
-                                };
-                                const tfaLoginClient =
-                                    await loadTfaLoginClient();
-                                if (!tfaLoginClient) {
-                                    showToast(
-                                        i18n.t("ui.app.login.error.generic"),
-                                        { variant: "error" },
-                                    );
-                                    return;
-                                }
-                                const { response: tfaResponse, body: tfaBody } =
-                                    await tfaLoginClient.verifyCode(payload);
-                                if (tfaResponse.ok && tfaBody?.data) {
-                                    await finalizeAuthenticatedSession(
-                                        tfaBody.data,
-                                        pendingKeyringPassword,
-                                    );
-                                    return;
-                                }
-                                showToast(
-                                    tfaLoginClient?.resolveErrorMessage(
-                                        tfaBody?.error?.message,
-                                    ) ?? i18n.t("ui.app.login.error.generic"),
-                                    { variant: "error" },
-                                );
-                                return;
-                            }
-                            const usernameEl =
-                                form.querySelector("#login-username");
-                            const passwordEl =
-                                form.querySelector("#login-password");
-                            const providerEl =
-                                form.querySelector("#login-provider");
-                            const payload = {
-                                username: usernameEl?.value ?? "",
-                                password: passwordEl?.value ?? "",
-                                provider: providerEl?.value ?? "local",
-                            };
-                            const response = await fetch("/api/v1/auth/login", {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify(payload),
-                            });
-                            const body = await response
-                                .json()
-                                .catch(() => null);
-                            if (response.ok && body?.data) {
-                                await handleAuthResult(
-                                    body.data,
-                                    payload.password,
-                                );
-                                return;
-                            }
-                            const errorKeyByCode = {
-                                account_archived:
-                                    "ui.app.login.reason.account_archived",
-                                account_deactivated:
-                                    "ui.app.login.reason.account_deactivated",
-                            };
-                            const errorKey = errorKeyByCode[body?.error?.code];
-                            const errorMsg = errorKey
-                                ? i18n.t(errorKey)
-                                : body?.error?.message ||
-                                  i18n.t("ui.app.login.error.generic");
-                            showToast(errorMsg, { variant: "error" });
-                        });
+                    document.querySelector("#login-form")?.addEventListener(
+                        "submit",
+                        createLoginSubmitHandler({
+                            getState: () => ({
+                                isPasswordResetMode,
+                                submitPasswordReset,
+                                currentTfaLoginAttemptId,
+                                pendingKeyringPassword,
+                            }),
+                            loadTfaLoginClient,
+                            finalizeAuthenticatedSession,
+                            handleAuthResult,
+                            showToast,
+                            i18n,
+                        }),
+                    );
                 },
             },
         ],

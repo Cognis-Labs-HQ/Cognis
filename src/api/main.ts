@@ -252,8 +252,17 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:scopedActions"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/ui-language-catalog.js",
+    providesCapabilities: ["ui:languageCatalog"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
-    providesCapabilities: ["ui:reuse"],
+    providesCapabilities: [
+        "ui:reuse",
+        "offline:accessPolicy",
+        "offline:outbox",
+        "offline:state",
+    ],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/footer-links.js",
@@ -286,6 +295,7 @@ uiRegistry.registerCapabilityProvider({
         "component-pages:discard",
         "ui:makeFloatingWindow",
         "ui:navigate",
+        "ui:redraw",
     ],
 });
 const healthService = new HealthService();

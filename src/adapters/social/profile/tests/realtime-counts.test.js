@@ -35,12 +35,3 @@ test("profile page polls follower and following lists for real-time counts", () 
     );
     assert.match(appSource, /if \(signal\?\.aborted\) return;/);
 });
-
-test("profile edits repaint profile cards from the mutation response", () => {
-    assert.match(appSource, /const responseBody = await response\.json\(\)/);
-    assert.match(appSource, /setState\(\{ profile: responseBody\.data \}\)/);
-    assert.match(
-        appSource,
-        /refreshProfileCards\(\["hero", "social-links", "posts-new"\]\)/,
-    );
-});

@@ -25,10 +25,17 @@ export function registerCalendarUi(
             }),
         );
     }
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/calendar/ui/provider.js",
+        providesCapabilities: ["calendar:request", "calendar:dashboardEvents"],
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
+    });
     uiHooks.registerSpaRoute({
         id: "calendar-page",
         pattern: "^/calendar$",
         base: "/calendar",
+        requiredCapabilities: ["calendar:request"],
         scriptUrl: "/static/gateways/calendar/ui/app.js",
         stylesheets: [
             "/static/styles/page-builder.css",

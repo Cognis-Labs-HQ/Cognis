@@ -1,3 +1,4 @@
+import { isOffline } from "/static/reuse/offline-state.js";
 import { renderRequestPreview } from "./request-preview.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -12,6 +13,7 @@ import {
 import { renderScope } from "./presentation.js";
 
 export async function loadLibraryRequests(i18n) {
+    if (isOffline()) return [];
     try {
         return await fetchLibraryPushRequests();
     } catch {

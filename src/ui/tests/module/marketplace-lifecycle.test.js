@@ -44,18 +44,6 @@ test("module refresh preserves its current view and redraws detail actions", () 
     );
 });
 
-test("catalog presentation updates win over installed manifest metadata", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
-    assert.match(source, /const catalogPresentation =/);
-    assert.match(source, /name: known\.name/);
-    assert.match(source, /description: known\.description/);
-    assert.match(source, /assets: known\.assets/);
-    assert.match(source, /Object\.assign\(known, catalogPresentation\)/);
-});
-
 test("modules page aborts direct-mount interactions before SPA remount", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

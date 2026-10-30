@@ -30,7 +30,7 @@
   <string name="gateway.registration.invite.revoke_success">Undangan berhasil dibatalkan.</string>
   <string name="gateway.registration.invite.revoke_failed">Gagal membatalkan undangan.</string>
   <string name="gateway.registration.invite.method">Metode</string>
-  <string name="gateway.registration.public_registration_enabled">Pendaftaran Publik</string>
+  <string name="gateway.registration.public_registration_enabled">Izinkan Pendaftaran Akun Lokal Publik</string>
   <string name="ui.page.title.register">Cognis - Undangan Registrasi</string>
   <string name="ui.app.register.form_title">Buat akun Anda</string>
   <string name="ui.app.register.page_subtitle">Buat akun baru untuk mengakses Cognis.</string>

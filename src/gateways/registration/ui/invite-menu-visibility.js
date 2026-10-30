@@ -10,6 +10,6 @@ export function shouldShowInviteMenuEntry({
     if (canInvite === false) return false;
     if (inviteEnabled !== true) return false;
     if (normalizedRole === "owner") return true;
-    if (normalizedRole === "admin") return false;
+    if (normalizedRole === "admin") return canInvite === true;
     return isFounder === true;
 }

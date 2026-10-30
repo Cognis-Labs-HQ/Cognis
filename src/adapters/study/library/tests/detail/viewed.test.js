@@ -1,3 +1,5 @@
+import * as offlineState from "../../../../../ui/reuse/offline-state.js";
+import * as entryGraph from "../../ui/reuse/entry-graph.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
@@ -20,6 +22,8 @@ function popupFixture({ next, fetchError, editing = false } = {}) {
     const { openEntryPopup } = loadTestModule(
         new URL("../../ui/app/entry-popup.js", import.meta.url),
         {
+            "/static/reuse/offline-state.js": offlineState,
+            "../reuse/entry-graph.js": entryGraph,
             "./viewed-entries.js": {
                 markEntryViewed: async (_root, entry) => {
                     assert.ok(opened.length);
@@ -46,15 +50,22 @@ function popupFixture({ next, fetchError, editing = false } = {}) {
                         : null;
                 },
             },
-            "/static/gateways/study/library-client.js": {
-                fetchLibraryEntry: async (id) => {
-                    if (fetchError) throw fetchError;
-                    return {
-                        entry: id === initial.id ? initial : second,
-                        references: [],
-                    };
+            "./entry-data.js": loadTestModule(
+                new URL("../../ui/app/entry-data.js", import.meta.url),
+                {
+                    "/static/reuse/offline-state.js": offlineState,
+                    "../reuse/entry-graph.js": entryGraph,
+                    "/static/gateways/study/library-client.js": {
+                        fetchLibraryEntry: async (id) => {
+                            if (fetchError) throw fetchError;
+                            return {
+                                entry: id === initial.id ? initial : second,
+                                references: [],
+                            };
+                        },
+                    },
                 },
-            },
+            ),
             "./detail.js": {
                 composeDetail: async () => ({
                     body: "detail",

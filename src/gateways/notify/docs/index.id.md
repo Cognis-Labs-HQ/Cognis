@@ -54,3 +54,23 @@ export interface NotificationGateway {
 | `POST` | `/api/v1/users/email/verify`                | Selesaikan verifikasi email            | Bearer      |
 | `GET`  | `/api/v1/users/:username/email`             | Dapatkan email utama pengguna          | Bearer      |
 | `PUT`  | `/api/v1/users/:username/email`             | Atur email utama pengguna              | Bearer      |
+
+## Verifikasi Email
+
+Verifikasi SMTP berlaku untuk akun SSO dan akun lokal. Pengiriman ulang menggunakan layanan pengiriman notifikasi yang dikonfigurasi. Kode dan tautan verifikasi mengikat ID akun lengkap dan email sebagai tupel buram, termasuk ID SSO dengan ruang nama. Membatalkan verifikasi dari Pengaturan mempertahankan alamat email yang ada.
+
+## Banner atas bersama
+
+Mode Luring dan Broadcast memakai satu tumpukan lengket di bagian paling atas dokumen, di atas header aplikasi. Mode Luring mendapat prioritas, tidak dapat ditutup, dan tetap menyediakan Periksa Ulang Koneksi serta Muat Ulang setelah pulih. Menghapus pengumuman tidak menghapus Mode Luring. Broadcast melewati permintaan jaringan saat terputus; penyedianya membersihkan banner dan pengatur waktu ketika dilepas.
+
+## Pengaturan Pribadi Luring
+
+Proses masuk terverifikasi menyiapkan daftar email akun dan kebijakan domain tepercaya tanpa membuka Pengaturan. Penambahan, penghapusan, serta perubahan alamat utama ditampilkan secara lokal dan diantrekan melalui `notify:emailClient` serta pemilik antrean terlindungi `notify.emails`. Validasi server tetap menentukan hasil akhir. Verifikasi email, pengiriman ulang, dan tindakan siklus hidup akun memerlukan koneksi; kode, token pemantauan, dan kata sandi tidak masuk antrean. Alamat baru tetap belum terverifikasi hingga diverifikasi secara daring. Pengiriman berhasil memperbarui snapshot email; kegagalan penyegaran opsional tidak mengubah penulisan tersimpan menjadi tindakan gagal. Snapshot privat terbatas ini tetap terikat tab dan sesi.
+
+## Batas Sesi dan Komponen
+
+Kapabilitas `notify:emailClient` yang mengikuti siklus hidup menyediakan permintaan akun sendiri dan domain tepercaya, `listUserEmails` administratif, `resendUserEmail` khusus daring, serta `smtpAvailable`. Setiap tindakan melewati tahapan terdaftar dan berhenti saat penyedianya dilepas. Pengaturan, Pengguna, dan Administrasi mengambil metode melalui ctx tanpa mengimpor implementasi UI Notify. Jika Notify tidak tersedia, pengelolaan email disembunyikan sementara kontrol akun lain tetap dapat digunakan.
+
+## Notifikasi Berdasarkan ID Akun
+
+Notifikasi berdasarkan peran menggunakan `accountId` yang tetap agar menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. `notify:dispatchToRole` mengembalikan ID penerima kanonis; nama pengguna publik tetap menjadi data tampilan.

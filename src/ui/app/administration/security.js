@@ -14,7 +14,7 @@ import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
-import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 
 const POLICY_FIELDS = [
     {
@@ -343,7 +343,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const [settings, passwordPolicy, smtpActive] = await Promise.all([
                 loadSettings(),
                 loadPasswordPolicy(),
-                isSmtpAdapterActive(apiFetch),
+                uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ??
+                    false,
             ]);
             bindSecurityInputs(settings, passwordPolicy, smtpActive);
             initialized = true;
@@ -354,7 +355,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 await this.init();
                 return;
             }
-            const smtpActive = await isSmtpAdapterActive(apiFetch);
+            const smtpActive =
+                (await uiCtx.capabilities
+                    .get("notify:emailClient")
+                    ?.smtpAvailable()) ?? false;
             bindSecurityInputs(
                 {
                     trustedDomains: originalDomains,

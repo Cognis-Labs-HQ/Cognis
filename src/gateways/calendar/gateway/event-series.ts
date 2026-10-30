@@ -13,6 +13,7 @@ import {
 } from "./utils.js";
 
 export function createEventSeries(input: {
+    operationId?: string;
     calendarId: string;
     sourceEventId?: string | null;
     title: string;
@@ -68,7 +69,10 @@ export function createEventSeries(input: {
         occurrenceIndex += 1
     ) {
         const event: CalendarEventRecord = {
-            id: randomUUID(),
+            id:
+                occurrenceIndex === 0 && input.operationId
+                    ? input.operationId
+                    : randomUUID(),
             calendarId: input.calendarId,
             sourceEventId: input.sourceEventId ?? null,
             title,

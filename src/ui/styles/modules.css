@@ -9,7 +9,7 @@
     display: flex;
     gap: 0.65rem;
 }
-.module-icon-button {
+.btn-neutral.module-icon-button {
     display: inline-grid;
     place-items: center;
     width: 2.5rem;
@@ -27,6 +27,7 @@
 }
 .module-icon {
     display: inline-block;
+    flex-shrink: 0;
     background: center / contain no-repeat;
 }
 .module-icon-back {

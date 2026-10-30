@@ -34,6 +34,7 @@ import "/static/reuse/flow-registry.js";
 import "/static/gateways/auth/reuse/password-confirmation.js";
 import "/static/adapters/auth/keyring/keyring.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
@@ -41,6 +42,7 @@ let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
 let sessionExpiryNavigationPending = false;
 const accountInfoByAccount = new Map();
+let verifiedOfflineSession = null;
 
 function isGuestSession() {
     const accountId = String(
@@ -60,6 +62,32 @@ function isGuestSession() {
 }
 
 uiCtx.capabilities.contribute("session:isGuest", isGuestSession);
+function isOfflineSessionValid() {
+    const expiry = localStorage.getItem("cognis_session_expires_at");
+    return Boolean(
+        !isGuestSession() &&
+        typeof verifiedOfflineSession?.instance === "string" &&
+        verifiedOfflineSession.instance.length > 0 &&
+        verifiedOfflineSession?.ready === true &&
+        verifiedOfflineSession.setupKnown === true &&
+        verifiedOfflineSession.token ===
+            localStorage.getItem("cognis_access_token") &&
+        verifiedOfflineSession.account ===
+            localStorage.getItem("cognis_account") &&
+        (!expiry || Date.parse(expiry) > Date.now()),
+    );
+}
+
+uiCtx.capabilities.contribute("session:isOfflineValid", isOfflineSessionValid);
+uiCtx.capabilities.contribute("session:getOfflineIdentity", () =>
+    isOfflineSessionValid()
+        ? {
+              account: verifiedOfflineSession.account,
+              instance: verifiedOfflineSession.instance,
+              session: verifiedOfflineSession.token,
+          }
+        : null,
+);
 uiCtx.capabilities.contribute(
     "session:isAuthenticated",
     () =>
@@ -81,6 +109,7 @@ function clearStoredSession({
     clearKeyring = false,
     skipKeyring = false,
 } = {}) {
+    verifiedOfflineSession = null;
     if (!skipKeyring) {
         const keyringAction = clearKeyring
             ? uiCtx.capabilities.get("keyring:clearAccountState")
@@ -154,6 +183,12 @@ uiCtx.extendFlow(
             // apply-alternate-auth handle it without wiping the token.
             return { valid: false, reason: "session_expired" };
         }
+        const offlineSession = () => {
+            return isOfflineSessionValid()
+                ? verifiedOfflineSession.result
+                : { valid: false, reason: null };
+        };
+        if (isOffline()) return offlineSession();
         try {
             const response = await apiFetch(
                 "/api/v1/users/" + encodeURIComponent(account) + "/info",
@@ -168,13 +203,29 @@ uiCtx.extendFlow(
                     clearStoredSession();
                     return { valid: false, reason: "account_disabled" };
                 }
-                return {
+                const result = {
                     valid: true,
                     reason: null,
                     accountId: account,
                     role: localStorage.getItem("cognis_role") ?? "user",
                 };
+                const previous =
+                    verifiedOfflineSession?.token === token &&
+                    verifiedOfflineSession?.account === account
+                        ? verifiedOfflineSession
+                        : null;
+                if (!previous) authSetupCacheExpiresAt = 0;
+                verifiedOfflineSession = {
+                    token,
+                    account,
+                    result,
+                    ready: previous?.ready === true,
+                    setupKnown: previous?.setupKnown === true,
+                    instance: previous?.instance,
+                };
+                return result;
             }
+            if (isOffline()) return offlineSession();
             if (response.status === 404) {
                 clearStoredSession({ clearKeyring: true });
                 return { valid: false, reason: "account_deleted" };
@@ -184,6 +235,7 @@ uiCtx.extendFlow(
                 return { valid: false, reason: "session_expired" };
             }
         } catch {
+            if (isOffline()) return offlineSession();
             return { valid: false, reason: null };
         }
         clearStoredSession();
@@ -204,6 +256,8 @@ uiCtx.extendFlow(
             stageCtx.stageResults,
             "apply-alternate-auth",
         );
+        if (alternateResult?.isGuestSession === true)
+            return { requiresSetup: false, redirectTo: null };
         if (!tokenResult?.valid && !alternateResult?.authenticated) {
             return { requiresSetup: false, redirectTo: null };
         }
@@ -211,7 +265,7 @@ uiCtx.extendFlow(
         const isSecurityRoute =
             window.location.pathname === "/settings" &&
             normalizedHash === "#security";
-        if (Date.now() < authSetupCacheExpiresAt) {
+        if (isOffline() || Date.now() < authSetupCacheExpiresAt) {
             if (!authSetupRequiredCached)
                 return { requiresSetup: false, redirectTo: null };
             if (isSecurityRoute)
@@ -224,13 +278,72 @@ uiCtx.extendFlow(
             return { requiresSetup: false, redirectTo: null };
         }
         try {
+            const snapshot = verifiedOfflineSession;
             const response = await apiFetch("/api/v1/auth/setup-status");
-            authSetupRequiredCached = response.ok
-                ? (await response.json().catch(() => null))?.data
-                      ?.requiresSetup === true
-                : false;
-        } catch {
-            authSetupRequiredCached = false;
+            if (!response.ok) throw new Error("setup_status_unavailable");
+            const data = (await response.json())?.data;
+            if (
+                snapshot &&
+                (snapshot.token !== verifiedOfflineSession?.token ||
+                    snapshot.account !== verifiedOfflineSession?.account ||
+                    snapshot.token !==
+                        localStorage.getItem("cognis_access_token") ||
+                    snapshot.account !== localStorage.getItem("cognis_account"))
+            )
+                throw new Error("setup_session_changed");
+            if (
+                typeof data?.accountInstanceId !== "string" ||
+                !data.accountInstanceId.trim()
+            )
+                throw new Error("account_instance_unavailable");
+            if (verifiedOfflineSession)
+                verifiedOfflineSession.instance = data.accountInstanceId;
+            if (
+                verifiedOfflineSession &&
+                (data?.requiresSetup || data?.integrations?.length)
+            ) {
+                verifiedOfflineSession.setupKnown = false;
+                verifiedOfflineSession.ready = false;
+            }
+            for (const integration of data?.integrations ?? []) {
+                const scriptUrl = new URL(
+                    integration.scriptUrl,
+                    window.location.origin,
+                );
+                if (
+                    scriptUrl.origin !== window.location.origin ||
+                    !scriptUrl.pathname.startsWith("/static/")
+                ) {
+                    throw new Error("invalid_setup_integration");
+                }
+                const client = await import(scriptUrl.href);
+                await client.enforceSetup({
+                    accountId: localStorage.getItem("cognis_account"),
+                });
+            }
+            if (verifiedOfflineSession)
+                verifiedOfflineSession.setupKnown = true;
+            authSetupRequiredCached = data?.requiresSetup === true;
+        } catch (error) {
+            if (
+                isOffline() &&
+                verifiedOfflineSession?.ready &&
+                verifiedOfflineSession.setupKnown &&
+                !authSetupRequiredCached
+            ) {
+                return { requiresSetup: false, redirectTo: null };
+            }
+            console.error("[auth]:setup-enforcement-failed", {
+                component: "auth",
+                operation: "enforceSetup",
+                error,
+            });
+            if (verifiedOfflineSession) {
+                verifiedOfflineSession.ready = false;
+                verifiedOfflineSession.setupKnown = false;
+            }
+            authSetupRequiredCached = true;
+            return { requiresSetup: true, redirectTo: "/login" };
         }
         authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
         if (!authSetupRequiredCached)
@@ -273,6 +386,15 @@ uiCtx.extendFlow(
         const authenticated =
             tokenResult?.valid === true ||
             alternateResult?.authenticated === true;
+        if (
+            isOffline() &&
+            (!authenticated || verifiedOfflineSession?.ready !== true)
+        )
+            throw new Error("offline_operation_unavailable");
+        if (!isOffline() && authenticated && verifiedOfflineSession)
+            verifiedOfflineSession.ready =
+                verifiedOfflineSession.setupKnown === true &&
+                !setupResult?.requiresSetup;
         if (!authenticated) {
             if (alternateResult) {
                 // A share token was present on this page (e.g. /share/:token)

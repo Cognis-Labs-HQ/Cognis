@@ -103,3 +103,27 @@ export async function serveEnabledModuleAsset(
     );
     return true;
 }
+
+export async function validateModuleAssetRevision(
+    res: ServerResponse,
+    url: URL,
+    moduleId: string,
+    runtime?: ModuleRuntimeGateway,
+): Promise<boolean> {
+    const requestedRevision = url.searchParams.get("revision");
+    if (!requestedRevision) return true;
+    const manifest = (await runtime?.listManifests())?.find(
+        (entry) => entry.id === moduleId,
+    );
+    if (!manifest) return true;
+    if (requestedRevision !== manifest.version) {
+        res.writeHead(409, {
+            "content-type": "application/json",
+            "cache-control": "no-store",
+        });
+        res.end(JSON.stringify({ error: { code: "module_revision_changed" } }));
+        return false;
+    }
+    res.setHeader("x-cognis-module-revision", manifest.version);
+    return true;
+}

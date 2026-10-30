@@ -32,6 +32,7 @@ import {
     resolveModuleRoot,
     serveDeclaredModuleStrings,
     serveEnabledModuleAsset,
+    validateModuleAssetRevision,
     uiStaticPath as staticPath,
 } from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
@@ -125,6 +126,26 @@ export function createUiRoutes(
                         assets: uiRegistry?.listAssetManifest() ?? {},
                     },
                 }),
+            );
+            return true;
+        }
+
+        const builtTranslation =
+            IS_PRODUCTION_BUILD &&
+            /\/languages\/[^/]+\/strings\.xml$/.test(url.pathname)
+                ? uiRegistry?.resolveAssetUrl(url.pathname)
+                : undefined;
+        if (
+            builtTranslation &&
+            /^\/assets\/locale-[A-Z0-9]{8}\.xml$/.test(builtTranslation)
+        ) {
+            await serveVersionedAsset(
+                req,
+                res,
+                url,
+                path.join(PRODUCTION_UI_ROOT, builtTranslation.slice(1)),
+                "application/xml; charset=utf-8",
+                ctx,
             );
             return true;
         }
@@ -632,6 +653,31 @@ export function createUiRoutes(
         if (serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
             return true;
 
+        if (
+            url.pathname === "/api/v1/ui/offline-routes" &&
+            req.method === "GET"
+        ) {
+            const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
+                (route) =>
+                    route.public === true &&
+                    route.offline &&
+                    (!route.isEnabled || route.isEnabled()),
+            );
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "cache-control": "no-store",
+            });
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(routes, ASSET_VERSION),
+                    offlineGuards: (uiRegistry?.listCapabilityProviders() ?? [])
+                        .map((provider) => provider.offlineAccessGuard)
+                        .filter(Boolean),
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
             const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
@@ -760,6 +806,15 @@ export function createUiRoutes(
                 );
                 return true;
             }
+            if (
+                !(await validateModuleAssetRevision(
+                    res,
+                    url,
+                    urlPath.split("/")[0],
+                    runtime,
+                ))
+            )
+                return true;
             const resolved = uiRegistry?.resolveModulePath(urlPath);
             if (resolved) {
                 await serveVersionedAsset(

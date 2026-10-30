@@ -3,7 +3,9 @@ import type { CoreRegistrationGateway } from "../gateway.js";
 export async function authorizeAccountCreation(
     gateway: Pick<
         CoreRegistrationGateway,
-        "isPublicEnabled" | "resolveInvite" | "consumeExternalAccountToken"
+        | "isAccountCreationEnabled"
+        | "resolveInvite"
+        | "consumeExternalAccountToken"
     >,
     gatewayEnabled: boolean,
     input: {
@@ -12,7 +14,7 @@ export async function authorizeAccountCreation(
         registrationToken?: string;
     },
 ) {
-    if (gatewayEnabled && gateway.isPublicEnabled()) {
+    if (gatewayEnabled && gateway.isAccountCreationEnabled()) {
         return { authorized: true, source: "public" };
     }
     const accountId = String(input.accountId ?? "").trim();

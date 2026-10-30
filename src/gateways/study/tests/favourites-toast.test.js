@@ -1,35 +1,19 @@
-import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
+import { createFavouriteFixture } from "./reuse/favourites-fixture.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import vm from "node:vm";
 
-test("favourite success toasts follow persisted add/remove state", async () => {
+test("favourite success toasts follow persisted add/remove state", async (testContext) => {
     let saved = [];
-    const toasts = [];
-    const ctx = vm.createContext({
-        apiFetch: async (_url, options) => {
-            if (options?.method === "PUT") {
-                const item = JSON.parse(options.body);
-                saved = item.favourite
-                    ? [{ kind: item.kind, id: item.id }]
-                    : [];
-            }
-            return { ok: true, json: async () => ({ data: saved }) };
-        },
-        showToast: (message) => toasts.push(message),
+    const state = createFavouriteFixture(async (_url, options = {}) => {
+        if (options.method === "PUT") {
+            const item = JSON.parse(options.body);
+            saved = item.favourite ? [{ kind: item.kind, id: item.id }] : [];
+        }
+        return Response.json({ data: saved });
     });
-    Object.assign(
-        ctx,
-        loadTestModule(
-            new URL("../ui/reuse/favourites.js", import.meta.url),
-            {
-                "/static/reuse/api-client.js": ctx,
-                "/static/reuse/escape-html.js": ctx,
-                "/static/reuse/toast.js": ctx,
-            },
-            ctx,
-        ),
-    );
+    testContext.after(() => state.controller.abort());
+    const ctx = state.loadView();
+    const toasts = state.notices;
     const controller = await ctx.loadFavourites();
     let handler;
     const button = {

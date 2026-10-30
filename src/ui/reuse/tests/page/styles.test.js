@@ -192,3 +192,29 @@ test("aborting a component stylesheet settles readiness without a later load eve
     assert.equal(last().removed, true);
     assert.equal(links[0].removed, false);
 });
+
+test("direct route styles survive background preparation before the route catalog loads", async () => {
+    const { styles, links } = fixture(["/direct-study.css"], []);
+    links[0].dataset.pageStylesheet = "true";
+    styles.adoptPageStylesheets();
+    const prepared = await styles.preparePageStylesheets(["/direct-study.css"]);
+    prepared.cancel();
+    assert.equal(links[0].removed, false);
+    assert.equal(links[0].media, "");
+});
+
+test("logical and emitted stylesheet URLs share one lease and component ownership", async () => {
+    const { styles, links } = fixture(["/assets/page-ABCDEFGH.css"], []);
+    links[0].dataset.pageStylesheetSource = "/static/styles/page.css";
+    styles.adoptPageStylesheets();
+    const component = new AbortController();
+    await styles.ensurePageStylesheet("/static/styles/page.css", {
+        signal: component.signal,
+    });
+    (await styles.preparePageStylesheets(["/assets/page-ABCDEFGH.css"]))();
+    (await styles.preparePageStylesheets([]))();
+    assert.equal(links.length, 1);
+    assert.equal(links[0].removed, false);
+    component.abort();
+    assert.equal(links[0].removed, true);
+});

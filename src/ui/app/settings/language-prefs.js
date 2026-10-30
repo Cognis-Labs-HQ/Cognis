@@ -1,19 +1,14 @@
-import { apiFetch } from "../../reuse/api-client.js";
+import { isOffline } from "../../reuse/offline-state.js";
+import { loadUiLanguageCatalog } from "../../reuse/ui-language-catalog.js";
 import {
     sanitizeLanguagePriority,
     readBrowserLocales,
 } from "../../reuse/i18n.js";
 
-async function loadLanguagesCatalog() {
-    const response = await apiFetch("/api/v1/system/languages");
-    const payload = await response.json();
-    return payload.data || [];
-}
-
 export function initLanguagePrefs(
     root,
     initialPriority,
-    { onDirtyChange } = {},
+    { onDirtyChange, signal } = {},
 ) {
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];
@@ -32,7 +27,10 @@ export function initLanguagePrefs(
 
     function makeRow(isoCode, labelText) {
         const row = document.createElement("tr");
-        row.setAttribute("draggable", "true");
+        row.setAttribute(
+            "draggable",
+            String(!isOffline() || languagePriority.includes(isoCode)),
+        );
         row.setAttribute("data-lang-row", isoCode);
 
         const tdLabel = document.createElement("td");
@@ -45,7 +43,11 @@ export function initLanguagePrefs(
         row.append(tdLabel, tdHandle);
 
         tdHandle.addEventListener("pointerdown", (e) => {
-            if (e.pointerType === "mouse") return;
+            if (
+                e.pointerType === "mouse" ||
+                (isOffline() && !languagePriority.includes(isoCode))
+            )
+                return;
             e.preventDefault();
             tdHandle.setPointerCapture(e.pointerId);
             row.classList.add("language-row-dragging");
@@ -100,6 +102,7 @@ export function initLanguagePrefs(
         const preferred = root.querySelector("#preferred-languages");
         const available = root.querySelector("#available-languages");
         if (!preferred || !available) return;
+        available.setAttribute("aria-disabled", String(isOffline()));
         const preferredSet = new Set(languagePriority);
 
         preferred.replaceChildren(
@@ -132,7 +135,11 @@ export function initLanguagePrefs(
 
     function findRowAt(excludeRow, clientY) {
         for (const row of root.querySelectorAll("tr[data-lang-row]")) {
-            if (row === excludeRow) continue;
+            if (
+                row === excludeRow ||
+                (isOffline() && !row.closest("#preferred-languages"))
+            )
+                continue;
             const rect = row.getBoundingClientRect();
             if (clientY >= rect.top && clientY <= rect.bottom)
                 return { row, rect };
@@ -144,6 +151,7 @@ export function initLanguagePrefs(
         for (const table of root.querySelectorAll(
             "#available-languages, #preferred-languages",
         )) {
+            if (isOffline() && table.id !== "preferred-languages") continue;
             const rect = table.getBoundingClientRect();
             if (
                 clientX >= rect.left &&
@@ -175,7 +183,13 @@ export function initLanguagePrefs(
     }
 
     function applyDrop(lang, targetTable, targetRow, targetIsAfter) {
-        if (!lang) return;
+        if (
+            !lang ||
+            (isOffline() &&
+                (targetTable?.id !== "preferred-languages" ||
+                    !languagePriority.includes(lang)))
+        )
+            return;
 
         if (targetTable?.id === "preferred-languages") {
             languagePriority = languagePriority.filter((item) => item !== lang);
@@ -212,55 +226,77 @@ export function initLanguagePrefs(
 
     let dragLanguage = null;
 
-    root.addEventListener("dragstart", (event) => {
-        const row = event.target.closest("tr[data-lang-row]");
-        if (!row) return;
-        dragLanguage = row.getAttribute("data-lang-row");
-        event.dataTransfer?.setData("text/plain", dragLanguage || "");
-    });
-
-    root.addEventListener("dragend", () => {
-        clearDropMarkers();
-        dragLanguage = null;
-    });
-
-    root.addEventListener("dragover", (event) => {
-        const zone = event.target.closest(
-            "#available-languages, #preferred-languages, tr[data-lang-row]",
-        );
-        if (!zone) return;
-        event.preventDefault();
-        clearDropMarkers();
-
-        const row = zone.closest("tr[data-lang-row]");
-        if (row) {
-            const rect = row.getBoundingClientRect();
-            const isAfter = event.clientY > rect.top + rect.height / 2;
-            row.classList.add(
-                isAfter ? "drop-target-after" : "drop-target-before",
-            );
-        } else {
-            const placeholderRow = zone.querySelector(
-                "tr:not([data-lang-row])",
-            );
-            if (placeholderRow) {
-                placeholderRow.classList.add("drop-target-before");
+    root.addEventListener(
+        "dragstart",
+        (event) => {
+            const row = event.target.closest("tr[data-lang-row]");
+            if (!row) return;
+            if (isOffline() && !row.closest("#preferred-languages")) {
+                event.preventDefault();
+                return;
             }
-        }
-    });
+            dragLanguage = row.getAttribute("data-lang-row");
+            event.dataTransfer?.setData("text/plain", dragLanguage || "");
+        },
+        { signal },
+    );
 
-    root.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const { targetTable, targetRow, targetIsAfter } = resolveDropTarget(
-            event.target,
-            event.clientX,
-            event.clientY,
-        );
-        clearDropMarkers();
-        const lang = dragLanguage || event.dataTransfer?.getData("text/plain");
-        applyDrop(lang, targetTable, targetRow, targetIsAfter);
-        dragLanguage = null;
-    });
+    root.addEventListener(
+        "dragend",
+        () => {
+            clearDropMarkers();
+            dragLanguage = null;
+        },
+        { signal },
+    );
+
+    root.addEventListener(
+        "dragover",
+        (event) => {
+            const zone = event.target.closest(
+                "#available-languages, #preferred-languages, tr[data-lang-row]",
+            );
+            if (!zone || (isOffline() && !zone.closest("#preferred-languages")))
+                return;
+            event.preventDefault();
+            clearDropMarkers();
+
+            const row = zone.closest("tr[data-lang-row]");
+            if (row) {
+                const rect = row.getBoundingClientRect();
+                const isAfter = event.clientY > rect.top + rect.height / 2;
+                row.classList.add(
+                    isAfter ? "drop-target-after" : "drop-target-before",
+                );
+            } else {
+                const placeholderRow = zone.querySelector(
+                    "tr:not([data-lang-row])",
+                );
+                if (placeholderRow) {
+                    placeholderRow.classList.add("drop-target-before");
+                }
+            }
+        },
+        { signal },
+    );
+
+    root.addEventListener(
+        "drop",
+        (event) => {
+            event.preventDefault();
+            const { targetTable, targetRow, targetIsAfter } = resolveDropTarget(
+                event.target,
+                event.clientX,
+                event.clientY,
+            );
+            clearDropMarkers();
+            const lang =
+                dragLanguage || event.dataTransfer?.getData("text/plain");
+            applyDrop(lang, targetTable, targetRow, targetIsAfter);
+            dragLanguage = null;
+        },
+        { signal },
+    );
 
     function commit() {
         savedPriority = [...languagePriority];
@@ -275,9 +311,17 @@ export function initLanguagePrefs(
     }
 
     async function init() {
-        catalog = await loadLanguagesCatalog().catch(() => [
-            { iso_code: "en", name: "English" },
-        ]);
+        catalog = await loadUiLanguageCatalog().catch(() => {
+            const names = new Intl.DisplayNames(
+                [document.documentElement.lang || "en"],
+                { type: "language", fallback: "none" },
+            );
+            return [...new Set([...initialPriority, "en"])].map((iso_code) => {
+                const name = names.of(iso_code);
+                if (!name) throw new Error("language_label_unavailable");
+                return { iso_code, name };
+            });
+        });
         languagePriority = sanitizeLanguagePriority(
             languagePriority,
             getSupportedLanguageCodes(),
@@ -289,10 +333,14 @@ export function initLanguagePrefs(
         renderTables();
     }
 
+    window.addEventListener("cognis:connectivity-changed", renderTables, {
+        signal,
+    });
     return {
         init,
         renderTables,
         syncFromBrowser() {
+            if (isOffline()) return;
             languagePriority = sanitizeLanguagePriority(
                 readBrowserLocales(),
                 getSupportedLanguageCodes(),

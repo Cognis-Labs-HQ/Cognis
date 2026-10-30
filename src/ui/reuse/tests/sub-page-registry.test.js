@@ -54,3 +54,25 @@ test("sub-page invalidation reloads provider data", async () => {
     await registry.load("pages");
     assert.equal(loadCount, 2);
 });
+
+for (const stage of ["groups", "pages"]) {
+    test(`failed ${stage} discovery can retry without remounting its provider`, async () => {
+        const registry = createSubPageRegistry();
+        let unavailable = true;
+        registry.register("study", {
+            listGroups: async () => {
+                if (stage === "groups" && unavailable)
+                    throw new Error("temporary_failure");
+                return [{ id: "ja" }];
+            },
+            listPages: async () => {
+                if (stage === "pages" && unavailable)
+                    throw new Error("temporary_failure");
+                return [{ id: "explore", pageUrl: "/study/explore" }];
+            },
+        });
+        await assert.rejects(registry.load("study"), /temporary_failure/);
+        unavailable = false;
+        assert.equal((await registry.load("study")).pages[0].id, "explore");
+    });
+}

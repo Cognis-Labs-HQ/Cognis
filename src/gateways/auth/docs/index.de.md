@@ -72,7 +72,7 @@ Browserseitige OAuth-Weiterleitungen können `/sso/<routeNamespace>/<path>` verw
 
 Ein Anbieter kann `routeNamespace` und `registerRoutes(router)` in seinem Adapter deklarieren. Der Router akzeptiert `GET`- und `POST`-Pfade relativ zu `/api/v1/auth/<routeNamespace>`, sodass OAuth-Rückrufe unter dem Authentifizierungs-Gateway liegen können, ohne dem beitragenden Modul direkten Zugriff auf geschützte Core-Routen zu geben. Namespaces sind auf sichere URL-Segmente beschränkt, Core-Authentifizierungs-Namespaces sind reserviert, doppelte Routen werden abgelehnt und beim Entfernen des Anbieters werden alle beigetragenen Routen entfernt.
 
-Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Bei deaktivierter öffentlicher Registrierung speichert Cognis eine unbekannte authentifizierte Identität hinter einer undurchsichtigen, ablaufenden Vorgangs-ID und gibt `account_creation_required` mit einer `registrationUrl` zurück. Anbieter leiten zu dieser URL weiter, statt eine eigene Autorisierungsoberfläche darzustellen. Der Registrierungstoken-Adapter trägt das Autorisierungsformular zur standardmäßigen Registrierungshülle bei und setzt die angehaltene Identität fort, ohne den Rückrufstatus des Anbieters offenzulegen. Öffentliche Registrierung überspringt die Tokenautorisierung.
+Sitzungen externer Anbieter durchlaufen `gateAccountCreation` vor `ensureExternalAccount`. Ein aktivierter öffentlicher Registrierungsadapter erlaubt die Bereitstellung von SSO-Konten unabhängig von der Richtlinie für öffentliche lokale Registrierung. Andernfalls speichert Cognis eine unbekannte authentifizierte Identität hinter einer undurchsichtigen, ablaufenden Vorgangs-ID und gibt `account_creation_required` mit einer `registrationUrl` zurück. Anbieter leiten zu dieser URL weiter. Der Registrierungstoken-Adapter ergänzt die Autorisierung in der standardmäßigen Registrierungshülle und setzt die angehaltene Identität fort, ohne Rückrufdaten des Anbieters offenzulegen.
 
 ## API-Routen
 
@@ -131,3 +131,29 @@ Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und bro
 ### Modul-Lebenszyklus
 
 `auth:registerKeyringDataOwner(ownerId, purge)` ist eine öffentliche Serverfähigkeit. Doppelte Eigentümer-IDs werden abgelehnt; zurückgegeben wird ein identitätsgeprüfter Disposer. Module verwenden `module:<id>` und registrieren die Bereinigung mit `ctx.registerDisposer`; purge erhält die normalisierte Konto-ID. Nur Keyring-abhängigen Zustand bereinigen, Kontenidentität und fremde gemeinsame Ressourcen erhalten.
+
+## Sitzungseinrichtung
+
+Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach einer SSO-Weiterleitung. Der Benachrichtigungsdienst liefert erforderliche E-Mail-Einrichtung über `auth:getSetupIntegrations(accountId, role)`: Skripte desselben Ursprungs mit dem Export `enforceSetup({ accountId })`. Die Einrichtung endet vor der Freigabe für Navigation oder Offline-Nutzung. SMTP-Ausfälle heben die Verifizierungspflicht nicht auf; der ursprüngliche Gründeradministrator bleibt ausgenommen.
+
+## Ladeanzeige bei Anmeldung
+
+Anfragen für Zugangsdaten, TFA-Codes und SSO-Autorisierung zeigen das gemeinsame Laderad und blenden es vor interaktiver Einrichtung aus. Doppelte Anmeldungen werden während einer laufenden Anfrage ignoriert. Öffentliche Offline-Caches werden nach der Anmeldung im Hintergrund bereinigt und aktualisiert. Der letzte Anmeldezeitpunkt wird auch für SSO bei deaktiviertem lokalem Authentifizierungsadapter erfasst.
+
+## Kontodatenschutz und Schlüsselbund-Isolation
+
+SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
+
+Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätzen weiter. Der Start erfordert kein Zurücksetzen der Datenbank. Anmeldung und Bereitstellung alter SSO-Konten werden einzeln abgelehnt, bis diese Konten mit undurchsichtigen IDs neu erstellt wurden. Konto-IDs, Beziehungen und Besprechungen werden weder automatisch migriert noch gelöscht.
+
+## Anmeldung und Übertragung
+
+Nach erfolgreicher Passwort- oder TFA-Anmeldung ersetzt die vorhandene SPA-Navigationsfunktion die Anmeldeseite durch das Dashboard. Der bestätigte Tab und gepufferte Arbeit bleiben dadurch erhalten, ohne die Schließwarnung des Browsers auszulösen. Die Ladeanzeige bleibt bis zum Abschluss der Navigation sichtbar; die optionale Zeitzonensynchronisierung folgt danach und verwirft Kontowechsel. Tatsächlich gepufferte Änderungen bleiben beim Schließen oder Neuladen eines authentifizierten Tabs durch die Warnung geschützt.
+
+## Sitzungs- und Modulgrenzen
+
+Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Instanz für bestätigten Offline-Zugriff. Geprüft werden abgeschlossene Einrichtung, aktuelles Konto und Token sowie der Sitzungsablauf. Warteschlangen verwenden diesen Vertrag statt eigener Auswertung des Auth-Speichers. Die Kontoeinrichtung überspringt alternative Gastsitzungen. Der Server-Endpunkt setup-status verwendet Shares Klassifizierungsfähigkeit vor TFA- oder E-Mail-Integrationen. Für normale lokale und SSO-Konten bleibt die vorgeschriebene Einrichtung verbindlich.
+
+## Kontogebundene Warteschlangen
+
+Gepufferte Einträge enthalten die vom Server bestätigte Kontoinstanzkennung. Auth liefert die kanonische `accountInstanceId` im authentifizierten Einrichtungsstatus und veröffentlicht `session:getOfflineIdentity` nur für bestätigte, vollständig eingerichtete und nicht abgelaufene Kontositzungen. Fehlende verbindliche Metadaten widerrufen die Offline-Berechtigung. Warteschlangenansichten sowie Speicher- und Zustellungsprüfungen sind an diese Instanz gebunden. Einträge alter oder unbestätigter Instanzen werden vor der Übertragung abgewiesen, auch wenn ein lokales Konto mit derselben Konto-ID neu erstellt wurde. Vorgangskennungen können nicht zwischen Kontoinstanzen kollidieren. Bearer-Token werden niemals in der Warteschlange gespeichert.

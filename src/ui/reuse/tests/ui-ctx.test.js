@@ -1,3 +1,6 @@
+import { createTopBanners } from "../top-banners.js";
+import { registerOfflineRuntime } from "../offline-runtime.js";
+import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -10,7 +13,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 function loadUiCtxForTests() {
     const context = {
         console,
-        BROWSER_FLOW_CONTRACTS: {},
+        BROWSER_FLOW_CONTRACTS,
         createReuseResources: () => Object.freeze({}),
         createSubPageRegistry: () => Object.freeze({}),
     };
@@ -18,7 +21,9 @@ function loadUiCtxForTests() {
         new URL("../ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": context,
+            "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
+            "./top-banners.js": { createTopBanners },
             "./sub-page-registry.js": context,
         },
         context,
@@ -195,4 +200,18 @@ test("uiCtx — registered hooks can be removed", async () => {
         engine.removeFlowHook("removable-flow", "compose", "provider:compose"),
         false,
     );
+});
+
+test("uiCtx exposes the shared broadcast publisher before a page or provider mounts", async () => {
+    const { uiCtx: ctx } = loadUiCtxForTests();
+    assert.equal(
+        typeof ctx.capabilities.get("ui:broadcast").publish,
+        "function",
+    );
+    const first = await import("../ui-ctx.js");
+    const publisher = first.uiCtx.capabilities.get("ui:broadcast");
+    const subPages = first.uiCtx.capabilities.get("ui:subPages");
+    const second = await import("../ui-ctx.js?broadcast-lifecycle");
+    assert.equal(second.uiCtx.capabilities.get("ui:broadcast"), publisher);
+    assert.equal(second.uiCtx.capabilities.get("ui:subPages"), subPages);
 });

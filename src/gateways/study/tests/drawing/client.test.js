@@ -1,3 +1,6 @@
+import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
+import * as offlineDelivery from "../../../../ui/reuse/offline-delivery.js";
+import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -5,21 +8,32 @@ import test from "node:test";
 function clientFixture() {
     const requests = [];
     let successful = true;
+    let start;
+    const started = new Promise((resolve) => {
+        start = resolve;
+    });
     let finish;
     const pending = new Promise((resolve) => {
         finish = resolve;
     });
     const saved = { completed: true, hiddenStrokeCount: 1 };
     const environment = {
+        crypto,
         apiFetch: async (path, options = {}) => {
             requests.push({ path, options });
+            start();
             if (options.method === "POST") await pending;
             return { ok: successful, json: async () => ({ data: saved }) };
         },
     };
     environment.client = loadTestModule(
         new URL("../../ui/drawing-client.js", import.meta.url),
-        { "/static/reuse/api-client.js": environment },
+        {
+            "/static/reuse/offline-delivery.js": offlineDelivery,
+            "/static/reuse/ui-ctx.js": { uiCtx },
+            "/static/reuse/offline-state.js": offlineState,
+            "/static/reuse/api-client.js": environment,
+        },
         environment,
     );
     return {
@@ -27,6 +41,7 @@ function clientFixture() {
         requests,
         finish,
         saved,
+        started,
         fail: () => {
             successful = false;
         },
@@ -34,11 +49,12 @@ function clientFixture() {
 }
 
 test("progress reads wait for in-flight completion on the same card", async () => {
-    const { client, requests, finish, saved } = clientFixture();
+    const { client, requests, finish, saved, started } = clientFixture();
     const completion = client.recordDrawingCompletion("card-a", {
         strokeCount: 4,
         mistakes: 0,
     });
+    await started;
     assert.equal(requests.length, 1);
     assert.equal(requests[0].options.keepalive, true);
     assert.equal(requests[0].options.signal, undefined);

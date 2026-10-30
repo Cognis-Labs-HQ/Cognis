@@ -619,3 +619,25 @@ Dictionary search-context reads use `study:library:readSearchContext` with autho
 ## Notification and persistence fixes
 
 Library content and deletion announcements include English, German, Indonesian and Japanese text from XML catalogs, use English fallback, and run through `study:library:notifyContent`. Card labels remain opaque during interpolation. Privileged class writes still require a real target class. Leaderboard observations roll back on failed persistence; season rollover rebuilds final standings after restart and restores state if saving fails. Verified administrators can release matching integration source bindings without room membership.
+
+## Empty offline Study pages
+
+Prepared Study pages remain navigable in a verified, consented offline session even without private content snapshots. Missing language/preference metadata produces empty navigation data. Explore mounts its normal empty browser and shows “No offline cached content available” instead of route-unavailable feedback or error toasts. Flashcards also retains an empty page when deck data or a required view resource is missing. Notices are scoped to the current page and deduplicated. Cache misses do not conceal access or consent denials. Library and flashcard providers prepare their public translations and light templates online; private data stays in the bounded tab-local caches.
+
+## Offline Study Assets
+
+Both theme variants of popup icons are prepared through the host’s scoped offline asset capability. Cached browsing and drawing remain available; content editing is disabled offline, including Edit on an already open popup when connectivity is lost. Missing decorative icons display their translated action label.
+
+## Offline Availability
+
+The offline route registry survives repeated bundled and directly served imports. Prepared route descriptors retain availability when reconstructed with the same script, styles and capability providers; changed assets require preparation again. Messages prepares its room list, translations and emoji catalogs after verified sign-in. The page can open offline before its first online visit; only cached rooms with cached threads open automatically, and selecting an uncached thread gives a targeted information toast. Explore keeps available cached collections when another collection or viewed-marker snapshot is missing. Access and consent denials still propagate. Banner actions sit directly in the shared action row, removing the inherited vertical offset.
+
+## Shared Study Favourites
+
+Library management and its edit/search/request pages require a connection. Their authorized navigation links remain visible but disabled offline, including immediately after disconnection; Explore remains available for cached browsing and drawing. The Library provider declares only Explore as an offline session route.
+
+Enrollment preparation caches the shared schema catalog, each enrolled language’s catalog and permitted lightweight collections through the Study contracts. Consumers use those prepared schemas and collection reads without a prior page visit. Drawing resources are prepared before first use. Audio, dictionary fetching, content editing and access checks retain their existing restrictions.
+
+## Account ID Notification Delivery
+
+Library request and content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID.

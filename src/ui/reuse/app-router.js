@@ -1,3 +1,4 @@
+import { registerPageRedraw } from "./page-redraw.js";
 /**
  * Client-side application router for the Cognis dashboard shell.
  *
@@ -38,6 +39,14 @@
  * @returns {void}
  */
 
+import { isOffline, offlineWorkerRequest } from "./offline-state.js";
+import {
+    offlineRouteAvailable,
+    allowOfflineRoute,
+    recoverOfflineNavigation,
+} from "./offline-navigation.js";
+import { prepareOfflineRouteAssets } from "./offline-route-assets.js";
+import { showOfflineUnavailable } from "./offline-unavailable.js";
 import { isMountSignal } from "./mount-scope.js";
 import { adoptPageStylesheets, preparePageStylesheets } from "./page-styles.js";
 import {
@@ -105,6 +114,7 @@ function componentPage(
 const STATIC_ROUTES = [
     {
         id: "core.dashboard",
+        offline: { session: true },
         ownerUuid: CORE_COMPONENT_UUID,
         componentPage: componentPage(
             "ui.reuse.dashboard",
@@ -117,6 +127,7 @@ const STATIC_ROUTES = [
     },
     {
         id: "core.settings",
+        offline: { session: true },
         ownerUuid: CORE_COMPONENT_UUID,
         componentPage: componentPage(
             "ui.reuse.settings",
@@ -203,6 +214,8 @@ const STATIC_ROUTES = [
         pattern: /^\/license$/,
         base: "/license",
         public: true,
+        offline: { assets: [] },
+        offlineAvailable: true,
         stylesheets: ROUTE_STYLE_BUNDLES.license,
         load: () => import("../app/license/index.js"),
     },
@@ -216,6 +229,8 @@ const STATIC_ROUTES = [
         pattern: /^\/error$/,
         base: "/error",
         public: true,
+        offline: { assets: [] },
+        offlineAvailable: true,
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
@@ -250,6 +265,7 @@ function findMatchingRoute(routes, path) {
 
 async function loadAllRoutes() {
     if (_allRoutes) return _allRoutes;
+    if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
     if (_allRoutesPromise) return _allRoutesPromise;
     const loadGeneration = _routeCacheGeneration;
     const loadPromise = (async () => {
@@ -257,6 +273,9 @@ async function loadAllRoutes() {
         const routes = [...STATIC_ROUTES, ...dynamicRoutes];
         if (loadGeneration === _routeCacheGeneration) {
             _allRoutes = routes;
+            prepareOfflineRouteAssets(
+                routes.filter((route) => offlineRouteAvailable(route)),
+            );
         }
         return routes;
     })();
@@ -301,6 +320,8 @@ let _navigationSequence = 0;
 let _initialized = false;
 let _historyIndex = 0;
 let _committedPath = "";
+let _lastSuccessfulPath = "";
+let _previousSuccessfulPath = "";
 let _restoringHistory = false;
 let _guardBypassPath = null;
 
@@ -350,6 +371,7 @@ async function loadRouteContent(
     ) {
         return false;
     }
+    if (!(await allowOfflineRoute(route, path, signal))) return false;
     globalThis.__cognisPublicSpaRoute = route.public === true;
     globalThis.__cognisPublicSpaRoutePageContext = route.componentPage ?? null;
 
@@ -358,13 +380,24 @@ async function loadRouteContent(
     // The router flag prevents the entry's direct-load mount from running.
     let mod;
     try {
-        await ensureHostUiProviders();
+        if (!isOffline()) {
+            await ensureHostUiProviders();
+            void loadAllRoutes().then((routes) =>
+                prepareOfflineRouteAssets(
+                    routes.filter((candidate) =>
+                        offlineRouteAvailable(candidate),
+                    ),
+                ),
+            );
+        }
+        if (!(await allowOfflineRoute(route, path, signal))) return false;
         mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
         if (signal.aborted || navigationSequence !== _navigationSequence)
             return false;
         console.error("[router] route load error for", path, error);
         finishPageLoading();
+        if (isOffline()) return false;
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
@@ -384,11 +417,12 @@ async function loadRouteContent(
     if (signal.aborted || navigationSequence !== _navigationSequence) {
         return false;
     }
+    if (!(await allowOfflineRoute(route, path, signal))) return false;
     const session = route.public
         ? null
         : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
 
-    await ensureHostUiProviders();
+    if (!isOffline()) await ensureHostUiProviders();
     if (signal.aborted || navigationSequence !== _navigationSequence) {
         return false;
     }
@@ -473,6 +507,10 @@ async function loadRouteContent(
             if (signal.aborted || navigationSequence !== _navigationSequence)
                 return false;
             commit(routeRoot);
+            if (_lastSuccessfulPath !== path)
+                _previousSuccessfulPath = _lastSuccessfulPath;
+            _lastSuccessfulPath = path;
+            uiCtx.capabilities.get("offline:recordRouteAssets")?.(route);
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
@@ -481,6 +519,7 @@ async function loadRouteContent(
                 observer?.disconnect();
                 if (_commitPage === commit) _commitPage = null;
                 commitPageStylesheets?.cancel();
+                if (isOffline()) return false;
                 await openRuntimeErrorPopup({
                     error,
                     contextKey: "ui.reuse.runtime_error_context_route_mount",
@@ -496,6 +535,7 @@ async function loadRouteContent(
         }
         console.error("[router] route load error for", path, error);
         finishPageLoading();
+        if (isOffline()) return false;
         await openRuntimeErrorPopup({
             error,
             contextKey: "ui.reuse.runtime_error_context_route_load",
@@ -511,9 +551,18 @@ async function loadRouteContent(
 
 export async function navigateTo(
     path,
-    { bypassGuard = false, state = {} } = {},
+    {
+        bypassGuard = false,
+        state = {},
+        replace = false,
+        recoverOfflineFailure = true,
+    } = {},
 ) {
     const route = await resolveRoute(path);
+    if (!(await allowOfflineRoute(route, path))) {
+        if (recoverOfflineFailure) await restoreAfterOfflineFailure(path);
+        return false;
+    }
     if (!route) return false;
     if (
         !bypassGuard &&
@@ -523,9 +572,9 @@ export async function navigateTo(
     )
         return false;
     const previousRouterPage = getCurrentRoutePath();
-    _historyIndex += 1;
+    if (!replace) _historyIndex += 1;
     _committedPath = path;
-    history.pushState(
+    history[replace ? "replaceState" : "pushState"](
         {
             ...state,
             routerPage: path,
@@ -535,10 +584,69 @@ export async function navigateTo(
         "",
         path,
     );
-    return loadRoute(path);
+    const expectedSequence = _navigationSequence + 1;
+    const mounted = await loadRoute(path);
+    if (
+        !mounted &&
+        isOffline() &&
+        expectedSequence === _navigationSequence &&
+        recoverOfflineFailure
+    )
+        await restoreAfterOfflineFailure(path);
+    return mounted;
+}
+
+async function restoreAfterOfflineFailure(
+    path,
+    { notify = true, fallback } = {},
+) {
+    const previous =
+        (_lastSuccessfulPath !== path
+            ? _lastSuccessfulPath
+            : _previousSuccessfulPath) ||
+        history.state?.previousRouterPage ||
+        internalNavigationPath(document.referrer);
+    let recoverySequence = _navigationSequence;
+    return recoverOfflineNavigation({
+        notify,
+        fallback: () => {
+            if (isOffline() && recoverySequence === _navigationSequence)
+                return fallback?.(
+                    () => recoverySequence === _navigationSequence,
+                );
+        },
+        restore: async () => {
+            if (!previous || previous === path) return false;
+            if (
+                getCurrentRoutePath() === previous &&
+                _lastSuccessfulPath === previous
+            )
+                return true;
+            if (
+                !(await allowOfflineRoute(
+                    await resolveRoute(previous),
+                    previous,
+                ))
+            )
+                return false;
+            recoverySequence = _navigationSequence + 1;
+            return navigateTo(previous, {
+                replace: true,
+                bypassGuard: true,
+                recoverOfflineFailure: false,
+            });
+        },
+    });
 }
 
 uiCtx.capabilities.contribute("ui:navigate", navigateTo);
+registerPageRedraw(uiCtx, {
+    currentPath: getCurrentRoutePath,
+    resolveRoute,
+    allowOfflineRoute,
+    requestNavigation: requestRouteNavigation,
+    mount: loadRoute,
+});
 uiCtx.capabilities.contribute(
     "router:invalidateRoutes",
     invalidateSpaRouteCache,
@@ -553,6 +661,13 @@ uiCtx.capabilities.contribute(
 export function invalidateSpaRouteCache() {
     _routeCacheGeneration += 1;
     clearSpaRouteCache();
+    void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES")
+        .then(
+            () =>
+                !isOffline() &&
+                offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
+        )
+        .catch(console.error);
     _allRoutes = null;
     _allRoutesPromise = null;
 }
@@ -572,11 +687,16 @@ export function initRouter(root) {
         return false;
     });
     installRuntimeErrorHandlers();
+    installOfflineNavigation();
 
     _historyIndex = Number.isInteger(history.state?.routerIndex)
         ? history.state.routerIndex
         : 0;
     _committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (initialRoute && root?.childElementCount) {
+        _lastSuccessfulPath = _committedPath;
+        uiCtx.capabilities.get("offline:recordRouteAssets")?.(initialRoute);
+    }
     history.replaceState(
         { ...(history.state ?? {}), routerIndex: _historyIndex },
         "",
@@ -610,22 +730,23 @@ export function initRouter(root) {
             (link.target && link.target !== "_self")
         )
             return;
-        const href = link.getAttribute("href");
-        if (
-            !href ||
-            href.startsWith("http") ||
-            href.startsWith("//") ||
-            href.startsWith("#") ||
-            !href.startsWith("/")
-        )
-            return;
-        event.preventDefault();
-        const route = await resolveRoute(href);
-        if (!route) {
-            window.location.assign(href);
+        if (link.getAttribute("aria-disabled") === "true") {
+            event.preventDefault();
             return;
         }
-        await navigateTo(href);
+        const routePath = internalNavigationPath(link.getAttribute("href"));
+        if (routePath === null) return;
+        event.preventDefault();
+        const route = await resolveRoute(routePath);
+        if (!route) {
+            if (!(await allowOfflineRoute(null, routePath))) {
+                await restoreAfterOfflineFailure(routePath);
+                return;
+            }
+            window.location.assign(routePath);
+            return;
+        }
+        await navigateTo(routePath);
     });
 
     window.addEventListener("popstate", async (event) => {
@@ -637,6 +758,10 @@ export function initRouter(root) {
         const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
         if (!route) {
+            if (!(await allowOfflineRoute(null, pathWithHash))) {
+                await restoreAfterOfflineFailure(pathWithHash);
+                return;
+            }
             window.location.assign(pathWithHash);
             return;
         }
@@ -681,6 +806,116 @@ export function initRouter(root) {
             _historyIndex = event.state.routerIndex;
         }
         _committedPath = pathWithHash;
-        await loadRoute(pathWithHash);
+        if (!(await loadRoute(pathWithHash)) && isOffline())
+            await restoreAfterOfflineFailure(pathWithHash);
     });
+}
+
+function internalNavigationPath(href) {
+    if (!href || href.startsWith("#")) return null;
+    let destination;
+    try {
+        destination = new URL(href, window.location.href);
+    } catch {
+        return null;
+    }
+    if (
+        destination.origin !== window.location.origin ||
+        !["http:", "https:"].includes(destination.protocol) ||
+        destination.username ||
+        destination.password
+    )
+        return null;
+    return destination.pathname + destination.search + destination.hash;
+}
+
+function installOfflineNavigation() {
+    let pending = false;
+    let updateRequested = false;
+    const update = async () => {
+        if (pending) {
+            updateRequested = true;
+            return;
+        }
+        pending = true;
+        try {
+            const routes = await loadAllRoutes();
+            for (const link of document.querySelectorAll(
+                "a[href], button[data-navigation-path], [data-online-only]",
+            )) {
+                const onlineOnly = link.hasAttribute("data-online-only");
+                const path = internalNavigationPath(
+                    link.getAttribute("href") ?? link.dataset.navigationPath,
+                );
+                if (path === null && !onlineOnly) continue;
+                const disabled =
+                    isOffline() &&
+                    (onlineOnly ||
+                        !offlineRouteAvailable(
+                            findMatchingRoute(routes, path),
+                            path,
+                        ));
+                if (disabled && !link.dataset.offlineDisabled) {
+                    link.setAttribute("aria-disabled", "true");
+                    link.dataset.offlineDisabled = "true";
+                    if (link.tagName === "BUTTON") {
+                        link.dataset.offlineWasDisabled = String(link.disabled);
+                        link.disabled = true;
+                    }
+                } else if (!disabled && link.dataset.offlineDisabled) {
+                    link.removeAttribute("aria-disabled");
+                    delete link.dataset.offlineDisabled;
+                    if (link.tagName === "BUTTON") {
+                        link.disabled =
+                            link.dataset.offlineWasDisabled === "true";
+                        delete link.dataset.offlineWasDisabled;
+                    }
+                }
+            }
+        } finally {
+            pending = false;
+            if (updateRequested) {
+                updateRequested = false;
+                void update();
+            }
+        }
+    };
+    const transition = async () => {
+        await update();
+        if (!isOffline()) return;
+        const path = getCurrentRoutePath();
+        const route = await resolveRoute(path);
+        if (!isOffline() || path !== getCurrentRoutePath()) return;
+        if (await allowOfflineRoute(route, path)) return;
+        ++_navigationSequence;
+        _mountController?.abort();
+        window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
+        await restoreAfterOfflineFailure(path, {
+            notify: false,
+            fallback: (isCurrent) =>
+                showOfflineUnavailable(resolveRouterRoot(), isCurrent),
+        });
+    };
+    window.addEventListener("cognis:offline-data-changed", () => void update());
+    window.addEventListener(
+        "cognis:offline-routes-prepared",
+        () => void update(),
+    );
+    for (const type of [
+        "cognis:connectivity-changed",
+        "cognis:offline-policy-changed",
+    ])
+        window.addEventListener(type, () => {
+            void transition().catch((error) =>
+                console.error("[offline] page transition failed", {
+                    operation: "recoverActivePage",
+                    errorName: error?.name,
+                }),
+            );
+        });
+    if (typeof MutationObserver !== "undefined")
+        new MutationObserver(() => {
+            if (isOffline()) void update();
+        }).observe(document.body, { childList: true, subtree: true });
+    void update();
 }

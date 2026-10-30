@@ -1,3 +1,6 @@
+import { ensurePageStylesheet } from "../../reuse/page-styles.js";
+import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
+import { createUserDetailsReader } from "./details.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -8,8 +11,6 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { loadLoginMethods } from "/static/gateways/auth/login-client.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
-import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
-import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     ACCESS_ROLES,
@@ -26,6 +27,7 @@ let composer = null;
 let elements = [];
 let leadingControlsHtml = "";
 let providerIcons = new Map();
+let readUserDetails;
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -34,14 +36,6 @@ const QUOTA_UNITS = [
     { id: "GiB", multiplier: 1024 ** 3 },
     { id: "TiB", multiplier: 1024 ** 4 },
 ];
-
-function formatMemberSince(iso) {
-    return formatDate(iso, i18n.t("ui.app.dashboard.never"));
-}
-
-function formatLastLogin(iso) {
-    return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
-}
 
 function getCurrentRole() {
     return (localStorage.getItem("cognis_role") ?? "user").trim();
@@ -71,9 +65,9 @@ function buildElements() {
             gridSize: {
                 default: [12, estimatedHeight],
                 min: [6, 5],
-                max: ["full", "fill"],
+                max: "full",
             },
-            render: () => renderUsersTable(),
+            render: () => renderUsersList(),
         },
     ];
 }
@@ -83,24 +77,6 @@ async function loadUsers() {
     if (!response.ok) return [];
     const payload = await response.json();
     return payload.data ?? [];
-}
-
-async function fetchUserInfo(username) {
-    const response = await apiFetch(
-        `/api/v1/users/${encodeURIComponent(username)}/info`,
-    );
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return payload?.data ?? null;
-}
-
-async function fetchUserEmails(username) {
-    const response = await apiFetch(
-        `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
-    );
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return payload?.data ?? [];
 }
 
 async function promptInput({ title, label, type = "text", placeholder = "" }) {
@@ -287,10 +263,16 @@ async function promptStorageQuotas(username) {
 async function refreshData() {
     const [loadedUsers, isSmtpActive, loginMethods] = await Promise.all([
         loadUsers(),
-        isSmtpAdapterActive(apiFetch),
+        uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ?? false,
         loadLoginMethods(),
     ]);
-    users = loadedUsers;
+    const providerNames = new Map(
+        loginMethods.map((method) => [method.id, method.name]),
+    );
+    users = loadedUsers.map((user) => ({
+        ...user,
+        providerLabel: providerNames.get(user.provider),
+    }));
     smtpAdapterActive = isSmtpActive;
     providerIcons = new Map(
         loginMethods
@@ -300,77 +282,67 @@ async function refreshData() {
     buildElements();
 }
 
-function renderUsersTable() {
+function renderUsersList() {
     const currentUsername = getCurrentUsername();
-    const currentUser = users.find((user) => user.username === currentUsername);
+    const currentUser = users.find(
+        (user) => user.accountId === currentUsername,
+    );
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
-    return `
-    ${leadingControlsHtml}
-    <div class="users-table-wrap">
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>${escapeHtml(i18n.t("ui.app.users.username"))}</th>
-            <th>${escapeHtml(i18n.t("ui.app.users.role"))}</th>
-            <th>${escapeHtml(i18n.t("ui.app.users.status"))}</th>
-            <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${users
-              .map((user) => {
-                  const isSelf = user.username === currentUsername;
-                  const userRole = user.role ?? "user";
-                  const isOwner = userRole === "owner";
-                  const protectPrivilegedFromViewer =
-                      !viewerCanManagePrivileged &&
-                      hasMinAccessRole(userRole, "admin") &&
-                      !isSelf;
-                  const roleDisabled =
-                      isOwner || isSelf || protectPrivilegedFromViewer;
-                  const roleOptions = isOwner
-                      ? ["owner"]
-                      : ACCESS_ROLES.filter((role) => role !== "owner");
-                  const roleOptionsHtml = roleOptions
-                      .map(
-                          (role) =>
-                              `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
-                      )
-                      .join("");
-                  const roleCellHtml = `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
-                  const lifecycleState = user.lifecycleState ?? "active";
-                  const statusLabel =
-                      lifecycleState === "archived"
-                          ? i18n.t("ui.app.users.archived")
-                          : lifecycleState === "deactivated"
-                            ? i18n.t("ui.app.users.deactivated")
-                            : user.enabled
-                              ? i18n.t("ui.app.users.enabled")
-                              : i18n.t("ui.app.users.disabled");
-                  const deleteUserLabel = i18n.t("ui.app.users.delete_user");
-                  const actionsHtml =
-                      isOwner || protectPrivilegedFromViewer
-                          ? ""
-                          : `
-                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
-                              <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>
-                              <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
+    const sectionComposer = createCollapsibleSectionComposer({
+        escapeHtml,
+        detailsLabel: i18n.t("ui.reuse.details"),
+    });
+    const rows = users.map((user) => {
+        const isSelf = user.accountId === currentUsername;
+        const userRole = user.role ?? "user";
+        const isOwner = userRole === "owner";
+        const protectPrivilegedFromViewer =
+            !viewerCanManagePrivileged &&
+            hasMinAccessRole(userRole, "admin") &&
+            !isSelf;
+        const roleDisabled = isOwner || isSelf || protectPrivilegedFromViewer;
+        const roleOptions = isOwner
+            ? ["owner"]
+            : ACCESS_ROLES.filter((role) => role !== "owner");
+        const roleOptionsHtml = roleOptions
+            .map(
+                (role) =>
+                    `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
+            )
+            .join("");
+        const roleControlHtml = `<select class="users-role-select theme-select" aria-label="${escapeHtml(i18n.t("ui.app.users.role"))}" data-username="${escapeHtml(user.accountId)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+        const lifecycleState = user.lifecycleState ?? "active";
+        const statusLabel =
+            lifecycleState === "archived"
+                ? i18n.t("ui.app.users.archived")
+                : lifecycleState === "deactivated"
+                  ? i18n.t("ui.app.users.deactivated")
+                  : user.enabled
+                    ? i18n.t("ui.app.users.enabled")
+                    : i18n.t("ui.app.users.disabled");
+        const deleteUserLabel = i18n.t("ui.app.users.delete_user");
+        const actionsHtml =
+            isOwner || protectPrivilegedFromViewer
+                ? ""
+                : `
+                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.accountId)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
+                              <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.accountId)}"${isSelf ? " disabled" : ""}>🗑</button>
+                              <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.accountId)}"${isSelf ? " disabled" : ""}>☰</button>
                           `;
-                  return `
-              <tr class="users-row" data-username="${escapeHtml(user.username)}">
-                <td><span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}${escapeHtml(user.handle || user.username)}</span></td>
-                <td>${roleCellHtml}</td>
-                <td>${escapeHtml(statusLabel)}</td>
-                <td class="users-actions-cell">${actionsHtml}</td>
-              </tr>
-            `;
-              })
-              .join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
+        return {
+            id: user.accountId,
+            className: "users-row",
+            summaryClassName: "users-row-summary",
+            controlsClassName: "users-row-controls",
+            contentClassName: "users-row-meta",
+            attributesHtml: `data-user-details="${escapeHtml(user.accountId)}" data-username="${escapeHtml(user.accountId)}"`,
+            titleHtml: `<span class="users-identity">${providerIcons.has(user.provider) ? `<img class="users-provider-icon" src="${escapeHtml(providerIcons.get(user.provider))}" alt="" />` : ""}<strong class="users-name">${escapeHtml(user.username)}</strong></span>`,
+            controlsHtml: `${roleControlHtml}<span class="state-pill ${user.enabled && lifecycleState === "active" ? "pill-active" : "pill-disabled"}" aria-label="${escapeHtml(i18n.t("ui.app.users.status"))}">${escapeHtml(statusLabel)}</span><div class="users-actions" role="group" aria-label="${escapeHtml(i18n.t("ui.reuse.actions"))}">${actionsHtml}</div>`,
+            contentHtml: `<div data-user-details-content></div>`,
+        };
+    });
+    return `${leadingControlsHtml}<div class="users-list">${sectionComposer.render(rows)}</div>`;
 }
 
 async function runUserMenuAction(action, username) {
@@ -400,9 +372,12 @@ async function runUserMenuAction(action, username) {
 
     if (action === "resend") {
         if (!smtpAdapterActive) return;
-        const emails = await fetchUserEmails(username);
+        const emails =
+            (await uiCtx.capabilities
+                .get("notify:emailClient")
+                ?.listUserEmails({ accountId: username })) ?? [];
         const unverifiedEmail =
-            emails.find((e) => e.isPrimary && !e.verified) ??
+            emails.find((e) => e.primary && !e.verified) ??
             emails.find((e) => !e.verified);
         if (!unverifiedEmail) {
             showToast(i18n.t("ui.app.users.no_unverified_email"), {
@@ -410,10 +385,12 @@ async function runUserMenuAction(action, username) {
             });
             return;
         }
-        const res = await apiFetch(
-            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
-            { method: "POST" },
-        );
+        const res = await uiCtx.capabilities
+            .get("notify:emailClient")
+            .resendUserEmail({
+                accountId: username,
+                email: unverifiedEmail.email,
+            });
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.verification_resent")
@@ -477,7 +454,7 @@ async function runUserMenuAction(action, username) {
         // Update from the confirmed mutation instead of immediately reloading.
         // The users endpoint can briefly return its pre-delete state, which would
         // put the deleted row straight back into the table.
-        users = users.filter((user) => user.username !== username);
+        users = users.filter((user) => user.accountId !== username);
         const deletedUserRow = Array.from(
             root.querySelectorAll(".users-row"),
         ).find((userRow) => userRow.dataset.username === username);
@@ -514,25 +491,38 @@ async function runUserMenuAction(action, username) {
 }
 
 function bindUsersInteractions() {
-    root.querySelectorAll(".users-row").forEach((row) => {
-        row.addEventListener("click", async (event) => {
-            const target = event.target;
-            if (
-                target instanceof HTMLElement &&
-                target.closest("button,input,select")
-            )
-                return;
-            const username = row.dataset.username;
-            if (!username) return;
-            const info = await fetchUserInfo(username);
-            await openPopup({
-                title: username,
-                body: `
-            <p>${escapeHtml(i18n.t("ui.app.users.member_since"))}: ${escapeHtml(formatMemberSince(info?.createdAt ?? null))}</p>
-            <p>${escapeHtml(i18n.t("ui.app.users.last_login"))}: ${escapeHtml(formatLastLogin(info?.lastLogin ?? null))}</p>
-            <p>${escapeHtml(i18n.t("ui.app.users.founder"))}: ${info?.isFounder ? "true" : "false"}</p>
-          `,
-            });
+    root.querySelectorAll("[data-user-details]").forEach((details) => {
+        if (details.dataset.userDetailsBound === "true") return;
+        details.dataset.userDetailsBound = "true";
+        const toggle = details.querySelector("[data-details-toggle]");
+        toggle.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            details.open = !details.open;
+        });
+        details.addEventListener("toggle", async () => {
+            if (!details.open) return;
+            const user = users.find(
+                (user) => user.accountId === details.dataset.userDetails,
+            );
+            if (!user) return;
+            try {
+                const html = await readUserDetails(user);
+                if (details.isConnected && details.open)
+                    details.querySelector(
+                        "[data-user-details-content]",
+                    ).innerHTML = html;
+            } catch (error) {
+                if (error?.name === "AbortError") return;
+                console.error("users_account_details_failed", {
+                    component: "ui",
+                    operation: "readUserDetails",
+                    errorName: error?.name,
+                });
+                showToast(i18n.t("ui.app.login.error.generic"), {
+                    variant: "error",
+                });
+            }
         });
     });
 
@@ -571,9 +561,12 @@ function bindUsersInteractions() {
         btn.addEventListener("click", async () => {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
-            const user = users.find((entry) => entry.username === username);
+            const user = users.find((entry) => entry.accountId === username);
+            if (!user) return;
             const emails = smtpAdapterActive
-                ? await fetchUserEmails(username)
+                ? ((await uiCtx.capabilities
+                      .get("notify:emailClient")
+                      ?.listUserEmails({ accountId: username })) ?? [])
                 : [];
             const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [
@@ -666,7 +659,9 @@ function bindUsersInteractions() {
 
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
+    await ensurePageStylesheet("/static/styles/users.css", { signal });
     i18n = await createI18n();
+    readUserDetails = createUserDetailsReader({ i18n, signal });
     applyDocumentTitle(i18n, "ui.page.title.users");
 
     reprompt = createRepromptGuard({ i18n });

@@ -89,8 +89,8 @@ export function createContentNotifiers({
                 await deliver(
                     "content",
                     new Map(
-                        recipients.map(({ username }) => [
-                            username,
+                        recipients.map(({ accountId }) => [
+                            accountId,
                             { count: String(entryCount) },
                         ]),
                     ),

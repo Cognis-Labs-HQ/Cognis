@@ -103,7 +103,10 @@
  * @returns {Promise<string|null>}
  */
 
-import { createPopupContentApi } from "./popup/content.js";
+import {
+    createPopupContentApi,
+    bindPopupActionIcons,
+} from "./popup/content.js";
 import { createI18n } from "./i18n.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
@@ -120,7 +123,11 @@ const CACHED_STYLESHEET_ID = "popup-cached-styles";
 function getI18n() {
     // Store the Promise, not the resolved value, so concurrent calls
     // before resolution share the same deferred.
-    if (!i18nReady) i18nReady = createI18n();
+    if (!i18nReady)
+        i18nReady = createI18n().catch((error) => {
+            i18nReady = null;
+            throw error;
+        });
     return i18nReady;
 }
 
@@ -440,6 +447,7 @@ export async function openPopup({
     initialPageId,
 } = {}) {
     await ensureStylesheet();
+    const i18n = await getI18n();
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "popup-overlay";
@@ -606,7 +614,13 @@ export async function openPopup({
             ? (currentPage?.actions ?? actions ?? [])
             : Array.isArray(actions)
               ? actions
-              : [{ id: "close", label: "Done", variant: "confirm" }];
+              : [
+                    {
+                        id: "close",
+                        label: i18n.t("ui.reuse.done"),
+                        variant: "confirm",
+                    },
+                ];
 
         const closeButtonClass =
             closeButtonVariant === "neutral"
@@ -642,7 +656,7 @@ export async function openPopup({
                   const icon = action.icon;
                   const content =
                       icon && typeof icon === "object" && icon.light
-                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt=""></picture>`
+                          ? `<picture class="popup-header-action-icon" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(icon.dark ?? icon.light)}"><img src="${escapeHtml(icon.light)}" alt="" data-resource-error-handled="true"></picture>`
                           : icon
                             ? `<span aria-hidden="true">${escapeHtml(icon)}</span>`
                             : escapeHtml(action.label);
@@ -650,12 +664,13 @@ export async function openPopup({
               })
               .join(
                   "",
-              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>`}</div>
+              )}${mandatory ? "" : `<button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="${escapeHtml(i18n.t("ui.reuse.close"))}">&#x2715;</button>`}</div>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
       </div>
     `;
+        bindPopupActionIcons(overlay);
 
         if (maxWidth && !window.matchMedia("(max-width: 640px)").matches) {
             overlay.querySelector(".popup-dialog").style.maxWidth = maxWidth;

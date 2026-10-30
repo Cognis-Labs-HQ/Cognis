@@ -52,9 +52,9 @@ const password = await keyring.resolve("meeting:123:password", {
 
 During login, the adapter opportunistically attempts to decrypt an existing vault with the account password. A failed attempt leaves the vault locked and never opens an unlock dialog or blocks dashboard navigation. The contextual unlock dialog is requested only when a component resolves keyring-backed content.
 
-## Browser-session unlock restoration
+## Account privacy and keyring isolation
 
-After a successful unlock, the adapter stores the non-extractable Web Crypto key in its IndexedDB session-key store and writes only a non-secret marker to `sessionStorage`. A page reload can restore the unlocked vault within the same tab session without retaining the password or an extractable key. A finite relock preference records one absolute deadline when the keyring is unlocked; reads, writes, page reloads, and server restarts neither extend nor shorten it. “On Logout” stores no deadline and remains unlocked until the authenticated session explicitly ends. Explicit lock, logout, account-instance mismatch, and an elapsed finite deadline invalidate restoration. Components still request access through their attributed keyring scope, which first attempts restoration and opens the contextual unlock dialog only when restoration is unavailable.
+Unlocks survive refreshes in the same authenticated tab/session. The password still encrypts the vault; neither a password nor a plaintext decryption key is persisted. Session storage holds only an AES-GCM encrypted unlock, wrapped using HKDF from the active session secret and bound to origin, account, server account-instance and session identity. The server must verify that binding before restoration. Finite relock deadlines are authenticated and remain absolute across refreshes. Explicit Lock, logout, account/instance/session changes and expiry invalidate restoration. Closing the tab or starting a new session requires unlocking again. The retired plaintext IndexedDB cache remains disabled.
 
 ## Cancelled access and manual recovery
 

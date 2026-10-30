@@ -27,7 +27,11 @@ test("login persists the authenticated identity before running account setup flo
 test("login retains the password until TFA authentication unlocks the keyring", () => {
     assert.match(loginSource, /pendingKeyringPassword = password;/);
     assert.match(
-        loginSource,
+        loginSource +
+            readFileSync(
+                resolve("src/gateways/auth/ui/login-page/submit.js"),
+                "utf8",
+            ),
         /finalizeAuthenticatedSession\(\s*tfaBody\.data,\s*pendingKeyringPassword,\s*\)/,
     );
     assert.match(

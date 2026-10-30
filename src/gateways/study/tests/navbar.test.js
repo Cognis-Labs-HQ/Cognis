@@ -51,6 +51,20 @@ async function fixture(
                 "/static/reuse/api-client.js": context,
                 "/static/reuse/i18n.js": context,
                 "./search/index.js": context,
+                "./navigation-client.js": {
+                    fetchStudyLanguages: async ({ signal }) => {
+                        const response = await context.apiFetch(
+                            "/api/v1/study/registered-languages",
+                            { signal },
+                        );
+                        if (!response.ok)
+                            throw new Error(
+                                "study_navigation_languages_unavailable",
+                            );
+                        return (await response.json()).data;
+                    },
+                    fetchStudyPreferences: async () => ({}),
+                },
             },
             context,
         ),

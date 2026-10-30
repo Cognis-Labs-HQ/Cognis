@@ -1,4 +1,4 @@
-import { apiFetch } from "/static/reuse/api-client.js";
+import { profileFetch as apiFetch } from "./offline-client.js";
 import {
     PROFILE_FILE_NAMESPACE_ID,
     buildNamespacedFileUrl,

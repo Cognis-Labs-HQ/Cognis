@@ -30,7 +30,7 @@
   <string name="gateway.registration.invite.revoke_success">Invitation revoked.</string>
   <string name="gateway.registration.invite.revoke_failed">Failed to revoke invitation.</string>
   <string name="gateway.registration.invite.method">Method</string>
-  <string name="gateway.registration.public_registration_enabled">Public Registration</string>
+  <string name="gateway.registration.public_registration_enabled">Allow Public Native Registration</string>
   <string name="ui.page.title.register">Cognis - Registration Invite</string>
   <string name="ui.app.register.form_title">Create your account</string>
   <string name="ui.app.register.page_subtitle">Create a new account to access Cognis.</string>

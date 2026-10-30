@@ -15,3 +15,7 @@ Token hanya dipakai setelah akun eksternal berhasil disimpan, dan alamat undanga
 ## Otorisasi SSO dan kebijakan undangan
 
 Saat pendaftaran publik ditutup, Cognis menyimpan status penyedia terautentikasi di balik ID percobaan sementara yang buram dan menampilkan formulir token milik adapter ini di shell pendaftaran standar. Tindakan “Kirim Email Undangan” mengirim undangan melalui SMTP; hanya administrator dan pemilik yang dapat membuat token mandiri melalui “Buat Token Pendaftaran”. Pendaftaran publik melewati tahap token. Pengguna pendiri dapat memiliki paling banyak sepuluh undangan email tertunda sekaligus; undangan yang dipakai, dicabut, atau kedaluwarsa segera mengembalikan slotnya. Hanya pemilik yang dapat menonaktifkan undangan pendiri atau administrator di Administrasi → Pendaftaran.
+
+## Perintah Undangan
+
+Administrator dan pemilik dapat membuka `/invite` tanpa status pendiri. Kebijakan undangan tetap mengatur penerbitan. Adapter Token Pendaftaran yang aktif menyediakan `cognisctl invite:token:generate` untuk membuat token mandiri tanpa pengiriman SMTP, dan `cognisctl invite:email:send person@example.com` untuk mengirim undangan. Tanpa argumen email, panduan masukan CLI dibuka. Kedua perintah menggunakan API pendaftaran terautentikasi serta mematuhi pembatasan peran, domain, dan pengiriman.

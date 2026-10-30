@@ -617,4 +617,19 @@
     <string name="ui.app.modules.config_action_failed">The configuration action failed. Check your settings or enter a voice ID manually.</string>
     <string name="ui.reuse.home">Home</string>
     <string name="ui.reuse.try_again">Try Again</string>
+    <string name="ui.reuse.offline_page_unavailable">This page is not available offline. Reconnect to continue.</string>
+    <string name="ui.app.settings.offline_enabled">Offline Mode</string>
+    <string name="ui.app.settings.offline_enabled_hint">Keep supported cached content available and buffer supported changes until reconnection. Audio, dictionary requests and large uploads require a connection. The latest fetched terms must be accepted. Turn off to retain connection error feedback.</string>
+    <string name="ui.reuse.offline_access_required">Offline Access Requires Review</string>
+    <string name="ui.reuse.offline_access_required_body">Reconnect to review and accept the latest required documents before using offline mode.</string>
+    <string name="ui.reuse.retry">Retry</string>
+    <string name="ui.reuse.offline_sync_rejected">Some Changes Could Not Be Applied.</string>
+    <string name="ui.reuse.offline_buffer_full_body">The offline buffer is full. Reconnect and send pending changes before adding more.</string>
+  <string name="ui.reuse.account_id">Account ID</string>
+  <string name="ui.reuse.authentication_provider">Authentication Provider</string>
+  <string name="ui.reuse.offline_mode_active">You are in offline mode</string>
+  <string name="ui.reuse.offline_connection_restored">Connection to the server is restored. Refresh when you are ready.</string>
+  <string name="ui.reuse.recheck_connectivity">Recheck Connectivity</string>
+  <string name="ui.reuse.offline_no_cached_content">No offline cached content available.</string>
+  <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
 </resources>

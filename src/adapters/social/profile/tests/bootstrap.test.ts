@@ -29,6 +29,10 @@ function makeAdapterCtx(
     const gatewayRegistry = overrides.gatewayRegistry ?? new GatewayRegistry();
     const routeRegistry = overrides.routeRegistry ?? new RouteRegistry();
     const capabilities = overrides.capabilities ?? new CapabilityStore();
+    capabilities.contribute(
+        "auth:getUsername",
+        async (accountId: string) => accountId,
+    );
     const uiRegistry = overrides.uiRegistry;
     if (!capabilities.get("db:executor")) {
         capabilities.contribute("db:executor", makeInMemoryDb());
@@ -245,6 +249,7 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
     assert.deepEqual(providers[0].providesCapabilities, [
         "ui:profileAvatarRenderer",
         "social:profileUiClient",
+        "social:profileRequest",
     ]);
 
     const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");

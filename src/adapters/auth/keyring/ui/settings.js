@@ -11,8 +11,27 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
-export function createSettingsSection({ i18n, root }) {
+export function createSettingsSection({ i18n, root, signal }) {
     const settingsRoot = root ?? document;
+    let dismissCurrentPopup = null;
+    const actions = new AbortController();
+    signal?.addEventListener("abort", () => actions.abort(), { once: true });
+    window.addEventListener(
+        "cognis:keyring-event",
+        (event) => {
+            if (event.detail?.type === "identityChanged") {
+                actions.abort();
+                settingsRoot
+                    .querySelector("#settings-keyring-manager")
+                    ?.replaceChildren();
+            } else if (event.detail?.type === "locked") {
+                dismissCurrentPopup?.();
+                dismissCurrentPopup = null;
+                rerender();
+            }
+        },
+        { signal: actions.signal },
+    );
     const pagination = uiCtx.capabilities.get("ui:pagination");
     if (!pagination) {
         throw new Error("Required UI capability unavailable: ui:pagination");
@@ -183,6 +202,7 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function rerender() {
+        if (actions.signal.aborted) return;
         const container = settingsRoot.querySelector(
             "#settings-keyring-manager",
         );
@@ -229,7 +249,15 @@ export function createSettingsSection({ i18n, root }) {
                     variant: "cancel",
                 },
             ],
-            onOpen(overlay) {
+            onOpen(overlay, dismiss) {
+                dismissCurrentPopup = dismiss;
+                if (actions.signal.aborted) {
+                    dismiss();
+                    return;
+                }
+                actions.signal.addEventListener("abort", dismiss, {
+                    once: true,
+                });
                 labelInput = overlay.querySelector("#keyring-entry-label");
                 idInput = overlay.querySelector("#keyring-entry-id");
                 valueInput = overlay.querySelector("#keyring-entry-value");
@@ -330,7 +358,15 @@ export function createSettingsSection({ i18n, root }) {
                     variant: "cancel",
                 },
             ],
-            onOpen(overlay) {
+            onOpen(overlay, dismiss) {
+                dismissCurrentPopup = dismiss;
+                if (actions.signal.aborted) {
+                    dismiss();
+                    return;
+                }
+                actions.signal.addEventListener("abort", dismiss, {
+                    once: true,
+                });
                 const formElement = overlay.querySelector(
                     "#keyring-change-password-form",
                 );
@@ -402,7 +438,7 @@ export function createSettingsSection({ i18n, root }) {
             async () => {
                 if (!isKeyringUnlocked()) return;
                 const input = await readEntryInput();
-                if (!input) return;
+                if (!input || actions.signal.aborted) return;
                 await keyring.set(input.id, input.value, {
                     label: input.label,
                 });
@@ -418,6 +454,7 @@ export function createSettingsSection({ i18n, root }) {
             async () => {
                 const destroy = !isKeyringUnlocked();
                 if (!(await confirmClearKeyring(destroy))) return;
+                if (actions.signal.aborted) return;
                 const completed = destroy
                     ? await destroyKeyring()
                     : await clearKeyringValues();
@@ -439,7 +476,7 @@ export function createSettingsSection({ i18n, root }) {
                 "click",
                 async () => {
                     const password = await readNewKeyringPassword();
-                    if (!password) return;
+                    if (!password || actions.signal.aborted) return;
                     await changeKeyringPassword(password);
                     rerender();
                     showToast(i18n.t("gateway.auth.keyring.password_changed"), {
@@ -515,8 +552,8 @@ export function createSettingsSection({ i18n, root }) {
                 ),
                 ensurePageStylesheet("/static/styles/reuse/page-sections.css"),
             ]);
-            if (await restoreKeyringSession()) rerender();
-            else bindActions();
+            await restoreKeyringSession();
+            rerender();
         },
         isDirty: () => false,
         async save() {},

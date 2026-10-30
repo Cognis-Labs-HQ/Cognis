@@ -1,7 +1,12 @@
-import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { mountAvailability } from "./availability.js";
+import { registerProfileOfflineClient } from "./offline-client.js";
 import { profileUiClient } from "./client.js";
 import { ensureProfileAvatarStyles } from "./profile-avatar.js";
 
-await ensureProfileAvatarStyles();
-
-uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
+export async function mountProvider(uiCtx) {
+    registerProfileOfflineClient(uiCtx);
+    await ensureProfileAvatarStyles();
+    uiCtx.signal.throwIfAborted();
+    uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
+    return mountAvailability(uiCtx);
+}
