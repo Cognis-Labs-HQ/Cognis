@@ -283,3 +283,4 @@ Abmelden bleibt im Offline-Modus sichtbar, ist jedoch wie andere nicht verfügba
 - [2a7180a](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a7180a48bd789fc0151df12128e25027cce1b88)
 - [a171f62](https://github.com/Cognis-Labs-HQ/Cognis/commit/a171f626b621eb52cfdc4dce85f7c9ad117689a3)
 - [bc7ecba](https://github.com/Cognis-Labs-HQ/Cognis/commit/bc7ecbabc36404cbdbd2563ef93b54bf1bbc4d83)
+- [e78d442](https://github.com/Cognis-Labs-HQ/Cognis/commit/e78d442dd40c03bddd37fed0a083569061d36c88)
