@@ -13,6 +13,8 @@ import { createCalendarPopupManager } from "./popup-manager.js";
 import { mount as mountSharedCalendar } from "../share-renderer.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
+import { createRenderScope } from "./render-scope.js";
+
 const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
 
 export async function mount(root, { signal, shareContext = null } = {}) {
@@ -39,6 +41,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     let selectedView = "month";
     let activeDate = new Date();
     let composer = null;
+    const nextViewRender = createRenderScope(signal);
     let availabilityBoundaryTimer = null;
     const MAX_TIMEOUT_MS = 2_147_000_000;
 
@@ -516,10 +519,12 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         `;
                 },
                 onRender: () => {
+                    const viewSignal = nextViewRender();
+                    if (viewSignal.aborted) return;
                     syncWeekViewLayout();
                     requestAnimationFrame(scrollTimedViewsToCurrentSlot);
                     window.addEventListener("resize", syncWeekViewLayout, {
-                        signal,
+                        signal: viewSignal,
                     });
 
                     root.querySelectorAll("[data-month-create-date]").forEach(
@@ -548,7 +553,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                         ),
                                     });
                                 },
-                                { signal },
+                                { signal: viewSignal },
                             );
                         },
                     );
@@ -574,7 +579,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                     setSelectedView("month");
                                     refreshCalendarComposer();
                                 },
-                                { signal },
+                                { signal: viewSignal },
                             );
                         },
                     );
@@ -594,7 +599,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                     setSelectedView("week");
                                     refreshCalendarComposer();
                                 },
-                                { signal },
+                                { signal: viewSignal },
                             );
                         },
                     );
@@ -614,7 +619,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                     setSelectedView("day");
                                     refreshCalendarComposer();
                                 },
-                                { signal },
+                                { signal: viewSignal },
                             );
                         },
                     );
