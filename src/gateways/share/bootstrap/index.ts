@@ -60,6 +60,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get.bind(ctx.capabilities),
         adapterConfigStore,
     );
+    const registerSmtpPurpose = ctx.capabilities.get<
+        (id: string) => Promise<string>
+    >("notify:registerSmtpPurpose");
+    const emailPurpose = registerSmtpPurpose
+        ? await registerSmtpPurpose("shareLinks")
+        : undefined;
     const registerEmailTemplate = ctx.capabilities.get<
         (
             templateId: string,
@@ -258,6 +264,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     ctx.routeRegistry.register(
         createShareRoutes({
+            emailPurpose,
             gateway,
             routeContext,
             uiRoot: path.join(GATEWAY_ROOT, "ui"),

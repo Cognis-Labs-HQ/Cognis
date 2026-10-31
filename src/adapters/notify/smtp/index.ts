@@ -27,7 +27,12 @@ export async function bootstrapNotifyAdapter(
                 ? (body.config as Record<string, unknown>)
                 : undefined;
         try {
-            await ctx.gateway.sendTestEmail("smtp", recipientEmail, config);
+            await ctx.gateway.sendTestEmail(
+                "smtp",
+                ctx.testEmailPurpose,
+                recipientEmail,
+                config,
+            );
         } catch (error) {
             ctx.log?.("error", "SMTP test email failed.", {
                 component: "notify-smtp",
@@ -55,12 +60,15 @@ export async function bootstrapNotifyAdapter(
     ctx.capabilities.contribute(
         "notify:sendEmail",
         async (input: {
+            purpose: string;
             recipientEmail: string;
             templateId: string;
             variables: Record<string, string>;
             config?: Record<string, unknown>;
             theme?: string;
         }) => {
+            if (!input.purpose || typeof input.purpose !== "string")
+                throw new Error("smtp_purpose_unregistered");
             const renderTemplate = ctx.capabilities.get<
                 (
                     templateId: string,
@@ -81,12 +89,14 @@ export async function bootstrapNotifyAdapter(
             if (input.templateId === "notify-test") {
                 await ctx.gateway.sendTestEmail(
                     "smtp",
+                    input.purpose,
                     input.recipientEmail,
                     input.config,
                 );
                 return { sent: true };
             }
             const envelope = {
+                purpose: input.purpose,
                 category: "system",
                 recipientUsername: input.recipientEmail,
                 recipientEmail: input.recipientEmail,

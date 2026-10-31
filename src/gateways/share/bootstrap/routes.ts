@@ -107,6 +107,7 @@ function readSharePassword(req: IncomingMessage, url: URL): string | null {
 }
 
 export function createShareRoutes(input: {
+    emailPurpose?: string;
     gateway: CoreShareGateway;
     routeContext?: RouteContext;
     uiRoot: string;
@@ -687,6 +688,7 @@ export function createShareRoutes(input: {
             await Promise.all(
                 recipients.map(async (recipient) => {
                     await sendEmail({
+                        purpose: input.emailPurpose!,
                         recipientEmail: recipient,
                         templateId: "share-link",
                         variables: {

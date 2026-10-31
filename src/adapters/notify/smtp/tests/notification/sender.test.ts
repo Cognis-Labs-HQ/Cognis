@@ -1,3 +1,4 @@
+import { createTestSender } from "../fixtures/sender.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import net from "node:net";
@@ -39,7 +40,7 @@ test("createNotificationSender accepts explicit port, secure mode, and credentia
     assert.equal(sender.senderId, "smtp");
 });
 test("SmtpNotificationSender.send rejects when recipientEmail is absent", async () => {
-    const sender = new SmtpNotificationSender({
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -48,6 +49,7 @@ test("SmtpNotificationSender.send rejects when recipientEmail is absent", async 
     await assert.rejects(
         () =>
             sender.send({
+                purpose: "test",
                 category: "account_alert",
                 recipientUsername: "alice",
                 subject: "Test",
@@ -56,8 +58,8 @@ test("SmtpNotificationSender.send rejects when recipientEmail is absent", async 
         /smtp_sender_requires_recipient_email/,
     );
 });
-test("SmtpNotificationSender.getConfig returns current configuration without password", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.getConfig returns current configuration without password", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -72,8 +74,8 @@ test("SmtpNotificationSender.getConfig returns current configuration without pas
     assert.equal(config.user, "user@example.com");
     assert.ok(!Object.prototype.hasOwnProperty.call(config, "pass"));
 });
-test("SmtpNotificationSender.setConfig updates host and port", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.setConfig updates host and port", async () => {
+    const sender = await createTestSender({
         host: "old.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -84,8 +86,8 @@ test("SmtpNotificationSender.setConfig updates host and port", () => {
     assert.equal(config.host, "new.example.com");
     assert.equal(config.port, 465);
 });
-test("SmtpNotificationSender exposes configurable verification code length", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender exposes configurable verification code length", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -98,8 +100,8 @@ test("SmtpNotificationSender exposes configurable verification code length", () 
     assert.equal(sender.getCodeLength(), 10);
     assert.equal(sender.getConfig().codeLength, 10);
 });
-test("SmtpNotificationSender.senderName returns descriptive name", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.senderName returns descriptive name", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -109,22 +111,22 @@ test("SmtpNotificationSender.senderName returns descriptive name", () => {
     assert.ok(sender.senderName.length > 0);
 });
 test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", async () => {
-    const sender = new SmtpNotificationSender({
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
         secure: "starttls",
     });
     await assert.rejects(
-        () => sender.sendTestEmail(""),
+        () => sender.sendTestEmail("test", ""),
         /smtp_test_email_requires_recipient/,
     );
 });
 test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
     const now = Date.now();
     const rateLimiter = new SmtpRateLimiter(60_000, () => now);
-    rateLimiter.record("alice@example.com", now, "loginCode");
-    const sender = new SmtpNotificationSender(
+    rateLimiter.record("alice@example.com", now);
+    const sender = await createTestSender(
         {
             host: "smtp.example.com",
             port: 587,
@@ -133,9 +135,10 @@ test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit
         },
         undefined,
         async () => new Promise(() => {}),
-        rateLimiter,
+        () => rateLimiter,
     );
     const queued = await sender.queueVerificationEmail(
+        "test",
         "alice@example.com",
         "123456",
     );
@@ -143,40 +146,7 @@ test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit
     assert.equal(queued.recipientEmail, "alice@example.com");
     assert.equal(typeof queued.availableAt, "string");
 });
-test("SmtpNotificationSender.queueVerificationEmail retries queue lookup before failing", async () => {
-    const sender = new SmtpNotificationSender({
-        host: "smtp.example.com",
-        port: 587,
-        from: "no-reply@example.com",
-        secure: "starttls",
-    });
-    const senderWithInternals = sender as unknown as {
-        queue: {
-            getQueueItem: (notificationId: string) => {
-                notificationId: string;
-                status: string;
-                createdAt: string;
-                updatedAt: string;
-            } | null;
-        };
-    };
-    const originalGetQueueItemMethod =
-        senderWithInternals.queue.getQueueItem.bind(senderWithInternals.queue);
-    let lookupCount = 0;
-    senderWithInternals.queue.getQueueItem = (notificationId: string) => {
-        lookupCount += 1;
-        if (lookupCount === 1) {
-            return null;
-        }
-        return originalGetQueueItemMethod(notificationId);
-    };
-    const queued = await sender.queueVerificationEmail(
-        "alice@example.com",
-        "123456",
-    );
-    assert.equal(queued.notificationId.length > 0, true);
-    assert.ok(lookupCount >= 2);
-});
+
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
@@ -217,8 +187,8 @@ test("SmtpNotificationSender.getRequiredFields omits auth fields when authentica
     assert.deepEqual(required, ["host", "from"]);
 });
 
-test("SmtpNotificationSender.setConfig applies allowSelfSigned and authDisabled", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.setConfig applies allowSelfSigned and authDisabled", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -382,7 +352,7 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -394,6 +364,7 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
             trackingSleep,
         );
         await sender.send({
+            purpose: "test",
             category: "test",
             recipientUsername: "alice",
             recipientEmail: "alice@example.com",
@@ -433,7 +404,7 @@ test("SmtpNotificationSender does not retry on permanent SMTP errors (5xx)", asy
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -447,6 +418,7 @@ test("SmtpNotificationSender does not retry on permanent SMTP errors (5xx)", asy
         await assert.rejects(
             () =>
                 sender.send({
+                    purpose: "test",
                     category: "test",
                     recipientUsername: "alice",
                     recipientEmail: "alice@example.com",
@@ -485,7 +457,7 @@ test("SmtpNotificationSender exhausts retries and throws SmtpTemporaryError", as
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -499,6 +471,7 @@ test("SmtpNotificationSender exhausts retries and throws SmtpTemporaryError", as
         await assert.rejects(
             () =>
                 sender.send({
+                    purpose: "test",
                     category: "test",
                     recipientUsername: "alice",
                     recipientEmail: "alice@example.com",
@@ -539,7 +512,7 @@ test("SmtpNotificationSender with greylistRetries:0 does not retry on 4xx", asyn
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -553,6 +526,7 @@ test("SmtpNotificationSender with greylistRetries:0 does not retry on 4xx", asyn
         await assert.rejects(
             () =>
                 sender.send({
+                    purpose: "test",
                     category: "test",
                     recipientUsername: "alice",
                     recipientEmail: "alice@example.com",
@@ -567,8 +541,8 @@ test("SmtpNotificationSender with greylistRetries:0 does not retry on 4xx", asyn
     }
 });
 
-test("SmtpNotificationSender.getConfig includes greylistRetries and greylistRetryDelayMs", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.getConfig includes greylistRetries and greylistRetryDelayMs", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -581,8 +555,8 @@ test("SmtpNotificationSender.getConfig includes greylistRetries and greylistRetr
     assert.equal(config.greylistRetryDelayMs, 60_000);
 });
 
-test("SmtpNotificationSender.setConfig updates greylistRetries and greylistRetryDelayMs", () => {
-    const sender = new SmtpNotificationSender({
+test("SmtpNotificationSender.setConfig updates greylistRetries and greylistRetryDelayMs", async () => {
+    const sender = await createTestSender({
         host: "smtp.example.com",
         port: 587,
         from: "no-reply@example.com",
@@ -635,7 +609,7 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -648,6 +622,7 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
             noopSleep,
         );
         await sender.send({
+            purpose: "test",
             category: "test",
             recipientUsername: "alice",
             recipientEmail: "alice@example.com",
@@ -705,7 +680,7 @@ test("SmtpNotificationSender email uses dark theme colors when theme is dark", a
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -717,6 +692,7 @@ test("SmtpNotificationSender email uses dark theme colors when theme is dark", a
             noopSleep,
         );
         await sender.send({
+            purpose: "test",
             category: "test",
             recipientUsername: "alice",
             recipientEmail: "alice@example.com",
@@ -758,7 +734,7 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -770,6 +746,7 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
             noopSleep,
         );
         await sender.send({
+            purpose: "test",
             category: "test",
             recipientUsername: "default-theme-recipient",
             recipientEmail: "default-theme-recipient@example.com",
@@ -810,7 +787,7 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -824,6 +801,7 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
         const inviteUrl =
             "https://cognis.example.com/register?token=test-token-value";
         await sender.sendRegistrationInviteEmail(
+            "test",
             "alice@example.com",
             "Inviter",
             inviteUrl,
@@ -869,7 +847,7 @@ test("SmtpNotificationSender emits provider-required message headers and MIME pa
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -883,6 +861,7 @@ test("SmtpNotificationSender emits provider-required message headers and MIME pa
             noopSleep,
         );
         await sender.send({
+            purpose: "test",
             category: "test",
             recipientUsername: "alice",
             recipientEmail: "alice@example.com",

@@ -1,5 +1,11 @@
 # Gateway Notifikasi
 
+Tujuan SMTP harus didaftarkan melalui `ctx` selama bootstrap gateway atau modul. Dapatkan `notify:registerSmtpPurpose`, panggil dengan nama tujuan lokal, tunggu hasilnya dan simpan pengidentifikasi yang terikat pada pemilik. Setiap pendaftaran membuat antrean serta status jeda penerima tersendiri; adapter tidak memiliki daftar tujuan bawaan.
+
+Setiap panggilan `notify:sendEmail` wajib menyertakan `purpose` yang sudah ada. Tujuan kosong atau tidak dikenal ditolak sebelum transport SMTP; pengiriman tidak dapat membuat tujuan secara implisit. Pendaftaran ditolak setelah bootstrap selesai, gagal atau kehabisan waktu, termasuk melalui callback tersimpan dan pekerjaan asinkron terpisah. Modul yang diaktifkan setelah startup dapat mendaftar selama bootstrap miliknya. Penonaktifan atau penghapusan modul membuang antreannya, menolak pengiriman tertunda dan menutup sesi SMTP aktif.
+
+Amplop umum menyertakan `purpose`; metode khusus pengiriman dan antrean SMTP kini menerima tujuan sebagai argumen pertama. Metode uji gateway menerima `(senderId, purpose, recipientEmail, config)`. Pembantu Gateway Notifikasi yang ada menyediakan tujuan yang didaftarkan gateway tersebut. Pemanggil komponen/modul umum mendaftarkan tujuan sendiri saat bootstrap dan menggunakan kembali pengidentifikasinya saat runtime.
+
 ## Ikhtisar
 
 Gateway Notifikasi mengirimkan notifikasi melalui adapter pengirim yang dapat dipasang. Gateway ini bertindak sebagai perantara antara bagian lain aplikasi dan mekanisme pengiriman konkret — SMTP, webhook di masa depan, atau sink dalam aplikasi — tanpa perlu mengetahui transport mana yang dikonfigurasi.

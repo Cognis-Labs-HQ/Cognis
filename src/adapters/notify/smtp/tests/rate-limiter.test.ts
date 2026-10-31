@@ -41,24 +41,11 @@ test("SmtpRateLimiter tracks recipients independently", () => {
     assert.equal(limiter.isThrottled("b@example.com"), false);
 });
 
-test("recipient cooldowns are normalized and isolated by delivery purpose", () => {
+test("recipient cooldowns are normalized within their dedicated limiter", () => {
     let now = 1000;
     const limiter = new SmtpRateLimiter(15_000, () => now);
-    limiter.record("Alice@Example.com", now, "emailVerification");
-    assert.equal(
-        limiter.isThrottled(" alice@example.com ", "emailVerification"),
-        true,
-    );
-    assert.equal(limiter.isThrottled("alice@example.com", "loginCode"), false);
-    limiter.record("alice@example.com", now, "loginCode");
-    assert.equal(
-        limiter.isThrottled("alice@example.com", "notification"),
-        false,
-    );
+    limiter.record("Alice@Example.com", now);
+    assert.equal(limiter.isThrottled(" alice@example.com "), true);
     now += 15_000;
-    assert.equal(limiter.isThrottled("alice@example.com", "loginCode"), false);
-    assert.equal(
-        limiter.isThrottled("alice@example.com", "emailVerification"),
-        false,
-    );
+    assert.equal(limiter.isThrottled("alice@example.com"), false);
 });

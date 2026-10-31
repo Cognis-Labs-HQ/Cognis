@@ -32,7 +32,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.37` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.3.0`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.30` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
@@ -71,7 +71,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Authentication (auth) | `src/gateways/auth/`          | `2.0.5`  |
 | Share                 | `src/gateways/share/`         | `1.7.50` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.20` |
+| Notification (notify) | `src/gateways/notify/`        | `2.0.0`  |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
 | Registration          | `src/gateways/registration/`  | `1.1.41` |

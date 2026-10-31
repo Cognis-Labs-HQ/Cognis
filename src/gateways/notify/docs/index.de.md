@@ -1,5 +1,11 @@
 # Benachrichtigungs-Gateway
 
+SMTP-Zwecke werden während des Gateway- oder Modul-Bootstraps über `ctx` registriert. Rufen Sie `notify:registerSmtpPurpose` mit einem lokalen Zwecknamen auf, warten Sie auf das Ergebnis und bewahren Sie die zurückgegebene besitzergebundene Kennung auf. Jede Registrierung erstellt eine eigene Warteschlange samt Empfänger-Sperrzeiten. Der Adapter besitzt keine feste Zweckliste.
+
+Jeder Aufruf von `notify:sendEmail` muss einen bestehenden `purpose` angeben. Fehlende oder unbekannte Zwecke werden vor dem SMTP-Transport abgewiesen; ein Versand erstellt keine Zwecke. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt, auch über gespeicherte Rückrufe und abgetrennte asynchrone Arbeit. Nach dem Start aktivierte Module dürfen während ihres eigenen Bootstraps registrieren. Deaktivierung und Deinstallation entfernen ihre Warteschlangen, lehnen ausstehende Zustellungen ab und schließen aktive SMTP-Verbindungen.
+
+Der allgemeine Umschlag enthält `purpose`; spezialisierte SMTP-Versand- und Warteschlangenmethoden erwarten den Zweck jetzt als erstes Argument. Die Gateway-Testmethode verwendet `(senderId, purpose, recipientEmail, config)`. Bestehende Gateway-Hilfsmethoden liefern ihre registrierten Zwecke selbst. Allgemeine Komponenten und Module registrieren eigene Zwecke beim Bootstrap und verwenden deren Kennungen zur Laufzeit.
+
 ## Überblick
 
 Das Benachrichtigungs-Gateway vermittelt Benachrichtigungen über pluggable Sender-Adapter. Es fungiert als Broker zwischen dem Rest der Anwendung und den konkreten Übertragungsmechanismen — SMTP, zukünftige Webhooks oder In-App-Senken — ohne zu wissen, welche Transporte konfiguriert sind.

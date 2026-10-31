@@ -613,14 +613,14 @@ test("CoreNotificationGateway.sendVerificationEmail delegates to capable sender"
         isConfigured() {
             return true;
         }
-        async sendVerificationEmail(to: string, code: string) {
+        async sendVerificationEmail(purpose: string, to: string, code: string) {
             calls.push({ to, code });
         }
     }
 
     gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
 
-    await gateway.sendVerificationEmail("user@example.com", "123456");
+    await gateway.sendVerificationEmail("test", "user@example.com", "123456");
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].to, "user@example.com");
@@ -633,7 +633,8 @@ test("CoreNotificationGateway.sendVerificationEmail throws when no capable sende
     gateway.registerSender(new CapturingSender("plain", "Plain"));
 
     await assert.rejects(
-        () => gateway.sendVerificationEmail("user@example.com", "123456"),
+        () =>
+            gateway.sendVerificationEmail("test", "user@example.com", "123456"),
         { message: "smtp_unavailable" },
     );
 });
@@ -648,7 +649,11 @@ test("CoreNotificationGateway.queueVerificationEmail delegates to queue-capable 
         isConfigured() {
             return true;
         }
-        async queueVerificationEmail(to: string, code: string) {
+        async queueVerificationEmail(
+            purpose: string,
+            to: string,
+            code: string,
+        ) {
             calls.push({ to, code });
             return {
                 notificationId: "queued-verification",
@@ -665,6 +670,7 @@ test("CoreNotificationGateway.queueVerificationEmail delegates to queue-capable 
     gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
 
     const queued = await gateway.queueVerificationEmail(
+        "test",
         "user@example.com",
         "123456",
     );
@@ -685,7 +691,7 @@ test("CoreNotificationGateway.queueVerificationEmail falls back to sendVerificat
         isConfigured() {
             return true;
         }
-        async sendVerificationEmail(to: string, code: string) {
+        async sendVerificationEmail(purpose: string, to: string, code: string) {
             calls.push({ to, code });
         }
     }
@@ -693,6 +699,7 @@ test("CoreNotificationGateway.queueVerificationEmail falls back to sendVerificat
     gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
 
     const queued = await gateway.queueVerificationEmail(
+        "test",
         "user@example.com",
         "123456",
     );

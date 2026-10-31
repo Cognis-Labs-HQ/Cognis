@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { NotificationSenderQueueEntry } from "@cognis/core";
+import type { NotificationSenderQueueEntry } from "../../../gateways/notify/gateway.js";
 
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
@@ -9,33 +9,22 @@ export class SmtpRateLimiter {
         private readonly now: () => number = () => Date.now(),
     ) {}
 
-    nextAvailableAt(recipient: string, purpose = "notification"): number {
-        const last = this.lastSent.get(
-            `${purpose}:${recipient.trim().toLowerCase()}`,
-        );
+    nextAvailableAt(recipient: string): number {
+        const last = this.lastSent.get(recipient.trim().toLowerCase());
         if (last === undefined) return this.now();
         return last + this.intervalMs;
     }
 
-    isThrottled(recipient: string, purpose = "notification"): boolean {
-        const lastSentAt = this.lastSent.get(
-            `${purpose}:${recipient.trim().toLowerCase()}`,
-        );
+    isThrottled(recipient: string): boolean {
+        const lastSentAt = this.lastSent.get(recipient.trim().toLowerCase());
         return (
             lastSentAt !== undefined &&
             this.now() < lastSentAt + this.intervalMs
         );
     }
 
-    record(
-        recipient: string,
-        sentAt: number = this.now(),
-        purpose = "notification",
-    ): void {
-        this.lastSent.set(
-            `${purpose}:${recipient.trim().toLowerCase()}`,
-            sentAt,
-        );
+    record(recipient: string, sentAt: number = this.now()): void {
+        this.lastSent.set(recipient.trim().toLowerCase(), sentAt);
     }
 }
 
@@ -43,8 +32,9 @@ type SmtpQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 interface SmtpQueueEntry extends NotificationSenderQueueEntry {
-    purpose?: SmtpNotificationQueuePayload["purpose"];
+    purpose: string;
     status: SmtpQueueStatus;
+    failure?: Error;
     recipientEmail: string;
     body: string;
     theme?: string;
@@ -52,6 +42,7 @@ interface SmtpQueueEntry extends NotificationSenderQueueEntry {
     verifyButtonLabel?: string;
     nextAttemptAt: number;
     config?: Record<string, unknown>;
+    attachments?: import("./mime-attachments.js").MimeAttachment[];
 }
 
 // Keep a bounded in-memory history so admins can inspect recent outcomes
@@ -59,13 +50,7 @@ interface SmtpQueueEntry extends NotificationSenderQueueEntry {
 const SMTP_QUEUE_HISTORY_LIMIT = 200;
 
 export interface SmtpNotificationQueuePayload {
-    purpose?:
-        | "notification"
-        | "emailVerification"
-        | "loginCode"
-        | "loginLink"
-        | "invite"
-        | "test";
+    purpose: string;
     recipientEmail: string;
     subject: string;
     body: string;
@@ -75,6 +60,7 @@ export interface SmtpNotificationQueuePayload {
     recipientUsername?: string;
     category?: string;
     config?: Record<string, unknown>;
+    attachments?: import("./mime-attachments.js").MimeAttachment[];
 }
 
 export class SmtpNotificationQueue {
@@ -87,6 +73,7 @@ export class SmtpNotificationQueue {
         }>
     >();
     private queueDraining = false;
+    private closed = false;
     private sleepingUntil: number | null = null;
     private wakeDrainSleep: {
         sleepId: number;
@@ -101,22 +88,19 @@ export class SmtpNotificationQueue {
         private readonly sendFn: (
             payload: SmtpNotificationQueuePayload,
         ) => Promise<void>,
+        readonly purpose: string,
     ) {}
 
-    private getRecipientNextAttemptAt(
-        recipientEmail: string,
-        purpose = "notification",
-    ): number {
+    private getRecipientNextAttemptAt(recipientEmail: string): number {
         const now = Date.now();
         let nextAttemptAt = Math.max(
             now,
-            this.rateLimiter.nextAvailableAt(recipientEmail, purpose),
+            this.rateLimiter.nextAvailableAt(recipientEmail),
         );
         for (const queued of this.queueById.values()) {
             if (
                 queued.recipientEmail.trim().toLowerCase() !==
-                    recipientEmail.trim().toLowerCase() ||
-                (queued.purpose ?? "notification") !== purpose
+                recipientEmail.trim().toLowerCase()
             )
                 continue;
             if (queued.status === "sent" || queued.status === "failed")
@@ -151,6 +135,7 @@ export class SmtpNotificationQueue {
             recipientEmail: entry.recipientEmail,
             ...(entry.category ? { category: entry.category } : {}),
             subject: entry.subject,
+            purpose: entry.purpose,
         };
     }
 
@@ -170,7 +155,8 @@ export class SmtpNotificationQueue {
             return;
         }
         if (entry.status === "failed") {
-            const error = new Error(entry.error ?? "smtp_send_failed");
+            const error =
+                entry.failure ?? new Error(entry.error ?? "smtp_send_failed");
             for (const waiter of waiters) waiter.reject(error);
         }
     }
@@ -196,10 +182,7 @@ export class SmtpNotificationQueue {
                 for (const entry of activeQueue) {
                     entry.nextAttemptAt = Math.max(
                         entry.nextAttemptAt,
-                        this.rateLimiter.nextAvailableAt(
-                            entry.recipientEmail,
-                            entry.purpose,
-                        ),
+                        this.rateLimiter.nextAvailableAt(entry.recipientEmail),
                     );
                 }
                 activeQueue.sort(
@@ -239,11 +222,12 @@ export class SmtpNotificationQueue {
                         recipientUsername: nextEntry.recipientUsername,
                         category: nextEntry.category,
                         config: nextEntry.config,
+                        attachments: nextEntry.attachments,
                     });
+                    if (this.closed) continue;
                     this.rateLimiter.record(
                         nextEntry.recipientEmail,
                         Date.now(),
-                        nextEntry.purpose,
                     );
                     this.touchQueueEntry(nextEntry, {
                         status: "sent",
@@ -258,6 +242,8 @@ export class SmtpNotificationQueue {
                         status: "failed",
                         availableAt: undefined,
                         error: message,
+                        failure:
+                            error instanceof Error ? error : new Error(message),
                     });
                     this.notifyWaiters(nextEntry);
                 }
@@ -272,9 +258,11 @@ export class SmtpNotificationQueue {
     }
 
     enqueue(input: SmtpNotificationQueuePayload): { notificationId: string } {
+        if (this.closed) throw new Error("smtp_purpose_disposed");
+        if (input.purpose !== this.purpose)
+            throw new Error("smtp_purpose_mismatch");
         const nextAttemptAt = this.getRecipientNextAttemptAt(
             input.recipientEmail,
-            input.purpose,
         );
         const nowIso = new Date().toISOString();
         const notificationId = randomUUID();
@@ -290,6 +278,7 @@ export class SmtpNotificationQueue {
             verifyUrl: input.verifyUrl,
             verifyButtonLabel: input.verifyButtonLabel,
             config: input.config,
+            attachments: input.attachments,
             createdAt: nowIso,
             updatedAt: nowIso,
             status:
@@ -341,12 +330,24 @@ export class SmtpNotificationQueue {
         }
     }
 
+    close(): void {
+        this.closed = true;
+        this.wakeDrainSleep?.resolve();
+        for (const entry of this.listActiveQueue()) {
+            this.touchQueueEntry(entry, {
+                status: "failed",
+                error: "smtp_purpose_disposed",
+            });
+            this.notifyWaiters(entry);
+        }
+    }
+
     async waitForResult(notificationId: string): Promise<void> {
         const item = this.queueById.get(notificationId);
         if (!item) throw new Error("smtp_queue_item_missing");
         if (item.status === "sent") return;
         if (item.status === "failed") {
-            throw new Error(item.error ?? "smtp_send_failed");
+            throw item.failure ?? new Error(item.error ?? "smtp_send_failed");
         }
         await new Promise<void>((resolve, reject) => {
             const waiters = this.pendingWaiters.get(notificationId) ?? [];

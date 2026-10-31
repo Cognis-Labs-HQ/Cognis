@@ -32,8 +32,10 @@ export function createUserEmailRoutes(
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     emailDelivery: {
+        purpose: string;
         canSendVerificationEmail: () => boolean;
         sendEmail: (input: {
+            purpose: string;
             recipientEmail: string;
             templateId: string;
             variables: Record<string, string>;
@@ -236,6 +238,7 @@ export function createUserEmailRoutes(
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
                     await emailDelivery.sendEmail({
+                        purpose: emailDelivery.purpose,
                         recipientEmail: email,
                         templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },
@@ -453,6 +456,7 @@ export function createUserEmailRoutes(
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
                     await emailDelivery.sendEmail({
+                        purpose: emailDelivery.purpose,
                         recipientEmail: email,
                         templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },

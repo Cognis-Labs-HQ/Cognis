@@ -201,7 +201,10 @@ export function createNotificationRoutes(
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
+        notificationPurpose?: string;
+        testEmailPurpose?: string;
         sendEmail?: (input: {
+            purpose: string;
             recipientEmail: string;
             templateId: string;
             variables: Record<string, string>;
@@ -243,6 +246,7 @@ export function createNotificationRoutes(
             }
 
             const result = await gateway.dispatch({
+                purpose: options?.notificationPurpose,
                 category,
                 recipientUsername,
                 recipientEmail,
@@ -649,6 +653,7 @@ export function createNotificationRoutes(
                 return true;
             }
             await options.sendEmail({
+                purpose: options.testEmailPurpose!,
                 recipientEmail: to,
                 templateId: "notify-test",
                 variables: {},

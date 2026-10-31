@@ -1,3 +1,4 @@
+import { registerSmtpPurposeCapability } from "./smtp-purposes.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
@@ -112,7 +113,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 
+    const registerSmtpPurpose = registerSmtpPurposeCapability(ctx, gateway);
+    const purposes: Record<string, string> = {};
+    if (registerSmtpPurpose)
+        for (const id of [
+            "notification",
+            "emailVerification",
+            "loginCode",
+            "invite",
+            "loginLink",
+            "test",
+        ]) {
+            purposes[id] = await registerSmtpPurpose(id);
+        }
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
+        testEmailPurpose: purposes.test,
         gateway,
         capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
@@ -128,6 +143,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         dbExecutor,
     });
     type SendEmail = (input: {
+        purpose: string;
         recipientEmail: string;
         templateId: string;
         variables: Record<string, string>;
@@ -177,6 +193,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             getTrustedDomains,
             routeContext,
             sendEmail,
+            notificationPurpose: purposes.notification,
+            testEmailPurpose: purposes.test,
         }),
         "notify",
     );
@@ -186,6 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             tfaService,
             verifyTokenService,
             {
+                purpose: purposes.emailVerification,
                 canSendVerificationEmail:
                     gateway.canSendVerificationEmail.bind(gateway),
                 sendEmail,
@@ -392,6 +411,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 .catch(() => null);
             return gateway.dispatch({
                 ...envelope,
+                purpose: envelope.purpose ?? purposes.notification,
                 recipientUsername:
                     recipientAccountId ?? envelope.recipientUsername,
             });
@@ -437,6 +457,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             for (const recipientUsername of recipients) {
                 const result = await gateway.dispatch({
                     ...envelope,
+                    purpose: envelope.purpose ?? purposes.notification,
                     recipientUsername,
                 });
                 dispatched.push({ recipientUsername, result });
@@ -509,6 +530,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:sendVerificationEmail",
         async (to: string, code: string, verifyUrl?: string, theme?: string) =>
             sendEmail({
+                purpose: verifyUrl
+                    ? purposes.emailVerification
+                    : purposes.loginCode,
                 recipientEmail: to,
                 templateId: "notify-verification",
                 variables: { code, verifyUrl: verifyUrl ?? "" },
@@ -524,6 +548,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             theme?: string,
         ) => {
             const result = (await sendEmail({
+                purpose: verifyUrl
+                    ? purposes.emailVerification
+                    : purposes.loginCode,
                 recipientEmail: to,
                 templateId: "notify-verification",
                 variables: { code, verifyUrl: verifyUrl ?? "" },
@@ -555,6 +582,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             theme?: string,
         ) =>
             sendEmail({
+                purpose: purposes.invite,
                 recipientEmail: to,
                 templateId: "notify-registration-invite",
                 variables: { inviterDisplayName, inviteUrl },
@@ -574,6 +602,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
         ) =>
             sendEmail({
+                purpose: purposes.loginLink,
                 recipientEmail: to,
                 templateId: "notify-one-time-login",
                 variables: {
@@ -653,6 +682,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     ? `${externalHost}/verify-email?token=${watchToken}`
                     : undefined;
                 await sendEmail({
+                    purpose: purposes.emailVerification,
                     recipientEmail: primaryEmail,
                     templateId: "notify-verification",
                     variables: { code, verifyUrl: verifyUrl ?? "" },

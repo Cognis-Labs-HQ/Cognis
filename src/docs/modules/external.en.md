@@ -246,3 +246,16 @@ Preparation remains idle while Offline Mode is disabled, disconnected or blocked
 ## Shared Study Favourites
 
 The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.
+
+## Bootstrap Purposes
+
+SMTP purposes must be registered through `ctx` during gateway or module bootstrap. Obtain `notify:registerSmtpPurpose`, await it with a local purpose name and retain the returned owner-scoped identifier. Each registration creates a dedicated queue and recipient cooldown state; the adapter has no built-in purpose list.
+
+```js
+const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const purpose = await registerPurpose("digest");
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, templateId, variables });
+```
+
+Every `notify:sendEmail` call must include an existing `purpose`. Missing and unknown purposes fail before SMTP transport; sends cannot create purposes implicitly. Registration is rejected after bootstrap returns, fails or times out, including through retained callbacks and detached asynchronous work. Modules enabled after startup may register during their own bootstrap. Module disable/uninstall disposes its queues, rejects pending deliveries and closes active SMTP sessions.

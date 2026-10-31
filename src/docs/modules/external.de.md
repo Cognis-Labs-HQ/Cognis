@@ -246,3 +246,16 @@ Die Vorbereitung bleibt bei deaktiviertem Offline-Modus, fehlender Verbindung od
 ## Gemeinsame Lernfavoriten
 
 Der Study-Anbieter stellt `study:favourites` mit lebenszyklusgebundenen Operationen `load`, `toggle` und `has` bereit. Darstellungsfunktionen verwenden diese ctx-Funktion statt eines eigenen Caches pro Lader. Favoriten werden nach bestätigter Anmeldung vorbereitet, berücksichtigen vorgemerkte Änderungen und teilen konto- und sitzungsgebundenen Zustand zwischen Explore, Lernkarten und wiederholten Importen. Fehlt ein optionaler Favoriten-Snapshot, bleibt die Auswahl mit vorgemerkten Änderungen nutzbar; Inhalte werden nicht verborgen und kein Aktualisierungsfehler angezeigt. Ein Kontowechsel leert die sichtbare Auswahl. Zugriffsverweigerungen gelten niemals als Cache-Fehltreffer.
+
+## Zwecke beim Bootstrap
+
+SMTP-Zwecke werden während des Gateway- oder Modul-Bootstraps über `ctx` registriert. Rufen Sie `notify:registerSmtpPurpose` mit einem lokalen Zwecknamen auf, warten Sie auf das Ergebnis und bewahren Sie die zurückgegebene besitzergebundene Kennung auf. Jede Registrierung erstellt eine eigene Warteschlange samt Empfänger-Sperrzeiten. Der Adapter besitzt keine feste Zweckliste.
+
+```js
+const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const purpose = await registerPurpose("digest");
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, templateId, variables });
+```
+
+Jeder Aufruf von `notify:sendEmail` muss einen bestehenden `purpose` angeben. Fehlende oder unbekannte Zwecke werden vor dem SMTP-Transport abgewiesen; ein Versand erstellt keine Zwecke. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt, auch über gespeicherte Rückrufe und abgetrennte asynchrone Arbeit. Nach dem Start aktivierte Module dürfen während ihres eigenen Bootstraps registrieren. Deaktivierung und Deinstallation entfernen ihre Warteschlangen, lehnen ausstehende Zustellungen ab und schließen aktive SMTP-Verbindungen.

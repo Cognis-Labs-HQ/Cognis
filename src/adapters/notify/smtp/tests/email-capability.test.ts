@@ -36,17 +36,28 @@ test("SMTP sends a component-contributed email template generically", async () =
     const sendEmail =
         capabilities.get<
             (input: {
+                purpose: string;
                 recipientEmail: string;
                 templateId: string;
                 variables: Record<string, string>;
             }) => Promise<unknown>
         >("notify:sendEmail");
     await sendEmail?.({
+        purpose: "test:example",
         recipientEmail: "recipient@example.test",
         templateId: "example",
         variables: { subject: "Hello", body: "Body" },
     });
+    assert.equal(envelopes[0]?.purpose, "test:example");
     assert.equal(envelopes[0]?.subject, "Hello");
+    await assert.rejects(
+        sendEmail!({
+            recipientEmail: "recipient@example.test",
+            templateId: "example",
+            variables: {},
+        } as never),
+        /smtp_purpose_unregistered/,
+    );
     assert.deepEqual(envelopes[0]?.metadata, {
         verifyUrl: "https://example.test/action",
         verifyButtonLabel: "Continue",
@@ -60,12 +71,14 @@ test("SMTP adapter owns its authenticated test route", async () => {
     const tested: Array<Record<string, unknown>> = [];
     await bootstrapNotifyAdapter({
         capabilities,
+        testEmailPurpose: "test:admin",
         gateway: {
             sendTestEmail: async (
                 senderId: string,
+                purpose: string,
                 recipientEmail: string,
                 config: Record<string, unknown>,
-            ) => tested.push({ senderId, recipientEmail, config }),
+            ) => tested.push({ senderId, recipientEmail, config, purpose }),
         },
         registerRoute: (route) => {
             registeredRoute = route as typeof registeredRoute;
@@ -99,6 +112,7 @@ test("SMTP adapter owns its authenticated test route", async () => {
     assert.deepEqual(tested, [
         {
             senderId: "smtp",
+            purpose: "test:admin",
             recipientEmail: "admin@example.test",
             config: { host: "smtp.example.test" },
         },

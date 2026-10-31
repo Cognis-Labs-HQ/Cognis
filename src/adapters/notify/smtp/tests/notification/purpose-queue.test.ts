@@ -6,15 +6,15 @@ import {
 } from "../../notification-queue.js";
 
 for (const deliveryDelay of [0, 500]) {
-    test(`verification and login messages remain independent with ${deliveryDelay}ms delivery delay`, async (context) => {
+    test(`a blocked purpose queue cannot stall an independently registered purpose (${deliveryDelay}ms)`, async (context) => {
         context.mock.timers.enable({ apis: ["Date"], now: 1000 });
-        const sent: Array<{ purpose: string | undefined; at: number }> = [];
-        let release: () => void = () => {};
+        const sent: Array<{ purpose: string; at: number }> = [];
+        let release!: () => void;
         const gate = new Promise<void>((resolve) => {
             release = resolve;
         });
         let first = true;
-        const queue = new SmtpNotificationQueue(
+        const primary = new SmtpNotificationQueue(
             new SmtpRateLimiter(250),
             async (ms) => {
                 context.mock.timers.tick(ms);
@@ -26,46 +26,50 @@ for (const deliveryDelay of [0, 500]) {
                 }
                 sent.push({ purpose: payload.purpose, at: Date.now() });
             },
+            "customDigest",
         );
-        const verification = queue.enqueue({
-            recipientEmail: "User@example.com",
-            subject: "Verification",
+        const independent = new SmtpNotificationQueue(
+            new SmtpRateLimiter(250),
+            async (ms) => {
+                context.mock.timers.tick(ms);
+            },
+            async (payload) => {
+                sent.push({ purpose: payload.purpose, at: Date.now() });
+            },
+            "customReminder",
+        );
+        const one = primary.enqueue({
+            purpose: "customDigest",
+            recipientEmail: "USER@example.test",
+            subject: "One",
             body: "one",
-            purpose: "emailVerification",
         });
-        const again = queue.enqueue({
-            recipientEmail: "USER@example.com",
-            subject: "Verification",
-            body: "three",
-            purpose: "emailVerification",
+        const two = primary.enqueue({
+            purpose: "customDigest",
+            recipientEmail: "user@example.test",
+            subject: "Two",
+            body: "two",
         });
         context.mock.timers.tick(deliveryDelay);
-        const code = queue.enqueue({
-            recipientEmail: "user@example.com",
-            subject: "Login",
-            body: "two",
-            purpose: "loginCode",
+        const three = independent.enqueue({
+            purpose: "customReminder",
+            recipientEmail: "user@example.test",
+            subject: "Three",
+            body: "three",
         });
-        assert.equal(
-            queue.getQueueItem(code.notificationId)?.availableAt,
-            undefined,
-        );
-        assert.equal(
-            Date.parse(
-                queue.getQueueItem(again.notificationId)?.availableAt ?? "",
-            ),
-            1250,
-        );
+        await independent.waitForResult(three.notificationId);
+        assert.deepEqual(sent, [
+            { purpose: "customReminder", at: 1000 + deliveryDelay },
+        ]);
         release();
         await Promise.all(
-            [verification, code, again].map(({ notificationId }) =>
-                queue.waitForResult(notificationId),
+            [one, two].map((item) =>
+                primary.waitForResult(item.notificationId),
             ),
         );
-        assert.deepEqual(sent, [
-            { purpose: "emailVerification", at: 1000 + deliveryDelay },
-            { purpose: "loginCode", at: 1000 + deliveryDelay },
-            { purpose: "emailVerification", at: 1250 + deliveryDelay },
+        assert.deepEqual(sent.slice(1), [
+            { purpose: "customDigest", at: 1000 + deliveryDelay },
+            { purpose: "customDigest", at: 1250 + deliveryDelay },
         ]);
     });
 }

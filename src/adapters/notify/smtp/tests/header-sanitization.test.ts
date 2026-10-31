@@ -1,7 +1,7 @@
+import { createTestSender } from "./fixtures/sender.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import net from "node:net";
-import { SmtpNotificationSender } from "../notification-sender.js";
 
 type MockSmtpServer = {
     host: string;
@@ -59,7 +59,7 @@ test("SmtpNotificationSender strips CR/LF from display name in Subject header", 
     });
 
     try {
-        const sender = new SmtpNotificationSender(
+        const sender = await createTestSender(
             {
                 host: server.host,
                 port: server.port,
@@ -74,6 +74,7 @@ test("SmtpNotificationSender strips CR/LF from display name in Subject header", 
             "Attacker\r\nBcc: victim@evil.example.com\r\nX-Injected: yes";
         const inviteUrl = "https://cognis.example.com/register?token=abc";
         await sender.sendRegistrationInviteEmail(
+            "test",
             "target@example.com",
             maliciousName,
             inviteUrl,

@@ -1,34 +1,26 @@
-# Adapter Notifikasi SMTP
+# Adapter Surel SMTP
 
-## Ikhtisar
+SMTP mendukung TCP biasa, STARTTLS dan TLS, autentikasi opsional serta percobaan ulang terbatas untuk kegagalan sementara. Templat didaftarkan melalui Gateway Notifikasi; transport membuat MIME, membersihkan header dan mendukung lampiran. Semua jalur pengiriman menggunakan antrean terpilih. `send` menunggu pengiriman; `sendTracked` langsung mengembalikan tanda terima.
 
-Adapter SMTP mengirimkan notifikasi sebagai email melalui server SMTP mana pun. Ini adalah satu-satunya adapter notifikasi bawaan dan aktif secara otomatis ketika variabel environment `COGNIS_SMTP_HOST` diatur. Kasus penggunaan tipikal meliputi pengiriman kode autentikasi dua faktor, tautan verifikasi email, dan kategori notifikasi lainnya.
+## Tujuan Saat Bootstrap
 
-Adapter mengimplementasikan pengiriman yang toleran terhadap greylisting: jika percobaan pengiriman pertama ditolak dengan kesalahan sementara, adapter akan mencoba kembali hingga dua kali dengan jeda lima menit di antara setiap percobaan.
+Tujuan SMTP harus didaftarkan melalui `ctx` selama bootstrap gateway atau modul. Dapatkan `notify:registerSmtpPurpose`, panggil dengan nama tujuan lokal, tunggu hasilnya dan simpan pengidentifikasi yang terikat pada pemilik. Setiap pendaftaran membuat antrean serta status jeda penerima tersendiri; adapter tidak memiliki daftar tujuan bawaan.
 
-## Tanggung Jawab
+```js
+const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const purpose = await registerPurpose("digest");
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, templateId, variables });
+```
 
-- Mengirim email melalui server SMTP yang dikonfigurasi menggunakan Nodemailer.
-- Menangani kegagalan pengiriman sementara dengan percobaan ulang (hingga 2 percobaan, jeda 5 menit).
-- Mengekspos `getConfig()` dan `setConfig()` untuk rekonfigurasi runtime melalui API admin.
-- `codeLength` (angka, opsional): Panjang kode verifikasi SMTP bersama yang digunakan oleh konfirmasi email dan kode SMTP TFA. Nilai dibatasi ke rentang 4–10 digit dan disinkronkan dengan adapter SMTP TFA.
-- Mengekspos `sendTestEmail(to)` untuk verifikasi pengiriman.
+Setiap panggilan `notify:sendEmail` wajib menyertakan `purpose` yang sudah ada. Tujuan kosong atau tidak dikenal ditolak sebelum transport SMTP; pengiriman tidak dapat membuat tujuan secara implisit. Pendaftaran ditolak setelah bootstrap selesai, gagal atau kehabisan waktu, termasuk melalui callback tersimpan dan pekerjaan asinkron terpisah. Modul yang diaktifkan setelah startup dapat mendaftar selama bootstrap miliknya. Penonaktifan atau penghapusan modul membuang antreannya, menolak pengiriman tertunda dan menutup sesi SMTP aktif.
+
+## Pengiriman dan Antrean
+
+Jeda standar adalah lima belas detik per penerima yang dinormalisasi dalam setiap tujuan. Tujuan independen diproses bersamaan sehingga koneksi lambat, percobaan ulang atau jeda tidak menghambat antrean lain. Jeda hanya diperbarui setelah pengiriman berhasil. Pemeriksaan antrean menggabungkan semua tujuan, menyertakan pengidentifikasinya dan menyimpan hingga 200 catatan selesai per antrean dalam memori.
+
+Amplop umum menyertakan `purpose`; metode khusus pengiriman dan antrean SMTP kini menerima tujuan sebagai argumen pertama. Metode uji gateway menerima `(senderId, purpose, recipientEmail, config)`. Pembantu Gateway Notifikasi yang ada menyediakan tujuan yang didaftarkan gateway tersebut. Pemanggil komponen/modul umum mendaftarkan tujuan sendiri saat bootstrap dan menggunakan kembali pengidentifikasinya saat runtime.
 
 ## Konfigurasi
 
-| Variabel             | Default | Keterangan                                                  |
-| -------------------- | ------- | ----------------------------------------------------------- |
-| `COGNIS_SMTP_HOST`   | —       | Hostname server SMTP; adapter tidak aktif jika tidak diatur |
-| `COGNIS_SMTP_PORT`   | `587`   | Port server SMTP                                            |
-| `COGNIS_SMTP_SECURE` | `false` | `true` untuk TLS saat koneksi (port 465)                    |
-| `COGNIS_SMTP_USER`   | —       | Nama pengguna autentikasi SMTP                              |
-| `COGNIS_SMTP_PASS`   | —       | Kata sandi autentikasi SMTP                                 |
-| `COGNIS_SMTP_FROM`   | —       | Alamat pengirim yang ditampilkan di header `From`           |
-
-## Pengiriman uji
-
-Pesan uji memakai antrean milik adapter dan pembatas laju per penerima yang sama dengan pengiriman SMTP operasional. Konfigurasi yang dikirim disertakan bersama uji dalam antrean, dan API menunggu hasil akhir pengiriman.
-
-## Jeda Surel Berdasarkan Tujuan
-
-Interval verifikasi SMTP bersama menjadi lima belas detik. Jeda dinormalisasi menurut penerima dan dipisahkan menurut tujuan pesan sehingga verifikasi, kode masuk, tautan masuk, undangan, dan pengujian tidak saling menunda. Antrean memakai interval terkonfigurasi dan waktu pengiriman berhasil; pengiriman langsung yang gagal tidak menghabiskan jeda.
+Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` opsional serta `COGNIS_SMTP_SECURE` (`none`, `starttls` atau `tls`). Nama pengirim, host EHLO, kebijakan sertifikat/autentikasi dan panjang kode menggunakan pengaturan adapter yang ada. Pesan uji dapat membawa penggantian konfigurasi dalam antrean.

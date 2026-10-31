@@ -1,8 +1,22 @@
+import type {
+    VerificationEmailSender,
+    OneTimeLoginEmailSender,
+    RegistrationInviteEmailSender,
+    SenderWithVerification,
+    SenderWithRegistrationInvite,
+    SenderWithOneTimeLogin,
+} from "./email-sender-contracts.js";
+export type {
+    VerificationEmailSender,
+    OneTimeLoginEmailSender,
+    RegistrationInviteEmailSender,
+} from "./email-sender-contracts.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     resolveComponentEnabledState,
+    requireBootstrapScope,
     type CapabilityStore,
 } from "@cognis/core";
 
@@ -13,6 +27,7 @@ import {
  */
 export interface NotifyAdapterBootstrapCtx {
     gateway: CoreNotificationGateway;
+    testEmailPurpose: string;
     capabilities: CapabilityStore;
     registerRoute(
         handler: (
@@ -34,6 +49,7 @@ export interface NotifyAdapterBootstrapCtx {
 }
 
 export interface NotificationEnvelope {
+    purpose?: string;
     category: string;
     recipientUsername: string;
     recipientEmail?: string;
@@ -70,6 +86,7 @@ export type NotificationQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 export interface NotificationSenderQueueEntry {
+    purpose?: string;
     notificationId: string;
     status: NotificationQueueStatus;
     createdAt: string;
@@ -113,7 +130,12 @@ export interface NotificationSender {
     }>;
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
-    sendTestEmail?(to: string, config?: Record<string, unknown>): Promise<void>;
+    registerPurpose?(purpose: string): () => void;
+    sendTestEmail?(
+        purpose: string,
+        to: string,
+        config?: Record<string, unknown>,
+    ): Promise<void>;
     isConfigured?(): boolean;
     getEnvValues?(): Record<string, string | undefined>;
     getRequiredFields?(): string[];
@@ -155,46 +177,6 @@ export interface NotificationEmailStore {
     getAccountIdByEmail(email: string): Promise<string | null>;
 }
 
-export interface VerificationEmailSender {
-    canSendVerificationEmail(): boolean;
-    queueVerificationEmail?(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<NotificationSenderQueueEntry>;
-    sendVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void>;
-}
-
-export interface OneTimeLoginEmailSender {
-    canSendOneTimeLoginEmail(): boolean;
-    sendOneTimeLoginEmail(
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void>;
-}
-
-export interface RegistrationInviteEmailSender {
-    canSendRegistrationInviteEmail(): boolean;
-    sendRegistrationInviteEmail(
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void>;
-}
-
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
     private readonly prefs = new Map<string, string[]>();
 
@@ -213,46 +195,6 @@ export class VolatileNotificationPreferenceStore implements NotificationPreferen
         return this.prefs.get(`${recipientUsername}:${category}`) ?? [];
     }
 }
-
-type SenderWithVerification = {
-    queueVerificationEmail?(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<NotificationSenderQueueEntry>;
-    sendVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void>;
-    isConfigured?(): boolean;
-};
-
-type SenderWithRegistrationInvite = {
-    sendRegistrationInviteEmail(
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void>;
-    isConfigured?(): boolean;
-};
-
-type SenderWithOneTimeLogin = {
-    sendOneTimeLoginEmail(
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void>;
-    isConfigured?(): boolean;
-};
 
 type SenderWithTrackedSend = {
     sendTracked(
@@ -346,6 +288,24 @@ export class CoreNotificationGateway
         private readonly configStore?: NotificationConfigStore,
         private readonly emailStore?: NotificationEmailStore,
     ) {}
+
+    canRegisterSenderPurpose(senderId: string): boolean {
+        return (
+            typeof this.senders.get(senderId)?.registerPurpose === "function"
+        );
+    }
+
+    registerSenderPurpose(senderId: string, purpose: string): () => void {
+        const scope = requireBootstrapScope();
+        if (!purpose.startsWith(`${scope.owner}:`))
+            throw new Error("smtp_purpose_owner_mismatch");
+        const sender = this.senders.get(senderId);
+        if (!sender?.registerPurpose)
+            throw new Error("smtp_purpose_registration_unavailable");
+        const dispose = sender.registerPurpose(purpose);
+        scope.registerDisposer(dispose);
+        return dispose;
+    }
 
     registerAlwaysOnSender(senderId: string): void {
         this.alwaysOnSenders.add(senderId);
@@ -617,6 +577,7 @@ export class CoreNotificationGateway
 
     async sendTestEmail(
         senderId: string,
+        purpose: string,
         recipientEmail: string,
         config?: Record<string, unknown>,
     ): Promise<void> {
@@ -624,7 +585,7 @@ export class CoreNotificationGateway
         if (!sender?.sendTestEmail) {
             throw new Error("notification_sender_test_unavailable");
         }
-        await sender.sendTestEmail(recipientEmail, config);
+        await sender.sendTestEmail(purpose, recipientEmail, config);
     }
 
     async sendWithSender(
@@ -655,6 +616,7 @@ export class CoreNotificationGateway
     }
 
     async sendVerificationEmail(
+        purpose: string,
         to: string,
         code: string,
         verifyUrl?: string,
@@ -663,13 +625,20 @@ export class CoreNotificationGateway
         for (const [id, sender] of this.senders.entries()) {
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithVerification(sender)) continue;
-            await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+            await sender.sendVerificationEmail(
+                purpose,
+                to,
+                code,
+                verifyUrl,
+                theme,
+            );
             return;
         }
         throw new Error("smtp_unavailable");
     }
 
     async queueVerificationEmail(
+        purpose: string,
         to: string,
         code: string,
         verifyUrl?: string,
@@ -680,13 +649,20 @@ export class CoreNotificationGateway
             if (!isSenderWithVerification(sender)) continue;
             if (typeof sender.queueVerificationEmail === "function") {
                 return sender.queueVerificationEmail(
+                    purpose,
                     to,
                     code,
                     verifyUrl,
                     theme,
                 );
             }
-            await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+            await sender.sendVerificationEmail(
+                purpose,
+                to,
+                code,
+                verifyUrl,
+                theme,
+            );
             return {
                 notificationId: "",
                 status: "sent",
@@ -710,6 +686,7 @@ export class CoreNotificationGateway
     }
 
     async sendRegistrationInviteEmail(
+        purpose: string,
         to: string,
         inviterDisplayName: string,
         inviteUrl: string,
@@ -719,6 +696,7 @@ export class CoreNotificationGateway
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithRegistrationInvite(sender)) continue;
             await sender.sendRegistrationInviteEmail(
+                purpose,
                 to,
                 inviterDisplayName,
                 inviteUrl,
@@ -741,6 +719,7 @@ export class CoreNotificationGateway
     }
 
     async sendOneTimeLoginEmail(
+        purpose: string,
         to: string,
         loginUrl: string,
         options?: {
@@ -753,7 +732,7 @@ export class CoreNotificationGateway
         for (const [id, sender] of this.senders.entries()) {
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithOneTimeLogin(sender)) continue;
-            await sender.sendOneTimeLoginEmail(to, loginUrl, options);
+            await sender.sendOneTimeLoginEmail(purpose, to, loginUrl, options);
             return;
         }
         throw new Error("smtp_unavailable");

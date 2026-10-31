@@ -1,3 +1,4 @@
+import { runBootstrapScope } from "../ctx/bootstrap-scope.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -372,7 +373,12 @@ export class GatewayService {
                     bootstrap?: (ctx: unknown) => Promise<void>;
                 };
                 if (typeof mod.bootstrap === "function") {
-                    await mod.bootstrap(ctx);
+                    await runBootstrapScope(
+                        ctx.capabilities.get<object>("system:ctx") ??
+                            ctx.capabilities,
+                        `gateway:${gatewayId}`,
+                        () => mod.bootstrap!(ctx),
+                    );
                 }
             } catch (error) {
                 const message =

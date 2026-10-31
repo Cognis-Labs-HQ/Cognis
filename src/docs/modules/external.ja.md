@@ -246,3 +246,16 @@ Profile と Messages のプロバイダーは ctx 経由で有効期間に対応
 ## 学習お気に入りの共有
 
 Study提供元は、ライフサイクルに従う `load`、`toggle`、`has` 操作を持つ `study:favourites` を公開します。表示用の関数はローダーごとのキャッシュを作らず、このctx機能を参照します。認証確認後にお気に入りを準備し、保留中の変更を反映して、Explore、フラッシュカード、繰り返し読み込んだモジュール間でアカウントとセッションに紐付く状態を共有します。任意のお気に入りスナップショットがない場合は空の選択にキュー内の変更を適用し、キャッシュ済みコンテンツを隠したり更新失敗のトーストを出したりしません。アカウント変更時は表示上の選択を消し、権限拒否をキャッシュ欠落とは扱いません。
+
+## ブートストラップ時の用途
+
+SMTP の用途はゲートウェイまたはモジュールのブートストラップ中に `ctx` で登録します。`notify:registerSmtpPurpose` を取得し、ローカルな用途名で呼び出して完了を待ち、返された所有元に結び付いた識別子を保持してください。登録ごとに専用キューと受信者別の待機状態を作成します。アダプターには固定の用途一覧を持たせません。
+
+```js
+const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const purpose = await registerPurpose("digest");
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, templateId, variables });
+```
+
+すべての `notify:sendEmail` 呼び出しは登録済みの `purpose` を指定する必要があります。未指定や未知の用途は SMTP 通信前に拒否し、送信時に暗黙で用途を作成しません。ブートストラップの完了、失敗、時間切れ後は、保持されたコールバックや分離した非同期処理からも登録できません。起動後に有効化したモジュールは自身のブートストラップ中に登録できます。無効化やアンインストールではキューを破棄し、保留中の送信を拒否して SMTP 接続を閉じます。

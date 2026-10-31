@@ -1,3 +1,4 @@
+import { runBootstrapScope } from "@cognis/core";
 import { versionModuleUiAssets } from "./module-ui-assets.js";
 import {
     disposeModuleResources,
@@ -605,20 +606,27 @@ export function createModuleExtensionRoutes(
     ): Promise<void | (() => void | Promise<void>)> {
         let timer: NodeJS.Timeout | undefined;
         try {
-            return await Promise.race([
-                plugin.bootstrapModule!(moduleCtx),
-                new Promise<never>((_resolve, reject) => {
-                    timer = setTimeout(
-                        () =>
-                            reject(
-                                new Error(
-                                    `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
-                                ),
-                            ),
-                        bootstrapTimeoutMs,
-                    );
-                }),
-            ]);
+            return await runBootstrapScope(
+                options.routeContext.getCapability<Ctx>("system:ctx") ??
+                    moduleCtx,
+                `module:${moduleCtx.moduleId}`,
+                () =>
+                    Promise.race([
+                        plugin.bootstrapModule!(moduleCtx),
+                        new Promise<never>((_resolve, reject) => {
+                            timer = setTimeout(
+                                () =>
+                                    reject(
+                                        new Error(
+                                            `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
+                                        ),
+                                    ),
+                                bootstrapTimeoutMs,
+                            );
+                        }),
+                    ]),
+                moduleCtx.registerDisposer.bind(moduleCtx),
+            );
         } finally {
             if (timer) clearTimeout(timer);
         }
