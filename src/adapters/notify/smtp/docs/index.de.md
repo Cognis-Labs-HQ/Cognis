@@ -28,3 +28,7 @@ Der Adapter implementiert Greylist-tolerante Zustellung: Bei einer vorübergehen
 ## Testzustellung
 
 Testnachrichten verwenden dieselbe adaptereigene Warteschlange und empfängerbezogene Ratenbegrenzung wie der reguläre SMTP-Versand. Die übermittelte Konfiguration bleibt beim eingereihten Test, und die API wartet auf das endgültige Zustellergebnis.
+
+## E-Mail-Pausen nach Zweck
+
+Das gemeinsame SMTP-Prüfintervall beträgt fünfzehn Sekunden. Pausen gelten je normalisiertem Empfänger und Nachrichtenzweck. Verifizierung, Anmeldecodes, Anmeldelinks, Einladungen und Tests verzögern einander nicht. Die Warteschlange berücksichtigt das konfigurierte Intervall und den tatsächlichen erfolgreichen Versand; fehlgeschlagene direkte Sendungen verbrauchen keine Pause.

@@ -632,4 +632,6 @@
   <string name="ui.reuse.recheck_connectivity">Periksa Ulang Koneksi</string>
   <string name="ui.reuse.offline_no_cached_content">Tidak ada konten luring tersimpan yang tersedia.</string>
   <string name="ui.app.settings.language_offline_locked">Hubungkan untuk menambah atau menghapus bahasa antarmuka. Bahasa terpilih tetap dapat diurutkan ulang.</string>
+  <string name="ui.app.users.details_failed">Rincian pengguna ini tidak dapat dimuat. Silakan coba lagi.</string>
+  <string name="ui.app.users.refresh_failed">Perubahan tersimpan, tetapi daftar Pengguna tidak dapat diperbarui. Muat ulang halaman untuk melihat data terbaru.</string>
 </resources>

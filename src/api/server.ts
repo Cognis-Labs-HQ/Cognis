@@ -66,7 +66,7 @@ export interface ApiDependencies {
         handle: string,
         role?: string,
     ) => Promise<void>;
-    setProfileRole?: (handle: string, role: string) => Promise<void>;
+    setProfileRole?: (accountId: string, role: string) => Promise<void>;
     searchProfiles?: (
         query: string,
         limit: number,

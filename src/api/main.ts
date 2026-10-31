@@ -593,9 +593,10 @@ const server = buildServer({
     log,
     observability: capabilities.get("observability:metrics"),
     createProfile,
-    setProfileRole: capabilities.get<
-        (handle: string, role: string) => Promise<void>
-    >("profile:setRoleByHandle"),
+    setProfileRole:
+        capabilities.get<(accountId: string, role: string) => Promise<void>>(
+            "profile:setRole",
+        ),
     searchProfiles: profileStore
         ? profileStore.searchProfiles.bind(profileStore)
         : undefined,

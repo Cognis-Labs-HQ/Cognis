@@ -32,7 +32,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.2.36`   |
+| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.2.37`   |
 | Internal Notification      | `src/adapters/notify/internal/`     | `0.5.30`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.25`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.23`   |
@@ -49,7 +49,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.39`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.22`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.5`    |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.6`    |
 | Messages (Social)          | `src/adapters/social/messages/`     | `2.7.30`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.35`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.37`   |
@@ -68,7 +68,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13`   |
-| Authentication (auth) | `src/gateways/auth/`          | `2.0.4`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.0.5`    |
 | Share                 | `src/gateways/share/`         | `1.7.49`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.19`   |
@@ -84,13 +84,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.5.4`    |
+| Core Package   | `src/core/` | `0.5.5`    |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.10.17`  |
+| API Server     | `src/api/` | `0.10.18`  |
 
 ## ツール
 

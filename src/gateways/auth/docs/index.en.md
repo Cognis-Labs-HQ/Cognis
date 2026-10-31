@@ -157,3 +157,7 @@ Auth publishes `session:isOfflineValid` as the synchronous, network-free authori
 ## Account-bound Queues
 
 Queued records include the server-verified account-instance identifier. Auth returns its canonical `accountInstanceId` in authenticated setup status and exposes `session:getOfflineIdentity` only for a verified, setup-ready, unexpired account session. Missing authoritative metadata revokes offline authorization. Queue views and storage/delivery checks bind to this instance; retired or unbound records are rejected before transport, including after recreating a local account with the same account ID. Operation IDs cannot collide across account instances. Bearer tokens are never persisted in the queue.
+
+## Bounded SSO Registration Attempts
+
+Invitation-gated SSO identities are held before account, profile or email provisioning. Cancelled or expired attempts cannot resume; expiry is enforced at the exact deadline for registration and TFA. Enabling the public registration adapter still permits SSO account creation independently of native public signup. Existing accounts are not deleted based on their provider or age.

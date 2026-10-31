@@ -632,4 +632,6 @@
   <string name="ui.reuse.recheck_connectivity">接続を再確認</string>
   <string name="ui.reuse.offline_no_cached_content">オフライン用に保存されたコンテンツはありません。</string>
   <string name="ui.app.settings.language_offline_locked">UI の言語を追加・削除するには接続してください。選択済みの言語の並べ替えは引き続きできます。</string>
+  <string name="ui.app.users.details_failed">このユーザーの詳細を読み込めませんでした。もう一度お試しください。</string>
+  <string name="ui.app.users.refresh_failed">変更は保存されましたが、ユーザー一覧を更新できませんでした。ページを再読み込みして最新の情報を確認してください。</string>
 </resources>

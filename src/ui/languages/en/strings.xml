@@ -632,4 +632,6 @@
   <string name="ui.reuse.recheck_connectivity">Recheck Connectivity</string>
   <string name="ui.reuse.offline_no_cached_content">No offline cached content available.</string>
   <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
+  <string name="ui.app.users.details_failed">Could not load this user’s details. Please try again.</string>
+  <string name="ui.app.users.refresh_failed">The change was saved, but the Users list could not be refreshed. Refresh the page to see the latest data.</string>
 </resources>

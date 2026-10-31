@@ -109,3 +109,9 @@ Offline-Profilzugriff erfordert einen vollständig vorbereiteten Schnappschuss d
 ## Bestätigte Einstellungskopien
 
 Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Lesezugriffen ihre begrenzte, anbietereigene Lesekopie, auch bei erneuter Übertragung und reinem Online-Speichern. Offline-Zusammenführungen behalten bestätigte Felder und berücksichtigen verbleibende Änderungen. Verzögerte Lesezugriffe überschreiben keine neueren bestätigten Daten; Kontowechsel, Anbieterabbau und fehlgeschlagene Schreibvorgänge veröffentlichen keine veralteten Daten.
+
+## Profilbearbeitung und Rollen
+
+Profilformulare verwenden die komponenteneigenen Grenzen für Anzeigename, Biografie, Ort und Webseite. Die Rollensynchronisierung ermittelt den öffentlichen Profilnamen anhand der unveränderlichen Konto-ID, bevor Rolle und Sichtbarkeit aktualisiert werden.
+
+`profile:setRole(accountId, role)` → `Promise<void>`.

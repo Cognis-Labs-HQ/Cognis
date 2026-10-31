@@ -742,6 +742,7 @@ export class SmtpNotificationSender implements NotificationSender {
             code,
         );
         const queued = this.queue.enqueue({
+            purpose: verifyUrl ? "emailVerification" : "loginCode",
             recipientEmail: to,
             subject,
             body,
@@ -776,6 +777,7 @@ export class SmtpNotificationSender implements NotificationSender {
             body,
             theme,
             verifyUrl: inviteUrl,
+            purpose: "invite",
             verifyButtonLabel: "Sign Up",
         });
         await this.queue.waitForResult(queued.notificationId);
@@ -807,6 +809,7 @@ export class SmtpNotificationSender implements NotificationSender {
             body,
             theme,
             verifyUrl: loginUrl,
+            purpose: "loginLink",
             verifyButtonLabel: options?.actionLabel,
         });
         await this.queue.waitForResult(queued.notificationId);
@@ -847,6 +850,7 @@ export class SmtpNotificationSender implements NotificationSender {
         }
         const queued = this.queue.enqueue({
             recipientEmail: to,
+            purpose: "test",
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
             config: cfg,
@@ -861,7 +865,6 @@ export class SmtpNotificationSender implements NotificationSender {
         if (this.rateLimiter.isThrottled(envelope.recipientEmail)) {
             throw new Error("smtp_rate_limited");
         }
-        this.rateLimiter.record(envelope.recipientEmail);
         const theme =
             typeof envelope.metadata?.theme === "string"
                 ? envelope.metadata.theme
@@ -877,6 +880,7 @@ export class SmtpNotificationSender implements NotificationSender {
             undefined,
             envelope.attachments ?? [],
         );
+        this.rateLimiter.record(envelope.recipientEmail);
     }
 
     async sendTracked(

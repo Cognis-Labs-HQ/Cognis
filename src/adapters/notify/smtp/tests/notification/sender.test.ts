@@ -123,7 +123,7 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
 test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
     const now = Date.now();
     const rateLimiter = new SmtpRateLimiter(60_000, () => now);
-    rateLimiter.record("alice@example.com", now);
+    rateLimiter.record("alice@example.com", now, "loginCode");
     const sender = new SmtpNotificationSender(
         {
             host: "smtp.example.com",

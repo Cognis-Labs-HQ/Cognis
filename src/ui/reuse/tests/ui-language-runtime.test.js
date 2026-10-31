@@ -176,6 +176,7 @@ test("language shortcut commits after two seconds, coalesces clicks and releases
     };
     const selected = [];
     const globals = {
+        localStorage: { getItem: () => "opaque-session" },
         document: { querySelector: () => toggle, createElement: () => ({}) },
         window: new EventTarget(),
         AbortController,

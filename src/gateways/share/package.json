@@ -6,6 +6,6 @@
     "private": true,
     "dependencies": {
         "@cognis/gateways": "<=0.2.0",
-        "@cognis/core": "<=0.5.4"
+        "@cognis/core": "<=0.5.5"
     }
 }

@@ -632,4 +632,6 @@
   <string name="ui.reuse.recheck_connectivity">Verbindung erneut prüfen</string>
   <string name="ui.reuse.offline_no_cached_content">Keine offline gespeicherten Inhalte verfügbar.</string>
   <string name="ui.app.settings.language_offline_locked">Verbinden Sie sich, um UI-Sprachen hinzuzufügen oder zu entfernen. Ausgewählte Sprachen können weiterhin umgeordnet werden.</string>
+  <string name="ui.app.users.details_failed">Die Kontodetails konnten nicht geladen werden. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.app.users.refresh_failed">Die Änderung wurde gespeichert, aber die Benutzerliste konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuellen Daten zu sehen.</string>
 </resources>

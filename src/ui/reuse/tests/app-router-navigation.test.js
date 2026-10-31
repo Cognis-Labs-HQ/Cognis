@@ -17,9 +17,15 @@ function createRouter({
     offline = false,
     allowOfflineRoute = async () => true,
     navigationItems = [],
+    importRoute,
 } = {}) {
     const flowPrefix = `test:${crypto.randomUUID()}:`;
     const listeners = new Map();
+    const listenerCounts = new Map();
+    const listen = (type, callback) => {
+        listenerCounts.set(type, (listenerCounts.get(type) ?? 0) + 1);
+        listeners.set(type, callback);
+    };
     const capabilities = new Map();
     const assigned = [];
     const navigationEvents = [];
@@ -30,7 +36,7 @@ function createRouter({
         location: Object.assign(location, {
             assign: (path) => assigned.push(path),
         }),
-        addEventListener: (type, callback) => listeners.set(type, callback),
+        addEventListener: listen,
         dispatchEvent: (event) => {
             navigationEvents.push(event);
             return allowNavigation;
@@ -56,7 +62,7 @@ function createRouter({
         document: {
             querySelector: () => root,
             querySelectorAll: () => navigationItems,
-            addEventListener: (type, callback) => listeners.set(type, callback),
+            addEventListener: listen,
         },
         CustomEvent: class {
             constructor(type, options) {
@@ -85,7 +91,8 @@ function createRouter({
             (async () => Object.assign(() => {}, { cancel() {} })),
         beginPageLoading: beginLoading || (() => () => {}),
         ensureHostUiProviders: prepareProviders || (async () => {}),
-        loadWithSpaImportGuard: (load) => load(),
+        loadWithSpaImportGuard: (load) =>
+            importRoute ? importRoute(location.pathname) : load(),
         getCurrentRoutePath: () =>
             `${location.pathname}${location.search}${location.hash}`,
         clearSpaRouteCache() {},
@@ -117,43 +124,48 @@ function createRouter({
         recordRouteMount() {},
     };
     vm.createContext(sandbox);
-    sandbox.router = loadTestModule(
-        new URL("../app-router.js", import.meta.url),
-        {
-            "./page-redraw.js": { registerPageRedraw },
-            "./offline-state.js": sandbox,
-            "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
-            "./offline-unavailable.js": {
-                showOfflineUnavailable: async () => {
-                    root.textContent = "Offline unavailable";
-                },
+    const imports = {
+        "./page-redraw.js": { registerPageRedraw },
+        "./offline-state.js": sandbox,
+        "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
+        "./offline-unavailable.js": {
+            showOfflineUnavailable: async () => {
+                root.textContent = "Offline unavailable";
             },
-            "./offline-navigation.js": {
-                allowOfflineRoute,
-                recoverOfflineNavigation: async ({ restore, fallback }) => {
-                    const restored = await restore();
-                    if (!restored) await fallback?.();
-                    return restored;
-                },
-                offlineRouteAvailable: () => false,
-            },
-            "./page-styles.js": sandbox,
-            "./mount-scope.js": sandbox,
-            "./page-entry.js": sandbox,
-            "./route-path.js": sandbox,
-            "./spa-route-registry.js": sandbox,
-            "./runtime-error-popup.js": sandbox,
-            "./guest-blocked-popup.js": sandbox,
-            "./ui-ctx.js": sandbox,
-            "./component-page-broker.js": sandbox,
-            "./performance-telemetry.js": sandbox,
-            "./page-flow-catalog.js": sandbox,
         },
-        sandbox,
-    );
+        "./offline-navigation.js": {
+            allowOfflineRoute,
+            recoverOfflineNavigation: async ({ restore, fallback }) => {
+                const restored = await restore();
+                if (!restored) await fallback?.();
+                return restored;
+            },
+            offlineRouteAvailable: () => false,
+        },
+        "./page-styles.js": sandbox,
+        "./mount-scope.js": sandbox,
+        "./page-entry.js": sandbox,
+        "./route-path.js": sandbox,
+        "./spa-route-registry.js": sandbox,
+        "./runtime-error-popup.js": sandbox,
+        "./guest-blocked-popup.js": sandbox,
+        "./ui-ctx.js": sandbox,
+        "./component-page-broker.js": sandbox,
+        "./performance-telemetry.js": sandbox,
+        "./page-flow-catalog.js": sandbox,
+    };
+    const reload = () =>
+        loadTestModule(
+            new URL("../app-router.js", import.meta.url),
+            imports,
+            sandbox,
+        );
+    sandbox.router = reload();
     sandbox.router.initRouter(root);
     return {
         ...sandbox.router,
+        reload,
+        listenerCounts,
         listeners,
         assigned,
         root,
@@ -547,4 +559,69 @@ test("online-only Logout stays visible, disables on cold or sudden disconnection
         assert.equal(attributes.has("aria-disabled"), false);
         assert.equal(logout.dataset.offlineDisabled, undefined);
     }
+});
+
+test("bundled and directly served router copies share one document binding and cancel superseded mounts", async () => {
+    const entered = deferred(),
+        release = deferred();
+    const router = createRouter({
+        routes: [
+            routeFixture("/delayed-screen", async (root, { signal }) => {
+                entered.resolve();
+                await release.promise;
+                if (!signal.aborted) root.textContent = "Settings";
+            }),
+            routeFixture("/final-screen", async (root) => {
+                root.textContent = "Dashboard";
+            }),
+        ],
+    });
+    const other = router.reload();
+    other.initRouter(router.root);
+    assert.equal(router.listenerCounts.get("click"), 1);
+    assert.equal(router.listenerCounts.get("popstate"), 1);
+    const stale = router.navigateTo("/delayed-screen");
+    await entered.promise;
+    await other.navigateTo("/final-screen");
+    release.resolve();
+    await stale;
+    assert.equal(router.root.textContent, "Dashboard");
+    assert.equal(router.location.pathname, "/final-screen");
+    assert.equal(router.assigned.length, 0);
+});
+
+test("Settings and other core pages navigate through the same SPA host without document requests", async () => {
+    const mounted = [];
+    const router = createRouter({
+        routes: ["/profile", "/calendar", "/messages", "/study"].map((path) =>
+            routeFixture(path, async (root) => {
+                root.textContent = path;
+            }),
+        ),
+        runFlow: async () => ({
+            stageResults: { "resolve-session": [{ authenticated: true }] },
+        }),
+        importRoute: async (path) => ({
+            mount: async (root) => {
+                root.textContent = path;
+                mounted.push(path);
+            },
+        }),
+    });
+    for (const path of [
+        "/settings",
+        "/dashboard",
+        "/users",
+        "/administration",
+        "/administration/modules",
+        "/profile",
+        "/docs",
+        "/settings",
+        "/dashboard",
+    ]) {
+        assert.equal(await router.navigateTo(path), true, path);
+        assert.equal(router.root.textContent, path);
+    }
+    assert.equal(mounted.length, 9);
+    assert.equal(router.assigned.length, 0);
 });

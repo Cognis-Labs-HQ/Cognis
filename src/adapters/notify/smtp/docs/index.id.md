@@ -28,3 +28,7 @@ Adapter mengimplementasikan pengiriman yang toleran terhadap greylisting: jika p
 ## Pengiriman uji
 
 Pesan uji memakai antrean milik adapter dan pembatas laju per penerima yang sama dengan pengiriman SMTP operasional. Konfigurasi yang dikirim disertakan bersama uji dalam antrean, dan API menunggu hasil akhir pengiriman.
+
+## Jeda Surel Berdasarkan Tujuan
+
+Interval verifikasi SMTP bersama menjadi lima belas detik. Jeda dinormalisasi menurut penerima dan dipisahkan menurut tujuan pesan sehingga verifikasi, kode masuk, tautan masuk, undangan, dan pengujian tidak saling menunda. Antrean memakai interval terkonfigurasi dan waktu pengiriman berhasil; pengiriman langsung yang gagal tidak menghabiskan jeda.

@@ -290,6 +290,7 @@ test("form builder can omit its submit button when includeSubmitButton is false"
 test("profile bio and post editors use form builder max-character fields", () => {
     const source =
         read("src/adapters/social/profile/ui/app.js") +
+        read("src/adapters/social/profile/ui/profile-edit-fields.js") +
         read("src/adapters/social/profile/ui/profile-config.js");
     const renderSource = read(
         "src/adapters/social/profile/ui/profile-render.js",

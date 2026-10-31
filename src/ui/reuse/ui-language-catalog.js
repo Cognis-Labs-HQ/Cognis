@@ -61,7 +61,9 @@ export function mountProvider(ctx) {
 }
 
 /** Resolve the current lifecycle-owned catalog through its public capability. @returns {Promise<object[]>} Languages. */
-export function loadUiLanguageCatalog() {
+export async function loadUiLanguageCatalog() {
+    if (!uiCtx.capabilities.get("ui:languageCatalog"))
+        await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.();
     const client = uiCtx.capabilities.get("ui:languageCatalog");
     if (!client) throw new Error("language_catalog_unavailable");
     return client.load();

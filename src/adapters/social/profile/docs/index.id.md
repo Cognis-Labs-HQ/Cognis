@@ -99,3 +99,9 @@ Akses Profil luring memerlukan cuplikan profil sendiri yang lengkap: teks, posti
 ## Salinan Preferensi Terkonfirmasi
 
 Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas milik penyedia sebelum pembacaan berikutnya, termasuk pengiriman ulang dan penyimpanan khusus daring. Penggabungan preferensi luring mempertahankan bidang terkonfirmasi dan menerapkan perubahan yang masih tertunda. Pembacaan terlambat tidak menimpa salinan terkonfirmasi yang lebih baru; pergantian akun, penghentian penyedia, dan penulisan gagal tidak menerbitkan data usang.
+
+## Penyuntingan Profil dan Peran
+
+Formulir profil memakai batas komponen untuk nama tampilan, biografi, lokasi, dan situs web. Sinkronisasi peran mencari nama publik profil dari ID akun yang tetap sebelum memperbarui peran dan visibilitas.
+
+`profile:setRole(accountId, role)` → `Promise<void>`.

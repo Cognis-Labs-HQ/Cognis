@@ -73,3 +73,7 @@ Runtime changes applied through the API override these environment values for th
 ## Test delivery
 
 Test messages use the same adapter-owned queue and per-recipient rate limiter as operational SMTP delivery. The submitted configuration is carried with the queued test, and the API waits for its final delivery result.
+
+## Purpose Scoped Email Cooldowns
+
+The shared SMTP verification interval is fifteen seconds. Cooldowns are normalized by recipient and isolated by message purpose, so verification, login codes, login links, invitations and tests do not delay one another. Same-purpose queue reservations use the configured interval and actual successful delivery time; failed direct sends do not consume a cooldown.

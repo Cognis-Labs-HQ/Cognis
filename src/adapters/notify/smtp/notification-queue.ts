@@ -1,31 +1,41 @@
 import { randomUUID } from "node:crypto";
 import type { NotificationSenderQueueEntry } from "@cognis/core";
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
 
     constructor(
-        private readonly minIntervalMs: number,
+        readonly intervalMs: number,
         private readonly now: () => number = () => Date.now(),
     ) {}
 
-    nextAvailableAt(recipient: string): number {
-        const last = this.lastSent.get(recipient);
+    nextAvailableAt(recipient: string, purpose = "notification"): number {
+        const last = this.lastSent.get(
+            `${purpose}:${recipient.trim().toLowerCase()}`,
+        );
         if (last === undefined) return this.now();
-        return last + this.minIntervalMs;
+        return last + this.intervalMs;
     }
 
-    isThrottled(recipient: string): boolean {
-        const lastSentAt = this.lastSent.get(recipient);
+    isThrottled(recipient: string, purpose = "notification"): boolean {
+        const lastSentAt = this.lastSent.get(
+            `${purpose}:${recipient.trim().toLowerCase()}`,
+        );
         return (
             lastSentAt !== undefined &&
-            this.now() < lastSentAt + this.minIntervalMs
+            this.now() < lastSentAt + this.intervalMs
         );
     }
 
-    record(recipient: string, sentAt: number = this.now()): void {
-        this.lastSent.set(recipient, sentAt);
+    record(
+        recipient: string,
+        sentAt: number = this.now(),
+        purpose = "notification",
+    ): void {
+        this.lastSent.set(
+            `${purpose}:${recipient.trim().toLowerCase()}`,
+            sentAt,
+        );
     }
 }
 
@@ -33,6 +43,7 @@ type SmtpQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 interface SmtpQueueEntry extends NotificationSenderQueueEntry {
+    purpose?: SmtpNotificationQueuePayload["purpose"];
     status: SmtpQueueStatus;
     recipientEmail: string;
     body: string;
@@ -48,6 +59,13 @@ interface SmtpQueueEntry extends NotificationSenderQueueEntry {
 const SMTP_QUEUE_HISTORY_LIMIT = 200;
 
 export interface SmtpNotificationQueuePayload {
+    purpose?:
+        | "notification"
+        | "emailVerification"
+        | "loginCode"
+        | "loginLink"
+        | "invite"
+        | "test";
     recipientEmail: string;
     subject: string;
     body: string;
@@ -85,19 +103,27 @@ export class SmtpNotificationQueue {
         ) => Promise<void>,
     ) {}
 
-    private getRecipientNextAttemptAt(recipientEmail: string): number {
+    private getRecipientNextAttemptAt(
+        recipientEmail: string,
+        purpose = "notification",
+    ): number {
         const now = Date.now();
         let nextAttemptAt = Math.max(
             now,
-            this.rateLimiter.nextAvailableAt(recipientEmail),
+            this.rateLimiter.nextAvailableAt(recipientEmail, purpose),
         );
         for (const queued of this.queueById.values()) {
-            if (queued.recipientEmail !== recipientEmail) continue;
+            if (
+                queued.recipientEmail.trim().toLowerCase() !==
+                    recipientEmail.trim().toLowerCase() ||
+                (queued.purpose ?? "notification") !== purpose
+            )
+                continue;
             if (queued.status === "sent" || queued.status === "failed")
                 continue;
             nextAttemptAt = Math.max(
                 nextAttemptAt,
-                queued.nextAttemptAt + SMTP_VERIFICATION_RATE_LIMIT_MS,
+                queued.nextAttemptAt + this.rateLimiter.intervalMs,
             );
         }
         return nextAttemptAt;
@@ -166,8 +192,19 @@ export class SmtpNotificationQueue {
         this.queueDraining = true;
         try {
             while (true) {
-                const activeQueue = this.listActiveQueue().sort(
-                    (a, b) => a.nextAttemptAt - b.nextAttemptAt,
+                const activeQueue = this.listActiveQueue();
+                for (const entry of activeQueue) {
+                    entry.nextAttemptAt = Math.max(
+                        entry.nextAttemptAt,
+                        this.rateLimiter.nextAvailableAt(
+                            entry.recipientEmail,
+                            entry.purpose,
+                        ),
+                    );
+                }
+                activeQueue.sort(
+                    (first, second) =>
+                        first.nextAttemptAt - second.nextAttemptAt,
                 );
                 const nextEntry = activeQueue[0];
                 if (!nextEntry) break;
@@ -192,6 +229,7 @@ export class SmtpNotificationQueue {
                 });
                 try {
                     await this.sendFn({
+                        purpose: nextEntry.purpose,
                         recipientEmail: nextEntry.recipientEmail,
                         subject: nextEntry.subject,
                         body: nextEntry.body,
@@ -205,6 +243,7 @@ export class SmtpNotificationQueue {
                     this.rateLimiter.record(
                         nextEntry.recipientEmail,
                         Date.now(),
+                        nextEntry.purpose,
                     );
                     this.touchQueueEntry(nextEntry, {
                         status: "sent",
@@ -235,12 +274,14 @@ export class SmtpNotificationQueue {
     enqueue(input: SmtpNotificationQueuePayload): { notificationId: string } {
         const nextAttemptAt = this.getRecipientNextAttemptAt(
             input.recipientEmail,
+            input.purpose,
         );
         const nowIso = new Date().toISOString();
         const notificationId = randomUUID();
         const entry: SmtpQueueEntry = {
             notificationId,
             recipientEmail: input.recipientEmail,
+            purpose: input.purpose,
             recipientUsername: input.recipientUsername,
             category: input.category,
             subject: input.subject,
