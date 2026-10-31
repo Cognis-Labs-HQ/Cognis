@@ -20,6 +20,7 @@ export function createProfileEditFields(profile, i18n) {
     return [
         {
             name: "displayName",
+            required: true,
             labelKey: "ui.app.profile.display_name",
             value: currentDisplayName,
             maxCharacters: PROFILE_DISPLAY_NAME_MAX_CHARACTERS,

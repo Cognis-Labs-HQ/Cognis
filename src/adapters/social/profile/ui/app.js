@@ -304,6 +304,9 @@ async function openEditPopup() {
                 variant: "confirm",
             },
         ],
+        onAction: (actionId) =>
+            actionId !== "save" ||
+            profileEditFormController?.validateAll(true) === true,
         closeProtection: true,
     });
 
