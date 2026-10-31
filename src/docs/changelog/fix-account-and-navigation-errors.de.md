@@ -81,3 +81,4 @@ Registrierungs- und Sharing-Adapter deklarieren ihre eigenen Browserbeiträge. T
 - [f38348a9285ed82d5cac049cf511c246a6124ac4](https://github.com/Cognis-Labs-HQ/Cognis/commit/f38348a9285ed82d5cac049cf511c246a6124ac4)
 - [1597944b8e745acf4c2116c2786df7cd0b7dc1a9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1597944b8e745acf4c2116c2786df7cd0b7dc1a9)
 - [f0e2f4e0fdc2f5d1acbfc13c275b9726c9dd0e5d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f0e2f4e0fdc2f5d1acbfc13c275b9726c9dd0e5d)
+- [9d818cedbcf80b2366c94b19d909adb55e191015](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d818cedbcf80b2366c94b19d909adb55e191015)
