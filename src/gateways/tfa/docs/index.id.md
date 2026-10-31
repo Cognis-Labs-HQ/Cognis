@@ -75,3 +75,7 @@ Aset browser milik TFA berada di `src/gateways/tfa/ui/`. Gateway ini mendaftarka
 ## Kontrak Adapter
 
 Setiap adapter di `src/adapters/tfa/<adapter-id>/` mengimplementasikan setup dan verifikasi khusus metode. Alur bersama seperti kode pemulihan, urutan preferensi, dan enforcement global tetap berada di gateway agar metode baru dapat ditambahkan tanpa menduplikasi kebijakan.
+
+## Konfirmasi TFA Berlapis
+
+Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali ke penjaga halaman lainnya. Membuang pendaftaran tidak membuang perubahan Pengaturan yang terpisah. Mempertahankan perubahan menghentikan navigasi; membuangnya secara eksplisit melanjutkan navigasi. Halaman yang sudah dilepas tidak dapat melanjutkan navigasi pendaftaran yang tersimpan.

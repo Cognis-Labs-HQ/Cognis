@@ -54,6 +54,18 @@ Validasi repositori GitLab menyertakan prefiks pemasangan yang dikonfigurasi sam
 
 Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.
 
+## Pengiriman Notifikasi Study
+
+Notifikasi permintaan, konten, dan penghapusan Study memakai kategori yang didaftarkan saat bootstrap Library. Pengiriman runtime hanya mencari kemampuan notifikasi terkini tanpa melakukan registrasi, sehingga pembatasan bootstrap SMTP tidak menghalangi pengiriman atau pemberitahuan perubahan visibilitas.
+
+## Pengikatan Kredensial Instalasi
+
+Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace yang sama dengan snapshot untuk memvalidasi URL repositori. Perubahan pengikatan sumber secara bersamaan membatalkan proses sebelum checkout, sehingga kredensial endpoint pengganti tidak dikirim ke host sebelumnya. Alias host API-ke-repositori GitHub hanya berlaku untuk sumber GitHub.
+
+## Konfirmasi TFA Berlapis
+
+Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali ke penjaga halaman lainnya. Membuang pendaftaran tidak membuang perubahan Pengaturan yang terpisah. Mempertahankan perubahan menghentikan navigasi; membuangnya secara eksplisit melanjutkan navigasi. Halaman yang sudah dilepas tidak dapat melanjutkan navigasi pendaftaran yang tersimpan.
+
 ## Komit
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

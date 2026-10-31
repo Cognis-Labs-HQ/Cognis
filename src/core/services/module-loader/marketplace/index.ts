@@ -589,6 +589,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             const clone = new URL(catalogModule.cloneUrl);
             const base = new URL(source.baseUrl);
             const repositoryHost =
+                source.provider === "github" &&
                 base.hostname === "api.github.com"
                     ? "github.com"
                     : base.hostname;
@@ -611,7 +612,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 !clone.pathname.toLowerCase().startsWith(repositoryPrefix)
             )
                 throw new Error("module_source_repository_mismatch");
-            const token = await this.sources.token(source.uuid);
+            const token = await this.sources.token(source.uuid, source);
             return await this.credentialContext.run(token, () =>
                 this.installUnlocked(
                     catalogModule,

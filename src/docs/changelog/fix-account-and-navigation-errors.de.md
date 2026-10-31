@@ -54,6 +54,18 @@ Die GitLab-Repository-Prüfung berücksichtigt das konfigurierte Installationspr
 
 Sprachwechsel und Einwilligungsabfragen scheitern nicht mehr daran, dass Calendar bei normalen HTTP-Anfragen Benachrichtigungen registriert. Calendar registriert seine Kategorie einmal beim Bootstrap-Abschluss, nachdem die Benachrichtigungsanbieter verfügbar sind. Share verwendet seine bereits registrierte Kategorie; Auth nutzt seinen Abschluss-Hook ohne doppelte frühzeitige Registrierung. SMTP-Registrierungen bleiben auf den Bootstrap beschränkt. Laufzeit-Handler lösen nur vorhandene Zustellfunktionen auf und nutzen sie. Calendar ist **1.5.5**.
 
+## Study-Benachrichtigungen
+
+Benachrichtigungen zu Study-Anfragen, Inhalten und Löschungen verwenden die beim Library-Bootstrap registrierte Kategorie. Zur Laufzeit wird nur die aktuelle Benachrichtigungsfunktion aufgelöst. Es erfolgt keine Registrierung, sodass SMTP-Bootstrap-Beschränkungen weder die Zustellung noch Hinweise zu Sichtbarkeitsänderungen unterdrücken.
+
+## Bindung von Zugangsdaten
+
+Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Namensraumstands auf, mit dem die Repository-URL geprüft wurde. Gleichzeitiges Umbinden einer Quelle bricht vor dem Checkout ab und verhindert, dass Zugangsdaten des neuen Endpunkts an den alten Host gesendet werden. Die Zuordnung zwischen GitHub-API- und Repository-Host gilt nur für GitHub-Quellen.
+
+## Getrennte TFA-Verwerfungsfragen
+
+Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übrigen Seitenschutzfunktionen übergeben. Das Verwerfen der Einrichtung verwirft keine anderen Einstellungsänderungen. Ihr Beibehalten stoppt die Navigation; erst ihre ausdrückliche Verwerfung setzt sie fort. Eine entfernte Seite kann eine gespeicherte Navigation nicht wieder aufnehmen.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

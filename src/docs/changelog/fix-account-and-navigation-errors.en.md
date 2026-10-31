@@ -54,6 +54,18 @@ GitLab repository validation includes the configured deployment prefix while pre
 
 Language switching and consent refreshes no longer fail because Calendar attempts notification registration during ordinary HTTP requests. Calendar registers its category once during bootstrap completion, after notification providers are available. Share sends through its already registered category, and Auth uses its completion hook without duplicate early registration. SMTP registration remains restricted to bootstrap; runtime handlers only resolve and use existing delivery capabilities. Calendar is **1.5.5**.
 
+## Study Notification Delivery
+
+Study request, content and deletion notifications use the category registered by Library bootstrap. Runtime delivery resolves the current notification capability and never performs registration, so SMTP bootstrap restrictions do not suppress delivery or visibility-change notices.
+
+## Installation Credential Binding
+
+Installation resolves credentials against the same provider, endpoint and namespace snapshot used to validate its repository URL. Concurrent source rebinding aborts before checkout, preventing a replacement endpoint’s credential from being sent to the previous host. GitHub’s API-to-repository host alias is applied only to GitHub sources.
+
+## Layered TFA Discard Decisions
+
+After enrollment cancellation is acknowledged, navigation is offered again to the remaining page guards. Discarding enrollment does not discard unrelated Settings changes. Keeping those changes stops navigation; explicitly discarding them resumes it. An unmounted page cannot resume a retained enrollment navigation.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

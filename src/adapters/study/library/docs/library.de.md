@@ -628,3 +628,7 @@ Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatal
 ## Benachrichtigungen per Konto-ID
 
 Anfrage- und Inhaltsbenachrichtigungen der Library verwenden die unveränderliche `accountId`. Dadurch erreichen sie auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. Bei Entscheidungen wird das handelnde Konto anhand derselben ID ausgeschlossen.
+
+## Study-Benachrichtigungen
+
+Benachrichtigungen zu Study-Anfragen, Inhalten und Löschungen verwenden die beim Library-Bootstrap registrierte Kategorie. Zur Laufzeit wird nur die aktuelle Benachrichtigungsfunktion aufgelöst. Es erfolgt keine Registrierung, sodass SMTP-Bootstrap-Beschränkungen weder die Zustellung noch Hinweise zu Sichtbarkeitsänderungen unterdrücken.

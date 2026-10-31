@@ -75,3 +75,7 @@ TFA-Browserassets liegen unter `src/gateways/tfa/ui/`. Das Gateway registriert s
 ## Adapter-Vertrag
 
 Jeder Adapter unter `src/adapters/tfa/<adapter-id>/` implementiert methodenspezifisches Setup und Verifikation. Gemeinsame Abläufe wie Recovery-Codes, Präferenzreihenfolge und globale Erzwingung bleiben im Gateway, damit neue Methoden ohne Richtlinien-Duplikate ergänzt werden können.
+
+## Getrennte TFA-Verwerfungsfragen
+
+Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übrigen Seitenschutzfunktionen übergeben. Das Verwerfen der Einrichtung verwirft keine anderen Einstellungsänderungen. Ihr Beibehalten stoppt die Navigation; erst ihre ausdrückliche Verwerfung setzt sie fort. Eine entfernte Seite kann eine gespeicherte Navigation nicht wieder aufnehmen.

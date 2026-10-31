@@ -36,9 +36,6 @@ export function createNotificationDelivery(
                     >("notify:dispatch");
                 if (!dispatch)
                     throw new Error("notification_gateway_unavailable");
-                ctx.capabilities.get<(id: string, label: string) => void>(
-                    "notify:registerCategory",
-                )?.("study", "Study");
                 const result = await dispatch(envelope);
                 if (result.errors?.length)
                     await log?.(

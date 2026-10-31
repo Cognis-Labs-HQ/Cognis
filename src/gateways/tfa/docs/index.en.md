@@ -77,3 +77,7 @@ This separation is intentional: password-reset controls belong to the auth gatew
 ## Adapter Contract
 
 Each adapter directory under `src/adapters/tfa/<adapter-id>/` provides the method-specific logic. Adapters declare identity for admin listings and implement setup / verification flows, but they do not own shared persistence for preferences or recovery codes. Those shared flows remain in `CoreTfaGateway` so additional methods can be introduced without duplicating policy.
+
+## Layered TFA Discard Decisions
+
+After enrollment cancellation is acknowledged, navigation is offered again to the remaining page guards. Discarding enrollment does not discard unrelated Settings changes. Keeping those changes stops navigation; explicitly discarding them resumes it. An unmounted page cannot resume a retained enrollment navigation.

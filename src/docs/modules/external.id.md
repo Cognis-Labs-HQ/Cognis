@@ -264,3 +264,7 @@ await sendEmail({ purpose, recipientEmail, variables });
 Setiap panggilan `notify:sendEmail` menyertakan tujuan yang sudah terdaftar dan variabel. `templateId` tidak digunakan lagi. Tujuan yang hilang atau tidak dikenal ditolak; aksi asinkron diperiksa kembali sebelum masuk antrean. Registrasi ditutup saat bootstrap selesai, gagal, atau melewati batas waktu. Hook penyelesaian gateway berjalan dengan pemilik yang sama setelah penyedia selesai melakukan bootstrap.
 
 Penonaktifan gateway dan pelepasan modul menghapus aksi miliknya serta membatalkan pengiriman tertunda. Aktivasi ulang memulihkan antrean baru tanpa mengirim ulang email yang dibatalkan. Kategori bersama tetap aktif selama pemilik terdaftar lainnya masih aktif. Penonaktifan pengirim SMTP juga menutup sesi dan membatalkan pengiriman tertunda; aktivasi ulang hanya memulihkan registrasi yang masih ada.
+
+## Pengikatan Kredensial Instalasi
+
+Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace yang sama dengan snapshot untuk memvalidasi URL repositori. Perubahan pengikatan sumber secara bersamaan membatalkan proses sebelum checkout, sehingga kredensial endpoint pengganti tidak dikirim ke host sebelumnya. Alias host API-ke-repositori GitHub hanya berlaku untuk sumber GitHub.

@@ -99,3 +99,45 @@ test("successful popup dismissal retains navigation through asynchronous popup r
     await resume();
     assert.equal(host.state().resumed, 1);
 });
+
+for (const decision of ["stay", "discard"])
+    test(`cancelling enrollment preserves the remaining Settings guard (${decision})`, async (t) => {
+        const { createUnsavedChangesBar } =
+            await import("../../../ui/reuse/unsaved-changes.js");
+        const host = fixture();
+        const previousWindow = globalThis.window;
+        globalThis.window = host.target;
+        let decisions = 0;
+        const changes = createUnsavedChangesBar(null, {
+            quiet: true,
+            openConfirmation: async () => {
+                decisions++;
+                return decision;
+            },
+        });
+        t.after(() => {
+            changes.destroy();
+            host.owner.abort();
+            globalThis.window = previousWindow;
+        });
+        changes.markDirty("preferredTfaMethodOrder", true);
+        host.navigate();
+        assert.equal(decisions, 0);
+        const resume = host.guard.close();
+        host.resolve(true);
+        await resume();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.equal(decisions, 1);
+        assert.equal(host.state().resumed, decision === "discard" ? 1 : 0);
+        assert.equal(changes.isAnyDirty(), decision === "stay");
+    });
+
+test("a retained enrollment navigation cannot resume after its Settings page unmounts", async () => {
+    const host = fixture();
+    host.navigate();
+    const resume = host.guard.close();
+    host.resolve(true);
+    host.owner.abort();
+    assert.equal(resume(), false);
+    assert.equal(host.state().resumed, 0);
+});

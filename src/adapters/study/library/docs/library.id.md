@@ -628,3 +628,7 @@ Persiapan bahasa yang diikuti menyimpan katalog skema bersama, katalog tiap baha
 ## Notifikasi Berdasarkan ID Akun
 
 Notifikasi permintaan dan konten Library menggunakan `accountId` yang tetap agar menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. Keputusan permintaan mengecualikan akun pelaku berdasarkan ID yang sama.
+
+## Pengiriman Notifikasi Study
+
+Notifikasi permintaan, konten, dan penghapusan Study memakai kategori yang didaftarkan saat bootstrap Library. Pengiriman runtime hanya mencari kemampuan notifikasi terkini tanpa melakukan registrasi, sehingga pembatasan bootstrap SMTP tidak menghalangi pengiriman atau pemberitahuan perubahan visibilitas.

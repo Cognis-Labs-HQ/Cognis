@@ -264,3 +264,7 @@ await sendEmail({ purpose, recipientEmail, variables });
 Jeder Aufruf von `notify:sendEmail` übergibt einen bestehenden Zweck und Variablen. `templateId` entfällt. Fehlende und unbekannte Zwecke werden abgewiesen; asynchrone Aktionen werden vor dem Einreihen erneut geprüft. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt. Abschluss-Hooks laufen nach dem Start der Anbieter unter demselben Besitzer.
 
 Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktionen und ausstehende Zustellungen beendet. Die erneute Aktivierung stellt frische Warteschlangen her, ohne abgebrochene E-Mails zu wiederholen. Gemeinsam genutzte Kategorien bleiben aktiv, solange ein weiterer Besitzer aktiv ist. Das Deaktivieren des SMTP-Senders schließt auch Verbindungen und bricht ausstehende Zustellungen ab; die Aktivierung stellt nur noch bestehende Registrierungen wieder her.
+
+## Bindung von Zugangsdaten
+
+Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Namensraumstands auf, mit dem die Repository-URL geprüft wurde. Gleichzeitiges Umbinden einer Quelle bricht vor dem Checkout ab und verhindert, dass Zugangsdaten des neuen Endpunkts an den alten Host gesendet werden. Die Zuordnung zwischen GitHub-API- und Repository-Host gilt nur für GitHub-Quellen.

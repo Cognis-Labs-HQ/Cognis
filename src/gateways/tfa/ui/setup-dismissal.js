@@ -28,7 +28,7 @@ export function createSetupDismissalGuard({
                     event.preventDefault();
                     event.stopImmediatePropagation();
                     if (pending) return;
-                    resumeNavigation = event.detail?.resume;
+                    resumeNavigation = event.detail;
                     pending = requestClose()
                         .then((didClose) => {
                             if (!closed && didClose !== true)
@@ -44,9 +44,21 @@ export function createSetupDismissalGuard({
         },
         close() {
             closed = true;
-            const resume = signal?.aborted ? undefined : resumeNavigation;
+            const navigation = signal?.aborted ? undefined : resumeNavigation;
+            resumeNavigation = undefined;
             controller.abort();
-            return resume;
+            if (typeof navigation?.resume !== "function") return undefined;
+            return () => {
+                if (signal?.aborted) return false;
+                const event = new CustomEvent("cognis:route-before-navigate", {
+                    cancelable: true,
+                    detail: navigation,
+                });
+                // Enrollment is closed; remaining page guards still get their own decision.
+                return target.dispatchEvent(event)
+                    ? navigation.resume()
+                    : false;
+            };
         },
     };
 }
