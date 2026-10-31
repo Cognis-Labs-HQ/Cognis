@@ -49,7 +49,6 @@ export function createCalendarCoreRoutes({
     resolveAccountDisplayName,
     log,
     getDispatchNotification,
-    ensureNotificationCategory,
     getCapability,
     runUpcomingEventsFlow,
 }: {
@@ -72,7 +71,6 @@ export function createCalendarCoreRoutes({
     resolveAccountDisplayName: ResolveAccountDisplayName | null;
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
-    ensureNotificationCategory: () => void;
     getCapability: <T>(capabilityId: string) => T | undefined;
     runUpcomingEventsFlow: (input: {
         accountId: string;
@@ -106,7 +104,6 @@ export function createCalendarCoreRoutes({
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        ensureNotificationCategory();
         const dispatchNotification = getDispatchNotification();
         if (
             url.pathname === "/api/v1/calendar/upcoming-events" &&

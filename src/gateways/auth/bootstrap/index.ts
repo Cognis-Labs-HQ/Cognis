@@ -495,13 +495,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         readSecuritySettings,
     });
 
-    const registerNotificationCategory = ctx.capabilities.get<
-        (id: string, label: string) => void
-    >("notify:registerCategory");
-    if (typeof registerNotificationCategory === "function") {
-        registerNotificationCategory("security", "Security");
-    }
-
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
         adapterCount: authGateway.listAdapters().length,

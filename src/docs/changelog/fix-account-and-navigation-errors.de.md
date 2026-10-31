@@ -50,6 +50,10 @@ Der Sendervertrag verwendet `test(recipient, config)` und optionale Bootstrap-, 
 
 Die GitLab-Repository-Prüfung berücksichtigt das konfigurierte Installationspräfix und behält Ursprungs- und Namensraumgrenzen bei. Gateway-Lebenszykluswechsel laufen asynchron und nacheinander: Aufrufer warten auf Aktivierung und Deaktivierung, Bootstrap-Ressourcen bleiben bis zur Deaktivierung ihres Besitzers erhalten, und fehlgeschlagene Aktivierungen werden zurückgenommen. Adapter erhalten eine eigene Bootstrap-Identität. SMTP TFA ist **1.0.38**.
 
+## Sichere Laufzeitanfragen
+
+Sprachwechsel und Einwilligungsabfragen scheitern nicht mehr daran, dass Calendar bei normalen HTTP-Anfragen Benachrichtigungen registriert. Calendar registriert seine Kategorie einmal beim Bootstrap-Abschluss, nachdem die Benachrichtigungsanbieter verfügbar sind. Share verwendet seine bereits registrierte Kategorie; Auth nutzt seinen Abschluss-Hook ohne doppelte frühzeitige Registrierung. SMTP-Registrierungen bleiben auf den Bootstrap beschränkt. Laufzeit-Handler lösen nur vorhandene Zustellfunktionen auf und nutzen sie. Calendar ist **1.5.5**.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

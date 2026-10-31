@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import {
     createCtx,
+    requireBootstrapScope,
+    runBootstrapScope,
     CapabilityStore,
     CTX_CAPABILITY,
     GatewayRegistry,
@@ -110,8 +112,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const shareEmailVariables: Array<Record<string, string>> = [];
     const userShareNotifications: Array<Record<string, unknown>> = [];
     const notificationCategories: string[] = [];
-    capabilities.contribute("notify:registerCategory", ((id: string) =>
-        notificationCategories.push(id)) as never);
+    capabilities.contribute("notify:registerCategory", ((id: string) => {
+        requireBootstrapScope(flowCtx);
+        notificationCategories.push(id);
+    }) as never);
     capabilities.contribute("notify:dispatch", ((
         envelope: Record<string, unknown>,
     ) => {
@@ -260,14 +264,16 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         }),
     );
 
-    await bootstrap({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        uiRegistry,
-        flow: flowCtx.flow,
-    } as never);
+    await runBootstrapScope(flowCtx, "gateway:share", () =>
+        bootstrap({
+            adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+            uiRegistry,
+            flow: flowCtx.flow,
+        } as never),
+    );
 
     assert.equal(gatewayRegistry.get("share")?.id, "share");
     assert.equal(
@@ -697,7 +703,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(duplicateUpdateResponse.statusCode, 409);
-    assert.ok(notificationCategories.includes("share"));
+    assert.deepEqual(notificationCategories, ["share"]);
     assert.deepEqual(
         userShareNotifications.map((entry) => entry.recipientUsername),
         ["bob", "charlie"],

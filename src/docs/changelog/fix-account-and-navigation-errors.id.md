@@ -50,6 +50,10 @@ Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kana
 
 Validasi repositori GitLab menyertakan prefiks pemasangan yang dikonfigurasi sambil mempertahankan pembatasan asal dan namespace. Transisi siklus hidup gateway bersifat asinkron dan berurutan: pemanggil menunggu aktivasi atau penonaktifan, sumber daya bootstrap dipertahankan hingga pemiliknya dinonaktifkan, dan aktivasi yang gagal dibatalkan. Adapter memperoleh identitas bootstrap sendiri. SMTP TFA adalah **1.0.38**.
 
+## Keamanan Permintaan Runtime
+
+Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.
+
 ## Komit
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)
