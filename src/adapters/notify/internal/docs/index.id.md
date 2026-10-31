@@ -1,5 +1,7 @@
 # Adaptor Notifikasi Internal
 
+Bootstrap mendaftarkan pengirim selalu aktif melalui `notify:registerAlwaysOnSender` pada ctx tanpa gateway konkret. Kontrak pengirim berasal dari `@cognis/core`.
+
 ## Ikhtisar
 
 Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikasi di setiap halaman dasbor. Adaptor ini selalu aktif secara bawaan — setiap notifikasi yang dikirim melalui gateway akan masuk ke kotak masuk penerima tanpa perlu mengonfigurasi preferensi notifikasi. Adaptor menyimpan hingga 50 notifikasi per pengguna dalam memori; entri akan hilang saat server di-restart.

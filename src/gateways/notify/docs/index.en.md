@@ -1,103 +1,30 @@
 # Notification Gateway
 
-## Overview
+The gateway brokers notifications through optional sender adapters. It does not require an email transport. Adapters export `createNotificationSender()` and own their configuration, connections, queues and test delivery. In-app senders can remain available when email delivery is absent.
 
-The Notification Gateway dispatches notifications through pluggable sender adapters. It acts as the broker between the rest of the application and the concrete delivery mechanisms — SMTP, future webhooks, or in-app sinks — without knowing which transports are configured. Gateways and routes that need to send a notification call `gateway.dispatch(envelope)` and the gateway routes the message to whichever senders the recipient has enabled for that notification category.
+## Delivery Contracts
 
-The gateway also owns two specialised services layered on top of its dispatch infrastructure: `TfaCodeService` for issuing and validating two-factor authentication codes, and `VerifyTokenService` for email verification flows. Both services use in-memory stores and are wired to the notification gateway's email-sending capability at bootstrap.
+Components use ctx capabilities rather than retaining the gateway implementation:
 
-Sender adapters are discovered by scanning `src/adapters/notify/` at bootstrap. Each adapter directory must export a `createSender()` function. The SMTP adapter is the only built-in sender; it activates automatically when `COGNIS_SMTP_HOST` is set.
+- `notify:dispatch` sends an envelope to the recipient's selected category senders and always-on senders.
+- `notify:dispatchToRole` resolves account IDs and dispatches to a role.
+- `notify:listSenders` returns public sender metadata. `requiresVerifiedEmail` declares an email requirement independently of the sender ID.
+- `notify:registerCategory(id, label)` is restricted to bootstrap. Each participating sender creates a channel and returns a bound delivery handle. Shared owners retain the channel until the final owner is removed.
 
-## Responsibilities
+Provider contracts are exported from `@cognis/core`. Adapter bootstrap receives ctx capabilities and bounded host registration functions, without the concrete gateway. Provider tests delegate through `testSender(senderId, recipient, config)`.
 
-- Discover and register notification sender adapters from `src/adapters/notify/` at bootstrap.
-- Dispatch notification envelopes to all senders enabled for the recipient and category.
-- Persist and reload sender configurations from the database.
-- Register the `system` notification category (and any categories added by other components).
-- Wire TFA code issuance and verification routes.
-- Wire email verification token routes.
-- Register adapter admin routes for configuring and testing senders.
+## Email Actions
 
-Not responsible for: knowing what transport to use (that is the adapter's concern), storing notification history, or managing user notification preferences beyond per-sender opt-in.
+An optional email provider contributes `notify:registerEmailPurpose(id, action)`, `notify:sendEmail`, `notify:emailAvailable` and `notify:emailCodeLength`. Consumers supply their own content; registration is allowed only during their bootstrap and returns an owner-scoped purpose. Sending requires that purpose, a recipient and variables. It never creates a queue. Without an email provider, email delivery actions are unavailable while stored addresses remain readable.
 
-## Architecture
+Email verification applies equally to local and SSO accounts. Codes and verification tokens bind the complete account ID and address. Verification uses the email provider's code length, independently of TFA adapters. Delivery outages do not waive required verification. The security setting uses `userValidationMode: "email"` or `"none"`.
 
-The central class is `CoreNotificationGateway` in `src/gateways/notify/gateway.ts`. It implements the `NotificationGateway` interface and holds a map of registered `NotificationSender` implementations.
+## Lifecycle
 
-```ts
-export interface NotificationGateway {
-    registerSender(sender: NotificationSender): void;
-    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-    registerCategory(id: string, label: string): void;
-    listSenders(): NotificationSenderInfo[];
-    listCategories(): NotificationCategory[];
-}
-```
+Disable and unmount revoke owned registrations and pending delivery. Re-enable restores fresh channels without replaying cancelled messages. Other owners of a shared category remain active. Async message actions cannot enqueue after their registration is disposed or replaced.
 
-A `NotificationEnvelope` carries `category`, `recipientUsername`, optional `recipientEmail`, `subject`, and `body`. The gateway resolves which senders to use by calling `notificationPrefStore.getSenderIds(recipientUsername, category)`. If no preference is stored for a given category, the gateway falls back to dispatching to all active senders.
+## Browser Capabilities
 
-`discoverSenders(path)` scans the `src/adapters/notify/` directory and dynamically imports each adapter's `createSender()` export. The gateway calls `registerSender(sender)` for each one found.
+The lifecycle-scoped `notify:emailClient` provides own-account email requests, trusted domains, administrator `listUserEmails`, online-only `resendUserEmail` and `emailAvailable`. Settings, Users and Administration resolve it through ctx. Email edits are cached and queued by their owning provider; verification remains online. `GET /api/v1/notify/email-delivery` is authenticated and returns only availability, not provider configuration.
 
-Bootstrap in `src/gateways/notify/bootstrap.ts`:
-
-1. Instantiates `DbNotificationStore` and `DbNotificationPreferenceStore`.
-2. Instantiates `CoreNotificationGateway`.
-3. Calls `discoverSenders()` and `loadPersistedConfigs()`.
-4. Registers the `system` notification category.
-5. Instantiates `TfaCodeService` and `VerifyTokenService` with in-memory stores.
-6. Registers notification, email, and adapter admin routes.
-
-Key source locations:
-
-| Path                                          | Purpose                                                                           |
-| --------------------------------------------- | --------------------------------------------------------------------------------- |
-| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`, `NotificationSender`, `NotificationGateway` interfaces |
-| `src/gateways/notify/bootstrap.ts`            | Bootstrap entry point                                                             |
-| `src/gateways/notify/routes/notifications.ts` | Notification dispatch and provider management routes                              |
-| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService` and `InMemoryTfaStore`                                           |
-| `src/api/reuse/verify-token.ts`               | `VerifyTokenService` and `InMemoryVerifyTokenStore`                               |
-| `src/adapters/db/reuse/notification-store.ts` | `DbNotificationStore` and `DbNotificationPreferenceStore`                         |
-
-## API Routes
-
-| Method | Path                                        | Description                         | Auth   |
-| ------ | ------------------------------------------- | ----------------------------------- | ------ |
-| `POST` | `/api/v1/notify/send`                       | Dispatch a notification             | Admin  |
-| `GET`  | `/api/v1/notify/providers`                  | List registered senders             | User   |
-| `GET`  | `/api/v1/notify/categories`                 | List notification categories        | Bearer |
-| `GET`  | `/api/v1/notify/preferences`                | Get own notification preferences    | Bearer |
-| `PUT`  | `/api/v1/notify/preferences`                | Update own notification preferences | Bearer |
-| `POST` | `/api/v1/notify/providers/:senderId/config` | Update sender config                | Admin  |
-| `POST` | `/api/v1/notify/providers/:senderId/test`   | Send a test notification            | Admin  |
-| `POST` | `/api/v1/users/tfa/request`                 | Request a TFA code                  | Bearer |
-| `POST` | `/api/v1/users/tfa/verify`                  | Verify a TFA code                   | Bearer |
-| `POST` | `/api/v1/users/email/verify/request`        | Request email verification          | Bearer |
-| `POST` | `/api/v1/users/email/verify`                | Complete email verification         | Bearer |
-| `GET`  | `/api/v1/users/:username/email`             | Get primary email for a user        | Bearer |
-| `PUT`  | `/api/v1/users/:username/email`             | Set primary email for a user        | Bearer |
-
-## Email Verification
-
-SMTP verification applies to SSO accounts as well as native accounts. Resending uses the configured notification delivery service. Codes and one-click links bind the complete account ID and email as an opaque tuple, including namespaced SSO IDs. Cancelling verification from Settings preserves the existing email address.
-
-## Shared top banners
-
-Offline Mode and Broadcast now use one sticky stack at the very top of the document, above the app header. Offline Mode has priority, cannot be dismissed, and retains Recheck Connectivity and the recovered Refresh action. Removing or dismissing an announcement does not remove Offline Mode. Broadcast polling skips disconnected requests and its provider disposes its bar and timer.
-
-## Offline Personal Settings
-
-Verified sign-in prepares the account’s email list and trusted-domain policy without opening Settings. Email additions, removals and primary-address changes are projected locally and queued through `notify:emailClient` and the protected `notify.emails` outbox owner. Server validation remains authoritative. Email verification, resend and account lifecycle actions require connectivity; no codes, watch tokens or passwords enter the queue. Queued additions remain unverified until online verification. Successful delivery refreshes the email snapshot; optional refresh failure cannot turn a persisted write into a failed action. These bounded private snapshots remain tab/session-scoped.
-
-## Session and Component Boundaries
-
-The lifecycle-scoped `notify:emailClient` capability provides own-account requests and trusted domains, administrator `listUserEmails`, online-only `resendUserEmail`, and `smtpAvailable`. Each action runs through registered stages and stops when its provider is disposed. Core Settings, Users and Administration resolve these methods through ctx; they do not import Notify UI implementations. Missing Notify hides email management while leaving unrelated account controls usable.
-
-## Bootstrap and Channels
-
-SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
-
-Notification categories use the existing `notify:registerCategory` capability. SMTP creates a queue during registration and returns a bound delivery handle to the gateway. The gateway remains sender-neutral. No send creates or infers a purpose; direct SMTP sends require an explicit registered purpose.
-
-Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.
-
-The sender contract uses generic `test(recipient, config)` and optional bootstrap/channel/lifecycle hooks. The gateway calls `testSender(senderId, recipient, config)` and contains no SMTP-specific test, verification, invitation or login methods. Existing SMTP-specific gateway helpers and the separate template registry are removed.
+Offline Mode and Broadcast share the top banner stack above the header. Offline Mode has priority, cannot be dismissed and offers Recheck Connectivity and Refresh after recovery. Broadcast acknowledgement, audience and scheduling policies remain enforced independently. Banner backgrounds and collapsibility are configured through the shared banner capability.

@@ -2,10 +2,10 @@
 
 ## Bootstrap und Kanäle
 
-SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerSmtpPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
+SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerEmailPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
 
 ```js
-const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
 const purpose = await registerPurpose("digest", (variables) => ({
     subject: variables.subject,
     body: variables.body,

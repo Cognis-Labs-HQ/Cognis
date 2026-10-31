@@ -380,10 +380,10 @@ export async function mount(root, { signal } = {}) {
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
-                emailRequired: userValidationMode === "smtp",
+                emailRequired: userValidationMode === "email",
             });
             const emailVerifyNoticeHtml =
-                !isInviteFlow && userValidationMode === "smtp"
+                !isInviteFlow && userValidationMode === "email"
                     ? renderInPageCallout({
                           variant: "info",
                           body: i18n.t("ui.app.register.email_verify_notice"),
@@ -480,7 +480,7 @@ export async function mount(root, { signal } = {}) {
         if (!addResponse.ok) {
             const addPayload = await addResponse.json().catch(() => null);
             const addCode = String(addPayload?.error?.code ?? "");
-            if (addCode === "smtp_unavailable") {
+            if (addCode === "email_delivery_unavailable") {
                 return;
             }
             return;
@@ -606,7 +606,7 @@ export async function mount(root, { signal } = {}) {
                     const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
-                        emailRequired: userValidationMode === "smtp",
+                        emailRequired: userValidationMode === "email",
                     });
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,

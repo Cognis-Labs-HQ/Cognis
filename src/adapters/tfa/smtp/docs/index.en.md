@@ -2,7 +2,7 @@
 
 ## Overview
 
-The adapter registers its own code-message action during bootstrap through `notify:registerSmtpPurpose` and sends through `notify:sendEmail`. Registration, code content and sender synchronization belong to this adapter. TFA Gateway provides only neutral adapter lifecycle hooks. Gateway disable cancels the owned SMTP queue; re-enable restores its registration.
+The adapter registers its own code-message action during bootstrap through `notify:registerEmailPurpose` and sends through `notify:sendEmail`. Registration, code content and sender synchronization belong to this adapter. TFA Gateway provides only neutral adapter lifecycle hooks. Gateway disable cancels the owned SMTP queue; re-enable restores its registration.
 
 ## Requirements
 

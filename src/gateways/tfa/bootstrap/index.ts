@@ -1,5 +1,5 @@
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
-import { readFile, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 import {
     registerLimitedAuthPathAllowance,
@@ -18,7 +18,7 @@ type PendingLoginAttemptInput = {
     provider: string;
     providerId: string;
     displayName: string;
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     requiredUserValidation: boolean;
     ttlSeconds: number | null;
 };
@@ -89,6 +89,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "ui",
     );
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
+    const adapterLanguageResources = gateway
+        .listAdapters()
+        .map(
+            (adapter) =>
+                `/static/adapters/tfa/${encodeURIComponent(adapter.id)}/languages`,
+        );
     const registerSecuritySection = ctx.capabilities.get<
         (section: {
             id: string;
@@ -101,8 +107,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/tfa/settings-section.js",
         stringsBaseUrl: [
             "/static/gateways/tfa/languages",
-            "/static/adapters/tfa/totp/languages",
-            "/static/adapters/tfa/smtp/languages",
+            ...adapterLanguageResources,
         ],
     });
     registerLimitedAuthPathAllowance("tfa", (path, _accountId) => {
@@ -199,8 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                               scriptUrl: "/static/gateways/tfa/login-flow.js",
                               stringsBaseUrl: [
                                   "/static/gateways/tfa/languages",
-                                  "/static/adapters/tfa/smtp/languages",
-                                  "/static/adapters/tfa/totp/languages",
+                                  ...adapterLanguageResources,
                               ],
                           },
                       ]
@@ -280,8 +284,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             currentSessionResult.displayName ?? accountId,
                         ),
                         userValidationMode:
-                            currentSessionResult.userValidationMode === "smtp"
-                                ? "smtp"
+                            currentSessionResult.userValidationMode === "email"
+                                ? "email"
                                 : "none",
                         requiredUserValidation:
                             currentSessionResult.requiredUserValidation ===

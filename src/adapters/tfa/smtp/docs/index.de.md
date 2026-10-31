@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Der Adapter registriert seine eigene Code-Nachrichtenaktion beim Bootstrap über `notify:registerSmtpPurpose` und sendet über `notify:sendEmail`. Registrierung, Nachrichteninhalt und Senderabgleich gehören diesem Adapter. Das TFA-Gateway stellt nur neutrale Adapter-Lebenszyklus-Hooks bereit. Beim Deaktivieren des Gateways wird die eigene SMTP-Warteschlange beendet; die Aktivierung stellt die Registrierung wieder her.
+Der Adapter registriert seine eigene Code-Nachrichtenaktion beim Bootstrap über `notify:registerEmailPurpose` und sendet über `notify:sendEmail`. Registrierung, Nachrichteninhalt und Senderabgleich gehören diesem Adapter. Das TFA-Gateway stellt nur neutrale Adapter-Lebenszyklus-Hooks bereit. Beim Deaktivieren des Gateways wird die eigene SMTP-Warteschlange beendet; die Aktivierung stellt die Registrierung wieder her.
 
 ## Voraussetzungen
 

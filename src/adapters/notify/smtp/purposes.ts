@@ -3,7 +3,7 @@ import {
     type Ctx,
     type BootstrapDisposer,
 } from "@cognis/core";
-import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/gateway.js";
+import type { NotifyAdapterBootstrapCtx } from "@cognis/core";
 import type {
     NotificationAction,
     RegisterNotificationAction,
@@ -80,7 +80,11 @@ export function registerSmtpActions(
         { id: "smtp:validateEmail" },
         ({ input, data }) => {
             const request = input as EmailActionInput;
-            if (!ctx.gateway.isSenderEnabled(sender.senderId))
+            if (
+                !ctx.capabilities.require<(id: string) => boolean>(
+                    "notify:isSenderEnabled",
+                )(sender.senderId)
+            )
                 throw new Error("smtp_sender_disabled");
             const action = actions.get(request.purpose);
             if (!action) throw new Error("smtp_purpose_unregistered");
@@ -109,7 +113,11 @@ export function registerSmtpActions(
             // Recheck after an async action: disabling its owner must prevent a late enqueue.
             if (actions.get(request.purpose) !== data.registration)
                 throw new Error("smtp_purpose_unregistered");
-            if (!ctx.gateway.isSenderEnabled(sender.senderId))
+            if (
+                !ctx.capabilities.require<(id: string) => boolean>(
+                    "notify:isSenderEnabled",
+                )(sender.senderId)
+            )
                 throw new Error("smtp_sender_disabled");
             const message = data.message as Awaited<
                 ReturnType<NotificationAction>
@@ -127,15 +135,19 @@ export function registerSmtpActions(
         (await root.flow.run(sendFlow, input)).data.receipt as Awaited<
             ReturnType<SendEmailAction>
         >;
-    ctx.capabilities.contribute("notify:registerSmtpPurpose", register);
+    ctx.capabilities.contribute("notify:registerEmailPurpose", register);
     ctx.capabilities.contribute("notify:sendEmail", send);
+    ctx.capabilities.contribute("notify:emailCodeLength", () =>
+        sender.getCodeLength(),
+    );
     ctx.capabilities.contribute(
         "notify:emailAvailable",
         () =>
-            ctx.gateway.isSenderEnabled(sender.senderId) &&
-            sender.isConfigured(),
+            ctx.capabilities.require<(id: string) => boolean>(
+                "notify:isSenderEnabled",
+            )(sender.senderId) && sender.isConfigured(),
     );
-    root.contributePublicCapability("notify:registerSmtpPurpose", register);
+    root.contributePublicCapability("notify:registerEmailPurpose", register);
     root.contributePublicCapability("notify:sendEmail", send);
     return { register, send };
 }

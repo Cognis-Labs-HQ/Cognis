@@ -155,7 +155,7 @@ type NotifyDispatch = (envelope: {
 }) => Promise<unknown>;
 
 const TFA_SETUP_ID_BYTES = 18;
-const TFA_METHOD_ISSUER = process.env.COGNIS_TOTP_ISSUER || "Cognis";
+const TFA_METHOD_ISSUER = "Cognis";
 
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;

@@ -34,7 +34,7 @@ Administrator-created accounts now pass the complete role name through the provi
 
 ## Bootstrap and Channels
 
-SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
+SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
 
 Every `notify:sendEmail` call supplies an existing purpose and variables. There is no `templateId`. Missing or unknown purposes are rejected, and asynchronous actions are checked again before enqueueing. Registration closes on bootstrap completion, failure or timeout. Gateway completion hooks run under the same owner after providers bootstrap.
 
@@ -65,6 +65,12 @@ Installation resolves credentials against the same provider, endpoint and namesp
 ## Layered TFA Discard Decisions
 
 After enrollment cancellation is acknowledged, navigation is offered again to the remaining page guards. Discarding enrollment does not discard unrelated Settings changes. Keeping those changes stops navigation; explicitly discarding them resumes it. An unmounted page cannot resume a retained enrollment navigation.
+
+## Component Boundaries
+
+Email actions use `notify:registerEmailPurpose`, independent of transport. Sender contracts are public Core types, and adapter bootstrap receives ctx capabilities instead of the concrete gateway. Email verification reads the email provider's code length; TFA may be absent. Authenticated availability exposes no configuration. Sender requirements drive email checks, and stored addresses remain readable without email delivery. Validation policy uses `email`; an existing non-empty requirement cannot silently become disabled.
+
+Registration and sharing adapters declare their own browser contributions. TFA discovers adapter language resources and uses common verification errors; issuer configuration stays with its adapter. Share maintenance follows gateway disable/reactivation. Share UI tests are separated by component ownership.
 
 ## Commits
 

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
+import type { NotificationEnvelope } from "@cognis/core";
 
 export interface InternalNotification {
     id: string;

@@ -8,7 +8,7 @@ import { showToast } from "/static/reuse/toast.js";
  * Renders a matrix of notification providers vs categories so users can
  * opt in or out of each combination. Integrates with the unsaved-changes bar.
  *
- * When the user enables SMTP, the module verifies they have a primary verified
+ * When the user enables an email-dependent sender, the module verifies they have a primary verified
  * email address. If not, a toast explains the requirement and the checkbox is
  * reverted.
  *
@@ -131,12 +131,14 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
 
                     if (
                         checkbox.checked &&
-                        senderId === "smtp" &&
+                        providers.find(
+                            (provider) => provider.senderId === senderId,
+                        )?.requiresVerifiedEmail === true &&
                         !hasPrimaryVerifiedEmail()
                     ) {
                         checkbox.checked = false;
                         showToast(
-                            i18n.t("ui.app.settings.notif_smtp_no_email_body"),
+                            i18n.t("ui.app.settings.notif_email_required_body"),
                             { variant: "warning" },
                         );
                         return;

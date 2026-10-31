@@ -3,7 +3,7 @@ import type {
     NotifyAdapterBootstrapCtx,
     NotificationCategory,
     NotificationChannelRegistration,
-} from "../../../gateways/notify/gateway.js";
+} from "@cognis/core";
 import type { EmailActionInput, NotificationActionMessage } from "@cognis/core";
 import type { BootstrapDisposer } from "@cognis/core";
 import { requireBootstrapScope } from "@cognis/core";
@@ -15,7 +15,7 @@ import type {
     NotificationEnvelope,
     NotificationSender,
     NotificationSenderQueueEntry,
-} from "../../../gateways/notify/gateway.js";
+} from "@cognis/core";
 import { encodeBasicHtmlEntities } from "./html-entities.js";
 import {
     encodeHeaderPhrase,
@@ -34,8 +34,8 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
-import { clampSmtpVerificationCodeLength } from "@cognis/core";
+import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
+import { clampVerificationCodeLength } from "@cognis/core";
 export interface SmtpConfig {
     host: string;
     port: number;
@@ -498,6 +498,7 @@ async function sendMailWithRetry(
 
 export class SmtpNotificationSender implements NotificationSender {
     readonly senderId = "smtp";
+    readonly requiresVerifiedEmail = true;
     readonly senderName = "SMTP Email";
 
     private readonly envSnapshot: Record<string, string | undefined>;
@@ -526,7 +527,7 @@ export class SmtpNotificationSender implements NotificationSender {
                 }));
         this.createRateLimiter =
             createRateLimiter ??
-            (() => new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS));
+            (() => new SmtpRateLimiter(EMAIL_DELIVERY_RATE_LIMIT_MS));
     }
 
     async bootstrap(ctx: NotifyAdapterBootstrapCtx): Promise<void> {
@@ -692,7 +693,7 @@ export class SmtpNotificationSender implements NotificationSender {
     }
 
     getCodeLength(): number {
-        return clampSmtpVerificationCodeLength(this.config.codeLength);
+        return clampVerificationCodeLength(this.config.codeLength);
     }
 
     setConfig(config: Record<string, unknown>): void {
@@ -720,7 +721,7 @@ export class SmtpNotificationSender implements NotificationSender {
         if (typeof config.greylistRetryDelayMs === "number")
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
         if (typeof config.codeLength === "number") {
-            this.config.codeLength = clampSmtpVerificationCodeLength(
+            this.config.codeLength = clampVerificationCodeLength(
                 config.codeLength,
             );
         }

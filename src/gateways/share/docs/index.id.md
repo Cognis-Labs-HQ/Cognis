@@ -1,5 +1,7 @@
 # Klien browser Berbagi
 
+Adapter mendeklarasikan penyedia navbar sendiri yang mengikuti status aktifnya. Penemuan pengirim memakai `notify:listSenders` tanpa implementasi Gateway Notifikasi. Pemeliharaan Share berkala berhenti saat gateway nonaktif dan dilanjutkan saat aktif.
+
 Klien browser Berbagi memungkinkan modul mengambil profil tamu berbagi yang sedang terautentikasi melalui kontrak browser publik gateway Share.
 
 ## Contoh penggunaan

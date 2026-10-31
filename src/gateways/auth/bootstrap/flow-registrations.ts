@@ -623,7 +623,7 @@ export async function registerAuthBootstrapHook(
                     listedEmails,
                     {
                         sendPrimaryVerification:
-                            securitySettings.userValidationMode === "smtp",
+                            securitySettings.userValidationMode === "email",
                     },
                 );
             }

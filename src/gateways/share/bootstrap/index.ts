@@ -1,4 +1,8 @@
-import type { RegisterNotificationAction } from "@cognis/core";
+import {
+    requireBootstrapScope,
+    type BootstrapDisposer,
+    type RegisterNotificationAction,
+} from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -63,7 +67,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const registerEmailAction =
         ctx.capabilities.get<RegisterNotificationAction>(
-            "notify:registerSmtpPurpose",
+            "notify:registerEmailPurpose",
         );
     const emailPurpose = registerEmailAction
         ? await registerEmailAction("shareLinks", (variables) => ({
@@ -302,6 +306,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             adapter.id,
             path.join(SHARE_ADAPTERS_ROOT, adapter.id),
         );
+        for (const plugin of adapter.navbarPlugins ?? []) {
+            uiHooks.registerNavbarPlugin(
+                plugin.scriptUrl,
+                () => gateway.isAdapterEnabled(adapter.id),
+                plugin.providesCapabilities,
+            );
+        }
     }
     uiHooks.registerNavbarPlugin(
         "/static/gateways/share/ui/approval-poller.js",
@@ -318,11 +329,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/share/ui/provider.js",
         providesCapabilities: ["share:uiGateway"],
     });
-    uiHooks.registerNavbarPlugin(
-        "/static/adapters/share/link/ui/share-links-popup/index.js",
-        () => gateway.isAdapterEnabled("link"),
-        ["share:openPopup", "share:openLinksPopup"],
-    );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
@@ -333,7 +339,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
     });
 
-    const cleanupTimer = setInterval(() => {
+    const runCleanup = () => {
         void notifyExpiredShares().catch((error) => {
             ctx.log?.("error", "Failed to notify expired shares.", {
                 component: "share-gateway",
@@ -367,8 +373,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 },
             );
         });
-    }, GUEST_PROFILE_CLEANUP_INTERVAL_MS);
-    cleanupTimer.unref?.();
+    };
+    let cleanupTimer: ReturnType<typeof setInterval>;
+    const startCleanup = () => {
+        cleanupTimer = setInterval(
+            runCleanup,
+            GUEST_PROFILE_CLEANUP_INTERVAL_MS,
+        );
+        cleanupTimer.unref?.();
+    };
+    startCleanup();
+    const dispose: BootstrapDisposer = () => clearInterval(cleanupTimer);
+    dispose.reactivate = startCleanup;
+    requireBootstrapScope().registerDisposer(dispose);
     void notifyExpiredShares().catch((error) => {
         ctx.log?.("error", "Failed initial expired share notification scan.", {
             component: "share-gateway",

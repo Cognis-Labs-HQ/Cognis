@@ -1,5 +1,7 @@
 # Internal Notification Adapter
 
+Bootstrap registers the always-on sender through `notify:registerAlwaysOnSender` on ctx; it receives no concrete gateway. Sender contracts come from `@cognis/core`.
+
 ## Overview
 
 The Internal adapter delivers notifications directly to the in-app notification bell on every dashboard page. It is always-on by default — every notification dispatched through the gateway reaches the recipient's inbox without requiring the user to configure any notification preferences. The adapter stores up to 50 notifications per user in memory; entries are lost on server restart.
@@ -19,7 +21,7 @@ Not responsible for: email delivery (handled by the SMTP adapter), persistence a
 
 `bootstrapNotifyAdapter` (also exported from `index.ts`) is called during gateway bootstrap via `CoreNotificationGateway.bootstrapAdapters`. It:
 
-1. Registers the sender as always-on with `ctx.gateway.registerAlwaysOnSender('internal')`.
+1. Registers the sender as always-on through the ctx capability `notify:registerAlwaysOnSender`.
 2. Registers the inbox API routes via `ctx.registerRoute(...)`.
 3. Registers the navbar plugin and its static directory so the bell is served to the browser.
 

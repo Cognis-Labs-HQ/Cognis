@@ -1,5 +1,7 @@
 # TFA Gateway
 
+Adapter language resources are discovered from the installed methods rather than a fixed provider list. Methods report `invalid_verification_code` through the common error contract; issuer-specific configuration belongs to the adapter.
+
 An unfinished enrollment is protected immediately, even before a code is typed. Backdrop, Escape, close, Cancel and SPA navigation use the shared discard confirmation; keeping the form restores focus. Navigation resumes only after cancellation completes. Refresh uses the browser leave warning. Disposing the owning section removes navigation listeners and popups; mandatory authentication setup remains enforced by the server.
 
 ## Overview

@@ -34,7 +34,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const registerEmailAction =
         ctx.capabilities.get<RegisterNotificationAction>(
-            "notify:registerSmtpPurpose",
+            "notify:registerEmailPurpose",
         );
     const invitePurpose = registerEmailAction
         ? await registerEmailAction("invite", (variables) => ({
@@ -110,14 +110,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         sendInviteEmail:
             sendInviteEmail ??
             (async () => {
-                throw new Error("smtp_unavailable");
+                throw new Error("email_delivery_unavailable");
             }),
         createProfile: createProfileAndQuota,
         isEmailRegistered: isEmailRegistered ?? (async () => false),
         upsertVerifiedPrimaryEmail:
             upsertVerifiedPrimaryEmail ??
             (async () => {
-                throw new Error("smtp_unavailable");
+                throw new Error("email_delivery_unavailable");
             }),
     });
     await gateway.loadPersistedConfigs();
@@ -195,29 +195,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ],
         isEnabled: isGatewayEnabled,
     });
-    const tokenAdapterUiDir = path.resolve(
-        ctx.adaptersRoot,
-        "registration",
-        "token",
-        "ui",
-    );
-    ctx.uiRegistry?.registerAdapterStaticDir?.(
-        "registration",
-        "token",
-        tokenAdapterUiDir,
-    );
-    const tokenAuthorizationScriptUrl =
-        "/static/adapters/registration/token/ui/authorization.js";
+    for (const adapter of gateway.listAdapters()) {
+        ctx.uiRegistry?.registerAdapterStaticDir?.(
+            "registration",
+            adapter.id,
+            path.resolve(registrationAdaptersRoot, adapter.id, "ui"),
+        );
+        for (const message of adapter.authTypingMessages ?? []) {
+            ctx.uiRegistry?.registerAuthTypingMessage({
+                id: message.id,
+                textKey: message.textKey,
+                ownerType: "adapter",
+                ownerId: adapter.id,
+                isEnabled: () =>
+                    isGatewayEnabled() &&
+                    gateway.isAdapterEnabled(adapter.id) &&
+                    (!message.publicRegistrationOnly ||
+                        gateway.isPublicEnabled()),
+            });
+        }
+    }
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
         providesCapabilities: ["users:getLeadingControls"],
-    });
-    ctx.uiRegistry?.registerAuthTypingMessage({
-        id: "registration-register-today",
-        textKey: "ui.app.login.typing.sample.7",
-        ownerType: "adapter",
-        ownerId: "public",
-        isEnabled: () => isGatewayEnabled() && gateway.isPublicEnabled(),
     });
 
     ctx.capabilities.contribute(
@@ -259,19 +259,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.flow.extend(
             "constructRegistrationUi",
             "compose-form",
-            { id: "registration-token:account-creation-authorization" },
+            { id: "registration:accountCreationUi" },
             () => ({
-                integrations: [
-                    {
-                        id: "registration-token-authorization",
-                        scriptUrl:
-                            ctx.uiRegistry?.resolveAssetUrl(
-                                tokenAuthorizationScriptUrl,
-                            ) ?? tokenAuthorizationScriptUrl,
-                        stringsBaseUrl:
-                            "/static/adapters/registration/token/languages",
-                    },
-                ],
+                integrations: isGatewayEnabled()
+                    ? gateway.listRegistrationUi().map((integration) => ({
+                          ...integration,
+                          scriptUrl:
+                              ctx.uiRegistry?.resolveAssetUrl(
+                                  integration.scriptUrl,
+                              ) ?? integration.scriptUrl,
+                      }))
+                    : [],
             }),
         );
     }

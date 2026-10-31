@@ -218,7 +218,7 @@ export function createUserEmailRoutes(
                     res.end(
                         JSON.stringify({
                             error: {
-                                code: "smtp_unavailable",
+                                code: "email_delivery_unavailable",
                                 message:
                                     "Email verification is not available. Contact your administrator.",
                             },
@@ -256,7 +256,7 @@ export function createUserEmailRoutes(
                 } catch (err) {
                     const msg =
                         err instanceof Error ? err.message : String(err);
-                    if (msg === "smtp_rate_limited") {
+                    if (msg === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });
@@ -407,7 +407,7 @@ export function createUserEmailRoutes(
                     res.end(
                         JSON.stringify({
                             error: {
-                                code: "smtp_unavailable",
+                                code: "email_delivery_unavailable",
                                 message: "Email delivery is not configured",
                             },
                         }),
@@ -472,7 +472,7 @@ export function createUserEmailRoutes(
                 } catch (err) {
                     const msg =
                         err instanceof Error ? err.message : String(err);
-                    if (msg === "smtp_rate_limited") {
+                    if (msg === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });

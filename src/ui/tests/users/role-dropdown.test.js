@@ -144,14 +144,14 @@ test("users tfa reset action has standalone branch", () => {
     );
 });
 
-test("users resend verification action is hidden when smtp adapter is disabled", () => {
+test("users resend verification requires email delivery while email metadata remains readable", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
     );
 
-    assert.match(source, /if \(!smtpAdapterActive\) return;/);
-    assert.match(source, /const emails = smtpAdapterActive\s*\?[\s\S]*: \[\];/);
+    assert.match(source, /if \(!emailDeliveryAvailable\) return;/);
+    assert.match(source, /listUserEmails\(\{ accountId: username \}\)/);
 });
 
 test("users storage quotas open from the hamburger menu with unit selectors", () => {

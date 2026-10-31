@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">Verification failed. Please try again.</string>
   <string name="ui.app.settings.emails_verify_rate_limited">A verification email was sent recently. Please wait before requesting another.</string>
   <string name="ui.app.settings.emails_remove_primary_body">This is your primary email address. Set another email as primary before removing this one.</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">You need a verified primary email address to enable email notifications. Add and verify an email address in your general settings first.</string>
+  <string name="ui.app.settings.notif_email_required_body">You need a verified primary email address to enable email notifications. Add and verify an email address in your general settings first.</string>
   <string name="ui.app.settings.notif_matrix_heading">Notification Preferences</string>
   <string name="ui.app.settings.notif_no_providers">No notification adapters are active.</string>
   <string name="ui.app.settings.notif_no_categories">No notification categories are registered.</string>
@@ -474,8 +474,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">User Validation Method</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (unavailable — enable the SMTP adapter first)</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">Email</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">Email (unavailable — configure an email delivery provider first)</string>
   <string name="ui.app.admin.security.password_policy_heading">Password Policy</string>
   <string name="ui.app.admin.security.policy_min_length">Minimum Length</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Minimum Uppercase Letters (0 = off)</string>

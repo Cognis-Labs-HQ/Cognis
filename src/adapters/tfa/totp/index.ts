@@ -123,7 +123,7 @@ class TotpAdapter implements TfaMethodAdapter {
         secret: string;
     }): Promise<Record<string, string>> {
         const otpAuthUri = toOtpAuthUri({
-            issuer: input.issuer,
+            issuer: process.env.COGNIS_TOTP_ISSUER || input.issuer,
             accountId: input.accountId,
             secret: input.secret,
             algorithm: this.algorithm,
@@ -205,7 +205,7 @@ class TotpAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_totp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({
@@ -239,7 +239,7 @@ class TotpAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_totp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({ verified: true });

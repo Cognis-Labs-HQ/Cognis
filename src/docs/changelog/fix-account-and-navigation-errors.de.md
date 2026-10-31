@@ -34,7 +34,7 @@ Bei der administrativen Kontoerstellung wird der vollständige Rollenname über 
 
 ## Bootstrap und Kanäle
 
-SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerSmtpPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
+SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerEmailPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
 
 Jeder Aufruf von `notify:sendEmail` übergibt einen bestehenden Zweck und Variablen. `templateId` entfällt. Fehlende und unbekannte Zwecke werden abgewiesen; asynchrone Aktionen werden vor dem Einreihen erneut geprüft. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt. Abschluss-Hooks laufen nach dem Start der Anbieter unter demselben Besitzer.
 
@@ -65,6 +65,12 @@ Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Na
 ## Getrennte TFA-Verwerfungsfragen
 
 Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übrigen Seitenschutzfunktionen übergeben. Das Verwerfen der Einrichtung verwirft keine anderen Einstellungsänderungen. Ihr Beibehalten stoppt die Navigation; erst ihre ausdrückliche Verwerfung setzt sie fort. Eine entfernte Seite kann eine gespeicherte Navigation nicht wieder aufnehmen.
+
+## Komponentengrenzen
+
+E-Mail-Aktionen verwenden transportunabhängig `notify:registerEmailPurpose`. Sender-Verträge sind öffentliche Core-Typen; der Adapter-Bootstrap erhält ctx statt einer konkreten Gateway-Instanz. Die Verifizierung liest die Codelänge vom E-Mail-Anbieter und benötigt kein TFA. Die authentifizierte Verfügbarkeitsabfrage legt keine Konfiguration offen. Sender-Anforderungen steuern E-Mail-Prüfungen; gespeicherte Adressen bleiben ohne Versand lesbar. Die Richtlinie verwendet `email`; eine bestehende Anforderung wird nicht stillschweigend deaktiviert.
+
+Registrierungs- und Sharing-Adapter deklarieren ihre eigenen Browserbeiträge. TFA ermittelt Adapter-Sprachressourcen und nutzt gemeinsame Verifizierungsfehler; Ausstellerkonfiguration bleibt beim Adapter. Share-Wartung folgt Deaktivierung und Reaktivierung. Share-UI-Tests sind nach Komponentenzuständigkeit getrennt.
 
 ## Commits
 

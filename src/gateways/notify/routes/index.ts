@@ -201,6 +201,7 @@ export function createNotificationRoutes(
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
+        emailAvailable?: () => boolean;
     },
 ) {
     const ctx = resolveRouteContext(options?.routeContext);
@@ -209,6 +210,19 @@ export function createNotificationRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/notify/email-delivery" &&
+            req.method === "GET"
+        ) {
+            if (!ctx.requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { available: options?.emailAvailable?.() === true },
+                }),
+            );
+            return true;
+        }
         if (url.pathname === "/api/v1/notify/send" && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
 

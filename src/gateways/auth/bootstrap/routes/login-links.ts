@@ -180,7 +180,7 @@ This link expires in 15 minutes and can only be used once.`,
                 revokeAccessToken(loginToken);
                 const message =
                     error instanceof Error ? error.message : String(error);
-                if (message === "smtp_rate_limited") {
+                if (message === "email_rate_limited") {
                     return respondWithPasswordResetEnvelope(429, {
                         error: {
                             code: "rate_limited",

@@ -1,5 +1,7 @@
 # Gateway and Adapter
 
+Cross-component notification contracts are exported from `@cognis/core`. Callers resolve `notify:dispatch` or `notify:listSenders` through ctx; adapters receive bounded host capabilities rather than a concrete gateway instance.
+
 ## Overview
 
 A gateway is the sole authority for a bounded domain in Cognis. It owns the
@@ -325,11 +327,15 @@ gateway contributes `logging:log`.
 
 ```ts
 // Contribute (from a gateway or adapter bootstrap):
-ctx.capabilities.contribute("notify:gateway", gateway);
+ctx.capabilities.contribute("notify:dispatch", (message) =>
+    gateway.dispatch(message),
+);
 
 // Consume (in a later gateway's bootstrap):
-const notifyGateway =
-    ctx.capabilities.get<NotificationGateway>("notify:gateway");
+const dispatch =
+    ctx.capabilities.require<
+        (message: NotificationEnvelope) => Promise<NotificationDispatchResult>
+    >("notify:dispatch");
 ```
 
 Capability keys follow the convention `<gateway-id>:<name>`.

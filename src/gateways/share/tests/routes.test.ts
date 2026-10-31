@@ -90,17 +90,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const adminToken = issueAccessToken("alice", "admin", 60);
     const bobToken = issueAccessToken("bob", "user", 60);
     capabilities.contribute("db:executor", dbExecutor as never);
-    capabilities.contribute("notify:gateway", {
-        listSenders() {
-            return [
-                {
-                    senderId: "smtp",
-                    name: "SMTP Email",
-                    active: true,
-                },
-            ];
+    capabilities.contribute("notify:listSenders", () => [
+        {
+            senderId: "smtp",
+            name: "SMTP Email",
+            active: true,
         },
-    } as never);
+    ]);
     capabilities.contribute(
         "notify:quickShare:smtp",
         ((input: { shareUrl: string; label?: string | null }) =>
@@ -124,7 +120,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     }) as never);
     const emailActions = new Map<string, NotificationAction>();
     capabilities.contribute(
-        "notify:registerSmtpPurpose",
+        "notify:registerEmailPurpose",
         async (id: string, action: NotificationAction) => {
             const purpose = `gateway:share:${id}`;
             emailActions.set(purpose, action);
@@ -348,6 +344,26 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                     plugin.scriptUrl === "/static/gateways/share/ui/navbar.js",
             ),
     );
+    const linkPopup = uiRegistry
+        .listNavbarPlugins()
+        .find((plugin) =>
+            plugin.providesCapabilities?.includes("share:openLinksPopup"),
+        );
+    assert.ok(linkPopup);
+    assert.equal(linkPopup.isEnabled?.(), true);
+    for (const action of ["disable", "enable"]) {
+        const toggleResponse = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            new RequestRecorder({ method: "POST", token: adminToken }),
+            toggleResponse,
+            new URL(
+                `http://localhost/api/v1/gateways/share/adapters/link/${action}`,
+            ),
+        );
+        assert.equal(toggleResponse.statusCode, 200);
+        assert.equal(linkPopup.isEnabled?.(), action === "enable");
+    }
 
     const response = new ResponseRecorder();
     await dispatchRoute(

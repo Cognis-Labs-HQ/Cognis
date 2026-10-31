@@ -83,17 +83,15 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
     function resolveTranslatedTfaErrorMessage(message) {
         const normalizedMessage = String(message ?? "").trim();
         const messageKeyByCode = {
-            invalid_totp_code: "ui.app.login.tfa.error_invalid",
+            invalid_verification_code: "ui.app.login.tfa.error_invalid",
             invalid_recovery_code: "ui.app.login.tfa.error_invalid",
             code_required: "ui.app.login.tfa.error_invalid",
             recovery_code_required: "ui.app.login.tfa.error_invalid",
-            invalid_smtp_code: "ui.app.login.tfa.error_invalid",
-            smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
-            smtp_capability_missing:
+            email_delivery_unavailable:
                 "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.notif_smtp_no_email_body",
+            primary_email_required: "ui.app.settings.notif_email_required_body",
             primary_email_address_not_verified:
-                "ui.app.settings.notif_smtp_no_email_body",
+                "ui.app.settings.notif_email_required_body",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",

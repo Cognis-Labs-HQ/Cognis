@@ -1,5 +1,7 @@
 # Share-Browserclient
 
+Adapter deklarieren ihre eigenen Navbar-Anbieter, die ihrem Aktivierungszustand folgen. Die Senderermittlung nutzt `notify:listSenders` ohne konkrete Notification-Gateway-Instanz. Regelmäßige Share-Wartung stoppt bei Deaktivierung und beginnt bei Aktivierung erneut.
+
 Der Share-Browserclient ermöglicht Modulen, das aktuell authentifizierte Freigabegastprofil über den öffentlichen Browservertrag des Share-Gateways abzurufen.
 
 ## Verwendungsbeispiele

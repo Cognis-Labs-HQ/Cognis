@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">確認に失敗しました。もう一度お試しください。</string>
   <string name="ui.app.settings.emails_verify_rate_limited">確認メールが最近送信されました。別のリクエストを行う前にしばらくお待ちください。</string>
   <string name="ui.app.settings.emails_remove_primary_body">これはプライマリメールアドレスです。このアドレスを削除する前に、別のメールをプライマリとして設定してください。</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">メール通知を有効にするには、確認済みのプライマリメールアドレスが必要です。まず一般設定でメールアドレスを追加して確認してください。</string>
+  <string name="ui.app.settings.notif_email_required_body">メール通知を有効にするには、確認済みのプライマリメールアドレスが必要です。まず一般設定でメールアドレスを追加して確認してください。</string>
   <string name="ui.app.settings.notif_matrix_heading">通知設定</string>
   <string name="ui.app.settings.notif_no_providers">アクティブな通知アダプターがありません。</string>
   <string name="ui.app.settings.notif_no_categories">通知カテゴリが登録されていません。</string>
@@ -474,8 +474,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">ユーザー検証方式</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP（利用不可 — 先にSMTPアダプターを有効にしてください）</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">メール</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">メール（利用不可 — 先にメール配信プロバイダーを設定してください）</string>
   <string name="ui.app.admin.security.password_policy_heading">パスワードポリシー</string>
   <string name="ui.app.admin.security.policy_min_length">最小文字数</string>
   <string name="ui.app.admin.security.policy_require_uppercase">大文字の最小数（0 = 無効）</string>

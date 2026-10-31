@@ -22,7 +22,7 @@ let root = null;
 let i18n = null;
 let reprompt = null;
 let users = [];
-let smtpAdapterActive = false;
+let emailDeliveryAvailable = false;
 let composer = null;
 let elements = [];
 let leadingControlsHtml = "";
@@ -252,9 +252,9 @@ async function promptStorageQuotas(username) {
 
 async function refreshData() {
     const requestSignal = pageSignal;
-    const [loadedUsers, isSmtpActive, loginMethods] = await Promise.all([
+    const [loadedUsers, isEmailAvailable, loginMethods] = await Promise.all([
         loadUsers(),
-        uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ?? false,
+        uiCtx.capabilities.get("notify:emailClient")?.emailAvailable() ?? false,
         loadLoginMethods(),
     ]);
     if (requestSignal !== pageSignal || requestSignal?.aborted) return;
@@ -265,7 +265,7 @@ async function refreshData() {
         ...user,
         providerLabel: providerNames.get(user.provider),
     }));
-    smtpAdapterActive = isSmtpActive;
+    emailDeliveryAvailable = isEmailAvailable;
     providerIcons = new Map(
         loginMethods
             .filter((method) => method.loginButton?.iconUrl)
@@ -382,7 +382,7 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "resend") {
-        if (!smtpAdapterActive) return;
+        if (!emailDeliveryAvailable) return;
         const emails =
             (await uiCtx.capabilities
                 .get("notify:emailClient")
@@ -573,11 +573,10 @@ function bindUsersInteractions() {
             const isSelf = username === localStorage.getItem("cognis_account");
             const user = users.find((entry) => entry.accountId === username);
             if (!user) return;
-            const emails = smtpAdapterActive
-                ? ((await uiCtx.capabilities
-                      .get("notify:emailClient")
-                      ?.listUserEmails({ accountId: username })) ?? [])
-                : [];
+            const emails =
+                (await uiCtx.capabilities
+                    .get("notify:emailClient")
+                    ?.listUserEmails({ accountId: username })) ?? [];
             const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [
                 {
@@ -677,7 +676,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     reprompt = createRepromptGuard({ i18n });
     users = [];
-    smtpAdapterActive = false;
+    emailDeliveryAvailable = false;
     leadingControlsHtml = "";
 
     await refreshData();

@@ -1,4 +1,4 @@
-import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/gateway.js";
+import type { NotifyAdapterBootstrapCtx } from "@cognis/core";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 import { registerSmtpActions } from "./purposes.js";
 
@@ -35,7 +35,13 @@ export async function bootstrapNotifyAdapter(
                 ? (body.config as Record<string, unknown>)
                 : undefined;
         try {
-            await ctx.gateway.testSender(
+            await ctx.capabilities.require<
+                (
+                    id: string,
+                    recipient: string,
+                    config?: Record<string, unknown>,
+                ) => Promise<void>
+            >("notify:testSender")(
                 sender.senderId,
                 String(body.to ?? "").trim(),
                 config,

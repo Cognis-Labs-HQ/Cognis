@@ -249,10 +249,10 @@ Study提供元は、ライフサイクルに従う `load`、`toggle`、`has` 操
 
 ## ブートストラップとチャネル
 
-SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerSmtpPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧やテンプレート一覧はありません。
+SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerEmailPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧やテンプレート一覧はありません。
 
 ```js
-const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
 const purpose = await registerPurpose("digest", (variables) => ({
     subject: variables.subject,
     body: variables.body,

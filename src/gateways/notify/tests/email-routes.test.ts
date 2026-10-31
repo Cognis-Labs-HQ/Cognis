@@ -145,7 +145,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
             purpose: EMAIL_PURPOSE,
             canSendVerificationEmail: () => false,
             sendEmail: async () => {
-                throw new Error("smtp_unavailable");
+                throw new Error("email_delivery_unavailable");
             },
         },
     );
@@ -158,7 +158,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
     );
     assert.equal(res.status, 503);
     const data = JSON.parse(res.payload);
-    assert.equal(data.error.code, "smtp_unavailable");
+    assert.equal(data.error.code, "email_delivery_unavailable");
 
     const emails = await notifStore.getUserEmails("alice");
     assert.equal(
@@ -704,6 +704,6 @@ test("SSO email resends support code and link verification with namespaced accou
     assert.equal(unavailable.status, 503);
     assert.equal(
         JSON.parse(unavailable.payload).error.code,
-        "smtp_unavailable",
+        "email_delivery_unavailable",
     );
 });

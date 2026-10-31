@@ -249,10 +249,10 @@ Penyedia Study menyediakan `study:favourites` dengan operasi `load`, `toggle`, d
 
 ## Bootstrap dan Kanal
 
-SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerSmtpPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
+SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerEmailPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
 
 ```js
-const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
 const purpose = await registerPurpose("digest", (variables) => ({
     subject: variables.subject,
     body: variables.body,

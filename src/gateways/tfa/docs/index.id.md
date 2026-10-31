@@ -1,5 +1,7 @@
 # TFA Gateway
 
+Sumber bahasa adapter ditemukan dari metode terpasang, bukan daftar penyedia tetap. Metode melaporkan `invalid_verification_code` melalui kontrak kesalahan bersama; konfigurasi penerbit menjadi milik adapter.
+
 Penyiapan yang belum selesai langsung dilindungi, bahkan sebelum kode diketik. Klik latar, Escape, tutup, Batal dan navigasi SPA menggunakan konfirmasi pembuangan bersama; mempertahankan formulir mengembalikan fokus. Navigasi dilanjutkan hanya setelah pembatalan selesai. Muat ulang menggunakan peringatan keluar browser. Pembuangan bagian pemilik menghapus pendengar dan popup; kewajiban penyiapan autentikasi tetap ditegakkan server.
 
 ## Ikhtisar

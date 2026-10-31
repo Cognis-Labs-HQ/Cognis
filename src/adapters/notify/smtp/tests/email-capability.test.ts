@@ -30,16 +30,14 @@ async function fixture(t: import("node:test").TestContext) {
     const routes: Array<
         (req: never, res: never, url: URL) => Promise<boolean>
     > = [];
+    capabilities.contribute("notify:isSenderEnabled", () => true);
+    capabilities.contribute(
+        "notify:testSender",
+        (_id: string, to: string, config: Record<string, unknown>) =>
+            sender.test!(to, config),
+    );
     const ctx = {
         capabilities,
-        gateway: {
-            isSenderEnabled: () => true,
-            testSender: (
-                _id: string,
-                to: string,
-                config: Record<string, unknown>,
-            ) => sender.test!(to, config),
-        },
         registerRoute: (route: (typeof routes)[number]) => routes.push(route),
         requireAuth: () => true,
         readJson: async () => ({ to: "admin@example.test" }),
@@ -58,7 +56,7 @@ async function fixture(t: import("node:test").TestContext) {
         routes,
         ctx,
         register: capabilities.require<RegisterNotificationAction>(
-            "notify:registerSmtpPurpose",
+            "notify:registerEmailPurpose",
         ),
         send: capabilities.require<SendEmailAction>("notify:sendEmail"),
     };
@@ -66,6 +64,11 @@ async function fixture(t: import("node:test").TestContext) {
 
 test("SMTP owns staged action registration and delivery for modules and adapters", async (t) => {
     const host = await fixture(t);
+    host.sender.setConfig({ codeLength: 8 });
+    assert.equal(
+        host.capabilities.require<() => number>("notify:emailCodeLength")(),
+        8,
+    );
     const stages: string[] = [];
     for (const stage of ["validate", "render", "enqueue"])
         host.root.flow.extend(
@@ -112,7 +115,7 @@ test("SMTP owns staged action registration and delivery for modules and adapters
     });
     assert.equal(host.root.getCapability("notify:sendEmail"), host.send);
     assert.equal(
-        host.root.isPublicCapability("notify:registerSmtpPurpose"),
+        host.root.isPublicCapability("notify:registerEmailPurpose"),
         true,
     );
     await assert.rejects(

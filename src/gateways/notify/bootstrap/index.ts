@@ -62,8 +62,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 
+    ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
+        gateway.isSenderEnabled(senderId),
+    );
+    ctx.capabilities.contribute(
+        "notify:registerAlwaysOnSender",
+        (senderId: string) => gateway.registerAlwaysOnSender(senderId),
+    );
+    ctx.capabilities.contribute(
+        "notify:testSender",
+        (
+            senderId: string,
+            recipient: string,
+            config?: Record<string, unknown>,
+        ) => gateway.testSender(senderId, recipient, config),
+    );
+    ctx.capabilities.contribute("notify:listSenders", () =>
+        gateway.listSenders(),
+    );
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
-        gateway,
         capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
@@ -79,7 +96,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     const registerEmailAction =
         ctx.capabilities.get<RegisterNotificationAction>(
-            "notify:registerSmtpPurpose",
+            "notify:registerEmailPurpose",
         );
     const emailVerificationPurpose = registerEmailAction
         ? await registerEmailAction("emailVerification", (variables) => ({
@@ -92,7 +109,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const sendEmail =
         ctx.capabilities.get<SendEmailAction>("notify:sendEmail") ??
         (async () => {
-            throw new Error("smtp_unavailable");
+            throw new Error("email_delivery_unavailable");
         });
     const emailAvailable = () =>
         ctx.capabilities.get<() => boolean>("notify:emailAvailable")?.() ===
@@ -105,9 +122,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const getTfaSmtpCodeLength = () =>
+    const getEmailCodeLength = () =>
         ctx.capabilities.get<() => number | undefined>(
-            "tfa:smtpCodeLength",
+            "notify:emailCodeLength",
         )?.();
     const externalHost =
         process.env.EXTERNAL_HOST ??
@@ -134,6 +151,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createNotificationRoutes(gateway, notifStore, {
             getTrustedDomains,
             routeContext,
+            emailAvailable,
         }),
         "notify",
     );
@@ -149,7 +167,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
             externalHost,
             routeContext,
-            getTfaSmtpCodeLength,
+            getEmailCodeLength,
         ),
         "notify",
     );
@@ -271,7 +289,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 (await accounts?.isFounder(accountId));
             if (
                 !isGatewayEnabled() ||
-                settings?.userValidationMode !== "smtp" ||
+                settings?.userValidationMode !== "email" ||
                 founder
             )
                 return [];
@@ -290,7 +308,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.flow.extend(
             "login",
             "establish-session",
-            { id: "notify-gateway:smtp-enforcement", order: 50 },
+            { id: "notify-gateway:emailEnforcement", order: 50 },
             async (stageCtx) => {
                 const sessionResult = stageCtx.data["sessionResult"] as
                     Record<string, unknown> | undefined;
@@ -313,7 +331,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     : false;
                 const requiresUserValidation =
                     isGatewayEnabled() &&
-                    sessionResult.userValidationMode === "smtp" &&
+                    sessionResult.userValidationMode === "email" &&
                     !isInitialAdmin &&
                     !hasVerifiedEmail;
                 const nextSessionResult = {
@@ -326,14 +344,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         );
     }
 
-    // Expose the notification gateway itself + a thin dispatch helper as
-    // capabilities so other adapters (e.g. the social/messages adapter) can
-    // hand off delivery without holding a direct reference to this gateway.
-    /**
-     * notify:gateway — notification gateway surface for advanced sender/category
-     * consumers.
-     */
-    ctx.capabilities.contribute("notify:gateway", gateway);
     /**
      * notify:dispatch — one-shot notification dispatch helper for other
      * components.
@@ -410,9 +420,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (id: string, label: string) => gateway.registerCategory(id, label),
     );
 
-    ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
-        gateway.isSenderEnabled(senderId),
-    );
     ctx.capabilities.contribute(
         "notify:setSenderEnabled",
         async (senderId: string, enabled: boolean) => {
@@ -509,7 +516,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 const code = tfaService.issueOrGet(
                     key,
                     15 * 60 * 1000,
-                    getTfaSmtpCodeLength(),
+                    getEmailCodeLength(),
                 );
                 const watchToken = verifyTokenService.issueOrGet(key);
                 const verifyUrl = externalHost

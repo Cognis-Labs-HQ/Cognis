@@ -249,10 +249,10 @@ The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `
 
 ## Bootstrap and Channels
 
-SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
+SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
 
 ```js
-const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
 const purpose = await registerPurpose("digest", (variables) => ({
     subject: variables.subject,
     body: variables.body,

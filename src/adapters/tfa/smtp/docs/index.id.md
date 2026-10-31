@@ -2,7 +2,7 @@
 
 ## Ringkasan
 
-Adapter mendaftarkan aksi pesan kodenya sendiri saat bootstrap melalui `notify:registerSmtpPurpose` dan mengirim melalui `notify:sendEmail`. Registrasi, isi kode, dan sinkronisasi pengirim dimiliki adapter ini. Gateway TFA hanya menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP miliknya; aktivasi ulang memulihkan registrasinya.
+Adapter mendaftarkan aksi pesan kodenya sendiri saat bootstrap melalui `notify:registerEmailPurpose` dan mengirim melalui `notify:sendEmail`. Registrasi, isi kode, dan sinkronisasi pengirim dimiliki adapter ini. Gateway TFA hanya menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP miliknya; aktivasi ulang memulihkan registrasinya.
 
 ## Persyaratan
 

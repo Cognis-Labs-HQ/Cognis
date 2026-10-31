@@ -6,7 +6,7 @@ export async function completeBootstrap(
     ctx: GatewayBootstrapContext,
 ): Promise<void> {
     const register = ctx.capabilities.get<RegisterNotificationAction>(
-        "notify:registerSmtpPurpose",
+        "notify:registerEmailPurpose",
     );
     if (!register) return;
     const purpose = await register("loginLink", (variables) => ({

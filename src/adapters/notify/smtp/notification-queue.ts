@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { NotificationSenderQueueEntry } from "../../../gateways/notify/gateway.js";
+import type { NotificationSenderQueueEntry } from "@cognis/core";
 
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();

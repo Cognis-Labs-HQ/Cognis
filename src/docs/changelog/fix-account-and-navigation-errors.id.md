@@ -34,7 +34,7 @@ Pembuatan akun oleh administrator kini meneruskan nama peran lengkap melalui alu
 
 ## Bootstrap dan Kanal
 
-SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerSmtpPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
+SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerEmailPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
 
 Setiap panggilan `notify:sendEmail` menyertakan tujuan yang sudah terdaftar dan variabel. `templateId` tidak digunakan lagi. Tujuan yang hilang atau tidak dikenal ditolak; aksi asinkron diperiksa kembali sebelum masuk antrean. Registrasi ditutup saat bootstrap selesai, gagal, atau melewati batas waktu. Hook penyelesaian gateway berjalan dengan pemilik yang sama setelah penyedia selesai melakukan bootstrap.
 
@@ -65,6 +65,12 @@ Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace
 ## Konfirmasi TFA Berlapis
 
 Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali ke penjaga halaman lainnya. Membuang pendaftaran tidak membuang perubahan Pengaturan yang terpisah. Mempertahankan perubahan menghentikan navigasi; membuangnya secara eksplisit melanjutkan navigasi. Halaman yang sudah dilepas tidak dapat melanjutkan navigasi pendaftaran yang tersimpan.
+
+## Batas Komponen
+
+Aksi email memakai `notify:registerEmailPurpose` tanpa bergantung pada transport. Kontrak pengirim menjadi tipe Core publik; bootstrap adapter menerima ctx tanpa gateway konkret. Verifikasi membaca panjang kode dari penyedia email dan tidak memerlukan TFA. Pemeriksaan ketersediaan memerlukan autentikasi tanpa membocorkan konfigurasi. Persyaratan pengirim mengatur pemeriksaan email; alamat tersimpan tetap dapat dibaca tanpa pengiriman. Kebijakan memakai `email`; persyaratan yang sudah ada tidak diam-diam dinonaktifkan.
+
+Adapter registrasi dan berbagi mendeklarasikan kontribusi browser sendiri. TFA menemukan sumber bahasa adapter dan memakai kesalahan verifikasi bersama; konfigurasi penerbit tetap milik adapter. Pemeliharaan Share mengikuti penonaktifan dan pengaktifan kembali gateway. Pengujian UI Share dipisahkan menurut komponen pemiliknya.
 
 ## Komit
 

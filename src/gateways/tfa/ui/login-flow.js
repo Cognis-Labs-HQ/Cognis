@@ -148,7 +148,7 @@ function resolveTranslatedMessage(i18n, key) {
 function resolveTranslatedTfaErrorMessage(i18n, message) {
     const normalizedMessage = String(message ?? "").trim();
     const messageKeyByCode = {
-        invalid_totp_code: "ui.app.login.tfa.error_invalid",
+        invalid_verification_code: "ui.app.login.tfa.error_invalid",
         invalid_recovery_code: "ui.app.login.tfa.error_invalid",
         code_required: "ui.app.login.tfa.error_invalid",
         recovery_code_required: "ui.app.login.tfa.error_invalid",

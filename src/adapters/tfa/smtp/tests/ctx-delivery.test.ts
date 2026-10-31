@@ -16,7 +16,7 @@ for (const enabled of [false, true])
             [];
         const updates: Array<{ id: string; enabled: boolean }> = [];
         capabilities.contribute(
-            "notify:registerSmtpPurpose",
+            "notify:registerEmailPurpose",
             async (id: string, action: NotificationAction) => {
                 registered.push({ id, action });
                 return `adapter:tfa:smtp:${id}`;
@@ -55,5 +55,4 @@ for (const enabled of [false, true])
         assert.equal(updates.length, enabled ? 1 : 0);
         await changed(true);
         assert.deepEqual(updates.at(-1), { id: "smtp", enabled: true });
-        assert.equal(typeof capabilities.get("tfa:smtpCodeLength"), "function");
     });

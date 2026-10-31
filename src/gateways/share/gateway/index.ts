@@ -28,6 +28,10 @@ export interface ShareMethodAdapter {
     nameKey: string;
     descriptionKey: string;
     pageModuleUrl: string;
+    navbarPlugins?: Array<{
+        scriptUrl: string;
+        providesCapabilities?: string[];
+    }>;
     order?: number;
     version?: string;
     publisher?: string;
