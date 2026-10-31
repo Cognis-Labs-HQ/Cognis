@@ -6,6 +6,10 @@
 
 Penangan tampilan kalender kini berlaku untuk satu proses render. Perubahan ukuran dan render ulang mengganti penangan sebelumnya sehingga satu klik hanya membuka satu formulir. Navigasi menghapus penangan tersebut tanpa menghapus penangan lain atau menyembunyikan galat yang berbeda.
 
+## Kalender Luring Tetap Utuh
+
+Diselaraskan dengan cabang pengembangan terbaru tanpa mengganti klien luring Kalender, perubahan tertunda, detail acara tersimpan, atau kontrol pengingat. Lingkup render hanya mengganti pendengar tampilan; pemilihan acara tetap tersedia setelah navigasi.
+
 ## Komit
 
 - [a74092b4ad19133fa63b19ae25d95281e76bb3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a74092b4ad19133fa63b19ae25d95281e76bb3ed)

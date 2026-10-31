@@ -6,6 +6,10 @@
 
 Calendar view listeners now belong to one render. Resizing or re-rendering replaces the previous listeners, so one date-add click opens one form. Navigation removes those listeners without removing unrelated handlers. Distinct runtime errors remain visible.
 
+## Preserved Offline Calendar
+
+Rebased on the current development branch without replacing the Calendar offline client, buffered writes, cached event details or reminder controls. Render scopes replace only view listeners; page-scoped event selection remains available after navigation.
+
 ## Commits
 
 - [a74092b4ad19133fa63b19ae25d95281e76bb3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a74092b4ad19133fa63b19ae25d95281e76bb3ed)

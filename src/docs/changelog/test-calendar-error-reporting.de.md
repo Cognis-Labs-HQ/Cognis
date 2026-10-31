@@ -6,6 +6,10 @@
 
 Ereignisbehandler der Kalenderansicht gelten nur für einen Rendervorgang. Größenänderungen und erneutes Rendern ersetzen die bisherigen Behandler, sodass ein Klick nur ein Formular öffnet. Beim Navigieren werden sie entfernt; andere Behandler und unterschiedliche Fehlermeldungen bleiben erhalten.
 
+## Offline-Kalender Erhalten
+
+Auf den aktuellen Entwicklungszweig umgestellt. Offline-Client, gepufferte Änderungen, zwischengespeicherte Termindetails und Erinnerungssteuerung bleiben erhalten. Render-Bereiche ersetzen nur Ansichtslistener; die seitengebundene Terminauswahl funktioniert auch nach der Navigation.
+
 ## Commits
 
 - [a74092b4ad19133fa63b19ae25d95281e76bb3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a74092b4ad19133fa63b19ae25d95281e76bb3ed)
