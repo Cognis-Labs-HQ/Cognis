@@ -94,4 +94,5 @@
   <string name="gateway.auth.keyring.destroy_message">Dadurch wird der verschlüsselte Schlüsselbund dauerhaft zerstört und deine Mitgliedschaft aus abhängigen geteilten Objekten entfernt. Anschließend wirst du zum Erstellen eines neuen Schlüsselbunds aufgefordert; Zugriff kann durch neue Einladungen wiederhergestellt werden.</string>
   <string name="gateway.auth.keyring.recreated">Der Schlüsselbund wurde zerstört und neu erstellt.</string>
   <string name="adapter.auth.keyring.sync_failed">Der Schlüsselbund konnte nicht synchronisiert werden. Die verschlüsselte lokale Kopie wurde beibehalten.</string>
+  <string name="gateway.auth.keyring.unavailable">Der Schlüsselbund ist nicht verfügbar. Versuchen Sie es erneut, sobald die Verbindung wiederhergestellt ist.</string>
 </strings>

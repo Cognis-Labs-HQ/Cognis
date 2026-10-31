@@ -1,4 +1,26 @@
 export function registerKeyringCapabilities(uiCtx, keyring) {
+    if (uiCtx.capabilities.get("keyring:readState")) return false;
+    const stateFlow = "keyring:readState";
+    uiCtx.registerFlow(stateFlow, ["load", "present"]);
+    uiCtx.extendFlow(
+        stateFlow,
+        "load",
+        { id: "keyring:stateLoader" },
+        async ({ data }) => {
+            data.state = await keyring.readState();
+        },
+    );
+    uiCtx.extendFlow(
+        stateFlow,
+        "present",
+        { id: "keyring:statePresentation" },
+        ({ data }) => {
+            data.state = {
+                exists: data.state.exists === true,
+                unlocked: data.state.unlocked === true,
+            };
+        },
+    );
     const capabilities = {
         "keyring:get": keyring.get,
         "keyring:set": keyring.set,
@@ -9,6 +31,8 @@ export function registerKeyringCapabilities(uiCtx, keyring) {
         "keyring:destroy": keyring.destroy,
         "keyring:create": keyring.create,
         "keyring:exists": keyring.exists,
+        "keyring:readState": async () =>
+            (await uiCtx.runFlow(stateFlow, {})).data.state,
         "keyring:clearAccountState": keyring.clearAccountState,
         "keyring:changePassword": keyring.changePassword,
         "keyring:resolve": keyring.resolve,
@@ -27,6 +51,7 @@ export function registerKeyringCapabilities(uiCtx, keyring) {
     };
     for (const [name, implementation] of Object.entries(capabilities))
         uiCtx.capabilities.contribute(name, implementation);
+    return true;
 }
 
 export function registerKeyringLoginFlow(uiCtx, setupAfterLogin) {

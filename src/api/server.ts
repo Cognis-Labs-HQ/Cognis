@@ -9,6 +9,7 @@ import {
     ModuleService,
     ModuleMarketplaceService,
     ModuleTestService,
+    type Ctx,
     type GatewayRegistry,
     type BootstrapLog,
     type ModuleManifest,
@@ -114,11 +115,11 @@ export async function discoverModuleSourcesOnStartup(
     log: BootstrapLog,
 ): Promise<void> {
     try {
-        const publicSourceUuids = (await marketplace.listSources())
-            .filter((source) => source.scanPrivateRepos !== true)
-            .map((source) => source.uuid);
-        const modules = publicSourceUuids.length
-            ? await marketplace.discover({}, publicSourceUuids, true)
+        const sourceUuids = (await marketplace.listSources()).map(
+            (source) => source.uuid,
+        );
+        const modules = sourceUuids.length
+            ? await marketplace.discover(sourceUuids, true)
             : [];
         log("info", "Initial module marketplace discovery completed.", {
             component: "api-modules",
@@ -380,6 +381,7 @@ export function buildServer(deps: ApiDependencies) {
                 path.resolve(process.cwd(), "config", "module-sources.json"),
             externalModulesRoot,
             (level, message, meta) => log(level, message, meta),
+            routeContext.getCapability<Ctx>("system:ctx"),
         );
     if (deps.discoverModulesOnStartup) {
         void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);

@@ -22,6 +22,14 @@ Invitation-gated SSO identities are held before account, profile or email provis
 
 The shared SMTP verification interval is fifteen seconds. Cooldowns are normalized by recipient and isolated by message purpose, so verification, login codes, login links, invitations and tests do not delay one another. Same-purpose queue reservations use the configured interval and actual successful delivery time; failed direct sends do not consume a cooldown.
 
+## Shared Sources and Setup
+
+Module source credentials and cached discovery are shared across administrators and concealed on the server. Blank credential saves preserve the configured value. Keyring Settings waits for authoritative state, unfinished TFA enrollment requires a discard decision, and internal Settings/share redirects preserve SPA navigation. Keyring is **2.1.1** and TFA is **1.1.20**.
+
+Implicit submissions from attached forms are handled in place and cannot submit a browser document request. Component submit handlers still receive the event. Internal page redirects use the SPA router; deliberate server-rendered destinations honor the same unsaved-change decision and recheck offline availability when resumed.
+
+Administrator-created accounts now pass the complete role name through the provisioning flow to the account store; administrator, moderator and teacher accounts no longer fall back to the regular-user role.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

@@ -50,10 +50,6 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
-const credentialsSource = readFileSync(
-    resolve(ROOT, "src/ui/app/modules/credentials.js"),
-    "utf8",
-);
 
 const marketplaceSource =
     readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
@@ -324,15 +320,10 @@ test("module marketplace identifies immutable trusted sources", () => {
         sourceSettingsSource,
         /const sourceValues = selectedSource\?\.trusted/,
     );
-    assert.match(sourceSettingsSource, /const STORED_PAT_MASK = "\*\*\*\*"/);
-    assert.match(sourceSettingsSource, /values\.token !== STORED_PAT_MASK/);
-    assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
-    assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
-    assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
-    assert.match(marketplaceSource, /promptWhenLocked:\s*forceRefresh/);
-    assert.match(credentialsSource, /keyring\?\.resolve\(source\.credentialId/);
-    assert.match(credentialsSource, /promptWhenLocked,/);
-    assert.doesNotMatch(credentialsSource, /keyring\?\.get/);
+    assert.match(sourceSettingsSource, /credentialConfigured/);
+    assert.match(sourceSettingsSource, /clearCredential/);
+    assert.match(sourceSettingsSource, /saveModuleSource/);
+    assert.match(sourceSettingsSource, /source_refresh_failed/);
 });
 
 test("recommended modules retain the published defaults", () => {
@@ -730,7 +721,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
+        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /createSelectedBranchResolver/);

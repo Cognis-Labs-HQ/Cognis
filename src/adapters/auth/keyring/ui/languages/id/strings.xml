@@ -94,4 +94,5 @@
   <string name="gateway.auth.keyring.destroy_message">Tindakan ini menghancurkan keyring terenkripsi secara permanen dan menghapus keanggotaan Anda dari objek bersama yang bergantung padanya. Anda akan diminta membuat keyring baru, dan akses dapat dipulihkan melalui undangan baru.</string>
   <string name="gateway.auth.keyring.recreated">Keyring telah dihancurkan dan dibuat ulang.</string>
   <string name="adapter.auth.keyring.sync_failed">Gantungan kunci tidak dapat disinkronkan. Salinan lokal terenkripsi tetap disimpan.</string>
+  <string name="gateway.auth.keyring.unavailable">Gantungan kunci tidak tersedia. Coba lagi setelah koneksi pulih.</string>
 </strings>

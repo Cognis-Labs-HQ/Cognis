@@ -145,7 +145,11 @@ function createRouter({
         "./page-styles.js": sandbox,
         "./mount-scope.js": sandbox,
         "./page-entry.js": sandbox,
-        "./route-path.js": sandbox,
+        "./route-path.js": loadTestModule(
+            new URL("../route-path.js", import.meta.url),
+            {},
+            { window, URL },
+        ),
         "./spa-route-registry.js": sandbox,
         "./runtime-error-popup.js": sandbox,
         "./guest-blocked-popup.js": sandbox,
@@ -625,3 +629,35 @@ test("Settings and other core pages navigate through the same SPA host without d
     assert.equal(mounted.length, 9);
     assert.equal(router.assigned.length, 0);
 });
+
+for (const offline of [false, true]) {
+    test(`standalone document links honor navigation cancellation and recheck connectivity on resume (offline=${offline})`, async () => {
+        let available = !offline;
+        const router = createRouter({
+            allowNavigation: false,
+            offline,
+            allowOfflineRoute: async () => available,
+        });
+        const event = click();
+        event.target.closest = () => ({
+            target: "",
+            hasAttribute: () => false,
+            getAttribute: () => "/server-page",
+        });
+        await router.listeners.get("click")(event);
+        assert.equal(event.defaultPrevented, true);
+        assert.deepEqual(router.assigned, []);
+        if (!offline) {
+            const decision = router.navigationEvents.find(
+                (event) => event.type === "cognis:route-before-navigate",
+            );
+            assert.ok(decision);
+            available = false;
+            assert.equal(await decision.detail.resume(), false);
+            assert.deepEqual(router.assigned, []);
+            available = true;
+            assert.equal(await decision.detail.resume(), true);
+            assert.deepEqual(router.assigned, ["/server-page"]);
+        }
+    });
+}

@@ -1,5 +1,7 @@
 # TFA Gateway
 
+Eine unvollständige Einrichtung ist sofort geschützt, auch bevor ein Code eingegeben wird. Hintergrundklick, Escape, Schließen, Abbrechen und SPA-Navigation verwenden die gemeinsame Verwerfen-Bestätigung; beim Beibehalten kehrt der Fokus zurück. Die Navigation wird erst nach dem Abbruch fortgesetzt. Beim Neuladen warnt der Browser. Beim Entfernen des Einstellungsbereichs werden Ereignisbehandler und Dialoge entfernt; verpflichtende Einrichtung bleibt serverseitig durchgesetzt.
+
 ## Überblick
 
 Das TFA-Gateway besitzt alle Zwei-Faktor-Funktionen in Cognis. Es entdeckt Methodenadapter unter `src/adapters/tfa/`, speichert Adapterzustand und Recovery-Codes, entscheidet über verpflichtende Einrichtung und verifiziert zweite Faktoren beim Login.

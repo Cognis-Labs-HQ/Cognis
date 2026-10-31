@@ -117,14 +117,13 @@ async function navigateToMissingShare() {
     const errorPath = "/error?code=404";
     const navigate = uiCtx.capabilities.get("ui:navigate");
     try {
-        if (await navigate?.(errorPath)) return;
+        await navigate?.(errorPath);
     } catch (error) {
         console.error("[share] failed to open missing-share error route", {
             operation: "navigate_missing_share_error",
             error,
         });
     }
-    window.location.assign(errorPath);
 }
 
 function startShareStatusMonitor(shareId) {
@@ -158,12 +157,11 @@ window.addEventListener("cognis:api-access-denied", (event) => {
     Promise.resolve(
         navigate?.(`/share/${encodeURIComponent(shareToken)}`) ?? false,
     )
-        .then((navigated) => {
-            if (!navigated) {
-                window.location.assign(
-                    `/share/${encodeURIComponent(shareToken)}`,
-                );
-            }
+        .catch((error) => {
+            console.error("[share] failed to open access-denied route", {
+                operation: "navigateAccessDenied",
+                errorName: error?.name,
+            });
         })
         .finally(() => {
             accessDeniedNavigationPending = false;
@@ -330,8 +328,11 @@ listenForShareRevocation((shareId) => {
     restoreGuestToken();
     const sharePath = `/share/${encodeURIComponent(shareToken)}`;
     const navigate = uiCtx.capabilities.get("ui:navigate");
-    Promise.resolve(navigate?.(sharePath) ?? false).then((navigated) => {
-        if (!navigated) window.location.assign(sharePath);
+    Promise.resolve(navigate?.(sharePath) ?? false).catch((error) => {
+        console.error("[share] failed to navigate revoked share", {
+            operation: "navigateRevokedShare",
+            errorName: error?.name,
+        });
     });
 });
 

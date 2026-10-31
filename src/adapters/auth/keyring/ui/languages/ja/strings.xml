@@ -94,4 +94,5 @@
   <string name="gateway.auth.keyring.destroy_message">暗号化キーリングを完全に破棄し、依存する共有オブジェクトからメンバーシップを削除します。新しいキーリングの作成を求められ、再招待によってアクセスを再確立できます。</string>
   <string name="gateway.auth.keyring.recreated">キーリングを破棄して再作成しました。</string>
   <string name="adapter.auth.keyring.sync_failed">キーリングを同期できませんでした。暗号化されたローカルコピーは保持されています。</string>
+  <string name="gateway.auth.keyring.unavailable">キーリングを利用できません。接続が回復したら、もう一度お試しください。</string>
 </strings>

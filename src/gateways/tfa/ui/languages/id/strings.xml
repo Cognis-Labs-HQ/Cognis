@@ -49,4 +49,5 @@
   <string name="gateway.tfa.settings.method_deactivated">Metode TFA {method} tidak lagi aktif.</string>
   <string name="gateway.tfa.settings.required_prompt">Pilih metode yang harus dikonfigurasi sebelum melanjutkan.</string>
   <string name="gateway.tfa.settings.loading">Memuat pengaturan keamanan…</string>
+  <string name="gateway.tfa.settings.qr_code_alt">Pindai kode QR ini dengan aplikasi autentikator Anda</string>
 </resources>

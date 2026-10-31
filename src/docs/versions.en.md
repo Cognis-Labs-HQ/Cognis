@@ -37,7 +37,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.0`  |
+| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.1`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23` |
@@ -69,9 +69,9 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13` |
 | Authentication (auth) | `src/gateways/auth/`          | `2.0.5`  |
-| Share                 | `src/gateways/share/`         | `1.7.49` |
+| Share                 | `src/gateways/share/`         | `1.7.50` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `1.5.19` |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.20` |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
 | Registration          | `src/gateways/registration/`  | `1.1.41` |

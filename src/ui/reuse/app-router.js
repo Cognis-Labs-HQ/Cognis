@@ -54,7 +54,10 @@ import {
     ensureHostUiProviders,
     loadWithSpaImportGuard,
 } from "./page-entry.js";
-import { getCurrentRoutePath } from "./route-path.js";
+import {
+    getCurrentRoutePath,
+    normalizeSameOriginRoutePath,
+} from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
     installRuntimeErrorHandlers,
@@ -331,6 +334,22 @@ function requestRouteNavigation(path, resume) {
         detail: { path, resume },
     });
     return window.dispatchEvent(navigationEvent);
+}
+
+async function navigateToStandaloneRoute(path, bypassGuard = false) {
+    if (!(await allowOfflineRoute(null, path))) {
+        await restoreAfterOfflineFailure(path);
+        return false;
+    }
+    if (
+        !bypassGuard &&
+        !requestRouteNavigation(path, () =>
+            navigateToStandaloneRoute(path, true),
+        )
+    )
+        return false;
+    window.location.assign(path);
+    return true;
 }
 
 async function loadRoute(path) {
@@ -759,11 +778,7 @@ export function initRouter(root) {
         event.preventDefault();
         const route = await resolveRoute(routePath);
         if (!route) {
-            if (!(await allowOfflineRoute(null, routePath))) {
-                await restoreAfterOfflineFailure(routePath);
-                return;
-            }
-            window.location.assign(routePath);
+            await navigateToStandaloneRoute(routePath);
             return;
         }
         await navigateTo(routePath);
@@ -778,11 +793,7 @@ export function initRouter(root) {
         const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
         if (!route) {
-            if (!(await allowOfflineRoute(null, pathWithHash))) {
-                await restoreAfterOfflineFailure(pathWithHash);
-                return;
-            }
-            window.location.assign(pathWithHash);
+            await navigateToStandaloneRoute(pathWithHash);
             return;
         }
         // If navigating within the same page section (e.g. docs internal
@@ -837,20 +848,10 @@ export function initRouter(root) {
 
 function internalNavigationPath(href) {
     if (!href || href.startsWith("#")) return null;
-    let destination;
-    try {
-        destination = new URL(href, window.location.href);
-    } catch {
-        return null;
-    }
-    if (
-        destination.origin !== window.location.origin ||
-        !["http:", "https:"].includes(destination.protocol) ||
-        destination.username ||
-        destination.password
-    )
-        return null;
-    return destination.pathname + destination.search + destination.hash;
+    return (
+        normalizeSameOriginRoutePath(href, { baseUrl: window.location.href }) ||
+        null
+    );
 }
 
 function installOfflineNavigation() {

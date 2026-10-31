@@ -1,5 +1,7 @@
 # TFA Gateway
 
+An unfinished enrollment is protected immediately, even before a code is typed. Backdrop, Escape, close, Cancel and SPA navigation use the shared discard confirmation; keeping the form restores focus. Navigation resumes only after cancellation completes. Refresh uses the browser leave warning. Disposing the owning section removes navigation listeners and popups; mandatory authentication setup remains enforced by the server.
+
 ## Overview
 
 The TFA Gateway owns every two-factor authentication concern in Cognis. It discovers method adapters under `src/adapters/tfa/`, persists adapter enablement and recovery-code state, decides whether a user must complete TFA setup, and verifies second-factor login challenges.

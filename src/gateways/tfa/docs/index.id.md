@@ -1,5 +1,7 @@
 # TFA Gateway
 
+Penyiapan yang belum selesai langsung dilindungi, bahkan sebelum kode diketik. Klik latar, Escape, tutup, Batal dan navigasi SPA menggunakan konfirmasi pembuangan bersama; mempertahankan formulir mengembalikan fokus. Navigasi dilanjutkan hanya setelah pembatalan selesai. Muat ulang menggunakan peringatan keluar browser. Pembuangan bagian pemilik menghapus pendengar dan popup; kewajiban penyiapan autentikasi tetap ditegakkan server.
+
 ## Ikhtisar
 
 Gateway TFA memiliki semua fungsi autentikasi dua faktor di Cognis. Ia menemukan adapter metode di `src/adapters/tfa/`, menyimpan status adapter dan kode pemulihan, menentukan apakah pengguna wajib menyiapkan TFA, lalu memverifikasi faktor kedua saat login.

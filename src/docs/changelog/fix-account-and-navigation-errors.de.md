@@ -22,6 +22,14 @@ Einladungspflichtige SSO-Identitäten werden vor dem Anlegen von Konto, Profil o
 
 Das gemeinsame SMTP-Prüfintervall beträgt fünfzehn Sekunden. Pausen gelten je normalisiertem Empfänger und Nachrichtenzweck. Verifizierung, Anmeldecodes, Anmeldelinks, Einladungen und Tests verzögern einander nicht. Die Warteschlange berücksichtigt das konfigurierte Intervall und den tatsächlichen erfolgreichen Versand; fehlgeschlagene direkte Sendungen verbrauchen keine Pause.
 
+## Quellen und Einrichtung
+
+Quellenzugangsdaten und der Erkennungscache werden von allen Administratoren gemeinsam verwendet; Geheimnisse bleiben verborgen auf dem Server. Ein leeres Passwortfeld behält den gespeicherten Wert bei. Schlüsselbund-Einstellungen warten auf den maßgeblichen Status, unvollständige TFA-Einrichtung erfordert eine Verwerfen-Bestätigung und interne Einstellungen-/Freigabeweiterleitungen erhalten die SPA-Navigation. Schlüsselbund: **2.1.1**, TFA: **1.1.20**.
+
+Implizites Absenden gebundener Formulare löst keine Dokumentanfrage des Browsers aus. Komponenten erhalten das Absendeereignis weiterhin. Interne Weiterleitungen verwenden den SPA-Router. Bewusste Wechsel zu serverseitig dargestellten Seiten beachten die Bestätigung ungespeicherter Änderungen und prüfen beim Fortsetzen erneut die Offline-Verfügbarkeit.
+
+Bei der administrativen Kontoerstellung wird der vollständige Rollenname über den Bereitstellungsablauf an den Kontenspeicher übergeben. Administrator-, Moderator- und Lehrerkonten fallen nicht mehr auf die normale Benutzerrolle zurück.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

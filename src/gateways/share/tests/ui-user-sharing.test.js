@@ -614,12 +614,15 @@ test("unavailable share links navigate to the native error page", () => {
     assert.match(statusMonitorSource, /onUnavailable\(response\)/);
     assert.match(
         sharePageSource,
-        /function navigateToShareError\(i18n, reason\)/,
+        /function navigateToShareError\(i18n, reason, showFallback\)/,
     );
     assert.match(sharePageSource, /const code = notFound \? "404" : "410"/);
     assert.match(
         sharePageSource,
         /\/error\?code=\$\{code\}&message=\$\{encodeURIComponent\(message\)\}/,
     );
-    assert.match(sharePageSource, /window\.location\.replace\(destination\)/);
+    assert.match(
+        sharePageSource,
+        /showFallback\(notFound \? "share\.error\.not_found" : "share\.error\.expired"\)/,
+    );
 });

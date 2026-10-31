@@ -42,7 +42,7 @@
   <string name="ui.app.modules.provider">Penyedia</string>
   <string name="ui.app.modules.namespace">Organisasi atau Grup</string>
   <string name="ui.app.modules.base_url">URL Dasar API</string>
-  <string name="ui.app.modules.pat">Token Akses Pribadi (Opsional)</string>
+  <string name="ui.app.modules.pat">Token Akses Pribadi</string>
   <string name="ui.app.modules.source_saved">Sumber modul disimpan.</string>
   <string name="ui.app.modules.recommended_url">URL Modul Rekomendasi</string>
   <string name="ui.app.modules.settings_saved">Pengaturan modul disimpan.</string>
@@ -96,4 +96,11 @@
   <string name="ui.app.modules.hard_dependency_blocked">Pasang dan aktifkan setiap dependensi wajib sebelum melanjutkan.</string>
   <string name="ui.app.modules.configure_adapters">Konfigurasikan Adaptor</string>
   <string name="ui.app.modules.configure_later">Nanti</string>
+  <string name="ui.app.modules.credential_stored">Tersimpan aman; kosongkan untuk mempertahankan</string>
+  <string name="ui.app.modules.credential_shared_hint">Kredensial tersimpan digunakan bersama oleh administrator dan pemindaian otomatis. Nilainya tidak dapat diambil atau ditampilkan. Kosongkan bidang untuk mempertahankan kredensial saat ini.</string>
+  <string name="ui.app.modules.remove_stored_pat">Hapus PAT Tersimpan</string>
+  <string name="ui.app.modules.credential_scope_changed">Tetapkan token baru atau hapus kredensial tersimpan sebelum mengubah penyedia, alamat, atau ruang nama sumber.</string>
+  <string name="ui.app.modules.source_save_failed">Sumber modul tidak dapat disimpan. Perubahan Anda masih tersedia dalam formulir ini.</string>
+  <string name="ui.app.modules.source_refresh_failed">Sumber tersimpan, tetapi daftar sumber tidak dapat dimuat ulang. Buka kembali Pengaturan untuk mencoba lagi.</string>
+  <string name="ui.app.modules.credential_storage_unavailable">Kredensial bersama memerlukan kunci enkripsi server persisten. Konfigurasikan DATA_ENCRYPTION_KEY lalu coba lagi.</string>
 </resources>

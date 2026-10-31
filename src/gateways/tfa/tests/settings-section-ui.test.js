@@ -57,7 +57,7 @@ test("tfa required setup popup is guarded against duplicate concurrent flows", (
     assert.match(SOURCE, /let requiredSetupPromptActive = false;/);
     assert.match(
         SOURCE,
-        /if \(enforcingTfaSetup \|\| requiredSetupPromptActive\) return;/,
+        /if \(signal\?\.aborted \|\| enforcingTfaSetup \|\| requiredSetupPromptActive\)\s*return;/,
     );
     assert.match(SOURCE, /requiredSetupPromptActive = true;/);
     assert.match(SOURCE, /requiredSetupPromptActive = false;/);

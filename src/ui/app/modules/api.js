@@ -83,16 +83,6 @@ export async function saveModuleSource(source) {
     );
 }
 
-export async function validateModuleSourceCredential(source, token) {
-    return data(
-        await apiFetch("/api/v1/modules/sources/validate-credential", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ source, token }),
-        }),
-    );
-}
-
 export async function removeModuleSource(uuid) {
     return data(
         await apiFetch(`/api/v1/modules/sources/${encodeURIComponent(uuid)}`, {
@@ -101,15 +91,11 @@ export async function removeModuleSource(uuid) {
     );
 }
 
-export async function loadAvailableModules(
-    tokens,
-    sourceUuids,
-    forceRefresh = false,
-) {
+export async function loadAvailableModules(sourceUuids, forceRefresh = false) {
     const response = await apiFetch("/api/v1/modules/catalog", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tokens, sourceUuids, forceRefresh }),
+        body: JSON.stringify({ sourceUuids, forceRefresh }),
     });
     if (!response.ok) await data(response);
     const payload = await response.json();
@@ -167,12 +153,12 @@ export async function loadModuleAsset(assetUrl, { signal } = {}) {
     }
 }
 
-export async function installModule(module, token, branch, wasEnabled) {
+export async function installModule(module, branch, wasEnabled) {
     const job = await data(
         await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ module, token, branch, wasEnabled }),
+            body: JSON.stringify({ module, branch, wasEnabled }),
             suppressConnectionRecoveryToast: true,
         }),
     );

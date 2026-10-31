@@ -1,3 +1,4 @@
+import type { LocalAccountStore } from "../reuse/account-store.js";
 import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
@@ -69,11 +70,7 @@ export interface AuthAccountStore {
      * support local account creation (e.g. local/LDAP adapters). Absent on
      * read-only or SSO-only stores. Returns the created account record.
      */
-    register?(
-        username: string,
-        password: string,
-        isAdmin: boolean,
-    ): Promise<{ username: string; role?: string }>;
+    register?: LocalAccountStore["register"];
     /**
      * Enables or disables an account. Optional — only available on stores that
      * support toggling account status. Absent on read-only stores.

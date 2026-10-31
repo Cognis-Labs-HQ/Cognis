@@ -421,6 +421,8 @@ test("form builder updates textarea counters and captures edited values after at
         const bioCounter = new FakeHTMLElement();
         const bioFieldWrapper = new FakeHTMLElement();
         const fakeFormElement = {
+            addEventListener() {},
+            removeEventListener() {},
             elements: {
                 namedItem(fieldName) {
                     return fieldName === "bio" ? bioField : null;
@@ -468,4 +470,33 @@ test("form builder updates textarea counters and captures edited values after at
         globalThis.HTMLTextAreaElement = originalHTMLTextAreaElement;
         globalThis.HTMLSelectElement = originalHTMLSelectElement;
     }
+});
+
+test("form builder prevents implicit document submissions while preserving component submit handlers and lifetime cleanup", () => {
+    const builder = createFormBuilder(
+        { i18n: { t: String }, escapeHtml: String },
+        { formId: "review", fields: [] },
+    );
+    const form = Object.assign(new EventTarget(), {
+        querySelectorAll: () => [],
+        querySelector: () => null,
+        elements: { namedItem: () => null },
+    });
+    let delivered = 0;
+    form.addEventListener("submit", () => delivered++);
+    const owner = new AbortController();
+    const controller = builder.attach(form, { signal: owner.signal });
+    const submitted = new Event("submit", { cancelable: true });
+    form.dispatchEvent(submitted);
+    assert.equal(submitted.defaultPrevented, true);
+    assert.equal(delivered, 1);
+    controller.detach();
+    const detached = new Event("submit", { cancelable: true });
+    form.dispatchEvent(detached);
+    assert.equal(detached.defaultPrevented, false);
+    builder.attach(form, { signal: owner.signal });
+    owner.abort();
+    const disposed = new Event("submit", { cancelable: true });
+    form.dispatchEvent(disposed);
+    assert.equal(disposed.defaultPrevented, false);
 });

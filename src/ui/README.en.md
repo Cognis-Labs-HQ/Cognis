@@ -1,5 +1,9 @@
 # Cognis UI
 
+Implicit submissions from attached forms are handled in place and cannot submit a browser document request. Component submit handlers still receive the event. Internal page redirects use the SPA router; deliberate server-rendered destinations honor the same unsaved-change decision and recheck offline availability when resumed.
+
+`openPopup({ signal })` scopes a popup to its owner. Aborting the signal closes the popup and any discard decision and releases listeners, timers, form tracking and scroll locks. Owner disposal does not ask whether to retain content belonging to an expired page or identity. Concurrent cancel paths share one discard decision.
+
 ## Structure
 
 - `src/layouts/`: reusable page layout guardrails.

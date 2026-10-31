@@ -22,6 +22,14 @@ Identitas SSO yang memerlukan undangan ditahan sebelum akun, profil, atau surel 
 
 Interval verifikasi SMTP bersama menjadi lima belas detik. Jeda dinormalisasi menurut penerima dan dipisahkan menurut tujuan pesan sehingga verifikasi, kode masuk, tautan masuk, undangan, dan pengujian tidak saling menunda. Antrean memakai interval terkonfigurasi dan waktu pengiriman berhasil; pengiriman langsung yang gagal tidak menghabiskan jeda.
 
+## Sumber dan Penyiapan Bersama
+
+Kredensial sumber modul dan cache penemuan dibagikan ke semua administrator; rahasia tetap tersembunyi di server. Penyimpanan kolom kredensial kosong mempertahankan nilai yang ada. Pengaturan Keyring menunggu status otoritatif, penyiapan TFA yang belum selesai memerlukan konfirmasi pembuangan, dan pengalihan internal Pengaturan/bagikan mempertahankan navigasi SPA. Keyring: **2.1.1**, TFA: **1.1.20**.
+
+Pengiriman implisit formulir yang terikat ditangani di tempat tanpa meminta dokumen browser. Penangan pengiriman komponen tetap menerima kejadian tersebut. Pengalihan internal menggunakan router SPA; tujuan yang dirender server tetap menghormati keputusan perubahan belum tersimpan dan memeriksa kembali ketersediaan offline saat dilanjutkan.
+
+Pembuatan akun oleh administrator kini meneruskan nama peran lengkap melalui alur penyediaan ke penyimpanan akun. Akun administrator, moderator dan pengajar tidak lagi kembali ke peran pengguna biasa.
+
 ## Komit
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)
