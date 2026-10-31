@@ -101,3 +101,7 @@ The shared image-preview provider loads its stylesheet before publishing control
 ## Responsive Session Navigation
 
 Logout clears private session data without waiting for public service-worker route maintenance. Identical worker policy requests share one exchange without merging changed access decisions. The language switcher waits for its catalog provider and hides account-only controls when signed out. Bundled and directly served router copies share document state, listeners and mount cancellation, including Settings to Dashboard navigation.
+
+## Guided tutorials
+
+The account menu opens the tutorial catalog. Components and enabled external modules contribute localized, replayable plays through `ui:tutorials`. Plays use semantic targets, guarded SPA navigation and cancellable steps; a required popup always takes priority. See [the tutorial contract](/docs/tutorials).

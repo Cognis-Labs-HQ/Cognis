@@ -634,4 +634,21 @@
   <string name="ui.app.settings.language_offline_locked">UI の言語を追加・削除するには接続してください。選択済みの言語の並べ替えは引き続きできます。</string>
   <string name="ui.app.users.details_failed">このユーザーの詳細を読み込めませんでした。もう一度お試しください。</string>
   <string name="ui.app.users.refresh_failed">変更は保存されましたが、ユーザー一覧を更新できませんでした。ページを再読み込みして最新の情報を確認してください。</string>
+  <string name="ui.reuse.tutorials">チュートリアル</string>
+  <string name="ui.reuse.skip">スキップ</string>
+  <string name="ui.reuse.start">開始</string>
+  <string name="ui.reuse.finish">完了</string>
+  <string name="ui.tutorial.progress">全{{total}}ステップ中の{{current}}</string>
+  <string name="ui.tutorial.missing">対象の要素を利用できません。要素を表示して再試行するか、チュートリアルを中止してください。</string>
+  <string name="ui.tutorial.waiting">ページの要素を待っています。いつでも中止できます。</string>
+  <string name="ui.tutorial.choose">チュートリアルを選択</string>
+  <string name="ui.tutorial.empty">現在のアクセス権で利用できるチュートリアルはありません。</string>
+  <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
+  <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
+  <string name="ui.tutorial.workspace.navigation.title">ナビゲーション</string>
+  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションからアカウントで利用できるページを開きます。このチュートリアルが権限を変更することはありません。</string>
+  <string name="ui.tutorial.workspace.search.title">検索</string>
+  <string name="ui.tutorial.workspace.search.body">有効なコンポーネントのページやコンテンツを検索します。ダイアログを開いたり別のページへ移動したりすると、安全にチュートリアルを終了します。</string>
+  <string name="ui.tutorial.workspace.account.title">アカウントメニュー</string>
+  <string name="ui.tutorial.workspace.account.body">設定、ドキュメント、チュートリアルはアカウントメニューから開けます。利用できるチュートリアルはここで繰り返し実行できます。</string>
 </resources>

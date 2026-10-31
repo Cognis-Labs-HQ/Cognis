@@ -77,7 +77,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration          | `src/gateways/registration/`  | `1.1.42` |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.4.9`  |
+| Study                 | `src/gateways/study/`         | `2.5.0`  |
 | Calendar              | `src/gateways/calendar/`      | `1.5.5`  |
 
 ## Kontrak inti
@@ -88,9 +88,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 ## API
 
-| Komponen   | Jalur      | Versi     |
-| ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.10.18` |
+| Komponen   | Jalur      | Versi    |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | `0.11.0` |
 
 ## Peralatan
 

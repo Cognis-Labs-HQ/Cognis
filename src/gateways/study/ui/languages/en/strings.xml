@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Get Started With Study</string>
+  <string name="gateway.study.tutorial.navigation.title">Choose A Learning Tool</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore browses enrolled languages. Flashcards and other installed tools appear here when available to your account.</string>
+  <string name="gateway.study.tutorial.languages.title">Your Study Languages</string>
+  <string name="gateway.study.tutorial.languages.body">Switch between the languages you have enrolled in. Use Study settings to change your enrollment; this tutorial does not change it for you.</string>
+  <string name="gateway.study.tutorial.modules.title">Open A Learning Module</string>
+  <string name="gateway.study.tutorial.modules.body">These cards open the installed learning tools. If a tool is unavailable offline or for your role, reconnect or ask an administrator.</string>
   <string name="gateway.study.picker.title">Choose A Language To Study</string>
   <string name="gateway.study.picker.select">Select a language:</string>
   <string name="gateway.study.page_subtitle">Your language learning dashboard</string>

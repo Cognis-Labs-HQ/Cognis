@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/static/styles/reuse/theme.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/buttons.css" />
+        <link
+            rel="stylesheet"
+            href="/static/reuse/tutorials/tests/fixtures/browser.css"
+        />
+        <title>Tutorial browser contract</title>
+    </head>
+    <body>
+        <button id="launcher" type="button">Launch</button>
+        <button id="outside" type="button">Outside</button>
+        <main tabindex="-1">
+            <div id="scroller">
+                <div id="content">
+                    <button id="target" type="button">Target</button>
+                </div>
+            </div>
+        </main>
+        <script
+            type="module"
+            src="/static/reuse/tutorials/tests/fixtures/browser.js"
+        ></script>
+    </body>
+</html>

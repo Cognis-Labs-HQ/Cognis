@@ -634,4 +634,21 @@
   <string name="ui.app.settings.language_offline_locked">Hubungkan untuk menambah atau menghapus bahasa antarmuka. Bahasa terpilih tetap dapat diurutkan ulang.</string>
   <string name="ui.app.users.details_failed">Rincian pengguna ini tidak dapat dimuat. Silakan coba lagi.</string>
   <string name="ui.app.users.refresh_failed">Perubahan tersimpan, tetapi daftar Pengguna tidak dapat diperbarui. Muat ulang halaman untuk melihat data terbaru.</string>
+  <string name="ui.reuse.tutorials">Tutorial</string>
+  <string name="ui.reuse.skip">Lewati</string>
+  <string name="ui.reuse.start">Mulai</string>
+  <string name="ui.reuse.finish">Selesai</string>
+  <string name="ui.tutorial.progress">Langkah {{current}} dari {{total}}</string>
+  <string name="ui.tutorial.missing">Elemen tujuan tidak tersedia. Tampilkan elemen tersebut lalu pilih Coba Lagi, atau batalkan tutorial ini.</string>
+  <string name="ui.tutorial.waiting">Menunggu elemen halaman. Anda dapat membatalkan kapan saja.</string>
+  <string name="ui.tutorial.choose">Pilih Tutorial</string>
+  <string name="ui.tutorial.empty">Tidak ada tutorial yang tersedia untuk akses Anda saat ini.</string>
+  <string name="ui.tutorial.error">Tutorial tidak dapat dilanjutkan. Halaman Anda tetap tersedia.</string>
+  <string name="ui.tutorial.workspace.title">Ruang Kerja Anda</string>
+  <string name="ui.tutorial.workspace.navigation.title">Navigasi</string>
+  <string name="ui.tutorial.workspace.navigation.body">Gunakan navigasi utama untuk membuka halaman yang tersedia bagi akun Anda. Tutorial ini tidak mengubah izin Anda.</string>
+  <string name="ui.tutorial.workspace.search.title">Pencarian</string>
+  <string name="ui.tutorial.workspace.search.body">Pencarian menemukan halaman dan konten dari komponen aktif. Membuka dialog atau meninggalkan halaman mengakhiri tutorial dengan aman.</string>
+  <string name="ui.tutorial.workspace.account.title">Menu Akun</string>
+  <string name="ui.tutorial.workspace.account.body">Buka menu akun untuk pengaturan, dokumentasi, dan tutorial. Anda dapat mengulang tutorial yang tersedia di sini.</string>
 </resources>
