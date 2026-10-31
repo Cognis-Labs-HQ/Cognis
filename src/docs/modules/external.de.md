@@ -268,3 +268,7 @@ Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktio
 ## Bindung von Zugangsdaten
 
 Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Namensraumstands auf, mit dem die Repository-URL geprüft wurde. Gleichzeitiges Umbinden einer Quelle bricht vor dem Checkout ab und verhindert, dass Zugangsdaten des neuen Endpunkts an den alten Host gesendet werden. Die Zuordnung zwischen GitHub-API- und Repository-Host gilt nur für GitHub-Quellen.
+
+## Geführte Tutorials
+
+Das Kontomenü öffnet den Tutorial-Katalog. Komponenten und aktivierte externe Module steuern über `ui:tutorials` übersetzte, wiederholbare Abläufe bei. Abläufe verwenden semantische Ziele, geschützte SPA-Navigation und abbrechbare Schritte; ein erforderlicher Dialog hat immer Vorrang. Siehe [Tutorial-Vertrag](/docs/tutorials).

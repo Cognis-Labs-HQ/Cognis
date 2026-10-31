@@ -1,3 +1,4 @@
+import { installTutorials } from "../tutorials/index.js";
 import { createTopBanners } from "../top-banners.js";
 import { registerOfflineRuntime } from "../offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
@@ -21,6 +22,7 @@ function loadUiCtxForTests() {
         new URL("../ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": context,
+            "./tutorials/index.js": { installTutorials },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
             "./top-banners.js": { createTopBanners },

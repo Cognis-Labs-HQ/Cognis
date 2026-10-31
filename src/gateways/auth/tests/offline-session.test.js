@@ -1,3 +1,4 @@
+import { installTutorials } from "../../../ui/reuse/tutorials/index.js";
 import { createTopBanners } from "../../../ui/reuse/top-banners.js";
 import { registerOfflineRuntime } from "../../../ui/reuse/offline-runtime.js";
 import test from "node:test";
@@ -26,6 +27,7 @@ function fixture() {
         new URL("../../../ui/reuse/ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
+            "./tutorials/index.js": { installTutorials },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": { createReuseResources },
             "./top-banners.js": { createTopBanners },

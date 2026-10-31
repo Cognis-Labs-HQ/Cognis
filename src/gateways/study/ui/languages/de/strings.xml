@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Mit Study beginnen</string>
+  <string name="gateway.study.tutorial.navigation.title">Ein Lernwerkzeug wählen</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore zeigt eingeschriebene Sprachen. Lernkarten und weitere installierte Werkzeuge erscheinen hier, wenn dein Konto sie nutzen darf.</string>
+  <string name="gateway.study.tutorial.languages.title">Deine Lernsprachen</string>
+  <string name="gateway.study.tutorial.languages.body">Wechsle zwischen deinen eingeschriebenen Sprachen. Ändere die Einschreibung in den Study-Einstellungen; diese Anleitung ändert sie nicht automatisch.</string>
+  <string name="gateway.study.tutorial.modules.title">Ein Lernmodul öffnen</string>
+  <string name="gateway.study.tutorial.modules.body">Diese Karten öffnen installierte Lernwerkzeuge. Ist ein Werkzeug offline oder für deine Rolle nicht verfügbar, stelle die Verbindung wieder her oder frage einen Administrator.</string>
   <string name="gateway.study.picker.title">Lernsprache wählen</string>
   <string name="gateway.study.picker.select">Sprache auswählen:</string>
   <string name="gateway.study.page_subtitle">Dein Sprachlern-Dashboard</string>

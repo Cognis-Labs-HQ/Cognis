@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Mulai Menggunakan Study</string>
+  <string name="gateway.study.tutorial.navigation.title">Pilih Alat Belajar</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore menampilkan bahasa yang diikuti. Kartu belajar dan alat terpasang lainnya muncul di sini jika tersedia untuk akun Anda.</string>
+  <string name="gateway.study.tutorial.languages.title">Bahasa Belajar Anda</string>
+  <string name="gateway.study.tutorial.languages.body">Beralih di antara bahasa yang Anda ikuti. Ubah pendaftaran melalui pengaturan Study; tutorial ini tidak mengubahnya secara otomatis.</string>
+  <string name="gateway.study.tutorial.modules.title">Buka Modul Belajar</string>
+  <string name="gateway.study.tutorial.modules.body">Kartu ini membuka alat belajar terpasang. Jika alat tidak tersedia saat luring atau untuk peran Anda, sambungkan kembali atau hubungi administrator.</string>
   <string name="gateway.study.picker.title">Pilih Bahasa yang Dipelajari</string>
   <string name="gateway.study.picker.select">Pilih bahasa:</string>
   <string name="gateway.study.page_subtitle">Dasbor pembelajaran bahasamu</string>

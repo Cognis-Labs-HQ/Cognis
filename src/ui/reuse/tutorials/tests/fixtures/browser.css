@@ -1,0 +1,28 @@
+body {
+    margin: 16px;
+    color: var(--text);
+    background: var(--surface-2);
+}
+
+#scroller {
+    height: 300px;
+    overflow: auto;
+    margin: 32px 0;
+    border: 1px solid var(--border);
+}
+
+#content {
+    height: 900px;
+    padding: 120px 24px;
+}
+
+#target {
+    min-width: 120px;
+    min-height: 48px;
+}
+
+#outside {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+}

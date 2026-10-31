@@ -58,3 +58,7 @@ Der Marketplace prüft alle fünfzehn Sekunden einen nur für Administratoren zu
 Katalogeinträge enthalten eine aus dem Inhalt abgeleitete `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` kann versionierte authentifizierte Sprachpakete innerhalb desselben Kontos und derselben Sitzung wiederverwenden. Neue Revisionen laden neue Texte; ein Identitätswechsel leert private Pakete, verspätete Antworten können keine andere Sitzung befüllen, und fehlgeschlagene Ladevorgänge bleiben wiederholbar. Öffentliche Pakete behalten ihren bisherigen Cache und die Lebenszyklusinvalidierung.
 
 Empfehlungsfeeds werden vom Marketplace-Dienst gemeinsam genutzt, bündeln gleichzeitige Lesezugriffe und bleiben fünf Minuten aktuell. Fehlgeschlagene Aktualisierungen behalten die letzte erfolgreiche Liste und warten vor dem nächsten Versuch eine Minute. Eine geänderte konfigurierte URL wählt ein eigenes Ergebnis; manuelles Aktualisieren umgeht die Gültigkeitsdauer.
+
+## Geführte Tutorials
+
+Das Kontomenü öffnet den Tutorial-Katalog. Komponenten und aktivierte externe Module steuern über `ui:tutorials` übersetzte, wiederholbare Abläufe bei. Abläufe verwenden semantische Ziele, geschützte SPA-Navigation und abbrechbare Schritte; ein erforderlicher Dialog hat immer Vorrang. Siehe [Tutorial-Vertrag](/docs/tutorials).

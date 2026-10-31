@@ -303,6 +303,24 @@ function bindTopbarActions() {
         if (!profileMenu?.contains(event.target)) closeMenu();
     });
 
+    document
+        .querySelector("[data-tutorial-catalog]")
+        ?.addEventListener("click", () => {
+            void uiCtx.capabilities
+                .get("ui:tutorials")
+                .openCatalog()
+                .catch((error) => {
+                    console.error("tutorial_catalog_failed", {
+                        component: "ui",
+                        operation: "openTutorialCatalog",
+                        errorName: error?.name,
+                    });
+                    showToast(i18n.t("ui.tutorial.error"), {
+                        variant: "error",
+                    });
+                });
+        });
+
     logout?.addEventListener("click", async () => {
         if (isOffline()) return;
         await uiCtx.runFlow("logout", { reason: "userRequested" });

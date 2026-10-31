@@ -268,3 +268,7 @@ Gateway disable and module unmount dispose owned actions and pending deliveries.
 ## Installation Credential Binding
 
 Installation resolves credentials against the same provider, endpoint and namespace snapshot used to validate its repository URL. Concurrent source rebinding aborts before checkout, preventing a replacement endpoint’s credential from being sent to the previous host. GitHub’s API-to-repository host alias is applied only to GitHub sources.
+
+## Guided tutorials
+
+The account menu opens the tutorial catalog. Components and enabled external modules contribute localized, replayable plays through `ui:tutorials`. Plays use semantic targets, guarded SPA navigation and cancellable steps; a required popup always takes priority. See [the tutorial contract](/docs/tutorials).

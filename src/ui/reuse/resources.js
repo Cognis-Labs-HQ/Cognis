@@ -44,6 +44,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "theme.css",
     "toast.css",
     "top-banners.css",
+    "tutorials.css",
 ]);
 
 function normalizeResourcePath(path, extension) {
