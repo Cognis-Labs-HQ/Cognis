@@ -12,7 +12,8 @@ Diselaraskan dengan cabang pengembangan terbaru tanpa mengganti klien luring Kal
 
 ## Komit
 
-- [a74092b4ad19133fa63b19ae25d95281e76bb3ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/a74092b4ad19133fa63b19ae25d95281e76bb3ed)
-- [4ed95e10c6978d9c66a2633349d8ed69eef877e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/4ed95e10c6978d9c66a2633349d8ed69eef877e7)
-- [6f38bf870ca3dedd8e044d944f21859bd5514fe9](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f38bf870ca3dedd8e044d944f21859bd5514fe9)
-- [ad074c7](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad074c7733baf1c79aed890b01c8d454f1fdd202)
+- [aa2959b21e70c585bf864c639f5319fdbb48f10a](https://github.com/Cognis-Labs-HQ/Cognis/commit/aa2959b21e70c585bf864c639f5319fdbb48f10a)
+- [ee6db7013d3b8b614bef1766a8e05c0572ac4932](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee6db7013d3b8b614bef1766a8e05c0572ac4932)
+- [3f6fb44800349314679b0fcd2bc827b9681a7bd5](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f6fb44800349314679b0fcd2bc827b9681a7bd5)
+- [c907d3dda0d8b07b8c9f0c6580ce4afb517315b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/c907d3dda0d8b07b8c9f0c6580ce4afb517315b2)
+- [9ee6d1d058d11f1a4dfd849183aebda17a804aa7](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ee6d1d058d11f1a4dfd849183aebda17a804aa7)
