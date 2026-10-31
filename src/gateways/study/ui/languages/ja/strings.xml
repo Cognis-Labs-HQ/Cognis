@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Study を使い始める</string>
+  <string name="gateway.study.tutorial.navigation.title">学習ツールを選ぶ</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore では登録した言語を閲覧できます。フラッシュカードなどのツールはアカウントで利用可能な場合にここへ表示されます。</string>
+  <string name="gateway.study.tutorial.languages.title">学習する言語</string>
+  <string name="gateway.study.tutorial.languages.body">登録した言語を切り替えます。登録の変更には Study の設定を使います。このチュートリアルが登録を自動変更することはありません。</string>
+  <string name="gateway.study.tutorial.modules.title">学習モジュールを開く</string>
+  <string name="gateway.study.tutorial.modules.body">カードからインストール済みの学習ツールを開きます。オフライン中や現在の役割で利用できない場合は、再接続するか管理者に相談してください。</string>
   <string name="gateway.study.picker.title">学習言語を選択</string>
   <string name="gateway.study.picker.select">言語を選択してください：</string>
   <string name="gateway.study.page_subtitle">言語学習ダッシュボード</string>

@@ -634,4 +634,21 @@
   <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
   <string name="ui.app.users.details_failed">Could not load this user’s details. Please try again.</string>
   <string name="ui.app.users.refresh_failed">The change was saved, but the Users list could not be refreshed. Refresh the page to see the latest data.</string>
+  <string name="ui.reuse.tutorials">Tutorials</string>
+  <string name="ui.reuse.skip">Skip</string>
+  <string name="ui.reuse.start">Start</string>
+  <string name="ui.reuse.finish">Finish</string>
+  <string name="ui.tutorial.progress">Step {{current}} of {{total}}</string>
+  <string name="ui.tutorial.missing">The target is unavailable. Make it available, then choose Retry, or cancel this tutorial.</string>
+  <string name="ui.tutorial.waiting">Waiting for the page element. You can cancel at any time.</string>
+  <string name="ui.tutorial.choose">Choose a Tutorial</string>
+  <string name="ui.tutorial.empty">No tutorials are available for your current access.</string>
+  <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
+  <string name="ui.tutorial.workspace.title">Your Workspace</string>
+  <string name="ui.tutorial.workspace.navigation.title">Navigation</string>
+  <string name="ui.tutorial.workspace.navigation.body">Use the main navigation to open the pages available to your account. This tutorial never changes your permissions.</string>
+  <string name="ui.tutorial.workspace.search.title">Search</string>
+  <string name="ui.tutorial.workspace.search.body">Search finds pages and content across enabled components. Opening a dialog or leaving the page safely ends this tutorial.</string>
+  <string name="ui.tutorial.workspace.account.title">Account Menu</string>
+  <string name="ui.tutorial.workspace.account.body">Open your account menu for settings, documentation and tutorials. You can replay any available tutorial here.</string>
 </resources>

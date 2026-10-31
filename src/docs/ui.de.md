@@ -50,3 +50,7 @@ Der gemeinsame Bildvorschau-Anbieter lädt sein Stylesheet, bevor er Steuereleme
 ## Reaktionsfähige Sitzungsnavigation
 
 Die Abmeldung löscht private Sitzungsdaten, ohne auf die öffentliche Routenpflege des Service-Workers zu warten. Identische Richtlinienanfragen teilen einen Austausch; geänderte Zugriffsentscheidungen bleiben getrennt. Der Sprachschalter wartet auf seinen Kataloganbieter und blendet kontogebundene Steuerelemente nach der Abmeldung aus. Gebündelte und direkt geladene Router teilen Dokumentzustand, Listener und Abbruch laufender Ansichten, einschließlich Einstellungen zum Dashboard.
+
+## Geführte Tutorials
+
+Das Kontomenü öffnet den Tutorial-Katalog. Komponenten und aktivierte externe Module steuern über `ui:tutorials` übersetzte, wiederholbare Abläufe bei. Abläufe verwenden semantische Ziele, geschützte SPA-Navigation und abbrechbare Schritte; ein erforderlicher Dialog hat immer Vorrang. Siehe [Tutorial-Vertrag](/docs/tutorials).

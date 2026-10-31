@@ -142,7 +142,7 @@ function renderCard(module) {
     const avatar = avatarUrl
         ? `<img class="module-store-avatar module-picture" src="${escapeHtml(avatarUrl)}" data-resource-id="${escapeHtml(module.uuid)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`
         : `<img class="module-store-avatar module-picture" src="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`;
-    return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
+    return `<article class="module-store-card" data-tutorial-module="${escapeHtml(module.id)}" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
         <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>

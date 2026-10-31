@@ -634,4 +634,21 @@
   <string name="ui.app.settings.language_offline_locked">Verbinden Sie sich, um UI-Sprachen hinzuzufügen oder zu entfernen. Ausgewählte Sprachen können weiterhin umgeordnet werden.</string>
   <string name="ui.app.users.details_failed">Die Kontodetails konnten nicht geladen werden. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.users.refresh_failed">Die Änderung wurde gespeichert, aber die Benutzerliste konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuellen Daten zu sehen.</string>
+  <string name="ui.reuse.tutorials">Anleitungen</string>
+  <string name="ui.reuse.skip">Überspringen</string>
+  <string name="ui.reuse.start">Starten</string>
+  <string name="ui.reuse.finish">Abschließen</string>
+  <string name="ui.tutorial.progress">Schritt {{current}} von {{total}}</string>
+  <string name="ui.tutorial.missing">Das Zielelement ist nicht verfügbar. Machen Sie es verfügbar und wählen Sie Erneut versuchen, oder brechen Sie diese Anleitung ab.</string>
+  <string name="ui.tutorial.waiting">Warten auf das Seitenelement. Sie können jederzeit abbrechen.</string>
+  <string name="ui.tutorial.choose">Anleitung auswählen</string>
+  <string name="ui.tutorial.empty">Für Ihren aktuellen Zugriff sind keine Anleitungen verfügbar.</string>
+  <string name="ui.tutorial.error">Die Anleitung konnte nicht fortgesetzt werden. Ihre Seite bleibt verfügbar.</string>
+  <string name="ui.tutorial.workspace.title">Ihr Arbeitsbereich</string>
+  <string name="ui.tutorial.workspace.navigation.title">Navigation</string>
+  <string name="ui.tutorial.workspace.navigation.body">Öffnen Sie über die Hauptnavigation die für Ihr Konto verfügbaren Seiten. Diese Anleitung ändert niemals Ihre Berechtigungen.</string>
+  <string name="ui.tutorial.workspace.search.title">Suche</string>
+  <string name="ui.tutorial.workspace.search.body">Die Suche findet Seiten und Inhalte aktivierter Komponenten. Ein Dialog oder Seitenwechsel beendet diese Anleitung sicher.</string>
+  <string name="ui.tutorial.workspace.account.title">Kontomenü</string>
+  <string name="ui.tutorial.workspace.account.body">Öffnen Sie Ihr Kontomenü für Einstellungen, Dokumentation und Anleitungen. Verfügbare Anleitungen können hier erneut gestartet werden.</string>
 </resources>
