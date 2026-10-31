@@ -32,10 +32,11 @@ export function createUserEmailRoutes(
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     emailDelivery: {
+        purpose: string;
         canSendVerificationEmail: () => boolean;
         sendEmail: (input: {
+            purpose: string;
             recipientEmail: string;
-            templateId: string;
             variables: Record<string, string>;
         }) => Promise<unknown>;
     },
@@ -217,7 +218,7 @@ export function createUserEmailRoutes(
                     res.end(
                         JSON.stringify({
                             error: {
-                                code: "smtp_unavailable",
+                                code: "email_delivery_unavailable",
                                 message:
                                     "Email verification is not available. Contact your administrator.",
                             },
@@ -236,8 +237,8 @@ export function createUserEmailRoutes(
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
                     await emailDelivery.sendEmail({
+                        purpose: emailDelivery.purpose,
                         recipientEmail: email,
-                        templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
                     res.writeHead(201, {
@@ -255,7 +256,7 @@ export function createUserEmailRoutes(
                 } catch (err) {
                     const msg =
                         err instanceof Error ? err.message : String(err);
-                    if (msg === "smtp_rate_limited") {
+                    if (msg === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });
@@ -406,7 +407,7 @@ export function createUserEmailRoutes(
                     res.end(
                         JSON.stringify({
                             error: {
-                                code: "smtp_unavailable",
+                                code: "email_delivery_unavailable",
                                 message: "Email delivery is not configured",
                             },
                         }),
@@ -453,8 +454,8 @@ export function createUserEmailRoutes(
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
                     await emailDelivery.sendEmail({
+                        purpose: emailDelivery.purpose,
                         recipientEmail: email,
-                        templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
                     res.writeHead(200, {
@@ -471,7 +472,7 @@ export function createUserEmailRoutes(
                 } catch (err) {
                     const msg =
                         err instanceof Error ? err.message : String(err);
-                    if (msg === "smtp_rate_limited") {
+                    if (msg === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });

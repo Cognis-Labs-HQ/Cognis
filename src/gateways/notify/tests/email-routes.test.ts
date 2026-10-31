@@ -16,6 +16,8 @@ import { CoreNotificationGateway } from "../gateway.js";
 import { VolatileNotificationPreferenceStore } from "../gateway.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
+const EMAIL_PURPOSE = "test:verification";
+
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new InMemoryTestExecutor();
     const store = new DbNotificationStore(db);
@@ -32,18 +34,22 @@ function makeGateway() {
 function makeEmailDelivery(gateway: {
     canSendVerificationEmail(): boolean;
     sendVerificationEmail?(
+        purpose: string,
         recipientEmail: string,
         code: string,
         verifyUrl?: string,
     ): Promise<void>;
 }) {
     return {
+        purpose: EMAIL_PURPOSE,
         canSendVerificationEmail: () => gateway.canSendVerificationEmail(),
         sendEmail: async (input: {
+            purpose: string;
             recipientEmail: string;
             variables: Record<string, string>;
         }) =>
             gateway.sendVerificationEmail?.(
+                input.purpose,
                 input.recipientEmail,
                 input.variables.code,
                 input.variables.verifyUrl || undefined,
@@ -99,6 +105,7 @@ test("adding the first email auto-sets it as primary", async () => {
         tfaService,
         verifyTokenService,
         {
+            purpose: EMAIL_PURPOSE,
             canSendVerificationEmail: () => true,
             sendEmail: async (input) => {
                 sentEmails.push(input);
@@ -113,7 +120,7 @@ test("adding the first email auto-sets it as primary", async () => {
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 201);
-    assert.equal(sentEmails[0]?.templateId, "notify-verification");
+    assert.equal(sentEmails[0]?.purpose, EMAIL_PURPOSE);
     assert.equal(sentEmails[0]?.recipientEmail, "alice@example.com");
 
     const emails = await notifStore.getUserEmails("alice");
@@ -134,7 +141,13 @@ test("returns 503 when SMTP is not available and does not add the email", async 
         notifStore,
         tfaService,
         verifyTokenService,
-        makeEmailDelivery(gateway),
+        {
+            purpose: EMAIL_PURPOSE,
+            canSendVerificationEmail: () => false,
+            sendEmail: async () => {
+                throw new Error("email_delivery_unavailable");
+            },
+        },
     );
     const res = makeResponse();
 
@@ -145,7 +158,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
     );
     assert.equal(res.status, 503);
     const data = JSON.parse(res.payload);
-    assert.equal(data.error.code, "smtp_unavailable");
+    assert.equal(data.error.code, "email_delivery_unavailable");
 
     const emails = await notifStore.getUserEmails("alice");
     assert.equal(
@@ -200,8 +213,13 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
 
     const sentEmails: Array<{ to: string; code: string }> = [];
     const mockGateway = {
+        purpose: EMAIL_PURPOSE,
         canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (to: string, code: string) => {
+        sendVerificationEmail: async (
+            _purpose: string,
+            to: string,
+            code: string,
+        ) => {
             sentEmails.push({ to, code });
         },
     } as any;
@@ -254,8 +272,13 @@ test("email verification codes use configured TFA SMTP code length", async () =>
 
     const sentEmails: Array<{ to: string; code: string }> = [];
     const mockGateway = {
+        purpose: EMAIL_PURPOSE,
         canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (to: string, code: string) => {
+        sendVerificationEmail: async (
+            _purpose: string,
+            to: string,
+            code: string,
+        ) => {
             sentEmails.push({ to, code });
         },
     } as any;
@@ -444,8 +467,10 @@ test("add email issues both TFA code and verify token and includes link in email
     const sentEmails: Array<{ to: string; code: string; verifyUrl?: string }> =
         [];
     const mockGateway = {
+        purpose: EMAIL_PURPOSE,
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
+            _purpose: string,
             to: string,
             code: string,
             verifyUrl?: string,
@@ -626,8 +651,10 @@ test("SSO email resends support code and link verification with namespaced accou
         codes,
         tokens,
         {
+            purpose: EMAIL_PURPOSE,
             canSendVerificationEmail: () => available,
-            sendEmail: async ({ variables }) => {
+            sendEmail: async ({ purpose, variables }) => {
+                assert.equal(purpose, EMAIL_PURPOSE);
                 sent.push(variables);
             },
         },
@@ -677,6 +704,6 @@ test("SSO email resends support code and link verification with namespaced accou
     assert.equal(unavailable.status, 503);
     assert.equal(
         JSON.parse(unavailable.payload).error.code,
-        "smtp_unavailable",
+        "email_delivery_unavailable",
     );
 });

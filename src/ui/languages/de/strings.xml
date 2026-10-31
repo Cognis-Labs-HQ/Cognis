@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">Bestätigung fehlgeschlagen. Bitte erneut versuchen.</string>
   <string name="ui.app.settings.emails_verify_rate_limited">Eine Bestätigungs-E-Mail wurde kürzlich gesendet. Bitte warte, bevor du eine weitere anforderst.</string>
   <string name="ui.app.settings.emails_remove_primary_body">Dies ist deine primäre E-Mail-Adresse. Setze eine andere E-Mail als primär, bevor du diese entfernst.</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">Du benötigst eine verifizierte primäre E-Mail-Adresse, um E-Mail-Benachrichtigungen zu aktivieren. Füge zuerst eine E-Mail-Adresse hinzu und bestätige sie in deinen allgemeinen Einstellungen.</string>
+  <string name="ui.app.settings.notif_email_required_body">Du benötigst eine verifizierte primäre E-Mail-Adresse, um E-Mail-Benachrichtigungen zu aktivieren. Füge zuerst eine E-Mail-Adresse hinzu und bestätige sie in deinen allgemeinen Einstellungen.</string>
   <string name="ui.app.settings.notif_matrix_heading">Benachrichtigungseinstellungen</string>
   <string name="ui.app.settings.notif_no_providers">Keine aktiven Benachrichtigungsadapter.</string>
   <string name="ui.app.settings.notif_no_categories">Keine Benachrichtigungskategorien registriert.</string>
@@ -474,8 +474,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">Benutzervalidierungsmethode</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (nicht verfügbar — zuerst den SMTP-Adapter aktivieren)</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">E-Mail</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">E-Mail (nicht verfügbar — zuerst einen E-Mail-Dienst konfigurieren)</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>
@@ -632,4 +632,6 @@
   <string name="ui.reuse.recheck_connectivity">Verbindung erneut prüfen</string>
   <string name="ui.reuse.offline_no_cached_content">Keine offline gespeicherten Inhalte verfügbar.</string>
   <string name="ui.app.settings.language_offline_locked">Verbinden Sie sich, um UI-Sprachen hinzuzufügen oder zu entfernen. Ausgewählte Sprachen können weiterhin umgeordnet werden.</string>
+  <string name="ui.app.users.details_failed">Die Kontodetails konnten nicht geladen werden. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.app.users.refresh_failed">Die Änderung wurde gespeichert, aber die Benutzerliste konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuellen Daten zu sehen.</string>
 </resources>

@@ -1,3 +1,4 @@
+import { navigateTo } from "../../reuse/app-router.js";
 import { createLanguageRedraw } from "./language-redraw.js";
 import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
 import { bindOnlineSettingsControls } from "./online-controls.js";
@@ -159,7 +160,7 @@ export async function mount(root, { signal } = {}) {
         authSetupRequired,
     );
     if (setupRedirect) {
-        window.location.replace(setupRedirect);
+        await navigateTo(setupRedirect, { replace: true });
         return;
     }
     const [i18n, sectionDescriptors] = await Promise.all([

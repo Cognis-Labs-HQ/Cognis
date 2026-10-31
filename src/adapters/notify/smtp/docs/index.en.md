@@ -1,75 +1,29 @@
-# SMTP Notification Adapter
+# SMTP Email Adapter
 
-## Overview
+## Bootstrap and Channels
 
-The SMTP adapter delivers notifications as email via any SMTP server. It is the only built-in notification adapter and activates automatically when the `COGNIS_SMTP_HOST` environment variable is set. Typical use cases include delivery of two-factor authentication codes, email verification links, and any other category of notification the notification gateway dispatches.
+SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
 
-The adapter implements greylisting-tolerant delivery: if the first send attempt is rejected with a transient error, it retries up to twice with a five-minute delay between each attempt, matching common SMTP greylisting intervals.
-
-## Responsibilities
-
-- Send email via the configured SMTP server using Nodemailer.
-- Handle greylisting by retrying transient delivery failures (up to 2 retries, 5-minute delay).
-- Expose `getConfig()` and `setConfig()` for runtime reconfiguration via the admin API.
-- Expose `sendTestEmail(to)` for delivery verification without going through the notification pipeline.
-- `codeLength` (number, optional): Shared SMTP verification-code length used by email confirmation and SMTP TFA codes. Values are clamped to 4–10 digits and synchronized with the SMTP TFA adapter.
-- Register the notification category `email` with the notification gateway.
-
-Not responsible for: rendering email content (the notification gateway builds the message body), managing user notification preferences (the profile gateway owns those), or delivering non-email notification types.
-
-## Architecture
-
-`SmtpNotificationSender` in `src/adapters/notify/smtp/smtp-notification-sender.ts` implements `NotificationSender`. It holds a Nodemailer transporter and recreates it whenever the config is updated via `setConfig()`.
-
-### Greylisting retry logic
-
-```ts
-async function sendWithRetry(
-    options: MailOptions,
-    attempts = 3,
-): Promise<void> {
-    for (let i = 0; i < attempts; i++) {
-        try {
-            await this.transporter.sendMail(options);
-            return;
-        } catch (err) {
-            if (i < attempts - 1 && isTransientError(err)) {
-                await sleep(5 * 60 * 1000);
-            } else {
-                throw err;
-            }
-        }
-    }
-}
+```js
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-`isTransientError` returns true for SMTP 4xx responses and connection timeouts — the class of errors a greylisting filter generates.
+Every `notify:sendEmail` call supplies an existing purpose and variables. There is no `templateId`. Missing or unknown purposes are rejected, and asynchronous actions are checked again before enqueueing. Registration closes on bootstrap completion, failure or timeout. Gateway completion hooks run under the same owner after providers bootstrap.
 
-### Runtime reconfiguration
+Notification categories use the existing `notify:registerCategory` capability. SMTP creates a queue during registration and returns a bound delivery handle to the gateway. The gateway remains sender-neutral. No send creates or infers a purpose; direct SMTP sends require an explicit registered purpose.
 
-The adapter exposes `setConfig(config)` and `getConfig()`. When the admin updates the SMTP config via the API, the notification gateway calls `setConfig()` on the adapter instance, which rebuilds the Nodemailer transporter with the new settings. No restart is required.
+Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.
+
+The default cooldown is fifteen seconds per normalized recipient within each queue. Independent queues drain concurrently. Only successful delivery advances the cooldown. Queue history retains up to 200 completed records per queue in memory. `sendEmail` returns the actual queue receipt; a queued receipt does not claim successful SMTP delivery.
+
+The sender contract uses generic `test(recipient, config)` and optional bootstrap/channel/lifecycle hooks. The gateway calls `testSender(senderId, recipient, config)` and contains no SMTP-specific test, verification, invitation or login methods. Existing SMTP-specific gateway helpers and the separate template registry are removed.
 
 ## Configuration
 
-| Variable             | Default | Description                                                |
-| -------------------- | ------- | ---------------------------------------------------------- |
-| `COGNIS_SMTP_HOST`   | —       | SMTP server hostname; the adapter is inactive if not set   |
-| `COGNIS_SMTP_PORT`   | `587`   | SMTP server port                                           |
-| `COGNIS_SMTP_SECURE` | `false` | `true` for TLS on connect (port 465); `false` for STARTTLS |
-| `COGNIS_SMTP_USER`   | —       | SMTP authentication username                               |
-| `COGNIS_SMTP_PASS`   | —       | SMTP authentication password                               |
-| `COGNIS_SMTP_FROM`   | —       | Sender address shown in the `From` header                  |
-
-Runtime changes applied through the API override these environment values for the life of the process.
-
-## API Routes
-
-| Method | Path                                           | Description                                      | Auth  |
-| ------ | ---------------------------------------------- | ------------------------------------------------ | ----- |
-| `GET`  | `/api/v1/gateways/notify/adapters/smtp/config` | Retrieve current SMTP config (password redacted) | Admin |
-| `PUT`  | `/api/v1/gateways/notify/adapters/smtp/config` | Update SMTP config at runtime                    | Admin |
-| `POST` | `/api/v1/gateways/notify/adapters/smtp/test`   | Send a test email                                | Admin |
-
-## Test delivery
-
-Test messages use the same adapter-owned queue and per-recipient rate limiter as operational SMTP delivery. The submitted configuration is carried with the queued test, and the API waits for its final delivery result.
+Configure `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, optional `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` and `COGNIS_SMTP_SECURE` (`none`, `starttls` or `tls`). Sender name, EHLO host, certificate policy, authentication policy and verification-code length use the existing adapter settings. Tests may supply a configuration override, retained with the queued message.

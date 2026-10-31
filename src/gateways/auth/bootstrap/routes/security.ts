@@ -24,7 +24,7 @@ export interface SecuritySubsection {
 }
 
 interface SecuritySettings {
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     loginSessionTimeoutMinutes: number;
 }
 

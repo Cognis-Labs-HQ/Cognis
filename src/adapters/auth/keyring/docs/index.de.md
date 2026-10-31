@@ -1,5 +1,7 @@
 # Benutzerschlüsselbund-Adapter
 
+Die Einstellungen lesen `keyring:readState` über den registrierten Ablauf mit Lade- und Darstellungsstufe, bevor der Tresorstatus angezeigt wird. Anfangs erscheint ein Ladezustand; nicht verfügbare Metadaten werden von einem fehlenden Tresor unterschieden. Ein erneuter Versuch erstellt keinen Tresor und fragt kein Passwort ab. Gebündelte und direkt geladene Verbraucher teilen einen Anbieter. Navigation, Identitätswechsel und Sperren entfernen sensible Dialoginhalte und Ereignisbehandler.
+
 PUT-Anfragen für Tresore verwenden den gemeinsamen JSON-Datenstromleser der API mit dem wirksamen Tresorbudget und 1 KiB zusätzlichem Platz für den Umschlag. Richtlinie, 413-Fehler und Prüfung der serialisierten Daten bleiben im Adapter; eine zweite Pufferimplementierung entfällt.
 
 Die Standardgrenze für Tresore beträgt 2 MiB, die absolute Verarbeitungsgrenze 8 MiB. Die wirksame Richtlinie wird an Clients zurückgegeben. PUT zählt eingehende Bytes vor dem Puffern oder Parsen und weist übergroße Anfragen zurück; GET prüft die gespeicherte Größe vor dem Parsen. Verschlüsselte Umschläge verwenden eine Basiszeile und begrenzte Folgezeilen mit atomarem Ersetzen und Löschen sowie einer gemeinsamen Leseabfrage. Jeder Abschnitt umfasst höchstens 60.000 UTF-8-Bytes; der Server entschlüsselt weiterhin keine Geheimnisse.

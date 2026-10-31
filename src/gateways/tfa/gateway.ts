@@ -1,3 +1,8 @@
+import type { CapabilityStore } from "@cognis/core";
+import {
+    bootstrapTfaAdapters,
+    type TfaAdapterBootstrapContext,
+} from "./adapter-bootstrap.js";
 import { randomBytes } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -25,6 +30,7 @@ export interface TfaMethodSetupView {
 }
 
 export interface TfaMethodAdapter {
+    bootstrap?(ctx: TfaAdapterBootstrapContext): Promise<void>;
     readonly id: string;
     readonly name: string;
     readonly version?: string;
@@ -149,7 +155,7 @@ type NotifyDispatch = (envelope: {
 }) => Promise<unknown>;
 
 const TFA_SETUP_ID_BYTES = 18;
-const TFA_METHOD_ISSUER = process.env.COGNIS_TOTP_ISSUER || "Cognis";
+const TFA_METHOD_ISSUER = "Cognis";
 
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
@@ -324,8 +330,12 @@ export class CoreTfaGateway {
     onAdapterEnabledChange(
         listenerId: string,
         listener: (adapterId: string, enabled: boolean) => Promise<void> | void,
-    ): void {
+    ): () => void {
         this.adapterEnabledChangeListeners.set(listenerId, listener);
+        return () => {
+            if (this.adapterEnabledChangeListeners.get(listenerId) === listener)
+                this.adapterEnabledChangeListeners.delete(listenerId);
+        };
     }
 
     onAdapterConfigChange(
@@ -876,6 +886,10 @@ export class CoreTfaGateway {
         }
     }
 
+    async bootstrapAdapters(capabilities: CapabilityStore): Promise<void> {
+        await bootstrapTfaAdapters(this.adapters.values(), capabilities, this);
+    }
+
     async discoverAdapters(tfaAdaptersRoot: string): Promise<void> {
         let entries: string[];
         try {
@@ -928,3 +942,5 @@ export class CoreTfaGateway {
         }
     }
 }
+
+export type { TfaAdapterBootstrapContext } from "./adapter-bootstrap.js";

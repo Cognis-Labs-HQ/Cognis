@@ -49,4 +49,5 @@
   <string name="gateway.tfa.settings.method_deactivated">Die TFA-Methode „{method}" ist nicht mehr aktiv.</string>
   <string name="gateway.tfa.settings.required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
   <string name="gateway.tfa.settings.loading">Sicherheitseinstellungen werden geladen…</string>
+  <string name="gateway.tfa.settings.qr_code_alt">Diesen QR-Code mit der Authentifizierungs-App scannen</string>
 </resources>

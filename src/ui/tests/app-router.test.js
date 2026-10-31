@@ -239,7 +239,7 @@ test("router protects and restores cancelled history traversal", () => {
         popstateIndex,
     );
     const restoreIndex = src.indexOf(
-        "history.go(_historyIndex - targetIndex)",
+        "history.go(routerState.historyIndex - targetIndex)",
         guardIndex,
     );
 
@@ -247,7 +247,7 @@ test("router protects and restores cancelled history traversal", () => {
     assert.ok(guardIndex > popstateIndex);
     assert.ok(restoreIndex > guardIndex);
     assert.match(src, /detail: \{ path, resume \}/);
-    assert.match(src, /_guardBypassPath === pathWithHash/);
+    assert.match(src, /routerState.guardBypassPath === pathWithHash/);
 });
 
 test("router rechecks navigation freshness after authentication", () => {
@@ -258,10 +258,13 @@ test("router rechecks navigation freshness after authentication", () => {
     const authentication = src.indexOf(
         'await uiCtx.runFlow("authenticate-session"',
     );
-    const freshnessCheck = src.indexOf(
-        "signal.aborted || navigationSequence !== _navigationSequence",
-        authentication,
-    );
+    const freshnessCheck =
+        authentication +
+        src
+            .slice(authentication)
+            .search(
+                /signal\.aborted \|\|\s*navigationSequence !== routerState\.navigationSequence/,
+            );
     const sessionProcessing = src.indexOf("const session =", authentication);
     assert.ok(authentication >= 0);
     assert.ok(freshnessCheck > authentication);
@@ -303,12 +306,12 @@ test("router guards against re-initialisation while refreshing its root", () => 
     );
     assert.match(
         src,
-        /_initialized/,
+        /routerState.initialized/,
         "app-router.js must guard initRouter against being called twice",
     );
     assert.match(
         src,
-        /if \(root\) _root = root;\s*if \(_initialized\) return;/,
+        /if \(root\) routerState.root = root;\s*if \(routerState.initialized\) return;/,
         "app-router.js must keep the router root fresh across shell reuse",
     );
 });
@@ -320,7 +323,10 @@ test("router resolves #app before mounting routes", () => {
     );
 
     assert.match(src, /function resolveRouterRoot\(\)/);
-    assert.match(src, /_root = document\.querySelector\(["']#app["']\);/);
+    assert.match(
+        src,
+        /routerState.root = document\.querySelector\(["']#app["']\);/,
+    );
     assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
     assert.match(
         src,
@@ -403,7 +409,7 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
     assert.match(
         src,
-        /_mountController\.abort\(\)/,
+        /routerState.mountController\.abort\(\)/,
         "app-router.js must abort the previous AbortController on navigation",
     );
     assert.match(

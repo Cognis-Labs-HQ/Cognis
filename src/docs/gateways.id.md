@@ -1,5 +1,7 @@
 # Panduan Gateway dan Adapter
 
+Kontrak notifikasi lintas komponen diekspor dari `@cognis/core`. Pemanggil mengambil `notify:dispatch` atau `notify:listSenders` melalui ctx; adapter menerima kapabilitas host terbatas, bukan instance gateway konkret.
+
 ## Ikhtisar
 
 Gateway adalah satu-satunya otoritas untuk domain terbatas di Cognis. Gateway

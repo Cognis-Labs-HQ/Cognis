@@ -341,7 +341,7 @@ export async function mount(root, { signal } = {}) {
         });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
-            data.userValidationMode === "smtp";
+            data.userValidationMode === "email";
         if (requiresUserValidation) {
             const requiredEmailClient =
                 await loadRequiredEmailEnforcementClient();

@@ -157,3 +157,7 @@ Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Insta
 ## Kontogebundene Warteschlangen
 
 Gepufferte Einträge enthalten die vom Server bestätigte Kontoinstanzkennung. Auth liefert die kanonische `accountInstanceId` im authentifizierten Einrichtungsstatus und veröffentlicht `session:getOfflineIdentity` nur für bestätigte, vollständig eingerichtete und nicht abgelaufene Kontositzungen. Fehlende verbindliche Metadaten widerrufen die Offline-Berechtigung. Warteschlangenansichten sowie Speicher- und Zustellungsprüfungen sind an diese Instanz gebunden. Einträge alter oder unbestätigter Instanzen werden vor der Übertragung abgewiesen, auch wenn ein lokales Konto mit derselben Konto-ID neu erstellt wurde. Vorgangskennungen können nicht zwischen Kontoinstanzen kollidieren. Bearer-Token werden niemals in der Warteschlange gespeichert.
+
+## Begrenzte SSO-Registrierungsversuche
+
+Einladungspflichtige SSO-Identitäten werden vor dem Anlegen von Konto, Profil oder E-Mail zurückgehalten. Abgebrochene oder abgelaufene Versuche können nicht fortgesetzt werden; Registrierung und Zwei-Faktor-Anmeldung laufen exakt zur Frist ab. Der aktivierte öffentliche Registrierungsadapter erlaubt weiterhin SSO-Kontoerstellung unabhängig von öffentlicher nativer Registrierung. Bestehende Konten werden nicht anhand von Anbieter oder Alter gelöscht.

@@ -1,3 +1,7 @@
+import {
+    runBootstrapScope,
+    type BootstrapDisposer,
+} from "../ctx/bootstrap-scope.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -43,6 +47,18 @@ export interface GatewayEntry extends GatewayManifest {
 }
 
 export class GatewayRegistry {
+    private readonly transitions = new Map<string, Promise<boolean>>();
+    private readonly bootstrapDisposers = new Map<
+        string,
+        BootstrapDisposer[]
+    >();
+
+    retainBootstrapDisposer(id: string, dispose: BootstrapDisposer): void {
+        const disposers = this.bootstrapDisposers.get(id) ?? [];
+        disposers.push(dispose);
+        this.bootstrapDisposers.set(id, disposers);
+    }
+
     private readonly gateways = new Map<string, GatewayEntry>();
     private readonly moduleNamespacePolicies = new Map<
         string,
@@ -89,18 +105,64 @@ export class GatewayRegistry {
         return this.gateways.get(id);
     }
 
-    enable(id: string): boolean {
-        const entry = this.gateways.get(id);
-        if (!entry) return false;
-        entry.status = "active";
-        return true;
+    enable(id: string): Promise<boolean> {
+        return this.transition(id, true);
     }
 
-    disable(id: string): boolean {
-        const entry = this.gateways.get(id);
-        if (!entry) return false;
-        entry.status = "disabled";
-        return true;
+    disable(id: string): Promise<boolean> {
+        return this.transition(id, false);
+    }
+
+    private async transition(id: string, enabled: boolean): Promise<boolean> {
+        const previous = this.transitions.get(id);
+        const operation = (async () => {
+            if (previous) await previous;
+            const entry = this.gateways.get(id);
+            if (!entry) return false;
+            const status = enabled ? "active" : "disabled";
+            if (entry.status === status) return true;
+            const disposers = this.bootstrapDisposers.get(id) ?? [];
+            if (enabled) {
+                const activated: BootstrapDisposer[] = [];
+                try {
+                    for (const dispose of disposers) {
+                        activated.push(dispose);
+                        await dispose.reactivate?.();
+                    }
+                    entry.status = status;
+                } catch (error) {
+                    await Promise.allSettled(
+                        activated
+                            .reverse()
+                            .map((dispose) => Promise.resolve().then(dispose)),
+                    );
+                    throw error;
+                }
+            } else {
+                entry.status = status;
+                const failures: unknown[] = [];
+                for (const dispose of [...disposers].reverse()) {
+                    try {
+                        await dispose();
+                    } catch (error) {
+                        failures.push(error);
+                    }
+                }
+                if (failures.length)
+                    throw new AggregateError(
+                        failures,
+                        "gateway_cleanup_failed",
+                    );
+            }
+            return true;
+        })();
+        this.transitions.set(id, operation);
+        try {
+            return await operation;
+        } finally {
+            if (this.transitions.get(id) === operation)
+                this.transitions.delete(id);
+        }
     }
 
     patch(id: string, updates: Partial<GatewayManifest>): void {
@@ -208,11 +270,11 @@ export class GatewayService {
         return this.registry.get(id);
     }
 
-    enable(id: string): boolean {
+    enable(id: string): Promise<boolean> {
         return this.registry.enable(id);
     }
 
-    disable(id: string): boolean {
+    disable(id: string): Promise<boolean> {
         return this.registry.disable(id);
     }
 
@@ -347,6 +409,8 @@ export class GatewayService {
             orderedEntries.push(nextEntry);
         }
 
+        const completionHooks: Array<{ id: string; run: () => Promise<void> }> =
+            [];
         for (const entry of orderedEntries) {
             const gatewayDir = path.join(gatewaysRoot, entry);
             const manifest = directoryManifests.get(entry) ?? {};
@@ -370,10 +434,26 @@ export class GatewayService {
             try {
                 const mod = (await import(bootstrapUrl)) as {
                     bootstrap?: (ctx: unknown) => Promise<void>;
+                    completeBootstrap?: (ctx: unknown) => Promise<void>;
                 };
                 if (typeof mod.bootstrap === "function") {
-                    await mod.bootstrap(ctx);
+                    await runBootstrapScope(
+                        ctx.capabilities.get<object>("system:ctx") ??
+                            ctx.capabilities,
+                        `gateway:${gatewayId}`,
+                        () => mod.bootstrap!(ctx),
+                        (dispose) =>
+                            ctx.gatewayRegistry.retainBootstrapDisposer(
+                                gatewayId,
+                                dispose,
+                            ),
+                    );
                 }
+                if (mod.completeBootstrap)
+                    completionHooks.push({
+                        id: gatewayId,
+                        run: () => mod.completeBootstrap!(ctx),
+                    });
             } catch (error) {
                 const message =
                     error instanceof Error ? error.message : String(error);
@@ -412,6 +492,20 @@ export class GatewayService {
                     (ctx as GatewayBootstrapBase).log = contributed;
                 }
             }
+        }
+
+        // Complete owner registrations after optional providers have bootstrapped.
+        for (const hook of completionHooks) {
+            await runBootstrapScope(
+                ctx.capabilities.get<object>("system:ctx") ?? ctx.capabilities,
+                `gateway:${hook.id}`,
+                hook.run,
+                (dispose) =>
+                    ctx.gatewayRegistry.retainBootstrapDisposer(
+                        hook.id,
+                        dispose,
+                    ),
+            );
         }
 
         // Validate cross-gateway dependencies now that all gateways have

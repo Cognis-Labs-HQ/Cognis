@@ -75,7 +75,7 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
             return JSON.stringify({
                 trustedDomains: [],
                 registrationsEnabled: true,
-                userValidationMode: "smtp",
+                userValidationMode: "email",
             });
         },
         async set() {
@@ -121,7 +121,7 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
         };
     };
     assert.equal(payload.data.displayName, "Alice Liddell");
-    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.userValidationMode, "email");
     assert.equal(payload.data.requiredUserValidation, false);
 });
 
@@ -134,7 +134,7 @@ test("login userValidation exempts founder admin even when SMTP is available", a
             return JSON.stringify({
                 trustedDomains: [],
                 registrationsEnabled: true,
-                userValidationMode: "smtp",
+                userValidationMode: "email",
             });
         },
     });
@@ -179,7 +179,7 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     };
     assert.equal(payload.data.role, "owner");
     assert.equal(payload.data.isFounder, true);
-    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.userValidationMode, "email");
     assert.equal(payload.data.requiredUserValidation, false);
 });
 

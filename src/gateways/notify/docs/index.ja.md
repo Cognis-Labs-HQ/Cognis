@@ -1,76 +1,30 @@
 # 通知ゲートウェイ
 
-## 概要
+ゲートウェイは任意の送信アダプターを介して通知を配信し、メール転送方式を必須としません。アダプターは `createNotificationSender()` を公開し、設定、接続、キュー、テスト配送を所有します。メール配信がなくてもアプリ内通知を利用できます。
 
-通知ゲートウェイは、プラグイン可能な送信者アダプターを通じて通知を配信します。アプリケーションの残りの部分と具体的な配信メカニズム（SMTP、将来のウェブフック、アプリ内通知など）の間のブローカーとして機能し、どのトランスポートが設定されているかを知る必要がありません。
+## 配送の契約
 
-ゲートウェイはまた、2要素認証コードの発行・検証のための `TfaCodeService` とメール検証フローのための `VerifyTokenService` という2つの特化サービスも所有しています。送信者アダプターはブートストラップ時に `src/adapters/notify/` をスキャンして検出されます。SMTPアダプターは唯一の組み込み送信者で、`COGNIS_SMTP_HOST` が設定されると自動的に起動します。
+コンポーネントは実装への参照ではなく ctx 機能を使います。
 
-## 責務
+- `notify:dispatch` は受信者がカテゴリごとに選んだ送信者と常時有効な送信者を使います。
+- `notify:dispatchToRole` はアカウント ID を解決して役割ごとに配信します。
+- `notify:listSenders` は公開メタデータを返します。`requiresVerifiedEmail` は送信者 ID に依存せずメール要件を示します。
+- `notify:registerCategory(id, label)` はブートストラップ中に限られます。送信者はチャネルと専用の配送関数を作成します。共有チャネルは最後の所有者が解除されるまで維持されます。
 
-- ブートストラップ時に `src/adapters/notify/` から通知送信者アダプターを検出・登録する。
-- 受信者とカテゴリに対して有効なすべての送信者に通知エンベロープを配信する。
-- 送信者設定をデータベースに永続化して再読み込みする。
-- `system` 通知カテゴリを登録する。
-- TFAコード発行・検証ルートを接続する。
-- メール検証トークンルートを接続する。
+公開契約は `@cognis/core` が提供します。アダプターのブートストラップには ctx 機能と制限されたホスト登録関数を渡し、具体的なゲートウェイ実装は渡しません。テストは `testSender(senderId, recipient, config)` に委譲します。
 
-## アーキテクチャ
+## メールアクション
 
-中心クラスは `src/gateways/notify/gateway.ts` の `CoreNotificationGateway` です。
+任意のメールプロバイダーは `notify:registerEmailPurpose(id, action)`、`notify:sendEmail`、`notify:emailAvailable`、`notify:emailCodeLength` を提供します。呼び出し側が内容を用意し、自身のブートストラップ中に所有者付きの用途を登録します。配送にはその用途、宛先、変数が必要で、配送時にキューを作ることはありません。プロバイダーがなくても保存済みアドレスは閲覧できます。
 
-```ts
-export interface NotificationGateway {
-    registerSender(sender: NotificationSender): void;
-    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-    registerCategory(id: string, label: string): void;
-    listSenders(): NotificationSenderInfo[];
-    listCategories(): NotificationCategory[];
-}
-```
+メール確認はローカルと SSO の両アカウントに適用します。コードとトークンは完全なアカウント ID とアドレスに結び付きます。コードの桁数は TFA アダプターではなくメールプロバイダーから取得します。配送障害でも確認義務は解除されません。セキュリティ設定には `userValidationMode: "email"` または `"none"` を使います。
 
-| パス                                          | 目的                                        |
-| --------------------------------------------- | ------------------------------------------- |
-| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`、インターフェース |
-| `src/gateways/notify/bootstrap.ts`            | ブートストラップエントリポイント            |
-| `src/gateways/notify/routes/notifications.ts` | 配信・管理ルート                            |
-| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService`                            |
-| `src/api/reuse/verify-token.ts`               | `VerifyTokenService`                        |
+## ライフサイクル
 
-## APIルート
+無効化や解除は所有する登録と保留中の配送を取り消します。再有効化は中止済みメッセージを再送せず新しいチャネルを復元します。共有カテゴリの別の所有者は引き続き動作します。非同期アクションは登録の解除や置換後に配送を追加できません。
 
-| メソッド | パス                                        | 説明                           | 認証     |
-| -------- | ------------------------------------------- | ------------------------------ | -------- |
-| `POST`   | `/api/v1/notify/send`                       | 通知を配信                     | 管理者   |
-| `GET`    | `/api/v1/notify/providers`                  | 登録済み送信者を一覧表示       | ユーザー |
-| `GET`    | `/api/v1/notify/categories`                 | 通知カテゴリを一覧表示         | Bearer   |
-| `GET`    | `/api/v1/notify/preferences`                | 自分の通知設定を取得           | Bearer   |
-| `PUT`    | `/api/v1/notify/preferences`                | 自分の通知設定を更新           | Bearer   |
-| `POST`   | `/api/v1/notify/providers/:senderId/config` | 送信者設定を更新               | 管理者   |
-| `POST`   | `/api/v1/notify/providers/:senderId/test`   | テスト通知を送信               | 管理者   |
-| `POST`   | `/api/v1/users/tfa/request`                 | TFAコードを要求                | Bearer   |
-| `POST`   | `/api/v1/users/tfa/verify`                  | TFAコードを検証                | Bearer   |
-| `POST`   | `/api/v1/users/email/verify/request`        | メール検証を要求               | Bearer   |
-| `POST`   | `/api/v1/users/email/verify`                | メール検証を完了               | Bearer   |
-| `GET`    | `/api/v1/users/:username/email`             | ユーザーのメールアドレスを取得 | Bearer   |
-| `PUT`    | `/api/v1/users/:username/email`             | ユーザーのメールアドレスを設定 | Bearer   |
+## ブラウザー機能
 
-## メールアドレス確認
+ライフサイクル付き `notify:emailClient` は自分のメール操作、信頼済みドメイン、管理者用 `listUserEmails`、オンライン専用 `resendUserEmail`、`emailAvailable` を提供します。設定、ユーザー管理、管理画面は ctx で解決します。所有プロバイダーがメール変更を保存してキューに入れ、確認はオンラインに限定します。認証必須の `GET /api/v1/notify/email-delivery` は可用性だけを返し、設定は公開しません。
 
-SMTP による確認は SSO とローカルの両アカウントに適用されます。再送には設定済みの通知配信サービスを使います。確認コードとリンクは、名前空間を含む SSO ID も含め、完全なアカウント ID とメールアドレスの組に結び付けられます。設定画面で確認を取り消しても既存のメールアドレスは保持されます。
-
-## 共通の最上部バナー
-
-オフラインモードと Broadcast は、アプリのヘッダーより上の文書最上部に共通の固定バナースタックを表示します。オフラインモードを優先し、閉じる操作は設けず、接続再確認と復旧後の更新操作を維持します。お知らせを削除してもオフライン表示は消えません。Broadcast は切断中の通信を省略し、プロバイダーの終了時にバナーとタイマーを解放します。
-
-## 個人設定のオフライン対応
-
-認証済みログイン時に、設定画面を開かずにメール一覧と信頼済みドメインの方針を準備します。アドレスの追加、削除、主要アドレス変更はローカル表示に反映し、`notify:emailClient` と保護対象の `notify.emails` キュー所有者を通して保存します。最終的な検証はサーバーが行います。メール確認、再送、アカウントの削除や無効化には接続が必要で、確認コード、監視トークン、パスワードはキューに含めません。追加したアドレスはオンライン確認が済むまで未確認のままです。送信成功時にはメールのスナップショットを更新し、任意の再取得に失敗しても保存済みの操作を失敗扱いにしません。容量を制限した非公開スナップショットはタブとセッションに紐付きます。
-
-## セッションとコンポーネントの分離
-
-ライフサイクルに従う`notify:emailClient`機能は、自分のアカウントへのリクエストと信頼済みドメイン、管理者向け`listUserEmails`、オンライン専用`resendUserEmail`、`smtpAvailable`を提供します。各操作は登録されたステージを実行し、プロバイダーの破棄時に停止します。設定、ユーザー管理、管理画面はNotifyのUI実装をインポートせず、ctx経由でこれらのメソッドを解決します。Notifyが利用できない場合はメール管理を非表示にし、他のアカウント操作は利用可能なままにします。
-
-## アカウントIDによる通知配信
-
-ロール宛ての通知は不変の `accountId` を使用し、公開ユーザー名が異なる SSO ユーザーにも配信します。`notify:dispatchToRole` は正規の宛先 ID を返し、公開ユーザー名は表示用データとして扱います。
+オフラインモードと Broadcast はヘッダー上のバナースタックを共有します。オフライン表示は最優先で閉じられず、接続確認と復旧後の更新を提供します。Broadcast の確認、対象、スケジュールは独立して適用されます。背景と折りたたみ可否は共通バナー機能で設定します。

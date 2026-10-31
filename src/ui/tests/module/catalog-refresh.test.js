@@ -209,12 +209,6 @@ async function fixture(context) {
                 },
                 modulePreferenceLabels: unused,
             },
-            "./credentials.js": {
-                resolveSourceToken: async (_keyring, source) => {
-                    assert.equal(source, undefined);
-                    return undefined;
-                },
-            },
             "./presentation.js": {
                 ...presentation,
                 ...localized,

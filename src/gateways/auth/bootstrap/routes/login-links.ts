@@ -50,7 +50,7 @@ export function createLoginLinkRoutes({
             req.method === "GET"
         ) {
             const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
-                "notify:canSendOneTimeLoginEmail",
+                "notify:emailAvailable",
             );
             const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
             res.writeHead(200, { "content-type": "application/json" });
@@ -112,7 +112,7 @@ export function createLoginLinkRoutes({
             oneTimeLoginIpRateLimiter.record(addressRateLimitKey);
             const contactEmail = String(process.env.CONTACT_EMAIL ?? "").trim();
             const canSendOneTimeLoginEmail = capabilities.get<() => boolean>(
-                "notify:canSendOneTimeLoginEmail",
+                "notify:emailAvailable",
             );
             const sendOneTimeLoginEmail = capabilities.get<
                 (
@@ -125,7 +125,7 @@ export function createLoginLinkRoutes({
                         actionLabel?: string;
                     },
                 ) => Promise<void>
-            >("notify:sendOneTimeLoginEmail");
+            >("auth:sendLoginLinkEmail");
             const getAccountIdByEmail = capabilities.get<
                 (email: string) => Promise<string | null>
             >("notify:getAccountIdByEmail");
@@ -180,7 +180,7 @@ This link expires in 15 minutes and can only be used once.`,
                 revokeAccessToken(loginToken);
                 const message =
                     error instanceof Error ? error.message : String(error);
-                if (message === "smtp_rate_limited") {
+                if (message === "email_rate_limited") {
                     return respondWithPasswordResetEnvelope(429, {
                         error: {
                             code: "rate_limited",

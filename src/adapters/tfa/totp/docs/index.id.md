@@ -1,5 +1,7 @@
 # Adaptor TOTP
 
+Adapter ini mengelola penggantian `COGNIS_TOTP_ISSUER`. Kode tidak valid memakai kesalahan bersama `invalid_verification_code` sehingga gateway tidak memerlukan penanganan khusus penyedia.
+
 ## Tujuan
 
 Menyediakan verifikasi kata sandi sekali pakai berbasis waktu untuk gateway TFA.

@@ -14,7 +14,7 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
-import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
+import type { NotificationEnvelope } from "@cognis/core";
 import type {
     InternalNotification,
     IInternalNotificationStore,

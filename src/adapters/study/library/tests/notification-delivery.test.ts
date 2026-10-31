@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CapabilityStore } from "@cognis/core";
+import {
+    CapabilityStore,
+    requireBootstrapScope,
+    runBootstrapScope,
+} from "@cognis/core";
 import { createNotificationDelivery } from "../notification-delivery.js";
 import { createRequestNotifier } from "../request-notifications.js";
 import { createLibraryFlow } from "./reuse/flows.js";
@@ -31,9 +35,15 @@ test("Study request delivery resolves late notification capabilities and forward
             },
         ],
     });
-    capabilities.contribute("notify:registerCategory", (id: string) =>
-        categories.push(id),
-    );
+    capabilities.contribute("notify:registerCategory", (id: string) => {
+        requireBootstrapScope();
+        categories.push(id);
+    });
+    await runBootstrapScope(capabilities, "adapter:study:library", async () => {
+        capabilities.require<(id: string) => void>("notify:registerCategory")(
+            "study",
+        );
+    });
     capabilities.contribute("notify:dispatch", async (envelope) => {
         feed.push(envelope);
         return { dispatched: ["internal"] };
@@ -49,7 +59,7 @@ test("Study request delivery resolves late notification capabilities and forward
             role: "admin",
         });
     assert.equal(feed.length, 4);
-    assert.deepEqual(categories, Array(4).fill("study"));
+    assert.deepEqual(categories, ["study"]);
     assert.equal(logs.filter(({ level }) => level === "info").length, 4);
     capabilities.contribute("notify:dispatch", async () => ({
         dispatched: [],

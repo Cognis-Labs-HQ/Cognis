@@ -130,7 +130,7 @@ function showAddEmailFailure({ code, i18n }) {
         });
         return;
     }
-    if (code === "smtp_unavailable") {
+    if (code === "email_delivery_unavailable") {
         showToast(i18n.t("ui.app.settings.emails_verify_unavailable"), {
             variant: "error",
         });

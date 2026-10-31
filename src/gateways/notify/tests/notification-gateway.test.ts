@@ -138,7 +138,7 @@ test("CoreNotificationGateway.listSenders exposes supportsTest from sender capab
     const gateway = new CoreNotificationGateway(prefStore);
 
     class TestableSender extends ConfigurableSender {
-        async sendTestEmail(): Promise<void> {}
+        async test(): Promise<void> {}
     }
 
     gateway.registerSender(new CapturingSender("plain", "Plain"));
@@ -242,17 +242,6 @@ test("CoreNotificationGateway.loadPersistedConfigs applies stored config to send
     const config = gateway.getProviderConfig("smtp");
     assert.ok(config !== null);
     assert.equal(config.host, "persisted.example.com");
-});
-
-test("CoreNotificationGateway.getSender returns registered sender by id", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-
-    const sender = new CapturingSender("test", "Test");
-    gateway.registerSender(sender);
-
-    assert.equal(gateway.getSender("test"), sender);
-    assert.equal(gateway.getSender("missing"), undefined);
 });
 
 test("CoreNotificationGateway.dispatch routes envelope to correct senders", async () => {
@@ -575,129 +564,96 @@ test("CoreNotificationGateway updateProviderConfig merges patches and emits conf
     assert.equal(changes.at(-1)?.codeLength, 8);
 });
 
-test("CoreNotificationGateway.canSendVerificationEmail returns false when no verification-capable sender", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new CapturingSender("plain", "Plain"));
-
-    assert.equal(gateway.canSendVerificationEmail(), false);
+test("shared notification channels retain their queue until every owner is disabled and reactivate without duplicate registration", async () => {
+    const { runBootstrapScope } = await import("@cognis/core");
+    const root = {};
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("person", "shared", ["custom"]);
+    const gateway = new CoreNotificationGateway(preferenceStore);
+    let registrations = 0;
+    let active = false;
+    let sent = 0;
+    gateway.registerSender({
+        senderId: "custom",
+        send: async () => {
+            throw new Error("channel_unbound");
+        },
+        registerChannel: () => {
+            registrations++;
+            active = true;
+            return Object.assign(
+                () => {
+                    active = false;
+                },
+                {
+                    reactivate: () => {
+                        active = true;
+                    },
+                    send: async () => {
+                        assert.equal(active, true);
+                        sent++;
+                    },
+                },
+            );
+        },
+    });
+    const scopes: Array<Array<import("@cognis/core").BootstrapDisposer>> = [
+        [],
+        [],
+    ];
+    for (const [index, owner] of ["gateway:first", "gateway:second"].entries())
+        await runBootstrapScope(
+            root,
+            owner,
+            async () => gateway.registerCategory("shared", "Shared"),
+            (dispose) => scopes[index].push(dispose),
+        );
+    const message = {
+        category: "shared",
+        recipientUsername: "person",
+        subject: "Subject",
+        body: "Body",
+    };
+    assert.equal(registrations, 1);
+    await scopes[0][0]();
+    assert.equal((await gateway.dispatch(message)).errors, undefined);
+    assert.equal(sent, 1);
+    await scopes[1][0]();
+    assert.equal(active, false);
+    assert.equal(gateway.listCategories().length, 0);
+    await scopes[0][0].reactivate!();
+    await scopes[1][0].reactivate!();
+    await gateway.dispatch(message);
+    assert.equal(registrations, 1);
+    assert.equal(sent, 2);
+    await scopes[0][0]();
+    assert.equal(active, true);
+    await scopes[1][0]();
+    assert.equal(active, false);
 });
 
-test("CoreNotificationGateway.canSendVerificationEmail returns false when sender is disabled", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-
-    class VerifyCapableSender extends CapturingSender {
-        getConfig() {
-            return { host: "mail.example.com" };
-        }
-        isConfigured() {
-            return true;
-        }
-        async sendVerificationEmail() {}
-    }
-
-    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
-    await gateway.saveProviderConfig("smtp", { enabled: false });
-
-    assert.equal(gateway.canSendVerificationEmail(), false);
-});
-
-test("CoreNotificationGateway.sendVerificationEmail delegates to capable sender", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-
-    const calls: Array<{ to: string; code: string }> = [];
-
-    class VerifyCapableSender extends CapturingSender {
-        isConfigured() {
-            return true;
-        }
-        async sendVerificationEmail(to: string, code: string) {
-            calls.push({ to, code });
-        }
-    }
-
-    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
-
-    await gateway.sendVerificationEmail("user@example.com", "123456");
-
-    assert.equal(calls.length, 1);
-    assert.equal(calls[0].to, "user@example.com");
-    assert.equal(calls[0].code, "123456");
-});
-
-test("CoreNotificationGateway.sendVerificationEmail throws when no capable sender is available", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-    gateway.registerSender(new CapturingSender("plain", "Plain"));
-
+test("provider testing delegates through the neutral sender contract", async () => {
+    const gateway = new CoreNotificationGateway(
+        new VolatileNotificationPreferenceStore(),
+    );
+    const tested: unknown[] = [];
+    gateway.registerSender({
+        senderId: "custom",
+        send: async () => {},
+        test: async (...input) => {
+            tested.push(input);
+        },
+    });
+    await gateway.testSender("custom", "recipient@example.test", {
+        endpoint: "configured",
+    });
+    assert.deepEqual(tested, [
+        ["recipient@example.test", { endpoint: "configured" }],
+    ]);
+    await gateway.disableSender("custom");
     await assert.rejects(
-        () => gateway.sendVerificationEmail("user@example.com", "123456"),
-        { message: "smtp_unavailable" },
+        gateway.testSender("custom", "recipient@example.test"),
+        /notification_sender_disabled/,
     );
-});
-
-test("CoreNotificationGateway.queueVerificationEmail delegates to queue-capable sender", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-
-    const calls: Array<{ to: string; code: string }> = [];
-
-    class VerifyCapableSender extends CapturingSender {
-        isConfigured() {
-            return true;
-        }
-        async queueVerificationEmail(to: string, code: string) {
-            calls.push({ to, code });
-            return {
-                notificationId: "queued-verification",
-                status: "waiting_rate_limit" as const,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                availableAt: new Date(Date.now() + 30_000).toISOString(),
-                recipientEmail: to,
-            };
-        }
-        async sendVerificationEmail() {}
-    }
-
-    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
-
-    const queued = await gateway.queueVerificationEmail(
-        "user@example.com",
-        "123456",
-    );
-
-    assert.equal(calls.length, 1);
-    assert.equal(calls[0].to, "user@example.com");
-    assert.equal(calls[0].code, "123456");
-    assert.equal(queued.status, "waiting_rate_limit");
-});
-
-test("CoreNotificationGateway.queueVerificationEmail falls back to sendVerificationEmail", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
-
-    const calls: Array<{ to: string; code: string }> = [];
-
-    class VerifyCapableSender extends CapturingSender {
-        isConfigured() {
-            return true;
-        }
-        async sendVerificationEmail(to: string, code: string) {
-            calls.push({ to, code });
-        }
-    }
-
-    gateway.registerSender(new VerifyCapableSender("smtp", "SMTP"));
-
-    const queued = await gateway.queueVerificationEmail(
-        "user@example.com",
-        "123456",
-    );
-
-    assert.equal(calls.length, 1);
-    assert.equal(queued.status, "sent");
-    assert.equal(queued.recipientEmail, "user@example.com");
+    assert.equal(tested.length, 1);
 });

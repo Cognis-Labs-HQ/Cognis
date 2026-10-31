@@ -29,7 +29,7 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
         resolveShareableUsers,
         resolveAccountId,
         resolveAccountDisplayName,
-        notificationResolver,
+        getDispatchNotification,
         systemCtx,
         gatewayRoot,
     } = input;
@@ -89,10 +89,7 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
             resolveAccountId: resolveAccountId ?? null,
             resolveAccountDisplayName,
             log: ctx.log,
-            getDispatchNotification: () =>
-                notificationResolver.getDispatchNotification(),
-            ensureNotificationCategory: () =>
-                notificationResolver.ensureCategory(),
+            getDispatchNotification,
             getCapability: <T>(capabilityId: string) =>
                 ctx.capabilities.get<T>(capabilityId),
             runUpcomingEventsFlow: async (input) => {

@@ -529,7 +529,7 @@ test("module catalog discovery accepts caller-selected sources", async () => {
                           contentType: "application/xml",
                       }
                     : undefined,
-            discoverWithReport: async (_tokens, sourceUuids, force) => {
+            discoverWithReport: async (sourceUuids, force) => {
                 selectedSources = sourceUuids;
                 forceRefresh = force;
                 return {

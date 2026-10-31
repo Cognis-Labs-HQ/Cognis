@@ -641,3 +641,7 @@ Enrollment preparation caches the shared schema catalog, each enrolled languageâ
 ## Account ID Notification Delivery
 
 Library request and content notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. Request decisions exclude the acting account by the same ID.
+
+## Study Notification Delivery
+
+Study request, content and deletion notifications use the category registered by Library bootstrap. Runtime delivery resolves the current notification capability and never performs registration, so SMTP bootstrap restrictions do not suppress delivery or visibility-change notices.

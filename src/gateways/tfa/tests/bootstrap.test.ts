@@ -1,3 +1,4 @@
+import { runBootstrapScope } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -105,14 +106,16 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
         },
     );
 
-    await bootstrap({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow: systemCtx.flow,
-        uiRegistry,
-    });
+    await runBootstrapScope(systemCtx, "gateway:tfa", () =>
+        bootstrap({
+            adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+            flow: systemCtx.flow,
+            uiRegistry,
+        }),
+    );
 
     const adminToken = issueAccessToken("admin-user", "admin", null);
     const result = await dispatchRoute(
@@ -137,8 +140,8 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
             ?.stringsBaseUrl,
         [
             "/static/gateways/tfa/languages",
-            "/static/adapters/tfa/totp/languages",
             "/static/adapters/tfa/smtp/languages",
+            "/static/adapters/tfa/totp/languages",
         ],
     );
     assert.equal(
@@ -184,14 +187,16 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
         flow: systemCtx.flow,
         uiRegistry,
     });
-    await bootstrap({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow: systemCtx.flow,
-        uiRegistry,
-    });
+    await runBootstrapScope(systemCtx, "gateway:tfa", () =>
+        bootstrap({
+            adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+            flow: systemCtx.flow,
+            uiRegistry,
+        }),
+    );
 
     const integrationsWhenEnabled = (
         await systemCtx.runFlow("construct-login-ui")
@@ -204,7 +209,7 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
         .filter((id): id is string => typeof id === "string");
     assert.ok(integrationsWhenEnabled.includes("tfa"));
 
-    gatewayRegistry.disable("tfa");
+    await gatewayRegistry.disable("tfa");
     const integrationsWhenDisabled = (
         await systemCtx.runFlow("construct-login-ui")
     ).stageResults["compose-form"]

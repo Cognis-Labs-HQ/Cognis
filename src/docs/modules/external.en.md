@@ -63,7 +63,9 @@ Localization keys must use periods as word separators: write `module.example.can
 
 ### Sources and private repositories
 
-Cognis includes the `https://github.com/Cognis-Labs-HQ` organization as an immutable trusted source by default. Administrators can add further GitHub organizations or GitLab groups from Modules in the user menu, then Module Sources. Cognis queries the provider API, treats each repository containing a valid root manifest as a module, and derives the catalog dynamically. A source can reference an optional PAT stored in the signed-in administrator's keyring; the source record stores only the keyring identifier. Use a least-privilege, read-only token with repository and metadata access. Tokens are supplied only for discovery and cloning and are never written to source configuration. Private repositories are excluded unless **Scan Private Repositories** is enabled; enabling it makes the PAT mandatory.
+Administrators manage one instance-wide source registry and marketplace catalog. Source credentials are concealed server-owned values encrypted with the persistent `DATA_ENCRYPTION_KEY`; every administrator can use, replace or clear them, but read APIs and forms expose only whether a credential is configured. Leaving the password field blank preserves it. Browser keyrings are not consulted: configure the shared credential once in Module Sources. Private scanning requires a configured read-only PAT with repository and metadata access. Startup discovery and installations use that same stored credential without a browser session. Credential scope is bound to the source identity and endpoint; changing either requires replacement or removal. Failed scans retain the shared catalog, concurrent scans coalesce, and a completed scan cannot overwrite a newer source configuration. Provider requests reject redirects and have bounded deadlines.
+
+The source-save API accepts `token` and `clearCredential` and returns only public source metadata, `credentialConfigured` and a revision. Discovery and installation no longer accept caller-supplied tokens. Installation resolves authoritative cached repository metadata and stored credentials on the server.
 
 ### GitHub PAT permissions for private scans
 
@@ -244,3 +246,25 @@ Preparation remains idle while Offline Mode is disabled, disconnected or blocked
 ## Shared Study Favourites
 
 The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.
+
+## Bootstrap and Channels
+
+SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
+
+```js
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, variables });
+```
+
+Every `notify:sendEmail` call supplies an existing purpose and variables. There is no `templateId`. Missing or unknown purposes are rejected, and asynchronous actions are checked again before enqueueing. Registration closes on bootstrap completion, failure or timeout. Gateway completion hooks run under the same owner after providers bootstrap.
+
+Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.
+
+## Installation Credential Binding
+
+Installation resolves credentials against the same provider, endpoint and namespace snapshot used to validate its repository URL. Concurrent source rebinding aborts before checkout, preventing a replacement endpoint’s credential from being sent to the previous host. GitHub’s API-to-repository host alias is applied only to GitHub sources.

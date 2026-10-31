@@ -1,3 +1,6 @@
+import { fetchMarketplaceResource } from "./request.js";
+import { CredentialContext } from "./credential-context.js";
+import { createCtx, type Ctx } from "../../../ctx/index.js";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -16,11 +19,18 @@ const CANONICAL_UUID =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class MarketplaceRepository {
+    protected readonly context: Ctx;
+    protected readonly credentialContext = new CredentialContext();
+    protected readonly log: ModuleMarketplaceLog;
     constructor(
         protected readonly statePath: string,
         protected readonly installRoot: string,
-        protected readonly log: ModuleMarketplaceLog = () => undefined,
-    ) {}
+        log: ModuleMarketplaceLog = () => undefined,
+        context?: Ctx,
+    ) {
+        this.context = context ?? createCtx();
+        this.log = this.credentialContext.logger(log);
+    }
 
     protected get cacheRoot(): string {
         return path.join(this.installRoot, ".cache");
@@ -33,9 +43,6 @@ export class MarketplaceRepository {
     }
     protected get assetCacheRoot(): string {
         return path.join(this.cacheRoot, "assets");
-    }
-    protected get credentialBindingsPath(): string {
-        return path.join(this.cacheRoot, "credential-bindings.json");
     }
 
     protected async cacheRepositoryAsset(
@@ -64,7 +71,9 @@ export class MarketplaceRepository {
         let stage = "fetch";
         let status: number | undefined;
         try {
-            const response = await fetch(assetUrl, { headers: requestHeaders });
+            const response = await fetchMarketplaceResource(assetUrl, {
+                headers: requestHeaders,
+            });
             status = response.status;
             if (!response.ok) throw new Error("asset_http_error");
             stage = "validate";
@@ -222,9 +231,10 @@ export class MarketplaceRepository {
             source.provider === "github"
                 ? `${source.baseUrl}/repos/${projectPath}/contents/media?ref=${encodeURIComponent(defaultBranch)}`
                 : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/tree?path=media&ref=${encodeURIComponent(defaultBranch)}&per_page=100`;
-        const response = await fetch(endpoint, { headers }).catch(
-            () => undefined,
-        );
+        const response = await fetchMarketplaceResource(endpoint, {
+            headers,
+            redirect: "error",
+        }).catch(() => undefined);
         if (!response?.ok) return [];
         const payload = await response.json();
         if (!Array.isArray(payload)) return [];
@@ -291,7 +301,7 @@ export class MarketplaceRepository {
     ): Promise<Array<T & { version?: string }>> {
         return Promise.all(
             refs.map(async (ref) => {
-                const response = await fetch(
+                const response = await fetchMarketplaceResource(
                     source.provider === "github"
                         ? this.resolveGithubManifestUrl(
                               source,
@@ -365,8 +375,24 @@ export class MarketplaceRepository {
     ): Promise<Array<Record<string, unknown>>> {
         const results: Array<Record<string, unknown>> = [];
         let nextUrl = initialUrl;
+        const first = new URL(initialUrl);
+        const visited = new Set<string>();
         while (nextUrl) {
-            const response = await fetch(nextUrl, {
+            const current = new URL(nextUrl, first);
+            if (
+                current.origin !== first.origin ||
+                current.pathname !== first.pathname ||
+                current.username ||
+                current.password ||
+                visited.has(current.href) ||
+                [...current.searchParams.keys()].some(
+                    (key) => key !== "page" && !first.searchParams.has(key),
+                )
+            )
+                throw new Error("module_source_pagination_invalid");
+            visited.add(current.href);
+            nextUrl = current.href;
+            const response = await fetchMarketplaceResource(nextUrl, {
                 headers,
                 cache: "no-store",
             });
@@ -522,18 +548,6 @@ export class MarketplaceRepository {
         return `${source.baseUrl}/repos/${projectPath}/contents/manifest.json?ref=${encodeURIComponent(reference)}`;
     }
 
-    protected assertSource(source: ModuleSource): void {
-        if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(source.uuid))
-            throw new Error("invalid_source_uuid");
-        const url = new URL(source.baseUrl);
-        if (
-            url.protocol !== "https:" ||
-            !source.namespace.trim() ||
-            (source.scanPrivateRepos !== undefined &&
-                typeof source.scanPrivateRepos !== "boolean")
-        )
-            throw new Error("invalid_module_source");
-    }
     protected assertCloneUrl(cloneUrl: string): string {
         const parsed = new URL(cloneUrl);
         if (

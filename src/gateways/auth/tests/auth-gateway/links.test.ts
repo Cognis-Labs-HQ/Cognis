@@ -43,14 +43,14 @@ test("POST /api/v1/auth/request-login-link sends a password reset link and consu
         const capabilities = new CapabilityStore();
         const db = new InMemoryTestExecutor();
         let sentLink = "";
-        capabilities.contribute("notify:canSendOneTimeLoginEmail", () => true);
+        capabilities.contribute("notify:emailAvailable", () => true);
         capabilities.contribute(
             "notify:getAccountIdByEmail",
             async (email: string) =>
                 email === "alice@example.com" ? "alice" : null,
         );
         capabilities.contribute(
-            "notify:sendOneTimeLoginEmail",
+            "auth:sendLoginLinkEmail",
             async (_to: string, loginUrl: string) => {
                 sentLink = loginUrl;
             },
@@ -137,14 +137,14 @@ test("POST /api/v1/auth/consume-login-link rejects concurrent reuse before first
         const capabilities = new CapabilityStore();
         const db = new InMemoryTestExecutor();
         let sentLink = "";
-        capabilities.contribute("notify:canSendOneTimeLoginEmail", () => true);
+        capabilities.contribute("notify:emailAvailable", () => true);
         capabilities.contribute(
             "notify:getAccountIdByEmail",
             async (email: string) =>
                 email === "alice@example.com" ? "alice" : null,
         );
         capabilities.contribute(
-            "notify:sendOneTimeLoginEmail",
+            "auth:sendLoginLinkEmail",
             async (_to: string, loginUrl: string) => {
                 sentLink = loginUrl;
             },

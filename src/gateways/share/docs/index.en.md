@@ -1,5 +1,7 @@
 # Share browser client
 
+Adapter navbar providers are declared by the owning adapter and follow its enabled state. Sender discovery uses `notify:listSenders`, without receiving the Notification Gateway implementation. Periodic Share maintenance stops on gateway disable and resumes on activation.
+
 The Share browser client lets modules retrieve the current authenticated share-guest profile through the Share gateway's public browser contract.
 
 ## Usage examples

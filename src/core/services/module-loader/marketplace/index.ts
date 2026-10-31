@@ -1,3 +1,8 @@
+import { fetchMarketplaceResource } from "./request.js";
+import {
+    ModuleSourceRegistry,
+    type SourceCredentialChange,
+} from "./sources.js";
 import { createHash } from "node:crypto";
 import {
     mkdir,
@@ -28,7 +33,8 @@ export interface ModuleSource {
     namespace: string;
     baseUrl: string;
     homepage?: string;
-    credentialId?: string;
+    credentialConfigured?: boolean;
+    revision?: string;
     scanPrivateRepos?: boolean;
     trusted?: boolean;
 }
@@ -116,6 +122,16 @@ interface ModuleInstallProvenance {
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
     private readonly installationLocks = new Map<string, Promise<void>>();
+    private readonly sourceScans = new Map<
+        string,
+        { revision?: string; request: Promise<MarketplaceModule[]> }
+    >();
+    private readonly sources = new ModuleSourceRegistry(
+        this.statePath,
+        this.context,
+        DEFAULT_TRUSTED_MODULE_SOURCE,
+        (source, token) => this.validateSourceCredential(source, token),
+    );
 
     async saveSelectedBranch(
         moduleUuid: string,
@@ -152,9 +168,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
 
     async listRecommendedModuleUuids(): Promise<string[]> {
         const { recommendedModulesUrl } = await this.getSettings();
-        const response = await fetch(recommendedModulesUrl).catch(
-            () => undefined,
-        );
+        const response = await fetchMarketplaceResource(
+            recommendedModulesUrl,
+        ).catch(() => undefined);
         if (!response?.ok) return [];
         const value = (await response.json()) as unknown;
         return Array.isArray(value)
@@ -167,75 +183,40 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
     }
 
     async listSources(): Promise<ModuleSource[]> {
-        try {
-            const value = JSON.parse(await readFile(this.statePath, "utf8"));
-            const stored = Array.isArray(value)
-                ? (value as ModuleSource[])
-                : [];
-            const trustedOverride = stored.find(
-                (source) => source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-            );
-            const credentialBindings = await this.readCredentialBindings();
-            return [
-                {
-                    ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                    credentialId:
-                        trustedOverride?.credentialId ??
-                        credentialBindings[DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
-                    scanPrivateRepos:
-                        trustedOverride?.scanPrivateRepos === true,
-                },
-                ...stored.filter(
-                    (source) =>
-                        source.uuid !== DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-                ),
-            ];
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                const credentialBindings = await this.readCredentialBindings();
-                return [
-                    {
-                        ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                        credentialId:
-                            credentialBindings[
-                                DEFAULT_TRUSTED_MODULE_SOURCE.uuid
-                            ],
-                    },
-                ];
-            }
-            throw error;
-        }
+        return this.sources.list();
     }
 
-    async saveSource(source: ModuleSource): Promise<ModuleSource> {
-        if (source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
-            source = {
-                ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                credentialId: source.credentialId,
-                scanPrivateRepos: source.scanPrivateRepos === true,
-            };
-        } else {
-            source = { ...source, trusted: false };
-        }
-        this.assertSource(source);
-        const sources = await this.listSources();
-        const next = sources.filter((entry) => entry.uuid !== source.uuid);
-        next.push(source);
-        await mkdir(path.dirname(this.statePath), { recursive: true });
-        await writeFile(this.statePath, JSON.stringify(next, null, 2), {
-            mode: 0o600,
+    async saveSource(
+        source: ModuleSource,
+        credential: SourceCredentialChange = {},
+    ): Promise<ModuleSource> {
+        const saved = await this.sources.mutate({
+            action: "save",
+            source,
+            credential,
         });
-        await this.saveCredentialBinding(source.uuid, source.credentialId);
-        await this.clearScanAttempt(source.uuid);
-        return source;
+        return saved!;
     }
 
     async validateSourceCredential(
         source: ModuleSource,
-        token: string,
+        token?: string,
     ): Promise<ModuleCredentialValidation> {
-        this.assertSource(source);
-        const normalizedToken = token.trim();
+        source = this.sources.normalize(source);
+        const normalizedToken = (
+            token ??
+            (await this.sources.token(source.uuid, source)) ??
+            ""
+        ).trim();
+        return this.credentialContext.run(normalizedToken, () =>
+            this.validateCredential(source, normalizedToken),
+        );
+    }
+
+    private async validateCredential(
+        source: ModuleSource,
+        normalizedToken: string,
+    ): Promise<ModuleCredentialValidation> {
         if (!normalizedToken) {
             return { valid: false, warnings: ["credential_empty"], scopes: [] };
         }
@@ -253,9 +234,10 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             source.provider === "github"
                 ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=${privateScan ? "100" : "1"}&type=${privateScan ? "private" : "all"}`
                 : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=${privateScan ? "100" : "1"}&include_subgroups=true${privateScan ? "&visibility=private" : ""}`;
-        const response = await fetch(endpoint, { headers }).catch(
-            () => undefined,
-        );
+        const response = await fetchMarketplaceResource(endpoint, {
+            headers,
+            redirect: "error",
+        }).catch(() => undefined);
         if (!response) {
             return {
                 valid: false,
@@ -294,9 +276,12 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                     source.provider === "github"
                         ? `${source.baseUrl}/repos/${String(repository.full_name ?? "")}/contents`
                         : `${source.baseUrl}/projects/${encodeURIComponent(String(repository.id ?? ""))}/repository/tree?per_page=1`;
-                const contentsResponse = await fetch(contentsEndpoint, {
-                    headers,
-                }).catch(() => undefined);
+                const contentsResponse = await fetchMarketplaceResource(
+                    contentsEndpoint,
+                    {
+                        headers,
+                    },
+                ).catch(() => undefined);
                 if (!contentsResponse?.ok) {
                     warnings.push("private_repository_contents_read_missing");
                 }
@@ -338,24 +323,42 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
     }
 
     async removeSource(uuid: string): Promise<void> {
+        uuid = uuid.toLowerCase();
         if (uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
             throw new Error("trusted_module_source_readonly");
         }
-        const sources = (await this.listSources()).filter(
-            (source) => source.uuid !== uuid,
-        );
-        await mkdir(path.dirname(this.statePath), { recursive: true });
-        await writeFile(this.statePath, JSON.stringify(sources, null, 2), {
-            mode: 0o600,
-        });
-        await this.saveCredentialBinding(uuid, undefined);
+        await this.sources.mutate({ action: "remove", uuid });
+        const sources = await this.listSources();
         await this.pruneCachedSources(
             new Set(sources.map((source) => source.uuid)),
         );
     }
 
+    private scanConfiguredSource(
+        source: ModuleSource,
+    ): Promise<MarketplaceModule[]> {
+        const previous = this.sourceScans.get(source.uuid);
+        if (previous && previous.revision === source.revision)
+            return previous.request;
+        const request = (async () => {
+            const token = await this.sources.token(source.uuid, source);
+            if (source.scanPrivateRepos === true && !token)
+                throw new Error("private_repository_credential_missing");
+            return this.credentialContext.run(token, () =>
+                this.discoverSource(source, token),
+            );
+        })();
+        const record = { revision: source.revision, request };
+        this.sourceScans.set(source.uuid, record);
+        const cleanup = () => {
+            if (this.sourceScans.get(source.uuid) === record)
+                this.sourceScans.delete(source.uuid);
+        };
+        void request.then(cleanup, cleanup);
+        return request;
+    }
+
     async discoverWithReport(
-        tokens: Record<string, string> = {},
         sourceUuids?: string[],
         forceRefresh = false,
     ): Promise<ModuleDiscoveryResult> {
@@ -368,9 +371,6 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             (left, right) =>
                 Number(Boolean(right.trusted)) - Number(Boolean(left.trusted)),
         );
-        const configuredSourceUuids = new Set(
-            sources.map((source) => source.uuid),
-        );
         const discovered: MarketplaceModule[] = [];
         const sourceFailures: ModuleSourceScanFailure[] = [];
         const claimedUuids = new Map<
@@ -379,7 +379,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         >();
         for (const source of selectedSources) {
             const cachedModules = await this.readCachedCatalog([source.uuid]);
-            const lastAttemptAt = (await this.readScanAttempts())[source.uuid];
+            const lastAttemptAt = (await this.readScanAttempts())[
+                `${source.uuid}:${source.revision ?? "default"}`
+            ];
             let modules: MarketplaceModule[];
             if (
                 !forceRefresh &&
@@ -396,21 +398,13 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 });
                 modules = cachedModules;
             } else {
-                await this.recordScanAttempt(source.uuid);
+                await this.recordScanAttempt(source.uuid, source.revision);
                 this.log("info", "Module source scan started.", {
                     sourceUuid: source.uuid,
                     sourceName: source.name,
                 });
                 try {
-                    const token = source.credentialId
-                        ? tokens[source.credentialId]
-                        : undefined;
-                    if (source.scanPrivateRepos === true && !token) {
-                        throw new Error(
-                            "private_repository_credential_missing",
-                        );
-                    }
-                    modules = await this.discoverSource(source, token);
+                    modules = await this.scanConfiguredSource(source);
                 } catch (error) {
                     modules = cachedModules;
                     const errorMessage =
@@ -438,12 +432,24 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                             sourceUuid: source.uuid,
                             sourceName: source.name,
                             modulesRetained: modules.length,
-                            error: errorMessage,
+                            errorName:
+                                error instanceof Error ? error.name : "Error",
                             privateRepositories:
                                 source.scanPrivateRepos === true,
                         },
                     );
                 }
+            }
+            const currentSource = (await this.listSources()).find(
+                (entry) => entry.uuid === source.uuid,
+            );
+            if (!currentSource || currentSource.revision !== source.revision) {
+                this.log(
+                    "info",
+                    "Discarded a module scan after its source configuration changed.",
+                    { sourceUuid: source.uuid },
+                );
+                continue;
             }
             modules = this.applyCachedSelectedBranches(modules, cachedModules);
             const accepted = modules.filter((module) => {
@@ -465,11 +471,15 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 });
                 return false;
             });
-            await this.replaceCachedSource(
-                source.uuid,
-                accepted,
-                configuredSourceUuids,
-            );
+            if (
+                !(await this.replaceCachedSource(
+                    source.uuid,
+                    accepted,
+                    () => this.listSources(),
+                    source.revision,
+                ))
+            )
+                continue;
             this.log("info", "Module source scan completed.", {
                 sourceUuid: source.uuid,
                 sourceName: source.name,
@@ -486,13 +496,11 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
     }
 
     async discover(
-        tokens: Record<string, string> = {},
         sourceUuids?: string[],
         forceRefresh = false,
     ): Promise<MarketplaceModule[]> {
-        return (
-            await this.discoverWithReport(tokens, sourceUuids, forceRefresh)
-        ).modules;
+        return (await this.discoverWithReport(sourceUuids, forceRefresh))
+            .modules;
     }
 
     async listCachedModules(): Promise<MarketplaceModule[]> {
@@ -553,7 +561,6 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
 
     async install(
         module: MarketplaceModule,
-        token?: string,
         branch?: string,
         validateDependencies?: (manifest: ModuleManifest) => Promise<void>,
     ): Promise<ModuleManifest> {
@@ -566,11 +573,53 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         this.installationLocks.set(module.uuid, current);
         await previous;
         try {
-            return await this.installUnlocked(
-                module,
-                token,
-                branch,
-                validateDependencies,
+            const catalogModule = (await this.listCachedModules()).find(
+                (entry) => entry.uuid === module.uuid,
+            );
+            if (
+                !catalogModule ||
+                catalogModule.sourceUuid !== module.sourceUuid ||
+                catalogModule.cloneUrl !== module.cloneUrl
+            )
+                throw new Error("module_catalog_entry_required");
+            const source = (await this.listSources()).find(
+                (entry) => entry.uuid === catalogModule.sourceUuid,
+            );
+            if (!source) throw new Error("module_source_unavailable");
+            const clone = new URL(catalogModule.cloneUrl);
+            const base = new URL(source.baseUrl);
+            const repositoryHost =
+                source.provider === "github" &&
+                base.hostname === "api.github.com"
+                    ? "github.com"
+                    : base.hostname;
+            const deploymentPrefix =
+                source.provider === "gitlab"
+                    ? base.pathname
+                          .replace(/\/api\/v4\/?$/, "")
+                          .replace(/\/$/, "")
+                    : "";
+            const repositoryPrefix =
+                `${deploymentPrefix}/${source.namespace}/`.toLowerCase();
+            if (
+                clone.protocol !== "https:" ||
+                clone.hostname !== repositoryHost ||
+                clone.port !== base.port ||
+                clone.username ||
+                clone.password ||
+                clone.search ||
+                clone.hash ||
+                !clone.pathname.toLowerCase().startsWith(repositoryPrefix)
+            )
+                throw new Error("module_source_repository_mismatch");
+            const token = await this.sources.token(source.uuid, source);
+            return await this.credentialContext.run(token, () =>
+                this.installUnlocked(
+                    catalogModule,
+                    token,
+                    branch,
+                    validateDependencies,
+                ),
             );
         } finally {
             release();
@@ -607,8 +656,10 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             GIT_TERMINAL_PROMPT: "0",
         };
         if (token) {
-            gitEnvironment.GIT_CONFIG_COUNT = "1";
-            gitEnvironment.GIT_CONFIG_KEY_0 = "http.extraHeader";
+            gitEnvironment.GIT_CONFIG_COUNT = "2";
+            gitEnvironment.GIT_CONFIG_KEY_0 = `http.${cloneUrl}.extraHeader`;
+            gitEnvironment.GIT_CONFIG_KEY_1 = "http.followRedirects";
+            gitEnvironment.GIT_CONFIG_VALUE_1 = "false";
             gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
         }
         try {

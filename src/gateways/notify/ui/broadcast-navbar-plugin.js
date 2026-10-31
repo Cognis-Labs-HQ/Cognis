@@ -39,7 +39,9 @@ async function navigateAfterClose(redirectUrl, i18n) {
         }
         const parsedUrl = new URL(redirectUrl, window.location.origin);
         if (parsedUrl.origin === window.location.origin) {
-            navigateTo(parsedUrl.pathname + parsedUrl.search + parsedUrl.hash);
+            await navigateTo(
+                parsedUrl.pathname + parsedUrl.search + parsedUrl.hash,
+            );
             return;
         }
         window.location.assign(parsedUrl.toString());

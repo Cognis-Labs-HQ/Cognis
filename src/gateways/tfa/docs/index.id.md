@@ -1,5 +1,9 @@
 # TFA Gateway
 
+Sumber bahasa adapter ditemukan dari metode terpasang, bukan daftar penyedia tetap. Metode melaporkan `invalid_verification_code` melalui kontrak kesalahan bersama; konfigurasi penerbit menjadi milik adapter.
+
+Penyiapan yang belum selesai langsung dilindungi, bahkan sebelum kode diketik. Klik latar, Escape, tutup, Batal dan navigasi SPA menggunakan konfirmasi pembuangan bersama; mempertahankan formulir mengembalikan fokus. Navigasi dilanjutkan hanya setelah pembatalan selesai. Muat ulang menggunakan peringatan keluar browser. Pembuangan bagian pemilik menghapus pendengar dan popup; kewajiban penyiapan autentikasi tetap ditegakkan server.
+
 ## Ikhtisar
 
 Gateway TFA memiliki semua fungsi autentikasi dua faktor di Cognis. Ia menemukan adapter metode di `src/adapters/tfa/`, menyimpan status adapter dan kode pemulihan, menentukan apakah pengguna wajib menyiapkan TFA, lalu memverifikasi faktor kedua saat login.
@@ -73,3 +77,7 @@ Aset browser milik TFA berada di `src/gateways/tfa/ui/`. Gateway ini mendaftarka
 ## Kontrak Adapter
 
 Setiap adapter di `src/adapters/tfa/<adapter-id>/` mengimplementasikan setup dan verifikasi khusus metode. Alur bersama seperti kode pemulihan, urutan preferensi, dan enforcement global tetap berada di gateway agar metode baru dapat ditambahkan tanpa menduplikasi kebijakan.
+
+## Konfirmasi TFA Berlapis
+
+Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali ke penjaga halaman lainnya. Membuang pendaftaran tidak membuang perubahan Pengaturan yang terpisah. Mempertahankan perubahan menghentikan navigasi; membuangnya secara eksplisit melanjutkan navigasi. Halaman yang sudah dilepas tidak dapat melanjutkan navigasi pendaftaran yang tersimpan.

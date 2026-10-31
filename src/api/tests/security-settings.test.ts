@@ -7,6 +7,21 @@ import {
     parseSecuritySettings,
 } from "../reuse/security-settings.js";
 
+test("stored validation requirements stay enforced when their policy name is unfamiliar", () => {
+    assert.equal(
+        parseSecuritySettings(
+            JSON.stringify({ userValidationMode: "required-policy" }),
+        )?.userValidationMode,
+        "email",
+    );
+    assert.equal(
+        parseSecuritySettings(JSON.stringify({ userValidationMode: "none" }))
+            ?.userValidationMode,
+        "none",
+    );
+    assert.equal(parseSecuritySettings(null)?.userValidationMode, "none");
+});
+
 test("normalizeTrustedDomains trims, deduplicates, and strips surrounding dots", () => {
     assert.deepEqual(
         normalizeTrustedDomains([

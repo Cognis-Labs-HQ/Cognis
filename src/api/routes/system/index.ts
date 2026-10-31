@@ -59,7 +59,7 @@ function parseDemoModeFromEnv() {
 
 function serializeSecuritySettings(input: {
     trustedDomains: string[];
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
     loginSessionTimeoutMinutes: number;
@@ -84,7 +84,7 @@ export function createSystemRoutes(
         "system:listCapabilities",
     );
     const canSendVerificationEmail = ctx.getCapability<() => boolean>(
-        "notify:canSendVerificationEmail",
+        "notify:emailAvailable",
     );
     const getEnforceTfaForAllUsers = ctx.getCapability<() => Promise<boolean>>(
         "tfa:getEnforceAllUsers",
@@ -245,8 +245,15 @@ export function createSystemRoutes(
             if (!claims) return true;
             const body = await readJson(req);
             const trustedDomains = normalizeTrustedDomains(body.trustedDomains);
+            if (
+                body.userValidationMode != null &&
+                body.userValidationMode !== "none" &&
+                body.userValidationMode !== "email"
+            ) {
+                throw new Error("invalid_user_validation_mode");
+            }
             const userValidationMode =
-                body.userValidationMode === "smtp" ? "smtp" : "none";
+                body.userValidationMode === "email" ? "email" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
             const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
@@ -274,13 +281,13 @@ export function createSystemRoutes(
                           body.loginSessionTimeoutMinutes,
                       );
             if (
-                userValidationMode === "smtp" &&
+                userValidationMode === "email" &&
                 canSendVerificationEmail &&
                 !canSendVerificationEmail()
             ) {
                 log?.(
                     "warn",
-                    "Rejected smtp validation mode: SMTP adapter unavailable.",
+                    "Rejected email validation mode: email delivery unavailable.",
                     {
                         ...logMeta,
                         accountId: claims.sub,
@@ -290,9 +297,8 @@ export function createSystemRoutes(
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "smtp_unavailable",
-                            message:
-                                "SMTP adapter is not enabled in the notification gateway.",
+                            code: "email_delivery_unavailable",
+                            message: "No email delivery provider is available.",
                         },
                     }),
                 );

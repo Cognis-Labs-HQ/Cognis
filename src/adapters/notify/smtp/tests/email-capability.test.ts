@@ -1,106 +1,208 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CapabilityStore } from "@cognis/core";
-import { bootstrapNotifyAdapter } from "../index.js";
+import {
+    CapabilityStore,
+    createCtx,
+    runBootstrapScope,
+    type BootstrapDisposer,
+} from "@cognis/core";
+import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+import { SmtpNotificationSender } from "../notification-sender.js";
+import { createMockSmtpServer, smtpSuccessHandler } from "./fixtures/server.js";
 
-test("SMTP sends a component-contributed email template generically", async () => {
+async function fixture(t: import("node:test").TestContext) {
+    const server = await createMockSmtpServer(smtpSuccessHandler);
+    t.after(() => server.close());
+    const sender = new SmtpNotificationSender({
+        host: server.host,
+        port: server.port,
+        from: "sender@example.test",
+        secure: "none",
+        authDisabled: true,
+    });
+    const root = createCtx();
     const capabilities = new CapabilityStore();
+    capabilities.contribute("system:ctx", root);
+    const cleanup: BootstrapDisposer[] = [];
+    t.after(async () => {
+        for (const dispose of cleanup.reverse()) await dispose();
+    });
+    const routes: Array<
+        (req: never, res: never, url: URL) => Promise<boolean>
+    > = [];
+    capabilities.contribute("notify:isSenderEnabled", () => true);
     capabilities.contribute(
-        "notify:renderEmailTemplate",
-        (templateId: string, variables: Record<string, string>) =>
-            templateId === "example"
-                ? {
-                      subject: variables.subject,
-                      body: variables.body,
-                      actionUrl: "https://example.test/action",
-                      actionLabel: "Continue",
-                  }
-                : null,
+        "notify:testSender",
+        (_id: string, to: string, config: Record<string, unknown>) =>
+            sender.test!(to, config),
     );
-    const envelopes: Array<Record<string, unknown>> = [];
-    await bootstrapNotifyAdapter({
+    const ctx = {
         capabilities,
-        gateway: {
-            isSenderEnabled: () => true,
-            sendWithSender: async (
-                _senderId: string,
-                envelope: Record<string, unknown>,
-            ) => {
-                envelopes.push(envelope);
-                return { sent: true, notificationId: "notification-1" };
+        registerRoute: (route: (typeof routes)[number]) => routes.push(route),
+        requireAuth: () => true,
+        readJson: async () => ({ to: "admin@example.test" }),
+    };
+    await runBootstrapScope(
+        root,
+        "adapter:notify:smtp",
+        () => sender.bootstrap(ctx as never),
+        (dispose) => cleanup.push(dispose),
+    );
+    return {
+        sender,
+        root,
+        capabilities,
+        cleanup,
+        routes,
+        ctx,
+        register: capabilities.require<RegisterNotificationAction>(
+            "notify:registerEmailPurpose",
+        ),
+        send: capabilities.require<SendEmailAction>("notify:sendEmail"),
+    };
+}
+
+test("SMTP owns staged action registration and delivery for modules and adapters", async (t) => {
+    const host = await fixture(t);
+    host.sender.setConfig({ codeLength: 8 });
+    assert.equal(
+        host.capabilities.require<() => number>("notify:emailCodeLength")(),
+        8,
+    );
+    const stages: string[] = [];
+    for (const stage of ["validate", "render", "enqueue"])
+        host.root.flow.extend(
+            "smtp:sendEmail",
+            stage,
+            { id: `test:${stage}`, order: 100 },
+            () => {
+                stages.push(stage);
             },
-        },
-        registerRoute: () => undefined,
-        log: () => {},
-    } as never);
-    const sendEmail =
-        capabilities.get<
-            (input: {
-                recipientEmail: string;
-                templateId: string;
-                variables: Record<string, string>;
-            }) => Promise<unknown>
-        >("notify:sendEmail");
-    await sendEmail?.({
-        recipientEmail: "recipient@example.test",
-        templateId: "example",
+        );
+    let called = 0;
+    const purpose = await runBootstrapScope(
+        host.root,
+        "module:example",
+        () =>
+            host.register("digest", (variables) => {
+                called++;
+                return {
+                    subject: variables.subject,
+                    body: variables.body,
+                    actionUrl: "https://example.test/action",
+                    actionLabel: "Continue",
+                };
+            }),
+        (dispose) => host.cleanup.push(dispose),
+    );
+    assert.equal(purpose, "module:example:digest");
+    const receipt = await host.send({
+        purpose,
+        recipientEmail: "person@example.test",
         variables: { subject: "Hello", body: "Body" },
     });
-    assert.equal(envelopes[0]?.subject, "Hello");
-    assert.deepEqual(envelopes[0]?.metadata, {
-        verifyUrl: "https://example.test/action",
-        verifyButtonLabel: "Continue",
+    assert.equal(called, 1);
+    assert.deepEqual(stages, ["validate", "render", "enqueue"]);
+    assert.equal(receipt.subject, "Hello");
+    assert.equal(receipt.purpose, purpose);
+    await host.sender.send({
+        purpose,
+        category: "test",
+        recipientUsername: "person",
+        recipientEmail: "second@example.test",
+        subject: "Direct",
+        body: "Body",
     });
+    assert.equal(host.root.getCapability("notify:sendEmail"), host.send);
+    assert.equal(
+        host.root.isPublicCapability("notify:registerEmailPurpose"),
+        true,
+    );
+    await assert.rejects(
+        host.register("late", () => ({ subject: "", body: "" })),
+        /bootstrap_registration_closed/,
+    );
+    await assert.rejects(
+        runBootstrapScope({}, "module:other", () =>
+            host.register("wrongRoot", () => ({ subject: "", body: "" })),
+        ),
+        /bootstrap_registration_closed/,
+    );
+    await assert.rejects(
+        runBootstrapScope(host.root, "module:other", () =>
+            host.register("invalid", undefined as never),
+        ),
+        /smtp_purpose_invalid/,
+    );
+    await assert.rejects(
+        host.send({
+            purpose: "unknown",
+            recipientEmail: "person@example.test",
+            variables: {},
+        }),
+        /smtp_purpose_unregistered/,
+    );
 });
 
-test("SMTP adapter owns its authenticated test route", async () => {
-    const capabilities = new CapabilityStore();
-    let registeredRoute:
-        ((req: never, res: never, url: URL) => Promise<boolean>) | undefined;
-    const tested: Array<Record<string, unknown>> = [];
-    await bootstrapNotifyAdapter({
-        capabilities,
-        gateway: {
-            sendTestEmail: async (
-                senderId: string,
-                recipientEmail: string,
-                config: Record<string, unknown>,
-            ) => tested.push({ senderId, recipientEmail, config }),
-        },
-        registerRoute: (route) => {
-            registeredRoute = route as typeof registeredRoute;
-        },
-        requireAuth: () => true,
-        readJson: async () => ({
-            to: "admin@example.test",
-            config: { host: "smtp.example.test" },
-        }),
-        log: () => undefined,
-    } as never);
-    let statusCode = 0;
-    let responsePayload = "";
-    const handled = await registeredRoute?.(
-        {
-            method: "POST",
-        } as never,
-        {
-            writeHead(code: number) {
-                statusCode = code;
-            },
-            end(payload: string) {
-                responsePayload = payload;
-            },
-        } as never,
-        new URL("http://localhost/api/v1/gateways/notify/adapters/smtp/test"),
+test("SMTP rejects action callbacks that finish after their owner is disabled and restores registration on activation", async (t) => {
+    const host = await fixture(t);
+    let release!: () => void;
+    const ready = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    const disposers: BootstrapDisposer[] = [];
+    const purpose = await runBootstrapScope(
+        host.root,
+        "adapter:test:mail",
+        () =>
+            host.register("delayed", async () => {
+                await ready;
+                return { subject: "Late", body: "Body" };
+            }),
+        (dispose) => disposers.push(dispose),
     );
-    assert.equal(handled, true);
-    assert.equal(statusCode, 200);
-    assert.deepEqual(JSON.parse(responsePayload), { data: { sent: true } });
-    assert.deepEqual(tested, [
-        {
-            senderId: "smtp",
-            recipientEmail: "admin@example.test",
-            config: { host: "smtp.example.test" },
+    const pending = host.send({
+        purpose,
+        recipientEmail: "person@example.test",
+        variables: {},
+    });
+    await disposers[0]();
+    await disposers[0].reactivate!();
+    release();
+    await assert.rejects(pending, /smtp_purpose_unregistered/);
+    assert.equal(host.sender.listQueue().length, 0);
+    host.cleanup.push(disposers[0]);
+    const receipt = await host.send({
+        purpose,
+        recipientEmail: "person@example.test",
+        variables: {},
+    });
+    assert.ok(receipt.notificationId);
+});
+
+test("SMTP adapter owns its authenticated test route", async (t) => {
+    const host = await fixture(t);
+    let status = 0;
+    const response = {
+        writeHead: (code: number) => {
+            status = code;
         },
-    ]);
+        end: () => {},
+    };
+    assert.equal(
+        await host.routes[0](
+            { method: "POST" } as never,
+            response as never,
+            new URL(
+                "http://localhost/api/v1/gateways/notify/adapters/smtp/test",
+            ),
+        ),
+        true,
+    );
+    assert.equal(status, 200);
+    assert.equal(
+        host.sender.listQueue()[0]?.purpose,
+        "adapter:notify:smtp:test",
+    );
+    assert.equal(host.sender.listQueue()[0]?.status, "sent");
 });

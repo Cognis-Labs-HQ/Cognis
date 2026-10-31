@@ -94,4 +94,5 @@
   <string name="gateway.auth.keyring.destroy_message">This permanently destroys the encrypted keyring and removes your membership from dependent shared objects. You will be prompted to create a new keyring, and access can be re-established through new invitations.</string>
   <string name="gateway.auth.keyring.recreated">The keyring was destroyed and recreated.</string>
   <string name="adapter.auth.keyring.sync_failed">The keyring could not sync. Your encrypted local copy has been retained.</string>
+  <string name="gateway.auth.keyring.unavailable">The keyring is unavailable. Retry when the connection is restored.</string>
 </strings>

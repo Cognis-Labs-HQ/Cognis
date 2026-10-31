@@ -20,7 +20,7 @@ test("startup refreshes module sources once and reports discovered modules", asy
         (level, message, meta) => logs.push({ level, message, ...meta }),
     );
 
-    assert.deepEqual(calls, [[{}, ["public-source"], true]]);
+    assert.deepEqual(calls, [[["public-source", "private-source"], true]]);
     assert.deepEqual(logs, [
         {
             level: "info",
@@ -56,7 +56,7 @@ test("startup reports module source refresh failures", async () => {
     ]);
 });
 
-test("startup leaves credentialed sources for authenticated polling", async () => {
+test("startup scans credentialed sources with server-owned credentials", async () => {
     let discoveryCalled = false;
 
     await discoverModuleSourcesOnStartup(
@@ -72,5 +72,5 @@ test("startup leaves credentialed sources for authenticated polling", async () =
         () => undefined,
     );
 
-    assert.equal(discoveryCalled, false);
+    assert.equal(discoveryCalled, true);
 });

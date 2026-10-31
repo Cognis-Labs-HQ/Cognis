@@ -1,5 +1,9 @@
 # Cognis UI
 
+Implizites Absenden gebundener Formulare löst keine Dokumentanfrage des Browsers aus. Komponenten erhalten das Absendeereignis weiterhin. Interne Weiterleitungen verwenden den SPA-Router. Bewusste Wechsel zu serverseitig dargestellten Seiten beachten die Bestätigung ungespeicherter Änderungen und prüfen beim Fortsetzen erneut die Offline-Verfügbarkeit.
+
+`openPopup({ signal })` bindet einen Dialog an seinen Besitzer. Das Abbrechen des Signals schließt ihn einschließlich einer Verwerfen-Bestätigung und entfernt Ereignisbehandler, Zeitgeber, Formularüberwachung und Scrollsperren. Beim Entfernen eines ungültigen Seiten- oder Identitätskontexts erscheint keine weitere Nachfrage. Gleichzeitige Abbruchversuche teilen eine Bestätigung.
+
 ## Struktur
 
 - `src/layouts/`: wiederverwendbare Leitplanken für Seitenlayouts.

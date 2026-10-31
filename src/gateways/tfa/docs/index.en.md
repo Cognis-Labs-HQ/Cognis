@@ -1,5 +1,9 @@
 # TFA Gateway
 
+Adapter language resources are discovered from the installed methods rather than a fixed provider list. Methods report `invalid_verification_code` through the common error contract; issuer-specific configuration belongs to the adapter.
+
+An unfinished enrollment is protected immediately, even before a code is typed. Backdrop, Escape, close, Cancel and SPA navigation use the shared discard confirmation; keeping the form restores focus. Navigation resumes only after cancellation completes. Refresh uses the browser leave warning. Disposing the owning section removes navigation listeners and popups; mandatory authentication setup remains enforced by the server.
+
 ## Overview
 
 The TFA Gateway owns every two-factor authentication concern in Cognis. It discovers method adapters under `src/adapters/tfa/`, persists adapter enablement and recovery-code state, decides whether a user must complete TFA setup, and verifies second-factor login challenges.
@@ -75,3 +79,7 @@ This separation is intentional: password-reset controls belong to the auth gatew
 ## Adapter Contract
 
 Each adapter directory under `src/adapters/tfa/<adapter-id>/` provides the method-specific logic. Adapters declare identity for admin listings and implement setup / verification flows, but they do not own shared persistence for preferences or recovery codes. Those shared flows remain in `CoreTfaGateway` so additional methods can be introduced without duplicating policy.
+
+## Layered TFA Discard Decisions
+
+After enrollment cancellation is acknowledged, navigation is offered again to the remaining page guards. Discarding enrollment does not discard unrelated Settings changes. Keeping those changes stops navigation; explicitly discarding them resumes it. An unmounted page cannot resume a retained enrollment navigation.

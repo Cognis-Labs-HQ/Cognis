@@ -69,6 +69,12 @@ export interface RegistrationPublicAdapter {
     }>;
 }
 
+export interface RegistrationTypingMessage {
+    id: string;
+    textKey: string;
+    publicRegistrationOnly?: boolean;
+}
+
 export interface RegistrationGatewayAdapter {
     id: string;
     name: string;
@@ -78,6 +84,12 @@ export interface RegistrationGatewayAdapter {
     locked?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
+    authTypingMessages?: RegistrationTypingMessage[];
+    registrationUi?: {
+        id: string;
+        scriptUrl: string;
+        stringsBaseUrl: string;
+    };
 }
 
 export interface RegistrationAdapterInfo {
@@ -87,6 +99,7 @@ export interface RegistrationAdapterInfo {
     publisher?: string;
     enabled: boolean;
     locked?: boolean;
+    authTypingMessages?: RegistrationTypingMessage[];
 }
 
 export interface RegistrationAdapterDeps {
@@ -292,7 +305,18 @@ export class CoreRegistrationGateway {
             ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             enabled: this.enabledAdapters.has(adapter.id),
             ...(adapter.locked ? { locked: true } : {}),
+            ...(adapter.authTypingMessages
+                ? { authTypingMessages: adapter.authTypingMessages }
+                : {}),
         }));
+    }
+
+    listRegistrationUi() {
+        return Array.from(this.adapters.values())
+            .filter((adapter) => this.enabledAdapters.has(adapter.id))
+            .flatMap((adapter) =>
+                adapter.registrationUi ? [adapter.registrationUi] : [],
+            );
     }
 
     async enableAdapter(adapterId: string): Promise<void> {

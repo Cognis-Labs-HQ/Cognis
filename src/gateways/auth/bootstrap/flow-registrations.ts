@@ -623,7 +623,7 @@ export async function registerAuthBootstrapHook(
                     listedEmails,
                     {
                         sendPrimaryVerification:
-                            securitySettings.userValidationMode === "smtp",
+                            securitySettings.userValidationMode === "email",
                     },
                 );
             }
@@ -788,7 +788,7 @@ export async function registerAuthBootstrapHook(
                 (stageCtx.stageResults["validate-request"] ?? []) as Array<{
                     valid: boolean;
                     reason?: string;
-                    role?: string;
+                    role?: Exclude<AccessRole, "owner">;
                 }>
             )[0];
             if (!validateResult?.valid) {
@@ -809,7 +809,7 @@ export async function registerAuthBootstrapHook(
             const created = await context.accountStore.register(
                 username,
                 password,
-                role === "admin",
+                role,
             );
             return { persisted: true, created, role };
         },

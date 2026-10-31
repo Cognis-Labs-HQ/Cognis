@@ -1,5 +1,7 @@
 # Interner Notify-Adapter
 
+Der Bootstrap registriert den ständig aktiven Sender über `notify:registerAlwaysOnSender` in ctx statt einer konkreten Gateway-Instanz. Sender-Verträge stammen aus `@cognis/core`.
+
 ## Übersicht
 
 Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtigungsglocke auf jeder Dashboard-Seite weiter. Er ist standardmäßig immer aktiv – jede über das Gateway gesendete Benachrichtigung erreicht den Posteingang des Empfängers, ohne dass Benachrichtigungseinstellungen konfiguriert werden müssen. Der Adapter speichert bis zu 50 Benachrichtigungen pro Benutzer im Arbeitsspeicher; Einträge gehen beim Neustart des Servers verloren.

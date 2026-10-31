@@ -9,6 +9,16 @@ export function createShareAdapter(): ShareMethodAdapter {
         descriptionKey: "adapter.share.link.description",
         pageModuleUrl: "/static/adapters/share/link/page.js",
         order: 10,
+        navbarPlugins: [
+            {
+                scriptUrl:
+                    "/static/adapters/share/link/ui/share-links-popup/index.js",
+                providesCapabilities: [
+                    "share:openPopup",
+                    "share:openLinksPopup",
+                ],
+            },
+        ],
         delivery: "public",
         deliveryPage: {
             id: "share-link-view",

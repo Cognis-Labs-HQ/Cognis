@@ -314,9 +314,6 @@ export async function registerShareBootstrapHooks(input: {
                         .filter(Boolean),
                 ),
             );
-            const registerCategory = input.ctx.capabilities.get<
-                (id: string, label: string) => void
-            >("notify:registerCategory");
             const dispatch =
                 input.ctx.capabilities.get<
                     (envelope: {
@@ -368,7 +365,6 @@ export async function registerShareBootstrapHooks(input: {
                 );
             }
             if (issued?.minted && dispatch && userRecipients.length > 0) {
-                registerCategory?.("share", "Share");
                 const notificationResults = await Promise.allSettled(
                     userRecipients.map((recipientUsername) => {
                         const actionUrl = String(

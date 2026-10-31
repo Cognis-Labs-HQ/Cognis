@@ -122,7 +122,7 @@ test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-li
     const adapter = createAdapter({
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async () => {
-            throw new Error("smtp_rate_limited");
+            throw new Error("email_rate_limited");
         },
     });
     const challenge = await adapter.beginLoginChallenge?.({
@@ -130,7 +130,7 @@ test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-li
         state: { email: "alice@example.com" },
     });
     assert.equal(challenge?.ready, true);
-    assert.equal(challenge?.message, "smtp_rate_limited");
+    assert.equal(challenge?.message, "email_rate_limited");
     assert.equal(typeof challenge?.retryAfterSeconds, "number");
     assert.equal(typeof challenge?.resendAvailableAt, "string");
 });
@@ -174,7 +174,7 @@ test("smtp adapter login challenge surfaces queued rate limits without replacing
         state: { email: "alice@example.com" },
     });
     assert.equal(secondChallenge?.ready, true);
-    assert.equal(secondChallenge?.message, "smtp_rate_limited");
+    assert.equal(secondChallenge?.message, "email_rate_limited");
     assert.equal(typeof secondChallenge?.retryAfterSeconds, "number");
     const verified = await adapter.verifyLogin({
         accountId: "alice",
@@ -227,7 +227,7 @@ test("smtp adapter login challenge rolls back on queued failed status", async ()
         state: { email: "alice@example.com" },
     });
     assert.equal(failedChallenge?.ready, false);
-    assert.equal(failedChallenge?.message, "smtp_unavailable");
+    assert.equal(failedChallenge?.message, "email_delivery_unavailable");
     const originalCodeAttempt = await adapter.verifyLogin({
         accountId: "alice",
         state: { email: "alice@example.com" },

@@ -76,7 +76,7 @@ export function initGeneralPrefs(
             throw new Error(payload?.error?.code ?? "already_verified");
         }
         if (res.status === 429) throw new Error("rate_limited");
-        if (res.status === 503) throw new Error("smtp_unavailable");
+        if (res.status === 503) throw new Error("email_delivery_unavailable");
         if (!res.ok) throw new Error("add_failed");
         const payload = await res.json();
         return { ...payload.data, queued: payload.queued === true };
@@ -108,7 +108,7 @@ export function initGeneralPrefs(
             { method: "POST" },
         );
         if (res.status === 429) throw new Error("rate_limited");
-        if (res.status === 503) throw new Error("smtp_unavailable");
+        if (res.status === 503) throw new Error("email_delivery_unavailable");
         if (!res.ok) throw new Error("resend_failed");
         const payload = await res.json();
         return { ...payload.data, queued: payload.queued === true };
@@ -438,7 +438,7 @@ export function initGeneralPrefs(
                                     "ui.app.settings.emails_verify_rate_limited",
                                 ),
                             );
-                        } else if (code === "smtp_unavailable") {
+                        } else if (code === "email_delivery_unavailable") {
                             showStatus(
                                 i18n.t(
                                     "ui.app.settings.emails_verify_unavailable",
@@ -510,7 +510,7 @@ export function initGeneralPrefs(
                                     "ui.app.settings.emails_verify_rate_limited",
                                 ),
                             );
-                        } else if (code === "smtp_unavailable") {
+                        } else if (code === "email_delivery_unavailable") {
                             showStatus(
                                 i18n.t(
                                     "ui.app.settings.emails_verify_unavailable",

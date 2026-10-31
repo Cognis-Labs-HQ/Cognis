@@ -2,7 +2,7 @@ import type { StudyAdapterBootstrapCtx } from "../../../gateways/study/gateway.j
 import type {
     NotificationEnvelope,
     NotificationDispatchResult,
-} from "../../../gateways/notify/gateway.js";
+} from "@cognis/core";
 
 export function createNotificationDelivery(
     ctx: Pick<StudyAdapterBootstrapCtx, "capabilities" | "log">,
@@ -36,9 +36,6 @@ export function createNotificationDelivery(
                     >("notify:dispatch");
                 if (!dispatch)
                     throw new Error("notification_gateway_unavailable");
-                ctx.capabilities.get<(id: string, label: string) => void>(
-                    "notify:registerCategory",
-                )?.("study", "Study");
                 const result = await dispatch(envelope);
                 if (result.errors?.length)
                     await log?.(

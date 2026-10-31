@@ -1,5 +1,7 @@
 # Adapter berbagi tautan
 
+Adapter mendeklarasikan popup Link beserta kapabilitasnya melalui `navbarPlugins`. Gateway memuat kontribusi yang dideklarasikan dan menonaktifkannya bersama adapter pemilik.
+
 ## Contoh penggunaan
 
 Membuat tautan publik yang dapat kedaluwarsa melalui gateway Share. Adapter memiliki penyiapan masukan khusus tautan dan halaman Tautan di dalam popup gateway.

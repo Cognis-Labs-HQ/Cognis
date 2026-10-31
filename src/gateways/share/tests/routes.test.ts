@@ -1,8 +1,11 @@
+import type { NotificationAction } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import {
     createCtx,
+    requireBootstrapScope,
+    runBootstrapScope,
     CapabilityStore,
     CTX_CAPABILITY,
     GatewayRegistry,
@@ -87,17 +90,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const adminToken = issueAccessToken("alice", "admin", 60);
     const bobToken = issueAccessToken("bob", "user", 60);
     capabilities.contribute("db:executor", dbExecutor as never);
-    capabilities.contribute("notify:gateway", {
-        listSenders() {
-            return [
-                {
-                    senderId: "smtp",
-                    name: "SMTP Email",
-                    active: true,
-                },
-            ];
+    capabilities.contribute("notify:listSenders", () => [
+        {
+            senderId: "smtp",
+            name: "SMTP Email",
+            active: true,
         },
-    } as never);
+    ]);
     capabilities.contribute(
         "notify:quickShare:smtp",
         ((input: { shareUrl: string; label?: string | null }) =>
@@ -109,20 +108,32 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const shareEmailVariables: Array<Record<string, string>> = [];
     const userShareNotifications: Array<Record<string, unknown>> = [];
     const notificationCategories: string[] = [];
-    capabilities.contribute("notify:registerCategory", ((id: string) =>
-        notificationCategories.push(id)) as never);
+    capabilities.contribute("notify:registerCategory", ((id: string) => {
+        requireBootstrapScope(flowCtx);
+        notificationCategories.push(id);
+    }) as never);
     capabilities.contribute("notify:dispatch", ((
         envelope: Record<string, unknown>,
     ) => {
         userShareNotifications.push(envelope);
         return Promise.resolve({ dispatched: ["internal"] });
     }) as never);
+    const emailActions = new Map<string, NotificationAction>();
+    capabilities.contribute(
+        "notify:registerEmailPurpose",
+        async (id: string, action: NotificationAction) => {
+            const purpose = `gateway:share:${id}`;
+            emailActions.set(purpose, action);
+            return purpose;
+        },
+    );
     capabilities.contribute("notify:sendEmail", ((emailInput: {
         recipientEmail: string;
-        templateId: string;
+        purpose: string;
         variables: Record<string, string>;
     }) => {
-        assert.equal(emailInput.templateId, "share-link");
+        assert.equal(emailInput.purpose, "gateway:share:shareLinks");
+        assert.ok(emailActions.get(emailInput.purpose));
         shareEmailRecipients.push(emailInput.recipientEmail);
         shareEmailVariables.push(emailInput.variables);
         return Promise.resolve({ dispatched: ["smtp"] });
@@ -249,14 +260,16 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         }),
     );
 
-    await bootstrap({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        uiRegistry,
-        flow: flowCtx.flow,
-    } as never);
+    await runBootstrapScope(flowCtx, "gateway:share", () =>
+        bootstrap({
+            adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+            uiRegistry,
+            flow: flowCtx.flow,
+        } as never),
+    );
 
     assert.equal(gatewayRegistry.get("share")?.id, "share");
     assert.equal(
@@ -331,6 +344,26 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                     plugin.scriptUrl === "/static/gateways/share/ui/navbar.js",
             ),
     );
+    const linkPopup = uiRegistry
+        .listNavbarPlugins()
+        .find((plugin) =>
+            plugin.providesCapabilities?.includes("share:openLinksPopup"),
+        );
+    assert.ok(linkPopup);
+    assert.equal(linkPopup.isEnabled?.(), true);
+    for (const action of ["disable", "enable"]) {
+        const toggleResponse = new ResponseRecorder();
+        await dispatchRoute(
+            routeRegistry,
+            new RequestRecorder({ method: "POST", token: adminToken }),
+            toggleResponse,
+            new URL(
+                `http://localhost/api/v1/gateways/share/adapters/link/${action}`,
+            ),
+        );
+        assert.equal(toggleResponse.statusCode, 200);
+        assert.equal(linkPopup.isEnabled?.(), action === "enable");
+    }
 
     const response = new ResponseRecorder();
     await dispatchRoute(
@@ -686,7 +719,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(duplicateUpdateResponse.statusCode, 409);
-    assert.ok(notificationCategories.includes("share"));
+    assert.deepEqual(notificationCategories, ["share"]);
     assert.deepEqual(
         userShareNotifications.map((entry) => entry.recipientUsername),
         ["bob", "charlie"],

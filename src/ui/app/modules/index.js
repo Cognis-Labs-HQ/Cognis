@@ -39,7 +39,6 @@ import {
     enableModuleWithIntegrityCheck,
     modulePreferenceLabels,
 } from "./activation.js";
-import { resolveSourceToken } from "./credentials.js";
 import {
     applyModuleFilterSelection,
     createModuleFilters,
@@ -99,7 +98,6 @@ const selectedBranch = createSelectedBranchResolver(
 );
 const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
 const PRIVATE_SOURCE_FAILURE_KEYS = new Set([
-    "private_repository_credential_missing",
     "private_repository_access_failed",
     "private_repository_contents_access_failed",
 ]);
@@ -381,16 +379,6 @@ async function runLifecycleAction(
             });
             if (result !== "confirm") return false;
         }
-        const source = sources.find(
-            (entry) => entry.uuid === module.sourceUuid,
-        );
-        const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
-            i18n.t("ui.app.modules.keyring_component"),
-        );
-        const token = await resolveSourceToken(keyring, source, {
-            action: i18n.t("ui.app.modules.installing"),
-            process: module.name,
-        });
         if (restoreEnabledState) {
             await setModuleEnabled(module.id, false, {
                 preserveEnabledState: true,
@@ -399,7 +387,6 @@ async function runLifecycleAction(
         try {
             const installedManifest = await installModule(
                 module,
-                token,
                 branch,
                 restoreEnabledState,
             );
@@ -554,29 +541,7 @@ async function discoverConfiguredSources(
 ) {
     const sequence = ++discoverySequence;
     const selectedModuleUuid = selectedModule?.uuid;
-    const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
-        i18n.t("ui.app.modules.keyring_component"),
-    );
-    const credentialSources = sources.filter((source) => source.credentialId);
-    const resolvedTokens = await Promise.all(
-        credentialSources.map(async (source) => [
-            source.credentialId,
-            (await resolveSourceToken(
-                keyring,
-                source,
-                {
-                    action: i18n.t("ui.app.modules.refresh_complete"),
-                    process: source.namespace,
-                },
-                {
-                    promptWhenLocked: forceRefresh,
-                },
-            )) ?? "",
-        ]),
-    );
-    const tokens = Object.fromEntries(resolvedTokens);
     const { modules: discovered, sourceFailures } = await loadAvailableModules(
-        tokens,
         sources.map((source) => source.uuid),
         forceRefresh,
     );
@@ -664,7 +629,10 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.id === "module-marketplace-settings") {
-                sources = await openMarketplaceSettings(i18n);
+                sources = await openMarketplaceSettings(i18n, "settings", {
+                    signal,
+                });
+                if (signal.aborted) return;
                 return;
             }
             if (target.id === "module-source-refresh") {

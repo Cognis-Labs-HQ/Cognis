@@ -6,7 +6,7 @@
     "description": "Shareable Study flashcard decks, learner schedules and Anki TSV exchange.",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.5.4",
+        "@cognis/core": "<=0.5.5",
         "@cognis/gateways": "<=0.2.0"
     }
 }

@@ -32,7 +32,7 @@ function updatePageDescriptor(root, i18n, subtitleKey) {
     }
 }
 
-async function navigateToShareError(i18n, reason) {
+async function navigateToShareError(i18n, reason, showFallback) {
     const notFound = reason === "share_not_found";
     const code = notFound ? "404" : "410";
     const message = i18n.t(
@@ -48,7 +48,7 @@ async function navigateToShareError(i18n, reason) {
             error,
         });
     }
-    window.location.replace(destination);
+    showFallback(notFound ? "share.error.not_found" : "share.error.expired");
 }
 
 /**
@@ -137,6 +137,13 @@ export async function mount(
 
     await composer.init();
 
+    const showShareFallback = (messageKey) => {
+        if (signal?.aborted) return;
+        state.loading = false;
+        state.errorKey = messageKey;
+        updatePageDescriptor(root, state.i18n, messageKey);
+        composer.refresh([buildShareElement(state)]);
+    };
     installGuestNavigationGuard({ root, signal });
 
     const flowResult = routedShareContext
@@ -151,7 +158,11 @@ export async function mount(
 
     if (session?.shareAttempted && !session?.authenticated) {
         if (session.failureReason !== "share_access_denied") {
-            await navigateToShareError(state.i18n, session.failureReason);
+            await navigateToShareError(
+                state.i18n,
+                session.failureReason,
+                showShareFallback,
+            );
             return;
         }
         // A share token was present in the URL but failed to resolve
@@ -168,12 +179,17 @@ export async function mount(
         await navigateToShareError(
             state.i18n,
             shareContext === null ? "share_not_found" : "share_expired",
+            showShareFallback,
         );
         return;
     }
 
     if (!session?.authenticated) {
-        await navigateToShareError(state.i18n, "share_expired");
+        await navigateToShareError(
+            state.i18n,
+            "share_expired",
+            showShareFallback,
+        );
         return;
     }
 

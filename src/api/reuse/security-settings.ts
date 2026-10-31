@@ -1,6 +1,6 @@
 export interface SecuritySettings {
     trustedDomains: string[];
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
     loginSessionTimeoutMinutes: number;
@@ -55,7 +55,10 @@ export function parseSecuritySettings(
         return {
             trustedDomains: normalizeTrustedDomains(parsed.trustedDomains),
             userValidationMode:
-                parsed.userValidationMode === "smtp" ? "smtp" : "none",
+                parsed.userValidationMode == null ||
+                parsed.userValidationMode === "none"
+                    ? "none"
+                    : "email",
             requireTeacherManualApproval:
                 parsed.requireTeacherManualApproval === false ? false : true,
             enforceTfaForAllUsers:

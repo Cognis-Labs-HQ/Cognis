@@ -1,5 +1,5 @@
 import { SmtpNotificationSender } from "./notification-sender.js";
-import { clampSmtpVerificationCodeLength } from "@cognis/core";
+import { clampVerificationCodeLength } from "@cognis/core";
 
 export function createNotificationSender(
     env: Record<string, string | undefined>,
@@ -24,7 +24,7 @@ export function createNotificationSender(
         env["EXTERNAL_HOST"] ?? (env["HOST"] ? `http://${env["HOST"]}` : "");
     const rawCodeLength = env["COGNIS_SMTP_CODE_LENGTH"];
     const codeLength = rawCodeLength
-        ? clampSmtpVerificationCodeLength(rawCodeLength)
+        ? clampVerificationCodeLength(rawCodeLength)
         : undefined;
 
     const envSnapshot: Record<string, string | undefined> = {

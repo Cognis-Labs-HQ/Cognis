@@ -1,3 +1,4 @@
+import type { LocalAccountStore } from "../reuse/account-store.js";
 import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
@@ -25,7 +26,11 @@ import {
 import { loadLocalAccountStore } from "./local-account.js";
 import { createAuthRouteBootstrapRuntime } from "./route-runtime.js";
 import { runBootstrapDirectoryHooks } from "../../reuse/bootstrap-loader.js";
-import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
+import {
+    parseSecuritySettings,
+    defaultSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+} from "../../../api/reuse/security-settings.js";
 import { createAuthPageRoutes } from "./routes/pages.js";
 
 export interface AuthAccountStore {
@@ -69,11 +74,7 @@ export interface AuthAccountStore {
      * support local account creation (e.g. local/LDAP adapters). Absent on
      * read-only or SSO-only stores. Returns the created account record.
      */
-    register?(
-        username: string,
-        password: string,
-        isAdmin: boolean,
-    ): Promise<{ username: string; role?: string }>;
+    register?: LocalAccountStore["register"];
     /**
      * Enables or disables an account. Optional — only available on stores that
      * support toggling account status. Absent on read-only stores.
@@ -89,7 +90,7 @@ export interface PendingTfaLoginAttempt {
     provider: string;
     providerId: string;
     displayName: string;
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     requiredUserValidation: boolean;
     ttlSeconds: number | null;
     expiresAt: number;
@@ -113,7 +114,7 @@ export interface PendingAccountCreationAttempt {
 }
 
 export interface SecuritySettings {
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     loginSessionTimeoutMinutes: number;
 }
 
@@ -402,37 +403,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     async function readSecuritySettings(): Promise<SecuritySettings> {
         const preferenceStore =
             ctx.capabilities.get<UserPreferenceStore>("preferences:store");
-        if (!preferenceStore) {
-            return {
-                userValidationMode: "none",
-                loginSessionTimeoutMinutes: 720,
-            };
-        }
-        const raw = await preferenceStore.get(
+        const raw = await preferenceStore?.get(
             "__system__",
-            "security-settings",
+            SECURITY_SETTINGS_KEY,
         );
-        if (!raw) {
-            return {
-                userValidationMode: "none",
-                loginSessionTimeoutMinutes: 720,
-            };
-        }
-        try {
-            const parsed = JSON.parse(raw) as Record<string, unknown>;
-            return {
-                userValidationMode:
-                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
-                loginSessionTimeoutMinutes: parseLoginSessionTimeoutMinutes(
-                    parsed.loginSessionTimeoutMinutes,
-                ),
-            };
-        } catch {
-            return {
-                userValidationMode: "none",
-                loginSessionTimeoutMinutes: 720,
-            };
-        }
+        return parseSecuritySettings(raw ?? null) ?? defaultSecuritySettings();
     }
 
     const securitySubsections: SecuritySubsection[] = [];
@@ -498,15 +473,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         readSecuritySettings,
     });
 
-    const registerNotificationCategory = ctx.capabilities.get<
-        (id: string, label: string) => void
-    >("notify:registerCategory");
-    if (typeof registerNotificationCategory === "function") {
-        registerNotificationCategory("security", "Security");
-    }
-
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
         adapterCount: authGateway.listAdapters().length,
     });
 }
+
+export { completeBootstrap } from "./email-actions.js";

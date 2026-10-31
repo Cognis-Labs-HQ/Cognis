@@ -1,3 +1,4 @@
+import { registerSecretEncryption } from "./bootstrap/secret-encryption.js";
 import type { EngagementStore } from "@cognis/core";
 import { buildServer, discoverModuleSourcesOnStartup } from "./server.js";
 import type {
@@ -305,6 +306,7 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // Create the platform flow bus upfront so every gateway bootstrap receives it
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
+registerSecretEncryption(systemCtx);
 capabilities.contribute("system:ctx", systemCtx);
 const {
     scoring: scoringEngine,
@@ -578,8 +580,9 @@ const moduleMarketplaceService = new ModuleMarketplaceService(
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules"),
     (level, message, meta) => log(level, message, meta),
+    systemCtx,
 );
-await discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
+void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
 
 const server = buildServer({
     moduleMarketplaceService,
@@ -593,9 +596,10 @@ const server = buildServer({
     log,
     observability: capabilities.get("observability:metrics"),
     createProfile,
-    setProfileRole: capabilities.get<
-        (handle: string, role: string) => Promise<void>
-    >("profile:setRoleByHandle"),
+    setProfileRole:
+        capabilities.get<(accountId: string, role: string) => Promise<void>>(
+            "profile:setRole",
+        ),
     searchProfiles: profileStore
         ? profileStore.searchProfiles.bind(profileStore)
         : undefined,

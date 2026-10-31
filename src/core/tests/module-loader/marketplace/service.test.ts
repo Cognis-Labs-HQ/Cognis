@@ -1,3 +1,4 @@
+import { createSecretContext } from "./fixtures/encryption.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -22,100 +23,53 @@ const source = {
 const execFileAsync = promisify(execFile);
 const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
-test("module marketplace persists source metadata without PAT values", async () => {
+test("module marketplace persists source metadata and exposes credential configuration", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const state = path.join(root, "sources.json");
     const service = new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
+        state,
         path.join(root, "modules"),
     );
-    await service.saveSource({
-        ...source,
-        credentialId: "module-source:pat",
-        scanPrivateRepos: true,
-    });
-    assert.deepEqual(await service.listSources(), [
-        {
-            uuid: "178271bf-5631-40df-82df-967f8a37a020",
-            name: "Cognis Labs HQ",
-            provider: "github",
-            namespace: "Cognis-Labs-HQ",
-            baseUrl: "https://api.github.com",
-            homepage: "https://github.com/Cognis-Labs-HQ",
-            scanPrivateRepos: false,
-            trusted: true,
-            credentialId: undefined,
-        },
-        {
-            ...source,
-            credentialId: "module-source:pat",
-            scanPrivateRepos: true,
-            trusted: false,
-        },
-    ]);
+    const saved = await service.saveSource(source);
+    assert.equal(saved.credentialConfigured, false);
+    const listed = await new ModuleMarketplaceService(
+        state,
+        path.join(root, "modules"),
+    ).listSources();
     assert.equal(
-        (
-            await new ModuleMarketplaceService(
-                path.join(root, "sources.json"),
-                path.join(root, "modules"),
-            ).listSources()
-        )[1].scanPrivateRepos,
-        true,
+        listed.find((entry) => entry.uuid === source.uuid)?.namespace,
+        source.namespace,
     );
-});
-
-test("module marketplace always provides an immutable trusted source", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
-    const service = new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
-        path.join(root, "modules"),
-    );
-    const [trusted] = await service.listSources();
-    assert.equal(trusted.namespace, "Cognis-Labs-HQ");
-    assert.equal(trusted.trusted, true);
+    assert.equal(listed[0].trusted, true);
     await assert.rejects(
-        service.removeSource(trusted.uuid),
+        service.removeSource(DEFAULT_TRUSTED_MODULE_SOURCE.uuid),
         /trusted_module_source_readonly/,
     );
+    await service.removeSource(source.uuid);
+    assert.equal((await service.listSources()).length, 1);
 });
 
-test("trusted source updates accept credentials without mutable metadata", async () => {
+test("trusted source metadata stays canonical when administrators edit settings", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
     );
     const saved = await service.saveSource({
-        uuid: DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-        credentialId: "module-source:trusted:pat",
-    } as any);
-    assert.equal(saved.name, "Cognis Labs HQ");
-    assert.equal(saved.credentialId, "module-source:trusted:pat");
-    await rm(path.join(root, "sources.json"));
-    const [restartedSource] = await new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
-        path.join(root, "modules"),
-    ).listSources();
-    assert.equal(restartedSource.credentialId, "module-source:trusted:pat");
-});
-
-test("trusted source private scanning survives a service restart", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
-    const statePath = path.join(root, "sources.json");
-    const installRoot = path.join(root, "modules");
-    const service = new ModuleMarketplaceService(statePath, installRoot);
-    await service.saveSource({
         ...DEFAULT_TRUSTED_MODULE_SOURCE,
-        credentialId: "module-source:trusted:pat",
-        scanPrivateRepos: true,
+        name: "Other",
+        baseUrl: "https://other.test",
     });
-
-    const stored = JSON.parse(await readFile(statePath, "utf8"));
-    assert.equal(stored[0].scanPrivateRepos, true);
-    const [restartedSource] = await new ModuleMarketplaceService(
-        statePath,
-        installRoot,
-    ).listSources();
-    assert.equal(restartedSource.scanPrivateRepos, true);
+    assert.equal(saved.name, DEFAULT_TRUSTED_MODULE_SOURCE.name);
+    assert.equal(saved.baseUrl, DEFAULT_TRUSTED_MODULE_SOURCE.baseUrl);
+    await assert.rejects(
+        service.saveSource({
+            ...DEFAULT_TRUSTED_MODULE_SOURCE,
+            scanPrivateRepos: true,
+        }),
+        /module_source_credential_required/,
+    );
+    assert.equal((await service.listSources())[0].scanPrivateRepos, false);
 });
 
 test("cached UUID collisions prefer the trusted Cognis source", async () => {
@@ -210,7 +164,7 @@ test("forced catalog refresh bypasses persisted scan throttling", async () => {
     };
     try {
         await service.discover();
-        await service.discover({}, undefined, true);
+        await service.discover(undefined, true);
         assert.equal(requests, 2);
     } finally {
         globalThis.fetch = originalFetch;
@@ -222,6 +176,8 @@ test("credential updates bypass scan throttling and authenticate immediately", a
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        () => undefined,
+        createSecretContext().ctx,
     );
     const originalFetch = globalThis.fetch;
     const authorizations: Array<string | null> = [];
@@ -233,14 +189,16 @@ test("credential updates bypass scan throttling and authenticate immediately", a
     };
     try {
         await service.discover();
-        await service.saveSource({
-            uuid: DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-            credentialId: "module-source:trusted:pat",
-        } as any);
-        await service.discover({
-            "module-source:trusted:pat": "github-secret",
-        });
-        assert.deepEqual(authorizations, [null, "Bearer github-secret"]);
+        await service.saveSource(
+            { ...DEFAULT_TRUSTED_MODULE_SOURCE },
+            { token: "github-secret" },
+        );
+        await service.discover();
+        assert.deepEqual(authorizations, [
+            null,
+            "Bearer github-secret",
+            "Bearer github-secret",
+        ]);
     } finally {
         globalThis.fetch = originalFetch;
     }
@@ -317,12 +275,11 @@ test("private source scans report a missing stored credential", async () => {
         path.join(root, "sources.json"),
         path.join(root, "modules"),
     );
-    await service.saveSource({
-        ...source,
-        credentialId: "module-source:private:pat",
-        scanPrivateRepos: true,
-    });
-    const result = await service.discoverWithReport({}, [source.uuid], true);
+    await writeFile(
+        path.join(root, "sources.json"),
+        JSON.stringify([{ ...source, scanPrivateRepos: true }]),
+    );
+    const result = await service.discoverWithReport([source.uuid], true);
     assert.deepEqual(result.modules, []);
     assert.deepEqual(result.sourceFailures, [
         {
@@ -377,12 +334,9 @@ test("private scans include organization repositories visible through the authen
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        () => undefined,
+        createSecretContext().ctx,
     );
-    await service.saveSource({
-        ...DEFAULT_TRUSTED_MODULE_SOURCE,
-        credentialId: "module-source:trusted:pat",
-        scanPrivateRepos: true,
-    });
     const originalFetch = globalThis.fetch;
     const requestedUrls: string[] = [];
     globalThis.fetch = async (input, init) => {
@@ -392,8 +346,15 @@ test("private scans include organization repositories visible through the authen
             new Headers(init?.headers).get("authorization"),
             "Bearer private-token",
         );
+        if (url.endsWith("/contents")) return Response.json([]);
         if (url.includes("/orgs/Cognis-Labs-HQ/repos?")) {
-            return Response.json([]);
+            return Response.json([
+                {
+                    id: 179,
+                    full_name: "Cognis-Labs-HQ/cognis-module-line-integration",
+                    private: true,
+                },
+            ]);
         }
         if (url.includes("/user/repos?")) {
             return Response.json([
@@ -442,8 +403,12 @@ test("private scans include organization repositories visible through the authen
         return new Response("", { status: 404 });
     };
     try {
+        await service.saveSource(
+            { ...DEFAULT_TRUSTED_MODULE_SOURCE, scanPrivateRepos: true },
+            { token: "private-token" },
+        );
+        requestedUrls.length = 0;
         const result = await service.discoverWithReport(
-            { "module-source:trusted:pat": "private-token" },
             [DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
             true,
         );
@@ -481,23 +446,29 @@ test("GitHub repository assets use the configured API host", async () => {
     );
 });
 
-test("module installation accepts cached catalogs created before release discovery", async () => {
+test("module installation requires an available catalog branch", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const modulesRoot = path.join(root, "modules");
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
-        path.join(root, "modules"),
+        modulesRoot,
+    );
+    await service.saveSource(source);
+    const module = {
+        uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+        sourceUuid: source.uuid,
+        cloneUrl: "https://github.com/example/notes.git",
+        defaultBranch: "main",
+        branches: [],
+        releases: [],
+    };
+    await mkdir(path.join(modulesRoot, ".cache"), { recursive: true });
+    await writeFile(
+        path.join(modulesRoot, ".cache", "catalog.json"),
+        JSON.stringify([module]),
     );
     await assert.rejects(
-        service.install(
-            {
-                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-                cloneUrl: "https://github.com/acme/notes.git",
-                defaultBranch: "main",
-                branches: [],
-            } as any,
-            undefined,
-            "main",
-        ),
+        service.install(module as never, "main"),
         /invalid_module_branch/,
     );
 });
@@ -782,7 +753,7 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(refreshed[0].name, "Notes");
         assert.equal(refreshed[0].description, "Shared notes.");
         assert.equal(refreshed[0].assetIds?.icon, originalIcon);
-        const forced = await service.discover({}, undefined, true);
+        const forced = await service.discover(undefined, true);
         assert.equal(forced[0].name, "Collaborative Notes");
         assert.equal(forced[0].description, "Updated shared notes.");
         assert.equal(forced[0].version, "1.1.0");
@@ -801,7 +772,7 @@ test("module marketplace discovers repository manifests", async () => {
                 commit: "def456",
             }),
         );
-        const preview = await service.discover({}, undefined, true);
+        const preview = await service.discover(undefined, true);
         assert.equal(preview[0].name, "Preview Notes");
         assert.equal(preview[0].installedBranch, "preview");
         assert.equal(preview[0].version, "1.1.0");
@@ -893,4 +864,56 @@ test("module marketplace serves persisted results after restart", async () => {
         path.join(root, "modules"),
     );
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
+});
+
+test("GitLab installation validates namespace within the configured deployment prefix", async (t) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gitlab-prefix-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const modulesRoot = path.join(root, "modules");
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        modulesRoot,
+    );
+    await service.saveSource({
+        ...source,
+        provider: "gitlab",
+        baseUrl: "https://example.test/gitlab/api/v4",
+        namespace: "team/subgroup",
+    });
+    const cache = path.join(modulesRoot, ".cache");
+    await mkdir(cache, { recursive: true });
+    for (const [cloneUrl, expected] of [
+        [
+            "https://example.test/gitlab/team/subgroup/module.git",
+            /invalid_module_branch/,
+        ],
+        [
+            "https://example.test/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://example.test/gitlab/team/other/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://other.test/gitlab/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+    ] as const) {
+        const module = {
+            uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+            sourceUuid: source.uuid,
+            cloneUrl,
+            defaultBranch: "main",
+            branches: [],
+            releases: [],
+        };
+        await writeFile(
+            path.join(cache, "catalog.json"),
+            JSON.stringify([module]),
+        );
+        const catalog = await service.listCachedModules();
+        assert.equal(catalog.length, 1);
+        await assert.rejects(service.install(catalog[0], "main"), expected);
+    }
 });

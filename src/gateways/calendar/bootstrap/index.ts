@@ -17,8 +17,7 @@ import {
     CoreCalendarGateway,
     type CalendarVisibility,
 } from "../gateway/index.js";
-import type { ResolveAccountId } from "./helpers.js";
-import { createCalendarNotificationResolver } from "./notification-capabilities.js";
+import type { ResolveAccountId, NotificationDispatcher } from "./helpers.js";
 import { finalizeCalendarBootstrap, GATEWAY_ROOT } from "./finalize.js";
 import { CalendarShareRegistry } from "./share-registry.js";
 import {
@@ -30,9 +29,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const routeHelpers = resolveRouteContext(routeContext);
     const gateway = new CoreCalendarGateway();
-    const notificationResolver = createCalendarNotificationResolver(
-        ctx.capabilities,
-    );
+    const getDispatchNotification = () =>
+        ctx.capabilities.get<NotificationDispatcher>("notify:dispatch") ?? null;
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const getPreferenceStore = () =>
@@ -909,8 +907,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         resolveShareableUsers,
         resolveAccountId,
         resolveAccountDisplayName,
-        notificationResolver,
+        getDispatchNotification,
         systemCtx,
         gatewayRoot: GATEWAY_ROOT,
     });
+}
+
+/** Register Calendar delivery after optional notification senders have bootstrapped. */
+export async function completeBootstrap(
+    ctx: GatewayBootstrapContext,
+): Promise<void> {
+    ctx.capabilities.get<(id: string, label: string) => void>(
+        "notify:registerCategory",
+    )?.("calendar", "Calendar Events");
 }

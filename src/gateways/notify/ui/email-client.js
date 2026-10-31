@@ -5,7 +5,7 @@ import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js";
 import { loadTrustedDomains } from "/static/reuse/trusted-domains.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
-import { isSmtpAdapterActive } from "./smtp-adapter.js";
+import { isEmailDeliveryAvailable } from "./email-delivery.js";
 
 function emailRoot() {
     return `/api/v1/notify/users/${encodeURIComponent(localStorage.getItem("cognis_account") ?? "")}/emails`;
@@ -88,7 +88,7 @@ export function mountProvider(ctx) {
     const actions = registerActions(ctx, "notify:emailPolicy", {
         listUserEmails: ({ accountId, signal }) =>
             loadUserEmails(accountId, { signal }),
-        smtpAvailable: () => isSmtpAdapterActive(apiFetch),
+        emailAvailable: () => isEmailDeliveryAvailable(apiFetch),
         resendUserEmail: ({ accountId, email }) => {
             if (isOffline()) throw new Error("offline_operation_unavailable");
             return apiFetch(

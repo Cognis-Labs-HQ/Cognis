@@ -23,10 +23,7 @@ test("keyring password popups use the form composer with required fields", () =>
     assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
     assert.match(settingsSource, /id="settings-keyring-create"/);
     assert.match(settingsSource, /variant: "cancel"/);
-    assert.match(
-        settingsSource,
-        /await restoreKeyringSession\(\)[\s\S]*rerender\(\)/,
-    );
+    assert.match(settingsSource, /await initialResult[\s\S]*rerender\(\)/);
     assert.match(
         settingsSource,
         /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,

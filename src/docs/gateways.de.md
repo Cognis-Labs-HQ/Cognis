@@ -1,5 +1,7 @@
 # Gateway- und Adapter-Leitfaden
 
+Komponentenübergreifende Benachrichtigungsverträge stammen aus `@cognis/core`. Aufrufer lösen `notify:dispatch` oder `notify:listSenders` über ctx auf; Adapter erhalten begrenzte Host-Fähigkeiten statt einer konkreten Gateway-Instanz.
+
 ## Überblick
 
 Ein Gateway ist die alleinige Autorität für eine abgegrenzte Domäne in Cognis.

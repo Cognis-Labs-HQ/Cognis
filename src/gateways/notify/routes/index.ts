@@ -201,12 +201,7 @@ export function createNotificationRoutes(
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
-        sendEmail?: (input: {
-            recipientEmail: string;
-            templateId: string;
-            variables: Record<string, string>;
-            config?: Record<string, unknown>;
-        }) => Promise<unknown>;
+        emailAvailable?: () => boolean;
     },
 ) {
     const ctx = resolveRouteContext(options?.routeContext);
@@ -215,6 +210,19 @@ export function createNotificationRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/notify/email-delivery" &&
+            req.method === "GET"
+        ) {
+            if (!ctx.requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { available: options?.emailAvailable?.() === true },
+                }),
+            );
+            return true;
+        }
         if (url.pathname === "/api/v1/notify/send" && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
 
@@ -636,24 +644,19 @@ export function createNotificationRoutes(
                 !Array.isArray(body.config)
                     ? (body.config as Record<string, unknown>)
                     : undefined;
-            if (senderId !== "smtp" || !options?.sendEmail) {
+            if (!gateway.getSenderAdminContract(senderId)?.supportsTest) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "not_supported",
-                            message: "Provider does not support test emails",
+                            message: "Provider does not support testing",
                         },
                     }),
                 );
                 return true;
             }
-            await options.sendEmail({
-                recipientEmail: to,
-                templateId: "notify-test",
-                variables: {},
-                config: overrideConfig,
-            });
+            await gateway.testSender(senderId, to, overrideConfig);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;

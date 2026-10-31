@@ -1,5 +1,5 @@
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
-import { readFile, readdir } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import path from "node:path";
 import {
     registerLimitedAuthPathAllowance,
@@ -7,7 +7,7 @@ import {
 } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
-import { CoreTfaGateway, type TfaMethodAdapter } from "../gateway.js";
+import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
@@ -18,7 +18,7 @@ type PendingLoginAttemptInput = {
     provider: string;
     providerId: string;
     displayName: string;
-    userValidationMode: "none" | "smtp";
+    userValidationMode: "none" | "email";
     requiredUserValidation: boolean;
     ttlSeconds: number | null;
 };
@@ -43,52 +43,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 metadata?: Record<string, unknown>;
             }) => Promise<unknown>
         >("notify:dispatch");
-    const canSendVerificationEmail = ctx.capabilities.get<() => boolean>(
-        "notify:canSendVerificationEmail",
-    );
-    const sendVerificationEmail = ctx.capabilities.get<
-        (
-            to: string,
-            code: string,
-            verifyUrl?: string,
-            theme?: string,
-        ) => Promise<void>
-    >("notify:sendVerificationEmail");
-    const queueVerificationEmail = ctx.capabilities.get<
-        (
-            to: string,
-            code: string,
-            verifyUrl?: string,
-            theme?: string,
-        ) => Promise<{
-            notificationId: string;
-            status:
-                "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
-            createdAt: string;
-            updatedAt: string;
-            availableAt?: string;
-            error?: string;
-            recipientEmail?: string;
-        }>
-    >("notify:queueVerificationEmail");
-    const getPrimaryEmail = ctx.capabilities.get<
-        (accountId: string) => Promise<string | null>
-    >("notify:getPrimaryEmail");
-    const setNotifySenderEnabled = ctx.capabilities.get<
-        (senderId: string, enabled: boolean) => Promise<void>
-    >("notify:setSenderEnabled");
     const registerNotificationCategory = ctx.capabilities.get<
         (id: string, label: string) => void
     >("notify:registerCategory");
     const gateway = new CoreTfaGateway(store, {
         dispatchNotification,
-        adapterFactoryContext: {
-            canSendVerificationEmail,
-            sendVerificationEmail,
-            queueVerificationEmail,
-            getPrimaryEmail,
-            log: ctx.log,
-        },
+        adapterFactoryContext: { log: ctx.log },
         log: ctx.log,
     });
     const revokeSetupPendingAccessTokens = ctx.capabilities.get<
@@ -97,33 +57,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
-    const smtpAdapter = gateway.getAdapter("smtp") as
-        (TfaMethodAdapter & { getCodeLength?: () => number }) | null;
-    if (smtpAdapter) {
-        gateway.setAdapterSyncTarget("smtp", {
-            gatewayId: "notify",
-            adapterId: "smtp",
-        });
-        if (setNotifySenderEnabled) {
-            gateway.onAdapterEnabledChange(
-                "tfa-smtp:sync-notify-smtp",
-                async (adapterId, enabled) => {
-                    if (adapterId === "smtp" && enabled) {
-                        await setNotifySenderEnabled("smtp", true);
-                    }
-                },
-            );
-            // Adapter change listeners only observe updates made after startup.
-            // Reconcile persisted state as well so SMTP setup can send its
-            // verification code immediately after a restart.
-            if (gateway.isAdapterEnabled("smtp")) {
-                await setNotifySenderEnabled("smtp", true);
-            }
-        }
-        ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
-            smtpAdapter.getCodeLength?.(),
-        );
-    }
+    await gateway.bootstrapAdapters(ctx.capabilities);
     ctx.routeRegistry.register(
         createTfaRoutes(gateway, ctx.capabilities, ctx.log),
         "tfa",
@@ -155,6 +89,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "ui",
     );
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
+    const adapterLanguageResources = gateway
+        .listAdapters()
+        .map(
+            (adapter) =>
+                `/static/adapters/tfa/${encodeURIComponent(adapter.id)}/languages`,
+        );
     const registerSecuritySection = ctx.capabilities.get<
         (section: {
             id: string;
@@ -167,8 +107,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/tfa/settings-section.js",
         stringsBaseUrl: [
             "/static/gateways/tfa/languages",
-            "/static/adapters/tfa/totp/languages",
-            "/static/adapters/tfa/smtp/languages",
+            ...adapterLanguageResources,
         ],
     });
     registerLimitedAuthPathAllowance("tfa", (path, _accountId) => {
@@ -265,8 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                               scriptUrl: "/static/gateways/tfa/login-flow.js",
                               stringsBaseUrl: [
                                   "/static/gateways/tfa/languages",
-                                  "/static/adapters/tfa/smtp/languages",
-                                  "/static/adapters/tfa/totp/languages",
+                                  ...adapterLanguageResources,
                               ],
                           },
                       ]
@@ -346,8 +284,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             currentSessionResult.displayName ?? accountId,
                         ),
                         userValidationMode:
-                            currentSessionResult.userValidationMode === "smtp"
-                                ? "smtp"
+                            currentSessionResult.userValidationMode === "email"
+                                ? "email"
                                 : "none",
                         requiredUserValidation:
                             currentSessionResult.requiredUserValidation ===

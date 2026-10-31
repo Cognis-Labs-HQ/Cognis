@@ -49,4 +49,5 @@
   <string name="gateway.tfa.settings.method_deactivated">TFA 方式「{method}」は無効になりました。</string>
   <string name="gateway.tfa.settings.required_prompt">続行する前に設定する方式を選択してください。</string>
   <string name="gateway.tfa.settings.loading">セキュリティ設定を読み込み中…</string>
+  <string name="gateway.tfa.settings.qr_code_alt">認証アプリでこの QR コードを読み取ってください</string>
 </resources>

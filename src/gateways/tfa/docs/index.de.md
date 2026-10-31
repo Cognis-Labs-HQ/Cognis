@@ -1,5 +1,9 @@
 # TFA Gateway
 
+Adapter-Sprachressourcen werden aus installierten Methoden statt einer festen Anbieterliste ermittelt. Methoden melden `invalid_verification_code` über den gemeinsamen Fehlervertrag; ausstellerspezifische Konfiguration bleibt beim Adapter.
+
+Eine unvollständige Einrichtung ist sofort geschützt, auch bevor ein Code eingegeben wird. Hintergrundklick, Escape, Schließen, Abbrechen und SPA-Navigation verwenden die gemeinsame Verwerfen-Bestätigung; beim Beibehalten kehrt der Fokus zurück. Die Navigation wird erst nach dem Abbruch fortgesetzt. Beim Neuladen warnt der Browser. Beim Entfernen des Einstellungsbereichs werden Ereignisbehandler und Dialoge entfernt; verpflichtende Einrichtung bleibt serverseitig durchgesetzt.
+
 ## Überblick
 
 Das TFA-Gateway besitzt alle Zwei-Faktor-Funktionen in Cognis. Es entdeckt Methodenadapter unter `src/adapters/tfa/`, speichert Adapterzustand und Recovery-Codes, entscheidet über verpflichtende Einrichtung und verifiziert zweite Faktoren beim Login.
@@ -73,3 +77,7 @@ TFA-Browserassets liegen unter `src/gateways/tfa/ui/`. Das Gateway registriert s
 ## Adapter-Vertrag
 
 Jeder Adapter unter `src/adapters/tfa/<adapter-id>/` implementiert methodenspezifisches Setup und Verifikation. Gemeinsame Abläufe wie Recovery-Codes, Präferenzreihenfolge und globale Erzwingung bleiben im Gateway, damit neue Methoden ohne Richtlinien-Duplikate ergänzt werden können.
+
+## Getrennte TFA-Verwerfungsfragen
+
+Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übrigen Seitenschutzfunktionen übergeben. Das Verwerfen der Einrichtung verwirft keine anderen Einstellungsänderungen. Ihr Beibehalten stoppt die Navigation; erst ihre ausdrückliche Verwerfung setzt sie fort. Eine entfernte Seite kann eine gespeicherte Navigation nicht wieder aufnehmen.

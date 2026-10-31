@@ -47,3 +47,7 @@ Pembuatan acara dalam antrean dan suntingan berikutnya muncul di daftar serta po
 ## Gaya Status Luring
 
 Penyedia Calendar menyiapkan lembar gaya status acara yang dimuat tertunda untuk penggunaan luring pertama. Host menyiapkan gaya popup, toast, dan visibilitas rahasia bersama sehingga membuka acara tersimpan tidak bergantung pada pembukaan detailnya secara daring sebelumnya.
+
+## Keamanan Permintaan Runtime
+
+Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.

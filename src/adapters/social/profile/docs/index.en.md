@@ -182,3 +182,9 @@ Offline Profile access requires the complete prepared own-profile snapshot: text
 ## Acknowledged Preference Snapshots
 
 Successful Profile preference writes update their bounded, provider-owned read snapshot before later reads, including replay and online-only saves. Offline preference merges retain acknowledged fields and project remaining pending changes. Delayed reads cannot overwrite a newer acknowledged snapshot; account changes, provider disposal and failed writes cannot publish stale data.
+
+## Profile Editing and Roles
+
+Profile edit forms use the owning component’s display-name, bio, location and website limits. Account role synchronization resolves a profile’s public handle from its immutable account ID before updating role and visibility.
+
+`profile:setRole(accountId, role)` → `Promise<void>`.

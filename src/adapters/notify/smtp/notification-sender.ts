@@ -1,5 +1,13 @@
-import net from "node:net";
-import tls from "node:tls";
+import { bootstrapNotifyAdapter } from "./bootstrap.js";
+import type {
+    NotifyAdapterBootstrapCtx,
+    NotificationCategory,
+    NotificationChannelRegistration,
+} from "@cognis/core";
+import type { EmailActionInput, NotificationActionMessage } from "@cognis/core";
+import type { BootstrapDisposer } from "@cognis/core";
+import { requireBootstrapScope } from "@cognis/core";
+import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "./smtp-session.js";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
@@ -26,12 +34,8 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import {
-    buildRegistrationInviteEmailMessage,
-    buildVerificationEmailMessage,
-} from "./message-builders.js";
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
-import { clampSmtpVerificationCodeLength } from "@cognis/core";
+import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
+import { clampVerificationCodeLength } from "@cognis/core";
 export interface SmtpConfig {
     host: string;
     port: number;
@@ -309,118 +313,6 @@ async function buildMessage(
     return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
 
-interface SmtpResponse {
-    code: number;
-    text: string;
-}
-
-class SmtpSession {
-    private buf = "";
-    private pending: ((r: SmtpResponse) => void) | null = null;
-    private readonly listener: (d: string) => void;
-
-    constructor(private readonly sock: net.Socket | tls.TLSSocket) {
-        this.listener = (d: string) => {
-            this.buf += d;
-            this.processBuffer();
-        };
-        sock.setEncoding("utf8");
-        sock.on("data", this.listener);
-    }
-
-    private processBuffer(): void {
-        while (true) {
-            const end = this.buf.indexOf("\r\n");
-            if (end === -1) break;
-            const line = this.buf.slice(0, end);
-            this.buf = this.buf.slice(end + 2);
-            if (line.length < 3) continue;
-            const code = Number.parseInt(line.slice(0, 3), 10);
-            const isContinuation = line.length > 3 && line[3] === "-";
-            if (!isContinuation && this.pending) {
-                const resolve = this.pending;
-                this.pending = null;
-                resolve({ code, text: line.length > 4 ? line.slice(4) : "" });
-                return;
-            }
-        }
-    }
-
-    read(): Promise<SmtpResponse> {
-        return new Promise((resolve) => {
-            this.pending = resolve;
-            this.processBuffer();
-        });
-    }
-
-    cmd(command: string): Promise<SmtpResponse> {
-        this.sock.write(`${command}\r\n`);
-        return this.read();
-    }
-
-    writeRaw(data: string): void {
-        this.sock.write(data);
-    }
-
-    detach(): void {
-        this.sock.removeListener("data", this.listener);
-    }
-
-    get socket(): net.Socket | tls.TLSSocket {
-        return this.sock;
-    }
-
-    destroy(): void {
-        this.sock.destroy();
-    }
-}
-
-const SMTP_TIMEOUT_MS = 30_000;
-
-async function openSession(
-    host: string,
-    port: number,
-    secure: "tls" | "none" | "starttls",
-    allowSelfSigned?: boolean,
-): Promise<SmtpSession> {
-    if (secure === "tls") {
-        const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-            const tlsSock = tls.connect({
-                host,
-                port,
-                rejectUnauthorized: !allowSelfSigned,
-            });
-            tlsSock.once("secureConnect", () => resolve(tlsSock));
-            tlsSock.once("error", reject);
-        });
-        return new SmtpSession(sock);
-    }
-
-    const sock = await new Promise<net.Socket>((resolve, reject) => {
-        const plainSock = net.createConnection({ host, port });
-        plainSock.once("connect", () => resolve(plainSock));
-        plainSock.once("error", reject);
-    });
-    return new SmtpSession(sock);
-}
-
-async function upgradeToTls(
-    session: SmtpSession,
-    allowSelfSigned?: boolean,
-): Promise<SmtpSession> {
-    session.detach();
-    const rawSock = session.socket as net.Socket;
-    const tlsSock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-        const newTlsSock = tls.connect({
-            socket: rawSock,
-            rejectUnauthorized: !allowSelfSigned,
-        });
-        newTlsSock.once("secureConnect", () => resolve(newTlsSock));
-        newTlsSock.once("error", reject);
-    });
-    return new SmtpSession(tlsSock);
-}
-
 async function sendMail(
     config: SmtpConfig,
     to: string,
@@ -430,12 +322,14 @@ async function sendMail(
     verifyUrl?: string,
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
+    signal?: AbortSignal,
 ): Promise<void> {
     let session = await openSession(
         config.host,
         config.port,
         config.secure,
         config.allowSelfSigned,
+        signal,
     );
 
     try {
@@ -460,7 +354,11 @@ async function sendMail(
             if (starttls.code !== 220) {
                 throw new Error(`smtp_starttls_failed:${starttls.code}`);
             }
-            session = await upgradeToTls(session, config.allowSelfSigned);
+            session = await upgradeToTls(
+                session,
+                config.allowSelfSigned,
+                signal,
+            );
             ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
             if (ehlo.code !== 250) {
                 throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
@@ -532,6 +430,25 @@ async function sendMail(
 const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
 
+async function waitForRetry(
+    sleep: (ms: number) => Promise<void>,
+    delay: number,
+    signal?: AbortSignal,
+): Promise<void> {
+    if (!signal) return sleep(delay);
+    signal.throwIfAborted();
+    let rejectAbort!: () => void;
+    const aborted = new Promise<never>((_resolve, reject) => {
+        rejectAbort = () => reject(signal.reason);
+        signal.addEventListener("abort", rejectAbort, { once: true });
+    });
+    try {
+        await Promise.race([sleep(delay), aborted]);
+    } finally {
+        signal.removeEventListener("abort", rejectAbort);
+    }
+}
+
 async function sendMailWithRetry(
     config: SmtpConfig,
     to: string,
@@ -542,6 +459,7 @@ async function sendMailWithRetry(
     verifyUrl?: string,
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
+    signal?: AbortSignal,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -550,8 +468,9 @@ async function sendMailWithRetry(
     let lastError: unknown;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         if (attempt > 0) {
-            await sleep(delayMs);
+            await waitForRetry(sleep, delayMs, signal);
         }
+        signal?.throwIfAborted();
         try {
             await sendMail(
                 config,
@@ -562,9 +481,11 @@ async function sendMailWithRetry(
                 verifyUrl,
                 verifyButtonLabel,
                 attachments,
+                signal,
             );
             return;
         } catch (err) {
+            signal?.throwIfAborted();
             if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
                 lastError = err;
                 continue;
@@ -577,41 +498,162 @@ async function sendMailWithRetry(
 
 export class SmtpNotificationSender implements NotificationSender {
     readonly senderId = "smtp";
+    readonly requiresVerifiedEmail = true;
     readonly senderName = "SMTP Email";
 
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
-    private readonly rateLimiter: SmtpRateLimiter;
-    private readonly queue: SmtpNotificationQueue;
+    private deliveryEnabled = true;
+    private readonly purposeActivations = new Map<
+        string,
+        { activate(): void; suspend(): void }
+    >();
+    private readonly queues = new Map<string, SmtpNotificationQueue>();
+    private readonly createRateLimiter: () => SmtpRateLimiter;
 
     constructor(
         private config: SmtpConfig,
         envSnapshot?: Record<string, string | undefined>,
         sleep?: (ms: number) => Promise<void>,
-        rateLimiter?: SmtpRateLimiter,
+        createRateLimiter?: () => SmtpRateLimiter,
     ) {
         this.envSnapshot = envSnapshot ?? {};
         this.sleep =
             sleep ??
-            ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
-        this.rateLimiter =
-            rateLimiter ?? new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS);
-        this.queue = new SmtpNotificationQueue(
-            this.rateLimiter,
-            this.sleep,
-            async (payload) => {
-                await sendMailWithRetry(
-                    (payload.config as SmtpConfig | undefined) ?? this.config,
-                    payload.recipientEmail,
-                    payload.subject,
-                    payload.body,
-                    this.sleep,
-                    payload.theme,
-                    payload.verifyUrl,
-                    payload.verifyButtonLabel,
-                );
+            ((ms) =>
+                new Promise((resolve) => {
+                    const timer = setTimeout(resolve, ms);
+                    timer.unref();
+                }));
+        this.createRateLimiter =
+            createRateLimiter ??
+            (() => new SmtpRateLimiter(EMAIL_DELIVERY_RATE_LIMIT_MS));
+    }
+
+    async bootstrap(ctx: NotifyAdapterBootstrapCtx): Promise<void> {
+        await bootstrapNotifyAdapter(ctx, this);
+    }
+
+    test?: (to: string, config?: Record<string, unknown>) => Promise<void>;
+
+    registerChannel(
+        category: NotificationCategory,
+    ): NotificationChannelRegistration {
+        const purpose = `channel:${category.id}`;
+        return Object.assign(this.registerPurpose(purpose), {
+            send: (envelope: NotificationEnvelope) =>
+                this.send({ ...envelope, purpose }),
+            sendTracked: (envelope: NotificationEnvelope) =>
+                this.sendTracked({ ...envelope, purpose }),
+        });
+    }
+
+    registerPurpose(purpose: string): BootstrapDisposer {
+        requireBootstrapScope();
+        if (!purpose || this.purposeActivations.has(purpose))
+            throw new Error("smtp_purpose_conflict");
+        let queue: SmtpNotificationQueue | undefined;
+        let controller: AbortController | undefined;
+        const activate = () => {
+            if (this.queues.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            const activeController = new AbortController();
+            controller = activeController;
+            queue = new SmtpNotificationQueue(
+                this.createRateLimiter(),
+                this.sleep,
+                async (payload) => {
+                    await sendMailWithRetry(
+                        (payload.config as SmtpConfig | undefined) ??
+                            this.config,
+                        payload.recipientEmail,
+                        payload.subject,
+                        payload.body,
+                        this.sleep,
+                        payload.theme,
+                        payload.verifyUrl,
+                        payload.verifyButtonLabel,
+                        payload.attachments ?? [],
+                        activeController.signal,
+                    );
+                },
+                purpose,
+            );
+            this.queues.set(purpose, queue);
+        };
+        const resource = {
+            activate,
+            suspend: () => {
+                controller?.abort();
+                queue?.close();
+                if (this.queues.get(purpose) === queue)
+                    this.queues.delete(purpose);
             },
-        );
+        };
+        this.purposeActivations.set(purpose, resource);
+        if (this.deliveryEnabled) activate();
+        const dispose: BootstrapDisposer = () => {
+            resource.suspend();
+            if (this.purposeActivations.get(purpose) === resource)
+                this.purposeActivations.delete(purpose);
+        };
+        dispose.reactivate = () => {
+            if (this.purposeActivations.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            this.purposeActivations.set(purpose, resource);
+            if (this.deliveryEnabled) activate();
+        };
+        return dispose;
+    }
+
+    setDeliveryEnabled(enabled: boolean): void {
+        if (this.deliveryEnabled === enabled) return;
+        this.deliveryEnabled = enabled;
+        for (const resource of this.purposeActivations.values()) {
+            if (enabled) resource.activate();
+            else resource.suspend();
+        }
+    }
+
+    async waitForEmail(purpose: string, notificationId: string): Promise<void> {
+        await this.requireQueue(purpose).waitForResult(notificationId);
+    }
+
+    async enqueueEmail(
+        input: EmailActionInput,
+        message: NotificationActionMessage,
+    ): Promise<
+        NotificationSenderQueueEntry & { sent: true; notificationId: string }
+    > {
+        const queued = this.requireQueue(input.purpose).enqueue({
+            purpose: input.purpose,
+            recipientEmail: input.recipientEmail,
+            subject: message.subject,
+            body: message.body,
+            theme: input.theme,
+            verifyUrl: message.actionUrl,
+            verifyButtonLabel: message.actionLabel,
+            config: {
+                ...this.config,
+                ...input.config,
+                ...(message.senderName
+                    ? { senderName: message.senderName }
+                    : {}),
+            },
+        });
+        return {
+            sent: true,
+            ...this.requireQueue(input.purpose).getQueueItem(
+                queued.notificationId,
+            )!,
+        };
+    }
+
+    private requireQueue(purpose: unknown): SmtpNotificationQueue {
+        const queue =
+            typeof purpose === "string" ? this.queues.get(purpose) : undefined;
+        if (!queue) throw new Error("smtp_purpose_unregistered");
+        return queue;
     }
 
     getEnvValues(): Record<string, string | undefined> {
@@ -651,7 +693,7 @@ export class SmtpNotificationSender implements NotificationSender {
     }
 
     getCodeLength(): number {
-        return clampSmtpVerificationCodeLength(this.config.codeLength);
+        return clampVerificationCodeLength(this.config.codeLength);
     }
 
     setConfig(config: Record<string, unknown>): void {
@@ -679,140 +721,28 @@ export class SmtpNotificationSender implements NotificationSender {
         if (typeof config.greylistRetryDelayMs === "number")
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
         if (typeof config.codeLength === "number") {
-            this.config.codeLength = clampSmtpVerificationCodeLength(
+            this.config.codeLength = clampVerificationCodeLength(
                 config.codeLength,
             );
         }
     }
 
     listQueue(): NotificationSenderQueueEntry[] {
-        return this.queue.listQueue();
+        return [...this.queues.values()]
+            .flatMap((queue) => queue.listQueue())
+            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
     }
 
     getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
-        return this.queue.getQueueItem(notificationId);
-    }
-
-    private async getQueueItemWithRetry(
-        notificationId: string,
-        retries = 1,
-        delayMs = 10,
-    ): Promise<NotificationSenderQueueEntry | null> {
-        let queueItem = this.queue.getQueueItem(notificationId);
-        let attemptsLeft = retries;
-        while (!queueItem && attemptsLeft > 0) {
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-            queueItem = this.queue.getQueueItem(notificationId);
-            attemptsLeft -= 1;
-        }
-        return queueItem;
-    }
-
-    async sendVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void> {
-        const queued = await this.queueVerificationEmail(
-            to,
-            code,
-            verifyUrl,
-            theme,
+        return (
+            [...this.queues.values()]
+                .map((queue) => queue.getQueueItem(notificationId))
+                .find(Boolean) ?? null
         );
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        await this.queue.waitForResult(notificationId);
-    }
-
-    async queueVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ) {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const messageType = verifyUrl
-            ? "email-address-verification"
-            : "verification-code";
-        const { subject, body } = buildVerificationEmailMessage(
-            messageType,
-            code,
-        );
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl,
-        });
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        const queueItem = await this.getQueueItemWithRetry(notificationId);
-        if (!queueItem) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        return queueItem;
-    }
-
-    async sendRegistrationInviteEmail(
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const { subject, body } = buildRegistrationInviteEmailMessage(
-            inviterDisplayName,
-            inviteUrl,
-        );
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: inviteUrl,
-            verifyButtonLabel: "Sign Up",
-        });
-        await this.queue.waitForResult(queued.notificationId);
-    }
-
-    async sendOneTimeLoginEmail(
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        if (!loginUrl) throw new Error("smtp_requires_login_url");
-        const theme = options?.theme;
-        const subject = options?.subject?.trim();
-        const body = options?.body?.trim();
-        if (!subject || !body) {
-            throw new Error(
-                "One-time login email subject and body are required.",
-            );
-        }
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: loginUrl,
-            verifyButtonLabel: options?.actionLabel,
-        });
-        await this.queue.waitForResult(queued.notificationId);
     }
 
     async sendTestEmail(
+        purpose: string,
         to: string,
         overrideConfig?: Record<string, unknown>,
     ): Promise<void> {
@@ -845,37 +775,23 @@ export class SmtpNotificationSender implements NotificationSender {
                 merged.authDisabled = overrideConfig.authDisabled;
             cfg = merged;
         }
-        const queued = this.queue.enqueue({
+        const queued = this.requireQueue(purpose).enqueue({
+            purpose,
             recipientEmail: to,
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
             config: cfg,
         });
-        await this.queue.waitForResult(queued.notificationId);
+        await this.requireQueue(purpose).waitForResult(queued.notificationId);
     }
 
     async send(envelope: NotificationEnvelope): Promise<void> {
         if (!envelope.recipientEmail) {
             throw new Error("smtp_sender_requires_recipient_email");
         }
-        if (this.rateLimiter.isThrottled(envelope.recipientEmail)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(envelope.recipientEmail);
-        const theme =
-            typeof envelope.metadata?.theme === "string"
-                ? envelope.metadata.theme
-                : undefined;
-        await sendMailWithRetry(
-            this.config,
-            envelope.recipientEmail,
-            envelope.subject,
-            envelope.body,
-            this.sleep,
-            theme,
-            undefined,
-            undefined,
-            envelope.attachments ?? [],
+        const queued = await this.sendTracked(envelope);
+        await this.requireQueue(envelope.purpose).waitForResult(
+            queued.notificationId,
         );
     }
 
@@ -889,7 +805,9 @@ export class SmtpNotificationSender implements NotificationSender {
             typeof envelope.metadata?.theme === "string"
                 ? envelope.metadata.theme
                 : undefined;
-        return this.queue.enqueue({
+        return this.requireQueue(envelope.purpose).enqueue({
+            purpose: envelope.purpose!,
+            attachments: envelope.attachments,
             recipientEmail: envelope.recipientEmail,
             recipientUsername: envelope.recipientUsername,
             category: envelope.category,

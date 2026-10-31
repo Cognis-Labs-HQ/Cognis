@@ -65,3 +65,36 @@ test("the host language catalog prepares after authentication and serves Setting
     assert.equal((await client.loadUiLanguageCatalog())[1].iso_code, "de");
     assert.equal(requests, 1);
 });
+
+test("catalog loading waits for initial provider registration and uses mounted providers immediately", async () => {
+    const capabilities = new Map();
+    let release;
+    const ready = new Promise((resolve) => {
+        release = resolve;
+    });
+    let waits = 0;
+    const catalog = [{ iso_code: "de" }];
+    capabilities.set("ui:ensureProvidersLoaded", async () => {
+        waits++;
+        await ready;
+        capabilities.set("ui:languageCatalog", { load: async () => catalog });
+    });
+    const { loadUiLanguageCatalog } = loadTestModule(
+        new URL("../ui-language-catalog.js", import.meta.url),
+        {
+            "./offline-identity.js": {},
+            "./ui-language-state.js": {},
+            "./i18n.js": {},
+            "./api-client.js": {},
+            "./offline-read-cache.js": {},
+            "./offline-snapshot.js": {},
+            "./ui-ctx.js": { uiCtx: { capabilities } },
+        },
+    );
+    const pending = loadUiLanguageCatalog();
+    assert.equal(waits, 1);
+    release();
+    assert.equal(await pending, catalog);
+    assert.equal(await loadUiLanguageCatalog(), catalog);
+    assert.equal(waits, 1);
+});

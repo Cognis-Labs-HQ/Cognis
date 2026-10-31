@@ -1,3 +1,4 @@
+import { runBootstrapScope } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -102,13 +103,15 @@ test("login issues setup-pending token when global TFA setup is required", async
         capabilities,
         flow: systemCtx.flow,
     });
-    await bootstrapTfa({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow: systemCtx.flow,
-    });
+    await runBootstrapScope(systemCtx, "gateway:tfa", () =>
+        bootstrapTfa({
+            adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+            flow: systemCtx.flow,
+        }),
+    );
 
     const createLocalAdmin = capabilities.get<
         (username: string, password: string) => Promise<void>

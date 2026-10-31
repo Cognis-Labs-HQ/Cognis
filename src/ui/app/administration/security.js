@@ -77,7 +77,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalEnforceTfaForAllUsers = false;
     let originalLoginSessionTimeoutMinutes = 720;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
-    let smtpAdapterActive = false;
+    let emailDeliveryAvailable = false;
     let initialized = false;
 
     async function loadSettings() {
@@ -146,10 +146,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function getValidationModeValue() {
-        if (!smtpAdapterActive) return "none";
+        if (!emailDeliveryAvailable) return "none";
         const select = root.querySelector("#security-user-validation-mode");
         if (!(select instanceof HTMLSelectElement)) return "none";
-        return select.value === "smtp" ? "smtp" : "none";
+        return select.value === "email" ? "email" : "none";
     }
 
     function getTeacherManualApprovalValue() {
@@ -238,7 +238,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
         const effectiveOriginalValidationMode =
-            !smtpAdapterActive && originalUserValidationMode === "smtp"
+            !emailDeliveryAvailable && originalUserValidationMode === "email"
                 ? "none"
                 : originalUserValidationMode;
         const modeChanged =
@@ -260,14 +260,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function bindSecurityInputs(settings, passwordPolicy, smtpActive) {
+    function bindSecurityInputs(settings, passwordPolicy, emailAvailable) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
-        smtpAdapterActive = smtpActive;
+        emailDeliveryAvailable = emailAvailable;
 
         originalDomains = settings.trustedDomains ?? [];
         currentUserValidationMode =
-            settings.userValidationMode === "smtp" ? "smtp" : "none";
+            settings.userValidationMode === "email" ? "email" : "none";
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
@@ -296,18 +296,18 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             "#security-login-session-timeout-unit",
         );
         if (validationSelect instanceof HTMLSelectElement) {
-            const smtpOption = validationSelect.querySelector(
-                "option[value='smtp']",
+            const emailOption = validationSelect.querySelector(
+                "option[value='email']",
             );
             const effectiveValidationMode =
-                !smtpAdapterActive && currentUserValidationMode === "smtp"
+                !emailDeliveryAvailable && currentUserValidationMode === "email"
                     ? "none"
                     : currentUserValidationMode;
-            if (smtpOption instanceof HTMLOptionElement && !smtpActive) {
-                smtpOption.disabled = true;
-                smtpOption.hidden = true;
-                smtpOption.textContent = i18n.t(
-                    "ui.app.admin.security.user_validation_mode.smtp_unavailable",
+            if (emailOption instanceof HTMLOptionElement && !emailAvailable) {
+                emailOption.disabled = true;
+                emailOption.hidden = true;
+                emailOption.textContent = i18n.t(
+                    "ui.app.admin.security.user_validation_mode.email_delivery_unavailable",
                 );
             }
             validationSelect.value = effectiveValidationMode;
@@ -340,13 +340,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const [settings, passwordPolicy, smtpActive] = await Promise.all([
-                loadSettings(),
-                loadPasswordPolicy(),
-                uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ??
-                    false,
-            ]);
-            bindSecurityInputs(settings, passwordPolicy, smtpActive);
+            const [settings, passwordPolicy, emailAvailable] =
+                await Promise.all([
+                    loadSettings(),
+                    loadPasswordPolicy(),
+                    uiCtx.capabilities
+                        .get("notify:emailClient")
+                        ?.emailAvailable() ?? false,
+                ]);
+            bindSecurityInputs(settings, passwordPolicy, emailAvailable);
             initialized = true;
         },
 
@@ -355,10 +357,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 await this.init();
                 return;
             }
-            const smtpActive =
+            const emailAvailable =
                 (await uiCtx.capabilities
                     .get("notify:emailClient")
-                    ?.smtpAvailable()) ?? false;
+                    ?.emailAvailable()) ?? false;
             bindSecurityInputs(
                 {
                     trustedDomains: originalDomains,
@@ -369,13 +371,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                         originalLoginSessionTimeoutMinutes,
                 },
                 originalPasswordPolicy,
-                smtpActive,
+                emailAvailable,
             );
         },
 
         async save() {
             const domains = parseDomains(getInputValue());
-            const validationMode = smtpAdapterActive
+            const validationMode = emailDeliveryAvailable
                 ? getValidationModeValue()
                 : originalUserValidationMode;
             const requireTeacherManualApproval =
@@ -414,7 +416,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             );
             if (validationSelect instanceof HTMLSelectElement) {
                 validationSelect.value =
-                    !smtpAdapterActive && originalUserValidationMode === "smtp"
+                    !emailDeliveryAvailable &&
+                    originalUserValidationMode === "email"
                         ? "none"
                         : originalUserValidationMode;
             }
@@ -483,7 +486,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="theme-select">
                 <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
-                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
+                <option value="email">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.email"))}</option>
               </select>
             </div>
           </div>

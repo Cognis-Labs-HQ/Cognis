@@ -1,5 +1,7 @@
 # Token Pendaftaran
 
+Adapter mendeklarasikan skrip otorisasi dan sumber bahasa melalui `registrationUi`. Gateway memuat kontribusi ini hanya saat adapter dan gateway aktif.
+
 Adapter Token Pendaftaran wajib memiliki token undangan dan otorisasi pembuatan akun. Adapter ini mengirim tautan sekali pakai melalui penyedia notifikasi email yang aktif dan menjadi sumber token yang dipakai halaman Pengguna untuk undangan administrator dan pendiri.
 
 ## Contoh penggunaan

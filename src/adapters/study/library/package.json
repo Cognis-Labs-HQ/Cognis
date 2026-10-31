@@ -1,13 +1,13 @@
 {
     "name": "@cognis/adapter-study-library",
-    "version": "4.1.10",
+    "version": "4.1.11",
     "description": "Scoped, deeply linked study and activity materials.",
     "type": "module",
     "main": "index.ts",
     "private": true,
     "dependencies": {
         "@audio/decode": "<=3.11.1",
-        "@cognis/core": "<=0.5.4",
+        "@cognis/core": "<=0.5.5",
         "@cognis/gateways": "<=0.2.0"
     }
 }
