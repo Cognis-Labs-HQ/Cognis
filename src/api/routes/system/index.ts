@@ -84,7 +84,7 @@ export function createSystemRoutes(
         "system:listCapabilities",
     );
     const canSendVerificationEmail = ctx.getCapability<() => boolean>(
-        "notify:canSendVerificationEmail",
+        "notify:emailAvailable",
     );
     const getEnforceTfaForAllUsers = ctx.getCapability<() => Promise<boolean>>(
         "tfa:getEnforceAllUsers",

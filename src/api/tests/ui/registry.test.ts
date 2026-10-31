@@ -401,7 +401,7 @@ test("GET /api/v1/ui/auth-typing-messages returns public messages and filters di
         name: "Registration Gateway",
         version: "1.0.0",
     });
-    gatewayRegistry.disable("registration");
+    await gatewayRegistry.disable("registration");
     const handler = createUiRoutes(
         undefined,
         uiReg,

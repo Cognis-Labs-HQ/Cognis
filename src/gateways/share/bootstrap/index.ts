@@ -1,3 +1,4 @@
+import type { RegisterNotificationAction } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -60,24 +61,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get.bind(ctx.capabilities),
         adapterConfigStore,
     );
-    const registerSmtpPurpose = ctx.capabilities.get<
-        (id: string) => Promise<string>
-    >("notify:registerSmtpPurpose");
-    const emailPurpose = registerSmtpPurpose
-        ? await registerSmtpPurpose("shareLinks")
+    const registerEmailAction =
+        ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerSmtpPurpose",
+        );
+    const emailPurpose = registerEmailAction
+        ? await registerEmailAction("shareLinks", (variables) => ({
+              subject: `${variables.senderName} shared ${variables.resourceName} with you`,
+              body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
+              senderName: "Cognis Share",
+              actionUrl: variables.url,
+              actionLabel: "Open Shared Item",
+          }))
         : undefined;
-    const registerEmailTemplate = ctx.capabilities.get<
-        (
-            templateId: string,
-            template: (variables: Record<string, string>) => {
-                subject: string;
-                body: string;
-                senderName: string;
-                actionUrl: string;
-                actionLabel: string;
-            },
-        ) => boolean
-    >("notify:registerEmailTemplate");
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("share", "Share");
@@ -132,13 +128,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             await gateway.markExpirationNotificationSent(share.id);
         }
     };
-    registerEmailTemplate?.("share-link", (variables) => ({
-        subject: `${variables.senderName} shared ${variables.resourceName} with you`,
-        body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
-        senderName: "Cognis Share",
-        actionUrl: variables.url,
-        actionLabel: "Open Shared Item",
-    }));
     await gateway.ensureSchema();
     await adapterConfigStore.ensureSchema();
     await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);

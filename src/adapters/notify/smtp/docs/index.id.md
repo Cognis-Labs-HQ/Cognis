@@ -1,25 +1,28 @@
 # Adapter Surel SMTP
 
-SMTP mendukung TCP biasa, STARTTLS dan TLS, autentikasi opsional serta percobaan ulang terbatas untuk kegagalan sementara. Templat didaftarkan melalui Gateway Notifikasi; transport membuat MIME, membersihkan header dan mendukung lampiran. Semua jalur pengiriman menggunakan antrean terpilih. `send` menunggu pengiriman; `sendTracked` langsung mengembalikan tanda terima.
+## Bootstrap dan Kanal
 
-## Tujuan Saat Bootstrap
-
-Tujuan SMTP harus didaftarkan melalui `ctx` selama bootstrap gateway atau modul. Dapatkan `notify:registerSmtpPurpose`, panggil dengan nama tujuan lokal, tunggu hasilnya dan simpan pengidentifikasi yang terikat pada pemilik. Setiap pendaftaran membuat antrean serta status jeda penerima tersendiri; adapter tidak memiliki daftar tujuan bawaan.
+SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerSmtpPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
-const purpose = await registerPurpose("digest");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
 const sendEmail = ctx.getCapability("notify:sendEmail");
-await sendEmail({ purpose, recipientEmail, templateId, variables });
+await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-Setiap panggilan `notify:sendEmail` wajib menyertakan `purpose` yang sudah ada. Tujuan kosong atau tidak dikenal ditolak sebelum transport SMTP; pengiriman tidak dapat membuat tujuan secara implisit. Pendaftaran ditolak setelah bootstrap selesai, gagal atau kehabisan waktu, termasuk melalui callback tersimpan dan pekerjaan asinkron terpisah. Modul yang diaktifkan setelah startup dapat mendaftar selama bootstrap miliknya. Penonaktifan atau penghapusan modul membuang antreannya, menolak pengiriman tertunda dan menutup sesi SMTP aktif.
+Setiap panggilan `notify:sendEmail` menyertakan tujuan yang sudah terdaftar dan variabel. `templateId` tidak digunakan lagi. Tujuan yang hilang atau tidak dikenal ditolak; aksi asinkron diperiksa kembali sebelum masuk antrean. Registrasi ditutup saat bootstrap selesai, gagal, atau melewati batas waktu. Hook penyelesaian gateway berjalan dengan pemilik yang sama setelah penyedia selesai melakukan bootstrap.
 
-## Pengiriman dan Antrean
+Kategori notifikasi memakai kemampuan `notify:registerCategory` yang sudah ada. SMTP membuat antrean saat registrasi dan mengembalikan fungsi pengiriman terikat kepada gateway. Gateway tetap netral terhadap pengirim. Pengiriman tidak membuat atau menebak tujuan; pengiriman SMTP langsung memerlukan tujuan terdaftar yang dinyatakan secara eksplisit.
 
-Jeda standar adalah lima belas detik per penerima yang dinormalisasi dalam setiap tujuan. Tujuan independen diproses bersamaan sehingga koneksi lambat, percobaan ulang atau jeda tidak menghambat antrean lain. Jeda hanya diperbarui setelah pengiriman berhasil. Pemeriksaan antrean menggabungkan semua tujuan, menyertakan pengidentifikasinya dan menyimpan hingga 200 catatan selesai per antrean dalam memori.
+Penonaktifan gateway dan pelepasan modul menghapus aksi miliknya serta membatalkan pengiriman tertunda. Aktivasi ulang memulihkan antrean baru tanpa mengirim ulang email yang dibatalkan. Kategori bersama tetap aktif selama pemilik terdaftar lainnya masih aktif. Penonaktifan pengirim SMTP juga menutup sesi dan membatalkan pengiriman tertunda; aktivasi ulang hanya memulihkan registrasi yang masih ada.
 
-Amplop umum menyertakan `purpose`; metode khusus pengiriman dan antrean SMTP kini menerima tujuan sebagai argumen pertama. Metode uji gateway menerima `(senderId, purpose, recipientEmail, config)`. Pembantu Gateway Notifikasi yang ada menyediakan tujuan yang didaftarkan gateway tersebut. Pemanggil komponen/modul umum mendaftarkan tujuan sendiri saat bootstrap dan menggunakan kembali pengidentifikasinya saat runtime.
+Jeda bawaan adalah lima belas detik per penerima yang dinormalisasi dalam setiap antrean. Antrean terpisah berjalan bersamaan. Hanya pengiriman berhasil yang memperbarui jeda. Riwayat menyimpan hingga 200 catatan selesai per antrean dalam memori. `sendEmail` mengembalikan tanda terima antrean yang sebenarnya; tanda terima antrean tidak menyatakan pengiriman SMTP telah berhasil.
+
+Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kanal, serta siklus hidup opsional. Gateway memanggil `testSender(senderId, recipient, config)` tanpa metode khusus SMTP untuk pengujian, verifikasi, undangan, atau login. Fungsi bantu gateway khusus SMTP dan registrasi templat terpisah dihapus.
 
 ## Konfigurasi
 

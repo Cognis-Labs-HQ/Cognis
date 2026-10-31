@@ -691,7 +691,7 @@ export function buildServer(deps: ApiDependencies) {
                     if (entry.required) continue;
                     const persisted = savedGateways.get(entry.id);
                     if (persisted === false) {
-                        deps.gatewayRegistry.disable(entry.id);
+                        await deps.gatewayRegistry.disable(entry.id);
                     }
                 }
                 for (const entry of deps.gatewayRegistry.list()) {

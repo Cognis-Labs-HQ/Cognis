@@ -75,3 +75,28 @@ test("failed bootstrap rolls back registrations and module lifetimes receive cle
     await cleanup[0]();
     assert.deepEqual(events, ["rollback", "disabled"]);
 });
+
+test("failed bootstrap attempts every cleanup even when one disposer fails", async () => {
+    const events: string[] = [];
+    const failure = new Error("bootstrap_failed");
+    await assert.rejects(
+        runBootstrapScope({}, "gateway:failed", async () => {
+            const scope = requireBootstrapScope();
+            scope.registerDisposer(() => {
+                events.push("first");
+            });
+            scope.registerDisposer(() => {
+                events.push("second");
+                throw new Error("cleanup_failed");
+            });
+            throw failure;
+        }),
+        (error) => {
+            assert.ok(error instanceof AggregateError);
+            assert.equal(error.cause, failure);
+            assert.equal(error.errors.length, 2);
+            return true;
+        },
+    );
+    assert.deepEqual(events, ["second", "first"]);
+});

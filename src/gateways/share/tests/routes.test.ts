@@ -1,3 +1,4 @@
+import type { NotificationAction } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
@@ -117,12 +118,22 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         userShareNotifications.push(envelope);
         return Promise.resolve({ dispatched: ["internal"] });
     }) as never);
+    const emailActions = new Map<string, NotificationAction>();
+    capabilities.contribute(
+        "notify:registerSmtpPurpose",
+        async (id: string, action: NotificationAction) => {
+            const purpose = `gateway:share:${id}`;
+            emailActions.set(purpose, action);
+            return purpose;
+        },
+    );
     capabilities.contribute("notify:sendEmail", ((emailInput: {
         recipientEmail: string;
-        templateId: string;
+        purpose: string;
         variables: Record<string, string>;
     }) => {
-        assert.equal(emailInput.templateId, "share-link");
+        assert.equal(emailInput.purpose, "gateway:share:shareLinks");
+        assert.ok(emailActions.get(emailInput.purpose));
         shareEmailRecipients.push(emailInput.recipientEmail);
         shareEmailVariables.push(emailInput.variables);
         return Promise.resolve({ dispatched: ["smtp"] });

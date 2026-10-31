@@ -122,7 +122,7 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
         /smtp_test_email_requires_recipient/,
     );
 });
-test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
+test("SmtpNotificationSender.enqueueEmail returns a waiting rate-limit entry immediately", async () => {
     const now = Date.now();
     const rateLimiter = new SmtpRateLimiter(60_000, () => now);
     rateLimiter.record("alice@example.com", now);
@@ -137,10 +137,9 @@ test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit
         async () => new Promise(() => {}),
         () => rateLimiter,
     );
-    const queued = await sender.queueVerificationEmail(
-        "test",
-        "alice@example.com",
-        "123456",
+    const queued = await sender.enqueueEmail(
+        { purpose: "test", recipientEmail: "alice@example.com", variables: {} },
+        { subject: "Code", body: "123456" },
     );
     assert.equal(queued.status, "waiting_rate_limit");
     assert.equal(queued.recipientEmail, "alice@example.com");
@@ -800,13 +799,19 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
         );
         const inviteUrl =
             "https://cognis.example.com/register?token=test-token-value";
-        await sender.sendRegistrationInviteEmail(
-            "test",
-            "alice@example.com",
-            "Inviter",
-            inviteUrl,
-            "light",
-        );
+        await sender.send({
+            purpose: "test",
+            category: "test",
+            recipientUsername: "alice",
+            recipientEmail: "alice@example.com",
+            subject: "Invitation",
+            body: "Inviter invited you",
+            metadata: {
+                theme: "light",
+                verifyUrl: inviteUrl,
+                verifyButtonLabel: "Sign Up",
+            },
+        });
         assert.ok(
             capturedData.includes("Sign Up"),
             "registration email should use Sign Up CTA",

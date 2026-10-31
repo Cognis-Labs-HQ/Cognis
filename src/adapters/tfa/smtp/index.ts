@@ -1,3 +1,5 @@
+import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import {
     DEFAULT_SMTP_VERIFICATION_CODE_LENGTH,
     SMTP_VERIFICATION_RATE_LIMIT_MS,
@@ -57,6 +59,54 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private codeLength = DEFAULT_SMTP_VERIFICATION_CODE_LENGTH;
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
+
+    async bootstrap(ctx: TfaAdapterBootstrapContext): Promise<void> {
+        const register = ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerSmtpPurpose",
+        );
+        if (register) {
+            const purpose = await register("loginCode", (variables) => ({
+                subject: "Your Cognis verification code",
+                body: `Your verification code is ${variables.code}.`,
+            }));
+            const send = async (
+                to: string,
+                code: string,
+                _verifyUrl?: string,
+                theme?: string,
+            ) =>
+                ctx.capabilities.require<SendEmailAction>("notify:sendEmail")({
+                    purpose,
+                    recipientEmail: to,
+                    variables: { code },
+                    theme,
+                });
+            this.context.canSendVerificationEmail = () =>
+                ctx.capabilities.get<() => boolean>(
+                    "notify:emailAvailable",
+                )?.() === true;
+            this.context.sendVerificationEmail = async (...args) => {
+                await send(...args);
+            };
+            this.context.queueVerificationEmail = send;
+        }
+        this.context.getPrimaryEmail = ctx.capabilities.get<
+            (accountId: string) => Promise<string | null>
+        >("notify:getPrimaryEmail");
+        ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
+            this.getCodeLength(),
+        );
+        ctx.registerSyncTarget({ gatewayId: "notify", adapterId: "smtp" });
+        const setEnabled = ctx.capabilities.get<
+            (id: string, enabled: boolean) => Promise<void>
+        >("notify:setSenderEnabled");
+        if (setEnabled) {
+            ctx.onEnabledChange("tfa:smtpSync", async (enabled) => {
+                if (enabled) await setEnabled("smtp", true);
+            });
+            if (ctx.isEnabled()) await setEnabled("smtp", true);
+        }
+    }
 
     private assertEmailCodeAvailable(): void {
         if (typeof this.context.sendVerificationEmail !== "function") {

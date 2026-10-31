@@ -1,4 +1,4 @@
-import { registerSmtpPurposeCapability } from "./smtp-purposes.js";
+import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
@@ -52,57 +52,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         notifStore,
     );
 
-    type EmailTemplate = (variables: Record<string, string>) => {
-        subject: string;
-        body: string;
-        senderName?: string;
-        actionUrl?: string;
-        actionLabel?: string;
-    };
-    const emailTemplates = new Map<string, EmailTemplate>();
-    ctx.capabilities.contribute(
-        "notify:registerEmailTemplate",
-        (templateId: string, template: EmailTemplate) => {
-            const normalizedId = String(templateId ?? "").trim();
-            if (
-                !normalizedId ||
-                typeof template !== "function" ||
-                emailTemplates.has(normalizedId)
-            )
-                return false;
-            emailTemplates.set(normalizedId, template);
-            return true;
-        },
-    );
-    ctx.capabilities.contribute(
-        "notify:renderEmailTemplate",
-        (templateId: string, variables: Record<string, string>) =>
-            emailTemplates.get(String(templateId ?? "").trim())?.(variables) ??
-            null,
-    );
-    emailTemplates.set("notify-test", () => ({
-        subject: "Cognis SMTP Test",
-        body: "This is a test email from Cognis.",
-    }));
-    emailTemplates.set("notify-verification", (variables) => ({
-        subject: "Verify your Cognis email address",
-        body: `Your verification code is ${variables.code}.`,
-        actionUrl: variables.verifyUrl || undefined,
-        actionLabel: variables.verifyUrl ? "Verify email" : undefined,
-    }));
-    emailTemplates.set("notify-registration-invite", (variables) => ({
-        subject: "You are invited to Cognis",
-        body: `${variables.inviterDisplayName} invited you to join Cognis.`,
-        actionUrl: variables.inviteUrl,
-        actionLabel: "Accept invitation",
-    }));
-    emailTemplates.set("notify-one-time-login", (variables) => ({
-        subject: variables.subject,
-        body: variables.body,
-        actionUrl: variables.loginUrl,
-        actionLabel: variables.actionLabel || undefined,
-    }));
-
     const notifyAdaptersRoot = path.join(ctx.adaptersRoot, "notify");
     await gateway.discoverSenders(notifyAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -113,21 +62,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 
-    const registerSmtpPurpose = registerSmtpPurposeCapability(ctx, gateway);
-    const purposes: Record<string, string> = {};
-    if (registerSmtpPurpose)
-        for (const id of [
-            "notification",
-            "emailVerification",
-            "loginCode",
-            "invite",
-            "loginLink",
-            "test",
-        ]) {
-            purposes[id] = await registerSmtpPurpose(id);
-        }
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
-        testEmailPurpose: purposes.test,
         gateway,
         capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
@@ -142,19 +77,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         log: ctx.log,
         dbExecutor,
     });
-    type SendEmail = (input: {
-        purpose: string;
-        recipientEmail: string;
-        templateId: string;
-        variables: Record<string, string>;
-        config?: Record<string, unknown>;
-        theme?: string;
-    }) => Promise<unknown>;
+    const registerEmailAction =
+        ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerSmtpPurpose",
+        );
+    const emailVerificationPurpose = registerEmailAction
+        ? await registerEmailAction("emailVerification", (variables) => ({
+              subject: "Verify your Cognis email address",
+              body: `Your verification code is ${variables.code}.`,
+              actionUrl: variables.verifyUrl || undefined,
+              actionLabel: variables.verifyUrl ? "Verify email" : undefined,
+          }))
+        : undefined;
     const sendEmail =
-        ctx.capabilities.get<SendEmail>("notify:sendEmail") ??
+        ctx.capabilities.get<SendEmailAction>("notify:sendEmail") ??
         (async () => {
             throw new Error("smtp_unavailable");
         });
+    const emailAvailable = () =>
+        ctx.capabilities.get<() => boolean>("notify:emailAvailable")?.() ===
+        true;
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",
     });
@@ -192,9 +134,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createNotificationRoutes(gateway, notifStore, {
             getTrustedDomains,
             routeContext,
-            sendEmail,
-            notificationPurpose: purposes.notification,
-            testEmailPurpose: purposes.test,
         }),
         "notify",
     );
@@ -204,9 +143,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             tfaService,
             verifyTokenService,
             {
-                purpose: purposes.emailVerification,
-                canSendVerificationEmail:
-                    gateway.canSendVerificationEmail.bind(gateway),
+                purpose: emailVerificationPurpose!,
+                canSendVerificationEmail: emailAvailable,
                 sendEmail,
             },
             externalHost,
@@ -411,7 +349,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 .catch(() => null);
             return gateway.dispatch({
                 ...envelope,
-                purpose: envelope.purpose ?? purposes.notification,
                 recipientUsername:
                     recipientAccountId ?? envelope.recipientUsername,
             });
@@ -457,7 +394,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             for (const recipientUsername of recipients) {
                 const result = await gateway.dispatch({
                     ...envelope,
-                    purpose: envelope.purpose ?? purposes.notification,
                     recipientUsername,
                 });
                 dispatched.push({ recipientUsername, result });
@@ -474,20 +410,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (id: string, label: string) => gateway.registerCategory(id, label),
     );
 
-    /**
-     * notify:canSendRegistrationInviteEmail — reports whether invite-email
-     * delivery is currently available.
-     */
-    ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
-        gateway.canSendRegistrationInviteEmail(),
-    );
-    /**
-     * notify:canSendVerificationEmail — reports whether verification-email
-     * delivery is currently available.
-     */
-    ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
-        gateway.canSendVerificationEmail(),
-    );
     ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
         gateway.isSenderEnabled(senderId),
     );
@@ -525,94 +447,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 config: Record<string, unknown>,
             ) => Promise<void> | void,
         ) => gateway.onSenderConfigChange(listenerId, listener),
-    );
-    ctx.capabilities.contribute(
-        "notify:sendVerificationEmail",
-        async (to: string, code: string, verifyUrl?: string, theme?: string) =>
-            sendEmail({
-                purpose: verifyUrl
-                    ? purposes.emailVerification
-                    : purposes.loginCode,
-                recipientEmail: to,
-                templateId: "notify-verification",
-                variables: { code, verifyUrl: verifyUrl ?? "" },
-                theme,
-            }),
-    );
-    ctx.capabilities.contribute(
-        "notify:queueVerificationEmail",
-        async (
-            to: string,
-            code: string,
-            verifyUrl?: string,
-            theme?: string,
-        ) => {
-            const result = (await sendEmail({
-                purpose: verifyUrl
-                    ? purposes.emailVerification
-                    : purposes.loginCode,
-                recipientEmail: to,
-                templateId: "notify-verification",
-                variables: { code, verifyUrl: verifyUrl ?? "" },
-                theme,
-            })) as { notificationId?: string };
-            const now = new Date().toISOString();
-            return {
-                notificationId: result.notificationId ?? "",
-                status: result.notificationId ? "queued" : "sent",
-                createdAt: now,
-                updatedAt: now,
-                recipientEmail: to,
-            };
-        },
-    );
-    ctx.capabilities.contribute("notify:canSendOneTimeLoginEmail", () =>
-        gateway.canSendOneTimeLoginEmail(),
-    );
-    /**
-     * notify:sendRegistrationInviteEmail — sends a registration invite via the
-     * active notification sender.
-     */
-    ctx.capabilities.contribute(
-        "notify:sendRegistrationInviteEmail",
-        async (
-            to: string,
-            inviterDisplayName: string,
-            inviteUrl: string,
-            theme?: string,
-        ) =>
-            sendEmail({
-                purpose: purposes.invite,
-                recipientEmail: to,
-                templateId: "notify-registration-invite",
-                variables: { inviterDisplayName, inviteUrl },
-                theme,
-            }),
-    );
-    ctx.capabilities.contribute(
-        "notify:sendOneTimeLoginEmail",
-        async (
-            to: string,
-            loginUrl: string,
-            options?: {
-                theme?: string;
-                subject?: string;
-                body?: string;
-                actionLabel?: string;
-            },
-        ) =>
-            sendEmail({
-                purpose: purposes.loginLink,
-                recipientEmail: to,
-                templateId: "notify-one-time-login",
-                variables: {
-                    loginUrl,
-                    subject: options?.subject ?? "",
-                    body: options?.body ?? "",
-                    actionLabel: options?.actionLabel ?? "",
-                },
-                theme: options?.theme,
-            }),
     );
     /**
      * notify:isEmailRegistered — checks whether an email is already registered
@@ -669,7 +503,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (
                 options?.sendPrimaryVerification === true &&
                 !primaryIsVerified &&
-                gateway.canSendVerificationEmail()
+                emailAvailable()
             ) {
                 const key = emailVerificationKey(accountId, primaryEmail);
                 const code = tfaService.issueOrGet(
@@ -682,9 +516,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     ? `${externalHost}/verify-email?token=${watchToken}`
                     : undefined;
                 await sendEmail({
-                    purpose: purposes.emailVerification,
+                    purpose: emailVerificationPurpose!,
                     recipientEmail: primaryEmail,
-                    templateId: "notify-verification",
                     variables: { code, verifyUrl: verifyUrl ?? "" },
                 });
             }

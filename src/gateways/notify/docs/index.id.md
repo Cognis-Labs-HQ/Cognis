@@ -1,11 +1,5 @@
 # Gateway Notifikasi
 
-Tujuan SMTP harus didaftarkan melalui `ctx` selama bootstrap gateway atau modul. Dapatkan `notify:registerSmtpPurpose`, panggil dengan nama tujuan lokal, tunggu hasilnya dan simpan pengidentifikasi yang terikat pada pemilik. Setiap pendaftaran membuat antrean serta status jeda penerima tersendiri; adapter tidak memiliki daftar tujuan bawaan.
-
-Setiap panggilan `notify:sendEmail` wajib menyertakan `purpose` yang sudah ada. Tujuan kosong atau tidak dikenal ditolak sebelum transport SMTP; pengiriman tidak dapat membuat tujuan secara implisit. Pendaftaran ditolak setelah bootstrap selesai, gagal atau kehabisan waktu, termasuk melalui callback tersimpan dan pekerjaan asinkron terpisah. Modul yang diaktifkan setelah startup dapat mendaftar selama bootstrap miliknya. Penonaktifan atau penghapusan modul membuang antreannya, menolak pengiriman tertunda dan menutup sesi SMTP aktif.
-
-Amplop umum menyertakan `purpose`; metode khusus pengiriman dan antrean SMTP kini menerima tujuan sebagai argumen pertama. Metode uji gateway menerima `(senderId, purpose, recipientEmail, config)`. Pembantu Gateway Notifikasi yang ada menyediakan tujuan yang didaftarkan gateway tersebut. Pemanggil komponen/modul umum mendaftarkan tujuan sendiri saat bootstrap dan menggunakan kembali pengidentifikasinya saat runtime.
-
 ## Ikhtisar
 
 Gateway Notifikasi mengirimkan notifikasi melalui adapter pengirim yang dapat dipasang. Gateway ini bertindak sebagai perantara antara bagian lain aplikasi dan mekanisme pengiriman konkret — SMTP, webhook di masa depan, atau sink dalam aplikasi — tanpa perlu mengetahui transport mana yang dikonfigurasi.
@@ -77,6 +71,12 @@ Proses masuk terverifikasi menyiapkan daftar email akun dan kebijakan domain tep
 
 Kapabilitas `notify:emailClient` yang mengikuti siklus hidup menyediakan permintaan akun sendiri dan domain tepercaya, `listUserEmails` administratif, `resendUserEmail` khusus daring, serta `smtpAvailable`. Setiap tindakan melewati tahapan terdaftar dan berhenti saat penyedianya dilepas. Pengaturan, Pengguna, dan Administrasi mengambil metode melalui ctx tanpa mengimpor implementasi UI Notify. Jika Notify tidak tersedia, pengelolaan email disembunyikan sementara kontrol akun lain tetap dapat digunakan.
 
-## Notifikasi Berdasarkan ID Akun
+## Bootstrap dan Kanal
 
-Notifikasi berdasarkan peran menggunakan `accountId` yang tetap agar menjangkau pengguna SSO dengan nama pengguna publik yang berbeda. `notify:dispatchToRole` mengembalikan ID penerima kanonis; nama pengguna publik tetap menjadi data tampilan.
+SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerSmtpPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
+
+Kategori notifikasi memakai kemampuan `notify:registerCategory` yang sudah ada. SMTP membuat antrean saat registrasi dan mengembalikan fungsi pengiriman terikat kepada gateway. Gateway tetap netral terhadap pengirim. Pengiriman tidak membuat atau menebak tujuan; pengiriman SMTP langsung memerlukan tujuan terdaftar yang dinyatakan secara eksplisit.
+
+Penonaktifan gateway dan pelepasan modul menghapus aksi miliknya serta membatalkan pengiriman tertunda. Aktivasi ulang memulihkan antrean baru tanpa mengirim ulang email yang dibatalkan. Kategori bersama tetap aktif selama pemilik terdaftar lainnya masih aktif. Penonaktifan pengirim SMTP juga menutup sesi dan membatalkan pengiriman tertunda; aktivasi ulang hanya memulihkan registrasi yang masih ada.
+
+Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kanal, serta siklus hidup opsional. Gateway memanggil `testSender(senderId, recipient, config)` tanpa metode khusus SMTP untuk pengujian, verifikasi, undangan, atau login. Fungsi bantu gateway khusus SMTP dan registrasi templat terpisah dihapus.

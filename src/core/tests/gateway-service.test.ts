@@ -241,7 +241,7 @@ test("gateway bootstrap initializes declared dependencies first", async () => {
     ]);
 });
 
-test("module namespace delegation belongs to active registered gateway owners", () => {
+test("module namespace delegation belongs to active registered gateway owners", async () => {
     const registry = new GatewayRegistry();
     const request = {
         moduleId: "notes-addon",
@@ -270,9 +270,9 @@ test("module namespace delegation belongs to active registered gateway owners", 
         }),
         false,
     );
-    registry.disable("notes");
+    await registry.disable("notes");
     assert.equal(registry.allowsModuleNamespace(request), false);
-    registry.enable("notes");
+    await registry.enable("notes");
     assert.equal(registry.allowsModuleNamespace(request), true);
     const replacement = registry.registerModuleNamespacePolicy(
         "notes",

@@ -247,15 +247,20 @@ Preparation remains idle while Offline Mode is disabled, disconnected or blocked
 
 The Study provider exposes `study:favourites` with scoped `load`, `toggle` and `has` operations. Rendering utilities resolve this ctx capability instead of keeping a separate cache for each loader. Favourites prepare after verified authentication, overlay pending changes and share account/session-bound state across Explore, flashcards and repeated imports. Missing optional favourite snapshots produce an empty selection with queued changes applied; they do not hide cached content or show an update-failed toast. Account changes clear the visible selection and access denials are never treated as cache misses.
 
-## Bootstrap Purposes
+## Bootstrap and Channels
 
-SMTP purposes must be registered through `ctx` during gateway or module bootstrap. Obtain `notify:registerSmtpPurpose`, await it with a local purpose name and retain the returned owner-scoped identifier. Each registration creates a dedicated queue and recipient cooldown state; the adapter has no built-in purpose list.
+SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
-const purpose = await registerPurpose("digest");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
 const sendEmail = ctx.getCapability("notify:sendEmail");
-await sendEmail({ purpose, recipientEmail, templateId, variables });
+await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-Every `notify:sendEmail` call must include an existing `purpose`. Missing and unknown purposes fail before SMTP transport; sends cannot create purposes implicitly. Registration is rejected after bootstrap returns, fails or times out, including through retained callbacks and detached asynchronous work. Modules enabled after startup may register during their own bootstrap. Module disable/uninstall disposes its queues, rejects pending deliveries and closes active SMTP sessions.
+Every `notify:sendEmail` call supplies an existing purpose and variables. There is no `templateId`. Missing or unknown purposes are rejected, and asynchronous actions are checked again before enqueueing. Registration closes on bootstrap completion, failure or timeout. Gateway completion hooks run under the same owner after providers bootstrap.
+
+Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.

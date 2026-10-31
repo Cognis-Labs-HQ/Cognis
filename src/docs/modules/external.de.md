@@ -247,15 +247,20 @@ Die Vorbereitung bleibt bei deaktiviertem Offline-Modus, fehlender Verbindung od
 
 Der Study-Anbieter stellt `study:favourites` mit lebenszyklusgebundenen Operationen `load`, `toggle` und `has` bereit. Darstellungsfunktionen verwenden diese ctx-Funktion statt eines eigenen Caches pro Lader. Favoriten werden nach bestätigter Anmeldung vorbereitet, berücksichtigen vorgemerkte Änderungen und teilen konto- und sitzungsgebundenen Zustand zwischen Explore, Lernkarten und wiederholten Importen. Fehlt ein optionaler Favoriten-Snapshot, bleibt die Auswahl mit vorgemerkten Änderungen nutzbar; Inhalte werden nicht verborgen und kein Aktualisierungsfehler angezeigt. Ein Kontowechsel leert die sichtbare Auswahl. Zugriffsverweigerungen gelten niemals als Cache-Fehltreffer.
 
-## Zwecke beim Bootstrap
+## Bootstrap und Kanäle
 
-SMTP-Zwecke werden während des Gateway- oder Modul-Bootstraps über `ctx` registriert. Rufen Sie `notify:registerSmtpPurpose` mit einem lokalen Zwecknamen auf, warten Sie auf das Ergebnis und bewahren Sie die zurückgegebene besitzergebundene Kennung auf. Jede Registrierung erstellt eine eigene Warteschlange samt Empfänger-Sperrzeiten. Der Adapter besitzt keine feste Zweckliste.
+SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerSmtpPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
-const purpose = await registerPurpose("digest");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
 const sendEmail = ctx.getCapability("notify:sendEmail");
-await sendEmail({ purpose, recipientEmail, templateId, variables });
+await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-Jeder Aufruf von `notify:sendEmail` muss einen bestehenden `purpose` angeben. Fehlende oder unbekannte Zwecke werden vor dem SMTP-Transport abgewiesen; ein Versand erstellt keine Zwecke. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt, auch über gespeicherte Rückrufe und abgetrennte asynchrone Arbeit. Nach dem Start aktivierte Module dürfen während ihres eigenen Bootstraps registrieren. Deaktivierung und Deinstallation entfernen ihre Warteschlangen, lehnen ausstehende Zustellungen ab und schließen aktive SMTP-Verbindungen.
+Jeder Aufruf von `notify:sendEmail` übergibt einen bestehenden Zweck und Variablen. `templateId` entfällt. Fehlende und unbekannte Zwecke werden abgewiesen; asynchrone Aktionen werden vor dem Einreihen erneut geprüft. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt. Abschluss-Hooks laufen nach dem Start der Anbieter unter demselben Besitzer.
+
+Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktionen und ausstehende Zustellungen beendet. Die erneute Aktivierung stellt frische Warteschlangen her, ohne abgebrochene E-Mails zu wiederholen. Gemeinsam genutzte Kategorien bleiben aktiv, solange ein weiterer Besitzer aktiv ist. Das Deaktivieren des SMTP-Senders schließt auch Verbindungen und bricht ausstehende Zustellungen ab; die Aktivierung stellt nur noch bestehende Registrierungen wieder her.

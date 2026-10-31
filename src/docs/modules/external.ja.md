@@ -247,15 +247,20 @@ Profile と Messages のプロバイダーは ctx 経由で有効期間に対応
 
 Study提供元は、ライフサイクルに従う `load`、`toggle`、`has` 操作を持つ `study:favourites` を公開します。表示用の関数はローダーごとのキャッシュを作らず、このctx機能を参照します。認証確認後にお気に入りを準備し、保留中の変更を反映して、Explore、フラッシュカード、繰り返し読み込んだモジュール間でアカウントとセッションに紐付く状態を共有します。任意のお気に入りスナップショットがない場合は空の選択にキュー内の変更を適用し、キャッシュ済みコンテンツを隠したり更新失敗のトーストを出したりしません。アカウント変更時は表示上の選択を消し、権限拒否をキャッシュ欠落とは扱いません。
 
-## ブートストラップ時の用途
+## ブートストラップとチャネル
 
-SMTP の用途はゲートウェイまたはモジュールのブートストラップ中に `ctx` で登録します。`notify:registerSmtpPurpose` を取得し、ローカルな用途名で呼び出して完了を待ち、返された所有元に結び付いた識別子を保持してください。登録ごとに専用キューと受信者別の待機状態を作成します。アダプターには固定の用途一覧を持たせません。
+SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerSmtpPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧やテンプレート一覧はありません。
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerSmtpPurpose");
-const purpose = await registerPurpose("digest");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
 const sendEmail = ctx.getCapability("notify:sendEmail");
-await sendEmail({ purpose, recipientEmail, templateId, variables });
+await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-すべての `notify:sendEmail` 呼び出しは登録済みの `purpose` を指定する必要があります。未指定や未知の用途は SMTP 通信前に拒否し、送信時に暗黙で用途を作成しません。ブートストラップの完了、失敗、時間切れ後は、保持されたコールバックや分離した非同期処理からも登録できません。起動後に有効化したモジュールは自身のブートストラップ中に登録できます。無効化やアンインストールではキューを破棄し、保留中の送信を拒否して SMTP 接続を閉じます。
+`notify:sendEmail`には、登録済みの用途と変数を渡します。`templateId`は使用しません。用途が未指定または未登録の場合は拒否し、非同期アクションはキュー投入前に再確認します。ブートストラップの完了、失敗、タイムアウト後は登録できません。ゲートウェイの完了フックは、プロバイダーの起動後に同じ所有者の権限で実行します。
+
+ゲートウェイの無効化やモジュールの解除時は、その所有者のアクションと保留中の配送を破棄します。再有効化時には新しいキューを復元し、中止したメールを再送しません。共有カテゴリは、他の登録済み所有者が有効な間は維持します。SMTP送信アダプターの無効化でもセッションを閉じて保留中の配送を中止し、再有効化では存在する登録だけを復元します。

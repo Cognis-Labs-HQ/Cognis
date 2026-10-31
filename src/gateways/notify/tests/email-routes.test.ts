@@ -121,7 +121,6 @@ test("adding the first email auto-sets it as primary", async () => {
     );
     assert.equal(res.status, 201);
     assert.equal(sentEmails[0]?.purpose, EMAIL_PURPOSE);
-    assert.equal(sentEmails[0]?.templateId, "notify-verification");
     assert.equal(sentEmails[0]?.recipientEmail, "alice@example.com");
 
     const emails = await notifStore.getUserEmails("alice");
@@ -142,7 +141,13 @@ test("returns 503 when SMTP is not available and does not add the email", async 
         notifStore,
         tfaService,
         verifyTokenService,
-        makeEmailDelivery(gateway),
+        {
+            purpose: EMAIL_PURPOSE,
+            canSendVerificationEmail: () => false,
+            sendEmail: async () => {
+                throw new Error("smtp_unavailable");
+            },
+        },
     );
     const res = makeResponse();
 

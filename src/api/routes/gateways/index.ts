@@ -159,9 +159,9 @@ export function createGatewayRoutes(
                 return true;
             }
             if (action === "enable") {
-                registry.enable(id);
+                await registry.enable(id);
             } else {
-                registry.disable(id);
+                await registry.disable(id);
             }
             await persistGatewayState?.(id, action === "enable");
             log?.("info", `Gateway ${action}d.`, {

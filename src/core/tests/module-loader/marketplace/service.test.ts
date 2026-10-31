@@ -865,3 +865,55 @@ test("module marketplace serves persisted results after restart", async () => {
     );
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
 });
+
+test("GitLab installation validates namespace within the configured deployment prefix", async (t) => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gitlab-prefix-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const modulesRoot = path.join(root, "modules");
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        modulesRoot,
+    );
+    await service.saveSource({
+        ...source,
+        provider: "gitlab",
+        baseUrl: "https://example.test/gitlab/api/v4",
+        namespace: "team/subgroup",
+    });
+    const cache = path.join(modulesRoot, ".cache");
+    await mkdir(cache, { recursive: true });
+    for (const [cloneUrl, expected] of [
+        [
+            "https://example.test/gitlab/team/subgroup/module.git",
+            /invalid_module_branch/,
+        ],
+        [
+            "https://example.test/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://example.test/gitlab/team/other/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://other.test/gitlab/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+    ] as const) {
+        const module = {
+            uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+            sourceUuid: source.uuid,
+            cloneUrl,
+            defaultBranch: "main",
+            branches: [],
+            releases: [],
+        };
+        await writeFile(
+            path.join(cache, "catalog.json"),
+            JSON.stringify([module]),
+        );
+        const catalog = await service.listCachedModules();
+        assert.equal(catalog.length, 1);
+        await assert.rejects(service.install(catalog[0], "main"), expected);
+    }
+});

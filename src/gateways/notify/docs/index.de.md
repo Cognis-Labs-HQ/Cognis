@@ -1,11 +1,5 @@
 # Benachrichtigungs-Gateway
 
-SMTP-Zwecke werden während des Gateway- oder Modul-Bootstraps über `ctx` registriert. Rufen Sie `notify:registerSmtpPurpose` mit einem lokalen Zwecknamen auf, warten Sie auf das Ergebnis und bewahren Sie die zurückgegebene besitzergebundene Kennung auf. Jede Registrierung erstellt eine eigene Warteschlange samt Empfänger-Sperrzeiten. Der Adapter besitzt keine feste Zweckliste.
-
-Jeder Aufruf von `notify:sendEmail` muss einen bestehenden `purpose` angeben. Fehlende oder unbekannte Zwecke werden vor dem SMTP-Transport abgewiesen; ein Versand erstellt keine Zwecke. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt, auch über gespeicherte Rückrufe und abgetrennte asynchrone Arbeit. Nach dem Start aktivierte Module dürfen während ihres eigenen Bootstraps registrieren. Deaktivierung und Deinstallation entfernen ihre Warteschlangen, lehnen ausstehende Zustellungen ab und schließen aktive SMTP-Verbindungen.
-
-Der allgemeine Umschlag enthält `purpose`; spezialisierte SMTP-Versand- und Warteschlangenmethoden erwarten den Zweck jetzt als erstes Argument. Die Gateway-Testmethode verwendet `(senderId, purpose, recipientEmail, config)`. Bestehende Gateway-Hilfsmethoden liefern ihre registrierten Zwecke selbst. Allgemeine Komponenten und Module registrieren eigene Zwecke beim Bootstrap und verwenden deren Kennungen zur Laufzeit.
-
 ## Überblick
 
 Das Benachrichtigungs-Gateway vermittelt Benachrichtigungen über pluggable Sender-Adapter. Es fungiert als Broker zwischen dem Rest der Anwendung und den konkreten Übertragungsmechanismen — SMTP, zukünftige Webhooks oder In-App-Senken — ohne zu wissen, welche Transporte konfiguriert sind.
@@ -78,6 +72,12 @@ Die bestätigte Anmeldung bereitet E-Mail-Liste und Richtlinie vertrauenswürdig
 
 Die lebenszyklusgebundene Fähigkeit `notify:emailClient` bietet Anfragen für das eigene Konto und vertrauenswürdige Domänen sowie administrative E-Mail-Abfragen mit `listUserEmails`, erneuten Versand nur bei Verbindung mit `resendUserEmail` und `smtpAvailable`. Jede Aktion durchläuft registrierte Stufen und endet bei Entsorgung des Providers. Einstellungen, Benutzerverwaltung und Administration lösen diese Methoden über ctx auf, ohne Notify-UI-Implementierungen zu importieren. Fehlt Notify, wird die E-Mail-Verwaltung ausgeblendet; unabhängige Kontosteuerungen bleiben nutzbar.
 
-## Benachrichtigungen per Konto-ID
+## Bootstrap und Kanäle
 
-Rollenbasierte Benachrichtigungen verwenden die unveränderliche `accountId` und erreichen dadurch auch SSO-Konten mit abweichenden öffentlichen Benutzernamen. `notify:dispatchToRole` gibt die kanonischen Empfänger-IDs zurück; öffentliche Benutzernamen bleiben Anzeigedaten.
+SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerSmtpPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke oder Vorlagen.
+
+Benachrichtigungskategorien verwenden weiterhin `notify:registerCategory`. SMTP erstellt die Warteschlange bei der Registrierung und gibt dem Gateway eine gebundene Zustellfunktion zurück. Das Gateway bleibt unabhängig vom Sender. Kein Versand erstellt oder erschließt einen Zweck; direkte SMTP-Aufrufe benötigen einen ausdrücklich registrierten Zweck.
+
+Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktionen und ausstehende Zustellungen beendet. Die erneute Aktivierung stellt frische Warteschlangen her, ohne abgebrochene E-Mails zu wiederholen. Gemeinsam genutzte Kategorien bleiben aktiv, solange ein weiterer Besitzer aktiv ist. Das Deaktivieren des SMTP-Senders schließt auch Verbindungen und bricht ausstehende Zustellungen ab; die Aktivierung stellt nur noch bestehende Registrierungen wieder her.
+
+Der Sendervertrag verwendet `test(recipient, config)` und optionale Bootstrap-, Kanal- und Lebenszyklus-Hooks. Das Gateway ruft `testSender(senderId, recipient, config)` auf und enthält keine SMTP-spezifischen Test-, Verifizierungs-, Einladungs- oder Anmeldemethoden. Die bisherigen speziellen Gateway-Hilfsmethoden und die separate Vorlagenregistrierung entfallen.

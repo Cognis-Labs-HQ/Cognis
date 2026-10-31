@@ -643,7 +643,7 @@ export function createShareRoutes(input: {
                 input.gateway.getCapability<
                     (emailInput: {
                         recipientEmail: string;
-                        templateId: string;
+                        purpose: string;
                         variables: Record<string, string>;
                     }) => Promise<unknown>
                 >("notify:sendEmail");
@@ -690,7 +690,6 @@ export function createShareRoutes(input: {
                     await sendEmail({
                         purpose: input.emailPurpose!,
                         recipientEmail: recipient,
-                        templateId: "share-link",
                         variables: {
                             url: shareUrl,
                             senderName,

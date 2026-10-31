@@ -2,7 +2,7 @@
 
 ## Ringkasan
 
-Adapter TFA SMTP menambahkan faktor kedua berbasis kode email ke gateway TFA. Saat penyiapan dan login, adapter ini mengirim kode sekali pakai ke email utama pengguna dengan memanfaatkan alur email verifikasi dari gateway Notification. Kode challenge bersifat sementara dan hanya disimpan di memori proses.
+Adapter mendaftarkan aksi pesan kodenya sendiri saat bootstrap melalui `notify:registerSmtpPurpose` dan mengirim melalui `notify:sendEmail`. Registrasi, isi kode, dan sinkronisasi pengirim dimiliki adapter ini. Gateway TFA hanya menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP miliknya; aktivasi ulang memulihkan registrasinya.
 
 ## Persyaratan
 

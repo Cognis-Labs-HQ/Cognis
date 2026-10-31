@@ -1,3 +1,4 @@
+import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
@@ -31,17 +32,38 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (subject: string, role: "user", ttlSeconds: number) => string
     >("auth:issueAccessToken");
 
+    const registerEmailAction =
+        ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerSmtpPurpose",
+        );
+    const invitePurpose = registerEmailAction
+        ? await registerEmailAction("invite", (variables) => ({
+              subject: "You are invited to Cognis",
+              body: `${variables.inviterDisplayName} invited you to join Cognis.`,
+              actionUrl: variables.inviteUrl,
+              actionLabel: "Accept invitation",
+          }))
+        : undefined;
     const canSendInviteEmail = ctx.capabilities.get<() => boolean>(
-        "notify:canSendRegistrationInviteEmail",
+        "notify:emailAvailable",
     );
-    const sendInviteEmail = ctx.capabilities.get<
-        (
-            to: string,
-            inviterDisplayName: string,
-            inviteUrl: string,
-            theme?: string,
-        ) => Promise<void>
-    >("notify:sendRegistrationInviteEmail");
+    const sendInviteEmail = invitePurpose
+        ? async (
+              to: string,
+              inviterDisplayName: string,
+              inviteUrl: string,
+              theme?: string,
+          ) => {
+              await ctx.capabilities.require<SendEmailAction>(
+                  "notify:sendEmail",
+              )({
+                  purpose: invitePurpose,
+                  recipientEmail: to,
+                  variables: { inviterDisplayName, inviteUrl },
+                  theme,
+              });
+          }
+        : undefined;
 
     const createProfile = ctx.capabilities.get<
         (

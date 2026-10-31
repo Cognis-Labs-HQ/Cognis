@@ -507,3 +507,5 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: authGateway.listAdapters().length,
     });
 }
+
+export { completeBootstrap } from "./email-actions.js";

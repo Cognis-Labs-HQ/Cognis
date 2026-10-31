@@ -111,3 +111,56 @@ test("purpose disposal rejects pending delivery, closes its SMTP session and per
         await server.close();
     }
 });
+
+test("SMTP sender disable cancels delivery and re-enable restores only registered queues", async () => {
+    const entered = gate();
+    let held!: net.Socket;
+    let connections = 0;
+    const server = await createMockSmtpServer((socket) => {
+        if (++connections === 1) {
+            held = socket;
+            entered.resolve();
+        } else smtpSuccessHandler(socket);
+    });
+    const sender = new SmtpNotificationSender({
+        host: server.host,
+        port: server.port,
+        from: "sender@example.test",
+        secure: "none",
+        authDisabled: true,
+    });
+    let channel!: ReturnType<SmtpNotificationSender["registerChannel"]>;
+    const cleanup: Array<() => void | Promise<void>> = [];
+    try {
+        await runBootstrapScope(sender, "gateway:custom", async () => {
+            channel = sender.registerChannel({ id: "custom", label: "Custom" });
+            cleanup.push(channel);
+        });
+        const pending = channel.send({ ...envelope, category: "custom" });
+        const rejected = assert.rejects(pending, /smtp_purpose_disposed/);
+        await entered.promise;
+        sender.setDeliveryEnabled(false);
+        await rejected;
+        held.destroy();
+        sender.setDeliveryEnabled(true);
+        await channel.send({
+            ...envelope,
+            category: "custom",
+            recipientEmail: "resumed@example.test",
+        });
+        assert.equal(connections, 2);
+        assert.equal(sender.listQueue()[0]?.purpose, "channel:custom");
+        assert.equal(sender.listQueue()[0]?.status, "sent");
+        await cleanup[0]();
+        sender.setDeliveryEnabled(false);
+        sender.setDeliveryEnabled(true);
+        await assert.rejects(
+            channel.send({ ...envelope, category: "custom" }),
+            /smtp_purpose_unregistered/,
+        );
+    } finally {
+        held?.destroy();
+        for (const dispose of cleanup) await dispose();
+        await server.close();
+    }
+});

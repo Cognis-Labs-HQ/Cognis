@@ -201,15 +201,6 @@ export function createNotificationRoutes(
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
-        notificationPurpose?: string;
-        testEmailPurpose?: string;
-        sendEmail?: (input: {
-            purpose: string;
-            recipientEmail: string;
-            templateId: string;
-            variables: Record<string, string>;
-            config?: Record<string, unknown>;
-        }) => Promise<unknown>;
     },
 ) {
     const ctx = resolveRouteContext(options?.routeContext);
@@ -246,7 +237,6 @@ export function createNotificationRoutes(
             }
 
             const result = await gateway.dispatch({
-                purpose: options?.notificationPurpose,
                 category,
                 recipientUsername,
                 recipientEmail,
@@ -640,25 +630,19 @@ export function createNotificationRoutes(
                 !Array.isArray(body.config)
                     ? (body.config as Record<string, unknown>)
                     : undefined;
-            if (senderId !== "smtp" || !options?.sendEmail) {
+            if (!gateway.getSenderAdminContract(senderId)?.supportsTest) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "not_supported",
-                            message: "Provider does not support test emails",
+                            message: "Provider does not support testing",
                         },
                     }),
                 );
                 return true;
             }
-            await options.sendEmail({
-                purpose: options.testEmailPurpose!,
-                recipientEmail: to,
-                templateId: "notify-test",
-                variables: {},
-                config: overrideConfig,
-            });
+            await gateway.testSender(senderId, to, overrideConfig);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;

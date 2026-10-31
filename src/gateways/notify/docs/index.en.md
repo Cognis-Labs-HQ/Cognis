@@ -1,11 +1,5 @@
 # Notification Gateway
 
-SMTP purposes must be registered through `ctx` during gateway or module bootstrap. Obtain `notify:registerSmtpPurpose`, await it with a local purpose name and retain the returned owner-scoped identifier. Each registration creates a dedicated queue and recipient cooldown state; the adapter has no built-in purpose list.
-
-Every `notify:sendEmail` call must include an existing `purpose`. Missing and unknown purposes fail before SMTP transport; sends cannot create purposes implicitly. Registration is rejected after bootstrap returns, fails or times out, including through retained callbacks and detached asynchronous work. Modules enabled after startup may register during their own bootstrap. Module disable/uninstall disposes its queues, rejects pending deliveries and closes active SMTP sessions.
-
-The generic envelope carries `purpose`; specialized SMTP send/queue helpers now take the purpose as their first argument. The gateway test helper takes `(senderId, purpose, recipientEmail, config)`. Existing Notification Gateway helpers supply purposes registered by that gateway. Generic component/module callers register their own purposes during bootstrap and reuse the returned identifiers at runtime.
-
 ## Overview
 
 The Notification Gateway dispatches notifications through pluggable sender adapters. It acts as the broker between the rest of the application and the concrete delivery mechanisms — SMTP, future webhooks, or in-app sinks — without knowing which transports are configured. Gateways and routes that need to send a notification call `gateway.dispatch(envelope)` and the gateway routes the message to whichever senders the recipient has enabled for that notification category.
@@ -98,6 +92,12 @@ Verified sign-in prepares the account’s email list and trusted-domain policy w
 
 The lifecycle-scoped `notify:emailClient` capability provides own-account requests and trusted domains, administrator `listUserEmails`, online-only `resendUserEmail`, and `smtpAvailable`. Each action runs through registered stages and stops when its provider is disposed. Core Settings, Users and Administration resolve these methods through ctx; they do not import Notify UI implementations. Missing Notify hides email management while leaving unrelated account controls usable.
 
-## Account ID Notification Delivery
+## Bootstrap and Channels
 
-Role-targeted notifications address recipients by immutable `accountId`, preserving delivery to SSO users whose public usernames differ. `notify:dispatchToRole` returns the canonical recipient IDs; public usernames remain display data.
+SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
+
+Notification categories use the existing `notify:registerCategory` capability. SMTP creates a queue during registration and returns a bound delivery handle to the gateway. The gateway remains sender-neutral. No send creates or infers a purpose; direct SMTP sends require an explicit registered purpose.
+
+Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.
+
+The sender contract uses generic `test(recipient, config)` and optional bootstrap/channel/lifecycle hooks. The gateway calls `testSender(senderId, recipient, config)` and contains no SMTP-specific test, verification, invitation or login methods. Existing SMTP-specific gateway helpers and the separate template registry are removed.

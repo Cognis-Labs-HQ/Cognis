@@ -1,6 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
-type Disposer = () => void | Promise<void>;
+export type BootstrapDisposer = (() => void | Promise<void>) & {
+    reactivate?: () => void | Promise<void>;
+};
+type Disposer = BootstrapDisposer;
 export interface BootstrapScope {
     readonly root: object;
     readonly owner: string;
@@ -40,7 +43,20 @@ export async function runBootstrapScope<T>(
             return result;
         } catch (error) {
             active = false;
-            for (const dispose of cleanup.reverse()) await dispose();
+            const failures: unknown[] = [];
+            for (const dispose of cleanup.reverse()) {
+                try {
+                    await dispose();
+                } catch (failure) {
+                    failures.push(failure);
+                }
+            }
+            if (failures.length)
+                throw new AggregateError(
+                    [error, ...failures],
+                    "bootstrap_cleanup_failed",
+                    { cause: error },
+                );
             throw error;
         } finally {
             active = false;

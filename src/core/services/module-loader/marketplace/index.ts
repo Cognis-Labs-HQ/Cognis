@@ -592,6 +592,14 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 base.hostname === "api.github.com"
                     ? "github.com"
                     : base.hostname;
+            const deploymentPrefix =
+                source.provider === "gitlab"
+                    ? base.pathname
+                          .replace(/\/api\/v4\/?$/, "")
+                          .replace(/\/$/, "")
+                    : "";
+            const repositoryPrefix =
+                `${deploymentPrefix}/${source.namespace}/`.toLowerCase();
             if (
                 clone.protocol !== "https:" ||
                 clone.hostname !== repositoryHost ||
@@ -600,9 +608,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 clone.password ||
                 clone.search ||
                 clone.hash ||
-                !clone.pathname
-                    .toLowerCase()
-                    .startsWith(`/${source.namespace.toLowerCase()}/`)
+                !clone.pathname.toLowerCase().startsWith(repositoryPrefix)
             )
                 throw new Error("module_source_repository_mismatch");
             const token = await this.sources.token(source.uuid);

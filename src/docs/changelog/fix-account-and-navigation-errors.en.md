@@ -32,21 +32,27 @@ Implicit submissions from attached forms are handled in place and cannot submit 
 
 Administrator-created accounts now pass the complete role name through the provisioning flow to the account store; administrator, moderator and teacher accounts no longer fall back to the regular-user role.
 
-## Bootstrap Purposes
+## Bootstrap and Channels
 
-SMTP purposes must be registered through `ctx` during gateway or module bootstrap. Obtain `notify:registerSmtpPurpose`, await it with a local purpose name and retain the returned owner-scoped identifier. Each registration creates a dedicated queue and recipient cooldown state; the adapter has no built-in purpose list.
+SMTP owns action registration, rendering and queues. Register `notify:registerSmtpPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
 
-Every `notify:sendEmail` call must include an existing `purpose`. Missing and unknown purposes fail before SMTP transport; sends cannot create purposes implicitly. Registration is rejected after bootstrap returns, fails or times out, including through retained callbacks and detached asynchronous work. Modules enabled after startup may register during their own bootstrap. Module disable/uninstall disposes its queues, rejects pending deliveries and closes active SMTP sessions.
+Every `notify:sendEmail` call supplies an existing purpose and variables. There is no `templateId`. Missing or unknown purposes are rejected, and asynchronous actions are checked again before enqueueing. Registration closes on bootstrap completion, failure or timeout. Gateway completion hooks run under the same owner after providers bootstrap.
 
-The default interval is fifteen seconds per normalized recipient within each purpose. Independent purposes drain concurrently, so a slow connection, retry or cooldown in one queue cannot block another. Cooldowns advance only after successful delivery. Queue inspection combines all purposes, includes their identifiers and retains up to 200 completed records per queue. Queues are in memory.
+Notification categories use the existing `notify:registerCategory` capability. SMTP creates a queue during registration and returns a bound delivery handle to the gateway. The gateway remains sender-neutral. No send creates or infers a purpose; direct SMTP sends require an explicit registered purpose.
 
-The generic envelope carries `purpose`; specialized SMTP send/queue helpers now take the purpose as their first argument. The gateway test helper takes `(senderId, purpose, recipientEmail, config)`. Existing Notification Gateway helpers supply purposes registered by that gateway. Generic component/module callers register their own purposes during bootstrap and reuse the returned identifiers at runtime.
+Gateway disable and module unmount dispose owned actions and pending deliveries. Re-enable restores fresh queues without replaying cancelled mail. Shared categories stay active while another registered owner remains active. Disabling the SMTP sender also closes its sessions and cancels pending delivery; re-enabling restores only registrations that still exist.
+
+The default cooldown is fifteen seconds per normalized recipient within each queue. Independent queues drain concurrently. Only successful delivery advances the cooldown. Queue history retains up to 200 completed records per queue in memory. `sendEmail` returns the actual queue receipt; a queued receipt does not claim successful SMTP delivery.
+
+The sender contract uses generic `test(recipient, config)` and optional bootstrap/channel/lifecycle hooks. The gateway calls `testSender(senderId, recipient, config)` and contains no SMTP-specific test, verification, invitation or login methods. Existing SMTP-specific gateway helpers and the separate template registry are removed.
+
+## Review Corrections
+
+GitLab repository validation includes the configured deployment prefix while preserving origin and namespace restrictions. Gateway lifecycle transitions are asynchronous and serialized: callers await enable/disable, bootstrap resources survive until their owner is disabled, and failed activation rolls back. Adapters receive their own bootstrap identity. SMTP TFA is **1.0.38**.
 
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)
 - [d09e01858cd856a505c24061bc524d8e87b88bf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d09e01858cd856a505c24061bc524d8e87b88bf0)
-
 - [160953932a8754503224475915afd905e656919d](https://github.com/Cognis-Labs-HQ/Cognis/commit/160953932a8754503224475915afd905e656919d)
-
 - [b379b4ac8cda27e2593bba493d5e9f13dc555b20](https://github.com/Cognis-Labs-HQ/Cognis/commit/b379b4ac8cda27e2593bba493d5e9f13dc555b20)

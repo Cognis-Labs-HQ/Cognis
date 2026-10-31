@@ -479,7 +479,7 @@ test("security PUT rejects smtp validation mode when SMTP adapter unavailable", 
         undefined,
         createDefaultRouteContext({
             getCapability: (cap) =>
-                (cap === "notify:canSendVerificationEmail"
+                (cap === "notify:emailAvailable"
                     ? () => false
                     : undefined) as any,
         }),
@@ -531,7 +531,7 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
         undefined,
         createDefaultRouteContext({
             getCapability: (cap) =>
-                (cap === "notify:canSendVerificationEmail"
+                (cap === "notify:emailAvailable"
                     ? () => true
                     : undefined) as any,
         }),

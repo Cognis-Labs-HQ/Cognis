@@ -73,12 +73,15 @@ test("SmtpNotificationSender strips CR/LF from display name in Subject header", 
         const maliciousName =
             "Attacker\r\nBcc: victim@evil.example.com\r\nX-Injected: yes";
         const inviteUrl = "https://cognis.example.com/register?token=abc";
-        await sender.sendRegistrationInviteEmail(
-            "test",
-            "target@example.com",
-            maliciousName,
-            inviteUrl,
-        );
+        await sender.send({
+            purpose: "test",
+            category: "test",
+            recipientUsername: "target",
+            recipientEmail: "target@example.com",
+            subject: `${maliciousName} invited you`,
+            body: maliciousName,
+            metadata: { verifyUrl: inviteUrl, verifyButtonLabel: "Sign Up" },
+        });
         const headerSection = capturedData.split("\r\n\r\n")[0] ?? "";
         const headerLines = headerSection.split("\r\n");
         const subjectLine = headerLines.find((line) =>

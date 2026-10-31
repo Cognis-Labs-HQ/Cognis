@@ -1,3 +1,11 @@
+import { bootstrapNotifyAdapter } from "./bootstrap.js";
+import type {
+    NotifyAdapterBootstrapCtx,
+    NotificationCategory,
+    NotificationChannelRegistration,
+} from "../../../gateways/notify/gateway.js";
+import type { EmailActionInput, NotificationActionMessage } from "@cognis/core";
+import type { BootstrapDisposer } from "@cognis/core";
 import { requireBootstrapScope } from "@cognis/core";
 import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "./smtp-session.js";
 import { readFile } from "node:fs/promises";
@@ -26,10 +34,6 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import {
-    buildRegistrationInviteEmailMessage,
-    buildVerificationEmailMessage,
-} from "./message-builders.js";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
 import { clampSmtpVerificationCodeLength } from "@cognis/core";
 export interface SmtpConfig {
@@ -498,6 +502,11 @@ export class SmtpNotificationSender implements NotificationSender {
 
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
+    private deliveryEnabled = true;
+    private readonly purposeActivations = new Map<
+        string,
+        { activate(): void; suspend(): void }
+    >();
     private readonly queues = new Map<string, SmtpNotificationQueue>();
     private readonly createRateLimiter: () => SmtpRateLimiter;
 
@@ -520,35 +529,122 @@ export class SmtpNotificationSender implements NotificationSender {
             (() => new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS));
     }
 
-    registerPurpose(purpose: string): () => void {
+    async bootstrap(ctx: NotifyAdapterBootstrapCtx): Promise<void> {
+        await bootstrapNotifyAdapter(ctx, this);
+    }
+
+    test?: (to: string, config?: Record<string, unknown>) => Promise<void>;
+
+    registerChannel(
+        category: NotificationCategory,
+    ): NotificationChannelRegistration {
+        const purpose = `channel:${category.id}`;
+        return Object.assign(this.registerPurpose(purpose), {
+            send: (envelope: NotificationEnvelope) =>
+                this.send({ ...envelope, purpose }),
+            sendTracked: (envelope: NotificationEnvelope) =>
+                this.sendTracked({ ...envelope, purpose }),
+        });
+    }
+
+    registerPurpose(purpose: string): BootstrapDisposer {
         requireBootstrapScope();
-        if (!purpose || this.queues.has(purpose))
+        if (!purpose || this.purposeActivations.has(purpose))
             throw new Error("smtp_purpose_conflict");
-        const controller = new AbortController();
-        const queue = new SmtpNotificationQueue(
-            this.createRateLimiter(),
-            this.sleep,
-            async (payload) => {
-                await sendMailWithRetry(
-                    (payload.config as SmtpConfig | undefined) ?? this.config,
-                    payload.recipientEmail,
-                    payload.subject,
-                    payload.body,
-                    this.sleep,
-                    payload.theme,
-                    payload.verifyUrl,
-                    payload.verifyButtonLabel,
-                    payload.attachments ?? [],
-                    controller.signal,
-                );
+        let queue: SmtpNotificationQueue | undefined;
+        let controller: AbortController | undefined;
+        const activate = () => {
+            if (this.queues.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            const activeController = new AbortController();
+            controller = activeController;
+            queue = new SmtpNotificationQueue(
+                this.createRateLimiter(),
+                this.sleep,
+                async (payload) => {
+                    await sendMailWithRetry(
+                        (payload.config as SmtpConfig | undefined) ??
+                            this.config,
+                        payload.recipientEmail,
+                        payload.subject,
+                        payload.body,
+                        this.sleep,
+                        payload.theme,
+                        payload.verifyUrl,
+                        payload.verifyButtonLabel,
+                        payload.attachments ?? [],
+                        activeController.signal,
+                    );
+                },
+                purpose,
+            );
+            this.queues.set(purpose, queue);
+        };
+        const resource = {
+            activate,
+            suspend: () => {
+                controller?.abort();
+                queue?.close();
+                if (this.queues.get(purpose) === queue)
+                    this.queues.delete(purpose);
             },
-            purpose,
-        );
-        this.queues.set(purpose, queue);
-        return () => {
-            controller.abort();
-            queue.close();
-            if (this.queues.get(purpose) === queue) this.queues.delete(purpose);
+        };
+        this.purposeActivations.set(purpose, resource);
+        if (this.deliveryEnabled) activate();
+        const dispose: BootstrapDisposer = () => {
+            resource.suspend();
+            if (this.purposeActivations.get(purpose) === resource)
+                this.purposeActivations.delete(purpose);
+        };
+        dispose.reactivate = () => {
+            if (this.purposeActivations.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            this.purposeActivations.set(purpose, resource);
+            if (this.deliveryEnabled) activate();
+        };
+        return dispose;
+    }
+
+    setDeliveryEnabled(enabled: boolean): void {
+        if (this.deliveryEnabled === enabled) return;
+        this.deliveryEnabled = enabled;
+        for (const resource of this.purposeActivations.values()) {
+            if (enabled) resource.activate();
+            else resource.suspend();
+        }
+    }
+
+    async waitForEmail(purpose: string, notificationId: string): Promise<void> {
+        await this.requireQueue(purpose).waitForResult(notificationId);
+    }
+
+    async enqueueEmail(
+        input: EmailActionInput,
+        message: NotificationActionMessage,
+    ): Promise<
+        NotificationSenderQueueEntry & { sent: true; notificationId: string }
+    > {
+        const queued = this.requireQueue(input.purpose).enqueue({
+            purpose: input.purpose,
+            recipientEmail: input.recipientEmail,
+            subject: message.subject,
+            body: message.body,
+            theme: input.theme,
+            verifyUrl: message.actionUrl,
+            verifyButtonLabel: message.actionLabel,
+            config: {
+                ...this.config,
+                ...input.config,
+                ...(message.senderName
+                    ? { senderName: message.senderName }
+                    : {}),
+            },
+        });
+        return {
+            sent: true,
+            ...this.requireQueue(input.purpose).getQueueItem(
+                queued.notificationId,
+            )!,
         };
     }
 
@@ -642,119 +738,6 @@ export class SmtpNotificationSender implements NotificationSender {
                 .map((queue) => queue.getQueueItem(notificationId))
                 .find(Boolean) ?? null
         );
-    }
-
-    async sendVerificationEmail(
-        purpose: string,
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void> {
-        const queued = await this.queueVerificationEmail(
-            purpose,
-            to,
-            code,
-            verifyUrl,
-            theme,
-        );
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        await this.requireQueue(purpose).waitForResult(notificationId);
-    }
-
-    async queueVerificationEmail(
-        purpose: string,
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ) {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const messageType = verifyUrl
-            ? "email-address-verification"
-            : "verification-code";
-        const { subject, body } = buildVerificationEmailMessage(
-            messageType,
-            code,
-        );
-        const queued = this.requireQueue(purpose).enqueue({
-            purpose,
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl,
-        });
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        const queueItem =
-            this.requireQueue(purpose).getQueueItem(notificationId);
-        if (!queueItem) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        return queueItem;
-    }
-
-    async sendRegistrationInviteEmail(
-        purpose: string,
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const { subject, body } = buildRegistrationInviteEmailMessage(
-            inviterDisplayName,
-            inviteUrl,
-        );
-        const queued = this.requireQueue(purpose).enqueue({
-            purpose,
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: inviteUrl,
-            verifyButtonLabel: "Sign Up",
-        });
-        await this.requireQueue(purpose).waitForResult(queued.notificationId);
-    }
-
-    async sendOneTimeLoginEmail(
-        purpose: string,
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        if (!loginUrl) throw new Error("smtp_requires_login_url");
-        const theme = options?.theme;
-        const subject = options?.subject?.trim();
-        const body = options?.body?.trim();
-        if (!subject || !body) {
-            throw new Error(
-                "One-time login email subject and body are required.",
-            );
-        }
-        const queued = this.requireQueue(purpose).enqueue({
-            purpose,
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: loginUrl,
-            verifyButtonLabel: options?.actionLabel,
-        });
-        await this.requireQueue(purpose).waitForResult(queued.notificationId);
     }
 
     async sendTestEmail(

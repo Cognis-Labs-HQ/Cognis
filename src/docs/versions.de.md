@@ -41,7 +41,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.37` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.38` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.26` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.26` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |

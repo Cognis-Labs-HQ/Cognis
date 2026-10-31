@@ -1,22 +1,12 @@
-import type {
-    VerificationEmailSender,
-    OneTimeLoginEmailSender,
-    RegistrationInviteEmailSender,
-    SenderWithVerification,
-    SenderWithRegistrationInvite,
-    SenderWithOneTimeLogin,
-} from "./email-sender-contracts.js";
-export type {
-    VerificationEmailSender,
-    OneTimeLoginEmailSender,
-    RegistrationInviteEmailSender,
-} from "./email-sender-contracts.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     resolveComponentEnabledState,
     requireBootstrapScope,
+    runBootstrapScope,
+    type BootstrapDisposer,
+    type NotificationActionReceipt,
     type CapabilityStore,
 } from "@cognis/core";
 
@@ -27,7 +17,6 @@ import {
  */
 export interface NotifyAdapterBootstrapCtx {
     gateway: CoreNotificationGateway;
-    testEmailPurpose: string;
     capabilities: CapabilityStore;
     registerRoute(
         handler: (
@@ -85,18 +74,9 @@ export interface NotificationSenderInfo {
 export type NotificationQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
-export interface NotificationSenderQueueEntry {
-    purpose?: string;
-    notificationId: string;
-    status: NotificationQueueStatus;
-    createdAt: string;
-    updatedAt: string;
-    availableAt?: string;
-    error?: string;
+export interface NotificationSenderQueueEntry extends NotificationActionReceipt {
     recipientUsername?: string;
-    recipientEmail?: string;
     category?: string;
-    subject?: string;
 }
 
 export interface NotificationQueueEntry extends NotificationSenderQueueEntry {
@@ -119,6 +99,13 @@ export interface NotificationDispatchResult {
     errors?: NotificationDispatchError[];
 }
 
+export type NotificationChannelRegistration = BootstrapDisposer & {
+    send(envelope: NotificationEnvelope): Promise<void>;
+    sendTracked?(
+        envelope: NotificationEnvelope,
+    ): Promise<{ notificationId: string }>;
+};
+
 export interface NotificationSender {
     readonly senderId: string;
     readonly senderName?: string;
@@ -130,12 +117,12 @@ export interface NotificationSender {
     }>;
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
-    registerPurpose?(purpose: string): () => void;
-    sendTestEmail?(
-        purpose: string,
-        to: string,
-        config?: Record<string, unknown>,
-    ): Promise<void>;
+    setDeliveryEnabled?(enabled: boolean): void;
+    bootstrap?(ctx: NotifyAdapterBootstrapCtx): Promise<void>;
+    registerChannel?(
+        category: NotificationCategory,
+    ): NotificationChannelRegistration;
+    test?(to: string, config?: Record<string, unknown>): Promise<void>;
     isConfigured?(): boolean;
     getEnvValues?(): Record<string, string | undefined>;
     getRequiredFields?(): string[];
@@ -210,39 +197,10 @@ type SenderWithQueueItem = {
     getQueueItem(notificationId: string): NotificationSenderQueueEntry | null;
 };
 
-function isSenderWithVerification(
-    sender: NotificationSender,
-): sender is NotificationSender & SenderWithVerification {
-    return (
-        typeof (sender as Record<string, unknown>).sendVerificationEmail ===
-        "function"
-    );
-}
-
-function isSenderWithRegistrationInvite(
-    sender: NotificationSender,
-): sender is NotificationSender & SenderWithRegistrationInvite {
-    return (
-        typeof (sender as Record<string, unknown>)
-            .sendRegistrationInviteEmail === "function"
-    );
-}
-
-function isSenderWithOneTimeLogin(
-    sender: NotificationSender,
-): sender is NotificationSender & SenderWithOneTimeLogin {
-    return (
-        typeof (sender as Record<string, unknown>).sendOneTimeLoginEmail ===
-        "function"
-    );
-}
-
-function isSenderWithTrackedSend(
-    sender: NotificationSender,
-): sender is NotificationSender & SenderWithTrackedSend {
-    return (
-        typeof (sender as Record<string, unknown>).sendTracked === "function"
-    );
+function isSenderWithTrackedSend(sender: {
+    sendTracked?: unknown;
+}): sender is SenderWithTrackedSend {
+    return typeof sender.sendTracked === "function";
 }
 
 function isSenderWithQueueList(
@@ -259,14 +217,16 @@ function isSenderWithQueueItem(
     );
 }
 
-export class CoreNotificationGateway
-    implements
-        NotificationGateway,
-        VerificationEmailSender,
-        RegistrationInviteEmailSender,
-        OneTimeLoginEmailSender
-{
+export class CoreNotificationGateway implements NotificationGateway {
+    private readonly adapterSenders = new Map<string, NotificationSender>();
     private readonly senders = new Map<string, NotificationSender>();
+    private readonly channelRegistrations = new Map<
+        string,
+        {
+            owners: Set<string>;
+            queues: Map<string, NotificationChannelRegistration>;
+        }
+    >();
     private readonly categories = new Map<string, string>();
     private readonly disabledSenders = new Set<string>();
     private readonly senderRequires = new Map<string, string[]>();
@@ -289,24 +249,6 @@ export class CoreNotificationGateway
         private readonly emailStore?: NotificationEmailStore,
     ) {}
 
-    canRegisterSenderPurpose(senderId: string): boolean {
-        return (
-            typeof this.senders.get(senderId)?.registerPurpose === "function"
-        );
-    }
-
-    registerSenderPurpose(senderId: string, purpose: string): () => void {
-        const scope = requireBootstrapScope();
-        if (!purpose.startsWith(`${scope.owner}:`))
-            throw new Error("smtp_purpose_owner_mismatch");
-        const sender = this.senders.get(senderId);
-        if (!sender?.registerPurpose)
-            throw new Error("smtp_purpose_registration_unavailable");
-        const dispose = sender.registerPurpose(purpose);
-        scope.registerDisposer(dispose);
-        return dispose;
-    }
-
     registerAlwaysOnSender(senderId: string): void {
         this.alwaysOnSenders.add(senderId);
     }
@@ -323,7 +265,57 @@ export class CoreNotificationGateway
     }
 
     registerCategory(id: string, label: string): void {
+        const scopedSenders = [...this.senders.values()].filter(
+            (sender) => sender.registerChannel,
+        );
+        if (!scopedSenders.length) {
+            this.categories.set(id, label);
+            return;
+        }
+        const scope = requireBootstrapScope();
+        let registration = this.channelRegistrations.get(id);
+        if (registration && !registration.owners.size) {
+            registration.queues = new Map(
+                scopedSenders.map((sender) => [
+                    sender.senderId,
+                    sender.registerChannel!({ id, label }),
+                ]),
+            );
+        }
+        if (!registration) {
+            registration = {
+                owners: new Set(),
+                queues: new Map(
+                    scopedSenders.map((sender) => [
+                        sender.senderId,
+                        sender.registerChannel!({ id, label }),
+                    ]),
+                ),
+            };
+            this.channelRegistrations.set(id, registration);
+        }
+        if (registration.owners.has(scope.owner)) return;
+        let owned = registration;
+        owned.owners.add(scope.owner);
         this.categories.set(id, label);
+        const dispose: BootstrapDisposer = async () => {
+            if (!owned.owners.delete(scope.owner) || owned.owners.size) return;
+            this.categories.delete(id);
+            this.channelRegistrations.delete(id);
+            for (const cleanup of owned.queues.values()) await cleanup();
+        };
+        dispose.reactivate = async () => {
+            const active = this.channelRegistrations.get(id);
+            if (active) owned = active;
+            else {
+                for (const cleanup of owned.queues.values())
+                    await cleanup.reactivate?.();
+                this.channelRegistrations.set(id, owned);
+            }
+            owned.owners.add(scope.owner);
+            this.categories.set(id, label);
+        };
+        scope.registerDisposer(dispose);
     }
 
     listSenders(): NotificationSenderInfo[] {
@@ -340,7 +332,7 @@ export class CoreNotificationGateway
                     (typeof sender.isConfigured === "function"
                         ? sender.isConfigured()
                         : typeof sender.getConfig === "function"),
-                supportsTest: typeof sender.sendTestEmail === "function",
+                supportsTest: typeof sender.test === "function",
                 ...(alwaysOn ? { alwaysOn: true } : {}),
                 locked: alwaysOn,
                 ...(requires && requires.length > 0 ? { requires } : {}),
@@ -426,6 +418,7 @@ export class CoreNotificationGateway
             this.disabledSenders.delete(senderId);
         }
         const sender = this.senders.get(senderId);
+        sender?.setDeliveryEnabled?.(isEnabled);
         if (sender && typeof sender.setConfig === "function") {
             sender.setConfig(senderConfig);
         }
@@ -472,6 +465,9 @@ export class CoreNotificationGateway
             } else {
                 this.disabledSenders.delete(sender.senderId);
             }
+            sender.setDeliveryEnabled?.(
+                !this.disabledSenders.has(sender.senderId),
+            );
             if (typeof sender.setConfig === "function") {
                 const { enabled, ...senderConfig } = config;
                 sender.setConfig(senderConfig);
@@ -482,6 +478,7 @@ export class CoreNotificationGateway
     async enableSender(senderId: string): Promise<void> {
         const wasDisabled = this.disabledSenders.has(senderId);
         this.disabledSenders.delete(senderId);
+        this.senders.get(senderId)?.setDeliveryEnabled?.(true);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;
         await this.configStore?.saveConfig(senderId, {
             ...(existing ?? {}),
@@ -498,6 +495,7 @@ export class CoreNotificationGateway
         }
         const wasDisabled = this.disabledSenders.has(senderId);
         this.disabledSenders.add(senderId);
+        this.senders.get(senderId)?.setDeliveryEnabled?.(false);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;
         await this.configStore?.saveConfig(senderId, {
             ...(existing ?? {}),
@@ -549,10 +547,6 @@ export class CoreNotificationGateway
         }
     }
 
-    getSender(senderId: string): NotificationSender | undefined {
-        return this.senders.get(senderId);
-    }
-
     getSenderAdminContract(senderId: string): {
         config: Record<string, unknown>;
         envValues: Record<string, string | undefined>;
@@ -566,7 +560,7 @@ export class CoreNotificationGateway
             config: sender.getConfig(),
             envValues: sender.getEnvValues?.() ?? {},
             requiredFields: sender.getRequiredFields?.() ?? [],
-            supportsTest: typeof sender.sendTestEmail === "function",
+            supportsTest: typeof sender.test === "function",
             locked: this.alwaysOnSenders.has(senderId),
         };
     }
@@ -575,17 +569,17 @@ export class CoreNotificationGateway
         return this.senders.has(senderId);
     }
 
-    async sendTestEmail(
+    async testSender(
         senderId: string,
-        purpose: string,
-        recipientEmail: string,
+        recipient: string,
         config?: Record<string, unknown>,
     ): Promise<void> {
         const sender = this.senders.get(senderId);
-        if (!sender?.sendTestEmail) {
+        if (!sender?.test)
             throw new Error("notification_sender_test_unavailable");
-        }
-        await sender.sendTestEmail(purpose, recipientEmail, config);
+        if (this.disabledSenders.has(senderId))
+            throw new Error("notification_sender_disabled");
+        await sender.test(recipient, config);
     }
 
     async sendWithSender(
@@ -602,140 +596,6 @@ export class CoreNotificationGateway
         }
         await sender.send(envelope);
         return { sent: true };
-    }
-
-    canSendVerificationEmail(): boolean {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithVerification(sender)) continue;
-            if (typeof sender.isConfigured === "function")
-                return sender.isConfigured();
-            return true;
-        }
-        return false;
-    }
-
-    async sendVerificationEmail(
-        purpose: string,
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void> {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithVerification(sender)) continue;
-            await sender.sendVerificationEmail(
-                purpose,
-                to,
-                code,
-                verifyUrl,
-                theme,
-            );
-            return;
-        }
-        throw new Error("smtp_unavailable");
-    }
-
-    async queueVerificationEmail(
-        purpose: string,
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<NotificationSenderQueueEntry> {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithVerification(sender)) continue;
-            if (typeof sender.queueVerificationEmail === "function") {
-                return sender.queueVerificationEmail(
-                    purpose,
-                    to,
-                    code,
-                    verifyUrl,
-                    theme,
-                );
-            }
-            await sender.sendVerificationEmail(
-                purpose,
-                to,
-                code,
-                verifyUrl,
-                theme,
-            );
-            return {
-                notificationId: "",
-                status: "sent",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                recipientEmail: to,
-            };
-        }
-        throw new Error("smtp_unavailable");
-    }
-
-    canSendRegistrationInviteEmail(): boolean {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithRegistrationInvite(sender)) continue;
-            if (typeof sender.isConfigured === "function")
-                return sender.isConfigured();
-            return true;
-        }
-        return false;
-    }
-
-    async sendRegistrationInviteEmail(
-        purpose: string,
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void> {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithRegistrationInvite(sender)) continue;
-            await sender.sendRegistrationInviteEmail(
-                purpose,
-                to,
-                inviterDisplayName,
-                inviteUrl,
-                theme,
-            );
-            return;
-        }
-        throw new Error("smtp_unavailable");
-    }
-
-    canSendOneTimeLoginEmail(): boolean {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithOneTimeLogin(sender)) continue;
-            if (typeof sender.isConfigured === "function")
-                return sender.isConfigured();
-            return true;
-        }
-        return false;
-    }
-
-    async sendOneTimeLoginEmail(
-        purpose: string,
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void> {
-        for (const [id, sender] of this.senders.entries()) {
-            if (this.disabledSenders.has(id)) continue;
-            if (!isSenderWithOneTimeLogin(sender)) continue;
-            await sender.sendOneTimeLoginEmail(purpose, to, loginUrl, options);
-            return;
-        }
-        throw new Error("smtp_unavailable");
     }
 
     async discoverSenders(adaptersRoot: string): Promise<void> {
@@ -793,6 +653,7 @@ export class CoreNotificationGateway
                     }
                     if (sender) {
                         this.registerSender(sender, requires);
+                        this.adapterSenders.set(entry, sender);
                     }
                 }
             } catch {
@@ -810,6 +671,17 @@ export class CoreNotificationGateway
             entries = await readdir(adaptersRoot);
         } catch {
             return;
+        }
+
+        for (const sender of this.senders.values()) {
+            if (!sender.bootstrap) continue;
+            const parent = requireBootstrapScope();
+            await runBootstrapScope(
+                parent.root,
+                `adapter:notify:${sender.senderId}`,
+                () => sender.bootstrap!(ctx),
+                (dispose) => parent.registerDisposer(dispose),
+            );
         }
 
         for (const entry of entries) {
@@ -834,14 +706,26 @@ export class CoreNotificationGateway
                 continue;
             }
 
-            if (typeof mod.bootstrapNotifyAdapter === "function") {
+            const ownedSender = this.adapterSenders.get(entry);
+            if (
+                !ownedSender?.bootstrap &&
+                typeof mod.bootstrapNotifyAdapter === "function"
+            ) {
                 const bootstrap = mod.bootstrapNotifyAdapter as (
                     ctx: NotifyAdapterBootstrapCtx,
                 ) => Promise<void> | void;
                 // Let bootstrap errors propagate. Adapters may throw deliberately
                 // to signal fatal startup conditions (e.g. missing DATA_ENCRYPTION_KEY
                 // in production) that must not be silently swallowed.
-                await bootstrap(ctx);
+                const parent = requireBootstrapScope();
+                await runBootstrapScope(
+                    parent.root,
+                    `adapter:notify:${entry}`,
+                    async () => {
+                        await bootstrap(ctx);
+                    },
+                    (dispose) => parent.registerDisposer(dispose),
+                );
             }
         }
     }
@@ -878,14 +762,19 @@ export class CoreNotificationGateway
             const sender = this.senders.get(id);
             if (!sender) continue;
             try {
-                if (isSenderWithTrackedSend(sender)) {
-                    const receipt = await sender.sendTracked(resolvedEnvelope);
+                const delivery =
+                    this.channelRegistrations
+                        .get(envelope.category)
+                        ?.queues.get(id) ?? sender;
+                if (isSenderWithTrackedSend(delivery)) {
+                    const receipt =
+                        await delivery.sendTracked(resolvedEnvelope);
                     notifications.push({
                         senderId: id,
                         notificationId: receipt.notificationId,
                     });
                 } else {
-                    await sender.send(resolvedEnvelope);
+                    await delivery.send(resolvedEnvelope);
                 }
                 dispatched.push(id);
             } catch (err) {

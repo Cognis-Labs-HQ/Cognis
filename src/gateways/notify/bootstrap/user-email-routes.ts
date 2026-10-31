@@ -37,7 +37,6 @@ export function createUserEmailRoutes(
         sendEmail: (input: {
             purpose: string;
             recipientEmail: string;
-            templateId: string;
             variables: Record<string, string>;
         }) => Promise<unknown>;
     },
@@ -240,7 +239,6 @@ export function createUserEmailRoutes(
                     await emailDelivery.sendEmail({
                         purpose: emailDelivery.purpose,
                         recipientEmail: email,
-                        templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
                     res.writeHead(201, {
@@ -458,7 +456,6 @@ export function createUserEmailRoutes(
                     await emailDelivery.sendEmail({
                         purpose: emailDelivery.purpose,
                         recipientEmail: email,
-                        templateId: "notify-verification",
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
                     res.writeHead(200, {
