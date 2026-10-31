@@ -24,4 +24,4 @@ Interval verifikasi SMTP bersama menjadi lima belas detik. Jeda dinormalisasi me
 
 ## Komit
 
-- [8e09f49cab2b2920c11f680034c0b858e4557607](https://github.com/Cognis-Labs-HQ/Cognis/commit/8e09f49cab2b2920c11f680034c0b858e4557607)
+- [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)
