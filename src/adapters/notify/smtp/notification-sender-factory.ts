@@ -1,5 +1,5 @@
+import { clampVerificationCodeLength } from "../../../gateways/reuse/verification-codes.js";
 import { SmtpNotificationSender } from "./notification-sender.js";
-import { clampVerificationCodeLength } from "@cognis/core";
 
 export function createNotificationSender(
     env: Record<string, string | undefined>,

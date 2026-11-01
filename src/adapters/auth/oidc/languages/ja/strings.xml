@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.oidc.config.providername">プロバイダー名</string>
+    <string name="adapter.oidc.config.clientid">クライアントID</string>
+    <string name="adapter.oidc.config.clientsecret">クライアントシークレット</string>
+    <string name="adapter.oidc.config.discoveryurl">ディスカバリーURL</string>
+    <string name="adapter.oidc.config.adminroles">管理者ロール（カンマ区切り）</string>
+</resources>

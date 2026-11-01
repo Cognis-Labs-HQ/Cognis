@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+} from "../../contracts/sender.js";
 import { issueAccessToken } from "../../../auth/access-tokens.js";
 import {
     CoreNotificationGateway,

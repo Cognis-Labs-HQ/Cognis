@@ -28,3 +28,7 @@ Disable and unmount revoke owned registrations and pending delivery. Re-enable r
 The lifecycle-scoped `notify:emailClient` provides own-account email requests, trusted domains, administrator `listUserEmails`, online-only `resendUserEmail` and `emailAvailable`. Settings, Users and Administration resolve it through ctx. Email edits are cached and queued by their owning provider; verification remains online. `GET /api/v1/notify/email-delivery` is authenticated and returns only availability, not provider configuration.
 
 Offline Mode and Broadcast share the top banner stack above the header. Offline Mode has priority, cannot be dismissed and offers Recheck Connectivity and Refresh after recovery. Broadcast acknowledgement, audience and scheduling policies remain enforced independently. Banner backgrounds and collapsibility are configured through the shared banner capability.
+
+## Provider-owned Contracts
+
+Notify owns its runtime declarations and optional public types under `contracts/`. Core has no notification contract files. Delivery providers supply configuration schemas, translations, conditional fields, stored-secret presence and test fields; the gateway forwards that metadata without assuming a transport. Notify contributes the `email` validation callback to Auth and exposes generic email availability. Provider delivery policy is available through `notify:emailDeliveryPolicy`; email factories are discovered through `notify:emailTemplates`.

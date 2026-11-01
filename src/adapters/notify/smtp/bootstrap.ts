@@ -1,4 +1,4 @@
-import type { NotifyAdapterBootstrapCtx } from "@cognis/core";
+import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/contracts/sender.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 import { registerSmtpActions } from "./purposes.js";
 
@@ -6,7 +6,34 @@ export async function bootstrapNotifyAdapter(
     ctx: NotifyAdapterBootstrapCtx,
     sender: SmtpNotificationSender,
 ): Promise<void> {
-    const { register, send } = registerSmtpActions(ctx, sender);
+    sender.setRecipientThemeResolver(async (email) => {
+        try {
+            const accountId = await ctx.capabilities.get<
+                (email: string) => Promise<string | null>
+            >("notify:getAccountIdByEmail")?.(email);
+            if (!accountId) return "light";
+            const stored = await ctx.capabilities
+                .get<{ get(id: string, key: string): Promise<string | null> }>(
+                    "preferences:store",
+                )
+                ?.get(accountId, "ui-preferences");
+            return stored && JSON.parse(stored).mode === "dark"
+                ? "dark"
+                : "light";
+        } catch (error) {
+            ctx.log?.(
+                "warn",
+                "Recipient email theme unavailable; using light mode.",
+                {
+                    component: "notify-smtp",
+                    operation: "resolveRecipientTheme",
+                    errorName: error instanceof Error ? error.name : undefined,
+                },
+            );
+            return "light";
+        }
+    });
+    const { register, send } = await registerSmtpActions(ctx, sender);
     const purpose = await register("test", () => ({
         subject: "Cognis SMTP Test",
         body: "This is a test email from Cognis.",

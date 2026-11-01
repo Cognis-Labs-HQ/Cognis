@@ -49,6 +49,7 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
         readSecuritySettings: async () => ({
             registrationsEnabled: false,
             userValidationMode: "none",
+            loginSessionTimeoutMinutes: 720,
         }),
     });
     let token = issueAccessToken("x:person", "user", 60, { providerId: "x" });

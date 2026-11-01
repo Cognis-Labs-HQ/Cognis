@@ -3,7 +3,7 @@ import {
     parseEmailVerificationKey,
 } from "./email-verification-key.js";
 import { readJson } from "../../shared.js";
-import { TfaCodeService } from "../../../api/reuse/tfa-code.js";
+import { TfaCodeService } from "../../reuse/tfa-code.js";
 import { VerifyTokenService } from "../../../api/reuse/verify-token.js";
 import {
     resolveRouteContext,

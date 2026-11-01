@@ -101,3 +101,7 @@ export interface AuthAccountStore {
 | `auth:accounts`     | Gateway auth       | Siklus hidup akun bawaan dan pengkabelan kebijakan autentikasi           |
 | `modules:lifecycle` | Rute modul         | Daftar modul, kontrol aktifkan/nonaktifkan, dan pemeriksaan kebijakan    |
 | `ui:shell`          | Rute UI            | Perutean shell aplikasi bersama dan permukaan operasi admin              |
+
+## Kontrak Runtime
+
+Pemilik mendeklarasikan kontrak domain melalui registri publik `system:contracts` selama bootstrap. `define(id, { version, kind, members, description })` mencatat struktur; `resolve(id, version)` memeriksa implementasi publik dan mengikat akses ke registrasi tersebut. Rollback atau penonaktifan menghapus definisi; pengaktifan kembali memulihkannya. Modul menggunakan namespace sendiri. Resolusi dalam konteks modul mempertahankan pemeriksaan izin host. Kontrak modul baru tidak memerlukan berkas sumber Core; deklarasi tipe opsional berada di direktori kontrak publik penyedia. Pembuatan kode verifikasi berada dalam penggunaan ulang server bersama dan diekspos Auth sebagai `auth:verificationCodes`, bukan diekspor Core.

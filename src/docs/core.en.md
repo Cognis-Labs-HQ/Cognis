@@ -114,3 +114,7 @@ export interface AuthAccountStore {
 - deterministic flow execution (`runFlow`)
 
 Flows are ordered stage pipelines that components can extend without direct imports between owners. A single flow can orchestrate backend behavior (e.g. login, password change) and UI construction behavior (e.g. construct login page, construct settings page), while optional adapters/modules hook into stages only when enabled.
+
+## Runtime Contracts
+
+Domain contracts are declared by their owners through the public `system:contracts` registry during bootstrap. `define(id, { version, kind, members, description })` records a structural contract; `resolve(id, version)` checks the public implementation and returns a handle bound to that registration. Definitions are removed on rollback or disable and restored on reactivation. Module IDs must use their own namespace. Module-scoped resolution preserves the host’s permission wrappers. A new module contract requires no Core source file; optional type declarations remain in the provider’s public contract directory. Verification-code generation now belongs to shared server reuse and is exposed by Auth as `auth:verificationCodes`, not exported by Core.

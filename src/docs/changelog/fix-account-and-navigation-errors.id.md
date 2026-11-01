@@ -2,6 +2,10 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Kontrak Penyedia yang Dapat Diperluas
+
+Mode validasi Auth didaftarkan melalui ctx dengan fungsi, ketersediaan, dan metadata UI sendiri. Administration mempertahankan pilihan tersimpan yang tidak tersedia dan memvalidasi perubahan. Registri kontrak runtime berversi memungkinkan gateway, adapter, dan modul eksternal menerbitkan kontrak tanpa berkas domain Core, sambil mempertahankan izin modul dan pencabutan siklus hidup. Fungsi verifikasi dipindahkan ke penggunaan ulang server bersama dan Auth. SMTP memiliki skema konfigurasi dan pabrik templat yang dapat dirangkai, termasuk opsi modul. Surel menggunakan tema penerima, secara bawaan terang, dengan HTML aman dan teks biasa. TFA memakai metadata tampilan metode serta kebijakan panjang kode/jeda penyedia surel. Instruksi AI mewajibkan pendekatan yang dapat diperluas ini.
+
 ## Administrasi Pengguna Andal
 
 Halaman Pengguna mengenali akun aktif melalui ID akun tersimpan, termasuk sesi SSO opak. Kontrol akun sendiri mengikuti perlindungan server. Kegagalan detail akun memakai terjemahan milik Pengguna. Kegagalan pemuatan ulang tidak mengubah mutasi yang sudah dikonfirmasi menjadi gagal disimpan; daftar sebelumnya tetap tampil dengan peringatan penyegaran.
@@ -26,7 +30,7 @@ Interval verifikasi SMTP bersama menjadi lima belas detik. Jeda dinormalisasi me
 
 ## Sumber dan Penyiapan Bersama
 
-Kredensial sumber modul dan cache penemuan dibagikan ke semua administrator; rahasia tetap tersembunyi di server. Penyimpanan kolom kredensial kosong mempertahankan nilai yang ada. Pengaturan Keyring menunggu status otoritatif, penyiapan TFA yang belum selesai memerlukan konfirmasi pembuangan, dan pengalihan internal Pengaturan/bagikan mempertahankan navigasi SPA. Keyring: **2.1.1**, TFA: **1.1.20**.
+Kredensial sumber modul dan cache penemuan dibagikan ke semua administrator; rahasia tetap tersembunyi di server. Penyimpanan kolom kredensial kosong mempertahankan nilai yang ada. Pengaturan Keyring menunggu status otoritatif, penyiapan TFA yang belum selesai memerlukan konfirmasi pembuangan, dan pengalihan internal Pengaturan/bagikan mempertahankan navigasi SPA. Keyring: **2.1.1**, TFA: **1.2.0**.
 
 Pengiriman implisit formulir yang terikat ditangani di tempat tanpa meminta dokumen browser. Penangan pengiriman komponen tetap menerima kejadian tersebut. Pengalihan internal menggunakan router SPA; tujuan yang dirender server tetap menghormati keputusan perubahan belum tersimpan dan memeriksa kembali ketersediaan offline saat dilanjutkan.
 
@@ -48,7 +52,7 @@ Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kana
 
 ## Perbaikan Tinjauan
 
-Validasi repositori GitLab menyertakan prefiks pemasangan yang dikonfigurasi sambil mempertahankan pembatasan asal dan namespace. Transisi siklus hidup gateway bersifat asinkron dan berurutan: pemanggil menunggu aktivasi atau penonaktifan, sumber daya bootstrap dipertahankan hingga pemiliknya dinonaktifkan, dan aktivasi yang gagal dibatalkan. Adapter memperoleh identitas bootstrap sendiri. SMTP TFA adalah **1.0.38**.
+Validasi repositori GitLab menyertakan prefiks pemasangan yang dikonfigurasi sambil mempertahankan pembatasan asal dan namespace. Transisi siklus hidup gateway bersifat asinkron dan berurutan: pemanggil menunggu aktivasi atau penonaktifan, sumber daya bootstrap dipertahankan hingga pemiliknya dinonaktifkan, dan aktivasi yang gagal dibatalkan. Adapter memperoleh identitas bootstrap sendiri. SMTP TFA adalah **1.1.0**.
 
 ## Keamanan Permintaan Runtime
 

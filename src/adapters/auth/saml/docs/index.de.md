@@ -35,3 +35,5 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/saml/config` (nur Admin)
 | `certificate`    | IdP X.509-Signaturzertifikat (PEM-Format) | Ja           |
 | `adminAttribute` | SAML-Attributname für Admin-Prüfung       | Nein         |
 | `adminValue`     | Attributwert, der Admin-Zugriff gewährt   | Nein         |
+
+Konfigurationsbeschriftungen werden über `stringsBaseUrl` aus den Sprachressourcen dieses Adapters geladen.

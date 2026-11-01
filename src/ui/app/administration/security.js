@@ -1,4 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
+import { extendI18n } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import {
     joinDurationMinutes,
@@ -77,7 +78,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalEnforceTfaForAllUsers = false;
     let originalLoginSessionTimeoutMinutes = 720;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
-    let emailDeliveryAvailable = false;
+    let validationModes = [];
     let initialized = false;
 
     async function loadSettings() {
@@ -146,10 +147,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function getValidationModeValue() {
-        if (!emailDeliveryAvailable) return "none";
         const select = root.querySelector("#security-user-validation-mode");
         if (!(select instanceof HTMLSelectElement)) return "none";
-        return select.value === "email" ? "email" : "none";
+        return select.value;
     }
 
     function getTeacherManualApprovalValue() {
@@ -237,10 +237,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
-        const effectiveOriginalValidationMode =
-            !emailDeliveryAvailable && originalUserValidationMode === "email"
-                ? "none"
-                : originalUserValidationMode;
+        const effectiveOriginalValidationMode = originalUserValidationMode;
         const modeChanged =
             getValidationModeValue() !== effectiveOriginalValidationMode;
         const teacherApprovalChanged =
@@ -260,14 +257,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function bindSecurityInputs(settings, passwordPolicy, emailAvailable) {
+    function bindSecurityInputs(settings, passwordPolicy) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
-        emailDeliveryAvailable = emailAvailable;
+        validationModes = settings.userValidationModes ?? validationModes;
 
         originalDomains = settings.trustedDomains ?? [];
-        currentUserValidationMode =
-            settings.userValidationMode === "email" ? "email" : "none";
+        currentUserValidationMode = settings.userValidationMode ?? "none";
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
@@ -296,21 +292,20 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             "#security-login-session-timeout-unit",
         );
         if (validationSelect instanceof HTMLSelectElement) {
-            const emailOption = validationSelect.querySelector(
-                "option[value='email']",
-            );
-            const effectiveValidationMode =
-                !emailDeliveryAvailable && currentUserValidationMode === "email"
-                    ? "none"
-                    : currentUserValidationMode;
-            if (emailOption instanceof HTMLOptionElement && !emailAvailable) {
-                emailOption.disabled = true;
-                emailOption.hidden = true;
-                emailOption.textContent = i18n.t(
-                    "ui.app.admin.security.user_validation_mode.email_delivery_unavailable",
-                );
-            }
-            validationSelect.value = effectiveValidationMode;
+            const choices = [...validationModes];
+            if (!choices.some((mode) => mode.id === currentUserValidationMode))
+                choices.push({
+                    id: currentUserValidationMode,
+                    labelKey: "ui.reuse.unavailable",
+                    available: false,
+                });
+            validationSelect.innerHTML = choices
+                .map(
+                    (mode) =>
+                        `<option value="${escapeHtml(mode.id)}"${mode.available ? "" : " disabled"}>${escapeHtml(i18n.t(mode.labelKey))}</option>`,
+                )
+                .join("");
+            validationSelect.value = currentUserValidationMode;
         }
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
@@ -340,15 +335,19 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const [settings, passwordPolicy, emailAvailable] =
-                await Promise.all([
-                    loadSettings(),
-                    loadPasswordPolicy(),
-                    uiCtx.capabilities
-                        .get("notify:emailClient")
-                        ?.emailAvailable() ?? false,
-                ]);
-            bindSecurityInputs(settings, passwordPolicy, emailAvailable);
+            const [settings, passwordPolicy] = await Promise.all([
+                loadSettings(),
+                loadPasswordPolicy(),
+            ]);
+            const stringBases = [
+                ...new Set(
+                    (settings.userValidationModes ?? [])
+                        .map((mode) => mode.stringsBaseUrl)
+                        .filter(Boolean),
+                ),
+            ];
+            i18n = await extendI18n(i18n, stringBases);
+            bindSecurityInputs(settings, passwordPolicy);
             initialized = true;
         },
 
@@ -357,10 +356,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 await this.init();
                 return;
             }
-            const emailAvailable =
-                (await uiCtx.capabilities
-                    .get("notify:emailClient")
-                    ?.emailAvailable()) ?? false;
             bindSecurityInputs(
                 {
                     trustedDomains: originalDomains,
@@ -371,15 +366,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                         originalLoginSessionTimeoutMinutes,
                 },
                 originalPasswordPolicy,
-                emailAvailable,
             );
         },
 
         async save() {
             const domains = parseDomains(getInputValue());
-            const validationMode = emailDeliveryAvailable
-                ? getValidationModeValue()
-                : originalUserValidationMode;
+            const validationMode = getValidationModeValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
             const enforceTfaForAllUsers = getEnforceTfaForAllUsersValue();
@@ -415,11 +407,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 "#security-user-validation-mode",
             );
             if (validationSelect instanceof HTMLSelectElement) {
-                validationSelect.value =
-                    !emailDeliveryAvailable &&
-                    originalUserValidationMode === "email"
-                        ? "none"
-                        : originalUserValidationMode;
+                validationSelect.value = originalUserValidationMode;
             }
             const teacherApprovalToggle = root.querySelector(
                 "#security-require-teacher-approval",
@@ -485,8 +473,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </h3>
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="theme-select">
-                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
-                <option value="email">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.email"))}</option>
+
               </select>
             </div>
           </div>

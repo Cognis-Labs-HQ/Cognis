@@ -1,4 +1,7 @@
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+} from "../../../../../contracts/sender.js";
 
 export function createNotificationSender(): NotificationSender {
     let receive: (message: NotificationEnvelope) => void;

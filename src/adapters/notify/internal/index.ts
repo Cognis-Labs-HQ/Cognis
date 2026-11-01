@@ -1,10 +1,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 import type {
     NotificationEnvelope,
     NotificationSender,
     NotifyAdapterBootstrapCtx,
-} from "@cognis/core";
+} from "../../../gateways/notify/contracts/sender.js";
 import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,

@@ -67,6 +67,7 @@ export function createTfaAdapterAdminRoutes(
                             .filter((field) => field.required)
                             .map((field) => field.key),
                         schema,
+                        stringsBaseUrl: adapter.stringsBaseUrl,
                         supportsTest: false,
                     }),
                 );

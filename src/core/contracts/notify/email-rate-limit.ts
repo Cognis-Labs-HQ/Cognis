@@ -1,1 +1,0 @@
-export const EMAIL_DELIVERY_RATE_LIMIT_MS = 15_000;

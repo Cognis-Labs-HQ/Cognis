@@ -10,29 +10,18 @@ const LOGIN_STYLE_SOURCE = readFileSync(
     "utf8",
 );
 
-test("login required-email enforcement resolves helper from flow-provided integration", () => {
-    const source =
-        readFileSync(
-            resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
-            "utf8",
-        ) +
-        readFileSync(
-            resolve(ROOT, "src/gateways/auth/ui/login-page/client-loaders.js"),
-            "utf8",
-        );
-    const integrationSource = readFileSync(
-        resolve(ROOT, "src/gateways/auth/ui/login-page/integrations.js"),
+test("login completion invokes server-provided setup integrations", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
         "utf8",
     );
-    assert.match(source, /loadClient\(\s*"required-email-enforcement"/);
     assert.match(
         source,
-        /loadClient\(\s*"required-email-enforcement",\s*\(module\)\s*=>\s*module\.createRequiredEmailEnforcementClient\(\)/,
+        /for \(const integration of data\?\.integrations \?\? \[\]\)/,
     );
-    assert.match(integrationSource, /async function loadClient\(/);
-    assert.match(integrationSource, /fetch\("\/api\/v1\/auth\/login-ui"\)/);
-    assert.match(source, /requiredEmailClient\?\.enforceRequiredEmailSetup/);
-    assert.doesNotMatch(source, /\/api\/v1\/users\/\$\{encodeURIComponent/);
+    assert.match(source, /scriptUrl\.origin !== window\.location\.origin/);
+    assert.match(source, /const client = await import\(scriptUrl\.href\)/);
+    assert.match(source, /await client\.enforceSetup\(\{/);
 });
 
 test("login UI includes password reset token flow and nested signup callout link", () => {

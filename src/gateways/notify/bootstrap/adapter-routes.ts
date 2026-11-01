@@ -68,6 +68,10 @@ export function createGatewayAdapterRoutes(
                 res.end(
                     JSON.stringify({
                         data: contract.config,
+                        schema: contract.schema,
+                        testSchema: contract.testSchema,
+                        stringsBaseUrl: contract.stringsBaseUrl,
+                        configuredSecretFields: contract.configuredSecretFields,
                         envValues: contract.envValues,
                         requiredFields: contract.requiredFields,
                         supportsTest: contract.supportsTest,

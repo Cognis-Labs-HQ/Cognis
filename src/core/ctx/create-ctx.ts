@@ -15,6 +15,10 @@ import { removeFlowStageHook as removeFlowStageHookImpl } from "./remove-flow-st
 import { requireCapability as requireCapabilityImpl } from "./require-capability.js";
 import { runFlow as runFlowImpl } from "./run-flow.js";
 import { createCtxState } from "./state.js";
+import {
+    CAPABILITY_CONTRACTS,
+    createCapabilityContracts,
+} from "./capability-contracts.js";
 import { unregisterFlow as unregisterFlowImpl } from "./unregister-flow.js";
 import type {
     Ctx,
@@ -104,5 +108,9 @@ export function createCtx(): Ctx {
         },
     };
 
+    ctx.contributePublicCapability(
+        CAPABILITY_CONTRACTS,
+        createCapabilityContracts(ctx),
+    );
     return ctx;
 }

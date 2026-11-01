@@ -1,0 +1,30 @@
+<resources>
+    <string name="adapter.smtp.config.host">SMTP-Server</string>
+    <string name="adapter.smtp.config.port">Port</string>
+    <string name="adapter.smtp.config.secure">Sicherheit</string>
+    <string name="adapter.smtp.config.from">Absenderadresse</string>
+    <string name="adapter.smtp.config.user">Benutzername</string>
+    <string name="adapter.smtp.config.password">Passwort</string>
+    <string name="adapter.smtp.config.secure_none">Keine</string>
+    <string name="adapter.smtp.config.secure_starttls">STARTTLS</string>
+    <string name="adapter.smtp.config.secure_tls">TLS</string>
+    <string name="adapter.smtp.config.allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
+    <string name="adapter.smtp.config.auth_disabled">Authentifizierung deaktivieren</string>
+    <string name="adapter.smtp.config.code_length">Codelänge</string>
+    <string name="adapter.smtp.config.sender_name">Absendername</string>
+    <string name="adapter.smtp.template.standard">Standard-E-Mail</string>
+    <string name="adapter.smtp.template.code">Bestätigungscode</string>
+    <string name="adapter.smtp.template.action">E-Mail mit Aktion</string>
+    <string name="adapter.smtp.template.digest">Zusammenfassung</string>
+    <string name="adapter.smtp.template.option.brand_name">Markenname</string>
+    <string name="adapter.smtp.template.option.brand_url">Marken-URL</string>
+    <string name="adapter.smtp.template.option.logo_url">Logo-URL</string>
+    <string name="adapter.smtp.template.option.footer_text">Fußzeilentext</string>
+    <string name="adapter.smtp.template.option.preview_text">Vorschautext</string>
+    <string name="adapter.smtp.template.option.heading">Überschrift</string>
+    <string name="adapter.smtp.email.footer">Dies ist eine automatische Benachrichtigung. Bitte antworten Sie nicht.</string>
+    <string name="adapter.smtp.email.action">Nachricht öffnen</string>
+    <string name="adapter.smtp.config.greylist_retries">Wiederholungen bei Greylisting</string>
+    <string name="adapter.smtp.config.greylist_retry_delay">Greylisting-Wartezeit (ms)</string>
+    <string name="adapter.smtp.config.test_recipient">Testempfänger</string>
+</resources>

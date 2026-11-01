@@ -1,0 +1,30 @@
+<resources>
+    <string name="adapter.smtp.config.host">SMTPホスト</string>
+    <string name="adapter.smtp.config.port">ポート</string>
+    <string name="adapter.smtp.config.secure">セキュリティ</string>
+    <string name="adapter.smtp.config.from">送信元アドレス</string>
+    <string name="adapter.smtp.config.user">ユーザー名</string>
+    <string name="adapter.smtp.config.password">パスワード</string>
+    <string name="adapter.smtp.config.secure_none">なし</string>
+    <string name="adapter.smtp.config.secure_starttls">STARTTLS</string>
+    <string name="adapter.smtp.config.secure_tls">TLS</string>
+    <string name="adapter.smtp.config.allow_self_signed">自己署名証明書を許可する</string>
+    <string name="adapter.smtp.config.auth_disabled">認証を無効にする</string>
+    <string name="adapter.smtp.config.code_length">コード長</string>
+    <string name="adapter.smtp.config.sender_name">送信者名</string>
+    <string name="adapter.smtp.template.standard">標準メール</string>
+    <string name="adapter.smtp.template.code">確認コード</string>
+    <string name="adapter.smtp.template.action">操作用メール</string>
+    <string name="adapter.smtp.template.digest">ダイジェスト</string>
+    <string name="adapter.smtp.template.option.brand_name">ブランド名</string>
+    <string name="adapter.smtp.template.option.brand_url">ブランド URL</string>
+    <string name="adapter.smtp.template.option.logo_url">ロゴ URL</string>
+    <string name="adapter.smtp.template.option.footer_text">フッターテキスト</string>
+    <string name="adapter.smtp.template.option.preview_text">プレビューテキスト</string>
+    <string name="adapter.smtp.template.option.heading">見出し</string>
+    <string name="adapter.smtp.email.footer">このメールは自動送信の通知です。返信しないでください。</string>
+    <string name="adapter.smtp.email.action">メッセージを開く</string>
+    <string name="adapter.smtp.config.greylist_retries">グレーリスト再試行回数</string>
+    <string name="adapter.smtp.config.greylist_retry_delay">グレーリスト再試行間隔（ミリ秒）</string>
+    <string name="adapter.smtp.config.test_recipient">テスト送信先</string>
+</resources>

@@ -29,3 +29,5 @@ Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/oidc/config` (hanya admi
 | `clientSecret` | Rahasia klien OAuth2                                   | Ya         |
 | `discoveryUrl` | URL dokumen discovery OpenID Connect                   | Ya         |
 | `adminRoles`   | Peran token yang memberikan akses admin (dipisah koma) | Tidak      |
+
+Label konfigurasi dibaca melalui `stringsBaseUrl` dari sumber bahasa adapter ini.

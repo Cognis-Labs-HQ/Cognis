@@ -101,3 +101,7 @@ export interface AuthAccountStore {
 | `auth:accounts`     | Auth-Gateway        | Eingebauter Account-Lebenszyklus und Authentifizierungsrichtlinienverkabelung       |
 | `modules:lifecycle` | Modulrouten         | Modullisting, Aktivierungs-/Deaktivierungssteuerungen und Richtlinienprüfungen      |
 | `ui:shell`          | UI-Routen           | Gemeinsames Anwendungsshell-Routing und Admin-Betriebsoberfläche                    |
+
+## Laufzeitverträge
+
+Domänenverträge werden während des Bootstraps durch ihre Besitzer über die öffentliche Registry `system:contracts` deklariert. `define(id, { version, kind, members, description })` beschreibt die Struktur; `resolve(id, version)` prüft die öffentliche Implementierung und bindet den Zugriff an diese Registrierung. Rollback und Deaktivierung entfernen Definitionen; Reaktivierung stellt sie wieder her. Module verwenden ihren eigenen Namensraum. Die Auflösung im Modulkontext erhält die Berechtigungsprüfung des Hosts. Neue Modulverträge benötigen keine Core-Quelldatei; optionale Typdeklarationen liegen im öffentlichen Vertragsverzeichnis des Anbieters. Bestätigungscodes gehören zur gemeinsamen Server-Wiederverwendung und werden durch Auth als `auth:verificationCodes` bereitgestellt, nicht durch Core.

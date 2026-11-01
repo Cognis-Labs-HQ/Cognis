@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">1 jam terakhir</string>
   <string name="ui.app.admin.logs.time_range.6h">6 jam terakhir</string>
   <string name="ui.app.admin.logs.time_range.24h">24 jam terakhir</string>
-  <string name="ui.app.admin.notif.smtp_host">Host SMTP</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Keamanan</string>
-  <string name="ui.app.admin.notif.smtp_from">Alamat Pengirim</string>
-  <string name="ui.app.admin.notif.smtp_user">Nama Pengguna</string>
-  <string name="ui.app.admin.notif.smtp_password">Kata Sandi</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">Tidak Ada</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Simpan Pengaturan</string>
   <string name="ui.app.admin.notif.test_email">Kirim Email Uji</string>
   <string name="ui.app.admin.notif.test_email_to">Alamat email penerima</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Alamat email penerima wajib diisi.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Mengganti variabel lingkungan</string>
   <string name="ui.app.admin.notif.required_field">Nilai Wajib</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Panjang Kode</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Nama Pengirim</string>
   <string name="ui.app.admin.security.title">Keamanan</string>
   <string name="ui.app.admin.security.trusted_domains_label">Domain Tepercaya</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain tepercaya yang dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain email, sementara tautan eksternal tetap dibatasi ke situs ini. Subdomain yang cocok juga diizinkan.</string>
@@ -634,4 +621,8 @@
   <string name="ui.app.settings.language_offline_locked">Hubungkan untuk menambah atau menghapus bahasa antarmuka. Bahasa terpilih tetap dapat diurutkan ulang.</string>
   <string name="ui.app.users.details_failed">Rincian pengguna ini tidak dapat dimuat. Silakan coba lagi.</string>
   <string name="ui.app.users.refresh_failed">Perubahan tersimpan, tetapi daftar Pengguna tidak dapat diperbarui. Muat ulang halaman untuk melihat data terbaru.</string>
+  <string name="ui.reuse.none">Tidak Ada</string>
+  <string name="ui.reuse.unavailable">Tidak Tersedia</string>
+    <string name="ui.reuse.test">Uji</string>
+    <string name="ui.app.admin.security.validation_unavailable">Metode validasi ini tidak tersedia.</string>
 </resources>

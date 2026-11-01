@@ -57,4 +57,5 @@
   <string name="gateway.notify.broadcast.acknowledge">確認</string>
   <string name="gateway.notify.broadcast.action_failed">一斉通知の状態更新に失敗しました。</string>
   <string name="gateway.notify.broadcast.invalid_redirect">リダイレクトURLが無効か、信頼されていません。</string>
+    <string name="gateway.notify.validation.email">確認済みメールアドレス</string>
 </resources>

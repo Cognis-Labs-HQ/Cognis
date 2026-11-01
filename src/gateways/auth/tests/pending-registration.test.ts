@@ -1,3 +1,5 @@
+import { registerUserValidationModes } from "../user-validation.js";
+import { runBootstrapScope } from "@cognis/core";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CapabilityStore, CTX_CAPABILITY, createCtx } from "@cognis/core";
@@ -23,6 +25,9 @@ async function registrationFixture() {
     const system = createCtx();
     const capabilities = new CapabilityStore();
     capabilities.contribute(CTX_CAPABILITY, system);
+    await runBootstrapScope(system, "gateway:auth", async () =>
+        registerUserValidationModes({ capabilities } as never),
+    );
     const accounts = new VolatileLocalAccountStore();
     // Login creation uses the shared account identity methods, not local password registration.
     const accountStore = accounts as unknown as AuthAccountStore;

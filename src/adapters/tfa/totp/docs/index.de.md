@@ -26,3 +26,5 @@ Stellt zeitbasierte Einmalpasswort-Prüfung für das TFA-Gateway bereit.
 Der Adapter bietet eine Admin-Einstellung:
 
 - `algorithm` — HMAC-Algorithmus für Setup- und Login-Prüfung.
+
+Die Methode deklariert Platzhalter, Sprachbasis und Konfigurationsbeschriftungen; das Gateway stellt diese ohne Verzweigung nach Anbieterkennung dar.

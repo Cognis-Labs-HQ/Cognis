@@ -654,7 +654,7 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
     }
 });
 
-test("SmtpNotificationSender email uses dark theme colors when theme is dark", async () => {
+test("SmtpNotificationSender email uses its recipient theme rather than caller metadata", async () => {
     let capturedData = "";
 
     const server = await createMockSmtpServer((conn) => {
@@ -690,6 +690,7 @@ test("SmtpNotificationSender email uses dark theme colors when theme is dark", a
             undefined,
             noopSleep,
         );
+        sender.setRecipientThemeResolver(async () => "dark");
         await sender.send({
             purpose: "test",
             category: "test",

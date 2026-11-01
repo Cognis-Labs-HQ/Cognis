@@ -96,13 +96,18 @@ test("login issues setup-pending token when global TFA setup is required", async
         () => async () => false,
     );
 
-    await bootstrapAuth({
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow: systemCtx.flow,
-    });
+    await runBootstrapScope(
+        capabilities.require(CTX_CAPABILITY),
+        "gateway:auth",
+        () =>
+            bootstrapAuth({
+                adaptersRoot: "/nonexistent",
+                routeRegistry,
+                gatewayRegistry,
+                capabilities,
+                flow: systemCtx.flow,
+            }),
+    );
     await runBootstrapScope(systemCtx, "gateway:tfa", () =>
         bootstrapTfa({
             adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),

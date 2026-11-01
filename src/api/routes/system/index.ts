@@ -59,7 +59,7 @@ function parseDemoModeFromEnv() {
 
 function serializeSecuritySettings(input: {
     trustedDomains: string[];
-    userValidationMode: "none" | "email";
+    userValidationMode: string;
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
     loginSessionTimeoutMinutes: number;
@@ -83,9 +83,19 @@ export function createSystemRoutes(
     const listCapabilities = ctx.getCapability<() => string[]>(
         "system:listCapabilities",
     );
-    const canSendVerificationEmail = ctx.getCapability<() => boolean>(
-        "notify:emailAvailable",
-    );
+    const validationModes = () =>
+        ctx.getCapability<{
+            list(): Promise<
+                Array<{
+                    id: string;
+                    labelKey: string;
+                    stringsBaseUrl?: string;
+                    available: boolean;
+                    requiredFields?: string[];
+                }>
+            >;
+            assertSelectable(id: string, previous?: string): Promise<void>;
+        }>("auth:userValidationModes");
     const getEnforceTfaForAllUsers = ctx.getCapability<() => Promise<boolean>>(
         "tfa:getEnforceAllUsers",
     );
@@ -231,6 +241,8 @@ export function createSystemRoutes(
                     data: {
                         ...(data ?? defaultSecuritySettings()),
                         enforceTfaForAllUsers,
+                        userValidationModes:
+                            (await validationModes()?.list()) ?? [],
                     },
                 }),
             );
@@ -245,15 +257,49 @@ export function createSystemRoutes(
             if (!claims) return true;
             const body = await readJson(req);
             const trustedDomains = normalizeTrustedDomains(body.trustedDomains);
-            if (
-                body.userValidationMode != null &&
-                body.userValidationMode !== "none" &&
-                body.userValidationMode !== "email"
-            ) {
-                throw new Error("invalid_user_validation_mode");
-            }
+            const previous =
+                parseSecuritySettings(
+                    (await preferenceStore?.get(
+                        "__system__",
+                        SECURITY_SETTINGS_KEY,
+                    )) ?? null,
+                ) ?? defaultSecuritySettings();
             const userValidationMode =
-                body.userValidationMode === "email" ? "email" : "none";
+                body.userValidationMode ?? previous.userValidationMode;
+            if (
+                typeof userValidationMode !== "string" ||
+                !/^[a-z][a-zA-Z0-9:._-]{0,149}$/.test(userValidationMode)
+            )
+                throw new Error("invalid_user_validation_mode");
+            if (userValidationMode !== previous.userValidationMode) {
+                const registry = validationModes();
+                try {
+                    if (!registry)
+                        throw new Error("user_validation_unavailable");
+                    await registry.assertSelectable(
+                        userValidationMode,
+                        previous.userValidationMode,
+                    );
+                } catch (error) {
+                    if (
+                        !(error instanceof Error) ||
+                        error.message !== "user_validation_unavailable"
+                    )
+                        throw error;
+                    res.writeHead(400, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "user_validation_unavailable",
+                                field: "userValidationMode",
+                                messageKey:
+                                    "ui.app.admin.security.validation_unavailable",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
             const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
@@ -280,30 +326,6 @@ export function createSystemRoutes(
                     : normalizeLoginSessionTimeoutMinutes(
                           body.loginSessionTimeoutMinutes,
                       );
-            if (
-                userValidationMode === "email" &&
-                canSendVerificationEmail &&
-                !canSendVerificationEmail()
-            ) {
-                log?.(
-                    "warn",
-                    "Rejected email validation mode: email delivery unavailable.",
-                    {
-                        ...logMeta,
-                        accountId: claims.sub,
-                    },
-                );
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "email_delivery_unavailable",
-                            message: "No email delivery provider is available.",
-                        },
-                    }),
-                );
-                return true;
-            }
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",

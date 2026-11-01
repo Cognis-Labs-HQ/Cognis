@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapDisposer } from "../../ctx/bootstrap-scope.js";
-import type { CapabilityStore } from "../../services/gateway-service.js";
+import type { BootstrapDisposer } from "@cognis/core";
+import type { CapabilityStore } from "@cognis/core";
 import type { NotificationActionReceipt } from "./action-delivery.js";
 
 /**
@@ -39,6 +39,7 @@ export interface NotificationEnvelope {
     senderName?: string;
     actionUrl?: string;
     metadata?: Record<string, unknown>;
+    presentation?: Record<string, unknown>;
     attachments?: Array<{
         filename: string;
         contentType?: string;
@@ -99,6 +100,15 @@ export type NotificationChannelRegistration = BootstrapDisposer & {
     ): Promise<{ notificationId: string }>;
 };
 
+export interface NotificationConfigField {
+    key: string;
+    label: string;
+    type: "text" | "password" | "number" | "boolean" | "select" | "email";
+    options?: Array<string | { value: string; labelKey: string }>;
+    visibleWhen?: { field: string; equals: string | boolean };
+    requiredWhen?: { field: string; equals: string | boolean };
+}
+
 export interface NotificationSender {
     readonly senderId: string;
     readonly requiresVerifiedEmail?: boolean;
@@ -109,6 +119,10 @@ export interface NotificationSender {
     sendTracked?(envelope: NotificationEnvelope): Promise<{
         notificationId: string;
     }>;
+    readonly stringsBaseUrl?: string;
+    getConfigSchema?(): NotificationConfigField[];
+    getConfiguredSecretFields?(): string[];
+    getTestSchema?(): NotificationConfigField[];
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
     setDeliveryEnabled?(enabled: boolean): void;

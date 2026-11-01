@@ -1,0 +1,30 @@
+<resources>
+    <string name="adapter.smtp.config.host">Host SMTP</string>
+    <string name="adapter.smtp.config.port">Port</string>
+    <string name="adapter.smtp.config.secure">Keamanan</string>
+    <string name="adapter.smtp.config.from">Alamat Pengirim</string>
+    <string name="adapter.smtp.config.user">Nama Pengguna</string>
+    <string name="adapter.smtp.config.password">Kata Sandi</string>
+    <string name="adapter.smtp.config.secure_none">Tidak Ada</string>
+    <string name="adapter.smtp.config.secure_starttls">STARTTLS</string>
+    <string name="adapter.smtp.config.secure_tls">TLS</string>
+    <string name="adapter.smtp.config.allow_self_signed">Izinkan Sertifikat Self-Signed</string>
+    <string name="adapter.smtp.config.auth_disabled">Nonaktifkan Autentikasi</string>
+    <string name="adapter.smtp.config.code_length">Panjang Kode</string>
+    <string name="adapter.smtp.config.sender_name">Nama Pengirim</string>
+    <string name="adapter.smtp.template.standard">Email Standar</string>
+    <string name="adapter.smtp.template.code">Kode Verifikasi</string>
+    <string name="adapter.smtp.template.action">Email Tindakan</string>
+    <string name="adapter.smtp.template.digest">Ringkasan</string>
+    <string name="adapter.smtp.template.option.brand_name">Nama Merek</string>
+    <string name="adapter.smtp.template.option.brand_url">URL Merek</string>
+    <string name="adapter.smtp.template.option.logo_url">URL Logo</string>
+    <string name="adapter.smtp.template.option.footer_text">Teks Kaki Email</string>
+    <string name="adapter.smtp.template.option.preview_text">Teks Pratinjau</string>
+    <string name="adapter.smtp.template.option.heading">Judul</string>
+    <string name="adapter.smtp.email.footer">Ini adalah pemberitahuan otomatis. Mohon jangan membalas.</string>
+    <string name="adapter.smtp.email.action">Buka Pesan</string>
+    <string name="adapter.smtp.config.greylist_retries">Percobaan Ulang Greylist</string>
+    <string name="adapter.smtp.config.greylist_retry_delay">Jeda Percobaan Greylist (ms)</string>
+    <string name="adapter.smtp.config.test_recipient">Penerima Uji</string>
+</resources>

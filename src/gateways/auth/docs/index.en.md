@@ -134,7 +134,7 @@ Authenticated pages permit media from same-origin routes and browser-generated `
 
 ## Session Setup
 
-Every authenticated session checks `/api/v1/auth/setup-status`, including sessions restored after an SSO redirect. The notification owner contributes required email setup through `auth:getSetupIntegrations(accountId, role)`, returning same-origin setup scripts that export `enforceSetup({ accountId })`. Setup finishes before the session is approved for navigation or offline use. SMTP delivery outages do not waive required verification; the initial founder administrator remains exempt.
+Every authenticated session checks `/api/v1/auth/setup-status`, including restored SSO sessions. Auth owns `auth:getSetupIntegrations(accountId, role)` and evaluates the selected registered validation mode. Its provider supplies same-origin scripts exporting `enforceSetup({ accountId })`. Required setup completes before navigation or offline use; provider unavailability does not waive the policy. Founder administrator recovery remains exempt.
 
 ## Login Feedback
 
@@ -161,3 +161,7 @@ Queued records include the server-verified account-instance identifier. Auth ret
 ## Bounded SSO Registration Attempts
 
 Invitation-gated SSO identities are held before account, profile or email provisioning. Cancelled or expired attempts cannot resume; expiry is enforced at the exact deadline for registration and TFA. Enabling the public registration adapter still permits SSO account creation independently of native public signup. Existing accounts are not deleted based on their provider or age.
+
+## Registered Validation Modes
+
+`auth:userValidationModes.register` accepts an ID, localized label, optional resource base, required registration fields, availability callback, validation callback and optional setup integration. Registration is bootstrap-only and owned by the contributor’s lifecycle. Auth evaluates the selected callback through `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`); it has no method-ID switch. Missing or unavailable configured policies fail closed. Founder administrator recovery remains exempt. Administration displays registered metadata; an unavailable saved choice stays selected rather than silently changing the policy.

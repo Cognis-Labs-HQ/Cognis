@@ -4,7 +4,11 @@ import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
 } from "../gateway.js";
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+} from "../contracts/sender.js";
 
 class CapturingSender implements NotificationSender {
     readonly senderId: string;

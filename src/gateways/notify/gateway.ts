@@ -21,7 +21,8 @@ export type {
     NotificationDispatchResult,
     NotificationChannelRegistration,
     NotificationSender,
-} from "@cognis/core";
+} from "./contracts/sender.js";
+
 import type {
     NotifyAdapterBootstrapCtx,
     NotificationEnvelope,
@@ -35,7 +36,7 @@ import type {
     NotificationDispatchResult,
     NotificationChannelRegistration,
     NotificationSender,
-} from "@cognis/core";
+} from "./contracts/sender.js";
 
 export interface NotificationGateway {
     registerSender(sender: NotificationSender): void;
@@ -456,6 +457,10 @@ export class CoreNotificationGateway implements NotificationGateway {
     }
 
     getSenderAdminContract(senderId: string): {
+        schema: import("./contracts/sender.js").NotificationConfigField[];
+        testSchema: import("./contracts/sender.js").NotificationConfigField[];
+        stringsBaseUrl?: string;
+        configuredSecretFields: string[];
         config: Record<string, unknown>;
         envValues: Record<string, string | undefined>;
         requiredFields: string[];
@@ -465,6 +470,10 @@ export class CoreNotificationGateway implements NotificationGateway {
         const sender = this.senders.get(senderId);
         if (!sender?.getConfig) return null;
         return {
+            schema: sender.getConfigSchema?.() ?? [],
+            testSchema: sender.getTestSchema?.() ?? [],
+            stringsBaseUrl: sender.stringsBaseUrl,
+            configuredSecretFields: sender.getConfiguredSecretFields?.() ?? [],
             config: sender.getConfig(),
             envValues: sender.getEnvValues?.() ?? {},
             requiredFields: sender.getRequiredFields?.() ?? [],

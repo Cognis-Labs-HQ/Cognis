@@ -5,6 +5,7 @@ export interface NotificationActionMessage {
     senderName?: string;
     actionUrl?: string;
     actionLabel?: string;
+    presentation?: Record<string, unknown>;
 }
 
 export type NotificationAction = (
@@ -14,6 +15,7 @@ export type NotificationAction = (
 export type RegisterNotificationAction = (
     id: string,
     action: NotificationAction,
+    options?: { factory?: string; options?: Record<string, unknown> },
 ) => Promise<string>;
 
 export interface EmailActionInput {
@@ -21,7 +23,6 @@ export interface EmailActionInput {
     recipientEmail: string;
     variables: Record<string, string>;
     config?: Record<string, unknown>;
-    theme?: string;
 }
 
 export type SendEmailAction = (input: EmailActionInput) => Promise<

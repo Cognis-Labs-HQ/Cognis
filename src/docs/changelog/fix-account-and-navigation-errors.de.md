@@ -2,6 +2,10 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## Erweiterbare Anbieterverträge
+
+Auth-Prüfmodi werden über ctx mit eigenen Funktionen, Verfügbarkeit und UI-Metadaten registriert. Administration erhält nicht verfügbare gespeicherte Auswahlen und prüft Änderungen. Eine allgemeine versionierte Laufzeitregistry ermöglicht Verträge für Gateways, Adapter und externe Module ohne Core-Domänendateien; Modulberechtigungen und Lebenszykluswiderruf bleiben erhalten. Prüfhelfer liegen in gemeinsamer Server-Wiederverwendung und Auth. SMTP besitzt Konfigurationsschema und kombinierbare Vorlagenfabriken mit Moduloptionen. E-Mails verwenden das Empfängerthema, standardmäßig hell, mit maskiertem HTML und Klartext. TFA verwendet Methodenmetadaten und Codelängen-/Intervallrichtlinien des E-Mail-Anbieters. KI-Anweisungen schreiben diesen erweiterungsorientierten Ansatz vor.
+
 ## Zuverlässige Benutzerverwaltung
 
 Die Benutzerverwaltung erkennt das aktuelle Konto anhand der gespeicherten Konto-ID, auch bei opaken SSO-Sitzungen. Eigene Kontosteuerungen beachten den Serverschutz. Fehler beim Laden von Kontodetails verwenden eine eigene Übersetzung. Eine fehlgeschlagene Aktualisierung macht eine bestätigte Änderung nicht zum Speicherfehler; die bisherige Liste bleibt mit einer Aktualisierungswarnung sichtbar.
@@ -26,7 +30,7 @@ Das gemeinsame SMTP-Prüfintervall beträgt fünfzehn Sekunden. Pausen gelten je
 
 ## Quellen und Einrichtung
 
-Quellenzugangsdaten und der Erkennungscache werden von allen Administratoren gemeinsam verwendet; Geheimnisse bleiben verborgen auf dem Server. Ein leeres Passwortfeld behält den gespeicherten Wert bei. Schlüsselbund-Einstellungen warten auf den maßgeblichen Status, unvollständige TFA-Einrichtung erfordert eine Verwerfen-Bestätigung und interne Einstellungen-/Freigabeweiterleitungen erhalten die SPA-Navigation. Schlüsselbund: **2.1.1**, TFA: **1.1.20**.
+Quellenzugangsdaten und der Erkennungscache werden von allen Administratoren gemeinsam verwendet; Geheimnisse bleiben verborgen auf dem Server. Ein leeres Passwortfeld behält den gespeicherten Wert bei. Schlüsselbund-Einstellungen warten auf den maßgeblichen Status, unvollständige TFA-Einrichtung erfordert eine Verwerfen-Bestätigung und interne Einstellungen-/Freigabeweiterleitungen erhalten die SPA-Navigation. Schlüsselbund: **2.1.1**, TFA: **1.2.0**.
 
 Implizites Absenden gebundener Formulare löst keine Dokumentanfrage des Browsers aus. Komponenten erhalten das Absendeereignis weiterhin. Interne Weiterleitungen verwenden den SPA-Router. Bewusste Wechsel zu serverseitig dargestellten Seiten beachten die Bestätigung ungespeicherter Änderungen und prüfen beim Fortsetzen erneut die Offline-Verfügbarkeit.
 
@@ -48,7 +52,7 @@ Der Sendervertrag verwendet `test(recipient, config)` und optionale Bootstrap-, 
 
 ## Review-Korrekturen
 
-Die GitLab-Repository-Prüfung berücksichtigt das konfigurierte Installationspräfix und behält Ursprungs- und Namensraumgrenzen bei. Gateway-Lebenszykluswechsel laufen asynchron und nacheinander: Aufrufer warten auf Aktivierung und Deaktivierung, Bootstrap-Ressourcen bleiben bis zur Deaktivierung ihres Besitzers erhalten, und fehlgeschlagene Aktivierungen werden zurückgenommen. Adapter erhalten eine eigene Bootstrap-Identität. SMTP TFA ist **1.0.38**.
+Die GitLab-Repository-Prüfung berücksichtigt das konfigurierte Installationspräfix und behält Ursprungs- und Namensraumgrenzen bei. Gateway-Lebenszykluswechsel laufen asynchron und nacheinander: Aufrufer warten auf Aktivierung und Deaktivierung, Bootstrap-Ressourcen bleiben bis zur Deaktivierung ihres Besitzers erhalten, und fehlgeschlagene Aktivierungen werden zurückgenommen. Adapter erhalten eine eigene Bootstrap-Identität. SMTP TFA ist **1.1.0**.
 
 ## Sichere Laufzeitanfragen
 

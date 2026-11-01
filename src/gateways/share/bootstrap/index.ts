@@ -1,8 +1,5 @@
-import {
-    requireBootstrapScope,
-    type BootstrapDisposer,
-    type RegisterNotificationAction,
-} from "@cognis/core";
+import { requireBootstrapScope, type BootstrapDisposer } from "@cognis/core";
+import type { RegisterNotificationAction } from "../../notify/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

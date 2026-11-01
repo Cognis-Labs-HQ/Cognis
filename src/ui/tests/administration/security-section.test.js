@@ -25,18 +25,14 @@ test("administration security section renders password policy controls", () => {
     assert.match(source, /enforceTfaForAllUsers/);
 });
 
-test("administration security section hides email validation when delivery is unavailable", () => {
+test("administration security section renders registered validation metadata", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/administration/security.js"),
         "utf8",
     );
-
-    assert.match(source, /emailOption\.hidden = true/);
-    assert.match(source, /if \(!emailDeliveryAvailable\) return "none"/);
-    assert.match(
-        source,
-        /const validationMode = emailDeliveryAvailable[\s\S]*: originalUserValidationMode/,
-    );
+    assert.match(source, /settings.userValidationModes/);
+    assert.match(source, /mode.labelKey/);
+    assert.match(source, /mode.available/);
 });
 
 test("administration dependency links scroll centered after expanding target gateway", () => {

@@ -112,6 +112,12 @@ function toOtpAuthUri(input: {
 
 class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
+    readonly stringsBaseUrl = "/static/adapters/tfa/totp/languages";
+    readonly loginUi = {
+        placeholderKey: "ui.app.login.tfa.code_placeholder_totp",
+        supportsResend: false,
+        challengeOnSelect: false,
+    };
     readonly name = "Authenticator App";
     readonly defaultEnabled = true;
 
@@ -266,7 +272,7 @@ class TotpAdapter implements TfaMethodAdapter {
         return [
             {
                 key: "algorithm",
-                label: "HMAC Algorithm",
+                label: "adapter.totp.config.algorithm",
                 type: "select" as const,
                 required: false,
                 options: [...TOTP_ALGORITHMS],

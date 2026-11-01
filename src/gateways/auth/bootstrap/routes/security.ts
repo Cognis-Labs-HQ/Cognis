@@ -24,7 +24,7 @@ export interface SecuritySubsection {
 }
 
 interface SecuritySettings {
-    userValidationMode: "none" | "email";
+    userValidationMode: string;
     loginSessionTimeoutMinutes: number;
 }
 
@@ -103,6 +103,17 @@ export function createSecurityRoutes({
         ) {
             const enabled = await registrationsEnabled();
             const { userValidationMode } = await readSecuritySettings();
+            const modes =
+                (await capabilities
+                    .get<{
+                        list(): Promise<
+                            Array<{ id: string; requiredFields?: string[] }>
+                        >;
+                    }>("auth:userValidationModes")
+                    ?.list()) ?? [];
+            const requiredFields =
+                modes.find((mode) => mode.id === userValidationMode)
+                    ?.requiredFields ?? [];
             const registrationCtx = capabilities.get<Ctx>("system:ctx");
             const flowResult = registrationCtx?.flow.exists(
                 "constructRegistrationUi",
@@ -144,6 +155,7 @@ export function createSecurityRoutes({
                     data: {
                         registrationsEnabled: enabled,
                         userValidationMode,
+                        requiredFields,
                         integrations,
                     },
                 }),

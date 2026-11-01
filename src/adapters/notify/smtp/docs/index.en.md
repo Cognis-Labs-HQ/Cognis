@@ -2,7 +2,7 @@
 
 ## Bootstrap and Channels
 
-SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application purposes or templates.
+SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application-specific purposes.
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
@@ -27,3 +27,41 @@ The sender contract uses generic `test(recipient, config)` and optional bootstra
 ## Configuration
 
 Configure `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, optional `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` and `COGNIS_SMTP_SECURE` (`none`, `starttls` or `tls`). Sender name, EHLO host, certificate policy, authentication policy and verification-code length use the existing adapter settings. Tests may supply a configuration override, retained with the queued message.
+
+## Factories and Recipient Theme
+
+`notify:emailTemplates` provides `blocks`, `compose`, `registerFactory`, `bindFactory`, `listFactories` and `render`. Built-in factories are `standard`, `code`, `action` and `digest`. During bootstrap a module can register its own factory with `id`, `labelKey`, `stringsBaseUrl`, typed `options` and a `render(message, { theme, variables, options })` callback. The returned ID includes the owner. Register a purpose with `{ factory, options }` as the third argument. Option schemas support required values, defaults and choices; unknown or invalid values are rejected before queue creation. Factories compose paragraphs, headings, codes, lists, tables, dividers and HTTP(S) action links. All text is escaped, and shell interpolation is single-pass. HTML and plain-text alternatives share the same content. Branding, logo, preheader and footer are configurable. Rendering uses the receiving account’s saved `ui-preferences.mode`; unknown recipients or missing preferences use light mode. Caller-supplied theme metadata cannot override the recipient. Disable or failed bootstrap removes factories and rejects in-flight results from revoked owners.
+
+```js
+export async function registerReport(ctx, heading) {
+    const templates = ctx
+        .getCapability("system:contracts")
+        .resolve("notify:emailTemplates", 1);
+    const factory = await templates.registerFactory({
+        id: "report",
+        labelKey: "module.example.report",
+        stringsBaseUrl: "/static/modules/example/languages",
+        options: {
+            heading: {
+                type: "string",
+                labelKey: "module.example.heading",
+                required: true,
+            },
+        },
+        render(message, { options }) {
+            return templates.compose(message, {
+                blocks: [
+                    templates.blocks.heading(options.heading),
+                    templates.blocks.paragraph(message.body),
+                ],
+            });
+        },
+    });
+    const purpose = await ctx.getCapability("notify:registerEmailPurpose")(
+        "report",
+        (variables) => ({ subject: variables.subject, body: variables.body }),
+        { factory, options: { heading } },
+    );
+    return purpose;
+}
+```

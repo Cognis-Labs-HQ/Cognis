@@ -94,7 +94,7 @@ export async function mount(root, { signal } = {}) {
     let tokenInvalid = false;
     let inviteAdapterDisabled = false;
     let openRegistrationsEnabled = false;
-    let userValidationMode = "none";
+    let requiredFields = [];
     let invalidTokenToastToken = null;
     let availableLanguages = [];
     let selectedLanguage = DEFAULT_LOCALE;
@@ -130,7 +130,7 @@ export async function mount(root, { signal } = {}) {
         if (!token && !hasTokenParam) {
             openRegistrationsEnabled = registrationConfig.registrationsEnabled;
         }
-        userValidationMode = registrationConfig.userValidationMode;
+        requiredFields = registrationConfig.requiredFields;
         for (const descriptor of registrationConfig.integrations) {
             try {
                 const integrationModule = await import(descriptor.scriptUrl);
@@ -380,10 +380,10 @@ export async function mount(root, { signal } = {}) {
             const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
-                emailRequired: userValidationMode === "email",
+                emailRequired: requiredFields.includes("email"),
             });
             const emailVerifyNoticeHtml =
-                !isInviteFlow && userValidationMode === "email"
+                !isInviteFlow && requiredFields.includes("email")
                     ? renderInPageCallout({
                           variant: "info",
                           body: i18n.t("ui.app.register.email_verify_notice"),
@@ -606,7 +606,7 @@ export async function mount(root, { signal } = {}) {
                     const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
-                        emailRequired: userValidationMode === "email",
+                        emailRequired: requiredFields.includes("email"),
                     });
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,

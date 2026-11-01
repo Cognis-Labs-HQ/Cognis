@@ -2,6 +2,10 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Extensible Provider Contracts
+
+Auth validation modes are registered through ctx with their own callbacks, availability and UI metadata. Administration preserves unavailable configured choices and validates new selections. A generic versioned runtime contract registry lets gateways, adapters and external modules publish contracts without Core domain files, preserving module authorization and lifecycle revocation. Verification helpers move to shared server reuse and Auth. SMTP owns its configuration schema and composable factories, including module-defined options. Emails use the receiving user’s theme, defaulting to light, with escaped HTML/plain-text content. TFA consumes method presentation metadata and the email provider’s code-length/cooldown policy. AI instructions now require this extension-first approach.
+
 ## Reliable User Administration
 
 Users identifies the current account by its stored account ID, including opaque SSO sessions. Self-management controls respect server protections. Failed account-detail loads use a Users-owned translation. A follow-up refresh failure does not change an acknowledged mutation into a failed save; the previous list remains visible with a refresh warning.
@@ -26,7 +30,7 @@ The shared SMTP verification interval is fifteen seconds. Cooldowns are normaliz
 
 ## Shared Sources and Setup
 
-Module source credentials and cached discovery are shared across administrators and concealed on the server. Blank credential saves preserve the configured value. Keyring Settings waits for authoritative state, unfinished TFA enrollment requires a discard decision, and internal Settings/share redirects preserve SPA navigation. Keyring is **2.1.1** and TFA is **1.1.20**.
+Module source credentials and cached discovery are shared across administrators and concealed on the server. Blank credential saves preserve the configured value. Keyring Settings waits for authoritative state, unfinished TFA enrollment requires a discard decision, and internal Settings/share redirects preserve SPA navigation. Keyring is **2.1.1** and TFA is **1.2.0**.
 
 Implicit submissions from attached forms are handled in place and cannot submit a browser document request. Component submit handlers still receive the event. Internal page redirects use the SPA router; deliberate server-rendered destinations honor the same unsaved-change decision and recheck offline availability when resumed.
 
@@ -48,7 +52,7 @@ The sender contract uses generic `test(recipient, config)` and optional bootstra
 
 ## Review Corrections
 
-GitLab repository validation includes the configured deployment prefix while preserving origin and namespace restrictions. Gateway lifecycle transitions are asynchronous and serialized: callers await enable/disable, bootstrap resources survive until their owner is disabled, and failed activation rolls back. Adapters receive their own bootstrap identity. SMTP TFA is **1.0.38**.
+GitLab repository validation includes the configured deployment prefix while preserving origin and namespace restrictions. Gateway lifecycle transitions are asynchronous and serialized: callers await enable/disable, bootstrap resources survive until their owner is disabled, and failed activation rolls back. Adapters receive their own bootstrap identity. SMTP TFA is **1.1.0**.
 
 ## Runtime Request Safety
 

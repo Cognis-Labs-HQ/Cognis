@@ -2,7 +2,7 @@
 
 ## ブートストラップとチャネル
 
-SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerEmailPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧やテンプレート一覧はありません。
+SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerEmailPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧はありません。
 
 ```js
 const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
@@ -27,3 +27,41 @@ await sendEmail({ purpose, recipientEmail, variables });
 ## 設定
 
 `COGNIS_SMTP_HOST`、`COGNIS_SMTP_PORT`（587）、`COGNIS_SMTP_FROM`、必要に応じて `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS`、`COGNIS_SMTP_SECURE`（`none`、`starttls`、`tls`）を設定します。送信者名、EHLO ホスト、証明書・認証方針、コード長は既存のアダプター設定を使います。テストメールは上書き設定をキューに保持できます。
+
+## ファクトリーと受信者のテーマ
+
+`notify:emailTemplates` は `blocks`、`compose`、`registerFactory`、`bindFactory`、`listFactories`、`render` を提供します。標準ファクトリーは `standard`、`code`、`action`、`digest` です。モジュールはブートストラップ中に `id`、`labelKey`、`stringsBaseUrl`、型付き `options`、`render(message, { theme, variables, options })` 関数を持つ独自ファクトリーを登録できます。返されたIDには所有者が含まれます。用途登録の第3引数に `{ factory, options }` を渡します。オプションは必須値、既定値、選択肢を指定でき、不明または不正な値はキュー作成前に拒否します。段落、見出し、コード、リスト、表、区切り、HTTP(S)アクションリンクを組み立てられます。テキストをエスケープし、テンプレート置換は1回だけ行います。HTMLとプレーンテキストの内容は共通です。ブランド、ロゴ、プレビュー、フッターを設定できます。テーマは受信アカウントの `ui-preferences.mode` を使い、不明な受信者や設定がない場合はライトモードにします。呼び出し側のテーマ指定で上書きできません。無効化やブートストラップ失敗でファクトリーを削除し、失効した所有者の処理中の結果も拒否します。
+
+```js
+export async function registerReport(ctx, heading) {
+    const templates = ctx
+        .getCapability("system:contracts")
+        .resolve("notify:emailTemplates", 1);
+    const factory = await templates.registerFactory({
+        id: "report",
+        labelKey: "module.example.report",
+        stringsBaseUrl: "/static/modules/example/languages",
+        options: {
+            heading: {
+                type: "string",
+                labelKey: "module.example.heading",
+                required: true,
+            },
+        },
+        render(message, { options }) {
+            return templates.compose(message, {
+                blocks: [
+                    templates.blocks.heading(options.heading),
+                    templates.blocks.paragraph(message.body),
+                ],
+            });
+        },
+    });
+    const purpose = await ctx.getCapability("notify:registerEmailPurpose")(
+        "report",
+        (variables) => ({ subject: variables.subject, body: variables.body }),
+        { factory, options: { heading } },
+    );
+    return purpose;
+}
+```

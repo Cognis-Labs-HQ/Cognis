@@ -83,3 +83,7 @@ Each adapter directory under `src/adapters/tfa/<adapter-id>/` provides the metho
 ## Layered TFA Discard Decisions
 
 After enrollment cancellation is acknowledged, navigation is offered again to the remaining page guards. Discarding enrollment does not discard unrelated Settings changes. Keeping those changes stops navigation; explicitly discarding them resumes it. An unmounted page cannot resume a retained enrollment navigation.
+
+## Method Presentation
+
+Each method supplies `stringsBaseUrl` and `loginUi` metadata: `placeholderKey`, `supportsResend` and `challengeOnSelect`. The login UI discovers these values rather than branching on provider IDs. Configuration labels are provider-owned translation keys.

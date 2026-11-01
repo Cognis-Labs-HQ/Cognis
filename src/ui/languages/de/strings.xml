@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">Letzte 1 Stunde</string>
   <string name="ui.app.admin.logs.time_range.6h">Letzte 6 Stunden</string>
   <string name="ui.app.admin.logs.time_range.24h">Letzte 24 Stunden</string>
-  <string name="ui.app.admin.notif.smtp_host">SMTP-Server</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Sicherheit</string>
-  <string name="ui.app.admin.notif.smtp_from">Absenderadresse</string>
-  <string name="ui.app.admin.notif.smtp_user">Benutzername</string>
-  <string name="ui.app.admin.notif.smtp_password">Passwort</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">Keine</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Einstellungen speichern</string>
   <string name="ui.app.admin.notif.test_email">Test-E-Mail senden</string>
   <string name="ui.app.admin.notif.test_email_to">Empfänger-E-Mail-Adresse</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Eine Empfänger-E-Mail-Adresse ist erforderlich.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Umgebungsvariable wird überschrieben</string>
   <string name="ui.app.admin.notif.required_field">Erforderlicher Wert</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Authentifizierung deaktivieren</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Codelänge</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Absendername</string>
   <string name="ui.app.admin.security.title">Sicherheit</string>
   <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige Domains</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Kommagetrennte Liste vertrauenswürdiger Domains. Leer lassen, um alle E-Mail-Domains zuzulassen, während externe Links auf diese Website beschränkt bleiben. Passende Subdomains sind ebenfalls erlaubt.</string>
@@ -634,4 +621,8 @@
   <string name="ui.app.settings.language_offline_locked">Verbinden Sie sich, um UI-Sprachen hinzuzufügen oder zu entfernen. Ausgewählte Sprachen können weiterhin umgeordnet werden.</string>
   <string name="ui.app.users.details_failed">Die Kontodetails konnten nicht geladen werden. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.users.refresh_failed">Die Änderung wurde gespeichert, aber die Benutzerliste konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuellen Daten zu sehen.</string>
+  <string name="ui.reuse.none">Keine</string>
+  <string name="ui.reuse.unavailable">Nicht verfügbar</string>
+    <string name="ui.reuse.test">Testen</string>
+    <string name="ui.app.admin.security.validation_unavailable">Diese Bestätigungsmethode ist nicht verfügbar.</string>
 </resources>

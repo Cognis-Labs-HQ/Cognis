@@ -52,3 +52,5 @@ Configure via `PUT /api/v1/gateways/auth/adapters/saml/config` (admin only).
 | `certificate`    | IdP X.509 signing certificate (PEM format, without header/footer)      | Yes      |
 | `adminAttribute` | SAML attribute name whose value is checked for admin access            | No       |
 | `adminValue`     | Attribute value that grants admin access (e.g. `admin`, `true`)        | No       |
+
+Configuration labels are resolved from this adapter’s language resources through `stringsBaseUrl`.

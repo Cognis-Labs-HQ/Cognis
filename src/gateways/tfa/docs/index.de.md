@@ -81,3 +81,7 @@ Jeder Adapter unter `src/adapters/tfa/<adapter-id>/` implementiert methodenspezi
 ## Getrennte TFA-Verwerfungsfragen
 
 Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übrigen Seitenschutzfunktionen übergeben. Das Verwerfen der Einrichtung verwirft keine anderen Einstellungsänderungen. Ihr Beibehalten stoppt die Navigation; erst ihre ausdrückliche Verwerfung setzt sie fort. Eine entfernte Seite kann eine gespeicherte Navigation nicht wieder aufnehmen.
+
+## Methodendarstellung
+
+Jede Methode liefert `stringsBaseUrl` und `loginUi` mit `placeholderKey`, `supportsResend` und `challengeOnSelect`. Die Anmeldeoberfläche verwendet diese Metadaten statt Verzweigungen nach Anbieterkennungen. Konfigurationsbeschriftungen sind Übersetzungsschlüssel des Anbieters.

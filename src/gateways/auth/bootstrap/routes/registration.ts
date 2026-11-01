@@ -9,8 +9,7 @@ import { readJson } from "../../../shared.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
 
 interface SecuritySettings {
-    registrationsEnabled: boolean;
-    userValidationMode: "none" | "email";
+    userValidationMode: string;
 }
 
 interface RegistrationRouteDependencies {

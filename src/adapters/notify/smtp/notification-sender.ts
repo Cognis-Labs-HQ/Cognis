@@ -1,22 +1,28 @@
+import { clampVerificationCodeLength } from "../../../gateways/reuse/verification-codes.js";
 import { bootstrapNotifyAdapter } from "./bootstrap.js";
+
 import type {
     NotifyAdapterBootstrapCtx,
     NotificationCategory,
     NotificationChannelRegistration,
-} from "@cognis/core";
-import type { EmailActionInput, NotificationActionMessage } from "@cognis/core";
+} from "../../../gateways/notify/contracts/sender.js";
+
+import type {
+    EmailActionInput,
+    NotificationActionMessage,
+} from "../../../gateways/notify/contracts/action-delivery.js";
 import type { BootstrapDisposer } from "@cognis/core";
 import { requireBootstrapScope } from "@cognis/core";
 import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "./smtp-session.js";
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
+
 import type {
     NotificationEnvelope,
     NotificationSender,
     NotificationSenderQueueEntry,
-} from "@cognis/core";
-import { encodeBasicHtmlEntities } from "./html-entities.js";
+} from "../../../gateways/notify/contracts/sender.js";
+import { renderEmailLayout } from "./email-layout.js";
+import type { EmailPresentation } from "./email-templates.js";
 import {
     encodeHeaderPhrase,
     foldHeader,
@@ -35,7 +41,7 @@ import {
     SmtpRateLimiter,
 } from "./notification-queue.js";
 import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
-import { clampVerificationCodeLength } from "@cognis/core";
+
 export interface SmtpConfig {
     host: string;
     port: number;
@@ -58,66 +64,6 @@ export class SmtpTemporaryError extends Error {
         this.name = "SmtpTemporaryError";
     }
 }
-let cachedEmailTemplate: string | null = null;
-async function loadEmailTemplate(): Promise<string> {
-    if (cachedEmailTemplate !== null) return cachedEmailTemplate;
-    const templatePath = fileURLToPath(
-        new URL("./templates/notification.html", import.meta.url),
-    );
-    cachedEmailTemplate = await readFile(templatePath, "utf8");
-    return cachedEmailTemplate;
-}
-function escapeHtmlForEmail(text: string): string {
-    return encodeBasicHtmlEntities(text);
-}
-interface ThemePalette {
-    bgOuter: string;
-    bgHeader: string;
-    bgContent: string;
-    bgCard: string;
-    bgFooter: string;
-    colorAccent: string;
-    colorAccent2: string;
-    colorText: string;
-    colorBodyText: string;
-    colorMuted: string;
-    colorFooterText: string;
-    colorDivider: string;
-    colorDiamond: string;
-    shadowColor: string;
-}
-const DARK_PALETTE: ThemePalette = {
-    bgOuter: "#0a1628",
-    bgHeader: "linear-gradient(135deg,#071421 0%,#0f2d3a 60%,#112b25 100%)",
-    bgContent: "#0d1f35",
-    bgCard: "rgba(255,255,255,0.04)",
-    bgFooter: "#081529",
-    colorAccent: "#2a7f62",
-    colorAccent2: "#3aa783",
-    colorText: "#e2e8f0",
-    colorBodyText: "#c8d8e8",
-    colorMuted: "#4a8fa8",
-    colorFooterText: "#4a6a85",
-    colorDivider: "rgba(42,127,98,0.25)",
-    colorDiamond: "#2a5068",
-    shadowColor: "rgba(0,0,0,0.45)",
-};
-const LIGHT_PALETTE: ThemePalette = {
-    bgOuter: "#e8eef9",
-    bgHeader: "linear-gradient(135deg,#f0f7ff 0%,#e8f3ff 60%,#e8f5f0 100%)",
-    bgContent: "#ffffff",
-    bgCard: "rgba(248,250,255,0.96)",
-    bgFooter: "#f4f8ff",
-    colorAccent: "#0f766e",
-    colorAccent2: "#0d9488",
-    colorText: "#0f172a",
-    colorBodyText: "#1e293b",
-    colorMuted: "#475569",
-    colorFooterText: "#64748b",
-    colorDivider: "rgba(15,118,110,0.25)",
-    colorDiamond: "#94a3b8",
-    shadowColor: "rgba(15,23,42,0.15)",
-};
 const MAX_QP_LINE_LENGTH = 76;
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
@@ -167,6 +113,7 @@ async function buildMessage(
     body: string,
     options: {
         theme?: string;
+        presentation?: EmailPresentation;
         externalHost?: string;
         verifyUrl?: string;
         verifyButtonLabel?: string;
@@ -175,84 +122,11 @@ async function buildMessage(
         attachments?: MimeAttachment[];
     } = {},
 ): Promise<string> {
-    const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
-    const externalHost = options.externalHost ?? "";
-    const iconUrl = externalHost
-        ? `${externalHost}/assets/icons/cognis-icon.png`
-        : "";
-    const brandIcon = iconUrl
-        ? `<td style="vertical-align:middle;padding-right:12px;">
-              <img src="${escapeHtmlForEmail(iconUrl)}" alt="Cognis" width="36" height="36" border="0" style="display:block;border-radius:6px;outline:none;text-decoration:none;" />
-            </td>`
-        : "";
-    const footerBrandLink = externalHost
-        ? `<a href="${escapeHtmlForEmail(externalHost)}" style="color:${palette.colorAccent2};text-decoration:none;">Cognis</a>`
-        : `<span style="color:${palette.colorAccent2};">Cognis</span>`;
-
-    const verifyButton = options.verifyUrl
-        ? `<tr>
-            <td style="background:${palette.bgContent};padding:0 36px 24px;text-align:center;">
-              <a href="${escapeHtmlForEmail(options.verifyUrl)}"
-                style="display:inline-block;padding:13px 32px;background:${palette.colorAccent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:700;font-size:15px;letter-spacing:0.04em;font-family:Arial,Helvetica,sans-serif;">
-                ${escapeHtmlForEmail(options.verifyButtonLabel ?? "Verify Email Address")}
-              </a>
-            </td>
-          </tr>`
-        : "";
-
-    function renderBodyWithLinks(rawBody: string): string {
-        const urlPattern = /https?:\/\/[^\s<]+/g;
-        let html = "";
-        let cursor = 0;
-        for (const match of rawBody.matchAll(urlPattern)) {
-            const index = match.index ?? 0;
-            const rawUrl = match[0];
-            html += escapeHtmlForEmail(rawBody.slice(cursor, index));
-            const safeUrl = escapeHtmlForEmail(rawUrl);
-            html += `<a href="${safeUrl}" style="color:${palette.colorAccent2};text-decoration:underline;">${safeUrl}</a>`;
-            cursor = index + rawUrl.length;
-        }
-        html += escapeHtmlForEmail(rawBody.slice(cursor));
-        return html.replace(/\n/g, "<br>");
-    }
-
-    const template = await loadEmailTemplate();
-    const htmlBody = template
-        .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
-        .replace(/\{\{body\}\}/g, renderBodyWithLinks(body))
-        .replace(/\{\{verifyButton\}\}/g, verifyButton)
-        .replace(/\{\{brandIcon\}\}/g, brandIcon)
-        .replace(/\{\{footerBrandLink\}\}/g, footerBrandLink)
-        .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
-        .replace(/\{\{bgOuter\}\}/g, palette.bgOuter)
-        .replace(/\{\{bgHeader\}\}/g, palette.bgHeader)
-        .replace(/\{\{bgContent\}\}/g, palette.bgContent)
-        .replace(/\{\{bgCard\}\}/g, palette.bgCard)
-        .replace(/\{\{bgFooter\}\}/g, palette.bgFooter)
-        .replace(/\{\{colorAccent\}\}/g, palette.colorAccent)
-        .replace(/\{\{colorAccent2\}\}/g, palette.colorAccent2)
-        .replace(/\{\{colorText\}\}/g, palette.colorText)
-        .replace(/\{\{colorBodyText\}\}/g, palette.colorBodyText)
-        .replace(/\{\{colorMuted\}\}/g, palette.colorMuted)
-        .replace(/\{\{colorFooterText\}\}/g, palette.colorFooterText)
-        .replace(/\{\{colorDivider\}\}/g, palette.colorDivider)
-        .replace(/\{\{colorDiamond\}\}/g, palette.colorDiamond)
-        .replace(/\{\{shadowColor\}\}/g, palette.shadowColor);
-
-    const textBody = [
+    const { htmlBody, textBody } = await renderEmailLayout(
         subject,
-        "",
-        stripHtmlTags(renderBodyWithLinks(body)),
-        ...(options.verifyUrl
-            ? [
-                  "",
-                  `${options.verifyButtonLabel ?? "Verify Email Address"}: ${options.verifyUrl}`,
-              ]
-            : []),
-        "",
-        "-- ",
-        "Cognis automated notification. Please do not reply to this message.",
-    ].join("\n");
+        body,
+        options,
+    );
     const boundary = `cognis-${randomUUID()}`;
     const hasAttachments =
         Array.isArray(options.attachments) && options.attachments.length > 0;
@@ -323,6 +197,7 @@ async function sendMail(
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
     signal?: AbortSignal,
+    presentation?: EmailPresentation,
 ): Promise<void> {
     let session = await openSession(
         config.host,
@@ -405,6 +280,7 @@ async function sendMail(
         session.writeRaw(
             await buildMessage(config.from, to, subject, body, {
                 theme,
+                presentation,
                 externalHost: config.externalHost,
                 verifyUrl,
                 verifyButtonLabel,
@@ -460,6 +336,7 @@ async function sendMailWithRetry(
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
     signal?: AbortSignal,
+    presentation?: EmailPresentation,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -482,6 +359,7 @@ async function sendMailWithRetry(
                 verifyButtonLabel,
                 attachments,
                 signal,
+                presentation,
             );
             return;
         } catch (err) {
@@ -504,6 +382,19 @@ export class SmtpNotificationSender implements NotificationSender {
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
     private deliveryEnabled = true;
+    private recipientTheme: (email: string) => Promise<"light" | "dark"> =
+        async () => "light";
+
+    setRecipientThemeResolver(
+        resolve: (email: string) => Promise<"light" | "dark">,
+    ): void {
+        this.recipientTheme = resolve;
+    }
+
+    async getRecipientTheme(email: string): Promise<"light" | "dark"> {
+        return (await this.recipientTheme(email)) === "dark" ? "dark" : "light";
+    }
+
     private readonly purposeActivations = new Map<
         string,
         { activate(): void; suspend(): void }
@@ -575,6 +466,7 @@ export class SmtpNotificationSender implements NotificationSender {
                         payload.verifyButtonLabel,
                         payload.attachments ?? [],
                         activeController.signal,
+                        payload.presentation,
                     );
                 },
                 purpose,
@@ -622,6 +514,7 @@ export class SmtpNotificationSender implements NotificationSender {
     async enqueueEmail(
         input: EmailActionInput,
         message: NotificationActionMessage,
+        theme?: "light" | "dark",
     ): Promise<
         NotificationSenderQueueEntry & { sent: true; notificationId: string }
     > {
@@ -630,7 +523,9 @@ export class SmtpNotificationSender implements NotificationSender {
             recipientEmail: input.recipientEmail,
             subject: message.subject,
             body: message.body,
-            theme: input.theme,
+            theme:
+                theme ?? (await this.getRecipientTheme(input.recipientEmail)),
+            presentation: message.presentation as EmailPresentation | undefined,
             verifyUrl: message.actionUrl,
             verifyButtonLabel: message.actionLabel,
             config: {
@@ -654,6 +549,60 @@ export class SmtpNotificationSender implements NotificationSender {
             typeof purpose === "string" ? this.queues.get(purpose) : undefined;
         if (!queue) throw new Error("smtp_purpose_unregistered");
         return queue;
+    }
+
+    readonly stringsBaseUrl = "/static/adapters/notify/smtp/languages";
+
+    getConfigSchema(): import("../../../gateways/notify/contracts/sender.js").NotificationConfigField[] {
+        const field = (
+            key: string,
+            type: "text" | "password" | "number" | "boolean" = "text",
+            label = key,
+        ) => ({ key, type, label: `adapter.smtp.config.${label}` });
+        const authentication = { field: "authDisabled", equals: false };
+        return [
+            field("host"),
+            field("port", "number"),
+            field("from"),
+            field("senderName", "text", "sender_name"),
+            {
+                ...field("secure"),
+                type: "select",
+                options: ["none", "starttls", "tls"].map((value) => ({
+                    value,
+                    labelKey: `adapter.smtp.config.secure_${value}`,
+                })),
+            },
+            field("authDisabled", "boolean", "auth_disabled"),
+            {
+                ...field("user"),
+                visibleWhen: authentication,
+                requiredWhen: authentication,
+            },
+            {
+                ...field("password", "password"),
+                visibleWhen: authentication,
+                requiredWhen: authentication,
+            },
+            field("allowSelfSigned", "boolean", "allow_self_signed"),
+            field("codeLength", "number", "code_length"),
+            field("greylistRetries", "number", "greylist_retries"),
+            field("greylistRetryDelayMs", "number", "greylist_retry_delay"),
+        ];
+    }
+
+    getConfiguredSecretFields(): string[] {
+        return this.config.password ? ["password"] : [];
+    }
+
+    getTestSchema(): import("../../../gateways/notify/contracts/sender.js").NotificationConfigField[] {
+        return [
+            {
+                key: "to",
+                label: "adapter.smtp.config.test_recipient",
+                type: "email",
+            },
+        ];
     }
 
     getEnvValues(): Record<string, string | undefined> {
@@ -801,16 +750,15 @@ export class SmtpNotificationSender implements NotificationSender {
         if (!envelope.recipientEmail) {
             throw new Error("smtp_sender_requires_recipient_email");
         }
-        const theme =
-            typeof envelope.metadata?.theme === "string"
-                ? envelope.metadata.theme
-                : undefined;
+        const theme = await this.getRecipientTheme(envelope.recipientEmail);
         return this.requireQueue(envelope.purpose).enqueue({
             purpose: envelope.purpose!,
             attachments: envelope.attachments,
             recipientEmail: envelope.recipientEmail,
             recipientUsername: envelope.recipientUsername,
             category: envelope.category,
+            presentation: envelope.presentation as
+                EmailPresentation | undefined,
             subject: envelope.subject,
             body: envelope.body,
             theme,

@@ -1,1 +1,1 @@
-export { EMAIL_DELIVERY_RATE_LIMIT_MS } from "@cognis/core";
+export const EMAIL_DELIVERY_RATE_LIMIT_MS = 15_000;

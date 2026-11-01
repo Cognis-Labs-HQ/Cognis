@@ -12,7 +12,7 @@ test("stored validation requirements stay enforced when their policy name is unf
         parseSecuritySettings(
             JSON.stringify({ userValidationMode: "required-policy" }),
         )?.userValidationMode,
-        "email",
+        "required-policy",
     );
     assert.equal(
         parseSecuritySettings(JSON.stringify({ userValidationMode: "none" }))

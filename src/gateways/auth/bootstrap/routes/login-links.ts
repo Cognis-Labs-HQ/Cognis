@@ -119,7 +119,6 @@ export function createLoginLinkRoutes({
                     to: string,
                     loginUrl: string,
                     options?: {
-                        theme?: string;
                         subject?: string;
                         body?: string;
                         actionLabel?: string;

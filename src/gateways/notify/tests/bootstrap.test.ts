@@ -5,10 +5,10 @@ import {
     CapabilityStore,
     createCtx,
     runBootstrapScope,
-    type NotificationEnvelope,
 } from "@cognis/core";
+import type { NotificationEnvelope } from "../contracts/sender.js";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
-import { bootstrap } from "../bootstrap.js";
+import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeInMemoryDb() {
@@ -42,6 +42,14 @@ function makeResponse() {
 
 const adminToken = issueAccessToken("test-session", "admin", 60);
 
+async function bootstrap(input: Parameters<typeof bootstrapImplementation>[0]) {
+    const root =
+        input.capabilities.require<ReturnType<typeof createCtx>>("system:ctx");
+    return runBootstrapScope(root, "gateway:notify", () =>
+        bootstrapImplementation(input),
+    );
+}
+
 async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -49,6 +57,7 @@ async function makeCtx() {
     const db = makeInMemoryDb();
     const systemCtx = createCtx();
     capabilities.contribute("db:executor", db);
+    capabilities.contribute("system:ctx", systemCtx);
     return {
         gatewayRegistry,
         routeRegistry,
@@ -384,22 +393,23 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
     );
 });
 
-test("SSO restored sessions require primary email verification, including when SMTP is unavailable", async () => {
+test("notification email validation contributes its own account verifier to Auth", async () => {
     const { InMemoryTestExecutor } =
         await import("../../db/tests/in-memory-test-executor.js");
     const context = await makeCtx();
     context.capabilities.contribute("db:executor", new InMemoryTestExecutor());
-    let mode = "email";
-    context.capabilities.contribute("preferences:store", {
-        get: async () => JSON.stringify({ userValidationMode: mode }),
-    });
-    context.capabilities.contribute("auth:accountStore", {
-        isFounder: async (id: string) => id === "founder",
+    let policy: {
+        validate(account: { accountId: string }): Promise<boolean>;
+        requiredFields: string[];
+        integration: { scriptUrl: string };
+        available(): boolean;
+    };
+    context.capabilities.contribute("auth:userValidationModes", {
+        register(mode: typeof policy) {
+            policy = mode;
+        },
     });
     await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
-    const setup = context.capabilities.require<
-        (id: string, role: string) => Promise<Array<{ scriptUrl: string }>>
-    >("auth:getSetupIntegrations");
     const provision = context.capabilities.require<
         (id: string, emails: string[]) => Promise<void>
     >("notify:provisionUserEmails");
@@ -407,15 +417,13 @@ test("SSO restored sessions require primary email verification, including when S
         (id: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
     await provision("x:person", ["person@example.com"]);
+    assert.equal(await policy!.validate({ accountId: "x:person" }), false);
+    assert.deepEqual(policy!.requiredFields, ["email"]);
     assert.equal(
-        (await setup("x:person", "user"))[0].scriptUrl,
+        policy!.integration.scriptUrl,
         "/static/gateways/notify/login-required-email-flow.js",
     );
-    assert.equal((await setup("x:no-email", "user")).length, 1);
-    assert.deepEqual(await setup("founder", "owner"), []);
-    assert.equal((await setup("founder", "user")).length, 1);
+    assert.equal(policy!.available(), false);
     await verify("x:person", "person@example.com");
-    assert.deepEqual(await setup("x:person", "user"), []);
-    mode = "none";
-    assert.deepEqual(await setup("x:no-email", "user"), []);
+    assert.equal(await policy!.validate({ accountId: "x:person" }), true);
 });

@@ -52,3 +52,5 @@ Configure via `PUT /api/v1/gateways/auth/adapters/oidc/config` (admin only).
 | `clientSecret` | OAuth2 client secret                                                                                        | Yes      |
 | `discoveryUrl` | OpenID Connect discovery document URL (e.g. `https://accounts.google.com/.well-known/openid-configuration`) | Yes      |
 | `adminRoles`   | Comma-separated token roles that grant admin access in Cognis                                               | No       |
+
+Configuration labels are resolved from this adapter’s language resources through `stringsBaseUrl`.

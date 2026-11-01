@@ -1,31 +1,44 @@
+import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
+import { createEmailTemplates } from "./email-templates.js";
 import {
+    registerBootstrapFlow,
     requireBootstrapScope,
     type Ctx,
     type BootstrapDisposer,
 } from "@cognis/core";
-import type { NotifyAdapterBootstrapCtx } from "@cognis/core";
+
+import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/contracts/sender.js";
+
 import type {
     NotificationAction,
     RegisterNotificationAction,
     SendEmailAction,
     EmailActionInput,
-} from "@cognis/core";
+} from "../../../gateways/notify/contracts/action-delivery.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 
 /** SMTP owns registration, rendering and delivery; contributors provide all message actions. */
-export function registerSmtpActions(
+export async function registerSmtpActions(
     ctx: NotifyAdapterBootstrapCtx,
     sender: SmtpNotificationSender,
 ) {
     const root = ctx.capabilities.require<Ctx>("system:ctx");
-    const actions = new Map<string, { action: NotificationAction }>();
+    const templates = await createEmailTemplates(root);
+    ctx.capabilities.contribute("notify:emailTemplates", templates);
+    root.contributePublicCapability("notify:emailTemplates", templates);
+    const actions = new Map<
+        string,
+        {
+            action: NotificationAction;
+            render: ReturnType<typeof templates.bindFactory>;
+        }
+    >();
     const registrationFlow = "smtp:registerPurpose";
-    root.registerFlow({
+    const registration = registerBootstrapFlow(root, {
         id: registrationFlow,
         stages: ["validate", "register"],
     });
-    root.flow.extend(
-        registrationFlow,
+    registration.extend(
         "validate",
         { id: "smtp:validatePurpose" },
         ({ input, data }) => {
@@ -40,16 +53,27 @@ export function registerSmtpActions(
             data.purpose = `${scope.owner}:${id}`;
         },
     );
-    root.flow.extend(
-        registrationFlow,
+    registration.extend(
         "register",
         { id: "smtp:registerPurposeQueue" },
         ({ input, data }) => {
             const scope = requireBootstrapScope(root);
             const purpose = data.purpose as string;
             const action = (input as { action: NotificationAction }).action;
+            const settings = (
+                input as {
+                    options?: {
+                        factory?: string;
+                        options?: Record<string, unknown>;
+                    };
+                }
+            ).options;
+            const render = templates.bindFactory(
+                settings?.factory ?? "standard",
+                settings?.options ?? {},
+            );
             const queue = sender.registerPurpose(purpose);
-            let registration = { action };
+            let registration = { action, render };
             actions.set(purpose, registration);
             const dispose: BootstrapDisposer = () => {
                 if (actions.get(purpose) === registration)
@@ -58,24 +82,27 @@ export function registerSmtpActions(
             };
             dispose.reactivate = async () => {
                 await queue.reactivate?.();
-                registration = { action };
+                registration = { action, render };
                 actions.set(purpose, registration);
             };
             scope.registerDisposer(dispose);
         },
     );
-    const register: RegisterNotificationAction = async (id, action) => {
+    const register: RegisterNotificationAction = async (
+        id,
+        action,
+        options,
+    ) => {
         requireBootstrapScope(root);
-        return (await root.flow.run(registrationFlow, { id, action })).data
-            .purpose as string;
+        return (await root.flow.run(registrationFlow, { id, action, options }))
+            .data.purpose as string;
     };
     const sendFlow = "smtp:sendEmail";
-    root.registerFlow({
+    const delivery = registerBootstrapFlow(root, {
         id: sendFlow,
         stages: ["validate", "render", "enqueue"],
     });
-    root.flow.extend(
-        sendFlow,
+    delivery.extend(
         "validate",
         { id: "smtp:validateEmail" },
         ({ input, data }) => {
@@ -94,18 +121,26 @@ export function registerSmtpActions(
             data.registration = action;
         },
     );
-    root.flow.extend(
-        sendFlow,
+    delivery.extend(
         "render",
         { id: "smtp:renderEmailAction" },
         async ({ input, data }) => {
-            data.message = await (data.action as NotificationAction)(
-                (input as EmailActionInput).variables,
+            const request = input as EmailActionInput;
+            data.theme = await sender.getRecipientTheme(request.recipientEmail);
+            const message = await (data.action as NotificationAction)(
+                request.variables,
+            );
+            const registration = data.registration as {
+                render: ReturnType<typeof templates.bindFactory>;
+            };
+            data.message = await registration.render(
+                message,
+                data.theme as "light" | "dark",
+                request.variables,
             );
         },
     );
-    root.flow.extend(
-        sendFlow,
+    delivery.extend(
         "enqueue",
         { id: "smtp:enqueueEmail" },
         async ({ input, data }) => {
@@ -128,7 +163,11 @@ export function registerSmtpActions(
                 typeof message.body !== "string"
             )
                 throw new Error("smtp_action_message_invalid");
-            data.receipt = await sender.enqueueEmail(request, message);
+            data.receipt = await sender.enqueueEmail(
+                request,
+                message,
+                data.theme as "light" | "dark",
+            );
         },
     );
     const send: SendEmailAction = async (input) =>
@@ -137,6 +176,15 @@ export function registerSmtpActions(
         >;
     ctx.capabilities.contribute("notify:registerEmailPurpose", register);
     ctx.capabilities.contribute("notify:sendEmail", send);
+    const deliveryPolicy = () => ({
+        codeLength: sender.getCodeLength(),
+        minimumIntervalMs: EMAIL_DELIVERY_RATE_LIMIT_MS,
+    });
+    ctx.capabilities.contribute("notify:emailDeliveryPolicy", deliveryPolicy);
+    root.contributePublicCapability(
+        "notify:emailDeliveryPolicy",
+        deliveryPolicy,
+    );
     ctx.capabilities.contribute("notify:emailCodeLength", () =>
         sender.getCodeLength(),
     );

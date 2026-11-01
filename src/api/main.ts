@@ -308,6 +308,10 @@ const gatewayService = new GatewayService(gatewayRegistry);
 const systemCtx = createCtx();
 registerSecretEncryption(systemCtx);
 capabilities.contribute("system:ctx", systemCtx);
+capabilities.contribute(
+    "system:contracts",
+    systemCtx.requireCapability("system:contracts"),
+);
 const {
     scoring: scoringEngine,
     achievements: achievementRegistry,

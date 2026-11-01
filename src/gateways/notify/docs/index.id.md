@@ -28,3 +28,7 @@ Penonaktifan dan pelepasan mencabut registrasi serta pengiriman tertunda milikny
 `notify:emailClient` menyediakan permintaan email akun sendiri, domain tepercaya, `listUserEmails` administratif, `resendUserEmail` khusus daring, dan `emailAvailable` yang terikat siklus hidup. Pengaturan, Pengguna, dan Administrasi mengambilnya melalui ctx. Penyedia menyimpan serta mengantre perubahan email; verifikasi tetap daring. `GET /api/v1/notify/email-delivery` memerlukan autentikasi dan hanya mengembalikan ketersediaan tanpa konfigurasi penyedia.
 
 Mode Luring dan Broadcast berbagi tumpukan banner di atas header. Mode Luring memiliki prioritas, tidak dapat ditutup, serta menyediakan pemeriksaan koneksi dan muat ulang setelah pulih. Kebijakan konfirmasi, penerima, dan jadwal Broadcast tetap terpisah. Latar dan kemampuan menciut diatur melalui kapabilitas banner bersama.
+
+## Kontrak Milik Penyedia
+
+Notify memiliki deklarasi runtime dan tipe publik opsional dalam `contracts/`. Core tidak menyimpan kontrak notifikasi. Penyedia pengiriman menyediakan skema konfigurasi, terjemahan, bidang bersyarat, keberadaan rahasia tersimpan, dan bidang pengujian. Gateway meneruskan metadata tanpa mengasumsikan transportasi. Notify mendaftarkan fungsi validasi `email` ke Auth dan menyediakan ketersediaan surel umum. Kebijakan pengiriman tersedia melalui `notify:emailDeliveryPolicy`; pabrik templat ditemukan melalui `notify:emailTemplates`.

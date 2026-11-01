@@ -29,3 +29,5 @@ export interface OidcClient {
 | `clientSecret` | OAuth2クライアントシークレット                         | はい   |
 | `discoveryUrl` | OpenID ConnectディスカバリドキュメントのURL            | はい   |
 | `adminRoles`   | 管理者アクセスを付与するトークンロール（カンマ区切り） | いいえ |
+
+設定ラベルは `stringsBaseUrl` を通じてこのアダプターの言語リソースから取得します。

@@ -7,7 +7,7 @@ import {
     createCtx,
 } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
-import { bootstrap } from "../../bootstrap.js";
+import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import { InMemoryTestExecutor } from "../../../db/tests/in-memory-test-executor.js";
 import {
     contributeTestKeyring,
@@ -34,7 +34,7 @@ async function bootstrapAuthGateway(input: {
     });
 }
 
-test("login userValidation fails open when SMTP validation is enabled but unavailable", async () => {
+test("login refuses a configured validation policy without its provider", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -102,30 +102,21 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
     assert.ok(registerResult.handled);
     assert.equal(registerResult.res.status, 201);
 
-    const loginResult = await dispatchRoute(
-        routeRegistry,
-        makeJsonRequest("POST", {
-            provider: "local",
-            username: "alice",
-            password: "pass123",
-        }),
-        "/api/v1/auth/login",
+    await assert.rejects(
+        dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", {
+                provider: "local",
+                username: "alice",
+                password: "pass123",
+            }),
+            "/api/v1/auth/login",
+        ),
+        /user_validation_unavailable/,
     );
-    assert.ok(loginResult.handled);
-    assert.equal(loginResult.res.status, 200);
-    const payload = JSON.parse(loginResult.res.payload) as {
-        data: {
-            displayName: string;
-            requiredUserValidation: boolean;
-            userValidationMode: string;
-        };
-    };
-    assert.equal(payload.data.displayName, "Alice Liddell");
-    assert.equal(payload.data.userValidationMode, "email");
-    assert.equal(payload.data.requiredUserValidation, false);
 });
 
-test("login userValidation exempts founder admin even when SMTP is available", async () => {
+test("login preserves founder recovery when a configured policy is unavailable", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -138,7 +129,6 @@ test("login userValidation exempts founder admin even when SMTP is available", a
             });
         },
     });
-    capabilities.contribute("notify:canSendVerificationEmail", () => true);
     const db = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,

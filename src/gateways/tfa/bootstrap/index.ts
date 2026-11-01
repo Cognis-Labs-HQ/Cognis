@@ -91,10 +91,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
     const adapterLanguageResources = gateway
         .listAdapters()
-        .map(
-            (adapter) =>
-                `/static/adapters/tfa/${encodeURIComponent(adapter.id)}/languages`,
-        );
+        .map((adapter) => adapter.stringsBaseUrl)
+        .filter((url): url is string => Boolean(url));
     const registerSecuritySection = ctx.capabilities.get<
         (section: {
             id: string;

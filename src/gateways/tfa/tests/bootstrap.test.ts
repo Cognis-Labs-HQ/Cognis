@@ -179,14 +179,19 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
     capabilities.contribute("db:executor", db);
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
 
-    await bootstrapAuth({
-        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow: systemCtx.flow,
-        uiRegistry,
-    });
+    await runBootstrapScope(
+        capabilities.require(CTX_CAPABILITY),
+        "gateway:auth",
+        () =>
+            bootstrapAuth({
+                adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+                routeRegistry,
+                gatewayRegistry,
+                capabilities,
+                flow: systemCtx.flow,
+                uiRegistry,
+            }),
+    );
     await runBootstrapScope(systemCtx, "gateway:tfa", () =>
         bootstrap({
             adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),

@@ -32,17 +32,17 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.3.0`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.31` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.4.0`  |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.32` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `2.1.1`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.23` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.23` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.38` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.27` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.24` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.1.0`  |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.28` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.26` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27` |
@@ -55,7 +55,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Link Share            | `src/adapters/share/link/`          | `1.1.38` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.11` |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.12` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
 | Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.21` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
@@ -68,13 +68,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.13` |
-| Authentication (auth) | `src/gateways/auth/`          | `2.0.5`  |
-| Share                 | `src/gateways/share/`         | `1.7.50` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.20` |
-| Notification (notify) | `src/gateways/notify/`        | `2.0.0`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.1.0`  |
+| Share                 | `src/gateways/share/`         | `1.7.51` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.2.0`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.1.0`  |
 | Social                | `src/gateways/social/`        | `1.3.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.2.2`  |
-| Registration          | `src/gateways/registration/`  | `1.1.42` |
+| Registration          | `src/gateways/registration/`  | `1.1.43` |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.4.9`  |
@@ -84,13 +84,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.5.6` |
+| Core Package | `src/core/` | `0.6.0` |
 
 ## API
 
-| Component  | Path       | Version   |
-| ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.10.19` |
+| Component  | Path       | Version  |
+| ---------- | ---------- | -------- |
+| API Server | `src/api/` | `0.11.0` |
 
 ## Tooling
 

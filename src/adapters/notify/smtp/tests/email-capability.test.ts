@@ -6,12 +6,23 @@ import {
     runBootstrapScope,
     type BootstrapDisposer,
 } from "@cognis/core";
-import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../../../gateways/notify/contracts/action-delivery.js";
 import { SmtpNotificationSender } from "../notification-sender.js";
 import { createMockSmtpServer, smtpSuccessHandler } from "./fixtures/server.js";
 
 async function fixture(t: import("node:test").TestContext) {
-    const server = await createMockSmtpServer(smtpSuccessHandler);
+    const delivered: string[] = [];
+    const server = await createMockSmtpServer((socket) => {
+        const index = delivered.push("") - 1;
+        socket.on("data", (chunk) => {
+            delivered[index] += chunk.toString();
+        });
+        smtpSuccessHandler(socket);
+    });
     t.after(() => server.close());
     const sender = new SmtpNotificationSender({
         host: server.host,
@@ -50,6 +61,7 @@ async function fixture(t: import("node:test").TestContext) {
     );
     return {
         sender,
+        delivered,
         root,
         capabilities,
         cleanup,
@@ -205,4 +217,47 @@ test("SMTP adapter owns its authenticated test route", async (t) => {
         "adapter:notify:smtp:test",
     );
     assert.equal(host.sender.listQueue()[0]?.status, "sent");
+});
+
+test("queued messages use recipient preferences and module factory options", async (t) => {
+    const host = await fixture(t);
+    host.capabilities.contribute(
+        "notify:getAccountIdByEmail",
+        async (email: string) =>
+            email === "dark@example.test" ? "dark-user" : null,
+    );
+    host.capabilities.contribute("preferences:store", {
+        get: async (id: string, key: string) => {
+            assert.equal(id, "dark-user");
+            assert.equal(key, "ui-preferences");
+            return JSON.stringify({ mode: "dark" });
+        },
+    });
+    const purpose = await runBootstrapScope(host.root, "module:example", () =>
+        host.register(
+            "report",
+            () => ({ subject: "Report", body: "Summary" }),
+            {
+                factory: "digest",
+                options: { brandName: "Example", heading: "Updates" },
+            },
+        ),
+    );
+    for (const recipientEmail of [
+        "dark@example.test",
+        "unknown@example.test",
+    ]) {
+        const receipt = await host.send({
+            purpose,
+            recipientEmail,
+            variables: {},
+        });
+        await host.sender.waitForEmail(purpose, receipt.notificationId);
+    }
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(host.delivered.length, 2);
+    assert.match(host.delivered[0], /#0a1628/);
+    assert.match(host.delivered[1], /#e8eef9/);
+    assert.match(host.delivered[0], /Example/);
+    assert.match(host.delivered[0], /Updates/);
 });

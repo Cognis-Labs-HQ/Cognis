@@ -4,10 +4,7 @@ import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
 import { DbNotificationStore } from "../notification-store.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
-import {
-    TfaCodeService,
-    InMemoryTfaStore,
-} from "../../../api/reuse/tfa-code.js";
+import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,

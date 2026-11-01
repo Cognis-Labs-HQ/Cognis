@@ -8,9 +8,6 @@
   <string name="ui.app.login.tfa.recovery_code_open_security">セキュリティ設定を開く</string>
   <string name="ui.app.login.tfa.required_prompt">続行するには二要素認証が必要です。</string>
   <string name="ui.app.login.tfa.error_invalid">二要素コードが無効です。</string>
-  <string name="ui.app.login.tfa.smtp.resend_action">メールコードを再送信</string>
-  <string name="ui.app.login.tfa.smtp.resend_rate_limited">{seconds}秒後にメールコードを再送信できます</string>
-  <string name="ui.app.login.tfa.smtp.resend_sent">新しい確認コードがメールに送信されました。</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">すべてのユーザーに二要素認証を必須化</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">有効化すると、二要素方式が未設定のユーザーは設定完了まで設定ページへリダイレクトされます。</string>
   <string name="ui.app.users.reset_tfa">二要素認証をリセット</string>
@@ -50,4 +47,8 @@
   <string name="gateway.tfa.settings.required_prompt">続行する前に設定する方式を選択してください。</string>
   <string name="gateway.tfa.settings.loading">セキュリティ設定を読み込み中…</string>
   <string name="gateway.tfa.settings.qr_code_alt">認証アプリでこの QR コードを読み取ってください</string>
+  <string name="ui.app.login.tfa.resend_action">コードを再送信</string>
+  <string name="ui.app.login.tfa.resend_rate_limited">{seconds}秒後にコードを再送信</string>
+  <string name="ui.app.login.tfa.resend_sent">新しい確認コードを送信しました。</string>
+  <string name="ui.app.login.tfa.code_placeholder">確認コード</string>
 </resources>

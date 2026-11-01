@@ -1,4 +1,4 @@
-import { randomInt } from "node:crypto";
+import { generateNumericVerificationCode } from "./verification-codes.js";
 
 /**
  * Time-limited verification code utility.
@@ -36,9 +36,7 @@ export class InMemoryTfaStore implements TfaStore {
 const DEFAULT_CODE_DIGITS = 6;
 
 export function generateNumericCode(digits = DEFAULT_CODE_DIGITS): string {
-    const max = Math.pow(10, digits);
-    const value = randomInt(0, max);
-    return String(value).padStart(digits, "0");
+    return generateNumericVerificationCode(digits);
 }
 
 export class TfaCodeService {

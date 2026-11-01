@@ -268,6 +268,17 @@ test("gateway implementations do not import production code from other gateways"
                 });
                 if (isAllowed) continue;
 
+                // Public provider-owned declarations contain types only; executable
+                // cross-component integration must still go through ctx.
+                const relative = path.relative(gatewaysDir, resolved);
+                const isPublicContract = /^[^/]+\/contracts\/[^/]+\.js$/.test(
+                    relative,
+                );
+                const typeOnly = new RegExp(
+                    `(?:import|export)\\s+type\\s+\\{[^}]*\\}\\s+from\\s+["']${importPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`,
+                ).test(source);
+                if (isPublicContract && typeOnly) continue;
+
                 // Test files may use test helpers from other gateways
                 const isTestFile =
                     file.includes("/tests/") || file.endsWith(".test.ts");

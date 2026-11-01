@@ -36,3 +36,5 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/oidc/config` (nur Admin)
 | `clientSecret` | OAuth2-Client-Secret                                    | Ja           |
 | `discoveryUrl` | OpenID Connect Discovery-Dokument-URL                   | Ja           |
 | `adminRoles`   | Kommagetrennte Token-Rollen, die Admin-Zugriff gewähren | Nein         |
+
+Konfigurationsbeschriftungen werden über `stringsBaseUrl` aus den Sprachressourcen dieses Adapters geladen.

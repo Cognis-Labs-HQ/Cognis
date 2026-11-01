@@ -28,3 +28,7 @@ Deaktivierung und Entfernen widerrufen eigene Registrierungen und ausstehende Zu
 `notify:emailClient` stellt lebenszyklusgebundene eigene E-Mail-Anfragen, vertrauenswürdige Domänen, administrative `listUserEmails`, ausschließlich online nutzbares `resendUserEmail` sowie `emailAvailable` bereit. Einstellungen, Benutzerverwaltung und Administration lösen den Vertrag über ctx auf. Der zuständige Anbieter puffert E-Mail-Änderungen; Verifizierung bleibt online. Das authentifizierte `GET /api/v1/notify/email-delivery` liefert nur Verfügbarkeit, keine Konfiguration.
 
 Offline-Modus und Broadcast teilen den Bannerstapel oberhalb des Kopfbereichs. Der Offline-Modus hat Vorrang, ist nicht schließbar und bietet Verbindungsprüfung sowie Aktualisierung nach Wiederherstellung. Bestätigung, Zielgruppen und Zeitpläne für Broadcast bleiben unabhängig wirksam. Hintergrund und Einklappbarkeit werden über die gemeinsame Banner-Fähigkeit festgelegt.
+
+## Verträge des Anbieters
+
+Notify besitzt Laufzeitdeklarationen und optionale öffentliche Typen unter `contracts/`. Core enthält keine Benachrichtigungsverträge. Zustellanbieter liefern Konfigurationsschema, Übersetzungen, bedingte Felder, Angaben zu gespeicherten Geheimnissen und Testfelder. Das Gateway reicht diese Metadaten ohne Transportannahmen weiter. Notify registriert die Prüffunktion `email` bei Auth und meldet allgemeine E-Mail-Verfügbarkeit. Die Zustellrichtlinie steht unter `notify:emailDeliveryPolicy`, Vorlagenfabriken unter `notify:emailTemplates` bereit.

@@ -3,18 +3,12 @@ import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { showToast } from "/static/reuse/toast.js";
 
-function setActiveTfaInputPlaceholder(i18n, activeMethodId, tfaCodeInput) {
+function setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
         return;
     }
-    const placeholderKeyByMethod = {
-        recovery_code: "ui.app.login.tfa.code_placeholder_recovery",
-        smtp: "ui.app.login.tfa.code_placeholder_smtp",
-        totp: "ui.app.login.tfa.code_placeholder_totp",
-    };
     const placeholderKey =
-        placeholderKeyByMethod[activeMethodId] ??
-        "ui.app.login.tfa.code_placeholder_totp";
+        method?.loginUi?.placeholderKey ?? "ui.app.login.tfa.code_placeholder";
     const placeholderText = i18n.t(placeholderKey);
     tfaCodeInput.placeholder = placeholderText;
     tfaCodeInput.setAttribute("aria-label", placeholderText);
@@ -76,14 +70,14 @@ export function renderTfaMethodTabs(
             tabsEl.querySelectorAll("a").forEach((entry) => {
                 entry.classList.toggle("active", entry === tabLink);
             });
-            setActiveTfaInputPlaceholder(i18n, method.id, tfaCodeInput);
+            setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
             onMethodActivated?.(method);
         });
         if (index === 0) {
             tabLink.classList.add("active");
             methodInput.value = method.id;
-            setActiveTfaInputPlaceholder(i18n, method.id, tfaCodeInput);
+            setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
         }
         tabsEl.appendChild(tabLink);
@@ -170,14 +164,17 @@ function resolveTranslatedTfaErrorMessage(i18n, message) {
 
 export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
     await ensurePageStylesheet("/static/gateways/tfa/login.css");
-    const i18n = await extendI18n(baseI18n, [
-        "/static/gateways/tfa/languages",
-        "/static/adapters/tfa/smtp/languages",
-        "/static/adapters/tfa/totp/languages",
-    ]);
+    let i18n = await extendI18n(baseI18n, ["/static/gateways/tfa/languages"]);
     return {
         i18n,
-        switchToTfaPrompt(payload) {
+        async switchToTfaPrompt(payload) {
+            i18n = await extendI18n(i18n, [
+                ...new Set(
+                    (payload?.methods ?? [])
+                        .map((method) => method.stringsBaseUrl)
+                        .filter(Boolean),
+                ),
+            ]);
             const fields = root.querySelector("#login-tfa-fields");
             const methods = Array.isArray(payload?.methods)
                 ? payload.methods
@@ -243,7 +240,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     return;
                 }
                 deliveryToastShownOnce = true;
-                showToast(i18n.t("ui.app.login.tfa.smtp.resend_sent"), {
+                showToast(i18n.t("ui.app.login.tfa.resend_sent"), {
                     variant: "success",
                 });
             };
@@ -257,10 +254,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     return;
                 }
                 stopCountdown();
-                const isSmtpMethod = method?.id === "smtp";
+                const supportsResend = method?.loginUi?.supportsResend === true;
                 const resendAt = parseChallengeResendTimestamp(method);
-                resendLink.hidden = !isSmtpMethod;
-                if (!isSmtpMethod) {
+                resendLink.hidden = !supportsResend;
+                if (!supportsResend) {
                     resendLocked = false;
                     syncDisabledResendState();
                     return;
@@ -278,7 +275,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         resendLocked = true;
                         syncDisabledResendState();
                         resendLink.textContent = i18n
-                            .t("ui.app.login.tfa.smtp.resend_rate_limited")
+                            .t("ui.app.login.tfa.resend_rate_limited")
                             .replace("{seconds}", String(remainingSeconds));
                         return;
                     }
@@ -286,7 +283,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     resendLocked = false;
                     syncDisabledResendState();
                     resendLink.textContent = i18n.t(
-                        "ui.app.login.tfa.smtp.resend_action",
+                        "ui.app.login.tfa.resend_action",
                     );
                 };
                 updateCountdown();
@@ -336,7 +333,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             );
                         }
                         deliveryToastShownOnce = true;
-                        showToast(i18n.t("ui.app.login.tfa.smtp.resend_sent"), {
+                        showToast(i18n.t("ui.app.login.tfa.resend_sent"), {
                             variant: "success",
                         });
                         setResendStateForMethod(resolveMethod(methodId), {
@@ -371,7 +368,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 fields.childElementCount === 0
             ) {
                 const placeholderText = i18n.t(
-                    "ui.app.login.tfa.code_placeholder_totp",
+                    "ui.app.login.tfa.code_placeholder",
                 );
                 fields.innerHTML = `
                   <div id="login-tfa-method-nav" class="auth-provider-toggle"></div>
@@ -404,7 +401,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 },
                 async (method) => {
                     if (
-                        method.id === "smtp" &&
+                        method.loginUi?.challengeOnSelect === true &&
                         !challengeStateByMethodId.has(method.id)
                     ) {
                         await sendChallenge(method.id);

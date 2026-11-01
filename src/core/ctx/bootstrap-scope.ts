@@ -1,4 +1,10 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import type {
+    Ctx,
+    FlowRegistration,
+    FlowHookRegistration,
+    FlowStageHook,
+} from "./types.js";
 
 export type BootstrapDisposer = (() => void | Promise<void>) & {
     reactivate?: () => void | Promise<void>;
@@ -70,4 +76,111 @@ export function requireBootstrapScope(root?: object): BootstrapScope {
     if (!scope?.active || (root && scope.root !== root))
         throw new Error("bootstrap_registration_closed");
     return scope;
+}
+
+/** A declared flow and its handlers share the owner's rollback, disable and reactivation lifetime. */
+export function registerBootstrapFlow(
+    ctx: Ctx,
+    definition: FlowRegistration,
+): {
+    extend(
+        stage: string,
+        metadata: FlowHookRegistration,
+        handler: FlowStageHook,
+    ): void;
+} {
+    const scope = requireBootstrapScope(ctx);
+    const hooks: Array<{
+        stage: string;
+        metadata: FlowHookRegistration;
+        handler: FlowStageHook;
+    }> = [];
+    let active = false;
+    const activate = () => {
+        if (active) return;
+        let registered = false;
+        try {
+            ctx.registerFlow(definition);
+            registered = true;
+            for (const hook of hooks) {
+                if (
+                    !ctx.flow.extend(
+                        definition.id,
+                        hook.stage,
+                        hook.metadata,
+                        hook.handler,
+                    )
+                )
+                    throw new Error("bootstrap_flow_hook_conflict");
+            }
+            active = true;
+        } catch (error) {
+            if (registered) ctx.unregisterFlow(definition.id);
+            throw error;
+        }
+    };
+    activate();
+    const dispose = () => {
+        if (active) {
+            ctx.unregisterFlow(definition.id);
+            active = false;
+        }
+    };
+    dispose.reactivate = activate;
+    scope.registerDisposer(dispose);
+    return Object.freeze({
+        extend(
+            stage: string,
+            metadata: FlowHookRegistration,
+            handler: FlowStageHook,
+        ) {
+            if (requireBootstrapScope(ctx).owner !== scope.owner)
+                throw new Error("bootstrap_flow_owner_mismatch");
+            if (!ctx.flow.extend(definition.id, stage, metadata, handler))
+                throw new Error("bootstrap_flow_hook_conflict");
+            hooks.push({ stage, metadata: { ...metadata }, handler });
+        },
+    });
+}
+
+export interface BootstrapRegistrationState {
+    readonly active: boolean;
+    readonly revision: number;
+}
+
+/** Bind one registry record to its contributor's bootstrap, rollback and disable lifetime. */
+export function registerBootstrapEntry<K, V extends object>(
+    ctx: Ctx,
+    entries: Map<K, V>,
+    key: K,
+    value: V,
+    conflictCode: string,
+): BootstrapRegistrationState {
+    const scope = requireBootstrapScope(ctx);
+    let active = false;
+    let revision = 0;
+    const activate = () => {
+        if (active && entries.get(key) === value) return;
+        if (entries.has(key)) throw new Error(conflictCode);
+        entries.set(key, value);
+        active = true;
+        revision++;
+    };
+    activate();
+    const dispose = () => {
+        if (!active) return;
+        if (entries.get(key) === value) entries.delete(key);
+        active = false;
+        revision++;
+    };
+    dispose.reactivate = activate;
+    scope.registerDisposer(dispose);
+    return Object.freeze({
+        get active() {
+            return active && entries.get(key) === value;
+        },
+        get revision() {
+            return revision;
+        },
+    });
 }

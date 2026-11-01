@@ -16,6 +16,7 @@ export interface SamlClient {
 
 class SamlAuthAdapter implements AuthProviderAdapter {
     readonly id = "saml";
+    readonly stringsBaseUrl = "/static/adapters/auth/saml/languages";
     readonly name = "SAML";
 
     private client: SamlClient | null = null;
@@ -49,26 +50,31 @@ class SamlAuthAdapter implements AuthProviderAdapter {
         return [
             {
                 key: "entryPoint",
-                label: "Entry Point URL",
+                label: "adapter.saml.config.entrypoint",
                 type: "text",
                 required: true,
             },
-            { key: "issuer", label: "Issuer", type: "text", required: true },
+            {
+                key: "issuer",
+                label: "adapter.saml.config.issuer",
+                type: "text",
+                required: true,
+            },
             {
                 key: "certificate",
-                label: "Certificate",
+                label: "adapter.saml.config.certificate",
                 type: "text",
                 required: true,
             },
             {
                 key: "adminAttribute",
-                label: "Admin Attribute",
+                label: "adapter.saml.config.adminattribute",
                 type: "text",
                 required: false,
             },
             {
                 key: "adminValue",
-                label: "Admin Attribute Value",
+                label: "adapter.saml.config.adminvalue",
                 type: "text",
                 required: false,
             },

@@ -211,7 +211,7 @@ test("adapter config form updates required title markers when requirements chang
 
     assert.match(source, /data-provider-required=/);
     assert.match(source, /requiredMarker\.hidden = !isRequired/);
-    assert.match(source, /input\.toggleAttribute\("required", isRequired\)/);
+    assert.match(source, /input\.toggleAttribute\("required", requiresInput\)/);
     assert.match(
         source,
         /popupFormEl\.addEventListener\("input", \(\) => \{[\s\S]*updateRequiredHighlights\(\)/m,
@@ -229,7 +229,7 @@ test("adapter environment warnings render beside headings in orange", () => {
 
     assert.match(
         source,
-        /provider-field-title[^`]*\$\{requiredMarker\}\$\{conflictWarning\}<\/span>\$\{inputHtml\}/,
+        /provider-field-title[\s\S]*provider-field-env-warning[\s\S]*<\/span>\$\{input\}/,
     );
     assert.match(
         styles,

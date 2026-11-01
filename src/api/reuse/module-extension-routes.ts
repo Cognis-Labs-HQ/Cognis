@@ -1,3 +1,7 @@
+import {
+    scopeCapabilityContracts,
+    type CapabilityContracts,
+} from "@cognis/core";
 import { runBootstrapScope } from "@cognis/core";
 import { versionModuleUiAssets } from "./module-ui-assets.js";
 import {
@@ -161,6 +165,11 @@ export function createModuleExtensionRoutes(
         const moduleId = manifest.id;
         function resolveCapability<T>(capabilityId: string): T | undefined {
             const capability = resolveHostCapability<T>(capabilityId);
+            if (capabilityId === "system:contracts" && capability)
+                return scopeCapabilityContracts(
+                    capability as unknown as CapabilityContracts,
+                    resolveCapability,
+                ) as T;
             if (
                 capabilityId !== "auth:registerProvider" ||
                 typeof capability !== "function"

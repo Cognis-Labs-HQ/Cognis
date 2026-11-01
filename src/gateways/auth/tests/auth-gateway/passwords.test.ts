@@ -7,7 +7,7 @@ import {
     createCtx,
 } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
-import { bootstrap } from "../../bootstrap.js";
+import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import { issueAccessToken } from "../../access-tokens.js";
 import { InMemoryTestExecutor } from "../../../db/tests/in-memory-test-executor.js";
 import {

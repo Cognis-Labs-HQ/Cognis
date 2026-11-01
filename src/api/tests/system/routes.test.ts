@@ -461,7 +461,7 @@ test("system security settings log malformed persisted data", async () => {
     ]);
 });
 
-test("security PUT rejects smtp validation mode when SMTP adapter unavailable", async () => {
+test("security PUT rejects unavailable validation modes", async () => {
     const token = issueAccessToken("admin", "admin", 60);
     const headers = {
         authorization: `Bearer ${token}`,
@@ -479,8 +479,12 @@ test("security PUT rejects smtp validation mode when SMTP adapter unavailable", 
         undefined,
         createDefaultRouteContext({
             getCapability: (cap) =>
-                (cap === "notify:emailAvailable"
-                    ? () => false
+                (cap === "auth:userValidationModes"
+                    ? {
+                          assertSelectable: async () => {
+                              throw new Error("user_validation_unavailable");
+                          },
+                      }
                     : undefined) as any,
         }),
     );
@@ -508,10 +512,10 @@ test("security PUT rejects smtp validation mode when SMTP adapter unavailable", 
 
     assert.equal(handled, true);
     assert.equal(status, 400);
-    assert.match(body, /"email_delivery_unavailable"/);
+    assert.match(body, /"user_validation_unavailable"/);
 });
 
-test("security PUT accepts smtp validation mode when SMTP adapter is available", async () => {
+test("security PUT accepts a dynamically registered validation mode", async () => {
     const token = issueAccessToken("admin", "admin", 60);
     const headers = {
         authorization: `Bearer ${token}`,
@@ -531,8 +535,12 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
         undefined,
         createDefaultRouteContext({
             getCapability: (cap) =>
-                (cap === "notify:emailAvailable"
-                    ? () => true
+                (cap === "auth:userValidationModes"
+                    ? {
+                          assertSelectable: async (id: string) => {
+                              assert.equal(id, "proof:approved");
+                          },
+                      }
                     : undefined) as any,
         }),
     );
@@ -543,7 +551,7 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
             headers,
             [Symbol.asyncIterator]: async function* () {
                 yield Buffer.from(
-                    JSON.stringify({ userValidationMode: "email" }),
+                    JSON.stringify({ userValidationMode: "proof:approved" }),
                 );
             },
         } as any,
@@ -558,7 +566,7 @@ test("security PUT accepts smtp validation mode when SMTP adapter is available",
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(savedValue, /"userValidationMode":"email"/);
+    assert.match(savedValue, /"userValidationMode":"proof:approved"/);
 });
 
 test("security PUT revokes setup-pending tokens when mandatory TFA is disabled", async () => {

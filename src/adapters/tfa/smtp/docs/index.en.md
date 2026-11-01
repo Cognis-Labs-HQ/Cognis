@@ -12,9 +12,13 @@ The adapter registers its own code-message action during bootstrap through `noti
 
 ## Configuration
 
-- `codeLength` (number, optional): Length of generated numeric codes. Values are clamped to 4–10 digits.
+Configure code length in the email delivery provider; this method reads its current policy.
 
 ## Runtime behavior
 
 - Challenge codes are stored in process memory. Restarting the app invalidates pending setup/login codes.
 - In multi-instance deployments, this adapter should only be used when requests are pinned to the same instance during a challenge window.
+
+## Delivery Policy
+
+Code length and resend interval are read from `notify:emailDeliveryPolicy`. The adapter has no separate code-length setting. Shared verification helpers generate cryptographically random digits; login presentation and language resources are declared by this method.

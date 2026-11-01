@@ -1,4 +1,7 @@
-import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../notify/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
@@ -48,19 +51,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:emailAvailable",
     );
     const sendInviteEmail = invitePurpose
-        ? async (
-              to: string,
-              inviterDisplayName: string,
-              inviteUrl: string,
-              theme?: string,
-          ) => {
+        ? async (to: string, inviterDisplayName: string, inviteUrl: string) => {
               await ctx.capabilities.require<SendEmailAction>(
                   "notify:sendEmail",
               )({
                   purpose: invitePurpose,
                   recipientEmail: to,
                   variables: { inviterDisplayName, inviteUrl },
-                  theme,
               });
           }
         : undefined;

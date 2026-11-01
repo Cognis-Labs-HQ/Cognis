@@ -57,4 +57,5 @@
   <string name="gateway.notify.broadcast.acknowledge">Acknowledge</string>
   <string name="gateway.notify.broadcast.action_failed">Failed to update broadcast state.</string>
   <string name="gateway.notify.broadcast.invalid_redirect">The redirect URL is invalid or not trusted.</string>
+    <string name="gateway.notify.validation.email">Verified Email Address</string>
 </resources>

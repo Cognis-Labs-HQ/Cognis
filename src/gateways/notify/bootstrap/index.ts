@@ -1,13 +1,13 @@
-import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
 import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
-import {
-    TfaCodeService,
-    InMemoryTfaStore,
-} from "../../../api/reuse/tfa-code.js";
+import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
@@ -33,6 +33,7 @@ export { createUserEmailRoutes };
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    declareNotificationContracts(ctx.capabilities.require<Ctx>("system:ctx"));
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
@@ -248,101 +249,23 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
         );
     }
-    if (ctx.flow.exists("construct-login-ui")) {
-        ctx.flow.extend(
-            "construct-login-ui",
-            "compose-form",
-            {
-                id: "notify-gateway:login-ui-required-email-integration",
-                order: 50,
+    ctx.capabilities
+        .get<{ register(mode: unknown): void }>("auth:userValidationModes")
+        ?.register({
+            id: "email",
+            labelKey: "gateway.notify.validation.email",
+            stringsBaseUrl: "/static/gateways/notify/languages",
+            requiredFields: ["email"],
+            available: () => isGatewayEnabled() && emailAvailable(),
+            validate: async ({ accountId }: { accountId: string }) =>
+                (await notifStore.getUserEmails(accountId)).some(
+                    (email) => email.primary && email.verified,
+                ),
+            integration: {
+                scriptUrl:
+                    "/static/gateways/notify/login-required-email-flow.js",
             },
-            () => ({
-                integrations: isGatewayEnabled()
-                    ? [
-                          {
-                              id: "required-email-enforcement",
-                              scriptUrl:
-                                  "/static/gateways/notify/login-required-email-flow.js",
-                              stringsBaseUrl:
-                                  "/static/gateways/notify/languages",
-                          },
-                      ]
-                    : [],
-            }),
-        );
-    }
-    // SSO redirects also establish sessions without visiting the login form.
-    ctx.capabilities.contribute(
-        "auth:getSetupIntegrations",
-        async (accountId: string, role: string) => {
-            const settings = parseSecuritySettings(
-                (await preferenceStore?.get(
-                    "__system__",
-                    SECURITY_SETTINGS_KEY,
-                )) ?? null,
-            );
-            const accounts = ctx.capabilities.get<{
-                isFounder(id: string): Promise<boolean>;
-            }>("auth:accountStore");
-            const founder =
-                (role === "admin" || role === "owner") &&
-                (await accounts?.isFounder(accountId));
-            if (
-                !isGatewayEnabled() ||
-                settings?.userValidationMode !== "email" ||
-                founder
-            )
-                return [];
-            const emails = await notifStore.getUserEmails(accountId);
-            if (emails.some((email) => email.primary && email.verified))
-                return [];
-            return [
-                {
-                    scriptUrl:
-                        "/static/gateways/notify/login-required-email-flow.js",
-                },
-            ];
-        },
-    );
-    if (ctx.flow.exists("login")) {
-        ctx.flow.extend(
-            "login",
-            "establish-session",
-            { id: "notify-gateway:emailEnforcement", order: 50 },
-            async (stageCtx) => {
-                const sessionResult = stageCtx.data["sessionResult"] as
-                    Record<string, unknown> | undefined;
-                if (sessionResult?.outcome !== "success") {
-                    return null;
-                }
-                const role = String(sessionResult.role ?? "user");
-                const isFounder = sessionResult.isFounder === true;
-                const isInitialAdmin =
-                    (role === "admin" || role === "owner") && isFounder;
-                const hasVerifiedEmail = sessionResult.accountId
-                    ? (
-                          await notifStore.getUserEmails(
-                              String(sessionResult.accountId),
-                          )
-                      ).some(
-                          (email) =>
-                              email.primary === true && email.verified === true,
-                      )
-                    : false;
-                const requiresUserValidation =
-                    isGatewayEnabled() &&
-                    sessionResult.userValidationMode === "email" &&
-                    !isInitialAdmin &&
-                    !hasVerifiedEmail;
-                const nextSessionResult = {
-                    ...sessionResult,
-                    requiredUserValidation: requiresUserValidation,
-                };
-                stageCtx.data["sessionResult"] = nextSessionResult;
-                return { sessionResult: nextSessionResult };
-            },
-        );
-    }
+        });
 
     /**
      * notify:dispatch — one-shot notification dispatch helper for other
@@ -562,3 +485,5 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 }
+import { declareNotificationContracts } from "../contracts/declarations.js";
+import type { Ctx } from "@cognis/core";

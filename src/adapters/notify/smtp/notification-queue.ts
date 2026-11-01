@@ -1,5 +1,7 @@
+import type { EmailPresentation } from "./email-templates.js";
 import { randomUUID } from "node:crypto";
-import type { NotificationSenderQueueEntry } from "@cognis/core";
+
+import type { NotificationSenderQueueEntry } from "../../../gateways/notify/contracts/sender.js";
 
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
@@ -38,6 +40,7 @@ interface SmtpQueueEntry extends NotificationSenderQueueEntry {
     recipientEmail: string;
     body: string;
     theme?: string;
+    presentation?: EmailPresentation;
     verifyUrl?: string;
     verifyButtonLabel?: string;
     nextAttemptAt: number;
@@ -55,6 +58,7 @@ export interface SmtpNotificationQueuePayload {
     subject: string;
     body: string;
     theme?: string;
+    presentation?: EmailPresentation;
     verifyUrl?: string;
     verifyButtonLabel?: string;
     recipientUsername?: string;
@@ -217,6 +221,7 @@ export class SmtpNotificationQueue {
                         subject: nextEntry.subject,
                         body: nextEntry.body,
                         theme: nextEntry.theme,
+                        presentation: nextEntry.presentation,
                         verifyUrl: nextEntry.verifyUrl,
                         verifyButtonLabel: nextEntry.verifyButtonLabel,
                         recipientUsername: nextEntry.recipientUsername,
@@ -275,6 +280,9 @@ export class SmtpNotificationQueue {
             subject: input.subject,
             body: input.body,
             theme: input.theme,
+            presentation: input.presentation
+                ? structuredClone(input.presentation)
+                : undefined,
             verifyUrl: input.verifyUrl,
             verifyButtonLabel: input.verifyButtonLabel,
             config: input.config,

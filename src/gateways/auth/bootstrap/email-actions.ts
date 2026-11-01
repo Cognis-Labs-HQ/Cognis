@@ -1,5 +1,9 @@
 import type { GatewayBootstrapContext } from "../../shared.js";
-import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
+
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../notify/contracts/action-delivery.js";
 
 /** Auth owns login-link content; completion waits for optional notification providers. */
 export async function completeBootstrap(
@@ -21,7 +25,6 @@ export async function completeBootstrap(
             to: string,
             loginUrl: string,
             options?: {
-                theme?: string;
                 subject?: string;
                 body?: string;
                 actionLabel?: string;
@@ -37,7 +40,6 @@ export async function completeBootstrap(
                         body: options?.body ?? "",
                         actionLabel: options?.actionLabel ?? "",
                     },
-                    theme: options?.theme,
                 },
             );
         },

@@ -81,3 +81,7 @@ Setiap adapter di `src/adapters/tfa/<adapter-id>/` mengimplementasikan setup dan
 ## Konfirmasi TFA Berlapis
 
 Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali ke penjaga halaman lainnya. Membuang pendaftaran tidak membuang perubahan Pengaturan yang terpisah. Mempertahankan perubahan menghentikan navigasi; membuangnya secara eksplisit melanjutkan navigasi. Halaman yang sudah dilepas tidak dapat melanjutkan navigasi pendaftaran yang tersimpan.
+
+## Tampilan Metode
+
+Setiap metode menyediakan `stringsBaseUrl` dan metadata `loginUi`: `placeholderKey`, `supportsResend`, serta `challengeOnSelect`. UI masuk menemukan nilai tersebut tanpa percabangan ID penyedia. Label konfigurasi memakai kunci terjemahan milik penyedia.

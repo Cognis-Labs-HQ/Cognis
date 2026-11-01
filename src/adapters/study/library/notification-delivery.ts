@@ -1,8 +1,9 @@
 import type { StudyAdapterBootstrapCtx } from "../../../gateways/study/gateway.js";
+
 import type {
     NotificationEnvelope,
     NotificationDispatchResult,
-} from "@cognis/core";
+} from "../../../gateways/notify/contracts/sender.js";
 
 export function createNotificationDelivery(
     ctx: Pick<StudyAdapterBootstrapCtx, "capabilities" | "log">,

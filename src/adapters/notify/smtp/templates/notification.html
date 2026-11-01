@@ -8,6 +8,9 @@
     <body
         style="margin:0;padding:0;background:{{bgOuter}};font-family:Arial,Helvetica,sans-serif;"
     >
+        <div style="display: none; max-height: 0; overflow: hidden">
+            {{previewText}}
+        </div>
         <table
             role="presentation"
             width="100%"
@@ -54,17 +57,11 @@
                                                     >
                                                         <span
                                                             style="font-size:22px;font-weight:700;letter-spacing:0.12em;color:{{colorAccent2}};text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;"
-                                                            >COGNIS</span
+                                                            >{{brandName}}</span
                                                         >
                                                     </td>
                                                 </tr>
                                             </table>
-                                        </td>
-                                        <td align="right">
-                                            <span
-                                                style="font-size:11px;color:{{colorMuted}};letter-spacing:0.08em;text-transform:uppercase;"
-                                                >Notification</span
-                                            >
                                         </td>
                                     </tr>
                                 </table>
@@ -104,8 +101,6 @@
                             </td>
                         </tr>
 
-                        {{verifyButton}}
-
                         <tr>
                             <td
                                 style="background:{{bgFooter}};padding:16px 36px;border-top:1px solid {{colorDivider}};"
@@ -122,15 +117,8 @@
                                             <p
                                                 style="margin:0;font-size:11px;color:{{colorFooterText}};line-height:1.5;"
                                             >
-                                                Sent by
-                                                <strong
-                                                    style="color:{{colorAccent2}};"
-                                                    >system</strong
-                                                >
-                                                from {{footerBrandLink}}. This
-                                                is an automated notification
-                                                &#8212; please do not reply to
-                                                this message.
+                                                {{footerText}}
+                                                {{footerBrandLink}}
                                             </p>
                                         </td>
                                         <td

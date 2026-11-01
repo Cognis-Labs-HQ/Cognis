@@ -1,11 +1,13 @@
-import type { RegisterNotificationAction, SendEmailAction } from "@cognis/core";
-import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import {
-    DEFAULT_VERIFICATION_CODE_LENGTH,
-    EMAIL_DELIVERY_RATE_LIMIT_MS,
     clampVerificationCodeLength,
     generateNumericVerificationCode,
-} from "@cognis/core";
+} from "../../../gateways/reuse/verification-codes.js";
+
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../../gateways/notify/contracts/action-delivery.js";
+import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
@@ -13,6 +15,10 @@ const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 interface SmtpTfaAdapterContext {
     canSendVerificationEmail?: () => boolean;
+    getEmailDeliveryPolicy?: () => {
+        minimumIntervalMs: number;
+        codeLength: number;
+    };
     sendVerificationEmail?: (
         to: string,
         code: string,
@@ -52,15 +58,37 @@ function challengeKey(scope: "setup" | "login", accountId: string): string {
 
 class SmtpTfaAdapter implements TfaMethodAdapter {
     readonly id = "smtp";
+    readonly stringsBaseUrl = "/static/adapters/tfa/smtp/languages";
+    readonly loginUi = {
+        placeholderKey: "ui.app.login.tfa.code_placeholder_smtp",
+        supportsResend: true,
+        challengeOnSelect: true,
+    };
     readonly name = "Email Code";
 
     private readonly challenges = new Map<string, CodeChallenge>();
     private readonly loginChallengeLastSentAt = new Map<string, number>();
-    private codeLength = DEFAULT_VERIFICATION_CODE_LENGTH;
+
+    private get codeLength() {
+        return clampVerificationCodeLength(
+            this.context.getEmailDeliveryPolicy?.().codeLength,
+        );
+    }
+
+    private get deliveryIntervalMs() {
+        return Math.max(
+            0,
+            this.context.getEmailDeliveryPolicy?.().minimumIntervalMs ?? 0,
+        );
+    }
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
 
     async bootstrap(ctx: TfaAdapterBootstrapContext): Promise<void> {
+        this.context.getEmailDeliveryPolicy = () =>
+            ctx.capabilities.require<
+                () => { minimumIntervalMs: number; codeLength: number }
+            >("notify:emailDeliveryPolicy")();
         const register = ctx.capabilities.get<RegisterNotificationAction>(
             "notify:registerEmailPurpose",
         );
@@ -73,13 +101,12 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 to: string,
                 code: string,
                 _verifyUrl?: string,
-                theme?: string,
+                _theme?: string,
             ) =>
                 ctx.capabilities.require<SendEmailAction>("notify:sendEmail")({
                     purpose,
                     recipientEmail: to,
                     variables: { code },
-                    theme,
                 });
             this.context.canSendVerificationEmail = () =>
                 ctx.capabilities.get<() => boolean>(
@@ -225,9 +252,9 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(EMAIL_DELIVERY_RATE_LIMIT_MS / 1000),
+            retryAfterSeconds: Math.ceil(this.deliveryIntervalMs / 1000),
             resendAvailableAt: new Date(
-                sentAtMs + EMAIL_DELIVERY_RATE_LIMIT_MS,
+                sentAtMs + this.deliveryIntervalMs,
             ).toISOString(),
         };
     }
@@ -418,7 +445,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 const lastSentAt =
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
                 const retryMs = Math.max(
-                    EMAIL_DELIVERY_RATE_LIMIT_MS - (now - lastSentAt),
+                    this.deliveryIntervalMs - (now - lastSentAt),
                     0,
                 );
                 return {
@@ -476,22 +503,11 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     }
 
     getConfigSchema() {
-        return [
-            {
-                key: "codeLength",
-                label: "ui.app.admin.notif.smtp_code_length",
-                type: "number" as const,
-                required: false,
-            },
-        ];
+        return [];
     }
 
     getCodeLength(): number {
         return this.codeLength;
-    }
-
-    configure(config: Record<string, unknown>): void {
-        this.codeLength = clampVerificationCodeLength(config.codeLength);
     }
 }
 

@@ -8,9 +8,6 @@
   <string name="ui.app.login.tfa.recovery_code_open_security">Sicherheitseinstellungen öffnen</string>
   <string name="ui.app.login.tfa.required_prompt">Für die Fortsetzung ist eine Zwei-Faktor-Prüfung erforderlich.</string>
   <string name="ui.app.login.tfa.error_invalid">Ungültiger Zwei-Faktor-Code.</string>
-  <string name="ui.app.login.tfa.smtp.resend_action">E-Mail-Code erneut senden</string>
-  <string name="ui.app.login.tfa.smtp.resend_rate_limited">E-Mail-Code in {seconds}s erneut senden</string>
-  <string name="ui.app.login.tfa.smtp.resend_sent">Ein neuer Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Zwei-Faktor-Authentifizierung Für Alle Benutzer Erzwingen</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">Wenn aktiviert, werden Benutzer ohne konfigurierte Zwei-Faktor-Methode zu den Einstellungen umgeleitet, bis die Einrichtung abgeschlossen ist.</string>
   <string name="ui.app.users.reset_tfa">Zwei-Faktor-Authentifizierung Zurücksetzen</string>
@@ -50,4 +47,8 @@
   <string name="gateway.tfa.settings.required_prompt">Wählen Sie eine Methode aus, die Sie vor dem Fortfahren konfigurieren möchten.</string>
   <string name="gateway.tfa.settings.loading">Sicherheitseinstellungen werden geladen…</string>
   <string name="gateway.tfa.settings.qr_code_alt">Diesen QR-Code mit der Authentifizierungs-App scannen</string>
+  <string name="ui.app.login.tfa.resend_action">Code erneut senden</string>
+  <string name="ui.app.login.tfa.resend_rate_limited">Code in {seconds} s erneut senden</string>
+  <string name="ui.app.login.tfa.resend_sent">Ein neuer Bestätigungscode wurde gesendet.</string>
+  <string name="ui.app.login.tfa.code_placeholder">Bestätigungscode</string>
 </resources>

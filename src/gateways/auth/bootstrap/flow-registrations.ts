@@ -1,3 +1,4 @@
+import type { UserValidationModes } from "../user-validation.js";
 import {
     AUTH_FLOW_CATALOG,
     BOOTSTRAP_FLOW_CATALOG,
@@ -575,13 +576,7 @@ export async function registerAuthBootstrapHook(
                 "files:quota:provisionUser",
             )?.(session.accountId);
 
-            const securitySettings = await context
-                .readSecuritySettings()
-                .catch(() => ({
-                    registrationsEnabled: false,
-                    userValidationMode: "none" as const,
-                    loginSessionTimeoutMinutes: globalTtlSeconds / 60,
-                }));
+            const securitySettings = await context.readSecuritySettings();
             const preferenceStore =
                 capabilities.get<
                     import("../../../api/reuse/preference-store.js").UserPreferenceStore
@@ -621,12 +616,15 @@ export async function registerAuthBootstrapHook(
                 >("notify:provisionUserEmails")?.(
                     session.accountId,
                     listedEmails,
-                    {
-                        sendPrimaryVerification:
-                            securitySettings.userValidationMode === "email",
-                    },
                 );
             }
+            const validation = await capabilities
+                .require<UserValidationModes>("auth:userValidationModes")
+                .evaluate(securitySettings.userValidationMode, {
+                    accountId: session.accountId,
+                    role,
+                    isFounder,
+                });
             const sharedPayload = {
                 accountId: session.accountId,
                 displayName: displayName ?? profileHandle ?? session.accountId,
@@ -635,8 +633,7 @@ export async function registerAuthBootstrapHook(
                 role,
                 isFounder,
                 userValidationMode: securitySettings.userValidationMode,
-                // Baseline default; optional notify flow hooks can override this.
-                requiredUserValidation: false,
+                requiredUserValidation: !validation.verified,
             };
             const token = issueAccessToken(
                 session.accountId,

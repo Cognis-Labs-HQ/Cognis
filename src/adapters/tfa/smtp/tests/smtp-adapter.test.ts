@@ -88,7 +88,7 @@ test("smtp adapter resend invalidates the previous login code and issues a new o
     assert.equal(secondCodeAttempt.verified, true);
 });
 
-test("smtp adapter supports configurable code length", async () => {
+test("smtp adapter reads code length from the delivery policy", async () => {
     const sentCodes: string[] = [];
     const adapter = createAdapter({
         canSendVerificationEmail: () => true,
@@ -96,8 +96,11 @@ test("smtp adapter supports configurable code length", async () => {
             sentCodes.push(code);
         },
         getPrimaryEmail: async () => "alice@example.com",
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 8,
+            minimumIntervalMs: 15000,
+        }),
     });
-    adapter.configure({ codeLength: 8 });
     const setup = await adapter.beginSetup({
         accountId: "alice",
         displayName: "Alice",

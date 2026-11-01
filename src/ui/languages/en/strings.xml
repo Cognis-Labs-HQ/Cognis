@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">Last 1 hour</string>
   <string name="ui.app.admin.logs.time_range.6h">Last 6 hours</string>
   <string name="ui.app.admin.logs.time_range.24h">Last 24 hours</string>
-  <string name="ui.app.admin.notif.smtp_host">SMTP Host</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Security</string>
-  <string name="ui.app.admin.notif.smtp_from">From Address</string>
-  <string name="ui.app.admin.notif.smtp_user">Username</string>
-  <string name="ui.app.admin.notif.smtp_password">Password</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">None</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Save Settings</string>
   <string name="ui.app.admin.notif.test_email">Send Test Email</string>
   <string name="ui.app.admin.notif.test_email_to">Recipient email address</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Overriding env variable</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Code Length</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Sender Name</string>
   <string name="ui.app.admin.security.title">Security</string>
   <string name="ui.app.admin.security.trusted_domains_label">Trusted Domains</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of trusted domains. Leave empty to allow all email domains while external links remain limited to this site. Matching subdomains are also allowed.</string>
@@ -634,4 +621,8 @@
   <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
   <string name="ui.app.users.details_failed">Could not load this user’s details. Please try again.</string>
   <string name="ui.app.users.refresh_failed">The change was saved, but the Users list could not be refreshed. Refresh the page to see the latest data.</string>
+  <string name="ui.reuse.none">None</string>
+  <string name="ui.reuse.unavailable">Unavailable</string>
+    <string name="ui.reuse.test">Test</string>
+    <string name="ui.app.admin.security.validation_unavailable">This validation method is unavailable.</string>
 </resources>

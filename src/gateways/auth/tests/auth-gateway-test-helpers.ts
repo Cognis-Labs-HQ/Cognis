@@ -1,3 +1,5 @@
+import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
+import { runBootstrapScope } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import {
     CTX_CAPABILITY,
@@ -125,11 +127,20 @@ export function contributeTestKeyring(capabilities: CapabilityStore): void {
 
 export function createAuthTestContext(
     capabilities: CapabilityStore,
-    database: InMemoryDb,
+    database: object,
 ): { flow: Ctx["flow"] } {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
     capabilities.contribute("db:executor", database);
     contributeTestKeyring(capabilities);
     return { flow: systemCtx.flow };
+}
+
+export async function bootstrapAuthTestHost(
+    input: Parameters<typeof bootstrapImplementation>[0],
+) {
+    const root = input.capabilities.require<Ctx>(CTX_CAPABILITY);
+    return runBootstrapScope(root, "gateway:auth", () =>
+        bootstrapImplementation(input),
+    );
 }

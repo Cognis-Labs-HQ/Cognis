@@ -1,11 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    CapabilityStore,
-    createCtx,
-    runBootstrapScope,
-    type NotificationAction,
-} from "@cognis/core";
+import { CapabilityStore, createCtx, runBootstrapScope } from "@cognis/core";
+import type { NotificationAction } from "../../../../gateways/notify/contracts/action-delivery.js";
 import { createAdapter } from "../index.js";
 
 for (const enabled of [false, true])

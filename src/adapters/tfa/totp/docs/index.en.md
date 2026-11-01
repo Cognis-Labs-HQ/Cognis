@@ -26,3 +26,5 @@ Provides time-based one-time password verification for the TFA gateway.
 The adapter exposes one admin setting:
 
 - `algorithm` — HMAC algorithm used for setup verification and login verification.
+
+The method declares its login placeholder, language base and configuration labels; the gateway renders that metadata without a provider-ID branch.
