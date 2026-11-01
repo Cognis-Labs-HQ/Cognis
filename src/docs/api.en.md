@@ -338,3 +338,11 @@ Users action menus resolve rows by immutable account ID rather than public usern
 ## Complete Cached Assets
 
 Range requests bypass the whole-file cache, and only complete HTTP 200 responses can populate or replace public assets. Partial responses leave existing complete bytes intact. Content-hashed font files use the same immutable caching and cross-generation reuse as hashed scripts and images, avoiding unnecessary downloads after worker updates.
+
+## Quiet Marketplace Polling
+
+The marketplace revalidates one administrator-only `/api/v1/modules/marketplace-state` snapshot every fifteen seconds. Its ETag covers sources, installed state, cached discoveries, recommendations and restart requirements. An unchanged response is `304` with no body; the page retains its prepared catalog without fetching translations or redrawing. Source discovery runs once after mounting, hourly, and after source changes; manual Refresh still forces a scan. Hidden, offline and busy pages pause polling, and unmount aborts requests and removes the timer.
+
+Catalog presentation includes a content-derived `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` can reuse versioned authenticated bundles within the same account/session. Changed revisions fetch new strings; changed identities clear private bundles, late responses cannot repopulate another session, and failed loads can retry. Public bundles retain their existing cache and lifecycle invalidation.
+
+Recommendation feeds are shared by the marketplace service, coalesce concurrent reads and stay fresh for five minutes. Failed refreshes retain the last successful list and back off for one minute; changing the configured URL selects a separate result, and manual Refresh bypasses freshness.

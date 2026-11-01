@@ -72,6 +72,14 @@ Email actions use `notify:registerEmailPurpose`, independent of transport. Sende
 
 Registration and sharing adapters declare their own browser contributions. TFA discovers adapter language resources and uses common verification errors; issuer configuration stays with its adapter. Share maintenance follows gateway disable/reactivation. Share UI tests are separated by component ownership.
 
+## Quiet Marketplace Polling
+
+The marketplace revalidates one administrator-only `/api/v1/modules/marketplace-state` snapshot every fifteen seconds. Its ETag covers sources, installed state, cached discoveries, recommendations and restart requirements. An unchanged response is `304` with no body; the page retains its prepared catalog without fetching translations or redrawing. Source discovery runs once after mounting, hourly, and after source changes; manual Refresh still forces a scan. Hidden, offline and busy pages pause polling, and unmount aborts requests and removes the timer.
+
+Catalog presentation includes a content-derived `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` can reuse versioned authenticated bundles within the same account/session. Changed revisions fetch new strings; changed identities clear private bundles, late responses cannot repopulate another session, and failed loads can retry. Public bundles retain their existing cache and lifecycle invalidation.
+
+Recommendation feeds are shared by the marketplace service, coalesce concurrent reads and stay fresh for five minutes. Failed refreshes retain the last successful list and back off for one minute; changing the configured URL selects a separate result, and manual Refresh bypasses freshness.
+
 ## Commits
 
 - [79980d16805ac67e696ce8d6b63f4daafba73f19](https://github.com/Cognis-Labs-HQ/Cognis/commit/79980d16805ac67e696ce8d6b63f4daafba73f19)

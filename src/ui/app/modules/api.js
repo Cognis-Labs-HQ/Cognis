@@ -21,8 +21,15 @@ async function data(response) {
     return (await response.json()).data;
 }
 
-export async function loadInstalledModules() {
-    return data(await apiFetch("/api/v1/modules"));
+/** Revalidate displayed marketplace state without downloading unchanged catalogs. */
+export async function loadMarketplaceState(etag, { signal } = {}) {
+    const response = await apiFetch("/api/v1/modules/marketplace-state", {
+        signal,
+        cache: "no-store",
+        headers: etag ? { "if-none-match": etag } : {},
+    });
+    if (response.status === 304) return null;
+    return { etag: response.headers.get("etag"), ...(await data(response)) };
 }
 
 export async function loadModuleConfig(moduleId) {
@@ -91,9 +98,14 @@ export async function removeModuleSource(uuid) {
     );
 }
 
-export async function loadAvailableModules(sourceUuids, forceRefresh = false) {
+export async function loadAvailableModules(
+    sourceUuids,
+    forceRefresh = false,
+    { signal } = {},
+) {
     const response = await apiFetch("/api/v1/modules/catalog", {
         method: "POST",
+        signal,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ sourceUuids, forceRefresh }),
     });
@@ -105,10 +117,6 @@ export async function loadAvailableModules(sourceUuids, forceRefresh = false) {
             ? payload.meta.sourceFailures
             : [],
     };
-}
-
-export async function loadCachedModules() {
-    return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
 export async function saveModuleReleaseChannel(moduleUuid, branch) {

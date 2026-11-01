@@ -1,3 +1,5 @@
+import { withMarketplaceAssetUrls } from "./catalog-presentation.js";
+import { createModuleMarketplaceStateRoute } from "./marketplace-state.js";
 import { createModuleSourceRoutes } from "./sources.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
@@ -82,75 +84,6 @@ function publicInstallErrorCode(error: unknown): string | undefined {
     return PUBLIC_INSTALL_ERROR_CODES.has(message) ? message : undefined;
 }
 
-async function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
-    module: T,
-    marketplace: ModuleMarketplaceService,
-    log?: BootstrapLog,
-): Promise<
-    T & {
-        assets?: {
-            icon?: string;
-            banner?: string;
-            screenshots?: string[];
-            media?: Array<{ url: string; contentType: string }>;
-        };
-    }
-> {
-    const assetIds = module.assetIds as
-        | {
-              icon?: string;
-              banner?: string;
-              screenshots?: string[];
-              media?: Array<{ id: string; contentType: string }>;
-              strings?: Record<string, string>;
-          }
-        | undefined;
-    const assetUrl = (id: string) =>
-        `/api/v1/modules/catalog/assets/${encodeURIComponent(id)}`;
-    const moduleUi =
-        (module as { ui?: Record<string, unknown> }).ui ?? undefined;
-    const declaresStrings =
-        typeof moduleUi?.stringsBaseUrl === "string" ||
-        Boolean(assetIds?.strings);
-    const englishStringsId = assetIds?.strings?.en;
-    const englishStrings = englishStringsId
-        ? await marketplace.getAsset(englishStringsId)
-        : undefined;
-    if (declaresStrings && !englishStrings) {
-        log?.("warn", "Module catalog strings were unavailable.", {
-            component: "api-modules",
-            operation: "resolve-marketplace-strings",
-            moduleUuid: String((module as { uuid?: unknown }).uuid ?? ""),
-            locale: "en",
-            assetId: englishStringsId,
-        });
-    }
-    return {
-        ...module,
-        ui: declaresStrings
-            ? {
-                  ...moduleUi,
-                  stringsBaseUrl: englishStrings
-                      ? `/api/v1/modules/catalog/strings/${encodeURIComponent(String((module as { uuid?: unknown }).uuid ?? ""))}`
-                      : undefined,
-              }
-            : (module as { ui?: Record<string, unknown> }).ui,
-        assets: assetIds
-            ? {
-                  icon: assetIds.icon ? assetUrl(assetIds.icon) : undefined,
-                  banner: assetIds.banner
-                      ? assetUrl(assetIds.banner)
-                      : undefined,
-                  screenshots: (assetIds.screenshots ?? []).map(assetUrl),
-                  media: (assetIds.media ?? []).map((entry) => ({
-                      url: assetUrl(entry.id),
-                      contentType: entry.contentType,
-                  })),
-              }
-            : undefined,
-    };
-}
-
 function sendRestartRequired(res: ServerResponse): void {
     res.writeHead(409, { "content-type": "application/json" });
     res.end(
@@ -181,6 +114,16 @@ export function createModuleRoutes(
         | { status: "failed"; message: string; code?: string }
     >();
     const restartRequiredModules = new Set<string>();
+    const stateRoute = marketplace
+        ? createModuleMarketplaceStateRoute({
+              moduleService,
+              marketplace,
+              ctx,
+              restartRequiredModules,
+              getStatus: hooks?.getStatus,
+              log: hooks?.log,
+          })
+        : undefined;
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -192,6 +135,7 @@ export function createModuleRoutes(
             path: url.pathname,
         };
         if (sourceRoutes && (await sourceRoutes(req, res, url))) return true;
+        if (stateRoute && (await stateRoute(req, res, url))) return true;
         const channelMatch = url.pathname.match(
             /^\/api\/v1\/modules\/catalog\/([^/]+)\/channel$/,
         );
@@ -332,7 +276,9 @@ export function createModuleRoutes(
                   )
                 : undefined;
             const recommended = new Set(
-                await marketplace.listRecommendedModuleUuids(),
+                await marketplace.listRecommendedModuleUuids(
+                    body.forceRefresh === true,
+                ),
             );
             const discovery =
                 req.method === "POST"

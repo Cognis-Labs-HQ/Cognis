@@ -26,9 +26,7 @@ import {
 import {
     installModule,
     loadAvailableModules,
-    loadCachedModules,
-    loadInstalledModules,
-    loadModuleSources,
+    loadMarketplaceState,
     saveModuleReleaseChannel,
     setModuleEnabled,
     uninstallModule,
@@ -82,6 +80,8 @@ let composer;
 let pageRoot;
 let modules = [];
 let sources = [];
+let marketplaceEtag;
+let marketplaceSourceRevision;
 const filters = createModuleFilters();
 let selectedModule = null;
 let discoverySequence = 0;
@@ -116,10 +116,11 @@ const reportSourceFailures = (failures) =>
 
 const startMarketplacePolling = createModulesPagePolling({
     isRefreshPending: () =>
+        uiCtx.capabilities.get("offline:state")?.isOffline() === true ||
         marketplaceRefreshPending ||
         pendingModuleActions.size > 0 ||
         pendingDependencyChecks.size > 0,
-    loadKnownModules: (signal) => loadKnownModules(false, signal, false),
+    loadKnownModules: (signal) => loadKnownModules(false, signal),
     discoverSources: (signal) => discoverConfiguredSources(false, signal),
     log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
     translate: (key) => i18n.t(key),
@@ -508,22 +509,23 @@ function refreshDetailActions() {
 async function loadKnownModules(
     restoreDetailRoute = false,
     signal = pageMountController?.signal,
-    refreshWhenReady = true,
 ) {
     const sequence = ++discoverySequence;
     const selectedModuleUuid =
         selectedModule?.uuid ??
         (restoreDetailRoute ? detailModuleUuid() : null);
-    const [loadedSources, installed, cached] = await Promise.all([
-        loadModuleSources(),
-        loadInstalledModules(),
-        loadCachedModules(),
-    ]);
+    const snapshot = await loadMarketplaceState(marketplaceEtag, { signal });
+    if (sequence !== discoverySequence || signal?.aborted) return;
+    if (!snapshot) return { sourceRevision: marketplaceSourceRevision };
+    const { sources: loadedSources, installed, cached } = snapshot;
+    const sourceRevision = JSON.stringify(loadedSources);
     const prepared = await prepareInstalledCatalog(cached, installed, i18n, {
         signal,
     });
     if (sequence !== discoverySequence || signal?.aborted) return;
     sources = loadedSources;
+    marketplaceEtag = snapshot.etag;
+    marketplaceSourceRevision = sourceRevision;
     modules = prepared;
     selectedModule = selectedModuleUuid
         ? (modules.find(
@@ -532,7 +534,8 @@ async function loadKnownModules(
                   module.template !== true,
           ) ?? null)
         : null;
-    if (refreshWhenReady) refreshMarketplace();
+    refreshMarketplace();
+    return { sourceRevision };
 }
 
 async function discoverConfiguredSources(
@@ -544,6 +547,7 @@ async function discoverConfiguredSources(
     const { modules: discovered, sourceFailures } = await loadAvailableModules(
         sources.map((source) => source.uuid),
         forceRefresh,
+        { signal },
     );
     if (sequence !== discoverySequence || signal?.aborted) return;
     reportSourceFailures(sourceFailures);
@@ -826,6 +830,8 @@ export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
     pageMountController = replaceMountScope(pageMountController, signal);
     const mountSignal = pageMountController.signal;
+    marketplaceEtag = undefined;
+    marketplaceSourceRevision = undefined;
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;

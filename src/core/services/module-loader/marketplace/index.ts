@@ -1,3 +1,4 @@
+import { createRecommendationReader } from "./recommendations.js";
 import { fetchMarketplaceResource } from "./request.js";
 import {
     ModuleSourceRegistry,
@@ -121,6 +122,9 @@ interface ModuleInstallProvenance {
 }
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
+    private readonly readRecommendations = createRecommendationReader(
+        (...args) => this.log(...args),
+    );
     private readonly installationLocks = new Map<string, Promise<void>>();
     private readonly sourceScans = new Map<
         string,
@@ -166,20 +170,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         return value;
     }
 
-    async listRecommendedModuleUuids(): Promise<string[]> {
+    async listRecommendedModuleUuids(forceRefresh = false): Promise<string[]> {
         const { recommendedModulesUrl } = await this.getSettings();
-        const response = await fetchMarketplaceResource(
-            recommendedModulesUrl,
-        ).catch(() => undefined);
-        if (!response?.ok) return [];
-        const value = (await response.json()) as unknown;
-        return Array.isArray(value)
-            ? value.filter(
-                  (uuid): uuid is string =>
-                      typeof uuid === "string" &&
-                      /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(uuid),
-              )
-            : [];
+        return this.readRecommendations(recommendedModulesUrl, forceRefresh);
     }
 
     async listSources(): Promise<ModuleSource[]> {

@@ -67,7 +67,7 @@ test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /window\.setInterval\((?:poll|run)/);
     assert.match(
         marketplaceSource,
-        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
@@ -558,9 +558,12 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /id="module-source-refresh"/);
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
-    assert.match(source, /loadCachedModules\(\)/);
+    assert.match(
+        source,
+        /loadMarketplaceState\(marketplaceEtag, \{ signal \}\)/,
+    );
     assert.match(source, /async function discoverConfiguredSources/);
-    assert.match(source, /loadModuleSources\(\)/);
+    assert.match(source, /sources: loadedSources, installed, cached/);
     assert.match(
         source,
         /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
@@ -582,7 +585,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /button-loading module-icon-button-loading/);
     assert.match(
         source,
-        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
 });
 

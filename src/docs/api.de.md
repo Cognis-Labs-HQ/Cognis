@@ -334,3 +334,11 @@ Aktionsmenüs der Benutzerverwaltung lösen Zeilen anhand der unveränderlichen 
 ## Vollständige Cache-Ressourcen
 
 Bereichsanfragen umgehen den Cache für vollständige Dateien. Nur vollständige HTTP-200-Antworten können öffentliche Ressourcen darin anlegen oder ersetzen. Teilantworten lassen vorhandene vollständige Dateien unverändert. Schriftdateien mit Inhaltshash nutzen dieselbe unveränderliche Zwischenspeicherung und generationenübergreifende Wiederverwendung wie gehashte Skripte und Bilder, wodurch unnötige Downloads nach Worker-Updates entfallen.
+
+## Ruhiges Marketplace-Polling
+
+Der Marketplace prüft alle fünfzehn Sekunden einen nur für Administratoren zugänglichen Snapshot unter `/api/v1/modules/marketplace-state`. Sein ETag umfasst Quellen, Installationszustand, zwischengespeicherte Entdeckungen, Empfehlungen und Neustartanforderungen. Unveränderte Antworten liefern `304` ohne Inhalt; der vorbereitete Katalog bleibt ohne erneutes Laden von Übersetzungen oder Neuzeichnen erhalten. Die Quellensuche läuft einmal nach dem Einhängen, stündlich und nach Quellenänderungen; manuelles Aktualisieren erzwingt weiterhin einen Scan. Ausgeblendete, offline befindliche und beschäftigte Seiten pausieren Abfragen; beim Aushängen werden Anfragen abgebrochen und der Timer entfernt.
+
+Katalogeinträge enthalten eine aus dem Inhalt abgeleitete `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` kann versionierte authentifizierte Sprachpakete innerhalb desselben Kontos und derselben Sitzung wiederverwenden. Neue Revisionen laden neue Texte; ein Identitätswechsel leert private Pakete, verspätete Antworten können keine andere Sitzung befüllen, und fehlgeschlagene Ladevorgänge bleiben wiederholbar. Öffentliche Pakete behalten ihren bisherigen Cache und die Lebenszyklusinvalidierung.
+
+Empfehlungsfeeds werden vom Marketplace-Dienst gemeinsam genutzt, bündeln gleichzeitige Lesezugriffe und bleiben fünf Minuten aktuell. Fehlgeschlagene Aktualisierungen behalten die letzte erfolgreiche Liste und warten vor dem nächsten Versuch eine Minute. Eine geänderte konfigurierte URL wählt ein eigenes Ergebnis; manuelles Aktualisieren umgeht die Gültigkeitsdauer.

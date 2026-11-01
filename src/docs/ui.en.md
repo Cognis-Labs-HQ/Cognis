@@ -101,3 +101,11 @@ The shared image-preview provider loads its stylesheet before publishing control
 ## Responsive Session Navigation
 
 Logout clears private session data without waiting for public service-worker route maintenance. Identical worker policy requests share one exchange without merging changed access decisions. The language switcher waits for its catalog provider and hides account-only controls when signed out. Bundled and directly served router copies share document state, listeners and mount cancellation, including Settings to Dashboard navigation.
+
+## Quiet Marketplace Polling
+
+The marketplace revalidates one administrator-only `/api/v1/modules/marketplace-state` snapshot every fifteen seconds. Its ETag covers sources, installed state, cached discoveries, recommendations and restart requirements. An unchanged response is `304` with no body; the page retains its prepared catalog without fetching translations or redrawing. Source discovery runs once after mounting, hourly, and after source changes; manual Refresh still forces a scan. Hidden, offline and busy pages pause polling, and unmount aborts requests and removes the timer.
+
+Catalog presentation includes a content-derived `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` can reuse versioned authenticated bundles within the same account/session. Changed revisions fetch new strings; changed identities clear private bundles, late responses cannot repopulate another session, and failed loads can retry. Public bundles retain their existing cache and lifecycle invalidation.
+
+Recommendation feeds are shared by the marketplace service, coalesce concurrent reads and stay fresh for five minutes. Failed refreshes retain the last successful list and back off for one minute; changing the configured URL selects a separate result, and manual Refresh bypasses freshness.

@@ -46,3 +46,11 @@ Penyedia pratinjau gambar bersama memuat lembar gayanya sebelum menerbitkan kont
 ## Navigasi Sesi Responsif
 
 Keluar membersihkan data sesi pribadi tanpa menunggu pemeliharaan rute publik oleh pekerja layanan. Permintaan kebijakan identik memakai satu pertukaran tanpa menggabungkan keputusan akses yang berubah. Pengalih bahasa menunggu penyedia katalog dan menyembunyikan kontrol khusus akun setelah keluar. Salinan router dalam bundel dan yang dimuat langsung berbagi status dokumen, pendengar, dan pembatalan tampilan, termasuk navigasi Pengaturan ke Dasbor.
+
+## Polling Marketplace Ringan
+
+Marketplace memvalidasi ulang satu snapshot khusus administrator di `/api/v1/modules/marketplace-state` setiap lima belas detik. ETag mencakup sumber, status pemasangan, penemuan dalam cache, rekomendasi dan kebutuhan memulai ulang. Jika tidak berubah, respons berupa `304` tanpa isi; halaman mempertahankan katalog siap tampil tanpa mengambil ulang terjemahan atau menggambar ulang. Penemuan sumber berjalan sekali setelah pemasangan halaman, setiap jam, dan setelah perubahan sumber; Refresh manual tetap memaksa pemindaian. Halaman tersembunyi, offline atau sibuk menghentikan polling sementara; pelepasan halaman membatalkan permintaan dan menghapus timer.
+
+Tampilan katalog menyertakan `ui.stringsRevision` yang diturunkan dari konten. `extendI18n(base, stringsBaseUrl, { revision })` dapat menggunakan kembali paket bahasa terautentikasi berversi dalam akun dan sesi yang sama. Revisi baru mengambil teks baru; pergantian identitas menghapus paket privat, respons terlambat tidak dapat mengisi sesi lain, dan pengambilan yang gagal dapat dicoba lagi. Paket publik mempertahankan cache dan pembatalan saat perubahan siklus hidup yang sudah ada.
+
+Feed rekomendasi dibagikan oleh layanan marketplace, menggabungkan pembacaan serentak dan tetap segar selama lima menit. Kegagalan pembaruan mempertahankan daftar terakhir yang berhasil dan menunda percobaan berikutnya satu menit. Perubahan URL konfigurasi memilih hasil tersendiri, sedangkan Refresh manual melewati masa kesegaran.
