@@ -95,3 +95,4 @@ Studyの申請、コンテンツ、削除の通知は、Libraryのブートス�
 - [f0e2f4e0fdc2f5d1acbfc13c275b9726c9dd0e5d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f0e2f4e0fdc2f5d1acbfc13c275b9726c9dd0e5d)
 - [9d818cedbcf80b2366c94b19d909adb55e191015](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d818cedbcf80b2366c94b19d909adb55e191015)
 - [b9f8ff7](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9f8ff7a5741bc4998bd416eefe89323532f68b1)
+- [d9f39dd9958cd0411ff1df222e085c68252c6f0b](https://github.com/Cognis-Labs-HQ/Cognis/commit/d9f39dd9958cd0411ff1df222e085c68252c6f0b)
