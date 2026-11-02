@@ -1,3 +1,5 @@
+import type { NotificationDeliveryReceipt } from "../../../../gateways/notify/contracts/sender.js";
+
 /** Public ctx delivery contracts: callers own message construction and local action identifiers. */
 export interface NotificationActionMessage {
     subject: string;
@@ -26,20 +28,8 @@ export interface EmailActionInput {
 }
 
 export type SendEmailAction = (input: EmailActionInput) => Promise<
-    NotificationActionReceipt & {
+    NotificationDeliveryReceipt & {
         sent: true;
         notificationId: string;
     }
 >;
-
-export interface NotificationActionReceipt {
-    notificationId: string;
-    status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
-    createdAt: string;
-    updatedAt: string;
-    availableAt?: string;
-    error?: string;
-    recipientEmail?: string;
-    subject?: string;
-    purpose?: string;
-}

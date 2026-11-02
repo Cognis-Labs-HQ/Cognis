@@ -14,7 +14,7 @@ import type {
     RegisterNotificationAction,
     SendEmailAction,
     EmailActionInput,
-} from "../../../gateways/notify/contracts/action-delivery.js";
+} from "./contracts/action-delivery.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 
 /** SMTP owns registration, rendering and delivery; contributors provide all message actions. */

@@ -87,6 +87,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.log,
         adaptersRoot,
         lifecycle,
+        ctx,
     );
     const timed = async <Result>(operation: () => Promise<Result>) => {
         const startedAt = performance.now();

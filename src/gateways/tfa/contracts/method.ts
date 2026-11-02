@@ -28,6 +28,7 @@ export interface TfaLoginPresentation {
 }
 
 export interface TfaMethodAdapter {
+    defineContracts?(ctx: TfaAdapterBootstrapContext): void | Promise<void>;
     bootstrap?(ctx: TfaAdapterBootstrapContext): Promise<void>;
     readonly id: string;
     readonly name: string;

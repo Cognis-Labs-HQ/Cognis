@@ -1,8 +1,5 @@
-import {
-    requireBootstrapScope,
-    runBootstrapScope,
-    type CapabilityStore,
-} from "@cognis/core";
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
+import { requireBootstrapScope, type CapabilityStore } from "@cognis/core";
 import type { CoreTfaGateway, TfaMethodAdapter } from "./gateway.js";
 
 export interface TfaAdapterBootstrapContext {
@@ -21,42 +18,41 @@ export async function bootstrapTfaAdapters(
     capabilities: CapabilityStore,
     gateway: CoreTfaGateway,
 ): Promise<void> {
-    const parent = requireBootstrapScope();
     for (const adapter of adapters) {
-        if (!adapter.bootstrap) continue;
-        await runBootstrapScope(
-            parent.root,
-            `adapter:tfa:${adapter.id}`,
-            () =>
-                adapter.bootstrap!({
-                    capabilities,
-                    isEnabled: () => gateway.isAdapterEnabled(adapter.id),
-                    registerSyncTarget: (target) =>
-                        gateway.setAdapterSyncTarget(adapter.id, target),
-                    onEnabledChange: (id, listener) => {
-                        const callback = async (
-                            changedId: string,
-                            enabled: boolean,
-                        ) => {
-                            if (changedId === adapter.id)
-                                await listener(enabled);
-                        };
-                        let unregister = gateway.onAdapterEnabledChange(
+        if (!adapter.bootstrap && adapter.defineContracts === undefined)
+            continue;
+        const context: TfaAdapterBootstrapContext = {
+            capabilities,
+            isEnabled: () => gateway.isAdapterEnabled(adapter.id),
+            registerSyncTarget: (target) =>
+                gateway.setAdapterSyncTarget(adapter.id, target),
+            onEnabledChange: (id, listener) => {
+                const callback = async (
+                    changedId: string,
+                    enabled: boolean,
+                ) => {
+                    if (changedId === adapter.id) await listener(enabled);
+                };
+                let unregister = gateway.onAdapterEnabledChange(id, callback);
+                const dispose = Object.assign(() => unregister(), {
+                    reactivate: () => {
+                        unregister = gateway.onAdapterEnabledChange(
                             id,
                             callback,
                         );
-                        const dispose = Object.assign(() => unregister(), {
-                            reactivate: () => {
-                                unregister = gateway.onAdapterEnabledChange(
-                                    id,
-                                    callback,
-                                );
-                            },
-                        });
-                        requireBootstrapScope().registerDisposer(dispose);
                     },
-                }),
-            (dispose) => parent.registerDisposer(dispose),
+                });
+                requireBootstrapScope().registerDisposer(dispose);
+            },
+        };
+        await bootstrapAdapter(
+            "tfa",
+            adapter.id,
+            context,
+            adapter,
+            async () => {
+                await adapter.bootstrap?.(context);
+            },
         );
     }
 }

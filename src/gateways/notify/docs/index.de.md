@@ -31,4 +31,6 @@ Offline-Modus und Broadcast teilen den Bannerstapel oberhalb des Kopfbereichs. D
 
 ## Verträge des Anbieters
 
-Notify besitzt Laufzeitdeklarationen und optionale öffentliche Typen unter `contracts/`. Core enthält keine Benachrichtigungsverträge. Zustellanbieter liefern Konfigurationsschema, Übersetzungen, bedingte Felder, Angaben zu gespeicherten Geheimnissen und Testfelder. Das Gateway reicht diese Metadaten ohne Transportannahmen weiter. Notify registriert die Prüffunktion `email` bei Auth und meldet allgemeine E-Mail-Verfügbarkeit. Die Zustellrichtlinie steht unter `notify:emailDeliveryPolicy`, Vorlagenfabriken unter `notify:emailTemplates` bereit.
+Notify besitzt unter `contracts/` transportneutrale Sender- und Zustellbelegtypen. Anbieterspezifische Laufzeitdefinitionen und optionale Aktionstypen gehören zum beitragenden Adapter. Anbieter liefern Konfigurationsschemata, Übersetzungen, bedingte Felder, Geheimnispräsenz und Testfelder; das Gateway reicht sie ohne Transportannahmen weiter. Notify trägt die E-Mail-Prüfrichtlinie bei Auth ein. Zustell- und Vorlagenfähigkeiten bestehen nur mit einem entsprechenden Adapter.
+
+Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).

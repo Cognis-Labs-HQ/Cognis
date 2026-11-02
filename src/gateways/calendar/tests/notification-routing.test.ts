@@ -9,7 +9,10 @@ import {
     createJsonDispatcher,
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
-import { bootstrap } from "../bootstrap.js";
+import {
+    bootstrapTestCalendar as bootstrap,
+    createCalendarHostFlow,
+} from "./bootstrap-host.js";
 
 async function bootstrapCalendarTest(input: {
     claimsByToken: Map<string, { sub: string; role: string }>;
@@ -25,6 +28,7 @@ async function bootstrapCalendarTest(input: {
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const ctx = createCtx();
+    capabilities.contribute("system:ctx", ctx);
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(input.claimsByToken),

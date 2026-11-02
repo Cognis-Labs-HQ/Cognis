@@ -1,9 +1,9 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import {
     resolveComponentEnabledState,
     requireBootstrapScope,
-    runBootstrapScope,
     type BootstrapDisposer,
     type CapabilityStore,
 } from "@cognis/core";
@@ -590,17 +590,7 @@ export class CoreNotificationGateway implements NotificationGateway {
             return;
         }
 
-        for (const sender of this.senders.values()) {
-            if (!sender.bootstrap) continue;
-            const parent = requireBootstrapScope();
-            await runBootstrapScope(
-                parent.root,
-                `adapter:notify:${sender.senderId}`,
-                () => sender.bootstrap!(ctx),
-                (dispose) => parent.registerDisposer(dispose),
-            );
-        }
-
+        const modules = new Map<string, Record<string, unknown>>();
         for (const entry of entries) {
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
@@ -623,27 +613,40 @@ export class CoreNotificationGateway implements NotificationGateway {
                 continue;
             }
 
+            modules.set(entry, mod);
+        }
+
+        const initialized = new Set<string>();
+        for (const sender of this.senders.values()) {
+            if (!sender.bootstrap) continue;
+            const owner =
+                [...this.adapterSenders].find(
+                    ([, candidate]) => candidate === sender,
+                )?.[0] ?? sender.senderId;
+            await bootstrapAdapter(
+                "notify",
+                owner,
+                ctx,
+                modules.get(owner) ?? {},
+                () => sender.bootstrap!(ctx),
+            );
+            initialized.add(owner);
+        }
+
+        for (const [entry, mod] of modules) {
+            if (initialized.has(entry)) continue;
             const ownedSender = this.adapterSenders.get(entry);
-            if (
+            const bootstrap =
                 !ownedSender?.bootstrap &&
                 typeof mod.bootstrapNotifyAdapter === "function"
-            ) {
-                const bootstrap = mod.bootstrapNotifyAdapter as (
-                    ctx: NotifyAdapterBootstrapCtx,
-                ) => Promise<void> | void;
-                // Let bootstrap errors propagate. Adapters may throw deliberately
-                // to signal fatal startup conditions (e.g. missing DATA_ENCRYPTION_KEY
-                // in production) that must not be silently swallowed.
-                const parent = requireBootstrapScope();
-                await runBootstrapScope(
-                    parent.root,
-                    `adapter:notify:${entry}`,
-                    async () => {
-                        await bootstrap(ctx);
-                    },
-                    (dispose) => parent.registerDisposer(dispose),
-                );
-            }
+                    ? (mod.bootstrapNotifyAdapter as (
+                          ctx: NotifyAdapterBootstrapCtx,
+                      ) => Promise<void> | void)
+                    : undefined;
+            if (!bootstrap && mod.defineContracts === undefined) continue;
+            await bootstrapAdapter("notify", entry, ctx, mod, async () => {
+                await bootstrap?.(ctx);
+            });
         }
     }
 

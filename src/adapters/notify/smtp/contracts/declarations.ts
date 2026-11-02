@@ -1,9 +1,7 @@
-import type { CapabilityContracts, Ctx } from "@cognis/core";
+import type { CapabilityContracts } from "@cognis/core";
 
 /** Runtime declarations are owned here, just as an external module declares its own APIs. */
-export function declareNotificationContracts(root: Ctx): void {
-    const contracts =
-        root.requireCapability<CapabilityContracts>("system:contracts");
+export function declareSmtpContracts(contracts: CapabilityContracts): void {
     for (const id of [
         "notify:registerEmailPurpose",
         "notify:sendEmail",

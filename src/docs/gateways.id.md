@@ -195,3 +195,7 @@ Untuk menambah gateway baru:
 1. Buat `src/gateways/<id>/` dengan `manifest.json`, `bootstrap.ts`, dan `gateway.ts`.
 2. Tambahkan `docs/index.en.md` dan varian bahasa.
 3. Tambahkan entri di `src/docs/index.<lang>.md` pada tabel Gateway.
+
+## Kontrak Milik Adapter
+
+Gateway menyediakan registri `system:contracts` yang sama kepada adapter melalui `ctx.capabilities`. Adapter dapat mengekspor `defineContracts(ctx)`; host memanggilnya selama bootstrap adapter sebelum inisialisasi. Hook bootstrap yang ada juga dapat mendeklarasikan kontrak langsung. Auth, Notify, TFA, Social, Study, dan Calendar menggunakan lingkup adapter; pemuat pabrik DB, Files, dan Registration juga mendukung hook definisi. Setiap definisi dimiliki `adapter:<gateway>:<adapter>` dan mengikuti rollback, penonaktifan, serta pengaktifan kembali gateway. Wewenang adapter bertingkat berakhir bersama bootstrap induk, termasuk pekerjaan asinkron terpisah. Permintaan runtime tidak dapat mendaftarkan kontrak baru. Impor tipe saja dari direktori publik `contracts/` penyedia membantu penulisan kode; panggilan lintas komponen yang dapat dijalankan tetap melalui ctx.

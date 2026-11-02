@@ -1,7 +1,7 @@
 import type {
     RegisterNotificationAction,
     SendEmailAction,
-} from "../contracts/action-delivery.js";
+} from "../../../adapters/notify/smtp/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
@@ -33,7 +33,6 @@ export { createUserEmailRoutes };
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    declareNotificationContracts(ctx.capabilities.require<Ctx>("system:ctx"));
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
@@ -485,5 +484,4 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 }
-import { declareNotificationContracts } from "../contracts/declarations.js";
 import type { Ctx } from "@cognis/core";

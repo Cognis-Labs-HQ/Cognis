@@ -1,3 +1,5 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
+import type { GatewayBootstrapContext } from "../shared.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveComponentEnabledState } from "@cognis/core";
@@ -233,6 +235,7 @@ export class CoreRegistrationGateway {
     async discoverAdapters(
         adaptersRoot: string,
         deps: RegistrationAdapterDeps,
+        context?: GatewayBootstrapContext,
     ): Promise<void> {
         let entries: string[];
         try {
@@ -253,24 +256,37 @@ export class CoreRegistrationGateway {
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
                 if (typeof mod.createAdapter !== "function") continue;
-                const adapter = mod.createAdapter(
-                    deps,
-                ) as RegistrationGatewayAdapter | null;
-                if (!adapter || !adapter.id || !adapter.name) continue;
-                if (pkg.version) {
-                    Object.assign(adapter, { version: pkg.version });
-                }
-                const manifestRaw = await readFile(
-                    path.join(adaptersRoot, entry, "manifest.json"),
-                    "utf8",
-                );
-                const manifest = JSON.parse(manifestRaw) as {
-                    publisher?: string;
+                const initialize = async () => {
+                    const adapter = mod.createAdapter(
+                        deps,
+                    ) as RegistrationGatewayAdapter | null;
+                    if (!adapter || !adapter.id || !adapter.name)
+                        throw new Error("invalid_registration_adapter");
+                    if (pkg.version)
+                        Object.assign(adapter, { version: pkg.version });
+                    const manifest = JSON.parse(
+                        await readFile(
+                            path.join(adaptersRoot, entry, "manifest.json"),
+                            "utf8",
+                        ),
+                    ) as { publisher?: string };
+                    if (manifest.publisher)
+                        Object.assign(adapter, {
+                            publisher: manifest.publisher,
+                        });
+                    this.registerAdapter(adapter);
                 };
-                if (manifest.publisher) {
-                    Object.assign(adapter, { publisher: manifest.publisher });
-                }
-                this.registerAdapter(adapter);
+                if (mod.defineContracts !== undefined) {
+                    if (!context)
+                        throw new Error("adapter_contract_context_required");
+                    await bootstrapAdapter(
+                        "registration",
+                        entry,
+                        context,
+                        mod,
+                        initialize,
+                    );
+                } else await initialize();
             } catch {
                 // Adapter load failures are non-fatal.
             }

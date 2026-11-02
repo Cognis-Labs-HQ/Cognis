@@ -1,17 +1,22 @@
+import {
+    CapabilityStore,
+    createCtx,
+    runBootstrapScope,
+    type CapabilityContracts,
+} from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, copyFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { CoreSocialGateway } from "../gateway.js";
 
 function createBaseCtx(gateway: CoreSocialGateway) {
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("system:ctx", createCtx());
     return {
         gateway,
-        capabilities: {
-            get: () => undefined,
-            contribute: () => {},
-        },
+        capabilities,
         gatewayRegistry: {
             get: () => undefined,
         },
@@ -22,8 +27,9 @@ function createBaseCtx(gateway: CoreSocialGateway) {
     } as never;
 }
 
-test("social gateway discovers adapters before bootstrap lifecycle wiring", async () => {
+test("social gateway discovers adapters before bootstrap lifecycle wiring", async (t) => {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-social-adapters-"));
+    t.after(() => rm(root, { recursive: true, force: true }));
     const adapterDir = path.join(root, "messages");
     await mkdir(adapterDir);
     await writeFile(
@@ -37,18 +43,9 @@ test("social gateway discovers adapters before bootstrap lifecycle wiring", asyn
         path.join(adapterDir, "package.json"),
         JSON.stringify({ main: "index.mjs", type: "module" }),
     );
-    await writeFile(
+    await copyFile(
+        new URL("./fixtures/lifecycle-adapter/index.mjs", import.meta.url),
         path.join(adapterDir, "index.mjs"),
-        `export function createSocialAdapter() {
-            return {
-                adapterId: 'messages',
-                adapterName: 'Messages',
-            };
-        }
-        export function bootstrapSocialAdapter(ctx) {
-            ctx.registerRoute(async () => false, 'social');
-        }
-        `,
     );
 
     const gateway = new CoreSocialGateway();
@@ -64,7 +61,26 @@ test("social gateway discovers adapters before bootstrap lifecycle wiring", asyn
         },
     ]);
 
-    await gateway.bootstrapAdapters(root, createBaseCtx(gateway));
+    const context = createBaseCtx(gateway) as unknown as {
+        capabilities: CapabilityStore;
+    };
+    const systemCtx =
+        context.capabilities.require<ReturnType<typeof createCtx>>(
+            "system:ctx",
+        );
+    await runBootstrapScope(systemCtx, "gateway:social", () =>
+        gateway.bootstrapAdapters(root, context as never),
+    );
+    const contracts =
+        context.capabilities.require<CapabilityContracts>("system:contracts");
+    assert.equal(
+        contracts.describe("social:fixtureReady")?.owner,
+        "adapter:social:messages",
+    );
+    assert.equal(
+        contracts.resolve<() => boolean>("social:fixtureReady", 1)(),
+        true,
+    );
 });
 
 test("social adapter enablement persists through the config store", async () => {

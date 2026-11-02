@@ -100,3 +100,32 @@ test("failed bootstrap attempts every cleanup even when one disposer fails", asy
     );
     assert.deepEqual(events, ["second", "first"]);
 });
+
+test("nested adapter bootstrap authority expires when its gateway scope finishes", async () => {
+    const root = {};
+    const pending = gate();
+    let adapter!: Promise<void>;
+    await runBootstrapScope(root, "gateway:example", async () => {
+        adapter = runBootstrapScope(
+            root,
+            "adapter:example:provider",
+            async () => {
+                await pending.promise;
+                assert.throws(
+                    () => requireBootstrapScope(root),
+                    /bootstrap_registration_closed/,
+                );
+                await assert.rejects(
+                    runBootstrapScope(
+                        root,
+                        "adapter:example:late",
+                        async () => {},
+                    ),
+                    /bootstrap_registration_closed/,
+                );
+            },
+        );
+    });
+    pending.resolve();
+    await adapter;
+});

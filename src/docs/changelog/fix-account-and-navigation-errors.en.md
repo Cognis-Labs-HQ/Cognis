@@ -2,6 +2,12 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Adapter-owned Contracts
+
+Gateways expose the same `system:contracts` registry to their adapters through `ctx.capabilities`. An adapter may export `defineContracts(ctx)`; the host calls it during adapter bootstrap before initialization. Existing adapter bootstrap hooks can also declare contracts directly. Auth, Notify, TFA, Social, Study and Calendar use adapter scopes; the DB, Files and Registration factory loaders also accept the definition hook. Each definition belongs to `adapter:<gateway>:<adapter>` and follows gateway rollback, disable and reactivation. Nested adapter authority expires with its parent bootstrap, including detached asynchronous work. Runtime requests cannot register new contracts. Type-only imports from a provider’s public `contracts/` directory are authoring aids; executable cross-component calls still use ctx.
+
+SMTP declares its email-purpose, delivery, policy and factory contracts during its own bootstrap. Runtime definitions live in `contracts/declarations.ts`; optional public action types live in `contracts/action-delivery.ts`. The notification gateway does not declare these provider APIs. It retains generic sender and delivery-receipt types. Other adapters use the same host registration mechanism without adding Core files.
+
 ## Email Contrast and Keyring State
 
 Email content uses a block container instead of nesting paragraphs around generated blocks. Paragraphs, codes, list items and table cells carry explicit theme colors; dark-mode footer text and light-mode links have readable contrast.

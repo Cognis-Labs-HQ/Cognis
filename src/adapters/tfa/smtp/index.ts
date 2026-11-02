@@ -6,7 +6,7 @@ import {
 import type {
     RegisterNotificationAction,
     SendEmailAction,
-} from "../../../gateways/notify/contracts/action-delivery.js";
+} from "../../notify/smtp/contracts/action-delivery.js";
 import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 

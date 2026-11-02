@@ -2,6 +2,8 @@
 
 ### Extension-first contracts
 
+Gateway adapter loaders must expose `system:contracts` through ctx and execute adapter definition hooks in adapter-owned bootstrap scopes. Optional adapters define their own contracts; gateways must not declare those contracts on their behalf. Support `defineContracts(ctx)` alongside normal adapter bootstrap hooks, with initialization rollback and parent lifecycle cleanup.
+
 Supported modes, providers, factories and policy choices must be contributed through ctx registries with their own executable handlers and discoverable metadata. Consumers render and execute registered choices; never add provider-ID switches, fixed option lists, or feature-specific enums to host code to admit another implementation. Keep registration within the owning bootstrap lifetime, reject duplicates, dispose and reactivate registrations correctly, and fail closed when a configured security policy has no working implementation.
 
 Domain owners declare versioned runtime capability contracts through `system:contracts`. External modules, gateways and adapters use the same mechanism; extending a contract must not require adding a domain file to Core. Provider-owned public TypeScript declarations are optional authoring aids, not a registration prerequisite. Registrations must include executable handlers and UI metadata (localized labels, configuration fields and interaction behavior); hosts must not infer that behavior from provider names. Core owns only generic contract/flow infrastructure. Verification, delivery, rendering and transport policy belong to their feature owner or an intentionally shared reuse module. Do not import a sibling implementation to obtain its contract.

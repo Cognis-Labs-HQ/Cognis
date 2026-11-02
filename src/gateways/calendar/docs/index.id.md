@@ -51,3 +51,5 @@ Penyedia Calendar menyiapkan lembar gaya status acara yang dimuat tertunda untuk
 ## Keamanan Permintaan Runtime
 
 Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).

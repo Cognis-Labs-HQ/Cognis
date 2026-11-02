@@ -69,3 +69,7 @@ export async function registerReport(ctx, heading) {
 ## Teks Surel yang Terbaca
 
 Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. Paragraf, kode, item daftar, dan sel tabel menetapkan warna tema secara eksplisit. Teks footer mode gelap dan tautan mode terang memiliki kontras yang terbaca.
+
+## Kepemilikan Kontrak SMTP
+
+SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik templat selama bootstrap miliknya sendiri. Definisi runtime berada di `contracts/declarations.ts`; tipe aksi publik opsional berada di `contracts/action-delivery.ts`. Gateway notifikasi tidak mendeklarasikan API penyedia tersebut dan hanya menyimpan tipe pengirim serta bukti pengiriman umum. Adapter lain menggunakan mekanisme registrasi host yang sama tanpa menambah berkas Core.

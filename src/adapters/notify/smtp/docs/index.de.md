@@ -69,3 +69,7 @@ export async function registerReport(ctx, heading) {
 ## Lesbarer E-Mail-Text
 
 E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um erzeugte Blöcke. Absätze, Codes, Listeneinträge und Tabellenzellen erhalten explizite Themenfarben. Fußzeilen im dunklen Modus und Links im hellen Modus bieten einen lesbaren Kontrast.
+
+## Vertragsbesitz von SMTP
+
+SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und Vorlagenfabriken im eigenen Bootstrap. Laufzeitdefinitionen liegen in `contracts/declarations.ts`, optionale öffentliche Aktionstypen in `contracts/action-delivery.ts`. Das Benachrichtigungs-Gateway deklariert diese Anbieter-APIs nicht; dort bleiben allgemeine Sender- und Zustellbelegtypen. Andere Adapter verwenden denselben Registrierungsmechanismus ohne zusätzliche Core-Dateien.

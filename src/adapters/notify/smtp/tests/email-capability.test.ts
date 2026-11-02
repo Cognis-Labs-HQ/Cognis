@@ -5,12 +5,13 @@ import {
     createCtx,
     runBootstrapScope,
     type BootstrapDisposer,
+    type CapabilityContracts,
 } from "@cognis/core";
 
 import type {
     RegisterNotificationAction,
     SendEmailAction,
-} from "../../../../gateways/notify/contracts/action-delivery.js";
+} from "../contracts/action-delivery.js";
 import { SmtpNotificationSender } from "../notification-sender.js";
 import { createMockSmtpServer, smtpSuccessHandler } from "./fixtures/server.js";
 
@@ -76,6 +77,15 @@ async function fixture(t: import("node:test").TestContext) {
 
 test("SMTP owns staged action registration and delivery for modules and adapters", async (t) => {
     const host = await fixture(t);
+    const contracts =
+        host.root.requireCapability<CapabilityContracts>("system:contracts");
+    for (const id of [
+        "notify:emailTemplates",
+        "notify:sendEmail",
+        "notify:registerEmailPurpose",
+        "notify:emailDeliveryPolicy",
+    ])
+        assert.equal(contracts.describe(id)?.owner, "adapter:notify:smtp");
     host.sender.setConfig({ codeLength: 8 });
     assert.equal(
         host.capabilities.require<() => number>("notify:emailCodeLength")(),

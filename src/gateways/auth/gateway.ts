@@ -1,3 +1,4 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -690,26 +691,41 @@ export class CoreAuthGateway {
                     pkg.main,
                 );
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
-                if (
-                    bootstrapContext &&
-                    typeof mod.bootstrapAuthAdapter === "function"
-                ) {
-                    await mod.bootstrapAuthAdapter({
-                        ...bootstrapContext,
-                        adapterRoot: path.join(authAdaptersRoot, entry),
-                    });
-                }
-                if (typeof mod.createAdapter === "function") {
-                    const adapter = mod.createAdapter() as AuthProviderAdapter;
-                    if (pkg.version) {
-                        Object.assign(adapter, { version: pkg.version });
+                const initialize = async () => {
+                    if (
+                        bootstrapContext &&
+                        typeof mod.bootstrapAuthAdapter === "function"
+                    ) {
+                        await mod.bootstrapAuthAdapter({
+                            ...bootstrapContext,
+                            adapterRoot: path.join(authAdaptersRoot, entry),
+                        });
                     }
-                    if (publisher) Object.assign(adapter, { publisher });
-                    if (locked) Object.assign(adapter, { locked: true });
-                    if (adapter.id !== "local") {
-                        this.registerAdapter(adapter, requires);
+                    if (typeof mod.createAdapter === "function") {
+                        const adapter =
+                            mod.createAdapter() as AuthProviderAdapter;
+                        if (pkg.version) {
+                            Object.assign(adapter, { version: pkg.version });
+                        }
+                        if (publisher) Object.assign(adapter, { publisher });
+                        if (locked) Object.assign(adapter, { locked: true });
+                        if (adapter.id !== "local") {
+                            this.registerAdapter(adapter, requires);
+                        }
                     }
-                }
+                };
+                if (bootstrapContext)
+                    await bootstrapAdapter(
+                        "auth",
+                        entry,
+                        {
+                            ...bootstrapContext,
+                            adapterRoot: path.join(authAdaptersRoot, entry),
+                        },
+                        mod,
+                        initialize,
+                    );
+                else await initialize();
             } catch {
                 // Adapter could not be loaded — skip silently
             }

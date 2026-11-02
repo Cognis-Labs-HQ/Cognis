@@ -3,7 +3,7 @@ import type { GatewayBootstrapContext } from "../../shared.js";
 import type {
     RegisterNotificationAction,
     SendEmailAction,
-} from "../../notify/contracts/action-delivery.js";
+} from "../../../adapters/notify/smtp/contracts/action-delivery.js";
 
 /** Auth owns login-link content; completion waits for optional notification providers. */
 export async function completeBootstrap(

@@ -31,4 +31,6 @@ Mode Luring dan Broadcast berbagi tumpukan banner di atas header. Mode Luring me
 
 ## Kontrak Milik Penyedia
 
-Notify memiliki deklarasi runtime dan tipe publik opsional dalam `contracts/`. Core tidak menyimpan kontrak notifikasi. Penyedia pengiriman menyediakan skema konfigurasi, terjemahan, bidang bersyarat, keberadaan rahasia tersimpan, dan bidang pengujian. Gateway meneruskan metadata tanpa mengasumsikan transportasi. Notify mendaftarkan fungsi validasi `email` ke Auth dan menyediakan ketersediaan surel umum. Kebijakan pengiriman tersedia melalui `notify:emailDeliveryPolicy`; pabrik templat ditemukan melalui `notify:emailTemplates`.
+Notify memiliki tipe pengirim dan bukti pengiriman yang netral terhadap transportasi dalam `contracts/`. Deklarasi runtime khusus penyedia dan tipe aksi opsional dimiliki adapter penyumbang. Penyedia menyediakan skema konfigurasi, terjemahan, bidang bersyarat, metadata rahasia tersimpan, dan bidang pengujian; gateway meneruskannya tanpa mengasumsikan transportasi. Notify menyumbangkan kebijakan validasi surel ke Auth. Kemampuan pengiriman dan pabrik templat surel hanya tersedia jika disediakan adapter.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).

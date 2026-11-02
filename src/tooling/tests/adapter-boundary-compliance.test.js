@@ -31,22 +31,19 @@ function normalizePath(filePath) {
     return filePath.replace(/\\/g, "/");
 }
 
-function extractImportPaths(source) {
-    const paths = new Set();
-    const patterns = [
+function extractImports(source) {
+    const imports = [];
+    for (const match of source.matchAll(
+        /(?:^|\n)\s*(?:import|export)\s+(type\s+)?[\w*\s{},]+\s+from\s+["']([^"']+)["']/g,
+    ))
+        imports.push({ path: match[2], typeOnly: Boolean(match[1]) });
+    for (const pattern of [
         /(?:^|\n)\s*import\s+["']([^"']+)["']/g,
-        /(?:^|\n)\s*(?:import|export)\s+(?:type\s+)?(?:[\w*\s{},]+)\s+from\s+["']([^"']+)["']/g,
         /\bimport\(\s*["']([^"']+)["']\s*\)/g,
-    ];
-
-    for (const pattern of patterns) {
-        let match;
-        pattern.lastIndex = 0;
-        while ((match = pattern.exec(source)) !== null) {
-            paths.add(match[1]);
-        }
-    }
-    return Array.from(paths);
+    ])
+        for (const match of source.matchAll(pattern))
+            imports.push({ path: match[1], typeOnly: false });
+    return imports;
 }
 
 function resolveAdapterOwner(filePath) {
@@ -88,14 +85,20 @@ test("direct adapter imports stay inside the owning gateway or adapter", () => {
         if (normalizePath(filePath).includes("/tests/")) continue;
 
         const source = readFileSync(filePath, "utf8");
-        const importPaths = extractImportPaths(source);
-        for (const importPath of importPaths) {
+        const imports = extractImports(source);
+        for (const { path: importPath, typeOnly } of imports) {
             if (!importPath.startsWith(".")) continue;
 
             const resolvedImportPath = resolve(dirname(filePath), importPath);
             const adapterOwner = resolveAdapterOwner(resolvedImportPath);
             if (!adapterOwner) continue;
             if (sourceOwnsAdapterImport(filePath, adapterOwner)) continue;
+            const contractRoot = `${normalizePath(resolve(adapterOwner.adapterRoot, "contracts"))}/`;
+            if (
+                typeOnly &&
+                normalizePath(resolvedImportPath).startsWith(contractRoot)
+            )
+                continue;
 
             violations.push(
                 `${relative(ROOT, filePath).replace(/\\/g, "/")} -> ${relative(ROOT, resolvedImportPath).replace(/\\/g, "/")}`,
@@ -107,7 +110,7 @@ test("direct adapter imports stay inside the owning gateway or adapter", () => {
         violations,
         [],
         [
-            "Direct adapter imports are forbidden outside the adapter itself and its owning gateway.",
+            "Runtime adapter imports are forbidden outside the adapter itself and its owning gateway; only type-only public contracts may cross that boundary.",
             "Use the gateway or ctx capabilities instead of reaching into a concrete adapter.",
             ...violations,
         ].join("\n"),
@@ -144,5 +147,18 @@ test("raw SQL execution stays inside the database gateway boundary", () => {
             "Raw SQL execution is restricted to the database gateway and owning adapter executors.",
             "Consumers must use executeCommand(), ensureTable(), or transaction() from the DB gateway capability.",
         ].join("\n"),
+    );
+});
+
+test("adapter import classification keeps value and dynamic imports distinct from public authoring types", () => {
+    assert.deepEqual(
+        extractImports(`import type { Contract } from "./contracts/api.js";
+import { execute } from "./contracts/api.js";
+const load = () => import("./contracts/api.js");`),
+        [
+            { path: "./contracts/api.js", typeOnly: true },
+            { path: "./contracts/api.js", typeOnly: false },
+            { path: "./contracts/api.js", typeOnly: false },
+        ],
     );
 });

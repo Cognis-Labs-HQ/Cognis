@@ -30,15 +30,19 @@ export async function runBootstrapScope<T>(
     registerDisposer?: (dispose: Disposer) => void,
 ): Promise<T> {
     const cleanup: Disposer[] = [];
+    const currentParent = current.getStore();
+    const parent = currentParent?.root === root ? currentParent : undefined;
+    if (parent && !parent.active)
+        throw new Error("bootstrap_registration_closed");
     let active = true;
     const scope: BootstrapScope = Object.freeze({
         root,
         owner,
         get active() {
-            return active;
+            return active && (!parent || parent.active);
         },
         registerDisposer(dispose: Disposer) {
-            if (!active) throw new Error("bootstrap_scope_closed");
+            if (!scope.active) throw new Error("bootstrap_scope_closed");
             cleanup.push(dispose);
         },
     });

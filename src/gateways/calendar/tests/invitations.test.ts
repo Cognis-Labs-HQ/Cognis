@@ -9,7 +9,10 @@ import {
     createJsonDispatcher,
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
-import { bootstrap } from "../bootstrap.js";
+import {
+    bootstrapTestCalendar as bootstrap,
+    createCalendarHostFlow,
+} from "./bootstrap-host.js";
 
 test("calendar invitations endpoint excludes events that have already passed", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -33,7 +36,7 @@ test("calendar invitations endpoint excludes events that have already passed", a
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);

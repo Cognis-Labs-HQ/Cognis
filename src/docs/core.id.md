@@ -105,3 +105,5 @@ export interface AuthAccountStore {
 ## Kontrak Runtime
 
 Pemilik mendeklarasikan kontrak domain melalui registri publik `system:contracts` selama bootstrap. `define(id, { version, kind, members, description })` mencatat struktur; `resolve(id, version)` memeriksa implementasi publik dan mengikat akses ke registrasi tersebut. Rollback atau penonaktifan menghapus definisi; pengaktifan kembali memulihkannya. Modul menggunakan namespace sendiri. Resolusi dalam konteks modul mempertahankan pemeriksaan izin host. Kontrak modul baru tidak memerlukan berkas sumber Core; deklarasi tipe opsional berada di direktori kontrak publik penyedia. Pembuatan kode verifikasi berada dalam penggunaan ulang server bersama dan diekspos Auth sebagai `auth:verificationCodes`, bukan diekspor Core.
+
+Lingkup bootstrap bertingkat mewarisi wewenang induk dan tidak dapat mendaftarkan kontrak setelah induk ditutup.

@@ -87,3 +87,5 @@ After enrollment cancellation is acknowledged, navigation is offered again to th
 ## Method Presentation
 
 Each method supplies `stringsBaseUrl` and `loginUi` metadata: `placeholderKey`, `supportsResend` and `challengeOnSelect`. The login UI discovers these values rather than branching on provider IDs. Configuration labels are provider-owned translation keys.
+
+Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).

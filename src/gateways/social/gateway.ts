@@ -1,3 +1,4 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -290,7 +291,11 @@ export class CoreSocialGateway {
                 continue;
             }
 
-            if (typeof mod.bootstrapSocialAdapter !== "function") continue;
+            if (
+                typeof mod.bootstrapSocialAdapter !== "function" &&
+                mod.defineContracts === undefined
+            )
+                continue;
 
             const bootstrapFn = mod.bootstrapSocialAdapter as (
                 ctx: SocialAdapterBootstrapCtx,
@@ -311,7 +316,16 @@ export class CoreSocialGateway {
             };
 
             try {
-                await bootstrapFn(adapterCtx);
+                await bootstrapAdapter(
+                    "social",
+                    entry,
+                    adapterCtx,
+                    mod,
+                    async () => {
+                        if (typeof bootstrapFn === "function")
+                            await bootstrapFn(adapterCtx);
+                    },
+                );
             } catch (err) {
                 baseCtx.log?.(
                     "error",

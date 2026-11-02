@@ -2,6 +2,12 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## Verträge der Adapter
+
+Gateways stellen ihren Adaptern dieselbe Registry `system:contracts` über `ctx.capabilities` bereit. Adapter können `defineContracts(ctx)` exportieren; der Host ruft die Funktion beim Adapter-Bootstrap vor der Initialisierung auf. Bestehende Bootstrap-Hooks können Verträge auch direkt deklarieren. Auth, Notify, TFA, Social, Study und Calendar verwenden Adapterbereiche; die Fabriklader für DB, Files und Registration unterstützen den Definitions-Hook ebenfalls. Definitionen gehören zu `adapter:<gateway>:<adapter>` und folgen Rollback, Deaktivierung und Reaktivierung des Gateways. Verschachtelte Adapterberechtigungen enden mit dem übergeordneten Bootstrap, auch für abgekoppelte asynchrone Arbeit. Laufzeitanfragen können keine Verträge registrieren. Reine Typimporte aus dem öffentlichen Verzeichnis `contracts/` eines Anbieters dienen der Entwicklung; ausführbare komponentenübergreifende Aufrufe verwenden weiterhin ctx.
+
+SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und Vorlagenfabriken im eigenen Bootstrap. Laufzeitdefinitionen liegen in `contracts/declarations.ts`, optionale öffentliche Aktionstypen in `contracts/action-delivery.ts`. Das Benachrichtigungs-Gateway deklariert diese Anbieter-APIs nicht; dort bleiben allgemeine Sender- und Zustellbelegtypen. Andere Adapter verwenden denselben Registrierungsmechanismus ohne zusätzliche Core-Dateien.
+
 ## E-Mail-Kontrast und Schlüsselbund
 
 E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um erzeugte Blöcke. Absätze, Codes, Listeneinträge und Tabellenzellen erhalten explizite Themenfarben. Fußzeilen im dunklen Modus und Links im hellen Modus bieten einen lesbaren Kontrast.

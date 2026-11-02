@@ -1,7 +1,7 @@
 import type {
     RegisterNotificationAction,
     SendEmailAction,
-} from "../../notify/contracts/action-delivery.js";
+} from "../../../adapters/notify/smtp/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
@@ -99,24 +99,28 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.adaptersRoot,
         "registration",
     );
-    await gateway.discoverAdapters(registrationAdaptersRoot, {
-        dbExecutor,
-        accountStore,
-        log: ctx.log,
-        canSendInviteEmail: canSendInviteEmail ?? (() => false),
-        sendInviteEmail:
-            sendInviteEmail ??
-            (async () => {
-                throw new Error("email_delivery_unavailable");
-            }),
-        createProfile: createProfileAndQuota,
-        isEmailRegistered: isEmailRegistered ?? (async () => false),
-        upsertVerifiedPrimaryEmail:
-            upsertVerifiedPrimaryEmail ??
-            (async () => {
-                throw new Error("email_delivery_unavailable");
-            }),
-    });
+    await gateway.discoverAdapters(
+        registrationAdaptersRoot,
+        {
+            dbExecutor,
+            accountStore,
+            log: ctx.log,
+            canSendInviteEmail: canSendInviteEmail ?? (() => false),
+            sendInviteEmail:
+                sendInviteEmail ??
+                (async () => {
+                    throw new Error("email_delivery_unavailable");
+                }),
+            createProfile: createProfileAndQuota,
+            isEmailRegistered: isEmailRegistered ?? (async () => false),
+            upsertVerifiedPrimaryEmail:
+                upsertVerifiedPrimaryEmail ??
+                (async () => {
+                    throw new Error("email_delivery_unavailable");
+                }),
+        },
+        ctx,
+    );
     await gateway.loadPersistedConfigs();
     ctx.log?.("info", "Registration adapters discovered and configured.", {
         component: "registration-gateway",

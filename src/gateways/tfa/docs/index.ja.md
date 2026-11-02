@@ -85,3 +85,5 @@ TFA のブラウザー資産は `src/gateways/tfa/ui/` に置かれます。こ�
 ## メソッドの表示
 
 各メソッドは `stringsBaseUrl` と `loginUi` の `placeholderKey`、`supportsResend`、`challengeOnSelect` を提供します。ログイン画面はプロバイダーIDで分岐せず、このメタデータを使います。設定ラベルは提供元の翻訳キーです。
+
+アダプター契約の登録は[共通ゲートウェイブートストラップ契約](/docs/gateways)に従います。

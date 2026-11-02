@@ -88,6 +88,7 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
+    capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("db:executor", db);
 
     const registeredSecuritySections: Array<{
@@ -176,6 +177,7 @@ test("tfa login UI integration unhooks when gateway is disabled", async () => {
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
+    capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("db:executor", db);
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
 

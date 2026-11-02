@@ -13,7 +13,10 @@ import {
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
-import { bootstrap } from "../bootstrap.js";
+import {
+    bootstrapTestCalendar as bootstrap,
+    createCalendarHostFlow,
+} from "./bootstrap-host.js";
 
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -310,7 +313,7 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -342,7 +345,7 @@ test("current events drive availability unless the user prevents updates", async
         gatewayRegistry: new GatewayRegistry(),
         capabilities,
         uiRegistry: new UIRegistry(),
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
     capabilities.contribute("preferences:store", preferences);
 
@@ -418,7 +421,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = (

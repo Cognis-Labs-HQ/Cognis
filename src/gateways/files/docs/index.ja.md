@@ -101,3 +101,5 @@ ctx.capabilities.get("files:registerNamespace")?.({
 ### ブラウザークライアント機能
 
 `files:uiClient` は Files UI プロバイダーが提供し、ブラウザーモジュール向けに名前空間付きファイル URL の解決を公開します。
+
+アダプター契約の登録は[共通ゲートウェイブートストラップ契約](/docs/gateways)に従います。

@@ -165,3 +165,5 @@ Invitation-gated SSO identities are held before account, profile or email provis
 ## Registered Validation Modes
 
 `auth:userValidationModes.register` accepts an ID, localized label, optional resource base, required registration fields, availability callback, validation callback and optional setup integration. Registration is bootstrap-only and owned by the contributor’s lifecycle. Auth evaluates the selected callback through `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`); it has no method-ID switch. Missing or unavailable configured policies fail closed. Founder administrator recovery remains exempt. Administration displays registered metadata; an unavailable saved choice stays selected rather than silently changing the policy.
+
+Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).

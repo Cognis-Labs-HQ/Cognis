@@ -1,7 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapDisposer } from "@cognis/core";
 import type { CapabilityStore } from "@cognis/core";
-import type { NotificationActionReceipt } from "./action-delivery.js";
 
 /**
  * Context passed to `bootstrapNotifyAdapter` when a notification adapter
@@ -68,7 +67,7 @@ export interface NotificationSenderInfo {
 export type NotificationQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
-export interface NotificationSenderQueueEntry extends NotificationActionReceipt {
+export interface NotificationSenderQueueEntry extends NotificationDeliveryReceipt {
     recipientUsername?: string;
     category?: string;
 }
@@ -136,4 +135,16 @@ export interface NotificationSender {
     getRequiredFields?(): string[];
     listQueue?(): NotificationSenderQueueEntry[];
     getQueueItem?(notificationId: string): NotificationSenderQueueEntry | null;
+}
+
+export interface NotificationDeliveryReceipt {
+    notificationId: string;
+    status: NotificationQueueStatus;
+    createdAt: string;
+    updatedAt: string;
+    availableAt?: string;
+    error?: string;
+    recipientEmail?: string;
+    subject?: string;
+    purpose?: string;
 }

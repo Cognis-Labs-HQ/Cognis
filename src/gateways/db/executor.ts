@@ -1,3 +1,8 @@
+import {
+    bootstrapAdapter,
+    type AdapterContractModule,
+} from "../reuse/adapter-bootstrap.js";
+import type { GatewayBootstrapContext } from "../shared.js";
 /**
  * Generic DB executor loader for the DB gateway.
  *
@@ -16,7 +21,7 @@ export type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
 export type { DbProviderId } from "./reuse/provider-id.js";
 export type SupportedDbType = DbProviderId;
 
-interface DbExecutorFactoryModule {
+interface DbExecutorFactoryModule extends AdapterContractModule {
     canHandleDbProvider?: (providerId: DbProviderId) => boolean;
     createDbExecutor?: (args: {
         databaseUrl: string;
@@ -57,6 +62,7 @@ export async function createDbExecutor(
     log?: BootstrapLog,
     adaptersRoot?: string,
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void },
+    context?: GatewayBootstrapContext,
 ): Promise<RawDbExecutor> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
@@ -78,11 +84,19 @@ export async function createDbExecutor(
         ) {
             continue;
         }
-        return adapterModule.createDbExecutor({
-            databaseUrl,
-            log,
-            lifecycle,
-        });
+        const create = () =>
+            adapterModule.createDbExecutor!({ databaseUrl, log, lifecycle });
+        if (adapterModule.defineContracts !== undefined) {
+            if (!context) throw new Error("adapter_contract_context_required");
+            return bootstrapAdapter(
+                "db",
+                adapterId,
+                context,
+                adapterModule,
+                create,
+            );
+        }
+        return create();
     }
 
     throw new Error(`db_executor_adapter_missing:${dbType}`);

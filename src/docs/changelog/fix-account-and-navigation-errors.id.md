@@ -2,6 +2,12 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Kontrak Milik Adapter
+
+Gateway menyediakan registri `system:contracts` yang sama kepada adapter melalui `ctx.capabilities`. Adapter dapat mengekspor `defineContracts(ctx)`; host memanggilnya selama bootstrap adapter sebelum inisialisasi. Hook bootstrap yang ada juga dapat mendeklarasikan kontrak langsung. Auth, Notify, TFA, Social, Study, dan Calendar menggunakan lingkup adapter; pemuat pabrik DB, Files, dan Registration juga mendukung hook definisi. Setiap definisi dimiliki `adapter:<gateway>:<adapter>` dan mengikuti rollback, penonaktifan, serta pengaktifan kembali gateway. Wewenang adapter bertingkat berakhir bersama bootstrap induk, termasuk pekerjaan asinkron terpisah. Permintaan runtime tidak dapat mendaftarkan kontrak baru. Impor tipe saja dari direktori publik `contracts/` penyedia membantu penulisan kode; panggilan lintas komponen yang dapat dijalankan tetap melalui ctx.
+
+SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik templat selama bootstrap miliknya sendiri. Definisi runtime berada di `contracts/declarations.ts`; tipe aksi publik opsional berada di `contracts/action-delivery.ts`. Gateway notifikasi tidak mendeklarasikan API penyedia tersebut dan hanya menyimpan tipe pengirim serta bukti pengiriman umum. Adapter lain menggunakan mekanisme registrasi host yang sama tanpa menambah berkas Core.
+
 ## Kontras Surel dan Status Keyring
 
 Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. Paragraf, kode, item daftar, dan sel tabel menetapkan warna tema secara eksplisit. Teks footer mode gelap dan tautan mode terang memiliki kontras yang terbaca.

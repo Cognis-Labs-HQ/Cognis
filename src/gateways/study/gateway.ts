@@ -1,3 +1,4 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -571,7 +572,11 @@ export class CoreStudyGateway {
                 continue;
             }
 
-            if (typeof mod.bootstrapStudyAdapter !== "function") continue;
+            if (
+                typeof mod.bootstrapStudyAdapter !== "function" &&
+                mod.defineContracts === undefined
+            )
+                continue;
 
             const bootstrapFn = mod.bootstrapStudyAdapter as (
                 ctx: StudyAdapterBootstrapCtx,
@@ -604,8 +609,17 @@ export class CoreStudyGateway {
             };
 
             try {
-                await bootstrapFn(adapterCtx);
-                this.refreshAdapterAvailability();
+                await bootstrapAdapter(
+                    "study",
+                    entry,
+                    adapterCtx,
+                    mod,
+                    async () => {
+                        if (typeof bootstrapFn === "function")
+                            await bootstrapFn(adapterCtx);
+                        this.refreshAdapterAvailability();
+                    },
+                );
             } catch (err) {
                 this.disabledAdapters.add(entry);
                 this.refreshAdapterAvailability();

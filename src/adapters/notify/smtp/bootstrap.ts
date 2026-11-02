@@ -1,3 +1,5 @@
+import { declareSmtpContracts } from "./contracts/declarations.js";
+import type { CapabilityContracts, Ctx } from "@cognis/core";
 import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/contracts/sender.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 import { registerSmtpActions } from "./purposes.js";
@@ -6,6 +8,11 @@ export async function bootstrapNotifyAdapter(
     ctx: NotifyAdapterBootstrapCtx,
     sender: SmtpNotificationSender,
 ): Promise<void> {
+    declareSmtpContracts(
+        ctx.capabilities
+            .require<Ctx>("system:ctx")
+            .requireCapability<CapabilityContracts>("system:contracts"),
+    );
     sender.setRecipientThemeResolver(async (email) => {
         try {
             const accountId = await ctx.capabilities.get<

@@ -69,3 +69,7 @@ export async function registerReport(ctx, heading) {
 ## Readable Email Text
 
 Email content uses a block container instead of nesting paragraphs around generated blocks. Paragraphs, codes, list items and table cells carry explicit theme colors; dark-mode footer text and light-mode links have readable contrast.
+
+## SMTP Contract Ownership
+
+SMTP declares its email-purpose, delivery, policy and factory contracts during its own bootstrap. Runtime definitions live in `contracts/declarations.ts`; optional public action types live in `contracts/action-delivery.ts`. The notification gateway does not declare these provider APIs. It retains generic sender and delivery-receipt types. Other adapters use the same host registration mechanism without adding Core files.

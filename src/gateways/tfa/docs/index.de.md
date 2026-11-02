@@ -85,3 +85,5 @@ Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übr
 ## Methodendarstellung
 
 Jede Methode liefert `stringsBaseUrl` und `loginUi` mit `placeholderKey`, `supportsResend` und `challengeOnSelect`. Die Anmeldeoberfläche verwendet diese Metadaten statt Verzweigungen nach Anbieterkennungen. Konfigurationsbeschriftungen sind Übersetzungsschlüssel des Anbieters.
+
+Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).

@@ -10,7 +10,7 @@ import type {
 import type {
     EmailActionInput,
     NotificationActionMessage,
-} from "../../../gateways/notify/contracts/action-delivery.js";
+} from "./contracts/action-delivery.js";
 import type { BootstrapDisposer } from "@cognis/core";
 import { requireBootstrapScope } from "@cognis/core";
 import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "./smtp-session.js";

@@ -5,7 +5,7 @@ import {
     type BootstrapRegistrationState,
     type Ctx,
 } from "@cognis/core";
-import type { NotificationActionMessage } from "../../../gateways/notify/contracts/action-delivery.js";
+import type { NotificationActionMessage } from "./contracts/action-delivery.js";
 
 export type EmailBlock =
     | { type: "paragraph" | "heading" | "code"; text: string }

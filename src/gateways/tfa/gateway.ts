@@ -889,6 +889,10 @@ export class CoreTfaGateway {
                 const adapter = factory(
                     this.options.adapterFactoryContext ?? {},
                 );
+                if (module.defineContracts !== undefined)
+                    Object.assign(adapter, {
+                        defineContracts: module.defineContracts,
+                    });
                 if (packageJson.version) {
                     Object.assign(adapter, { version: packageJson.version });
                 }

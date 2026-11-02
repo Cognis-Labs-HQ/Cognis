@@ -101,3 +101,5 @@ Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalu
 ### Kapabilitas klien browser
 
 `files:uiClient` dikontribusikan oleh penyedia UI Berkas dan menyediakan penyelesaian URL berkas bernamespace bagi modul browser.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).

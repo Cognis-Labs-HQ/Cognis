@@ -85,3 +85,5 @@ Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali 
 ## Tampilan Metode
 
 Setiap metode menyediakan `stringsBaseUrl` dan metadata `loginUi`: `placeholderKey`, `supportsResend`, serta `challengeOnSelect`. UI masuk menemukan nilai tersebut tanpa percabangan ID penyedia. Label konfigurasi memakai kunci terjemahan milik penyedia.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
