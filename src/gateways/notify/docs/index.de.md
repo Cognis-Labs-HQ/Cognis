@@ -34,3 +34,7 @@ Offline-Modus und Broadcast teilen den Bannerstapel oberhalb des Kopfbereichs. D
 Notify besitzt unter `contracts/` transportneutrale Sender- und Zustellbelegtypen. Anbieterspezifische Laufzeitdefinitionen und optionale Aktionstypen gehören zum beitragenden Adapter. Anbieter liefern Konfigurationsschemata, Übersetzungen, bedingte Felder, Geheimnispräsenz und Testfelder; das Gateway reicht sie ohne Transportannahmen weiter. Notify trägt die E-Mail-Prüfrichtlinie bei Auth ein. Zustell- und Vorlagenfähigkeiten bestehen nur mit einem entsprechenden Adapter.
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Zuverlässige Freigaben und Tests
+
+Administratoren können Konfigurationen vor der Senderaktivierung testen. Tests aktivieren keine normale Zustellung; jeder Anbieter verwaltet seinen Diagnosetransport und dessen Bereinigung.

@@ -2,6 +2,14 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Reliable Sharing and Tests
+
+Calendar and Flashcards sharing hooks tolerate unrelated resource providers returning no result, so both link and account shares can be created and resolved with all providers enabled. Share loading, account-share status and Calendar guest pages use responsive minimum sizes rather than requiring eight grid columns. Guest pages remain usable on narrow screens. Share maintenance runs sequentially, coalesces overlapping requests, ends a failed pass and retries at the next fifteen-minute interval. Disable stops subsequent work; reactivation resumes scheduling.
+
+SMTP configuration tests can run while the sender is disabled without enabling ordinary delivery. Tests use a dedicated bootstrap-owned diagnostic queue and a staged flow; gateway shutdown cancels that queue. Empty password overrides retain the concealed stored password. Diagnostic logs include safe transport error codes and protocol response codes without credentials or server response text.
+
+Guest Flashcard practice uses a temporary mode selection and disables account enhancements and persisted layout settings. It does not read or write account practice preferences.
+
 ## Adapter-owned Contracts
 
 Gateways expose the same `system:contracts` registry to their adapters through `ctx.capabilities`. An adapter may export `defineContracts(ctx)`; the host calls it during adapter bootstrap before initialization. Existing adapter bootstrap hooks can also declare contracts directly. Auth, Notify, TFA, Social, Study and Calendar use adapter scopes; the DB, Files and Registration factory loaders also accept the definition hook. Each definition belongs to `adapter:<gateway>:<adapter>` and follows gateway rollback, disable and reactivation. Nested adapter authority expires with its parent bootstrap, including detached asynchronous work. Runtime requests cannot register new contracts. Type-only imports from a provider’s public `contracts/` directory are authoring aids; executable cross-component calls still use ctx.

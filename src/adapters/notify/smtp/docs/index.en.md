@@ -73,3 +73,7 @@ Email content uses a block container instead of nesting paragraphs around genera
 ## SMTP Contract Ownership
 
 SMTP declares its email-purpose, delivery, policy and factory contracts during its own bootstrap. Runtime definitions live in `contracts/declarations.ts`; optional public action types live in `contracts/action-delivery.ts`. The notification gateway does not declare these provider APIs. It retains generic sender and delivery-receipt types. Other adapters use the same host registration mechanism without adding Core files.
+
+## Reliable Sharing and Tests
+
+SMTP configuration tests can run while the sender is disabled without enabling ordinary delivery. Tests use a dedicated bootstrap-owned diagnostic queue and a staged flow; gateway shutdown cancels that queue. Empty password overrides retain the concealed stored password. Diagnostic logs include safe transport error codes and protocol response codes without credentials or server response text.

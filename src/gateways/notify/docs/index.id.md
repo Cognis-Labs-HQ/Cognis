@@ -34,3 +34,7 @@ Mode Luring dan Broadcast berbagi tumpukan banner di atas header. Mode Luring me
 Notify memiliki tipe pengirim dan bukti pengiriman yang netral terhadap transportasi dalam `contracts/`. Deklarasi runtime khusus penyedia dan tipe aksi opsional dimiliki adapter penyumbang. Penyedia menyediakan skema konfigurasi, terjemahan, bidang bersyarat, metadata rahasia tersimpan, dan bidang pengujian; gateway meneruskannya tanpa mengasumsikan transportasi. Notify menyumbangkan kebijakan validasi surel ke Auth. Kemampuan pengiriman dan pabrik templat surel hanya tersedia jika disediakan adapter.
 
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+
+## Berbagi dan Pengujian Andal
+
+Administrator dapat menguji konfigurasi sebelum pengirim diaktifkan. Pengujian tidak mengaktifkan pengiriman biasa; setiap penyedia mengelola transportasi diagnostik dan pembersihannya.

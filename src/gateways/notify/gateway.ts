@@ -494,8 +494,6 @@ export class CoreNotificationGateway implements NotificationGateway {
         const sender = this.senders.get(senderId);
         if (!sender?.test)
             throw new Error("notification_sender_test_unavailable");
-        if (this.disabledSenders.has(senderId))
-            throw new Error("notification_sender_disabled");
         await sender.test(recipient, config);
     }
 

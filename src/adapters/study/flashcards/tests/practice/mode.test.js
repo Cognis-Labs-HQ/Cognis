@@ -6,6 +6,7 @@ import { uiCtx } from "../../../../../ui/reuse/ui-ctx.js";
 
 test("the floating practice preference restores the saved mode, confirms session resets and persists only accepted changes", async () => {
     const saved = [];
+    let loaded = 0;
     const resets = [];
     const popups = [];
     let decision = "cancel";
@@ -18,7 +19,10 @@ test("the floating practice preference restores the saved mode, confirms session
     };
     const context = vm.createContext({
         uiCtx,
-        loadUiPreferences: async () => ({ studyPracticeMode: "writing" }),
+        loadUiPreferences: async () => {
+            loaded++;
+            return { studyPracticeMode: "writing" };
+        },
         saveUiPreferences: async (patch) => saved.push(patch),
         openPopup: async (options) => {
             popups.push(options);
@@ -93,5 +97,21 @@ test("the floating practice preference restores the saved mode, confirms session
     assert.equal(saved[0].studyPracticeMode, "reading");
     assert.deepEqual(resets, ["reading"]);
     assert.equal(popups[0].variant, "warning");
+    const ephemeral = await context.createPracticeModePreference({
+        i18n: { t: (key) => key },
+        templates: {},
+        signal: controller.signal,
+        persist: false,
+        isActive: () => false,
+        onChange: (mode) => resets.push(mode),
+    });
+    ephemeral.mount(slot);
+    assert.equal(ephemeral.value, "reading");
+    assert.equal(loaded, 1);
+    select.value = "writing";
+    await handler();
+    assert.equal(ephemeral.value, "writing");
+    assert.equal(saved.length, 1);
+    assert.deepEqual(resets, ["reading", "writing"]);
     controller.abort();
 });

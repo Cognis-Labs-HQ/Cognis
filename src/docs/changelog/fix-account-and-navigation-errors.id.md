@@ -2,6 +2,14 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Berbagi dan Pengujian Andal
+
+Hook berbagi Calendar dan Flashcards menangani hasil kosong dari penyedia sumber daya lain, sehingga tautan dan pembagian akun dapat dibuat serta dibuka ketika semua penyedia aktif. Tampilan pemuatan, status pembagian akun, dan kalender tamu memakai ukuran minimum responsif tanpa mewajibkan delapan kolom kisi, sehingga tetap dapat digunakan pada layar sempit. Pemeliharaan berbagi berjalan berurutan, menggabungkan permintaan yang tumpang tindih, menghentikan putaran yang gagal, dan mencoba lagi pada interval lima belas menit berikutnya. Penonaktifan menghentikan pekerjaan berikutnya; pengaktifan kembali melanjutkan jadwal.
+
+Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa mengaktifkan pengiriman biasa. Pengujian memakai antrean diagnostik khusus milik bootstrap dan alur bertahap; penonaktifan gateway membatalkan antrean tersebut. Penggantian kata sandi kosong mempertahankan kata sandi tersimpan yang disembunyikan. Log diagnostik memuat kode kesalahan transportasi dan respons protokol yang aman tanpa kredensial atau teks respons server.
+
+Latihan Flashcard tamu memakai pilihan mode sementara dan menonaktifkan fitur akun serta penyimpanan tata letak. Latihan ini tidak membaca atau menulis preferensi latihan akun.
+
 ## Kontrak Milik Adapter
 
 Gateway menyediakan registri `system:contracts` yang sama kepada adapter melalui `ctx.capabilities`. Adapter dapat mengekspor `defineContracts(ctx)`; host memanggilnya selama bootstrap adapter sebelum inisialisasi. Hook bootstrap yang ada juga dapat mendeklarasikan kontrak langsung. Auth, Notify, TFA, Social, Study, dan Calendar menggunakan lingkup adapter; pemuat pabrik DB, Files, dan Registration juga mendukung hook definisi. Setiap definisi dimiliki `adapter:<gateway>:<adapter>` dan mengikuti rollback, penonaktifan, serta pengaktifan kembali gateway. Wewenang adapter bertingkat berakhir bersama bootstrap induk, termasuk pekerjaan asinkron terpisah. Permintaan runtime tidak dapat mendaftarkan kontrak baru. Impor tipe saja dari direktori publik `contracts/` penyedia membantu penulisan kode; panggilan lintas komponen yang dapat dijalankan tetap melalui ctx.

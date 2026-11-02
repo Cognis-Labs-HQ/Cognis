@@ -397,7 +397,7 @@ export class SmtpNotificationSender implements NotificationSender {
 
     private readonly purposeActivations = new Map<
         string,
-        { activate(): void; suspend(): void }
+        { activate(): void; suspend(): void; diagnostic: boolean }
     >();
     private readonly queues = new Map<string, SmtpNotificationQueue>();
     private readonly createRateLimiter: () => SmtpRateLimiter;
@@ -439,7 +439,10 @@ export class SmtpNotificationSender implements NotificationSender {
         });
     }
 
-    registerPurpose(purpose: string): BootstrapDisposer {
+    registerPurpose(
+        purpose: string,
+        { diagnostic = false }: { diagnostic?: boolean } = {},
+    ): BootstrapDisposer {
         requireBootstrapScope();
         if (!purpose || this.purposeActivations.has(purpose))
             throw new Error("smtp_purpose_conflict");
@@ -474,6 +477,7 @@ export class SmtpNotificationSender implements NotificationSender {
             this.queues.set(purpose, queue);
         };
         const resource = {
+            diagnostic,
             activate,
             suspend: () => {
                 controller?.abort();
@@ -483,7 +487,7 @@ export class SmtpNotificationSender implements NotificationSender {
             },
         };
         this.purposeActivations.set(purpose, resource);
-        if (this.deliveryEnabled) activate();
+        if (this.deliveryEnabled || diagnostic) activate();
         const dispose: BootstrapDisposer = () => {
             resource.suspend();
             if (this.purposeActivations.get(purpose) === resource)
@@ -493,7 +497,7 @@ export class SmtpNotificationSender implements NotificationSender {
             if (this.purposeActivations.has(purpose))
                 throw new Error("smtp_purpose_conflict");
             this.purposeActivations.set(purpose, resource);
-            if (this.deliveryEnabled) activate();
+            if (this.deliveryEnabled || diagnostic) activate();
         };
         return dispose;
     }
@@ -502,6 +506,7 @@ export class SmtpNotificationSender implements NotificationSender {
         if (this.deliveryEnabled === enabled) return;
         this.deliveryEnabled = enabled;
         for (const resource of this.purposeActivations.values()) {
+            if (resource.diagnostic) continue;
             if (enabled) resource.activate();
             else resource.suspend();
         }
@@ -529,11 +534,12 @@ export class SmtpNotificationSender implements NotificationSender {
             verifyUrl: message.actionUrl,
             verifyButtonLabel: message.actionLabel,
             config: {
-                ...this.config,
-                ...input.config,
-                ...(message.senderName
-                    ? { senderName: message.senderName }
-                    : {}),
+                ...this.resolveDeliveryConfig({
+                    ...input.config,
+                    ...(message.senderName
+                        ? { senderName: message.senderName }
+                        : {}),
+                }),
             },
         });
         return {
@@ -542,6 +548,44 @@ export class SmtpNotificationSender implements NotificationSender {
                 queued.notificationId,
             )!,
         };
+    }
+
+    private resolveDeliveryConfig(
+        overrides?: Record<string, unknown>,
+    ): SmtpConfig {
+        const config = { ...this.config };
+        if (!overrides) return config;
+        for (const field of [
+            "host",
+            "from",
+            "senderName",
+            "user",
+            "password",
+        ] as const) {
+            const value = overrides[field];
+            if (
+                typeof value === "string" &&
+                (field !== "password" || value !== "")
+            )
+                config[field] = value;
+        }
+        if (
+            typeof overrides.port === "number" &&
+            Number.isInteger(overrides.port) &&
+            overrides.port > 0 &&
+            overrides.port <= 65535
+        )
+            config.port = overrides.port;
+        if (
+            overrides.secure === "none" ||
+            overrides.secure === "tls" ||
+            overrides.secure === "starttls"
+        )
+            config.secure = overrides.secure;
+        for (const field of ["allowSelfSigned", "authDisabled"] as const)
+            if (typeof overrides[field] === "boolean")
+                config[field] = overrides[field];
+        return config;
     }
 
     private requireQueue(purpose: unknown): SmtpNotificationQueue {
@@ -696,40 +740,15 @@ export class SmtpNotificationSender implements NotificationSender {
         overrideConfig?: Record<string, unknown>,
     ): Promise<void> {
         if (!to) throw new Error("smtp_test_email_requires_recipient");
-        let cfg = this.config;
-        if (overrideConfig && typeof overrideConfig === "object") {
-            const merged: SmtpConfig = { ...this.config };
-            if (typeof overrideConfig.host === "string")
-                merged.host = overrideConfig.host;
-            if (typeof overrideConfig.port === "number")
-                merged.port = overrideConfig.port;
-            if (typeof overrideConfig.from === "string")
-                merged.from = overrideConfig.from;
-            if (typeof overrideConfig.senderName === "string")
-                merged.senderName = overrideConfig.senderName;
-            if (typeof overrideConfig.user === "string")
-                merged.user = overrideConfig.user;
-            if (typeof overrideConfig.password === "string")
-                merged.password = overrideConfig.password;
-            if (
-                overrideConfig.secure === "none" ||
-                overrideConfig.secure === "tls" ||
-                overrideConfig.secure === "starttls"
-            ) {
-                merged.secure = overrideConfig.secure;
-            }
-            if (typeof overrideConfig.allowSelfSigned === "boolean")
-                merged.allowSelfSigned = overrideConfig.allowSelfSigned;
-            if (typeof overrideConfig.authDisabled === "boolean")
-                merged.authDisabled = overrideConfig.authDisabled;
-            cfg = merged;
-        }
+        const cfg = this.resolveDeliveryConfig(overrideConfig);
+        const theme = await this.getRecipientTheme(to);
         const queued = this.requireQueue(purpose).enqueue({
             purpose,
             recipientEmail: to,
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
-            config: cfg,
+            config: { ...cfg },
+            theme,
         });
         await this.requireQueue(purpose).waitForResult(queued.notificationId);
     }

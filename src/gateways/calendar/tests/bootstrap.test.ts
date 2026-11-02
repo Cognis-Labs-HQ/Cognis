@@ -24,6 +24,18 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
+    for (const [flowId, stage] of [
+        ["mint-share-token", "validate-resource"],
+        ["resolve-share-token", "validate-token"],
+        ["resolve-share-token", "resolve-resource"],
+    ])
+        systemCtx.flow.extend(
+            flowId,
+            stage,
+            { id: `other:${stage}`, order: -100 },
+            () => null,
+        );
+
     const adminToken = issueAccessToken("calendar-admin", "admin", 60);
     const recipientToken = issueAccessToken("calendar-recipient", "user", 60);
     const authContext = createAuthContext(
@@ -69,6 +81,39 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         },
     );
     assert.equal(createCalendarResponse.statusCode, 201);
+    const calendarId = createCalendarResponse.body.data.id;
+    const minted = await systemCtx.flow.run("mint-share-token", {
+        resourceType: "calendar",
+        resourceId: calendarId,
+        ownerAccountId: "calendar-admin",
+        password: "review-password",
+    });
+    assert.ok(
+        minted.stageResults["authorize-minter"].some(
+            (result) => (result as { authorized?: boolean } | null)?.authorized,
+        ),
+    );
+    systemCtx.flow.extend(
+        "resolve-share-token",
+        "validate-token",
+        { id: "test:token" },
+        () => ({
+            valid: true,
+            tokenRecord: { resourceType: "calendar", resourceId: calendarId },
+        }),
+    );
+    const resolved = await systemCtx.flow.run("resolve-share-token", {});
+    assert.ok(
+        resolved.stageResults["resolve-resource"].some(
+            (result) => (result as { resolved?: boolean } | null)?.resolved,
+        ),
+    );
+    assert.ok(
+        resolved.stageResults["check-access"].some(
+            (result) => (result as { allowed?: boolean } | null)?.allowed,
+        ),
+    );
+
     const ownerEventResponse = await createJsonDispatcher(routeRegistry)(
         "POST",
         adminToken,

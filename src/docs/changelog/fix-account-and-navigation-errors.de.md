@@ -2,6 +2,14 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## Zuverlässige Freigaben und Tests
+
+Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse anderer Ressourcenanbieter. Link- und Kontofreigaben lassen sich dadurch bei aktivierten Anbietern erstellen und auflösen. Ladeansicht, Kontofreigabestatus und Kalender-Gastansicht verwenden responsive Mindestgrößen statt acht verpflichtender Rasterspalten und bleiben auf schmalen Bildschirmen nutzbar. Die Freigabewartung läuft nacheinander, bündelt überlappende Aufrufe, beendet fehlgeschlagene Durchläufe und versucht es nach fünfzehn Minuten erneut. Deaktivierung stoppt weitere Arbeit; Reaktivierung setzt die Planung fort.
+
+SMTP-Konfigurationstests funktionieren bei deaktiviertem Sender, ohne normale Zustellung einzuschalten. Tests verwenden eine eigene, beim Bootstrap registrierte Diagnosewarteschlange und einen gestuften Ablauf; die Gateway-Deaktivierung beendet diese Warteschlange. Leere Passwortüberschreibungen behalten das gespeicherte, verborgene Passwort bei. Diagnoseprotokolle enthalten sichere Transportfehler- und Protokollantwortcodes, jedoch keine Zugangsdaten oder Serverantworttexte.
+
+Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und deaktiviert Kontofunktionen sowie gespeicherte Layouteinstellungen. Sie liest oder schreibt keine Übungseinstellungen eines Kontos.
+
 ## Verträge der Adapter
 
 Gateways stellen ihren Adaptern dieselbe Registry `system:contracts` über `ctx.capabilities` bereit. Adapter können `defineContracts(ctx)` exportieren; der Host ruft die Funktion beim Adapter-Bootstrap vor der Initialisierung auf. Bestehende Bootstrap-Hooks können Verträge auch direkt deklarieren. Auth, Notify, TFA, Social, Study und Calendar verwenden Adapterbereiche; die Fabriklader für DB, Files und Registration unterstützen den Definitions-Hook ebenfalls. Definitionen gehören zu `adapter:<gateway>:<adapter>` und folgen Rollback, Deaktivierung und Reaktivierung des Gateways. Verschachtelte Adapterberechtigungen enden mit dem übergeordneten Bootstrap, auch für abgekoppelte asynchrone Arbeit. Laufzeitanfragen können keine Verträge registrieren. Reine Typimporte aus dem öffentlichen Verzeichnis `contracts/` eines Anbieters dienen der Entwicklung; ausführbare komponentenübergreifende Aufrufe verwenden weiterhin ctx.

@@ -548,8 +548,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ).find(
                     (entry) =>
                         (entry as { valid?: boolean; resourceType?: string })
-                            .valid === true &&
-                        (entry as { resourceType?: string }).resourceType ===
+                            ?.valid === true &&
+                        (entry as { resourceType?: string })?.resourceType ===
                             "calendar",
                 ) as { ownerAccountId?: string } | undefined;
                 return result
@@ -571,9 +571,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     stageCtx.stageResults["validate-token"] ?? []
                 ).find(
                     (entry) =>
-                        (entry as { valid?: boolean }).valid === true &&
+                        (entry as { valid?: boolean })?.valid === true &&
                         (entry as { tokenRecord?: { resourceType?: string } })
-                            .tokenRecord?.resourceType === "calendar",
+                            ?.tokenRecord?.resourceType === "calendar",
                 ) as
                     | {
                           tokenRecord?: {
@@ -614,8 +614,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                                 resolved?: boolean;
                                 resourceType?: string;
                             }
-                        ).resolved === true &&
-                        (entry as { resourceType?: string }).resourceType ===
+                        )?.resolved === true &&
+                        (entry as { resourceType?: string })?.resourceType ===
                             "calendar",
                 );
                 return resolved

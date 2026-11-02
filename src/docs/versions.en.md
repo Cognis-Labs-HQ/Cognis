@@ -32,7 +32,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.0`  |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.1`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.32` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
@@ -57,7 +57,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
 | Library (Study)       | `src/adapters/study/library/`       | `4.1.12` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.21` |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.22` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.5`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -69,16 +69,16 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.0`  |
-| Share                 | `src/gateways/share/`         | `1.7.52` |
+| Share                 | `src/gateways/share/`         | `1.7.53` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.0`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.0`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.1`  |
 | Social                | `src/gateways/social/`        | `1.4.0`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.0`  |
 | Registration          | `src/gateways/registration/`  | `1.2.0`  |
 | Logging               | `src/gateways/logging/`       | `1.5.14` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.5.0`  |
-| Calendar              | `src/gateways/calendar/`      | `1.6.0`  |
+| Calendar              | `src/gateways/calendar/`      | `1.6.1`  |
 
 ## Core contracts
 
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.11.1` |
+| API Server | `src/api/` | `0.11.2` |
 
 ## Tooling
 

@@ -73,3 +73,7 @@ Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. 
 ## Kepemilikan Kontrak SMTP
 
 SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik templat selama bootstrap miliknya sendiri. Definisi runtime berada di `contracts/declarations.ts`; tipe aksi publik opsional berada di `contracts/action-delivery.ts`. Gateway notifikasi tidak mendeklarasikan API penyedia tersebut dan hanya menyimpan tipe pengirim serta bukti pengiriman umum. Adapter lain menggunakan mekanisme registrasi host yang sama tanpa menambah berkas Core.
+
+## Berbagi dan Pengujian Andal
+
+Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa mengaktifkan pengiriman biasa. Pengujian memakai antrean diagnostik khusus milik bootstrap dan alur bertahap; penonaktifan gateway membatalkan antrean tersebut. Penggantian kata sandi kosong mempertahankan kata sandi tersimpan yang disembunyikan. Log diagnostik memuat kode kesalahan transportasi dan respons protokol yang aman tanpa kredensial atau teks respons server.

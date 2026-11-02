@@ -29,6 +29,7 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
         templates,
         signal,
         isActive: () => Boolean(practiceSession.current),
+        persist: false,
         writingAvailable: supportsDeckWriting(
             queue,
             queue.flatMap((detail) => [detail.entry, ...detail.references]),
@@ -41,6 +42,10 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
     });
     const composer = createPageComposer(root, {
         allowCustomization: false,
+        requireAccountSession: false,
+        enableAccountEnhancements: false,
+        showNavbar: false,
+        persistLayoutPreferences: false,
         i18n,
         pageContext: {
             title: deck.name,

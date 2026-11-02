@@ -13,3 +13,9 @@ Der Share-Browserclient ermöglicht Modulen, das aktuell authentifizierte Freiga
 Der Client besitzt `/api/v1/share/guest-profile`, gibt die ursprüngliche `Response` zurück und verwendet den Host-API-Client für Authentifizierung und Verbindungsbehandlung. Sein Anbieter ist nur mit dem Share-Gateway aktiv; abhängige Routen müssen `share:uiClient` deklarieren, wenn sie ihn beim Einhängen benötigen.
 
 Browserkomponenten, die eine Freigabeaktion darstellen, benötigen `share:uiGateway` und rufen `mountTrigger(container, options)` auf. Das Gateway besitzt das lokalisierte Symbol-und-Beschriftung-Markup, die Aktionsgestaltung, die Unterdrückung in Gastsitzungen und den Bereinigungsgriff; Verbraucher liefern nur Container und Aktivierungsrückruf.
+
+## Zuverlässige Freigaben und Tests
+
+Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse anderer Ressourcenanbieter. Link- und Kontofreigaben lassen sich dadurch bei aktivierten Anbietern erstellen und auflösen. Ladeansicht, Kontofreigabestatus und Kalender-Gastansicht verwenden responsive Mindestgrößen statt acht verpflichtender Rasterspalten und bleiben auf schmalen Bildschirmen nutzbar. Die Freigabewartung läuft nacheinander, bündelt überlappende Aufrufe, beendet fehlgeschlagene Durchläufe und versucht es nach fünfzehn Minuten erneut. Deaktivierung stoppt weitere Arbeit; Reaktivierung setzt die Planung fort.
+
+Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und deaktiviert Kontofunktionen sowie gespeicherte Layouteinstellungen. Sie liest oder schreibt keine Übungseinstellungen eines Kontos.

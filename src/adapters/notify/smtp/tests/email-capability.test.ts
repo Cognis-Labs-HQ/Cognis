@@ -15,12 +15,17 @@ import type {
 import { SmtpNotificationSender } from "../notification-sender.js";
 import { createMockSmtpServer, smtpSuccessHandler } from "./fixtures/server.js";
 
-async function fixture(t: import("node:test").TestContext) {
+async function fixture(
+    t: import("node:test").TestContext,
+    authenticated = false,
+) {
     const delivered: string[] = [];
     const server = await createMockSmtpServer((socket) => {
         const index = delivered.push("") - 1;
         socket.on("data", (chunk) => {
             delivered[index] += chunk.toString();
+            if (authenticated && chunk.toString().startsWith("AUTH PLAIN "))
+                socket.write("235 Authentication successful\r\n");
         });
         smtpSuccessHandler(socket);
     });
@@ -30,7 +35,10 @@ async function fixture(t: import("node:test").TestContext) {
         port: server.port,
         from: "sender@example.test",
         secure: "none",
-        authDisabled: true,
+        authDisabled: !authenticated,
+        ...(authenticated
+            ? { user: "review-user", password: "stored-review-password" }
+            : {}),
     });
     const root = createCtx();
     const capabilities = new CapabilityStore();
@@ -52,7 +60,9 @@ async function fixture(t: import("node:test").TestContext) {
         capabilities,
         registerRoute: (route: (typeof routes)[number]) => routes.push(route),
         requireAuth: () => true,
-        readJson: async () => ({ to: "admin@example.test" }),
+        readJson: async (): Promise<Record<string, unknown>> => ({
+            to: "admin@example.test",
+        }),
     };
     await runBootstrapScope(
         root,
@@ -270,4 +280,48 @@ test("queued messages use recipient preferences and module factory options", asy
     assert.match(host.delivered[1], /#e8eef9/);
     assert.match(host.delivered[0], /Example/);
     assert.match(host.delivered[0], /Updates/);
+});
+
+test("SMTP diagnostic delivery works while disabled and retains concealed credentials", async (t) => {
+    const host = await fixture(t, true);
+    host.sender.setDeliveryEnabled(false);
+    host.capabilities.contribute("notify:isSenderEnabled", () => false);
+    host.ctx.readJson = async () => ({
+        to: "diagnostic@example.test",
+        config: { password: "" },
+    });
+    let status = 0;
+    await host.routes[0](
+        { method: "POST" } as never,
+        {
+            writeHead: (code: number) => {
+                status = code;
+            },
+            end: () => {},
+        } as never,
+        new URL("http://localhost/api/v1/gateways/notify/adapters/smtp/test"),
+    );
+    assert.equal(status, 200);
+    assert.ok(
+        host.delivered
+            .join("")
+            .includes(
+                "AUTH PLAIN " +
+                    Buffer.from(
+                        "\0review-user\0stored-review-password",
+                    ).toString("base64"),
+            ),
+    );
+    assert.equal(
+        host.sender.getConfiguredSecretFields().includes("password"),
+        true,
+    );
+    await assert.rejects(
+        host.send({
+            purpose: "adapter:notify:smtp:test",
+            recipientEmail: "normal@example.test",
+            variables: {},
+        }),
+        /smtp_sender_disabled/,
+    );
 });

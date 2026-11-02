@@ -73,3 +73,7 @@ E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um 
 ## Vertragsbesitz von SMTP
 
 SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und Vorlagenfabriken im eigenen Bootstrap. Laufzeitdefinitionen liegen in `contracts/declarations.ts`, optionale öffentliche Aktionstypen in `contracts/action-delivery.ts`. Das Benachrichtigungs-Gateway deklariert diese Anbieter-APIs nicht; dort bleiben allgemeine Sender- und Zustellbelegtypen. Andere Adapter verwenden denselben Registrierungsmechanismus ohne zusätzliche Core-Dateien.
+
+## Zuverlässige Freigaben und Tests
+
+SMTP-Konfigurationstests funktionieren bei deaktiviertem Sender, ohne normale Zustellung einzuschalten. Tests verwenden eine eigene, beim Bootstrap registrierte Diagnosewarteschlange und einen gestuften Ablauf; die Gateway-Deaktivierung beendet diese Warteschlange. Leere Passwortüberschreibungen behalten das gespeicherte, verborgene Passwort bei. Diagnoseprotokolle enthalten sichere Transportfehler- und Protokollantwortcodes, jedoch keine Zugangsdaten oder Serverantworttexte.

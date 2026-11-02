@@ -655,9 +655,7 @@ test("provider testing delegates through the neutral sender contract", async () 
         ["recipient@example.test", { endpoint: "configured" }],
     ]);
     await gateway.disableSender("custom");
-    await assert.rejects(
-        gateway.testSender("custom", "recipient@example.test"),
-        /notification_sender_disabled/,
-    );
-    assert.equal(tested.length, 1);
+    await gateway.testSender("custom", "recipient@example.test");
+    assert.equal(tested.length, 2);
+    assert.equal(gateway.isSenderEnabled("custom"), false);
 });

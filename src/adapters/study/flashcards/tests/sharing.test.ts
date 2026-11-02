@@ -24,6 +24,17 @@ function fixture() {
             id: contract.id,
             stages: contract.stages.map((stage) => stage.id),
         });
+    for (const [flowId, stage] of [
+        ["mint-share-token", "validate-resource"],
+        ["resolve-share-token", "validate-token"],
+        ["resolve-share-token", "resolve-resource"],
+    ])
+        system.flow.extend(
+            flowId,
+            stage,
+            { id: `other:${stage}`, order: -100 },
+            () => null,
+        );
     const capabilities = new CapabilityStore();
     let enabled = true;
     const ctx: StudyAdapterBootstrapCtx = {
@@ -73,7 +84,7 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
         grantedCapabilities: [DECK_READ],
     });
     assert.equal(
-        (minted.stageResults["validate-resource"][0] as { valid: boolean })
+        (minted.stageResults["validate-resource"][1] as { valid: boolean })
             .valid,
         true,
     );
@@ -84,7 +95,7 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
     );
     assert.equal(
         (
-            minted.stageResults["validate-resource"][0] as {
+            minted.stageResults["validate-resource"][1] as {
                 metadata: { contentUrl: string };
             }
         ).metadata.contentUrl,
@@ -96,7 +107,7 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
         ownerAccountId: "other",
     });
     assert.equal(
-        (denied.stageResults["validate-resource"][0] as { valid: boolean })
+        (denied.stageResults["validate-resource"][1] as { valid: boolean })
             .valid,
         false,
     );
@@ -115,7 +126,7 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
     );
     const resolved = await system.flow.run("resolve-share-token", {});
     assert.equal(
-        (resolved.stageResults["resolve-resource"][0] as { resolved: boolean })
+        (resolved.stageResults["resolve-resource"][1] as { resolved: boolean })
             .resolved,
         true,
     );
@@ -141,7 +152,7 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
         resourceId: "deck",
         ownerAccountId: "owner",
     });
-    assert.equal(disabled.stageResults["validate-resource"][0], null);
+    assert.equal(disabled.stageResults["validate-resource"][1], null);
 });
 
 test("guest access checks the live grant, resource, capability, expiry, and adapter availability", async () => {
@@ -175,7 +186,7 @@ test("deck shares reject write permissions during creation and updates before to
         grantedCapabilities: [DECK_READ],
         accessControls: { permissions: ["read", "write"] },
     });
-    const validation = rejected.stageResults["validate-resource"][0] as {
+    const validation = rejected.stageResults["validate-resource"][1] as {
         valid: boolean;
     };
     assert.equal(validation.valid, false);

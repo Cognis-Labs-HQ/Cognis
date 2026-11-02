@@ -34,3 +34,7 @@ Offline Mode and Broadcast share the top banner stack above the header. Offline 
 Notify owns transport-neutral sender and delivery-receipt types under `contracts/`. Provider-specific runtime declarations and optional action types belong to the contributing adapter. Providers supply configuration schemas, translations, conditional fields, configured-secret metadata and test fields; the gateway forwards them without assuming a transport. Notify contributes the email validation policy to Auth. Email delivery and factory capabilities exist only when an adapter provides them.
 
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
+
+## Reliable Sharing and Tests
+
+Administrator configuration tests are available before a sender is enabled. Testing does not activate normal delivery; each provider owns its diagnostic transport and cleanup.

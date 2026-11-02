@@ -1,5 +1,10 @@
 import { declareSmtpContracts } from "./contracts/declarations.js";
-import type { CapabilityContracts, Ctx } from "@cognis/core";
+import {
+    registerBootstrapFlow,
+    requireBootstrapScope,
+    type CapabilityContracts,
+    type Ctx,
+} from "@cognis/core";
 import type { NotifyAdapterBootstrapCtx } from "../../../gateways/notify/contracts/sender.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 import { registerSmtpActions } from "./purposes.js";
@@ -40,19 +45,35 @@ export async function bootstrapNotifyAdapter(
             return "light";
         }
     });
-    const { register, send } = await registerSmtpActions(ctx, sender);
-    const purpose = await register("test", () => ({
-        subject: "Cognis SMTP Test",
-        body: "This is a test email from Cognis.",
-    }));
+    await registerSmtpActions(ctx, sender);
+    const root = ctx.capabilities.require<Ctx>("system:ctx");
+    const scope = requireBootstrapScope(root);
+    const purpose = `${scope.owner}:test`;
+    scope.registerDisposer(
+        sender.registerPurpose(purpose, { diagnostic: true }),
+    );
+    const testFlow = registerBootstrapFlow(root, {
+        id: "smtp:testEmail",
+        stages: ["validate", "deliver"],
+    });
+    testFlow.extend("validate", { id: "smtp:validateTest" }, ({ input }) => {
+        const { to } = input as { to: string };
+        if (typeof to !== "string" || !to || /[\r\n]/.test(to))
+            throw new Error("smtp_test_email_requires_recipient");
+    });
+    testFlow.extend(
+        "deliver",
+        { id: "smtp:deliverTest" },
+        async ({ input }) => {
+            const { to, config } = input as {
+                to: string;
+                config?: Record<string, unknown>;
+            };
+            await sender.sendTestEmail(purpose, to, config);
+        },
+    );
     sender.test = async (to, config) => {
-        const receipt = await send({
-            purpose,
-            recipientEmail: to,
-            variables: {},
-            config,
-        });
-        await sender.waitForEmail(purpose, receipt.notificationId);
+        await root.flow.run("smtp:testEmail", { to, config });
     };
     ctx.registerRoute(async (req, res, url) => {
         if (
@@ -85,6 +106,7 @@ export async function bootstrapNotifyAdapter(
                 component: "notify-smtp",
                 operation: "sendTestEmail",
                 errorName: error instanceof Error ? error.name : "UnknownError",
+                ...describeSmtpFailure(error),
             });
             res.writeHead(400, { "content-type": "application/json" });
             res.end(
@@ -101,4 +123,17 @@ export async function bootstrapNotifyAdapter(
         res.end(JSON.stringify({ data: { sent: true } }));
         return true;
     }, "notify");
+}
+
+function describeSmtpFailure(error: unknown): Record<string, unknown> {
+    if (!(error instanceof Error)) return { reason: "smtp_test_failed" };
+    const smtp = /^(smtp_[a-z_]+)(?::([0-9]{3}))?$/.exec(error.message);
+    const code = Reflect.get(error, "code");
+    return {
+        reason: smtp?.[1] ?? "smtp_test_failed",
+        ...(smtp?.[2] ? { responseCode: Number(smtp[2]) } : {}),
+        ...(typeof code === "string" && /^[A-Z][A-Z0-9_]{1,63}$/.test(code)
+            ? { code }
+            : {}),
+    };
 }
