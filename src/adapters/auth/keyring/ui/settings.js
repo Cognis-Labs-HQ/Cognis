@@ -41,7 +41,6 @@ export function createSettingsSection({ i18n, root, signal }) {
     const clearKeyringValues = uiCtx.capabilities.get("keyring:clear");
     const destroyKeyring = uiCtx.capabilities.get("keyring:destroy");
     const createKeyring = uiCtx.capabilities.get("keyring:create");
-    const keyringExists = uiCtx.capabilities.get("keyring:exists");
     const changeKeyringPassword = uiCtx.capabilities.get(
         "keyring:changePassword",
     );
@@ -56,28 +55,27 @@ export function createSettingsSection({ i18n, root, signal }) {
     if (!readKeyringState) throw new Error("keyring_state_reader_unavailable");
     let loadState = "loading";
     let loadSequence = 0;
-    const initialRead = readKeyringState();
-    // Attach rejection handling before the section’s asynchronous render begins.
-    const initialResult = initialRead.then(
-        (state) => ({ state }),
-        (error) => ({ error }),
-    );
-    window.addEventListener(
-        "cognis:keyring-event",
-        (event) => {
-            if (event.detail?.type === "identityChanged") {
-                actions.abort();
-                settingsRoot
-                    .querySelector("#settings-keyring-manager")
-                    ?.replaceChildren();
-            } else if (event.detail?.type === "locked") {
-                popupController?.abort();
-                dismissCurrentPopup = null;
-                rerender();
-            }
-        },
-        { signal: actions.signal },
-    );
+    let keyringPresent = false;
+    let watchingEvents = false;
+
+    function handleKeyringEvent(event) {
+        if (event.detail?.type === "identityChanged") {
+            actions.abort();
+            settingsRoot
+                .querySelector("#settings-keyring-manager")
+                ?.replaceChildren();
+        } else if (event.detail?.type === "locked") {
+            popupController?.abort();
+            dismissCurrentPopup = null;
+            rerender();
+        } else if (
+            ["created", "destroy"].includes(event.detail?.type) &&
+            settingsRoot.querySelector("#settings-keyring-manager")
+        ) {
+            void section.onRender();
+        }
+    }
+
     const keyring = createKeyringScope(
         i18n.t("adapter.auth.keyring.component_name"),
     );
@@ -157,7 +155,7 @@ export function createSettingsSection({ i18n, root, signal }) {
             return `<p role="status">${escapeHtml(i18n.t("ui.reuse.loading"))}</p>`;
         if (loadState === "unavailable")
             return `<p role="status">${escapeHtml(i18n.t("gateway.auth.keyring.unavailable"))}</p><button type="button" id="settings-keyring-retry" class="btn-neutral">${escapeHtml(i18n.t("ui.reuse.retry"))}</button>`;
-        if (!keyringExists()) {
+        if (!keyringPresent) {
             return `<section class="settings-keyring-missing" role="status">
               <h3>${escapeHtml(i18n.t("gateway.auth.keyring.not_found"))}</h3>
               <p>${escapeHtml(i18n.t("gateway.auth.keyring.not_found_message"))}</p>
@@ -434,7 +432,7 @@ export function createSettingsSection({ i18n, root, signal }) {
         settingsRoot
             .querySelector("#settings-keyring-create")
             ?.addEventListener("click", async () => {
-                if (await createKeyring()) rerender();
+                if (await createKeyring()) await section.onRender();
             });
         settingsRoot
             .querySelector('[data-keyring-section="keys"]')
@@ -591,21 +589,30 @@ export function createSettingsSection({ i18n, root, signal }) {
         async onRender() {
             if (actions.signal.aborted) return;
             const sequence = ++loadSequence;
+            // Read on entry, not when the Settings catalog constructs this section.
+            // Snapshot the current actor before subscribing to later identity changes.
+            const reading = readKeyringState().then(
+                (state) => ({ state }),
+                (error) => ({ error }),
+            );
+            if (!watchingEvents) {
+                window.addEventListener(
+                    "cognis:keyring-event",
+                    handleKeyringEvent,
+                    { signal: actions.signal },
+                );
+                watchingEvents = true;
+            }
             await Promise.all([
                 ensurePageStylesheet(
                     "/static/adapters/auth/keyring/settings.css",
                 ),
                 ensurePageStylesheet("/static/styles/reuse/page-sections.css"),
             ]);
-            const result =
-                sequence === 1
-                    ? await initialResult
-                    : await readKeyringState().then(
-                          (state) => ({ state }),
-                          (error) => ({ error }),
-                      );
+            const result = await reading;
             if (actions.signal.aborted || sequence !== loadSequence) return;
             loadState = result.error ? "unavailable" : "ready";
+            if (result.state) keyringPresent = result.state.exists === true;
             if (result.error) {
                 console.error("[keyring] settings metadata unavailable", {
                     component: "auth-keyring",

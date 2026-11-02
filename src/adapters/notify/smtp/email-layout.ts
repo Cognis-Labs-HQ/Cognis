@@ -47,7 +47,7 @@ const DARK_PALETTE: ThemePalette = {
     colorText: "#e2e8f0",
     colorBodyText: "#c8d8e8",
     colorMuted: "#4a8fa8",
-    colorFooterText: "#4a6a85",
+    colorFooterText: "#94a9be",
     colorDivider: "rgba(42,127,98,0.25)",
     colorDiamond: "#2a5068",
     shadowColor: "rgba(0,0,0,0.45)",
@@ -59,11 +59,11 @@ const LIGHT_PALETTE: ThemePalette = {
     bgCard: "rgba(248,250,255,0.96)",
     bgFooter: "#f4f8ff",
     colorAccent: "#0f766e",
-    colorAccent2: "#0d9488",
+    colorAccent2: "#0f766e",
     colorText: "#0f172a",
     colorBodyText: "#1e293b",
     colorMuted: "#475569",
-    colorFooterText: "#64748b",
+    colorFooterText: "#5b6b82",
     colorDivider: "rgba(15,118,110,0.25)",
     colorDiamond: "#94a3b8",
     shadowColor: "rgba(15,23,42,0.15)",
@@ -118,7 +118,7 @@ function renderBlock(
     const escape = encodeBasicHtmlEntities;
     if (block.type === "paragraph")
         return {
-            html: `<p style="margin:0 0 16px;">${linkText(block.text, palette.colorAccent2)}</p>`,
+            html: `<p style="margin:0 0 16px;color:${palette.colorBodyText};">${linkText(block.text, palette.colorAccent2)}</p>`,
             text: block.text,
         };
     if (block.type === "heading")
@@ -128,17 +128,17 @@ function renderBlock(
         };
     if (block.type === "code")
         return {
-            html: `<p style="padding:16px;background:${palette.bgCard};border:1px solid ${palette.colorDivider};font:700 24px monospace;letter-spacing:4px;white-space:pre-wrap;">${escape(block.text)}</p>`,
+            html: `<p style="padding:16px;background:${palette.bgCard};border:1px solid ${palette.colorDivider};color:${palette.colorText};font:700 24px monospace;letter-spacing:4px;white-space:pre-wrap;">${escape(block.text)}</p>`,
             text: block.text,
         };
     if (block.type === "list")
         return {
-            html: `<ul>${block.items.map((item) => `<li>${linkText(item, palette.colorAccent2)}</li>`).join("")}</ul>`,
+            html: `<ul style="color:${palette.colorBodyText};">${block.items.map((item) => `<li style="color:${palette.colorBodyText};">${linkText(item, palette.colorAccent2)}</li>`).join("")}</ul>`,
             text: block.items.map((item) => `- ${item}`).join("\n"),
         };
     if (block.type === "table")
         return {
-            html: `<table style="width:100%;border-collapse:collapse;"><thead><tr>${block.headings.map((text) => `<th scope="col" style="text-align:left;padding:8px;border-bottom:1px solid ${palette.colorDivider};">${escape(text)}</th>`).join("")}</tr></thead><tbody>${block.rows.map((row) => `<tr>${row.map((text) => `<td style="padding:8px;border-bottom:1px solid ${palette.colorDivider};">${escape(text)}</td>`).join("")}</tr>`).join("")}</tbody></table>`,
+            html: `<table style="width:100%;border-collapse:collapse;color:${palette.colorBodyText};"><thead><tr>${block.headings.map((text) => `<th scope="col" style="text-align:left;padding:8px;color:${palette.colorText};border-bottom:1px solid ${palette.colorDivider};">${escape(text)}</th>`).join("")}</tr></thead><tbody>${block.rows.map((row) => `<tr>${row.map((text) => `<td style="padding:8px;color:${palette.colorBodyText};border-bottom:1px solid ${palette.colorDivider};">${escape(text)}</td>`).join("")}</tr>`).join("")}</tbody></table>`,
             text: [block.headings, ...block.rows]
                 .map((row) => row.join("\t"))
                 .join("\n"),

@@ -2,6 +2,12 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Email Contrast and Keyring State
+
+Email content uses a block container instead of nesting paragraphs around generated blocks. Paragraphs, codes, list items and table cells carry explicit theme colors; dark-mode footer text and light-mode links have readable contrast.
+
+Keyring Settings reads current state when the section is shown, including its first entry after login or refresh. Constructing the Settings catalog does not cache a missing result. Rendering uses the acknowledged state snapshot, and creation or destruction refreshes the displayed section. Identity changes and navigation still cancel late rendering and sensitive popups.
+
 ## Extensible Provider Contracts
 
 Auth validation modes are registered through ctx with their own callbacks, availability and UI metadata. Administration preserves unavailable configured choices and validates new selections. A generic versioned runtime contract registry lets gateways, adapters and external modules publish contracts without Core domain files, preserving module authorization and lifecycle revocation. Verification helpers move to shared server reuse and Auth. SMTP owns its configuration schema and composable factories, including module-defined options. Emails use the receiving user’s theme, defaulting to light, with escaped HTML/plain-text content. TFA consumes method presentation metadata and the email provider’s code-length/cooldown policy. AI instructions now require this extension-first approach.

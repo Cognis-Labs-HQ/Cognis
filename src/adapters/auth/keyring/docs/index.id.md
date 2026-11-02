@@ -69,3 +69,7 @@ Membatalkan permintaan buka kunci beratribusi menolak semua penunggu bersamaan d
 ## Batasi Pertumbuhan Aktivitas
 
 Brankas terenkripsi menyimpan paling banyak 1.000 aktivitas terbaru dalam batas riwayat 64 KiB; nilai rahasia tidak pernah dihapus untuk memenuhi batas tersebut. Pembacaan berulang berbagi proses penyimpanan yang berjalan. GET terautentikasi dapat mengambil brankas yang ada hingga batas mutlak 8 MiB agar klien dapat meringkas riwayat meskipun batas penulisan lebih rendah. PUT tetap menerapkan batas yang dikonfigurasi. Kegagalan sinkronisasi latar belakang menampilkan notifikasi kesalahan dan mempertahankan salinan lokal terenkripsi.
+
+## Status Terkini Saat Dibuka
+
+Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunjungan pertama setelah masuk atau memuat ulang. Pembuatan katalog Settings tidak menyimpan hasil bahwa keyring belum ada. Tampilan memakai status yang telah dikonfirmasi; pembuatan atau penghapusan memperbarui bagian yang terlihat. Pergantian identitas dan navigasi tetap membatalkan render terlambat serta dialog sensitif.

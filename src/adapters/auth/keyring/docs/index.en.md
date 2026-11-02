@@ -69,3 +69,7 @@ Cancelling an attributed unlock request resolves every concurrent waiter as refu
 ## Recover Activity Growth
 
 The encrypted vault retains at most 1,000 recent activity events within a 64 KiB history budget; secret values are never removed to meet that budget. Repeated background reads share pending persistence. Authenticated GET can return an existing vault up to the 8 MiB hard limit so the client can compact its history, even when the configured write limit is lower. PUT still enforces the configured limit. A failed background sync shows an error toast and retains the encrypted local copy.
+
+## Current State on Entry
+
+Keyring Settings reads current state when the section is shown, including its first entry after login or refresh. Constructing the Settings catalog does not cache a missing result. Rendering uses the acknowledged state snapshot, and creation or destruction refreshes the displayed section. Identity changes and navigation still cancel late rendering and sensitive popups.

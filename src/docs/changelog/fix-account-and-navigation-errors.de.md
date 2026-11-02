@@ -2,6 +2,12 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## E-Mail-Kontrast und Schlüsselbund
+
+E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um erzeugte Blöcke. Absätze, Codes, Listeneinträge und Tabellenzellen erhalten explizite Themenfarben. Fußzeilen im dunklen Modus und Links im hellen Modus bieten einen lesbaren Kontrast.
+
+Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch beim ersten Öffnen nach Anmeldung oder Aktualisierung. Der Aufbau des Einstellungskatalogs speichert kein fehlendes Ergebnis zwischen. Die Darstellung verwendet den bestätigten Zustandsstand; Erstellung und Löschung aktualisieren den sichtbaren Abschnitt. Identitätswechsel und Navigation verhindern weiterhin verspätete Darstellung und schließen sensible Dialoge.
+
 ## Erweiterbare Anbieterverträge
 
 Auth-Prüfmodi werden über ctx mit eigenen Funktionen, Verfügbarkeit und UI-Metadaten registriert. Administration erhält nicht verfügbare gespeicherte Auswahlen und prüft Änderungen. Eine allgemeine versionierte Laufzeitregistry ermöglicht Verträge für Gateways, Adapter und externe Module ohne Core-Domänendateien; Modulberechtigungen und Lebenszykluswiderruf bleiben erhalten. Prüfhelfer liegen in gemeinsamer Server-Wiederverwendung und Auth. SMTP besitzt Konfigurationsschema und kombinierbare Vorlagenfabriken mit Moduloptionen. E-Mails verwenden das Empfängerthema, standardmäßig hell, mit maskiertem HTML und Klartext. TFA verwendet Methodenmetadaten und Codelängen-/Intervallrichtlinien des E-Mail-Anbieters. KI-Anweisungen schreiben diesen erweiterungsorientierten Ansatz vor.

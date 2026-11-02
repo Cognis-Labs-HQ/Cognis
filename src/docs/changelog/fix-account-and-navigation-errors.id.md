@@ -2,6 +2,12 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Kontras Surel dan Status Keyring
+
+Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. Paragraf, kode, item daftar, dan sel tabel menetapkan warna tema secara eksplisit. Teks footer mode gelap dan tautan mode terang memiliki kontras yang terbaca.
+
+Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunjungan pertama setelah masuk atau memuat ulang. Pembuatan katalog Settings tidak menyimpan hasil bahwa keyring belum ada. Tampilan memakai status yang telah dikonfirmasi; pembuatan atau penghapusan memperbarui bagian yang terlihat. Pergantian identitas dan navigasi tetap membatalkan render terlambat serta dialog sensitif.
+
 ## Kontrak Penyedia yang Dapat Diperluas
 
 Mode validasi Auth didaftarkan melalui ctx dengan fungsi, ketersediaan, dan metadata UI sendiri. Administration mempertahankan pilihan tersimpan yang tidak tersedia dan memvalidasi perubahan. Registri kontrak runtime berversi memungkinkan gateway, adapter, dan modul eksternal menerbitkan kontrak tanpa berkas domain Core, sambil mempertahankan izin modul dan pencabutan siklus hidup. Fungsi verifikasi dipindahkan ke penggunaan ulang server bersama dan Auth. SMTP memiliki skema konfigurasi dan pabrik templat yang dapat dirangkai, termasuk opsi modul. Surel menggunakan tema penerima, secara bawaan terang, dengan HTML aman dan teks biasa. TFA memakai metadata tampilan metode serta kebijakan panjang kode/jeda penyedia surel. Instruksi AI mewajibkan pendekatan yang dapat diperluas ini.

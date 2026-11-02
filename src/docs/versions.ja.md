@@ -32,12 +32,12 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.4.0`    |
+| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.4.1`    |
 | Internal Notification      | `src/adapters/notify/internal/`     | `0.5.32`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.25`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.23`   |
 | Local Auth                 | `src/adapters/auth/local/`          | `0.4.1`    |
-| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.1`    |
+| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.2`    |
 | LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.37`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.24`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.24`   |

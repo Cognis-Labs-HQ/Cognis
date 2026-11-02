@@ -65,3 +65,7 @@ export async function registerReport(ctx, heading) {
     return purpose;
 }
 ```
+
+## Teks Surel yang Terbaca
+
+Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. Paragraf, kode, item daftar, dan sel tabel menetapkan warna tema secara eksplisit. Teks footer mode gelap dan tautan mode terang memiliki kontras yang terbaca.

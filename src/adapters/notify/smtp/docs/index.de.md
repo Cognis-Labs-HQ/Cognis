@@ -65,3 +65,7 @@ export async function registerReport(ctx, heading) {
     return purpose;
 }
 ```
+
+## Lesbarer E-Mail-Text
+
+E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um erzeugte Blöcke. Absätze, Codes, Listeneinträge und Tabellenzellen erhalten explizite Themenfarben. Fußzeilen im dunklen Modus und Links im hellen Modus bieten einen lesbaren Kontrast.

@@ -15,7 +15,6 @@ function fixture({
     const pending = new Promise((finish) => {
         resolve = finish;
     });
-    let loaded = false;
     const container = {
         innerHTML: "",
         replaceChildren() {
@@ -39,13 +38,13 @@ function fixture({
             },
         ],
         ["keyring:forComponent", () => ({})],
-        ["keyring:exists", () => loaded && exists],
         ["keyring:isUnlocked", () => false],
         ["keyring:getRelockMinutes", () => 0],
         ["keyring:listEvents", () => []],
         [
             "keyring:readState",
             async () => {
+                const snapshot = exists;
                 if (initialIdentityChange)
                     window.dispatchEvent(
                         new CustomEvent("cognis:keyring-event", {
@@ -54,8 +53,7 @@ function fixture({
                     );
                 await pending;
                 if (failure) throw new Error("keyring_metadata_unavailable");
-                loaded = true;
-                return { exists, unlocked: false };
+                return { exists: snapshot, unlocked: false };
             },
         ],
     ]);
@@ -93,7 +91,17 @@ function fixture({
         root,
         signal: controller.signal,
     });
-    return { section, controller, window, container, notices, resolve };
+    return {
+        section,
+        controller,
+        window,
+        container,
+        notices,
+        resolve,
+        setExists: (value) => {
+            exists = value;
+        },
+    };
 }
 
 for (const exists of [true, false])
@@ -137,3 +145,39 @@ for (const reason of ["navigation", "identityChanged"])
         assert.equal(host.container.innerHTML, "");
         assert.deepEqual(host.notices, []);
     });
+
+test("first entry reads a keyring created after the Settings section was constructed", async () => {
+    const host = fixture({ exists: false });
+    host.setExists(true);
+    const rendering = host.section.onRender();
+    host.resolve();
+    await rendering;
+    assert.match(host.container.innerHTML, /settings-keyring-toggle/);
+    assert.deepEqual(host.notices, []);
+    host.controller.abort();
+});
+
+test("creation and destruction refresh the currently displayed keyring state", async () => {
+    const host = fixture({ exists: false });
+    host.resolve();
+    await host.section.onRender();
+    assert.match(host.container.innerHTML, /settings-keyring-create/);
+    host.setExists(true);
+    host.window.dispatchEvent(
+        new CustomEvent("cognis:keyring-event", {
+            detail: { type: "created" },
+        }),
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.match(host.container.innerHTML, /settings-keyring-toggle/);
+    host.setExists(false);
+    host.window.dispatchEvent(
+        new CustomEvent("cognis:keyring-event", {
+            detail: { type: "destroy" },
+        }),
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.match(host.container.innerHTML, /settings-keyring-create/);
+    assert.deepEqual(host.notices, []);
+    host.controller.abort();
+});

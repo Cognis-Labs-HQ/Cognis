@@ -69,3 +69,7 @@ Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartend
 ## Aktivitätswachstum begrenzen
 
 Der verschlüsselte Tresor behält höchstens 1.000 aktuelle Aktivitäten innerhalb von 64 KiB. Geheimnisse werden dafür niemals entfernt. Wiederholte Lesezugriffe teilen einen laufenden Speichervorgang. Authentifizierte GET-Anfragen können bestehende Tresore bis zur festen Grenze von 8 MiB lesen, damit der Client den Verlauf kürzen kann, auch bei einem niedrigeren Schreiblimit. PUT erzwingt weiterhin das konfigurierte Limit. Fehler bei der Hintergrundsynchronisierung zeigen eine Fehlermeldung; die verschlüsselte lokale Kopie bleibt erhalten.
+
+## Aktueller Zustand beim Öffnen
+
+Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch beim ersten Öffnen nach Anmeldung oder Aktualisierung. Der Aufbau des Einstellungskatalogs speichert kein fehlendes Ergebnis zwischen. Die Darstellung verwendet den bestätigten Zustandsstand; Erstellung und Löschung aktualisieren den sichtbaren Abschnitt. Identitätswechsel und Navigation verhindern weiterhin verspätete Darstellung und schließen sensible Dialoge.

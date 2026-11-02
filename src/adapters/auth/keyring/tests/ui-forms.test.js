@@ -23,7 +23,7 @@ test("keyring password popups use the form composer with required fields", () =>
     assert.match(settingsSource, /gateway\.auth\.keyring\.not_found/);
     assert.match(settingsSource, /id="settings-keyring-create"/);
     assert.match(settingsSource, /variant: "cancel"/);
-    assert.match(settingsSource, /await initialResult[\s\S]*rerender\(\)/);
+    assert.match(settingsSource, /await reading[\s\S]*rerender\(\)/);
     assert.match(
         settingsSource,
         /promptToUnlock\(\)[\s\S]*rerender\(\);[\s\S]*return;/,
@@ -56,6 +56,6 @@ test("account password setup reuses the authenticated credential", () => {
 test("cancelled keyring creation remains available", () => {
     assert.match(
         settingsSource,
-        /#settings-keyring-create"\)\s*\?\.addEventListener\("click", async \(\) => \{\s*if \(await createKeyring\(\)\) rerender\(\);\s*\}\);/,
+        /#settings-keyring-create"\)\s*\?\.addEventListener\("click", async \(\) => \{\s*if \(await createKeyring\(\)\) await section\.onRender\(\);\s*\}\);/,
     );
 });

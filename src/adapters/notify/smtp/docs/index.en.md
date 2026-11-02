@@ -65,3 +65,7 @@ export async function registerReport(ctx, heading) {
     return purpose;
 }
 ```
+
+## Readable Email Text
+
+Email content uses a block container instead of nesting paragraphs around generated blocks. Paragraphs, codes, list items and table cells carry explicit theme colors; dark-mode footer text and light-mode links have readable contrast.
