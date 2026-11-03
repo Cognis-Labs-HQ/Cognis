@@ -61,3 +61,9 @@ Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse
 ## Prüfung und Lebenszyklus
 
 Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.
+
+## Browsereigene Aktionen
+
+Lesezugriffe und Änderungen für Gastkalender verwenden die lebenszyklusgebundene Capability `calendar:sharedClient` und benannte Flows `calendar:shared:*`. Anfragen behalten die ausdrückliche Gastberechtigung bei, kombinieren Seiten- und Anbieterabbruch und gelangen nie in die Ausgangswarteschlange des Kontos. Verbraucher setzen den Freigabe-Endpunkt nicht selbst zusammen.
+
+Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbieter besitzt die Erstellungsanfrage und das Ziel; Calendar löst eine gültige HTTP(S)-URL für das Ereignis auf, ohne Modul-ID oder Route zu kennen. Fehlende Anbieter werden abgewiesen; offline bleibt die Besprechungsoption deaktiviert. Die ungenutzte serverseitige Verfügbarkeitsprüfung und anbieterspezifische Metadaten entfallen.

@@ -2,6 +2,18 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Aksi Milik Penyedia
+
+Pembacaan dan perubahan Calendar tamu memakai kapabilitas `calendar:sharedClient` yang terikat siklus hidup serta alur bernama `calendar:shared:*`. Permintaan mempertahankan wewenang tamu secara eksplisit, menggabungkan pembatalan halaman dan penyedia, serta tidak pernah masuk antrean akun. Konsumen tidak menyusun endpoint berbagi sendiri.
+
+## Pembuatan Rapat Milik Penyedia
+
+Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Penyedia memiliki permintaan pembuatan dan tujuannya; Calendar menentukan URL HTTP(S) yang valid untuk acara tanpa mengetahui ID atau rute modul. Penyedia yang tidak tersedia ditolak dan opsi rapat tetap dinonaktifkan saat offline. Pemeriksaan ketersediaan server yang tidak digunakan serta metadata khusus penyedia dihapus.
+
+## Satu Kontrak Halaman Bersama
+
+Sumber daya bersama menyediakan `page.mountScriptUrl` dengan ekspor `mount(root, options)`. Registri skrip renderer dan cabang rendering alternatif yang tidak digunakan dihapus. Pengujian menjalankan partisipasi alur serta batas wewenang dan pembatalan, bukan mewajibkan kode HTTP tetap berada dalam renderer.
+
 ## Peninjauan dan Siklus Hidup
 
 Adapter Share dapat mengekspor `defineContracts(ctx)`. Share memanggilnya sebelum membentuk metode, memakai registri kontrak bersama dan lingkup bootstrap milik adapter. Metode yang tidak valid membatalkan definisinya dan mencatat metadata kegagalan yang aman. Definisi mengikuti penonaktifan dan pengaktifan kembali gateway.

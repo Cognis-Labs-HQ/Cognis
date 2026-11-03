@@ -2,6 +2,18 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Owned Browser Actions
+
+Guest Calendar reads and mutations use the lifecycle-owned `calendar:sharedClient` capability and named `calendar:shared:*` flows. Requests retain explicit guest authority, combine page/provider cancellation, and never enter the account outbox. Consumers do not construct the shared endpoint.
+
+## Provider-owned Meeting Creation
+
+Calendar discovers `meetings:createMeeting` from the active browser provider. The provider owns its creation request and destination; Calendar resolves a valid HTTP(S) URL for the event without knowing a module ID or route. Missing providers fail closed and the meeting toggle remains unavailable offline. The unused server availability probe and provider-specific metadata are removed.
+
+## One Shared Page Contract
+
+Shared resources supply `page.mountScriptUrl` with an exported `mount(root, options)`. The unused renderer-script registry and alternate rendering branch are removed. Tests exercise executable flow participation and authority/cancellation boundaries rather than requiring HTTP code to remain in the renderer.
+
 ## Review and Lifecycle Hardening
 
 Share adapters may export `defineContracts(ctx)`. Share invokes this before constructing the method, using the shared contract registry and adapter-owned bootstrap scope. Invalid methods roll back their definitions and log safe failure metadata. Definitions follow gateway disable and reactivation.

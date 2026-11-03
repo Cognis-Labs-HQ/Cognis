@@ -21,7 +21,6 @@ import {
     resolveCreatedSeries,
     resolveEventMeta,
     resolveAvailabilityStatus,
-    resolveJitsiAvailability,
     sendCalendarError,
     sendJson,
     validateSharedCalendars,
@@ -43,7 +42,6 @@ export function createCalendarCoreRoutes({
     gateway,
     shareRegistry,
     routeContext,
-    resolveMeetingsProviderAvailability,
     resolveShareableUsers,
     resolveAccountId,
     resolveAccountDisplayName,
@@ -55,8 +53,6 @@ export function createCalendarCoreRoutes({
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
     routeContext?: RouteContext;
-    resolveMeetingsProviderAvailability:
-        ((providerId: string) => Promise<boolean> | boolean) | null;
     resolveShareableUsers:
         | ((input: { ownerAccountId: string; query: string }) => Promise<
               Array<{
@@ -274,10 +270,6 @@ export function createCalendarCoreRoutes({
             }
             const targetAccountId = requestedAccountId || claims.sub;
             gateway.ensureDefaultCalendar(targetAccountId);
-            const jitsiAvailable = await resolveJitsiAvailability(
-                resolveMeetingsProviderAvailability,
-                log,
-            );
             const resolveAvailabilityStatuses = getCapability<
                 () => readonly string[]
             >("social:getAvailabilityStatuses");
@@ -324,7 +316,6 @@ export function createCalendarCoreRoutes({
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: targetAccountId,
                     requestedByAccountId: claims.sub,
-                    jitsiAvailable,
                     availabilityStatuses,
                 },
             });

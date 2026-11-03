@@ -11,7 +11,6 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { getShareRenderer } from "./renderer-registry.js";
 
 const log = (operation, error) =>
     console.error("Share page operation failed.", {
@@ -84,16 +83,9 @@ function buildShareElement(state) {
                     </div>
                 `;
             }
-            if (state.errorKey) {
-                return `
-                    <div class="share-window card-elevated">
-                        ${renderFallbackBody(state.i18n, state.errorKey)}
-                    </div>
-                `;
-            }
             return `
                 <div class="share-window card-elevated">
-                    <section class="share-window-body">${state.renderedContent}</section>
+                    ${renderFallbackBody(state.i18n, state.errorKey || "share.error.renderer_missing")}
                 </div>
             `;
         },
@@ -108,7 +100,6 @@ export async function mount(
     const state = {
         loading: true,
         errorKey: "",
-        renderedContent: "",
         i18n: await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
@@ -270,59 +261,8 @@ export async function mount(
         return;
     }
 
-    if (shareContext.page?.rendererScriptUrl) {
-        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-        globalThis.__spaRouter = true;
-        try {
-            await import(String(shareContext.page.rendererScriptUrl));
-        } catch (error) {
-            if (signal?.aborted) return;
-            log("loadRenderer", error);
-            state.loading = false;
-            state.errorKey = "share.error.renderer_missing";
-            updatePageDescriptor(root, state.i18n, state.errorKey);
-            composer.refresh([buildShareElement(state)]);
-            return;
-        } finally {
-            globalThis.__spaRouterCount--;
-            if (globalThis.__spaRouterCount === 0) {
-                globalThis.__spaRouter = false;
-            }
-        }
-    }
     if (signal?.aborted) return;
-    const renderer = getShareRenderer(shareContext.resourceType);
-    if (!renderer) {
-        state.loading = false;
-        state.errorKey = "share.error.renderer_missing";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
-
-    let renderedContent = "";
-    try {
-        renderedContent = renderer({
-            data: shareContext.payload ?? {},
-            grantedCapabilities: shareContext.grantedCapabilities,
-            guestAccessToken: shareContext.guestAccessToken,
-            i18n: state.i18n,
-            signal,
-        });
-    } catch (error) {
-        if (signal?.aborted) return;
-        log("render", error);
-        state.loading = false;
-        state.errorKey = "share.error.malformed_response";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
-    state.loading = false;
-    state.errorKey = "";
-    state.renderedContent =
-        typeof renderedContent === "string" ? renderedContent : "";
-    composer.refresh([buildShareElement(state)]);
+    showShareFallback("share.error.renderer_missing");
 }
 
 await mountWhenDirect(mount);

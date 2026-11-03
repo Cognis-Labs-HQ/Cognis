@@ -256,7 +256,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "resolve-resource-renderer",
         { id: "test:renderer" },
         () => ({
-            rendererScriptUrl: "/static/modules/jitsi-meet/share-renderer.js",
+            mountScriptUrl: "/static/modules/jitsi-meet/share-renderer.js",
         }),
     );
 

@@ -64,12 +64,6 @@ for (const blocked of ["i18n", "composer", "providers", "strings", "styles"]) {
                     navigateTo: () =>
                         assert.fail("A cancelled share must not navigate."),
                 },
-                "./renderer-registry.js": {
-                    getShareRenderer: () => {
-                        calls.push("renderer");
-                        return () => "<p>Shared content</p>";
-                    },
-                },
             },
             { console },
         );
@@ -81,6 +75,7 @@ for (const blocked of ["i18n", "composer", "providers", "strings", "styles"]) {
                     resourceType: "fixture",
                     payload: {},
                     page: {
+                        mountScriptUrl: "/fixture/share-page.js",
                         stringsBaseUrl: "/fixture/languages",
                         stylesheetUrls: ["/fixture.css"],
                     },
@@ -93,7 +88,6 @@ for (const blocked of ["i18n", "composer", "providers", "strings", "styles"]) {
         release.resolve();
         await pending;
         assert.deepEqual(calls, stoppedAt);
-        assert.equal(calls.includes("renderer"), false);
         if (options) assert.equal(options.signal, controller.signal);
     });
 }

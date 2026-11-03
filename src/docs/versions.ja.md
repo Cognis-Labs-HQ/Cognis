@@ -69,7 +69,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`    |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.0`    |
-| Share                 | `src/gateways/share/`         | `1.8.0`    |
+| Share                 | `src/gateways/share/`         | `1.9.0`    |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.0`    |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.1`    |
 | Social                | `src/gateways/social/`        | `1.4.0`    |
@@ -78,7 +78,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.5.0`    |
-| Calendar              | `src/gateways/calendar/`      | `1.6.2`    |
+| Calendar              | `src/gateways/calendar/`      | `1.7.0`    |
 
 ## コア契約
 
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.11.3`   |
+| API Server     | `src/api/` | `0.11.4`   |
 
 ## ツール
 

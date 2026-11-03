@@ -240,25 +240,27 @@ async function respondToEvent(
     );
 }
 
-async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
-    const response = await apiFetch(
-        "/api/v1/modules/jitsi-meet/meetings/create",
-        {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-            },
-            body: JSON.stringify({ participants: attendees, scheduledAt }),
-        },
-    );
-    if (!response.ok) throw new Error("meeting_create_failed");
-    const payload = await response.json();
-    const meetingId = String(payload?.data?.id ?? "").trim();
-    if (meetingId) {
-        // Prefer the in-app Meetings route so join flows stay within Cognis UI.
-        return `${window.location.origin}/meetings?meetingId=${encodeURIComponent(meetingId)}`;
-    }
-    return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
+async function createMeeting(attendees, { scheduledAt = null, signal } = {}) {
+    signal?.throwIfAborted();
+    const client = uiCtx.capabilities.get("meetings:createMeeting");
+    if (typeof client !== "function")
+        throw new Error("meeting_provider_unavailable");
+    const result = await client({
+        participants: attendees,
+        scheduledAt,
+        signal,
+    });
+    signal?.throwIfAborted();
+    if (typeof result?.navigationUrl !== "string" || !result.navigationUrl)
+        throw new Error("meeting_destination_unavailable");
+    const destination = new URL(result.navigationUrl, window.location.origin);
+    if (
+        !["https:", "http:"].includes(destination.protocol) ||
+        destination.username ||
+        destination.password
+    )
+        throw new Error("meeting_destination_invalid");
+    return destination.href;
 }
 
 export const calendarDashboardEvents = {
@@ -277,5 +279,5 @@ export {
     updateEvent,
     deleteEvent,
     respondToEvent,
-    createJitsiMeeting,
+    createMeeting,
 };

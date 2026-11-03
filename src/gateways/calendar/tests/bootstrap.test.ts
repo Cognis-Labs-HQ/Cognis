@@ -330,7 +330,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.equal(writeAfterExpiry.statusCode, 404);
 });
 
-test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
+test("calendar metadata resolves availability choices through its owner", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -340,10 +340,6 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
         new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
     );
     const systemCtx = createCtx();
-    systemCtx.contributePublicCapability(
-        "meetings:isProviderAvailable",
-        (providerId: string) => providerId === "jitsi-meet",
-    );
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", authContext);
     capabilities.contribute("social:getAvailabilityStatuses", () => [
@@ -369,7 +365,6 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
     );
 
     assert.equal(calendarsResponse.statusCode, 200);
-    assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
     assert.deepEqual(calendarsResponse.body.meta.availabilityStatuses, [
         "free",
         "busy",

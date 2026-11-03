@@ -613,11 +613,10 @@ export async function registerShareBootstrapHooks(input: {
                         }
                         const candidate = result as {
                             mountScriptUrl?: unknown;
-                            rendererScriptUrl?: unknown;
                         };
-                        return Boolean(
-                            candidate.mountScriptUrl ||
-                            candidate.rendererScriptUrl,
+                        return (
+                            typeof candidate.mountScriptUrl === "string" &&
+                            candidate.mountScriptUrl.trim().length > 0
                         );
                     },
                 ) as Record<string, unknown> | null) ?? {};

@@ -25,3 +25,7 @@ Latihan Flashcard tamu memakai pilihan mode sementara dan menonaktifkan fitur ak
 Adapter Share dapat mengekspor `defineContracts(ctx)`. Share memanggilnya sebelum membentuk metode, memakai registri kontrak bersama dan lingkup bootstrap milik adapter. Metode yang tidak valid membatalkan definisinya dan mencatat metadata kegagalan yang aman. Definisi mengikuti penonaktifan dan pengaktifan kembali gateway.
 
 Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi composer, pemuatan sesi dan penyedia, serta impor gaya dan renderer. Composer, popup Calendar, dan permintaan sumber daya memakai sinyal halaman. Halaman yang dibatalkan tidak dapat menimpa halaman berikutnya atau melaporkan hasil lama. Putaran pemeliharaan juga meneruskan sinyal pembatalan kepada tugasnya; penonaktifan Share mencegah notifikasi kedaluwarsa berikutnya dalam pemindaian yang sedang berjalan.
+
+## Aksi Milik Penyedia
+
+Sumber daya bersama menyediakan `page.mountScriptUrl` dengan ekspor `mount(root, options)`. Registri skrip renderer dan cabang rendering alternatif yang tidak digunakan dihapus. Pengujian menjalankan partisipasi alur serta batas wewenang dan pembatalan, bukan mewajibkan kode HTTP tetap berada dalam renderer.

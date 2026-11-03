@@ -25,7 +25,6 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
         routeHelpers,
         adaptersRoot,
         getPreferenceStore,
-        resolveMeetingsProviderAvailability,
         resolveShareableUsers,
         resolveAccountId,
         resolveAccountDisplayName,
@@ -83,8 +82,6 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
             gateway,
             shareRegistry,
             routeContext,
-            resolveMeetingsProviderAvailability:
-                resolveMeetingsProviderAvailability ?? null,
             resolveShareableUsers,
             resolveAccountId: resolveAccountId ?? null,
             resolveAccountDisplayName,

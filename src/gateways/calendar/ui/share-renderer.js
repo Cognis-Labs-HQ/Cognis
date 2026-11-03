@@ -1,3 +1,4 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -74,27 +75,6 @@ function buildEventFormMarkup(i18n, event = {}, slot = {}) {
     ).render();
 }
 
-async function mutateSharedEvent({
-    calendarId,
-    guestAccessToken,
-    method,
-    body,
-    signal,
-}) {
-    return fetch(
-        `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
-        {
-            method,
-            signal,
-            headers: {
-                "content-type": "application/json",
-                authorization: `Bearer ${guestAccessToken}`,
-            },
-            body: JSON.stringify(body),
-        },
-    );
-}
-
 async function openEventEditor({
     calendarId,
     event,
@@ -104,6 +84,7 @@ async function openEventEditor({
     onChanged,
     canWrite,
     signal,
+    client,
 }) {
     let form = null;
     const isEditing = Boolean(event?.id);
@@ -166,12 +147,16 @@ async function openEventEditor({
     const formData = Object.fromEntries(new FormData(form));
     let response;
     try {
-        response = await mutateSharedEvent({
+        const actionMethod =
+            action === "delete"
+                ? "deleteEvent"
+                : isEditing
+                  ? "updateEvent"
+                  : "createEvent";
+        response = await client[actionMethod]({
             calendarId,
             guestAccessToken,
             signal,
-            method:
-                action === "delete" ? "DELETE" : isEditing ? "PATCH" : "POST",
             body:
                 action === "delete"
                     ? { eventId: event.id }
@@ -205,6 +190,8 @@ export async function mount(
     { shareContext, i18n, signal = new AbortController().signal } = {},
 ) {
     if (signal.aborted) return;
+    const client = uiCtx.capabilities.get("calendar:sharedClient");
+    if (!client) throw new Error("calendar_shared_client_unavailable");
     const calendar = shareContext?.payload?.calendar ?? {};
     let events = Array.isArray(shareContext?.payload?.events)
         ? shareContext.payload.events
@@ -225,13 +212,11 @@ export async function mount(
 
     const reloadEvents = async () => {
         try {
-            const response = await fetch(
-                `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
-                {
-                    signal,
-                    headers: { authorization: `Bearer ${guestAccessToken}` },
-                },
-            );
+            const response = await client.readEvents({
+                calendarId,
+                guestAccessToken,
+                signal,
+            });
             if (signal.aborted) return;
             if (!response.ok) {
                 showToast(i18n.t("gateway.calendar.load_failed"), {
@@ -407,6 +392,7 @@ export async function mount(
                 onChanged: reloadEvents,
                 canWrite,
                 signal,
+                client,
             });
         },
         { signal },

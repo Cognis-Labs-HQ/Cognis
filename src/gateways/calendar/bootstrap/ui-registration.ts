@@ -27,7 +27,11 @@ export function registerCalendarUi(
     }
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/calendar/ui/provider.js",
-        providesCapabilities: ["calendar:request", "calendar:dashboardEvents"],
+        providesCapabilities: [
+            "calendar:request",
+            "calendar:dashboardEvents",
+            "calendar:sharedClient",
+        ],
         isEnabled: () =>
             ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     });

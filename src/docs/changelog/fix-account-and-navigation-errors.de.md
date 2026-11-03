@@ -2,6 +2,18 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## Browsereigene Aktionen
+
+Lesezugriffe und Änderungen für Gastkalender verwenden die lebenszyklusgebundene Capability `calendar:sharedClient` und benannte Flows `calendar:shared:*`. Anfragen behalten die ausdrückliche Gastberechtigung bei, kombinieren Seiten- und Anbieterabbruch und gelangen nie in die Ausgangswarteschlange des Kontos. Verbraucher setzen den Freigabe-Endpunkt nicht selbst zusammen.
+
+## Besprechungserstellung beim Anbieter
+
+Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbieter besitzt die Erstellungsanfrage und das Ziel; Calendar löst eine gültige HTTP(S)-URL für das Ereignis auf, ohne Modul-ID oder Route zu kennen. Fehlende Anbieter werden abgewiesen; offline bleibt die Besprechungsoption deaktiviert. Die ungenutzte serverseitige Verfügbarkeitsprüfung und anbieterspezifische Metadaten entfallen.
+
+## Ein Vertrag für Freigabeseiten
+
+Geteilte Ressourcen liefern `page.mountScriptUrl` mit einem exportierten `mount(root, options)`. Die ungenutzte Renderer-Skript-Registry und der alternative Renderpfad entfallen. Tests prüfen ausführbare Flow-Beteiligung sowie Berechtigungs- und Abbruchgrenzen, statt HTTP-Code im Renderer vorauszusetzen.
+
 ## Prüfung und Lebenszyklus
 
 Share-Adapter können `defineContracts(ctx)` exportieren. Share ruft diese Funktion vor der Konstruktion der Methode mit der gemeinsamen Vertragsregistrierung und einem adaptereigenen Bootstrap-Bereich auf. Ungültige Methoden rollen ihre Definitionen zurück und protokollieren sichere Fehlermetadaten. Definitionen folgen der Deaktivierung und Reaktivierung des Gateways.

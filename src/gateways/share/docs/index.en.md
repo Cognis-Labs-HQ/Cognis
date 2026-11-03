@@ -25,3 +25,7 @@ Guest Flashcard practice uses a temporary mode selection and disables account en
 Share adapters may export `defineContracts(ctx)`. Share invokes this before constructing the method, using the shared contract registry and adapter-owned bootstrap scope. Invalid methods roll back their definitions and log safe failure metadata. Definitions follow gateway disable and reactivation.
 
 Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
+
+## Owned Browser Actions
+
+Shared resources supply `page.mountScriptUrl` with an exported `mount(root, options)`. The unused renderer-script registry and alternate rendering branch are removed. Tests exercise executable flow participation and authority/cancellation boundaries rather than requiring HTTP code to remain in the renderer.

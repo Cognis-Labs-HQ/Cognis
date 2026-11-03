@@ -25,3 +25,7 @@ Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und
 Share-Adapter können `defineContracts(ctx)` exportieren. Share ruft diese Funktion vor der Konstruktion der Methode mit der gemeinsamen Vertragsregistrierung und einem adaptereigenen Bootstrap-Bereich auf. Ungültige Methoden rollen ihre Definitionen zurück und protokollieren sichere Fehlermetadaten. Definitionen folgen der Deaktivierung und Reaktivierung des Gateways.
 
 Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.
+
+## Browsereigene Aktionen
+
+Geteilte Ressourcen liefern `page.mountScriptUrl` mit einem exportierten `mount(root, options)`. Die ungenutzte Renderer-Skript-Registry und der alternative Renderpfad entfallen. Tests prüfen ausführbare Flow-Beteiligung sowie Berechtigungs- und Abbruchgrenzen, statt HTTP-Code im Renderer vorauszusetzen.

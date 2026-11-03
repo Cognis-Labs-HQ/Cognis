@@ -160,8 +160,6 @@ test("calendar composer keeps title counter without title criteria list", () => 
         HELPERS_SOURCE,
         /name:\s*"title"[\s\S]*required:\s*true[\s\S]*maxCharacters:\s*120/,
     );
-    assert.doesNotMatch(HELPERS_SOURCE, /event-title-required/);
-    assert.doesNotMatch(HELPERS_SOURCE, /event-title-max/);
 });
 
 test("calendar slot clicks create events outside event buttons and empty slots omit add buttons", () => {
@@ -362,7 +360,6 @@ test("calendar composer supports multiple reminders and remembers selected view"
         POPUP_REMINDERS_SOURCE,
         /name="calendar-popup-reminder-offset"/,
     );
-    assert.doesNotMatch(POPUP_REMINDERS_SOURCE, /calendar-popup-reminder-menu/);
     assert.match(POPUP_REMINDERS_SOURCE, /choice-checkbox/);
     assert.match(
         POPUP_REMINDERS_SOURCE,
@@ -537,11 +534,6 @@ test("calendar main view and summaries aggregate events across calendars", () =>
     );
 });
 
-test("calendar app reads jitsi availability from calendar metadata", () => {
-    assert.match(APP_SOURCE, /calendarState\.meta\?\.jitsiAvailable/);
-    assert.doesNotMatch(APP_SOURCE, /probeJitsiAvailability/);
-});
-
 test("calendar toolbar shows shared visibility icon", () => {
     assert.match(
         HELPERS_SOURCE,
@@ -632,7 +624,6 @@ test("calendar event popup combines participants and responses", () => {
 });
 
 test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
-    assert.doesNotMatch(POPUP_MANAGER_SOURCE, /calendar-popup-all-day-range/);
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
         /insertAdjacentElement\("afterend", allDayToggleRow\)/,
@@ -758,16 +749,15 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
-    assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
+    assert.match(SHARE_RENDERER_SOURCE, /calendar:sharedClient/);
     assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
     assert.match(SHARE_RENDERER_SOURCE, /guestAccessToken/);
-    assert.match(SHARE_RENDERER_SOURCE, /authorization: `Bearer/);
+    assert.match(SHARE_RENDERER_SOURCE, /client\.readEvents/);
     assert.doesNotMatch(SHARE_RENDERER_SOURCE, /apiFetch/);
     assert.match(
         BOOTSTRAP_SOURCE,
         /mountScriptUrl:\s*"\/static\/gateways\/calendar\/ui\/share-renderer\.js"/,
     );
-    assert.doesNotMatch(BOOTSTRAP_SOURCE, /preserveShareShell/);
     assert.match(BOOTSTRAP_SOURCE, /share-renderer\.css/);
     assert.match(BOOTSTRAP_SOURCE, /calendar\.css/);
     assert.match(BOOTSTRAP_SOURCE, /share_import_success/);

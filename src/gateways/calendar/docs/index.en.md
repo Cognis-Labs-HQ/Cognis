@@ -61,3 +61,9 @@ Calendar and Flashcards sharing hooks tolerate unrelated resource providers retu
 ## Review and Lifecycle Hardening
 
 Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
+
+## Owned Browser Actions
+
+Guest Calendar reads and mutations use the lifecycle-owned `calendar:sharedClient` capability and named `calendar:shared:*` flows. Requests retain explicit guest authority, combine page/provider cancellation, and never enter the account outbox. Consumers do not construct the shared endpoint.
+
+Calendar discovers `meetings:createMeeting` from the active browser provider. The provider owns its creation request and destination; Calendar resolves a valid HTTP(S) URL for the event without knowing a module ID or route. Missing providers fail closed and the meeting toggle remains unavailable offline. The unused server availability probe and provider-specific metadata are removed.

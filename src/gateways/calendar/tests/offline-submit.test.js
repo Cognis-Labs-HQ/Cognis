@@ -32,7 +32,7 @@ test("a queued event remains successful and readable when optional activity and 
     host.disconnect();
     const notices = [];
     const submit = createSubmitEvent({
-        getJitsiAvailable: () => false,
+        getMeetingsAvailable: () => false,
         calendarUi: {
             createEvent: (id, payload) =>
                 client.calendarFetch(

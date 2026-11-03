@@ -61,9 +61,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             registerCanonicalFlow(systemCtx, flow);
         }
     }
-    const resolveMeetingsProviderAvailability = systemCtx?.getCapability<
-        (providerId: string) => Promise<boolean> | boolean
-    >("meetings:isProviderAvailable");
     const resolveAccountId = ctx.capabilities.get<ResolveAccountId>(
         "auth:resolveAccountId",
     );
@@ -903,7 +900,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         routeHelpers,
         adaptersRoot,
         getPreferenceStore,
-        resolveMeetingsProviderAvailability,
         resolveShareableUsers,
         resolveAccountId,
         resolveAccountDisplayName,
