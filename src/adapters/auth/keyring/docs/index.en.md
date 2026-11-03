@@ -73,3 +73,7 @@ The encrypted vault retains at most 1,000 recent activity events within a 64 KiB
 ## Current State on Entry
 
 Keyring Settings reads current state when the section is shown, including its first entry after login or refresh. Constructing the Settings catalog does not cache a missing result. Rendering uses the acknowledged state snapshot, and creation or destruction refreshes the displayed section. Identity changes and navigation still cancel late rendering and sensitive popups.
+
+## Localized Adapter Fields
+
+Keyring configuration declares its own string bundle and localized labels for maximum vault size and password derivation iterations. The shared Administration popup resolves these labels through the same XML resources as the adapter.

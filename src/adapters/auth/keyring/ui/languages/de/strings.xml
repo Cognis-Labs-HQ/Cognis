@@ -95,4 +95,6 @@
   <string name="gateway.auth.keyring.recreated">Der Schlüsselbund wurde zerstört und neu erstellt.</string>
   <string name="adapter.auth.keyring.sync_failed">Der Schlüsselbund konnte nicht synchronisiert werden. Die verschlüsselte lokale Kopie wurde beibehalten.</string>
   <string name="gateway.auth.keyring.unavailable">Der Schlüsselbund ist nicht verfügbar. Versuchen Sie es erneut, sobald die Verbindung wiederhergestellt ist.</string>
+  <string name="adapter.auth.keyring.config.maximum_vault_size">Maximale Tresorgröße (MiB)</string>
+  <string name="adapter.auth.keyring.config.derivation_iterations">Iterationen zur Passwortableitung</string>
 </strings>

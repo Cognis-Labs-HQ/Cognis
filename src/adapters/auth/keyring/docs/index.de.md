@@ -73,3 +73,7 @@ Der verschlüsselte Tresor behält höchstens 1.000 aktuelle Aktivitäten innerh
 ## Aktueller Zustand beim Öffnen
 
 Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch beim ersten Öffnen nach Anmeldung oder Aktualisierung. Der Aufbau des Einstellungskatalogs speichert kein fehlendes Ergebnis zwischen. Die Darstellung verwendet den bestätigten Zustandsstand; Erstellung und Löschung aktualisieren den sichtbaren Abschnitt. Identitätswechsel und Navigation verhindern weiterhin verspätete Darstellung und schließen sensible Dialoge.
+
+## Lokalisierte Adapterfelder
+
+Die Keyring-Konfiguration deklariert ihr eigenes Sprachpaket und lokalisierte Bezeichnungen für maximale Tresorgröße und Iterationen zur Passwortableitung. Das gemeinsame Administrations-Popup löst diese Bezeichnungen über dieselben XML-Ressourcen wie der Adapter auf.

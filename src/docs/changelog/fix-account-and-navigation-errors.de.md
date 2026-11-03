@@ -2,6 +2,10 @@
 
 **Feature-Zweig:** fix-account-and-navigation-errors
 
+## Lokalisierte Adapterfelder
+
+Die Logging-Konfiguration öffnet sich mit übersetzten Anbieterbezeichnungen. Katalog- und Konfigurationsantworten teilen ein Browserschema; Logging-Adapter behalten ihren Definitionsvertrag mit `labelKey`. Auch die Keyring-Konfiguration liefert lokalisierte Schlüssel und ihr Sprachpaket. Popup-Prüfungen decken den englischen Ersatz und ausdrückliche Fehler bei fehlenden Übersetzungen ab.
+
 ## Browsereigene Aktionen
 
 Lesezugriffe und Änderungen für Gastkalender verwenden die lebenszyklusgebundene Capability `calendar:sharedClient` und benannte Flows `calendar:shared:*`. Anfragen behalten die ausdrückliche Gastberechtigung bei, kombinieren Seiten- und Anbieterabbruch und gelangen nie in die Ausgangswarteschlange des Kontos. Verbraucher setzen den Freigabe-Endpunkt nicht selbst zusammen.

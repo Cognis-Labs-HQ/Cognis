@@ -95,4 +95,6 @@
   <string name="gateway.auth.keyring.recreated">The keyring was destroyed and recreated.</string>
   <string name="adapter.auth.keyring.sync_failed">The keyring could not sync. Your encrypted local copy has been retained.</string>
   <string name="gateway.auth.keyring.unavailable">The keyring is unavailable. Retry when the connection is restored.</string>
+  <string name="adapter.auth.keyring.config.maximum_vault_size">Maximum Vault Size (MiB)</string>
+  <string name="adapter.auth.keyring.config.derivation_iterations">Password Derivation Iterations</string>
 </strings>

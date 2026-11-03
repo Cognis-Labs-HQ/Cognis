@@ -2,6 +2,10 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Kolom Adaptor Terlokalisasi
+
+Konfigurasi Logging terbuka dengan label penyedia yang diterjemahkan. Respons katalog dan konfigurasi berbagi satu skema browser; adaptor Logging mempertahankan kontrak definisi `labelKey`. Konfigurasi Keyring juga menyediakan kunci terlokalisasi dan paket bahasanya. Pemeriksaan popup mencakup penggunaan bahasa Inggris sebagai pengganti dan kegagalan eksplisit jika terjemahan tidak tersedia.
+
 ## Aksi Milik Penyedia
 
 Pembacaan dan perubahan Calendar tamu memakai kapabilitas `calendar:sharedClient` yang terikat siklus hidup serta alur bernama `calendar:shared:*`. Permintaan mempertahankan wewenang tamu secara eksplisit, menggabungkan pembatalan halaman dan penyedia, serta tidak pernah masuk antrean akun. Konsumen tidak menyusun endpoint berbagi sendiri.

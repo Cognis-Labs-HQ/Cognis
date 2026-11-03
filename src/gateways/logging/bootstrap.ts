@@ -378,6 +378,13 @@ type LoggingAdapterContract = {
     ): Record<string, unknown>;
 };
 
+function describeLoggingSchema(schema: LoggingAdapterContract["schema"]) {
+    return schema.map(({ labelKey, ...field }) => ({
+        ...field,
+        label: labelKey,
+    }));
+}
+
 async function loadLoggingAdapterContracts(
     adaptersRoot: string,
 ): Promise<LoggingAdapterContract[]> {
@@ -441,6 +448,7 @@ function createLoggingAdapterRoutes(
                 JSON.stringify({
                     data: adapters.map((adapter) => ({
                         ...adapter,
+                        schema: describeLoggingSchema(adapter.schema),
                         active: true,
                         locked: true,
                         config: overrides.get(adapter.id) ?? {},
@@ -484,7 +492,8 @@ function createLoggingAdapterRoutes(
                 JSON.stringify({
                     data: overrides.get(adapter.id) ?? {},
                     envValues: environmentConfig[adapter.id],
-                    schema: adapter.schema,
+                    schema: describeLoggingSchema(adapter.schema),
+                    stringsBaseUrl: adapter.stringsBaseUrl,
                     supportsReset: true,
                 }),
             );

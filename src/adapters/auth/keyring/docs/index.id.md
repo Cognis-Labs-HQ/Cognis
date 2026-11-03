@@ -73,3 +73,7 @@ Brankas terenkripsi menyimpan paling banyak 1.000 aktivitas terbaru dalam batas 
 ## Status Terkini Saat Dibuka
 
 Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunjungan pertama setelah masuk atau memuat ulang. Pembuatan katalog Settings tidak menyimpan hasil bahwa keyring belum ada. Tampilan memakai status yang telah dikonfirmasi; pembuatan atau penghapusan memperbarui bagian yang terlihat. Pergantian identitas dan navigasi tetap membatalkan render terlambat serta dialog sensitif.
+
+## Kolom Adaptor Terlokalisasi
+
+Konfigurasi Keyring mendeklarasikan paket bahasanya sendiri serta label terlokalisasi untuk ukuran maksimum brankas dan iterasi derivasi kata sandi. Popup Administrasi bersama menerjemahkan label tersebut melalui sumber daya XML yang sama dengan adaptor.

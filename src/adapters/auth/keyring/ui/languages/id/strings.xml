@@ -95,4 +95,6 @@
   <string name="gateway.auth.keyring.recreated">Keyring telah dihancurkan dan dibuat ulang.</string>
   <string name="adapter.auth.keyring.sync_failed">Gantungan kunci tidak dapat disinkronkan. Salinan lokal terenkripsi tetap disimpan.</string>
   <string name="gateway.auth.keyring.unavailable">Gantungan kunci tidak tersedia. Coba lagi setelah koneksi pulih.</string>
+  <string name="adapter.auth.keyring.config.maximum_vault_size">Ukuran Maksimum Brankas (MiB)</string>
+  <string name="adapter.auth.keyring.config.derivation_iterations">Iterasi Derivasi Kata Sandi</string>
 </strings>

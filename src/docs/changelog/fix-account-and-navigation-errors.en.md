@@ -2,6 +2,10 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Localized Adapter Fields
+
+Logging configuration opens with translated provider labels. Catalog and configuration responses share one browser schema; logging adapters retain their own `labelKey` definition contract. Keyring’s configuration also supplies localized keys and its string bundle. Popup checks cover English fallback and explicit failure for missing translations.
+
 ## Owned Browser Actions
 
 Guest Calendar reads and mutations use the lifecycle-owned `calendar:sharedClient` capability and named `calendar:shared:*` flows. Requests retain explicit guest authority, combine page/provider cancellation, and never enter the account outbox. Consumers do not construct the shared endpoint.

@@ -70,3 +70,7 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 ### Penerimaan log browser
 
 Komponen browser terautentikasi mengirim entri terstruktur dengan `POST /api/v1/logging/entries` memakai `{ level, message, meta }`. Gateway memvalidasi tingkat dan pesan, menambahkan akun terautentikasi serta sumber browser, lalu menulis entri melalui `logging:log`.
+
+## Kolom Adaptor Terlokalisasi
+
+Definisi adaptor Logging memakai `labelKey`. Gateway menyajikan skema katalog dan konfigurasi dengan kunci terjemahan browser `label` serta `stringsBaseUrl` milik setiap adaptor. Tipe, opsi, dan nilai mempertahankan makna yang ditentukan penyedia. Pembacaan konfigurasi tetap hanya untuk administrator.

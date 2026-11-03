@@ -95,4 +95,6 @@
   <string name="gateway.auth.keyring.recreated">キーリングを破棄して再作成しました。</string>
   <string name="adapter.auth.keyring.sync_failed">キーリングを同期できませんでした。暗号化されたローカルコピーは保持されています。</string>
   <string name="gateway.auth.keyring.unavailable">キーリングを利用できません。接続が回復したら、もう一度お試しください。</string>
+  <string name="adapter.auth.keyring.config.maximum_vault_size">保管庫の最大サイズ (MiB)</string>
+  <string name="adapter.auth.keyring.config.derivation_iterations">パスワード導出の反復回数</string>
 </strings>
