@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { tutorialHost } from "./fixtures/host.js";
-import { collectPageTutorials } from "../pages.js";
+import { collectPageTutorials, mountComposerTutorials } from "../pages.js";
 
 test("composed tutorials enforce role changes, visible page scopes and page lifetime through public flows", async (context) => {
     let role = "user";
@@ -122,4 +122,56 @@ test("a failed component guide mount rolls back earlier definitions and targets"
     assert.deepEqual(await state.api.list(), []);
     const replacement = state.owner("optional.component");
     assert.ok(await replacement.target("first.one", { resolve: () => null }));
+});
+
+test("a failed composed page rolls back all earlier tutorial owners and permits a fresh mount", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        querySelectorAll: () => [],
+    };
+    const tutorials = ["first", "second"].map((id) => ({
+        owner: `page.${id}`,
+        definitions: [
+            {
+                id: "overview",
+                page: "/dashboard",
+                titleKey: id,
+                steps: [{ id: "one", titleKey: id }],
+            },
+        ],
+    }));
+    const lifetime = new AbortController();
+    await assert.rejects(
+        mountComposerTutorials(state.ctx, {
+            root,
+            lifetime,
+            tutorials,
+            i18n: {
+                t(key) {
+                    if (key === "second")
+                        throw new Error("missing_translation");
+                    return key;
+                },
+            },
+        }),
+        /missing_translation/,
+    );
+    assert.equal(lifetime.signal.aborted, true);
+    assert.deepEqual(await state.api.list(), []);
+    const replacement = new AbortController();
+    await mountComposerTutorials(state.ctx, {
+        root,
+        lifetime: replacement,
+        tutorials,
+        i18n: { t: (key) => key },
+    });
+    assert.equal((await state.api.list()).length, 2);
+    state.window.dispatchEvent(new Event("cognis:route-will-change"));
+    assert.equal(replacement.signal.aborted, true);
+    assert.deepEqual(await state.api.list(), []);
+    assert.ok(state.events.includes("ui:tutorial:mountPage"));
 });

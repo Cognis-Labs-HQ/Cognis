@@ -29,7 +29,10 @@ export async function mountProvider(ctx) {
                 id: name,
                 route: "/dashboard",
                 target: `ui.workspace:${name}`,
-                titleKey: `ui.tutorial.workspace.${name}.title`,
+                titleKey:
+                    name === "account"
+                        ? "ui.tutorial.workspace.account.title"
+                        : `ui.reuse.${name}`,
                 bodyKey: `ui.tutorial.workspace.${name}.body`,
                 effects: { callout: true, arrow: true, spotlight: true },
                 missing: { timeoutMs: 3000, action: "skip" },

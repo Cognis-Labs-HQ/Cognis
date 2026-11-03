@@ -1,3 +1,12 @@
+/**
+ * Install the version-one host tutorial contract and staged operations.
+ * Owners publish semantic targets and localized plays; sessions never execute declarative strings.
+ * Public export: registerTutorials — registers owner-scoped tutorials and named session flows.
+ * @example const owner = ctx.capabilities.get('ui:tutorials').owner('module.example', { signal, i18n });
+ * @param {object} ctx Host flow/capability context.
+ * @param {object} dependencies Host presentation, navigation and document boundaries.
+ * @returns {object} The shared tutorial capability.
+ */
 import { validateName, validatePlay } from "./schema.js";
 import { resolveTarget } from "./targets.js";
 import { createSession } from "./session.js";
@@ -5,14 +14,6 @@ import { abortable } from "./async.js";
 import { mountPageTutorials } from "./pages.js";
 import { hasMinAccessRole } from "../access-role.js";
 
-/**
- * Install the version-one host tutorial contract and staged operations.
- * Owners publish semantic targets and localized plays; sessions never execute declarative strings.
- * @example const owner = ctx.capabilities.get('ui:tutorials').owner('module.example', { signal, i18n });
- * @param {object} ctx Host flow/capability context.
- * @param {object} dependencies Host presentation, navigation and document boundaries.
- * @returns {object} The shared tutorial capability.
- */
 export function registerTutorials(
     ctx,
     {

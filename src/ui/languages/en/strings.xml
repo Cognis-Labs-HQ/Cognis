@@ -634,9 +634,7 @@
   <string name="ui.tutorial.waiting">Waiting for the page element. You can cancel at any time.</string>
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
-  <string name="ui.tutorial.workspace.navigation.title">Navigation</string>
   <string name="ui.tutorial.workspace.navigation.body">Use the main navigation to open the pages available to your account. This tutorial never changes your permissions.</string>
-  <string name="ui.tutorial.workspace.search.title">Search</string>
   <string name="ui.tutorial.workspace.search.body">Search finds pages and content across enabled components. Opening a dialog or leaving the page safely ends this tutorial.</string>
   <string name="ui.tutorial.workspace.account.title">Account Menu</string>
   <string name="ui.tutorial.workspace.account.body">Open your account menu for settings, documentation and tutorials. You can replay any available tutorial here.</string>

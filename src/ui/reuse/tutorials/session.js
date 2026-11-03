@@ -1,8 +1,14 @@
+/**
+ * Runs cancellable tutorial steps with isolated lifetimes for late callbacks.
+ * Public export: createSession — creates one session and its step operations.
+ * @example const session = createSession(dependencies); await session.begin();
+ * @param {object} dependencies Registration, presentation, navigation and lifecycle boundaries.
+ * @returns {object} Session state, completion promises and step operations.
+ */
 import { abortable } from "./async.js";
 import { waitForTarget } from "./targets.js";
 import { validateRoute } from "./schema.js";
 
-/** One cancellable session. Step epochs isolate late callbacks from subsequent steps. */
 export function createSession({
     record,
     firstTime = false,

@@ -14,6 +14,10 @@ Alle Aktionsbuttons stehen in einer eigenen Instanz des gemeinsamen schwebenden 
 
 Seiten übergeben verfasste Beiträge im Composer-Feld `tutorials`. Jeder Beitrag erklärt Besitzer, Definitionen und optional `minRole`; jede Definition liefert Seite, übersetzte Texte und komponenteneigene Selektoren. `scope` beschränkt die Erkennung auf einen sichtbaren Bereich. Der Host veröffentlicht begrenzte Ziele und registriert über `ui:tutorial:mountPage`. Beim Entfernen der Seite werden ihre Anleitungen bereinigt. Optionale Anbieter können `mountTutorialProvider` aus `ui:reuse` verwenden und Übersetzungen sowie Lebenszyklus selbst besitzen.
 
+## Übersetzungsschlüssel
+
+Anleitungsschlüssel behalten die Modul-ID des Manifests als ein Namensraumsegment bei. Allgemeine Bezeichnungen für Navigation und Suche stammen aus dem gemeinsamen Katalog. Fehlgeschlagene Seiteneinrichtung entfernt alle Anleitungen, damit die Seite erneut geladen werden kann.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

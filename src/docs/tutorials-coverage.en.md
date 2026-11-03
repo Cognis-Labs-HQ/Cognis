@@ -47,6 +47,8 @@ The inventory below covers interactive dashboard pages and component-owned admin
 
 The companion modules cover Analytics, ElevenLabs, English and Japanese Study, Jitsi meetings and administration, all three legal-document pages, X sign-in configuration, LINE configuration, and Whiteboard canvas/configuration/administration. Their guides remain owned and packaged by their repositories.
 
+The Legal administration section also has a restricted guide for publishing and consent reports.
+
 ## Intentional Boundaries
 
 Read-only license/error pages, offline boot code and development fixtures have no action tour. Sign-in callbacks, mandatory consent, password confirmation and required setup dialogs retain their own interaction policy. Recipient share status screens do not automatically expose another account’s content. Embedded surfaces use the tutorial controls available in their own page context.

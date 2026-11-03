@@ -1,4 +1,10 @@
-/** Validate versioned declarative plays; callbacks are trusted owner code, never evaluated strings. */
+/**
+ * Validates versioned tutorial definitions without evaluating declarative strings.
+ * Public exports: validateName — validates an owner or step identifier;
+ * validateRoute — validates a same-origin pathname;
+ * validatePlay — validates and freezes a tutorial definition.
+ * @example const play = validatePlay(definition);
+ */
 const NAME_PATTERN = /^[a-z][a-z0-9.-]{0,79}$/;
 const TARGET = /^[a-z][a-z0-9.-]{0,79}:[a-z][a-z0-9.-]{0,79}$/;
 const EVENTS = new Set(["click", "change", "input", "submit", "keydown"]);
@@ -6,11 +12,19 @@ const assert = (allowed) => {
     if (!allowed) throw new TypeError("invalid_tutorial_definition");
 };
 
+/**
+ * @param {string} value Owner, play, target or step name.
+ * @returns {string} The validated name.
+ */
 export function validateName(value) {
     assert(typeof value === "string" && NAME_PATTERN.test(value));
     return value;
 }
 
+/**
+ * @param {string} value Same-origin pathname.
+ * @returns {string} The validated pathname.
+ */
 export function validateRoute(value) {
     assert(
         typeof value === "string" && /^\/(?!\/)[a-zA-Z0-9/_-]*$/.test(value),
@@ -23,6 +37,10 @@ function keys(value, allowed) {
     assert(Object.keys(value).every((key) => allowed.includes(key)));
 }
 
+/**
+ * @param {object} input Component-authored tutorial definition.
+ * @returns {object} A frozen validated definition.
+ */
 export function validatePlay(input) {
     keys(input, [
         "version",

@@ -1,6 +1,12 @@
+/**
+ * Coordinates page discovery, account-scoped completion and header replay controls.
+ * Public export: createPageTutorials — creates a lifecycle-owned page coordinator.
+ * @example const page = createPageTutorials(dependencies); page.connect();
+ * @param {object} dependencies Public ctx, tutorial, document, storage and localization boundaries.
+ * @returns {{refresh: Function, open: Function, connect: Function, dispose: Function}} Page operations.
+ */
 import { createFloatingMenu } from "../floating-menu.js";
 
-/** Coordinate page discovery, per-account completion and the page-context replay action. */
 export function createPageTutorials({
     ctx,
     api,

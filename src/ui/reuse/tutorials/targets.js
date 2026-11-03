@@ -1,4 +1,15 @@
-/** Resolve published same-document targets without exposing private component selectors. */
+/**
+ * Resolves published same-document targets within their owner and visibility boundaries.
+ * Public exports: usableTarget — checks a target's active visibility;
+ * resolveTarget — resolves one authorized semantic target;
+ * waitForTarget — observes an owned target until available, cancelled or timed out.
+ * @example const element = await waitForTarget(resolve, { signal, timeoutMs: 1000, document });
+ */
+/**
+ * @param {Element} element Candidate target.
+ * @param {Document} document Expected owner document.
+ * @returns {boolean} Whether the target is currently usable.
+ */
 export function usableTarget(element, document) {
     if (
         !element ||
@@ -43,6 +54,13 @@ export function usableTarget(element, document) {
     );
 }
 
+/**
+ * @param {Map} targets Published target records.
+ * @param {string} id Requested semantic target.
+ * @param {string} owner Requesting tutorial owner.
+ * @param {Document} document Expected owner document.
+ * @returns {Element|null} The authorized visible target.
+ */
 export function resolveTarget(targets, id, owner, document) {
     if (!id) return null;
     const record = targets.get(id);
@@ -67,6 +85,11 @@ export function resolveTarget(targets, id, owner, document) {
     return element;
 }
 
+/**
+ * @param {Function} resolve Owner-provided target resolver.
+ * @param {object} options Lifetime, timeout and observer document.
+ * @returns {Promise<Element|null>} The target or null after the deadline.
+ */
 export function waitForTarget(resolve, { signal, timeoutMs, document }) {
     signal.throwIfAborted();
     return new Promise((accept, reject) => {

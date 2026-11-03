@@ -634,9 +634,7 @@
   <string name="ui.tutorial.waiting">Warten auf das Seitenelement. Sie können jederzeit abbrechen.</string>
   <string name="ui.tutorial.error">Die Anleitung konnte nicht fortgesetzt werden. Ihre Seite bleibt verfügbar.</string>
   <string name="ui.tutorial.workspace.title">Ihr Arbeitsbereich</string>
-  <string name="ui.tutorial.workspace.navigation.title">Navigation</string>
   <string name="ui.tutorial.workspace.navigation.body">Öffnen Sie über die Hauptnavigation die für Ihr Konto verfügbaren Seiten. Diese Anleitung ändert niemals Ihre Berechtigungen.</string>
-  <string name="ui.tutorial.workspace.search.title">Suche</string>
   <string name="ui.tutorial.workspace.search.body">Die Suche findet Seiten und Inhalte aktivierter Komponenten. Ein Dialog oder Seitenwechsel beendet diese Anleitung sicher.</string>
   <string name="ui.tutorial.workspace.account.title">Kontomenü</string>
   <string name="ui.tutorial.workspace.account.body">Öffnen Sie Ihr Kontomenü für Einstellungen, Dokumentation und Anleitungen. Verfügbare Anleitungen können hier erneut gestartet werden.</string>

@@ -76,6 +76,10 @@ export async function mountPageTutorials(
     }
 }
 
+/**
+ * @param {object} options Page and nested-section contribution metadata.
+ * @returns {object[]} Collected tutorial contributions.
+ */
 export function collectPageTutorials(options) {
     return [
         ...(options.tutorials ?? []),
@@ -138,6 +142,11 @@ export async function mountTutorialProvider(
     }
 }
 
+/**
+ * @param {object} ctx Public browser context.
+ * @param {object} options Page root, localization, lifetime and authored contributions.
+ * @returns {Promise<void>} Resolves after every registration succeeds.
+ */
 export async function mountComposerTutorials(
     ctx,
     { root, i18n, lifetime, tutorials, elements },
@@ -152,12 +161,20 @@ export async function mountComposerTutorials(
             signal: lifetime.signal,
         },
     );
-    for (const contribution of collectPageTutorials({ tutorials, elements })) {
-        await api.mountPage({
-            ...contribution,
-            root,
-            signal: lifetime.signal,
-            i18n: contribution.i18n ?? i18n,
-        });
+    try {
+        for (const contribution of collectPageTutorials({
+            tutorials,
+            elements,
+        })) {
+            await api.mountPage({
+                ...contribution,
+                root,
+                signal: lifetime.signal,
+                i18n: contribution.i18n ?? i18n,
+            });
+        }
+    } catch (error) {
+        lifetime.abort();
+        throw error;
     }
 }

@@ -14,6 +14,10 @@ All tutorial action buttons live in an independent instance of the shared floati
 
 Pages pass authored tutorial contributions in the composer’s `tutorials` array. Each contribution declares an owner, definitions, and an optional `minRole`; each definition supplies its page, localized text and component-owned selectors. `scope` restricts discovery to a visible section. The host publishes scoped targets and runs registration through `ui:tutorial:mountPage`. Removing a page disposes its guides. Optional component providers can use `mountTutorialProvider` from `ui:reuse` and keep their localization and lifecycle ownership.
 
+## Module Translation Keys
+
+Tutorial keys preserve the manifest module ID as one namespace segment. Generic navigation and search labels reuse the shared catalog. Failed page setup releases every tutorial contribution so the page can mount again.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

@@ -1,3 +1,9 @@
+/**
+ * Presents tutorial effects and localized controls in independently owned floating menus.
+ * Public exports: placeCallout — clamps a callout to the visual viewport;
+ * createTutorialView — creates a renderer with session-scoped cleanup.
+ * @example const view = createTutorialView({ document, hostI18n, loadStyles });
+ */
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
 
@@ -16,6 +22,14 @@ function viewportBounds(window) {
 }
 
 /** Place a bounded callout beside the target, clamping it to the visual viewport. */
+/**
+ * @param {DOMRect} rect Target bounds.
+ * @param {object} box Callout dimensions.
+ * @param {object} viewport Visual viewport dimensions and offsets.
+ * @param {string} placement Preferred side.
+ * @param {number} padding Target spacing.
+ * @returns {{side: string, left: number, top: number}} Clamped placement.
+ */
 export function placeCallout(
     rect,
     box,
@@ -52,6 +66,10 @@ export function placeCallout(
 }
 
 /** Render session-owned effects without moving or modifying the target element. */
+/**
+ * @param {object} dependencies Document, host localization and stylesheet loader.
+ * @returns {Function} An asynchronous renderer returning session-owned cleanup.
+ */
 export function createTutorialView({ document, hostI18n, loadStyles }) {
     return async ({
         step,

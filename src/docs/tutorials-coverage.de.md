@@ -47,6 +47,8 @@ Die folgende Übersicht erfasst interaktive Dashboard-Seiten und komponenteneige
 
 Die Begleitmodule decken Analytics, ElevenLabs, englisches und japanisches Lernen, Jitsi-Besprechungen und Verwaltung, alle drei Rechtsdokumentseiten, X- und LINE-Konfiguration sowie Whiteboard-Zeichenfläche, Konfiguration und Verwaltung ab. Anleitungen bleiben in ihren eigenen Repositorys verpackt.
 
+Der Verwaltungsbereich für Rechtsdokumente bietet außerdem eine zugriffsbeschränkte Anleitung für Veröffentlichung und Zustimmungsberichte.
+
 ## Bewusste Grenzen
 
 Schreibgeschützte Lizenz- und Fehlerseiten, Offline-Startcode und Entwicklungsfixtures haben keine Aktionsanleitung. Anmelderückrufe, Pflichtzustimmung, Passwortbestätigung und notwendige Einrichtungsdialoge behalten ihre eigenen Eingaberegeln. Empfängerstatusseiten zeigen nicht automatisch fremde Inhalte. Eingebettete Bereiche verwenden die Tutorial-Bedienelemente ihres eigenen Seitenkontexts.

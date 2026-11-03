@@ -1,13 +1,14 @@
-import { registerTutorials } from "./runtime.js";
-import { createTutorialView } from "./presentation.js";
-import { createPageTutorials } from "./page.js";
-
 /**
  * Install tutorials through host-owned resources; components consume ui:tutorials only.
+ * Public export: installTutorials — installs the host tutorial capability and page coordinator.
  * @example installTutorials(uiCtx);
  * @param {object} ctx Browser capability and flow context.
  * @returns {object} Tutorial registration/session contract.
  */
+import { registerTutorials } from "./runtime.js";
+import { createTutorialView } from "./presentation.js";
+import { createPageTutorials } from "./page.js";
+
 export function installTutorials(ctx) {
     if (ctx.capabilities.get("ui:tutorials"))
         return ctx.capabilities.get("ui:tutorials");

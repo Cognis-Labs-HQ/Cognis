@@ -47,6 +47,8 @@ Daftar berikut mencakup halaman dasbor interaktif dan bagian administrasi milik 
 
 Modul pendamping mencakup Analytics, ElevenLabs, pembelajaran Inggris dan Jepang, pertemuan dan administrasi Jitsi, ketiga halaman dokumen hukum, konfigurasi masuk X dan LINE, serta kanvas, konfigurasi, dan administrasi Whiteboard. Panduan tetap dimiliki dan dikemas oleh repositorinya.
 
+Bagian administrasi Hukum juga memiliki panduan terbatas untuk penerbitan dan laporan persetujuan.
+
 ## Batas yang Disengaja
 
 Halaman lisensi dan kesalahan yang hanya dibaca, kode awal luring, serta fixture pengembangan tidak memiliki tur aksi. Callback masuk, persetujuan wajib, konfirmasi kata sandi, dan dialog penyiapan wajib mempertahankan aturan interaksinya. Halaman status penerima berbagi tidak otomatis mengungkap konten akun lain. Tampilan tertanam memakai kontrol tutorial dalam konteks halamannya sendiri.

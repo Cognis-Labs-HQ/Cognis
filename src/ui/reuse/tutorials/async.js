@@ -1,4 +1,12 @@
-/** Bound owner callbacks and discard work after session cancellation. */
+/**
+ * Bounds asynchronous work by timeout and cancellation.
+ * Public export: abortable — settles work only while its signal remains active.
+ * @example const result = await abortable(load(), signal);
+ * @param {Promise<unknown>} work Pending owner work.
+ * @param {AbortSignal} signal Work lifetime.
+ * @param {number} timeoutMs Maximum wait in milliseconds.
+ * @returns {Promise<unknown>} The result or a cancellation/timeout rejection.
+ */
 export function abortable(work, signal, timeoutMs = 15000) {
     signal.throwIfAborted();
     return new Promise((resolve, reject) => {
