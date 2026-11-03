@@ -2,7 +2,7 @@ import { createCtx, CapabilityStore } from "@cognis/core";
 import { registerTutorials } from "../../runtime.js";
 
 /** Real staged flows with an explicit presentation/DOM contract fake. */
-export function tutorialHost({ onFeedback } = {}) {
+export function tutorialHost({ onFeedback, identity, page, openPage } = {}) {
     const core = createCtx();
     const controller = new AbortController();
     const window = new EventTarget();
@@ -55,6 +55,9 @@ export function tutorialHost({ onFeedback } = {}) {
     };
     const api = registerTutorials(ctx, {
         document,
+        identity,
+        page,
+        openPage,
         view: async (options) => {
             const entry = {
                 ...options,
@@ -71,7 +74,6 @@ export function tutorialHost({ onFeedback } = {}) {
             feedback.push(args);
             return onFeedback?.(...args);
         },
-        catalog: () => true,
     });
     const owners = [];
     const owner = (id = "example") => {
@@ -123,5 +125,11 @@ export const play = (
         { id: "one", titleKey: "owner.one" },
         { id: "two", titleKey: "owner.two" },
     ],
-) => ({ version: 1, id: "intro", titleKey: "owner.title", steps });
+) => ({
+    version: 1,
+    page: "/dashboard",
+    id: "intro",
+    titleKey: "owner.title",
+    steps,
+});
 export const tick = () => new Promise(setImmediate);

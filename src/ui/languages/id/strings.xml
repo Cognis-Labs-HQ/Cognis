@@ -632,8 +632,6 @@
   <string name="ui.tutorial.progress">Langkah {{current}} dari {{total}}</string>
   <string name="ui.tutorial.missing">Elemen tujuan tidak tersedia. Tampilkan elemen tersebut lalu pilih Coba Lagi, atau batalkan tutorial ini.</string>
   <string name="ui.tutorial.waiting">Menunggu elemen halaman. Anda dapat membatalkan kapan saja.</string>
-  <string name="ui.tutorial.choose">Pilih Tutorial</string>
-  <string name="ui.tutorial.empty">Tidak ada tutorial yang tersedia untuk akses Anda saat ini.</string>
   <string name="ui.tutorial.error">Tutorial tidak dapat dilanjutkan. Halaman Anda tetap tersedia.</string>
   <string name="ui.tutorial.workspace.title">Ruang Kerja Anda</string>
   <string name="ui.tutorial.workspace.navigation.title">Navigasi</string>
@@ -642,4 +640,5 @@
   <string name="ui.tutorial.workspace.search.body">Pencarian menemukan halaman dan konten dari komponen aktif. Membuka dialog atau meninggalkan halaman mengakhiri tutorial dengan aman.</string>
   <string name="ui.tutorial.workspace.account.title">Menu Akun</string>
   <string name="ui.tutorial.workspace.account.body">Buka menu akun untuk pengaturan, dokumentasi, dan tutorial. Anda dapat mengulang tutorial yang tersedia di sini.</string>
+    <string name="ui.tutorial.replay">Ulangi Tutorial Halaman Ini</string>
 </resources>

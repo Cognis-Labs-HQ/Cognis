@@ -1,6 +1,6 @@
 # Guided Tutorials
 
-Tutorials is available from the account menu. It lists the plays currently permitted by installed components and modules. The host supplies presentation, target resolution, interaction policy and session coordination; each feature owns its text, targets and script. No tutorial runs automatically or changes permissions.
+Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.
 
 ## Register A Play
 
@@ -23,6 +23,7 @@ export async function mountProvider(ctx) {
         });
         const play = await owner.register({
             version: 1,
+            page: "/example",
             id: "introduction",
             titleKey: "module.example.tutorial.title",
             steps: [
@@ -48,6 +49,12 @@ export async function mountProvider(ctx) {
 
 Register through `mountProvider`; importing a script must not register anything. Return `owner.dispose` and dispose partial registrations on failure. Workspace and Study supply built-in plays. The external-module fixture under `src/ui/reuse/tutorials/tests/fixtures/` demonstrates an independent public-contract consumer.
 
+## Page Binding And First Visits
+
+Every play requires `page`: an exact pathname such as `/dashboard`, or a trusted synchronous predicate `({ pathname }) => boolean` for a group of URLs or a page-specific condition. This is separate from step navigation. Starts outside the binding are rejected. Registration, page mounts, account changes and popup dismissal refresh discovery; removed providers withdraw their help action. Required popups defer automatic starts.
+
+Study exposes `study:tutorialTargets.matchesPage({ pathname, language })` so language providers can bind their tutorial to Study-owned Explore and Flashcards pages without copying host route rules. The composer publishes completed page mounts through `page:mounted` (`publish`).
+
 ## Targets And Localization
 
 Target names become `owner:name`. Targets are private unless explicitly published with `public: true`; cross-component consumers use the returned semantic ID, never private selectors. Duplicate owner, play and target IDs are rejected. A resolver returns exactly one same-document element or `null`; publish resolvers rather than retained page nodes. Optional `root` restricts resolution and `signal` can shorten a target's lifetime. Hidden, inert and disabled targets are unavailable. Withdrawing a target cancels a session currently using it.
@@ -70,10 +77,10 @@ Definitions declare version 1, unique step IDs, localized title keys and at most
 
 ## Sessions And Flows
 
-`await owner.register(play)` returns `{ id, start, dispose }`. `await tutorials.list()` reads the current permitted catalog; `openCatalog()` uses the existing decision popup and coalesces repeated requests. `await tutorials.start(id)` or the play's `start()` returns a session with `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` and `dispose()`. `current()` is a read-only snapshot. Skip ends the play; cancellation and cleanup are idempotent.
+`await owner.register(play)` returns `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` reads permitted plays for that page. `refreshPage()` refreshes discovery; `openPage()` starts the only matching play or offers the matching plays in a shared floating menu. `await tutorials.start(id)` or `start()` returns `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` and `dispose()`. `current()` is a read-only snapshot.
 
-Only one session is active. A competing start rejects unless `{ replace: true }` explicitly cancels the current one. Registration, target publication, catalog reads/opening, start, next, back, retry, skip and cancel run through `ui:tutorial:<action>` flows with `validate`, `execute` and `after` stages. Page and module code must not bypass these capabilities.
+Only one session is active. A competing start rejects unless `{ replace: true }` explicitly cancels it. Registration, targets, discovery, page entry, replay, start and step actions use `ui:tutorial:<action>` flows with `validate`, `execute` and `after` stages. Consumers must not bypass these capabilities.
 
-Unrelated navigation, browser Back/Forward, Escape, permission loss, owner removal and required popups cancel the session. Explicit route steps may continue through an accepted SPA transition. A pending navigation always has visible cancellation controls. The tutorial never confirms a dialog, submits a privileged form or initiates a call. Existing mandatory dialogs take precedence and retain their dismissal policy.
+All tutorial action buttons live in an independent instance of the shared floating menu. First-time sessions have no Cancel or Skip action; Escape does not dismiss them. Next remains available during target waits, asynchronous work and event-driven steps, so repeatedly pressing it always reaches completion. Replays expose cancellation with `btn-cancel`. Unrelated navigation, history, account/access loss, provider removal and required popups still release every session. Tutorials never confirm dialogs, submit privileged forms or initiate calls.
 
-Completion and cancellation remove host overlays, input listeners, observers, timers and pending target waits, then restore focus when appropriate. Late callbacks cannot restore an old step. Module disable, uninstall, update and failed provider mounting dispose the owner's definitions and affected sessions. No completion state is persisted; consumers may observe `cognis:tutorial-presented` and `cognis:tutorial-finish` without adding storage to the engine.
+Completion and cancellation remove overlays, floating menus, listeners, observers and pending work, then restore focus where appropriate. Late callbacks cannot revive old steps. Completed tutorial IDs are stored in this browser under the current account, separately from other accounts. Interrupted or failed first visits remain eligible on a later visit; failures do not automatically loop on the current page. Clearing browser storage makes them unseen again. Consumers may observe `cognis:tutorial-presented` and `cognis:tutorial-finish`.

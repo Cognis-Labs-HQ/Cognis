@@ -112,4 +112,4 @@ Recommendation feeds are shared by the marketplace service, coalesce concurrent 
 
 ## Guided tutorials
 
-The account menu opens the tutorial catalog. Components and enabled external modules contribute localized, replayable plays through `ui:tutorials`. Plays use semantic targets, guarded SPA navigation and cancellable steps; a required popup always takes priority. See [the tutorial contract](/docs/tutorials).
+Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.

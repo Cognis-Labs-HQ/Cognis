@@ -534,3 +534,118 @@ test("failed feedback cannot leak a rejection or retain a failed session", async
         state.logs.some((entry) => entry[2]?.operation === "tutorialFeedback"),
     );
 });
+
+test("page bindings discover only matching plays and reject an off-page start", async (context) => {
+    const state = host(context);
+    const owner = state.owner();
+    const dashboard = await owner.register(play());
+    const settings = await owner.register({
+        ...play(),
+        id: "settings",
+        page: "/settings",
+    });
+    const scoped = await owner.register({
+        ...play(),
+        id: "scoped",
+        page: ({ pathname }) => pathname.startsWith("/study/"),
+    });
+    assert.deepEqual(
+        (await state.api.list({ page: { pathname: "/dashboard" } })).map(
+            (item) => item.id,
+        ),
+        [dashboard.id],
+    );
+    assert.deepEqual(
+        (await state.api.list({ page: { pathname: "/study/en" } })).map(
+            (item) => item.id,
+        ),
+        [scoped.id],
+    );
+    await assert.rejects(settings.start(), /tutorial_unavailable/);
+    await assert.rejects(
+        owner.register({ ...play(), id: "invalid", page: "//other.test" }),
+        /invalid_tutorial/,
+    );
+});
+
+test("first-visit Next interrupts preparation and leaves late callbacks unable to retain a step", async (context) => {
+    const state = host(context);
+    let resolve;
+    const definition = await state.owner().register(
+        play([
+            {
+                id: "pending",
+                titleKey: "a",
+                enter: () =>
+                    new Promise((done) => {
+                        resolve = done;
+                    }),
+            },
+            { id: "last", titleKey: "b" },
+        ]),
+    );
+    const session = await definition.start({ firstTime: true });
+    await tick();
+    assert.equal(state.rendered.at(-1).firstTime, true);
+    assert.equal(state.rendered.at(-1).waiting, true);
+    assert.equal(await session.cancel(), false);
+    assert.equal(await session.skip(), false);
+    await session.next();
+    assert.equal(session.state().stepId, "last");
+    let released = 0;
+    resolve(() => {
+        released++;
+    });
+    await tick();
+    assert.equal(released, 1);
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+    assert.ok(state.rendered.every((entry) => entry.disposed));
+});
+
+test("first-visit Next advances from a missing target while disposal remains available", async (context) => {
+    const state = host(context);
+    const definition = await state.owner().register(
+        play([
+            {
+                id: "missing",
+                titleKey: "a",
+                target: "example:missing",
+                missing: { timeoutMs: 0, action: "cancel" },
+            },
+            { id: "last", titleKey: "b" },
+        ]),
+    );
+    const session = await definition.start({ firstTime: true });
+    await session.ready;
+    assert.equal(state.rendered.at(-1).missing, true);
+    await session.next();
+    assert.equal(session.state().stepId, "last");
+    await session.dispose();
+    assert.equal((await session.finished).reason, "disposed");
+});
+
+test("account changes invalidate an active session through its permission boundary", async (context) => {
+    let account = "first";
+    const state = tutorialHost({ identity: () => account });
+    context.after(state.dispose);
+    const definition = await state.owner().register(play());
+    const session = await definition.start({ firstTime: true });
+    await session.ready;
+    account = "second";
+    assert.equal(state.rendered.at(-1).valid(), false);
+    await session.next();
+    assert.equal((await session.finished).reason, "permissionLost");
+});
+
+test("required dialogs release first-visit controls even though user cancellation is disabled", async (context) => {
+    const state = host(context);
+    const definition = await state.owner().register(play());
+    const session = await definition.start({ firstTime: true });
+    await session.ready;
+    state.rendered.at(-1).actions.modal();
+    assert.equal((await session.finished).reason, "modal");
+    assert.equal(state.api.current(), null);
+    assert.ok(state.rendered.every((entry) => entry.disposed));
+    assert.ok(state.events.includes("ui:tutorial:modal"));
+});

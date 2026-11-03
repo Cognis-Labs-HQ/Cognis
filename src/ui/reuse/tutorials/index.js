@@ -1,6 +1,6 @@
 import { registerTutorials } from "./runtime.js";
 import { createTutorialView } from "./presentation.js";
-import { openTutorialCatalog } from "./catalog.js";
+import { createPageTutorials } from "./page.js";
 
 /**
  * Install tutorials through host-owned resources; components consume ui:tutorials only.
@@ -9,6 +9,14 @@ import { openTutorialCatalog } from "./catalog.js";
  * @returns {object} Tutorial registration/session contract.
  */
 export function installTutorials(ctx) {
+    if (ctx.capabilities.get("ui:tutorials"))
+        return ctx.capabilities.get("ui:tutorials");
+    let page;
+    const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
+    const prepareStyles = () =>
+        ctx.capabilities
+            .get("ui:reuse")
+            .loadStylesheets(["tutorials.css", "floating-menu.css"]);
     const localize = async (componentStringBaseUrls = []) => {
         const { createI18n } = await ctx.capabilities
             .get("ui:reuse")
@@ -24,17 +32,15 @@ export function installTutorials(ctx) {
         const view = createTutorialView({
             document,
             hostI18n: i18n,
-            loadStyles: () =>
-                ctx.capabilities
-                    .get("ui:reuse")
-                    .loadStylesheet("tutorials.css"),
+            loadStyles: prepareStyles,
         });
         return view;
     };
-    return registerTutorials(ctx, {
+    const api = registerTutorials(ctx, {
         localize,
         view: async (options) => (await prepare())(options),
-        log: (...args) => ctx.capabilities.get("ui:log")?.(...args),
+        log,
+        identity: () => globalThis.localStorage?.getItem("cognis_account"),
         feedback: async () => {
             const i18n = await localize();
             ctx.capabilities.get("ui:showToast")?.(
@@ -42,6 +48,44 @@ export function installTutorials(ctx) {
                 { variant: "error" },
             );
         },
-        catalog: (api) => openTutorialCatalog(api, ctx),
+        page: () => page?.refresh(),
+        openPage: () => page?.open(),
     });
+    if (globalThis.document?.defaultView?.MutationObserver) {
+        page = createPageTutorials({
+            ctx,
+            api,
+            document,
+            localize,
+            prepareStyles,
+            account: () =>
+                ctx.capabilities.get("session:isAuthenticated")?.() === true
+                    ? globalThis.localStorage?.getItem("cognis_account")
+                    : null,
+            storage: () => globalThis.localStorage,
+            report(error) {
+                log("error", "Page tutorial failed.", {
+                    component: "ui",
+                    operation: "pageTutorial",
+                    errorName: error?.name,
+                });
+                void localize()
+                    .then((i18n) =>
+                        ctx.capabilities.get("ui:showToast")?.(
+                            i18n.t("ui.tutorial.error"),
+                            { variant: "error" },
+                        ),
+                    )
+                    .catch((failure) => {
+                        log("error", "Tutorial feedback failed.", {
+                            component: "ui",
+                            operation: "tutorialFeedback",
+                            errorName: failure?.name,
+                        });
+                    });
+            },
+        });
+        page.connect();
+    }
+    return api;
 }

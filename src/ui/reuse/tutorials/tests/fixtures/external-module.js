@@ -11,6 +11,7 @@ export async function mountProvider(ctx) {
         });
         const play = await owner.register({
             version: 1,
+            page: "/dashboard",
             id: "overview",
             titleKey: "module.fixture.overview",
             steps: [

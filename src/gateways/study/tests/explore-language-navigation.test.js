@@ -8,6 +8,7 @@ import {
     exploreLayers,
     languageExploreUrl,
     languageFlashcardsUrl,
+    languageStudyPage,
 } from "../ui/reuse/explore.js";
 
 const schemas = [
@@ -339,4 +340,24 @@ test("disabled Study language links cannot bypass the router through their state
     assert.equal(navigated.length, 1);
     assert.equal(navigated[0][0], "/study/explore/ja/kanji");
     scope.abort();
+});
+
+test("language page discovery matches owned Explore and Flashcards routes without crossing languages", () => {
+    for (const pathname of [
+        "/study/en/flashcards",
+        "/study/en/flashcards/deck",
+        "/study/explore/en/words",
+        "/study/explore/en/words/card",
+    ]) {
+        assert.equal(languageStudyPage({ pathname, language: "en" }), true);
+        assert.equal(languageStudyPage({ pathname, language: "ja" }), false);
+    }
+    for (const pathname of [
+        "/study",
+        "/settings",
+        "/study/english/flashcards",
+        "/study/en/flashcards-other",
+    ]) {
+        assert.equal(languageStudyPage({ pathname, language: "en" }), false);
+    }
 });

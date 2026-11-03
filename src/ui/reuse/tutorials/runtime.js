@@ -18,8 +18,10 @@ export function registerTutorials(
         view,
         feedback = () => {},
         log = () => {},
-        catalog,
+        page,
+        openPage,
         localize,
+        identity = () => null,
     } = {},
 ) {
     if (ctx.capabilities.get("ui:tutorials"))
@@ -55,6 +57,11 @@ export function registerTutorials(
             )
         );
     }
+    function matchesPage(record, page) {
+        return typeof record.play.page === "function"
+            ? record.play.page(page) === true
+            : record.play.page === page.pathname;
+    }
     const action = (name, execute) => {
         const id = `ui:tutorial:${name}`;
         ctx.registerFlow(id, ["validate", "execute", "after"]);
@@ -71,7 +78,9 @@ export function registerTutorials(
         return async (input) => (await ctx.runFlow(id, input)).data.result;
     };
     const emit = (name, detail) => {
-        if (["next", "back", "skip", "cancel", "retry"].includes(name)) {
+        if (
+            ["next", "back", "skip", "cancel", "retry", "modal"].includes(name)
+        ) {
             void operations[name]({ session: active }).catch(report);
         } else
             document?.defaultView?.dispatchEvent(
@@ -121,6 +130,7 @@ export function registerTutorials(
             signal: owner.signal,
         };
         plays.set(id, record);
+        emit("changed");
         log("info", "Tutorial registered.", {
             component: "ui",
             operation: "registerTutorial",
@@ -130,6 +140,7 @@ export function registerTutorials(
         const dispose = () => {
             if (plays.get(id) !== record) return;
             plays.delete(id);
+            emit("changed");
             if (active?.id === id) active.cancel("playRemoved");
         };
         return {
@@ -177,18 +188,33 @@ export function registerTutorials(
     );
     operations.start = action(
         "start",
-        async ({ id, replace = false, expected }) => {
-            if (typeof id !== "string" || typeof replace !== "boolean")
+        async ({ id, replace = false, expected, firstTime = false }) => {
+            if (
+                typeof id !== "string" ||
+                typeof replace !== "boolean" ||
+                typeof firstTime !== "boolean"
+            )
                 throw new TypeError("invalid_tutorial_start");
             const record = plays.get(id);
             if (
                 !record ||
                 (expected && expected !== record) ||
-                !allowed(record)
+                !allowed(record) ||
+                !matchesPage(record, {
+                    pathname: document?.defaultView?.location.pathname,
+                })
             )
                 throw new Error("tutorial_unavailable");
+            const actor = identity();
             const i18n = await translationResolver(record);
-            if (plays.get(id) !== record || !allowed(record))
+            if (
+                identity() !== actor ||
+                !matchesPage(record, {
+                    pathname: document?.defaultView?.location.pathname,
+                }) ||
+                plays.get(id) !== record ||
+                !allowed(record)
+            )
                 throw new Error("tutorial_unavailable");
             if (active && !replace) throw new Error("tutorial_session_active");
             if (document?.querySelector?.(".popup-overlay--visible"))
@@ -196,8 +222,9 @@ export function registerTutorials(
             active?.cancel("replaced");
             const session = createSession({
                 record: { ...record, i18n },
+                firstTime,
                 document,
-                allowed: () => allowed(record),
+                allowed: () => allowed(record) && identity() === actor,
                 resolve: (target) =>
                     resolveTarget(targets, target, record.owner, document),
                 view,
@@ -229,18 +256,27 @@ export function registerTutorials(
                 retry: () => operations.retry({ session }),
                 skip: () => operations.skip({ session }),
                 cancel: () => operations.cancel({ session }),
-                dispose: () => operations.cancel({ session }),
+                dispose: () => operations.dispose({ session }),
             });
         },
     );
-    for (const name of ["next", "back", "skip", "cancel", "retry"])
+    for (const name of [
+        "next",
+        "back",
+        "skip",
+        "cancel",
+        "retry",
+        "dispose",
+        "modal",
+    ])
         operations[name] = action(name, ({ session }) =>
             active === session && session ? session[name]() : false,
         );
-    operations.list = action("list", async () => {
+    operations.list = action("list", async ({ page }) => {
         const available = [];
         for (const record of plays.values()) {
             if (!allowed(record)) continue;
+            if (page && !matchesPage(record, page)) continue;
             const i18n = await translationResolver(record);
             if (plays.get(record.id) === record && allowed(record))
                 available.push({
@@ -250,7 +286,7 @@ export function registerTutorials(
         }
         return available;
     });
-    let catalogPending;
+    let openingPage;
     const capability = {
         version: 1,
         owner(id, { signal, i18n, stringsBaseUrls = [] }) {
@@ -289,6 +325,7 @@ export function registerTutorials(
                 for (const [key, record] of plays)
                     if (record.owner === id) {
                         plays.delete(key);
+                        emit("changed");
                         if (active?.id === key) active.cancel("ownerRemoved");
                     }
                 for (const [key, record] of targets)
@@ -310,16 +347,18 @@ export function registerTutorials(
                     operations.publishTarget({ owner, name, options }),
             });
         },
-        list: () => operations.list({}),
+        list: (options = {}) => operations.list(options),
         start: (id, options = {}) => operations.start({ ...options, id }),
         current: () => active?.state() ?? null,
         cancel: () => operations.cancel({ session: active }),
-        openCatalog: () =>
-            (catalogPending ??= operations.catalog({}).finally(() => {
-                catalogPending = undefined;
+        refreshPage: () => operations.page({}),
+        openPage: () =>
+            (openingPage ??= operations.openPage({}).finally(() => {
+                openingPage = undefined;
             })),
     };
-    operations.catalog = action("catalog", () => catalog(capability));
+    operations.page = action("page", () => page?.());
+    operations.openPage = action("openPage", () => openPage?.());
     ctx.capabilities.contribute("ui:tutorials", Object.freeze(capability));
     document?.defaultView?.addEventListener(
         "cognis:route-will-change",
@@ -341,7 +380,7 @@ export function registerTutorials(
             }
             event.preventDefault();
             event.stopImmediatePropagation();
-            active.cancel("escape");
+            if (!active.state().firstTime) active.cancel("escape");
         },
         { capture: true, signal: ctx.signal },
     );

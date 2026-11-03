@@ -32,15 +32,24 @@
     font-size: 0.85em;
 }
 .tutorial-actions {
-    position: sticky;
-    bottom: 0;
-    display: flex;
+    z-index: 1801;
     flex-wrap: wrap;
+}
+.tutorial-help {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 12px;
-    padding: 8px 0 0;
-    background: var(--surface);
+    justify-content: center;
+    margin-inline-start: 0.5rem;
+    padding: 0.25rem;
+    vertical-align: middle;
+}
+.tutorial-help-icon {
+    display: block;
+    width: 1.1em;
+    height: 1.1em;
+    background: currentColor;
+    mask: url("/static/assets/reuse/icons/tutorial-help.svg") center / contain
+        no-repeat;
 }
 .tutorial-spotlight {
     position: fixed;

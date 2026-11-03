@@ -2,6 +2,7 @@ import { uiCtx } from "../../../ui-ctx.js";
 import { openPopup } from "../../../popup.js";
 
 const api = uiCtx.capabilities.get("ui:tutorials");
+const fixturePath = window.location.pathname;
 const counts = { inside: 0, outside: 0, cleanup: 0 };
 let owner, session, pendingCallback;
 let sequence = 0;
@@ -26,6 +27,7 @@ window.tutorialFixture = {
         missing = "cancel",
         waiting = false,
         unsafeText = false,
+        firstTime = false,
     } = {}) {
         owner?.dispose();
         permitted = true;
@@ -48,6 +50,7 @@ window.tutorialFixture = {
         });
         const play = await owner.register({
             version: 1,
+            page: ({ pathname }) => pathname === fixturePath,
             id: `case-${++sequence}`,
             titleKey: "title",
             available: () => permitted,
@@ -77,8 +80,35 @@ window.tutorialFixture = {
                 { id: "last", titleKey: "last" },
             ],
         });
-        session = await play.start();
+        session = await play.start({ firstTime });
         if (!waiting) await session.ready;
+        return this.status();
+    },
+    async bindPage({ reset = true } = {}) {
+        owner?.dispose();
+        localStorage.setItem("cognis_account", "tutorial-browser");
+        if (reset)
+            localStorage.removeItem(
+                "cognis_tutorial:tutorial-browser:browser:first-visit",
+            );
+        uiCtx.capabilities.contribute("session:isAuthenticated", () =>
+            Boolean(localStorage.getItem("cognis_account")),
+        );
+        owner = api.owner("browser", {
+            signal: new AbortController().signal,
+            i18n: { t: (key) => `Content ${key}` },
+        });
+        await owner.register({
+            version: 1,
+            page: ({ pathname }) => pathname === fixturePath,
+            id: "first-visit",
+            titleKey: "title",
+            steps: [
+                { id: "one", titleKey: "one" },
+                { id: "two", titleKey: "two" },
+            ],
+        });
+        await api.refreshPage();
         return this.status();
     },
     status() {

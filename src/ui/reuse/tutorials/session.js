@@ -5,6 +5,7 @@ import { validateRoute } from "./schema.js";
 /** One cancellable session. Step epochs isolate late callbacks from subsequent steps. */
 export function createSession({
     record,
+    firstTime = false,
     resolve,
     view,
     navigate,
@@ -31,6 +32,7 @@ export function createSession({
     });
     const status = () => ({
         id: record.id,
+        firstTime,
         stepId: record.play.steps[index]?.id ?? null,
         index,
         total: record.play.steps.length,
@@ -106,8 +108,8 @@ export function createSession({
         }
         return rendered;
     }
-    async function enter(nextIndex) {
-        if (disposed || busy) return false;
+    async function enter(nextIndex, interrupt = false) {
+        if (disposed || (busy && !interrupt)) return false;
         busy = true;
         cleanStep();
         index = nextIndex;
@@ -131,6 +133,7 @@ export function createSession({
                 cancel: () => emit("cancel"),
                 skip: () => emit("skip"),
                 retry: () => emit("retry"),
+                modal: () => emit("modal"),
             };
             rendering = await present({
                 step,
@@ -182,11 +185,11 @@ export function createSession({
             if (step.target && !target) {
                 rendering?.dispose();
                 rendering = null;
-                if (step.missing.action === "skip") {
+                if (!firstTime && step.missing.action === "skip") {
                     busy = false;
                     return enter(index + 1);
                 }
-                if (step.missing.action === "cancel")
+                if (!firstTime && step.missing.action === "cancel")
                     return finish("cancelled", "missingTarget");
                 rendering = await present({
                     step,
@@ -332,11 +335,14 @@ export function createSession({
         state: status,
         targetId: () => record.play.steps[index]?.target,
         begin: () => enter(0),
-        next: () => (busy ? false : enter(index + 1)),
+        next: () => enter(index + 1, firstTime),
         back: () => (busy || index <= 0 ? false : enter(index - 1)),
         retry: () => enter(index),
-        cancel: (reason) => finish("cancelled", reason),
-        skip: () => finish("skipped", "skip"),
+        cancel: (reason) =>
+            firstTime && !reason ? false : finish("cancelled", reason),
+        skip: () => (firstTime ? false : finish("skipped", "skip")),
+        dispose: () => finish("cancelled", "disposed"),
+        modal: () => finish("cancelled", "modal"),
         navigation: () => {
             if (!transitioningRoute) finish("cancelled", "navigation");
         },

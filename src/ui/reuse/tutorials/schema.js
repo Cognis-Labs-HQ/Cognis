@@ -28,11 +28,13 @@ export function validatePlay(input) {
         "version",
         "id",
         "titleKey",
+        "page",
         "steps",
         "available",
         "requires",
     ]);
     assert(input.version === 1);
+    if (typeof input.page !== "function") validateRoute(input.page);
     validateName(input.id);
     assert(typeof input.titleKey === "string" && input.titleKey.length > 0);
     assert(

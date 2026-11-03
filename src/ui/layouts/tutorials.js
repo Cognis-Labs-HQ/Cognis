@@ -20,6 +20,7 @@ export async function mountProvider(ctx) {
             });
         const play = await owner.register({
             version: 1,
+            page: "/dashboard",
             id: "welcome",
             titleKey: "ui.tutorial.workspace.title",
             available: () =>

@@ -1,6 +1,6 @@
 # Geführte Anleitungen
 
-Im Kontomenü öffnet Anleitungen die aktuell zulässigen Abläufe installierter Komponenten und Module. Der Host besitzt Darstellung, Zielauflösung, Eingaberegeln und Sitzungssteuerung; die jeweilige Funktion besitzt Texte, Ziele und Skript. Anleitungen starten nicht automatisch und ändern keine Berechtigungen.
+Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
 
 ## Einen Ablauf registrieren
 
@@ -23,6 +23,7 @@ export async function mountProvider(ctx) {
         });
         const play = await owner.register({
             version: 1,
+            page: "/example",
             id: "introduction",
             titleKey: "module.example.tutorial.title",
             steps: [
@@ -48,6 +49,12 @@ export async function mountProvider(ctx) {
 
 Registrierungen erfolgen in `mountProvider`, niemals beim Import. Bei Fehlern werden Teilregistrierungen entfernt. Workspace und Study enthalten eigene Abläufe; die externe Modul-Testinstanz unter `src/ui/reuse/tutorials/tests/fixtures/` zeigt einen unabhängigen Verbraucher des öffentlichen Vertrags.
 
+## Seitenbindung und erster Besuch
+
+Jeder Ablauf benötigt `page`: einen genauen Pfad wie `/dashboard` oder ein vertrauenswürdiges synchrones Prädikat `({ pathname }) => boolean` für mehrere URLs oder eine seitenspezifische Bedingung. Die Bindung ist unabhängig von der Schrittnavigation. Starts außerhalb der Bindung werden abgelehnt. Registrierung, Seitenwechsel, Kontowechsel und geschlossene Popups aktualisieren die Erkennung. Entfernte Anbieter ziehen ihre Hilfeaktion zurück. Pflichtdialoge verschieben den automatischen Start.
+
+Study bietet `study:tutorialTargets.matchesPage({ pathname, language })`, damit Sprachanbieter ihre Anleitung ohne kopierte Host-Routenregeln an Explore- und Flashcards-Seiten binden. Der Composer veröffentlicht abgeschlossene Seitenaufbauten über `page:mounted` (`publish`).
+
 ## Ziele und Übersetzungen
 
 Ziele erhalten `owner:name`. Sie bleiben privat, außer sie werden mit `public: true` veröffentlicht. Andere Komponenten verwenden semantische IDs statt privater Selektoren. Doppelte Besitzer-, Ablauf- und Ziel-IDs werden abgelehnt. Resolver liefern genau ein Element des aktuellen Dokuments oder `null`, keine dauerhaft gespeicherten Seitenknoten. `root` begrenzt die Auflösung; ein zusätzliches `signal` kann die Lebensdauer verkürzen. Versteckte, inaktive und deaktivierte Ziele sind nicht verfügbar. Das Zurückziehen eines gerade verwendeten Ziels beendet die betroffene Sitzung.
@@ -70,10 +77,10 @@ Definitionen benötigen Version 1, eindeutige Schritt-IDs, übersetzte Titel und
 
 ## Sitzungen und Flows
 
-`await owner.register(play)` liefert `{ id, start, dispose }`. `await tutorials.list()` liest den zulässigen Katalog; `openCatalog()` verwendet das vorhandene Entscheidungs-Popup und bündelt wiederholte Anfragen. `await tutorials.start(id)` oder `start()` liefert `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` und `dispose()`. `current()` ist eine schreibgeschützte Momentaufnahme. Skip beendet den gesamten Ablauf; Abbruch und Bereinigung sind idempotent.
+`await owner.register(play)` liefert `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` liest zulässige Abläufe dieser Seite. `refreshPage()` aktualisiert die Erkennung; `openPage()` startet den einzigen passenden Ablauf oder bietet die Auswahl im gemeinsamen schwebenden Menü an. `start()` liefert `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` und `dispose()`. `current()` liefert eine schreibgeschützte Momentaufnahme.
 
-Es gibt nur eine aktive Sitzung. Ein konkurrierender Start scheitert, außer `{ replace: true }` beendet ausdrücklich die alte Sitzung. Registrierung, Zielveröffentlichung, Katalog, Start und Schrittaktionen verwenden `ui:tutorial:<action>` mit `validate`, `execute`, `after`. Verbraucher dürfen diese Verträge nicht umgehen.
+Es gibt nur eine aktive Sitzung. Ein konkurrierender Start scheitert, außer `{ replace: true }` beendet ausdrücklich die alte Sitzung. Registrierung, Ziele, Erkennung, Seiteneintritt, Wiederholung, Start und Schrittaktionen verwenden `ui:tutorial:<action>` mit `validate`, `execute` und `after`. Verbraucher dürfen diese Verträge nicht umgehen.
 
-Andere Navigation, Browser-Zurück/Vorwärts, Escape, Berechtigungsverlust, Besitzerentfernung und notwendige Popups beenden die Sitzung. Ausdrückliche Routenschritte dürfen nach angenommener SPA-Navigation fortfahren. Ausstehende Navigation besitzt sichtbare Abbruchkontrollen. Anleitungen bestätigen keine Dialoge, senden keine privilegierten Formulare und starten keine Anrufe. Pflichtdialoge behalten Vorrang und ihre Schließregeln.
+Alle Aktionsbuttons stehen in einer eigenen Instanz des gemeinsamen schwebenden Menüs. Erstdurchläufe haben weder Abbrechen noch Überspringen; Escape beendet sie nicht. Weiter bleibt während Zielsuche, asynchroner Arbeit und ereignisgesteuerter Schritte verfügbar, sodass wiederholtes Weiter immer zum Ende führt. Wiederholungen bieten Abbrechen mit `btn-cancel`. Andere Navigation, Verlauf, Konto- oder Berechtigungsverlust, entfernte Anbieter und Pflichtdialoge räumen weiterhin jede Sitzung auf. Anleitungen bestätigen keine Dialoge, senden keine privilegierten Formulare und starten keine Anrufe.
 
-Am Ende werden Host-Overlays, Listener, Beobachter, Timer und Zielwartezeiten entfernt und der Fokus passend wiederhergestellt. Späte Callbacks können keine alten Schritte zurückbringen. Deaktivierung, Deinstallation, Aktualisierung und fehlgeschlagenes Mounten entfernen eigene Definitionen und betroffene Sitzungen. Fortschritt wird nicht gespeichert; Erweiterungen können `cognis:tutorial-presented` und `cognis:tutorial-finish` beobachten.
+Abschluss und Abbruch entfernen Overlays, schwebende Menüs, Listener, Beobachter und ausstehende Arbeit und stellen den Fokus passend wieder her. Späte Callbacks beleben keine alten Schritte. Abgeschlossene Tutorial-IDs werden in diesem Browser getrennt nach Konto gespeichert. Unterbrochene oder fehlgeschlagene Erstdurchläufe bleiben beim nächsten Besuch verfügbar; Fehler starten keine Schleife auf der aktuellen Seite. Gelöschter Browserspeicher setzt die Erkennung zurück. Verbraucher können `cognis:tutorial-presented` und `cognis:tutorial-finish` beobachten.

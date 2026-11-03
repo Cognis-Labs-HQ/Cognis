@@ -1,3 +1,4 @@
+import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
 
 const focusable =
@@ -57,6 +58,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         text,
         index,
         total,
+        firstTime = false,
         waiting,
         missing,
         target,
@@ -114,34 +116,54 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             "tutorial-offscreen",
             !waiting && !step.effects.callout,
         );
-        const buttons = document.createElement("div");
-        buttons.className = "tutorial-actions";
-        const button = (key, action, disabled = false, variant = "neutral") => {
-            const element = document.createElement("button");
-            element.type = "button";
-            element.className = `btn-${variant} btn-animated`;
-            element.textContent = hostI18n.t(key);
-            element.disabled = disabled;
-            element.addEventListener("click", action, { signal: scoped });
-            buttons.append(element);
-            return element;
-        };
+        const items = [];
+        const button = (
+            id,
+            key,
+            execute,
+            disabled = false,
+            variant = "neutral",
+        ) =>
+            items.push({
+                id,
+                label: hostI18n.t(key),
+                execute,
+                disabled,
+                variant,
+            });
         button(
+            "back",
             "ui.reuse.back",
             actions.back,
             (waiting && !missing) || index === 0,
         );
-        if (missing) button("ui.reuse.retry", actions.retry);
-        else
+        if (missing) button("retry", "ui.reuse.retry", actions.retry);
+        button(
+            "next",
+            index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
+            actions.next,
+            !firstTime &&
+                Boolean(waiting || step.waitFor || step.advance || missing),
+            "confirm",
+        );
+        if (!firstTime) {
+            button("skip", "ui.reuse.skip", actions.skip);
             button(
-                index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
-                actions.next,
-                Boolean(waiting || step.waitFor || step.advance),
-                "confirm",
+                "cancel",
+                "ui.reuse.cancel",
+                actions.cancel,
+                false,
+                "cancel",
             );
-        button("ui.reuse.skip", actions.skip);
-        button("ui.reuse.cancel", actions.cancel);
-        panel.append(progress, title, body, buttons);
+        }
+        const menu = createFloatingMenu({
+            document,
+            label: hostI18n.t("ui.reuse.tutorials"),
+            signal: scoped,
+            items,
+        });
+        menu.element.classList.add("tutorial-actions");
+        panel.append(progress, title, body);
         const arrow = document.createElement("div");
         arrow.className = "tutorial-arrow";
         arrow.setAttribute("aria-hidden", "true");
@@ -156,12 +178,14 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             controls.abort();
             window.cancelAnimationFrame(frame);
             resize?.disconnect();
+            menu.dispose();
             root.remove();
         }
         const isPopup = () =>
             Boolean(document.querySelector(".popup-overlay--visible"));
         const contains = (node, event) =>
             panel.contains(node) ||
+            menu.element.contains(node) ||
             (target &&
                 (target.contains(node) ||
                     event?.composedPath?.().includes(target)));
@@ -171,6 +195,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     ? [target, ...target.querySelectorAll(focusable)]
                     : []),
                 ...panel.querySelectorAll(focusable),
+                ...menu.element.querySelectorAll(focusable),
             ].filter(
                 (item) =>
                     !item.disabled &&
@@ -182,7 +207,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         }
         function block(event) {
             if (isPopup()) {
-                actions.cancel();
+                actions.modal();
                 return;
             }
             if (!contains(event.target, event)) {
@@ -195,7 +220,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             if (disposed || scoped.aborted) return;
             if (isPopup()) {
                 dispose();
-                actions.cancel();
+                actions.modal();
                 return;
             }
             try {
@@ -288,6 +313,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                         if (
                             contains(event.target, event) &&
                             !panel.contains(event.target) &&
+                            !menu.element.contains(event.target) &&
                             !event.defaultPrevented
                         )
                             interacted?.(event);
@@ -323,13 +349,13 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             "keydown",
             (event) => {
                 if (isPopup()) {
-                    actions.cancel();
+                    actions.modal();
                     return;
                 }
                 if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopImmediatePropagation();
-                    actions.cancel();
+                    if (!firstTime) actions.cancel();
                     return;
                 }
                 if (!blocking) return;

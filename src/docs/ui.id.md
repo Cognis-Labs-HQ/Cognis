@@ -57,4 +57,4 @@ Feed rekomendasi dibagikan oleh layanan marketplace, menggabungkan pembacaan ser
 
 ## Tutorial terpandu
 
-Menu akun membuka katalog tutorial. Komponen dan modul eksternal yang aktif menyediakan alur terjemahan yang dapat diulang melalui `ui:tutorials`. Alur memakai target semantik, navigasi SPA dengan pemeriksaan akses, serta langkah yang dapat dibatalkan; dialog wajib selalu didahulukan. Lihat [kontrak tutorial](/docs/tutorials).
+Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.

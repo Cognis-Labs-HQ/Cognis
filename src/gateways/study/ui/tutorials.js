@@ -1,5 +1,9 @@
 import { fetchLibrarySchemas } from "./library-client.js";
-import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
+import {
+    languageExploreUrl,
+    languageFlashcardsUrl,
+    languageStudyPage,
+} from "./reuse/explore.js";
 
 /** Publish Study-owned semantic navigation targets for registered learning tutorials. */
 export async function mountProvider(ctx) {
@@ -49,10 +53,15 @@ export async function mountProvider(ctx) {
         });
         ctx.capabilities.contribute(
             "study:tutorialTargets",
-            Object.freeze({ ...ids, ...actions }),
+            Object.freeze({
+                ...ids,
+                ...actions,
+                matchesPage: languageStudyPage,
+            }),
         );
         await owner.register({
             version: 1,
+            page: "/study",
             id: "getting-started",
             titleKey: "gateway.study.tutorial.title",
             available: () =>

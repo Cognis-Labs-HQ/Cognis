@@ -1,6 +1,6 @@
 # Tutorial Terpandu
 
-Tutorial pada menu akun menampilkan panduan yang saat ini diizinkan dari komponen dan modul terpasang. Host mengelola tampilan, pencarian target, aturan interaksi, dan koordinasi sesi; setiap fitur memiliki teks, target, serta skripnya. Tutorial tidak berjalan otomatis dan tidak mengubah izin.
+Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
 
 ## Mendaftarkan Panduan
 
@@ -23,6 +23,7 @@ export async function mountProvider(ctx) {
         });
         const play = await owner.register({
             version: 1,
+            page: "/example",
             id: "introduction",
             titleKey: "module.example.tutorial.title",
             steps: [
@@ -48,6 +49,12 @@ export async function mountProvider(ctx) {
 
 Registrasikan melalui `mountProvider`, bukan saat mengimpor skrip. Kembalikan `owner.dispose` dan bersihkan registrasi parsial jika gagal. Workspace dan Study menyediakan panduan bawaan; contoh modul eksternal di `src/ui/reuse/tutorials/tests/fixtures/` menunjukkan konsumen kontrak publik yang terpisah.
 
+## Ikatan Halaman dan Kunjungan Awal
+
+Setiap panduan memerlukan `page`: jalur tepat seperti `/dashboard` atau predikat sinkron tepercaya `({ pathname }) => boolean` untuk beberapa URL atau kondisi halaman. Ikatan ini terpisah dari navigasi langkah. Mulai di luar ikatan ditolak. Registrasi, pemasangan halaman, pergantian akun, dan penutupan popup memperbarui pencarian. Penyedia yang dilepas menarik aksi bantuannya. Dialog wajib menunda mulai otomatis.
+
+Study menyediakan `study:tutorialTargets.matchesPage({ pathname, language })` agar penyedia bahasa mengikat tutorial pada halaman Explore dan Flashcards milik Study tanpa menyalin aturan rute host. Composer menerbitkan pemasangan halaman selesai melalui `page:mounted` (`publish`).
+
 ## Target dan Lokalisasi
 
 Nama target menjadi `owner:name`. Target bersifat privat kecuali diterbitkan dengan `public: true`; komponen lain menggunakan ID semantik, bukan selector privat. ID pemilik, panduan, dan target yang ganda ditolak. Resolver mengembalikan tepat satu elemen dalam dokumen yang sama atau `null`; jangan menyimpan node halaman secara permanen. `root` membatasi pencarian dan `signal` tambahan dapat memperpendek masa hidup. Target tersembunyi, inert, atau nonaktif tidak tersedia. Penarikan target yang sedang dipakai menghentikan sesi terkait.
@@ -70,10 +77,10 @@ Definisi memerlukan versi 1, ID langkah unik, judul terlokalisasi, dan paling ba
 
 ## Sesi dan Flow
 
-`await owner.register(play)` menghasilkan `{ id, start, dispose }`. `await tutorials.list()` membaca katalog yang diizinkan; `openCatalog()` memakai popup keputusan yang ada dan menggabungkan permintaan berulang. `await tutorials.start(id)` atau `start()` menghasilkan `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()`, dan `dispose()`. `current()` merupakan snapshot hanya baca. Skip mengakhiri seluruh panduan; pembatalan dan pembersihan bersifat idempoten.
+`await owner.register(play)` menghasilkan `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` membaca panduan yang diizinkan pada halaman itu. `refreshPage()` memperbarui pencarian; `openPage()` memulai satu panduan yang cocok atau menawarkan pilihannya dalam menu mengambang bersama. `start()` menghasilkan `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()`, dan `dispose()`. `current()` merupakan snapshot hanya baca.
 
-Hanya satu sesi yang aktif. Mulai bersamaan ditolak kecuali `{ replace: true }` secara eksplisit membatalkan sesi lama. Registrasi, publikasi target, katalog, mulai, dan aksi langkah memakai flow `ui:tutorial:<action>` dengan tahap `validate`, `execute`, dan `after`. Konsumen tidak boleh melewati kontrak ini.
+Hanya satu sesi aktif. Mulai bersamaan ditolak kecuali `{ replace: true }` secara eksplisit membatalkan sesi lama. Registrasi, target, pencarian, kunjungan halaman, pemutaran ulang, mulai, dan aksi langkah menggunakan flow `ui:tutorial:<action>` dengan tahap `validate`, `execute`, dan `after`. Konsumen tidak boleh melewati kapabilitas ini.
 
-Navigasi lain, Kembali/Maju browser, Escape, hilangnya izin, pelepasan pemilik, dan popup wajib mengakhiri sesi. Langkah rute eksplisit dapat melanjutkan setelah transisi SPA disetujui. Navigasi yang menunggu selalu mempunyai kontrol pembatalan terlihat. Tutorial tidak mengonfirmasi dialog, mengirim formulir berizin khusus, atau memulai panggilan. Dialog wajib mempertahankan prioritas dan aturan penutupannya.
+Semua tombol aksi tutorial berada dalam instans terpisah dari menu mengambang bersama. Sesi pertama tidak memiliki Batal atau Lewati; Escape tidak menutupnya. Berikutnya tetap tersedia saat menunggu target, pekerjaan asinkron, atau langkah berbasis peristiwa, sehingga menekannya berulang selalu menyelesaikan panduan. Pemutaran ulang menyediakan Batal dengan `btn-cancel`. Navigasi lain, riwayat, perubahan akun atau izin, pelepasan penyedia, dan dialog wajib tetap membersihkan sesi. Tutorial tidak menyetujui dialog, mengirim formulir berizin khusus, atau memulai panggilan.
 
-Penyelesaian dan pembatalan menghapus overlay host, listener, observer, timer, serta penantian target, lalu mengembalikan fokus jika sesuai. Callback terlambat tidak menghidupkan langkah lama. Penonaktifan, penghapusan, pembaruan, dan pemasangan penyedia yang gagal membersihkan definisi serta sesi terkait. Kemajuan tidak disimpan; konsumen dapat mengamati `cognis:tutorial-presented` dan `cognis:tutorial-finish`.
+Penyelesaian dan pembatalan menghapus overlay, menu mengambang, listener, observer, dan pekerjaan tertunda, lalu memulihkan fokus jika sesuai. Callback terlambat tidak menghidupkan langkah lama. ID tutorial yang selesai disimpan pada browser ini terpisah untuk setiap akun. Kunjungan awal yang terputus atau gagal tetap memenuhi syarat pada kunjungan berikutnya; kegagalan tidak mengulang otomatis pada halaman aktif. Menghapus penyimpanan browser menjadikannya belum pernah dilihat. Konsumen dapat mengamati `cognis:tutorial-presented` dan `cognis:tutorial-finish`.

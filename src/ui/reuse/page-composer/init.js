@@ -895,6 +895,11 @@ export function createPageComposer(
             });
             activePresenceTracker.mount(mainWindow);
         }
+        await uiCtx.runFlow("page:mounted", {
+            root,
+            pathname: window.location.pathname,
+            signal,
+        });
     }
 
     function refresh(newElements) {

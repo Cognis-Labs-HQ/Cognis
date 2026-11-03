@@ -61,4 +61,4 @@ Empfehlungsfeeds werden vom Marketplace-Dienst gemeinsam genutzt, bündeln gleic
 
 ## Geführte Tutorials
 
-Das Kontomenü öffnet den Tutorial-Katalog. Komponenten und aktivierte externe Module steuern über `ui:tutorials` übersetzte, wiederholbare Abläufe bei. Abläufe verwenden semantische Ziele, geschützte SPA-Navigation und abbrechbare Schritte; ein erforderlicher Dialog hat immer Vorrang. Siehe [Tutorial-Vertrag](/docs/tutorials).
+Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
