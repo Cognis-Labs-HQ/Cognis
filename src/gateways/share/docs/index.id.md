@@ -28,4 +28,4 @@ Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi comp
 
 ## Aksi Milik Penyedia
 
-Sumber daya bersama menyediakan `page.mountScriptUrl` dengan ekspor `mount(root, options)`. Registri skrip renderer dan cabang rendering alternatif yang tidak digunakan dihapus. Pengujian menjalankan partisipasi alur serta batas wewenang dan pembatalan, bukan mewajibkan kode HTTP tetap berada dalam renderer.
+Sumber daya bersama menyediakan `page.mountScriptUrl` dengan ekspor `mount(root, options)`. Fungsi mount menerima konteks berbagi, teks terlokalisasi, dan sinyal pembatalan halaman. Entrypoint yang tidak tersedia menghasilkan kesalahan renderer yang terlokalisasi.

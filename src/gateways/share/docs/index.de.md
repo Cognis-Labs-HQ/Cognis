@@ -28,4 +28,4 @@ Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sit
 
 ## Browsereigene Aktionen
 
-Geteilte Ressourcen liefern `page.mountScriptUrl` mit einem exportierten `mount(root, options)`. Die ungenutzte Renderer-Skript-Registry und der alternative Renderpfad entfallen. Tests prüfen ausführbare Flow-Beteiligung sowie Berechtigungs- und Abbruchgrenzen, statt HTTP-Code im Renderer vorauszusetzen.
+Geteilte Ressourcen liefern `page.mountScriptUrl` mit einem exportierten `mount(root, options)`. Der Einstiegspunkt erhält den Freigabekontext, lokalisierte Texte und das Abbruchsignal der Seite. Fehlende Einstiegspunkte erzeugen den lokalisierten Rendererfehler.

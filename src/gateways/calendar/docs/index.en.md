@@ -66,4 +66,4 @@ Guest page startup checks cancellation after localization, composer initializati
 
 Guest Calendar reads and mutations use the lifecycle-owned `calendar:sharedClient` capability and named `calendar:shared:*` flows. Requests retain explicit guest authority, combine page/provider cancellation, and never enter the account outbox. Consumers do not construct the shared endpoint.
 
-Calendar discovers `meetings:createMeeting` from the active browser provider. The provider owns its creation request and destination; Calendar resolves a valid HTTP(S) URL for the event without knowing a module ID or route. Missing providers fail closed and the meeting toggle remains unavailable offline. The unused server availability probe and provider-specific metadata are removed.
+Calendar discovers `meetings:createMeeting` from the active browser provider. The provider owns its creation request and destination; Calendar resolves a valid HTTP(S) URL for the event without knowing a module ID or route. Missing providers fail closed and the meeting toggle remains unavailable offline.

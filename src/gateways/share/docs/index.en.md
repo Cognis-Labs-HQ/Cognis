@@ -28,4 +28,4 @@ Guest page startup checks cancellation after localization, composer initializati
 
 ## Owned Browser Actions
 
-Shared resources supply `page.mountScriptUrl` with an exported `mount(root, options)`. The unused renderer-script registry and alternate rendering branch are removed. Tests exercise executable flow participation and authority/cancellation boundaries rather than requiring HTTP code to remain in the renderer.
+Shared resources supply `page.mountScriptUrl` with an exported `mount(root, options)`. The mount receives the share context, localized strings and page cancellation signal. Missing entrypoints produce the localized renderer error.
