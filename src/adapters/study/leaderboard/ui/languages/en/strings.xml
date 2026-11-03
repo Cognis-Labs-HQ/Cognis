@@ -22,4 +22,9 @@
   <string name="gateway.study.leaderboard_silver">silver</string>
   <string name="gateway.study.leaderboard_bronze">bronze</string>
   <string name="gateway.study.leaderboard_classroom">Classroom Scores</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.title">Leaderboard Guide</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.step1.title">Ranking Selection</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.step1.body">Choose a ranking to see its participants and scoring period.</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.step2.title">Scores And Movement</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.step2.body">Compare scores and rank movement; highlighted rows identify your own position when available.</string>
 </resources>

@@ -236,6 +236,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/files/provider.js",
         providesCapabilities: ["files:uiClient"],
     });
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/files/tutorials.js",
+        providesCapabilities: ["files:pageTutorials"],
+        access: { minRole: "admin" },
+    });
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",

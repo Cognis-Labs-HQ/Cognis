@@ -1,3 +1,4 @@
+import { guides } from "../ui/app/guides.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
     loadTestModule,
@@ -214,6 +215,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         await importTestModule(
             new URL("../ui/app/index.js", import.meta.url),
             {
+                "./guides.js": { guides },
                 "/static/reuse/offline-state.js": offlineState,
                 "/static/gateways/study/offline-page.js": {
                     mountOfflineStudyPage: () =>

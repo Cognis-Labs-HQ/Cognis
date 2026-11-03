@@ -8,4 +8,9 @@
   <string name="gateway.files.admin.quota_bytes">Kuota bawaan (byte)</string>
   <string name="gateway.files.admin.saved">Kuota bawaan disimpan.</string>
   <string name="gateway.files.admin.save_failed">Kuota bawaan tidak dapat disimpan.</string>
+    <string name="gateway.files.tutorial.quotas.title">Kuota Penyimpanan</string>
+    <string name="gateway.files.tutorial.quotas.step1.title">Kuota Bawaan</string>
+    <string name="gateway.files.tutorial.quotas.step1.body">Periksa kuota penyimpanan bawaan global dan namespace komponen yang menggunakannya.</string>
+    <string name="gateway.files.tutorial.quotas.step2.title">Batas Namespace</string>
+    <string name="gateway.files.tutorial.quotas.step2.body">Periksa pemilik dan visibilitas namespace sebelum mengubah kuota byte dan menyimpannya.</string>
 </resources>

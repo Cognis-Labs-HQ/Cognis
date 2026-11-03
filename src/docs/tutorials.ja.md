@@ -84,3 +84,40 @@ Study は `study:tutorialTargets.matchesPage({ pathname, language })` を公開�
 操作ボタンはすべて、共通のフローティングメニューの独立したインスタンスに表示します。初回は中止とスキップを表示せず、Escape でも終了しません。対象の待機中、非同期処理中、イベント待ちでも「次へ」が有効なので、繰り返し押せば最後まで進めます。再生時の中止ボタンには `btn-cancel` を使います。無関係な移動、履歴操作、アカウントや権限の喪失、所有者の解除、必須ダイアログでは引き続きセッションを解除します。確認の承認、特権フォームの送信、通話開始は行いません。
 
 完了と中止はオーバーレイ、フローティングメニュー、リスナー、監視、未完了処理を解除し、適切な場合にフォーカスを戻します。遅延した処理から古いステップを復活させません。完了したガイドの ID は、このブラウザー内でアカウント別に保存します。中断や失敗した初回は次の訪問時に再実行できますが、現在のページで失敗を自動的に繰り返しません。ブラウザーの保存内容を消すと未実行になります。`cognis:tutorial-presented` と `cognis:tutorial-finish` を監視できます。
+
+## コンポーネントが所有するガイド
+
+ページはコンポーザーの `tutorials` 配列でガイドを提供します。各提供元は所有者、定義、必要に応じて `minRole` を指定し、定義には対象ページ、翻訳済みの文章、コンポーネントが所有するセレクターを含めます。`scope` は表示中の領域に判定を限定します。ホストは寿命を限定した対象を公開し、`ui:tutorial:mountPage` で登録します。ページの解除時にはガイドも解除します。任意コンポーネントのプロバイダーは `ui:reuse` の `mountTutorialProvider` を使い、翻訳と寿命を自身で管理できます。
+
+```js
+createPageComposer(root, {
+    signal,
+    i18n,
+    pageContext,
+    elements,
+    tutorials: [
+        {
+            owner: "example.page",
+            minRole: "admin",
+            definitions: [
+                {
+                    id: "review",
+                    page: "/example",
+                    scope: ".example-panel",
+                    titleKey: "example.tutorial.title",
+                    steps: [
+                        {
+                            id: "options",
+                            selector: ".example-options",
+                            titleKey: "example.tutorial.options.title",
+                            bodyKey: "example.tutorial.options.body",
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+});
+```
+
+[チュートリアルの対応範囲](/docs/tutorials-coverage)

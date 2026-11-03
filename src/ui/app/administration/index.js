@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -856,6 +857,7 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
+        tutorials: guides,
         signal,
         allowCustomization: false,
         subPageNavigation: true,

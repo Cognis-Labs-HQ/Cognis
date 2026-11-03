@@ -38,4 +38,11 @@
   <string name="adapter.study.flashcards.practice_restart_warning">Mengubah mode latihan akan memulai ulang sesi serta membuang posisi dan jawaban saat ini. Ulasan yang telah dikirim tetap tersimpan.</string>
   <string name="adapter.study.flashcards.practice_hint">Tampilkan Jawaban Benar</string>
   <string name="adapter.study.flashcards.practice_hint_answer">Jawaban benar: {{ answer }}</string>
+    <string name="adapter.study.flashcards.tutorial.decks.title">Panduan Kartu Belajar</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step1.title">Pilih Dek</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step1.body">Pilih dek dari bilah samping lalu periksa bahasa dan kartu di dalamnya.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step2.title">Mode Belajar</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step2.body">Tinjau mode dan filter belajar yang tersedia sebelum mulai berlatih.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step3.title">Latihan dan Kemajuan</string>
+    <string name="adapter.study.flashcards.tutorial.decks.step3.body">Gunakan kontrol latihan untuk menjawab dan meninjau kartu; kemajuan terikat pada akun Anda.</string>
 </resources>

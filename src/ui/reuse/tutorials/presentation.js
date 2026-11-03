@@ -144,7 +144,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             actions.next,
             !firstTime &&
                 Boolean(waiting || step.waitFor || step.advance || missing),
-            "confirm",
+            "neutral",
         );
         if (!firstTime) {
             button("skip", "ui.reuse.skip", actions.skip);

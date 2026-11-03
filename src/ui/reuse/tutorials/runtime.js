@@ -2,6 +2,8 @@ import { validateName, validatePlay } from "./schema.js";
 import { resolveTarget } from "./targets.js";
 import { createSession } from "./session.js";
 import { abortable } from "./async.js";
+import { mountPageTutorials } from "./pages.js";
+import { hasMinAccessRole } from "../access-role.js";
 
 /**
  * Install the version-one host tutorial contract and staged operations.
@@ -22,6 +24,7 @@ export function registerTutorials(
         openPage,
         localize,
         identity = () => null,
+        role = () => null,
     } = {},
 ) {
     if (ctx.capabilities.get("ui:tutorials"))
@@ -351,12 +354,21 @@ export function registerTutorials(
         start: (id, options = {}) => operations.start({ ...options, id }),
         current: () => active?.state() ?? null,
         cancel: () => operations.cancel({ session: active }),
+        mountPage: (options) => operations.mountPage({ options }),
         refreshPage: () => operations.page({}),
         openPage: () =>
             (openingPage ??= operations.openPage({}).finally(() => {
                 openingPage = undefined;
             })),
     };
+    operations.mountPage = action("mountPage", ({ options }) =>
+        mountPageTutorials(capability, {
+            ...options,
+            authorized: () =>
+                ctx.capabilities.get("session:isAuthenticated")?.() === true &&
+                (!options.minRole || hasMinAccessRole(role(), options.minRole)),
+        }),
+    );
     operations.page = action("page", () => page?.());
     operations.openPage = action("openPage", () => openPage?.());
     ctx.capabilities.contribute("ui:tutorials", Object.freeze(capability));

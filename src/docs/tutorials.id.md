@@ -84,3 +84,40 @@ Hanya satu sesi aktif. Mulai bersamaan ditolak kecuali `{ replace: true }` secar
 Semua tombol aksi tutorial berada dalam instans terpisah dari menu mengambang bersama. Sesi pertama tidak memiliki Batal atau Lewati; Escape tidak menutupnya. Berikutnya tetap tersedia saat menunggu target, pekerjaan asinkron, atau langkah berbasis peristiwa, sehingga menekannya berulang selalu menyelesaikan panduan. Pemutaran ulang menyediakan Batal dengan `btn-cancel`. Navigasi lain, riwayat, perubahan akun atau izin, pelepasan penyedia, dan dialog wajib tetap membersihkan sesi. Tutorial tidak menyetujui dialog, mengirim formulir berizin khusus, atau memulai panggilan.
 
 Penyelesaian dan pembatalan menghapus overlay, menu mengambang, listener, observer, dan pekerjaan tertunda, lalu memulihkan fokus jika sesuai. Callback terlambat tidak menghidupkan langkah lama. ID tutorial yang selesai disimpan pada browser ini terpisah untuk setiap akun. Kunjungan awal yang terputus atau gagal tetap memenuhi syarat pada kunjungan berikutnya; kegagalan tidak mengulang otomatis pada halaman aktif. Menghapus penyimpanan browser menjadikannya belum pernah dilihat. Konsumen dapat mengamati `cognis:tutorial-presented` dan `cognis:tutorial-finish`.
+
+## Panduan Milik Komponen
+
+Halaman memberikan kontribusi yang ditulis melalui larik `tutorials` pada composer. Setiap kontribusi menetapkan pemilik, definisi, dan `minRole` opsional; setiap definisi memberikan halaman, teks terlokalisasi, dan selektor milik komponen. `scope` membatasi pencarian pada bagian yang terlihat. Host menerbitkan target bersiklus hidup terbatas dan mendaftar melalui `ui:tutorial:mountPage`. Pelepasan halaman membersihkan panduannya. Penyedia opsional dapat memakai `mountTutorialProvider` dari `ui:reuse` sambil tetap memiliki lokalisasi dan siklus hidupnya.
+
+```js
+createPageComposer(root, {
+    signal,
+    i18n,
+    pageContext,
+    elements,
+    tutorials: [
+        {
+            owner: "example.page",
+            minRole: "admin",
+            definitions: [
+                {
+                    id: "review",
+                    page: "/example",
+                    scope: ".example-panel",
+                    titleKey: "example.tutorial.title",
+                    steps: [
+                        {
+                            id: "options",
+                            selector: ".example-options",
+                            titleKey: "example.tutorial.options.title",
+                            bodyKey: "example.tutorial.options.body",
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+});
+```
+
+[Cakupan Tutorial](/docs/tutorials-coverage)

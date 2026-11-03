@@ -41,6 +41,7 @@ export function installTutorials(ctx) {
         view: async (options) => (await prepare())(options),
         log,
         identity: () => globalThis.localStorage?.getItem("cognis_account"),
+        role: () => globalThis.localStorage?.getItem("cognis_role"),
         feedback: async () => {
             const i18n = await localize();
             ctx.capabilities.get("ui:showToast")?.(

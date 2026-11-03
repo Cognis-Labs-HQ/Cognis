@@ -286,6 +286,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/registration", "registration");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/registration/tutorials.js",
+        providesCapabilities: ["registration:pageTutorials"],
+        access: { minRole: "admin" },
+    });
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",

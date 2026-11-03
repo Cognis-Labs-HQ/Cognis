@@ -58,4 +58,19 @@
   <string name="gateway.notify.broadcast.action_failed">Failed to update broadcast state.</string>
   <string name="gateway.notify.broadcast.invalid_redirect">The redirect URL is invalid or not trusted.</string>
     <string name="gateway.notify.validation.email">Verified Email Address</string>
+    <string name="gateway.notify.tutorial.preferences.title">Notification Preferences</string>
+    <string name="gateway.notify.tutorial.preferences.step1.title">Channels And Categories</string>
+    <string name="gateway.notify.tutorial.preferences.step1.body">Choose which available channels receive each category of notification.</string>
+    <string name="gateway.notify.tutorial.preferences.step2.title">Save Preferences</string>
+    <string name="gateway.notify.tutorial.preferences.step2.body">Review the selected combinations and save the settings; unavailable channels cannot be enabled here.</string>
+    <string name="gateway.notify.tutorial.delivery.title">Notification Delivery</string>
+    <string name="gateway.notify.tutorial.delivery.step1.title">Delivery Diagnostics</string>
+    <string name="gateway.notify.tutorial.delivery.step1.body">Inspect provider availability and delivery diagnostics before sending a test notification.</string>
+    <string name="gateway.notify.tutorial.delivery.step2.title">Test Delivery</string>
+    <string name="gateway.notify.tutorial.delivery.step2.body">Choose the intended test recipient and channel; sending a test is a separate action.</string>
+    <string name="gateway.notify.tutorial.broadcasts.title">Broadcast Administration</string>
+    <string name="gateway.notify.tutorial.broadcasts.step1.title">Audience And Content</string>
+    <string name="gateway.notify.tutorial.broadcasts.step1.body">Review the announcement content, audience and display period before publishing.</string>
+    <string name="gateway.notify.tutorial.broadcasts.step2.title">Publication State</string>
+    <string name="gateway.notify.tutorial.broadcasts.step2.body">Inspect existing broadcasts before editing or removing them; publishing changes what other users see.</string>
 </resources>

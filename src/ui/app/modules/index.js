@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { formatModuleTag } from "./filters.js";
 import {
     prepareInstalledCatalog,
@@ -840,6 +841,7 @@ export async function mount(root, { signal } = {}) {
         });
         applyDocumentTitle(i18n, "ui.page.title.modules");
         composer = createPageComposer(root, {
+            tutorials: guides,
             allowCustomization: false,
             subPageNavigation: true,
             preferenceKey: "administration-modules-layout",

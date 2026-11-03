@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { createLanguageRedraw } from "./language-redraw.js";
 import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
@@ -704,6 +705,7 @@ export async function mount(root, { signal } = {}) {
     );
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
         signal,
         allowCustomization: false,
         subPageNavigation: true,

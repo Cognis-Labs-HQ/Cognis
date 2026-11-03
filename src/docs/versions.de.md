@@ -49,17 +49,17 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.6`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.30` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.7`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.31` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.38` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.5`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.12` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.6`  |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.13` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.23` |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.24` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.5`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.6`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
@@ -68,17 +68,17 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.0`  |
-| Share                 | `src/gateways/share/`         | `1.9.0`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.0`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.1`  |
-| Social                | `src/gateways/social/`        | `1.4.0`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.3.0`  |
-| Registration          | `src/gateways/registration/`  | `1.2.0`  |
-| Logging               | `src/gateways/logging/`       | `1.5.15` |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.1`  |
+| Share                 | `src/gateways/share/`         | `1.9.1`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.1`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.2`  |
+| Social                | `src/gateways/social/`        | `1.4.1`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.3.1`  |
+| Registration          | `src/gateways/registration/`  | `1.2.1`  |
+| Logging               | `src/gateways/logging/`       | `1.5.16` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.6.1`  |
-| Calendar              | `src/gateways/calendar/`      | `1.7.0`  |
+| Study                 | `src/gateways/study/`         | `2.6.2`  |
+| Calendar              | `src/gateways/calendar/`      | `1.7.1`  |
 
 ## Kernverträge
 
@@ -90,7 +90,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.12.6` |
+| API Server | `src/api/` | `0.12.7` |
 
 ## Werkzeuge
 

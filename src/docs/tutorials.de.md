@@ -84,3 +84,40 @@ Es gibt nur eine aktive Sitzung. Ein konkurrierender Start scheitert, außer `{ 
 Alle Aktionsbuttons stehen in einer eigenen Instanz des gemeinsamen schwebenden Menüs. Erstdurchläufe haben weder Abbrechen noch Überspringen; Escape beendet sie nicht. Weiter bleibt während Zielsuche, asynchroner Arbeit und ereignisgesteuerter Schritte verfügbar, sodass wiederholtes Weiter immer zum Ende führt. Wiederholungen bieten Abbrechen mit `btn-cancel`. Andere Navigation, Verlauf, Konto- oder Berechtigungsverlust, entfernte Anbieter und Pflichtdialoge räumen weiterhin jede Sitzung auf. Anleitungen bestätigen keine Dialoge, senden keine privilegierten Formulare und starten keine Anrufe.
 
 Abschluss und Abbruch entfernen Overlays, schwebende Menüs, Listener, Beobachter und ausstehende Arbeit und stellen den Fokus passend wieder her. Späte Callbacks beleben keine alten Schritte. Abgeschlossene Tutorial-IDs werden in diesem Browser getrennt nach Konto gespeichert. Unterbrochene oder fehlgeschlagene Erstdurchläufe bleiben beim nächsten Besuch verfügbar; Fehler starten keine Schleife auf der aktuellen Seite. Gelöschter Browserspeicher setzt die Erkennung zurück. Verbraucher können `cognis:tutorial-presented` und `cognis:tutorial-finish` beobachten.
+
+## Komponenteneigene Anleitungen
+
+Seiten übergeben verfasste Beiträge im Composer-Feld `tutorials`. Jeder Beitrag erklärt Besitzer, Definitionen und optional `minRole`; jede Definition liefert Seite, übersetzte Texte und komponenteneigene Selektoren. `scope` beschränkt die Erkennung auf einen sichtbaren Bereich. Der Host veröffentlicht begrenzte Ziele und registriert über `ui:tutorial:mountPage`. Beim Entfernen der Seite werden ihre Anleitungen bereinigt. Optionale Anbieter können `mountTutorialProvider` aus `ui:reuse` verwenden und Übersetzungen sowie Lebenszyklus selbst besitzen.
+
+```js
+createPageComposer(root, {
+    signal,
+    i18n,
+    pageContext,
+    elements,
+    tutorials: [
+        {
+            owner: "example.page",
+            minRole: "admin",
+            definitions: [
+                {
+                    id: "review",
+                    page: "/example",
+                    scope: ".example-panel",
+                    titleKey: "example.tutorial.title",
+                    steps: [
+                        {
+                            id: "options",
+                            selector: ".example-options",
+                            titleKey: "example.tutorial.options.title",
+                            bodyKey: "example.tutorial.options.body",
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+});
+```
+
+[Tutorial-Abdeckung](/docs/tutorials-coverage)

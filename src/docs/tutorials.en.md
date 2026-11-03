@@ -84,3 +84,40 @@ Only one session is active. A competing start rejects unless `{ replace: true }`
 All tutorial action buttons live in an independent instance of the shared floating menu. First-time sessions have no Cancel or Skip action; Escape does not dismiss them. Next remains available during target waits, asynchronous work and event-driven steps, so repeatedly pressing it always reaches completion. Replays expose cancellation with `btn-cancel`. Unrelated navigation, history, account/access loss, provider removal and required popups still release every session. Tutorials never confirm dialogs, submit privileged forms or initiate calls.
 
 Completion and cancellation remove overlays, floating menus, listeners, observers and pending work, then restore focus where appropriate. Late callbacks cannot revive old steps. Completed tutorial IDs are stored in this browser under the current account, separately from other accounts. Interrupted or failed first visits remain eligible on a later visit; failures do not automatically loop on the current page. Clearing browser storage makes them unseen again. Consumers may observe `cognis:tutorial-presented` and `cognis:tutorial-finish`.
+
+## Component-Owned Page Guides
+
+Pages pass authored tutorial contributions in the composer’s `tutorials` array. Each contribution declares an owner, definitions, and an optional `minRole`; each definition supplies its page, localized text and component-owned selectors. `scope` restricts discovery to a visible section. The host publishes scoped targets and runs registration through `ui:tutorial:mountPage`. Removing a page disposes its guides. Optional component providers can use `mountTutorialProvider` from `ui:reuse` and keep their localization and lifecycle ownership.
+
+```js
+createPageComposer(root, {
+    signal,
+    i18n,
+    pageContext,
+    elements,
+    tutorials: [
+        {
+            owner: "example.page",
+            minRole: "admin",
+            definitions: [
+                {
+                    id: "review",
+                    page: "/example",
+                    scope: ".example-panel",
+                    titleKey: "example.tutorial.title",
+                    steps: [
+                        {
+                            id: "options",
+                            selector: ".example-options",
+                            titleKey: "example.tutorial.options.title",
+                            bodyKey: "example.tutorial.options.body",
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+});
+```
+
+[Tutorial Coverage](/docs/tutorials-coverage)

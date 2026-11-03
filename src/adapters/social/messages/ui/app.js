@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 /**
  * Messages page.
  *
@@ -833,6 +834,7 @@ export async function mount(root, { signal } = {}) {
     );
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         elements,
         preferenceKey: "messages-layout",

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="module.study.classes.tutorial.classes.title">Classes Guide</string>
+    <string name="module.study.classes.tutorial.classes.step1.title">Language Filter</string>
+    <string name="module.study.classes.tutorial.classes.step1.body">Filter classes by language to find the classes available to you.</string>
+    <string name="module.study.classes.tutorial.classes.step2.title">Class Membership</string>
+    <string name="module.study.classes.tutorial.classes.step2.body">Review class members and request status; class chat and meetings follow the class access rules.</string>
+    <string name="module.study.classes.tutorial.classes.step3.title">Teaching And Management</string>
+    <string name="module.study.classes.tutorial.classes.step3.body">Teachers manage assigned classes and invitations; teacher requests may require administrator approval.</string>
+    <string name="module.study.classes.tutorial.membership.step1.title">Enrolled Classes</string>
+    <string name="module.study.classes.tutorial.membership.step1.body">Review the classes you belong to and check the language before opening a class.</string>
+    <string name="module.study.classes.tutorial.membership.step2.title">Join Requests</string>
+    <string name="module.study.classes.tutorial.membership.step2.body">Browse available classes and check whether a join request is pending before applying again.</string>
+</resources>

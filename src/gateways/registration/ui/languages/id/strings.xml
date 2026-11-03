@@ -69,4 +69,14 @@
   <string name="ui.app.register.email_verify_notice">Anda harus memverifikasi alamat email dalam 5 menit setelah mendaftar, atau akun Anda akan dihapus secara otomatis.</string>
   <string name="gateway.registration.invite_sent">Undangan terkirim.</string>
   <string name="gateway.registration.invite_failed">Gagal mengirim undangan.</string>
+    <string name="gateway.registration.tutorial.invitations.title">Panduan Undangan</string>
+    <string name="gateway.registration.tutorial.invitations.step1.title">Pilihan Undangan</string>
+    <string name="gateway.registration.tutorial.invitations.step1.body">Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda.</string>
+    <string name="gateway.registration.tutorial.invitations.step2.title">Riwayat Undangan</string>
+    <string name="gateway.registration.tutorial.invitations.step2.body">Periksa status dan kedaluwarsa; salin token hanya untuk penerima yang dituju dan cabut undangan tak terpakai jika perlu.</string>
+    <string name="gateway.registration.tutorial.policy.title">Kebijakan Pendaftaran</string>
+    <string name="gateway.registration.tutorial.policy.step1.title">Akses Pendaftaran</string>
+    <string name="gateway.registration.tutorial.policy.step1.body">Tinjau pendaftaran publik dan izin undangan sebelum mengubah siapa yang dapat membuat akun.</string>
+    <string name="gateway.registration.tutorial.policy.step2.title">Terapkan Aturan Pendaftaran</string>
+    <string name="gateway.registration.tutorial.policy.step2.body">Simpan perubahan kebijakan yang ditinjau lalu periksa opsi pada halaman undangan.</string>
 </resources>

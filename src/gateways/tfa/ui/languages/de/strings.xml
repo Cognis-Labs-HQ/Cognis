@@ -51,4 +51,16 @@
   <string name="ui.app.login.tfa.resend_rate_limited">Code in {seconds} s erneut senden</string>
   <string name="ui.app.login.tfa.resend_sent">Ein neuer Bestätigungscode wurde gesendet.</string>
   <string name="ui.app.login.tfa.code_placeholder">Bestätigungscode</string>
+    <string name="gateway.tfa.tutorial.methods.title">Zwei-Faktor-Sicherheit</string>
+    <string name="gateway.tfa.tutorial.methods.step1.title">Methode einrichten</string>
+    <string name="gateway.tfa.tutorial.methods.step1.body">Wählen Sie eine verfügbare Methode und schließen Sie deren Einrichtung vor der Anmeldung ab.</string>
+    <string name="gateway.tfa.tutorial.methods.step2.title">Bevorzugte Methoden</string>
+    <string name="gateway.tfa.tutorial.methods.step2.body">Ordnen Sie aktive Methoden, um die zuerst angebotene auszuwählen.</string>
+    <string name="gateway.tfa.tutorial.methods.step3.title">Wiederherstellungscodes</string>
+    <string name="gateway.tfa.tutorial.methods.step3.body">Bewahren Sie Wiederherstellungscodes sicher auf; Anzeigen und Ersetzen sind eigene bewusste Aktionen.</string>
+    <string name="gateway.tfa.tutorial.enforcement.title">Zwei-Faktor-Pflicht</string>
+    <string name="gateway.tfa.tutorial.enforcement.step1.title">Pflichtregeln</string>
+    <string name="gateway.tfa.tutorial.enforcement.step1.body">Prüfen Sie Folgen für alle Konten vor dem Verpflichten zur Zwei-Faktor-Authentifizierung.</string>
+    <string name="gateway.tfa.tutorial.enforcement.step2.title">Regel übernehmen</string>
+    <string name="gateway.tfa.tutorial.enforcement.step2.body">Speichern Sie erst nach Prüfung der Pflichtoption und der nötigen Benutzereinrichtung.</string>
 </resources>

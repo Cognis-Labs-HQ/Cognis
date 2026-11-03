@@ -113,16 +113,16 @@ export function createSession({
         busy = true;
         cleanStep();
         index = nextIndex;
-        if (index >= record.play.steps.length) {
-            busy = false;
-            return finish("completed", "complete");
-        }
         const step = record.play.steps[index];
         const current = new AbortController();
         stepController = current;
         const signal = AbortSignal.any([controller.signal, current.signal]);
         try {
             if (!allowed()) return finish("cancelled", "permissionLost");
+            if (index >= record.play.steps.length) {
+                busy = false;
+                return finish("completed", "complete");
+            }
             const text = {
                 title: record.i18n.t(step.titleKey),
                 body: step.bodyKey ? record.i18n.t(step.bodyKey) : "",

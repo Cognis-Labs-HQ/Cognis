@@ -1,3 +1,4 @@
+import { guides } from "../../ui/app/guides.js";
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import {
     loadTestModule,
@@ -89,6 +90,7 @@ async function searchPage(lookup, selectedIndex) {
     const search = await importTestModule(
         new URL("../../ui/app/search/index.js", import.meta.url),
         {
+            "../guides.js": { guides },
             "/static/reuse/mount-scope.js": {
                 replaceMountScope: context.replaceMountScope,
             },

@@ -1,3 +1,4 @@
+import { guides } from "../guides.js";
 import {
     readStudySnapshot,
     showOfflineContentNotice,
@@ -107,6 +108,7 @@ export async function mount(root, { signal } = {}) {
           : i18n.t("gateway.study.explore");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         contentScrolling: false,
         elements: [

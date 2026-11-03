@@ -1,3 +1,4 @@
+import { guides } from "../guides.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -251,6 +252,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
     };
     applyDocumentTitle(i18n, "gateway.study.library_search_results");
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         contentScrolling: false,
         preferenceKey: "study-library-search-layout",

@@ -2,7 +2,13 @@ import { createCtx, CapabilityStore } from "@cognis/core";
 import { registerTutorials } from "../../runtime.js";
 
 /** Real staged flows with an explicit presentation/DOM contract fake. */
-export function tutorialHost({ onFeedback, identity, page, openPage } = {}) {
+export function tutorialHost({
+    onFeedback,
+    identity,
+    role,
+    page,
+    openPage,
+} = {}) {
     const core = createCtx();
     const controller = new AbortController();
     const window = new EventTarget();
@@ -56,6 +62,7 @@ export function tutorialHost({ onFeedback, identity, page, openPage } = {}) {
     const api = registerTutorials(ctx, {
         document,
         identity,
+        role,
         page,
         openPage,
         view: async (options) => {

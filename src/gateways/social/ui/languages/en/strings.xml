@@ -366,4 +366,9 @@
   <string name="social.emoji.white_flag">white flag</string>
   <string name="social.emoji.black_flag">black flag</string>
   <string name="social.emoji.triangular_flag">triangular flag</string>
+    <string name="gateway.social.tutorial.social.title">Social Administration</string>
+    <string name="gateway.social.tutorial.social.step1.title">Social Providers</string>
+    <string name="gateway.social.tutorial.social.step1.body">Inspect the active social adapters and their available settings.</string>
+    <string name="gateway.social.tutorial.social.step2.title">Change Availability</string>
+    <string name="gateway.social.tutorial.social.step2.body">Review the affected user features before enabling, disabling or reconfiguring a provider.</string>
 </resources>

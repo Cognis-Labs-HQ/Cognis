@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { fetchLibrarySchemas } from "./library-client.js";
 import {
     languageExploreUrl,
@@ -12,6 +13,7 @@ export async function mountProvider(ctx) {
         stringsBaseUrls: ["/static/gateways/study/languages"],
     });
     const ids = {};
+    let releaseGuides;
     try {
         for (const [name, selector] of Object.entries({
             navigation: ".study-subnav-modules",
@@ -77,8 +79,19 @@ export async function mountProvider(ctx) {
                 missing: { timeoutMs: 3000, action: "skip" },
             })),
         });
-        return owner.dispose;
+        const { mountTutorialProvider } = await ctx.capabilities
+            .get("ui:reuse")
+            .importModule("tutorials/pages.js");
+        releaseGuides = await mountTutorialProvider(ctx, {
+            guides,
+            stringsBaseUrls: ["/static/gateways/study/languages"],
+        });
+        return () => {
+            releaseGuides();
+            owner.dispose();
+        };
     } catch (error) {
+        releaseGuides?.();
         owner.dispose();
         throw error;
     }

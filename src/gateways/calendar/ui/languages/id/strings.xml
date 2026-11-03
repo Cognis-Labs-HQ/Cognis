@@ -195,4 +195,11 @@
   <string name="gateway.calendar.share_acknowledge_action">Tambahkan kalender</string>
   <string name="gateway.calendar.delete_shared_calendar_confirm">Kalender bersama ini akan dihapus dari halaman Kalender Anda.</string>
   <string name="gateway.calendar.reminder_minutes">{minutes} menit sebelumnya</string>
+    <string name="gateway.calendar.tutorial.calendar.title">Panduan Kalender</string>
+    <string name="gateway.calendar.tutorial.calendar.step1.title">Kalender</string>
+    <string name="gateway.calendar.tutorial.calendar.step1.body">Pilih kalender dan periksa visibilitasnya sebelum menambah acara.</string>
+    <string name="gateway.calendar.tutorial.calendar.step2.title">Tampilan Kalender</string>
+    <string name="gateway.calendar.tutorial.calendar.step2.body">Ganti tampilan dan berpindah periode untuk menemukan tanggal yang diperlukan.</string>
+    <string name="gateway.calendar.tutorial.calendar.step3.title">Acara dan Undangan</string>
+    <string name="gateway.calendar.tutorial.calendar.step3.body">Buka acara untuk meninjau detail, peserta, dan status undangan sebelum mengubahnya.</string>
 </resources>
