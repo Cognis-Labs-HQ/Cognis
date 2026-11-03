@@ -42,7 +42,7 @@
   <string name="ui.app.modules.provider">Anbieter</string>
   <string name="ui.app.modules.namespace">Organisation oder Gruppe</string>
   <string name="ui.app.modules.base_url">API-Basis-URL</string>
-  <string name="ui.app.modules.pat">Persönliches Zugriffstoken (optional)</string>
+  <string name="ui.app.modules.pat">Persönliches Zugriffstoken</string>
   <string name="ui.app.modules.source_saved">Modulquelle gespeichert.</string>
   <string name="ui.app.modules.recommended_url">URL der empfohlenen Module</string>
   <string name="ui.app.modules.settings_saved">Moduleinstellungen gespeichert.</string>
@@ -96,4 +96,11 @@
   <string name="ui.app.modules.hard_dependency_blocked">Installieren und aktivieren Sie alle erforderlichen Abhängigkeiten, bevor Sie fortfahren.</string>
   <string name="ui.app.modules.configure_adapters">Adapter konfigurieren</string>
   <string name="ui.app.modules.configure_later">Später</string>
+  <string name="ui.app.modules.credential_stored">Sicher gespeichert; leer lassen zum Beibehalten</string>
+  <string name="ui.app.modules.credential_shared_hint">Gespeicherte Zugangsdaten stehen allen Administratoren und automatischen Scans zur Verfügung. Ihre Werte können nicht abgerufen oder angezeigt werden. Lassen Sie das Feld leer, um die aktuellen Zugangsdaten beizubehalten.</string>
+  <string name="ui.app.modules.remove_stored_pat">Gespeichertes PAT Entfernen</string>
+  <string name="ui.app.modules.credential_scope_changed">Setzen Sie ein neues Token oder entfernen Sie die gespeicherten Zugangsdaten, bevor Sie Anbieter, Adresse oder Namensraum ändern.</string>
+  <string name="ui.app.modules.source_save_failed">Die Modulquelle konnte nicht gespeichert werden. Ihre Änderungen bleiben in diesem Formular erhalten.</string>
+  <string name="ui.app.modules.source_refresh_failed">Die Quelle wurde gespeichert, aber die Quellenliste konnte nicht aktualisiert werden. Öffnen Sie die Einstellungen erneut.</string>
+  <string name="ui.app.modules.credential_storage_unavailable">Gemeinsame Zugangsdaten benötigen einen dauerhaften Serverschlüssel. Konfigurieren Sie DATA_ENCRYPTION_KEY und versuchen Sie es erneut.</string>
 </resources>

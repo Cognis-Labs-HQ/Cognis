@@ -1,12 +1,13 @@
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../../adapters/notify/smtp/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import path from "node:path";
 import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
-import {
-    TfaCodeService,
-    InMemoryTfaStore,
-} from "../../../api/reuse/tfa-code.js";
+import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
@@ -51,57 +52,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         notifStore,
     );
 
-    type EmailTemplate = (variables: Record<string, string>) => {
-        subject: string;
-        body: string;
-        senderName?: string;
-        actionUrl?: string;
-        actionLabel?: string;
-    };
-    const emailTemplates = new Map<string, EmailTemplate>();
-    ctx.capabilities.contribute(
-        "notify:registerEmailTemplate",
-        (templateId: string, template: EmailTemplate) => {
-            const normalizedId = String(templateId ?? "").trim();
-            if (
-                !normalizedId ||
-                typeof template !== "function" ||
-                emailTemplates.has(normalizedId)
-            )
-                return false;
-            emailTemplates.set(normalizedId, template);
-            return true;
-        },
-    );
-    ctx.capabilities.contribute(
-        "notify:renderEmailTemplate",
-        (templateId: string, variables: Record<string, string>) =>
-            emailTemplates.get(String(templateId ?? "").trim())?.(variables) ??
-            null,
-    );
-    emailTemplates.set("notify-test", () => ({
-        subject: "Cognis SMTP Test",
-        body: "This is a test email from Cognis.",
-    }));
-    emailTemplates.set("notify-verification", (variables) => ({
-        subject: "Verify your Cognis email address",
-        body: `Your verification code is ${variables.code}.`,
-        actionUrl: variables.verifyUrl || undefined,
-        actionLabel: variables.verifyUrl ? "Verify email" : undefined,
-    }));
-    emailTemplates.set("notify-registration-invite", (variables) => ({
-        subject: "You are invited to Cognis",
-        body: `${variables.inviterDisplayName} invited you to join Cognis.`,
-        actionUrl: variables.inviteUrl,
-        actionLabel: "Accept invitation",
-    }));
-    emailTemplates.set("notify-one-time-login", (variables) => ({
-        subject: variables.subject,
-        body: variables.body,
-        actionUrl: variables.loginUrl,
-        actionLabel: variables.actionLabel || undefined,
-    }));
-
     const notifyAdaptersRoot = path.join(ctx.adaptersRoot, "notify");
     await gateway.discoverSenders(notifyAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -112,8 +62,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 
+    ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
+        gateway.isSenderEnabled(senderId),
+    );
+    ctx.capabilities.contribute(
+        "notify:registerAlwaysOnSender",
+        (senderId: string) => gateway.registerAlwaysOnSender(senderId),
+    );
+    ctx.capabilities.contribute(
+        "notify:testSender",
+        (
+            senderId: string,
+            recipient: string,
+            config?: Record<string, unknown>,
+        ) => gateway.testSender(senderId, recipient, config),
+    );
+    ctx.capabilities.contribute("notify:listSenders", () =>
+        gateway.listSenders(),
+    );
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
-        gateway,
         capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
@@ -127,18 +94,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         log: ctx.log,
         dbExecutor,
     });
-    type SendEmail = (input: {
-        recipientEmail: string;
-        templateId: string;
-        variables: Record<string, string>;
-        config?: Record<string, unknown>;
-        theme?: string;
-    }) => Promise<unknown>;
+    const registerEmailAction =
+        ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerEmailPurpose",
+        );
+    const emailVerificationPurpose = registerEmailAction
+        ? await registerEmailAction("emailVerification", (variables) => ({
+              subject: "Verify your Cognis email address",
+              body: `Your verification code is ${variables.code}.`,
+              actionUrl: variables.verifyUrl || undefined,
+              actionLabel: variables.verifyUrl ? "Verify email" : undefined,
+          }))
+        : undefined;
     const sendEmail =
-        ctx.capabilities.get<SendEmail>("notify:sendEmail") ??
+        ctx.capabilities.get<SendEmailAction>("notify:sendEmail") ??
         (async () => {
-            throw new Error("smtp_unavailable");
+            throw new Error("email_delivery_unavailable");
         });
+    const emailAvailable = () =>
+        ctx.capabilities.get<() => boolean>("notify:emailAvailable")?.() ===
+        true;
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",
     });
@@ -147,9 +122,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const getTfaSmtpCodeLength = () =>
+    const getEmailCodeLength = () =>
         ctx.capabilities.get<() => number | undefined>(
-            "tfa:smtpCodeLength",
+            "notify:emailCodeLength",
         )?.();
     const externalHost =
         process.env.EXTERNAL_HOST ??
@@ -176,7 +151,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createNotificationRoutes(gateway, notifStore, {
             getTrustedDomains,
             routeContext,
-            sendEmail,
+            emailAvailable,
         }),
         "notify",
     );
@@ -186,13 +161,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             tfaService,
             verifyTokenService,
             {
-                canSendVerificationEmail:
-                    gateway.canSendVerificationEmail.bind(gateway),
+                purpose: emailVerificationPurpose!,
+                canSendVerificationEmail: emailAvailable,
                 sendEmail,
             },
             externalHost,
             routeContext,
-            getTfaSmtpCodeLength,
+            getEmailCodeLength,
         ),
         "notify",
     );
@@ -273,110 +248,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
         );
     }
-    if (ctx.flow.exists("construct-login-ui")) {
-        ctx.flow.extend(
-            "construct-login-ui",
-            "compose-form",
-            {
-                id: "notify-gateway:login-ui-required-email-integration",
-                order: 50,
+    ctx.capabilities
+        .get<{ register(mode: unknown): void }>("auth:userValidationModes")
+        ?.register({
+            id: "email",
+            labelKey: "gateway.notify.validation.email",
+            stringsBaseUrl: "/static/gateways/notify/languages",
+            requiredFields: ["email"],
+            available: () => isGatewayEnabled() && emailAvailable(),
+            validate: async ({ accountId }: { accountId: string }) =>
+                (await notifStore.getUserEmails(accountId)).some(
+                    (email) => email.primary && email.verified,
+                ),
+            integration: {
+                scriptUrl:
+                    "/static/gateways/notify/login-required-email-flow.js",
             },
-            () => ({
-                integrations: isGatewayEnabled()
-                    ? [
-                          {
-                              id: "required-email-enforcement",
-                              scriptUrl:
-                                  "/static/gateways/notify/login-required-email-flow.js",
-                              stringsBaseUrl:
-                                  "/static/gateways/notify/languages",
-                          },
-                      ]
-                    : [],
-            }),
-        );
-    }
-    // SSO redirects also establish sessions without visiting the login form.
-    ctx.capabilities.contribute(
-        "auth:getSetupIntegrations",
-        async (accountId: string, role: string) => {
-            const settings = parseSecuritySettings(
-                (await preferenceStore?.get(
-                    "__system__",
-                    SECURITY_SETTINGS_KEY,
-                )) ?? null,
-            );
-            const accounts = ctx.capabilities.get<{
-                isFounder(id: string): Promise<boolean>;
-            }>("auth:accountStore");
-            const founder =
-                (role === "admin" || role === "owner") &&
-                (await accounts?.isFounder(accountId));
-            if (
-                !isGatewayEnabled() ||
-                settings?.userValidationMode !== "smtp" ||
-                founder
-            )
-                return [];
-            const emails = await notifStore.getUserEmails(accountId);
-            if (emails.some((email) => email.primary && email.verified))
-                return [];
-            return [
-                {
-                    scriptUrl:
-                        "/static/gateways/notify/login-required-email-flow.js",
-                },
-            ];
-        },
-    );
-    if (ctx.flow.exists("login")) {
-        ctx.flow.extend(
-            "login",
-            "establish-session",
-            { id: "notify-gateway:smtp-enforcement", order: 50 },
-            async (stageCtx) => {
-                const sessionResult = stageCtx.data["sessionResult"] as
-                    Record<string, unknown> | undefined;
-                if (sessionResult?.outcome !== "success") {
-                    return null;
-                }
-                const role = String(sessionResult.role ?? "user");
-                const isFounder = sessionResult.isFounder === true;
-                const isInitialAdmin =
-                    (role === "admin" || role === "owner") && isFounder;
-                const hasVerifiedEmail = sessionResult.accountId
-                    ? (
-                          await notifStore.getUserEmails(
-                              String(sessionResult.accountId),
-                          )
-                      ).some(
-                          (email) =>
-                              email.primary === true && email.verified === true,
-                      )
-                    : false;
-                const requiresUserValidation =
-                    isGatewayEnabled() &&
-                    sessionResult.userValidationMode === "smtp" &&
-                    !isInitialAdmin &&
-                    !hasVerifiedEmail;
-                const nextSessionResult = {
-                    ...sessionResult,
-                    requiredUserValidation: requiresUserValidation,
-                };
-                stageCtx.data["sessionResult"] = nextSessionResult;
-                return { sessionResult: nextSessionResult };
-            },
-        );
-    }
+        });
 
-    // Expose the notification gateway itself + a thin dispatch helper as
-    // capabilities so other adapters (e.g. the social/messages adapter) can
-    // hand off delivery without holding a direct reference to this gateway.
-    /**
-     * notify:gateway — notification gateway surface for advanced sender/category
-     * consumers.
-     */
-    ctx.capabilities.contribute("notify:gateway", gateway);
     /**
      * notify:dispatch — one-shot notification dispatch helper for other
      * components.
@@ -453,23 +342,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (id: string, label: string) => gateway.registerCategory(id, label),
     );
 
-    /**
-     * notify:canSendRegistrationInviteEmail — reports whether invite-email
-     * delivery is currently available.
-     */
-    ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
-        gateway.canSendRegistrationInviteEmail(),
-    );
-    /**
-     * notify:canSendVerificationEmail — reports whether verification-email
-     * delivery is currently available.
-     */
-    ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
-        gateway.canSendVerificationEmail(),
-    );
-    ctx.capabilities.contribute("notify:isSenderEnabled", (senderId: string) =>
-        gateway.isSenderEnabled(senderId),
-    );
     ctx.capabilities.contribute(
         "notify:setSenderEnabled",
         async (senderId: string, enabled: boolean) => {
@@ -504,86 +376,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 config: Record<string, unknown>,
             ) => Promise<void> | void,
         ) => gateway.onSenderConfigChange(listenerId, listener),
-    );
-    ctx.capabilities.contribute(
-        "notify:sendVerificationEmail",
-        async (to: string, code: string, verifyUrl?: string, theme?: string) =>
-            sendEmail({
-                recipientEmail: to,
-                templateId: "notify-verification",
-                variables: { code, verifyUrl: verifyUrl ?? "" },
-                theme,
-            }),
-    );
-    ctx.capabilities.contribute(
-        "notify:queueVerificationEmail",
-        async (
-            to: string,
-            code: string,
-            verifyUrl?: string,
-            theme?: string,
-        ) => {
-            const result = (await sendEmail({
-                recipientEmail: to,
-                templateId: "notify-verification",
-                variables: { code, verifyUrl: verifyUrl ?? "" },
-                theme,
-            })) as { notificationId?: string };
-            const now = new Date().toISOString();
-            return {
-                notificationId: result.notificationId ?? "",
-                status: result.notificationId ? "queued" : "sent",
-                createdAt: now,
-                updatedAt: now,
-                recipientEmail: to,
-            };
-        },
-    );
-    ctx.capabilities.contribute("notify:canSendOneTimeLoginEmail", () =>
-        gateway.canSendOneTimeLoginEmail(),
-    );
-    /**
-     * notify:sendRegistrationInviteEmail — sends a registration invite via the
-     * active notification sender.
-     */
-    ctx.capabilities.contribute(
-        "notify:sendRegistrationInviteEmail",
-        async (
-            to: string,
-            inviterDisplayName: string,
-            inviteUrl: string,
-            theme?: string,
-        ) =>
-            sendEmail({
-                recipientEmail: to,
-                templateId: "notify-registration-invite",
-                variables: { inviterDisplayName, inviteUrl },
-                theme,
-            }),
-    );
-    ctx.capabilities.contribute(
-        "notify:sendOneTimeLoginEmail",
-        async (
-            to: string,
-            loginUrl: string,
-            options?: {
-                theme?: string;
-                subject?: string;
-                body?: string;
-                actionLabel?: string;
-            },
-        ) =>
-            sendEmail({
-                recipientEmail: to,
-                templateId: "notify-one-time-login",
-                variables: {
-                    loginUrl,
-                    subject: options?.subject ?? "",
-                    body: options?.body ?? "",
-                    actionLabel: options?.actionLabel ?? "",
-                },
-                theme: options?.theme,
-            }),
     );
     /**
      * notify:isEmailRegistered — checks whether an email is already registered
@@ -640,21 +432,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (
                 options?.sendPrimaryVerification === true &&
                 !primaryIsVerified &&
-                gateway.canSendVerificationEmail()
+                emailAvailable()
             ) {
                 const key = emailVerificationKey(accountId, primaryEmail);
                 const code = tfaService.issueOrGet(
                     key,
                     15 * 60 * 1000,
-                    getTfaSmtpCodeLength(),
+                    getEmailCodeLength(),
                 );
                 const watchToken = verifyTokenService.issueOrGet(key);
                 const verifyUrl = externalHost
                     ? `${externalHost}/verify-email?token=${watchToken}`
                     : undefined;
                 await sendEmail({
+                    purpose: emailVerificationPurpose!,
                     recipientEmail: primaryEmail,
-                    templateId: "notify-verification",
                     variables: { code, verifyUrl: verifyUrl ?? "" },
                 });
             }
@@ -692,3 +484,4 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 }
+import type { Ctx } from "@cognis/core";

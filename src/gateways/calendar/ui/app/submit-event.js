@@ -1,7 +1,8 @@
 import { findOverlappingEvents } from "./popup-manager-event-utils.js";
 
 export function createSubmitEvent({
-    getJitsiAvailable,
+    getMeetingsAvailable,
+    signal,
     calendarUi,
     showToast,
     i18n,
@@ -25,15 +26,18 @@ export function createSubmitEvent({
         recurrence,
         allowConflict = false,
     }) {
+        if (signal?.aborted) return false;
         const targetCalendarId = String(calendarId ?? "").trim();
         if (!targetCalendarId) return false;
         let meetingUrl = null;
-        if (createMeeting && getJitsiAvailable()) {
+        if (createMeeting && getMeetingsAvailable()) {
             try {
-                meetingUrl = await calendarUi.createJitsiMeeting(attendees, {
+                meetingUrl = await calendarUi.createMeeting(attendees, {
                     scheduledAt: startAt,
+                    signal,
                 });
             } catch {
+                if (signal?.aborted) return false;
                 showToast(
                     i18n.t("gateway.calendar.create_meeting_failed"),
                     "error",
@@ -41,6 +45,7 @@ export function createSubmitEvent({
                 return false;
             }
         }
+        if (signal?.aborted) return false;
         const overlaps = findOverlappingEvents(getEventsByCalendar(), {
             calendarId: targetCalendarId,
             startAt: new Date(startAt).toISOString(),

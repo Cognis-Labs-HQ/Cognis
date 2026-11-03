@@ -60,6 +60,9 @@ export async function loadRegistrationConfig() {
     return {
         registrationsEnabled: data.registrationsEnabled === true,
         userValidationMode: String(data.userValidationMode ?? "none"),
+        requiredFields: Array.isArray(data.requiredFields)
+            ? data.requiredFields.filter((key) => typeof key === "string")
+            : [],
         integrations: Array.isArray(data.integrations)
             ? data.integrations.filter(
                   (descriptor) =>

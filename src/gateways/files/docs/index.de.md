@@ -101,3 +101,5 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 ### Browserclient-Capability
 
 `files:uiClient` wird vom Files-UI-Anbieter bereitgestellt und löst namensraumbezogene Datei-URLs für Browsermodule auf.
+
+Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).

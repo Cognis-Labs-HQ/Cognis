@@ -150,7 +150,7 @@ export function registerDeckSharing(
     hook("mint-share-token", "authorize-minter", (stage) => {
         const result = stage.stageResults["validate-resource"]?.find(
             (value) =>
-                (value as { resourceType?: string }).resourceType ===
+                (value as { resourceType?: string })?.resourceType ===
                 DECK_RESOURCE,
         ) as { valid: boolean; ownerAccountId: string } | undefined;
         return result?.valid
@@ -160,7 +160,7 @@ export function registerDeckSharing(
     hook("resolve-share-token", "resolve-resource", async (stage) => {
         const validated = stage.stageResults["validate-token"]?.find(
             (value) =>
-                (value as { tokenRecord?: ShareRecord }).tokenRecord
+                (value as { tokenRecord?: ShareRecord })?.tokenRecord
                     ?.resourceType === DECK_RESOURCE,
         ) as
             | {
@@ -189,8 +189,8 @@ export function registerDeckSharing(
         stage.stageResults["resolve-resource"]?.some(
             (value) =>
                 (value as { resourceType?: string; resolved?: boolean })
-                    .resourceType === DECK_RESOURCE &&
-                (value as { resolved?: boolean }).resolved,
+                    ?.resourceType === DECK_RESOURCE &&
+                (value as { resolved?: boolean })?.resolved,
         )
             ? { allowed: true, directAccess: false }
             : null,

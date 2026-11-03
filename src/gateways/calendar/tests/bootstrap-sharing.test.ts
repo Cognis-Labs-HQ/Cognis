@@ -12,7 +12,10 @@ import {
     ResponseRecorder,
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
-import { bootstrap } from "../bootstrap.js";
+import {
+    bootstrapTestCalendar as bootstrap,
+    createCalendarHostFlow,
+} from "./bootstrap-host.js";
 
 test("calendar shared write access appears in recipient list and supports event creation", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -35,7 +38,7 @@ test("calendar shared write access appears in recipient list and supports event 
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -189,7 +192,7 @@ test("calendar invite dispatch resolves notify capability after bootstrap", asyn
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatched: Array<{
@@ -273,7 +276,7 @@ test("calendar reminders are scheduled instead of dispatched immediately", async
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -392,7 +395,7 @@ test("calendar accept response via invitations API saves copy into chosen calend
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -514,7 +517,7 @@ test("calendar recurring invitation acceptance copies all occurrences into targe
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);

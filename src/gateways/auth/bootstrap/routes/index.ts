@@ -1,3 +1,4 @@
+import { parseLoginSessionTimeoutMinutes } from "../../session-timeout.js";
 import type { IncomingMessage } from "node:http";
 import type {
     CapabilityStore,
@@ -43,6 +44,8 @@ export function createAuthGatewayRoutes(
         readSecuritySettings ??
         (async () => ({
             userValidationMode: "none",
+            loginSessionTimeoutMinutes:
+                parseLoginSessionTimeoutMinutes(undefined),
         }));
 
     async function registrationsEnabled(): Promise<boolean> {

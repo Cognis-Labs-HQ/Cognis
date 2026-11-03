@@ -42,7 +42,7 @@
   <string name="ui.app.modules.provider">Provider</string>
   <string name="ui.app.modules.namespace">Organization or Group</string>
   <string name="ui.app.modules.base_url">API Base URL</string>
-  <string name="ui.app.modules.pat">Personal Access Token (Optional)</string>
+  <string name="ui.app.modules.pat">Personal Access Token</string>
   <string name="ui.app.modules.source_saved">Module source saved.</string>
   <string name="ui.app.modules.recommended_url">Recommended Modules URL</string>
   <string name="ui.app.modules.settings_saved">Module settings saved.</string>
@@ -96,4 +96,11 @@
   <string name="ui.app.modules.hard_dependency_blocked">Install and enable every required dependency before continuing.</string>
   <string name="ui.app.modules.configure_adapters">Configure Adapters</string>
   <string name="ui.app.modules.configure_later">Later</string>
+  <string name="ui.app.modules.credential_stored">Stored securely; leave blank to keep</string>
+  <string name="ui.app.modules.credential_shared_hint">Stored credentials are shared by administrators and used by automatic scans. Their saved values cannot be retrieved or revealed. Leave the field blank to keep the current credential.</string>
+  <string name="ui.app.modules.remove_stored_pat">Remove Stored PAT</string>
+  <string name="ui.app.modules.credential_scope_changed">Set a new token or remove the stored credential before changing the source provider, address or namespace.</string>
+  <string name="ui.app.modules.source_save_failed">The module source could not be saved. Your changes are still available in this form.</string>
+  <string name="ui.app.modules.source_refresh_failed">The source was saved, but the source list could not be refreshed. Reopen Settings to retry.</string>
+  <string name="ui.app.modules.credential_storage_unavailable">Shared credentials require a persistent server encryption key. Configure DATA_ENCRYPTION_KEY and try again.</string>
 </resources>

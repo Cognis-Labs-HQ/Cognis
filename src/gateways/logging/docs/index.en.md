@@ -101,3 +101,7 @@ The DB gateway uses the shared logger for its own events but records only summar
 ### Browser log ingestion
 
 Authenticated browser components submit structured entries with `POST /api/v1/logging/entries` using `{ level, message, meta }`. The gateway validates the level and message, attaches the authenticated account and browser source, and writes the entry through `logging:log`.
+
+## Localized Adapter Fields
+
+Logging adapter definitions use `labelKey`. The gateway serializes catalog and configuration schemas with the browser-facing `label` translation key and supplies each adapter’s `stringsBaseUrl`. Types, options and values retain their provider-owned meaning. Configuration reads remain administrator-only.

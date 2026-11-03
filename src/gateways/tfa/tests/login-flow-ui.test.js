@@ -28,7 +28,7 @@ test("tfa login cooldown toast uses the resend success message", () => {
     );
     assert.match(
         SOURCE,
-        /showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.smtp\.resend_sent[\s\S]*?\{\s*variant:\s*"success",?\s*\}/,
+        /showToast\(\s*[\s\S]*?ui\.app\.login\.tfa\.resend_sent[\s\S]*?\{\s*variant:\s*"success",?\s*\}/,
     );
     assert.doesNotMatch(
         SOURCE,

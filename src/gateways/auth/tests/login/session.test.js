@@ -23,7 +23,7 @@ test("login session persistence records and clears authentication state", () => 
             role: "admin",
             providerId: "ldap",
             isFounder: true,
-            userValidationMode: "smtp",
+            userValidationMode: "email",
             ttlSeconds: 3600,
         },
         storage,
@@ -35,7 +35,7 @@ test("login session persistence records and clears authentication state", () => 
     assert.equal(storage.getItem("cognis_role"), "admin");
     assert.equal(storage.getItem("cognis_provider_id"), "ldap");
     assert.equal(storage.getItem("cognis_is_founder"), "true");
-    assert.equal(storage.getItem("cognis_user_validation_mode"), "smtp");
+    assert.equal(storage.getItem("cognis_user_validation_mode"), "email");
     assert.match(storage.getItem("cognis_login_time"), /^\d{4}-\d{2}-\d{2}T/);
     assert.ok(
         Date.parse(storage.getItem("cognis_session_expires_at")) > Date.now(),

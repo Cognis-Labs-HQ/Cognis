@@ -57,7 +57,7 @@ test("tfa required setup popup is guarded against duplicate concurrent flows", (
     assert.match(SOURCE, /let requiredSetupPromptActive = false;/);
     assert.match(
         SOURCE,
-        /if \(enforcingTfaSetup \|\| requiredSetupPromptActive\) return;/,
+        /if \(signal\?\.aborted \|\| enforcingTfaSetup \|\| requiredSetupPromptActive\)\s*return;/,
     );
     assert.match(SOURCE, /requiredSetupPromptActive = true;/);
     assert.match(SOURCE, /requiredSetupPromptActive = false;/);
@@ -66,19 +66,19 @@ test("tfa required setup popup is guarded against duplicate concurrent flows", (
 test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     assert.match(
         SOURCE,
-        /smtp_unavailable:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
+        /email_delivery_unavailable:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
     );
     assert.match(
         SOURCE,
-        /primary_email_required:\s*"ui\.app\.settings\.notif_smtp_no_email_body"/,
+        /primary_email_required:\s*"ui\.app\.settings\.notif_email_required_body"/,
     );
     assert.match(
         SOURCE,
-        /primary_email_address_not_verified:\s*"ui\.app\.settings\.notif_smtp_no_email_body"/,
+        /primary_email_address_not_verified:\s*"ui\.app\.settings\.notif_email_required_body"/,
     );
     assert.match(
         SOURCE,
-        /invalid_smtp_code:\s*"ui\.app\.login\.tfa\.error_invalid"/,
+        /invalid_verification_code:\s*"ui\.app\.login\.tfa\.error_invalid"/,
     );
     assert.match(
         SOURCE,

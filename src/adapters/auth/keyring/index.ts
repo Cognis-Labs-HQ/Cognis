@@ -44,6 +44,7 @@ export function createAdapter(): AuthProviderAdapter {
         name: "User Keyring",
         locked: true,
         authenticationProvider: false,
+        stringsBaseUrl: "/static/adapters/auth/keyring/languages",
         async authenticate() {
             return null;
         },
@@ -51,13 +52,13 @@ export function createAdapter(): AuthProviderAdapter {
             return [
                 {
                     key: "maxVaultMiB",
-                    label: "Maximum vault size (MiB)",
+                    label: "adapter.auth.keyring.config.maximum_vault_size",
                     type: "number",
                     required: true,
                 },
                 {
                     key: "derivationIterations",
-                    label: "Password derivation iterations",
+                    label: "adapter.auth.keyring.config.derivation_iterations",
                     type: "number",
                     required: true,
                 },

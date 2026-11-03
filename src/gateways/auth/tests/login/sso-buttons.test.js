@@ -170,6 +170,7 @@ test("auth client owns registration configuration response parsing", async () =>
         assert.deepEqual(await loadRegistrationConfig(), {
             registrationsEnabled: true,
             userValidationMode: "email",
+            requiredFields: [],
             integrations: [{ id: "terms", scriptUrl: "/static/terms.js" }],
         });
     } finally {

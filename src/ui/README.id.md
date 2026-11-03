@@ -1,5 +1,9 @@
 # Cognis UI
 
+Pengiriman implisit formulir yang terikat ditangani di tempat tanpa meminta dokumen browser. Penangan pengiriman komponen tetap menerima kejadian tersebut. Pengalihan internal menggunakan router SPA; tujuan yang dirender server tetap menghormati keputusan perubahan belum tersimpan dan memeriksa kembali ketersediaan offline saat dilanjutkan.
+
+`openPopup({ signal })` mengikat popup pada pemiliknya. Pembatalan sinyal menutup popup beserta konfirmasi pembuangan dan membersihkan pendengar, pewaktu, pelacakan formulir serta kunci gulir. Pembuangan pemilik tidak meminta untuk mempertahankan isi dari halaman atau identitas yang sudah tidak berlaku. Upaya pembatalan bersamaan berbagi satu keputusan.
+
 ## Struktur
 
 - `src/layouts/`: pembatas tata letak halaman yang dapat digunakan ulang.

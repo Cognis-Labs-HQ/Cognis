@@ -1,5 +1,7 @@
 # Registrierungstoken
 
+Der Adapter deklariert Autorisierungsskript und Sprachressourcen über `registrationUi`. Das Gateway lädt den Beitrag nur bei aktiviertem Adapter und Gateway.
+
 Der verpflichtende Registrierungstoken-Adapter verwaltet Einladungs- und Autorisierungstoken für die Kontoerstellung. Er sendet einmalig verwendbare Links über den aktiven E-Mail-Benachrichtigungsanbieter und dient der Benutzerseite als Tokenquelle für Einladungen durch Administratoren und Gründer.
 
 ## Anwendungsbeispiele

@@ -29,3 +29,5 @@ Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/saml/config` (hanya admi
 | `certificate`    | Sertifikat penandatanganan X.509 IdP (format PEM) | Ya         |
 | `adminAttribute` | Nama atribut SAML untuk pemeriksaan admin         | Tidak      |
 | `adminValue`     | Nilai atribut yang memberikan akses admin         | Tidak      |
+
+Label konfigurasi dibaca melalui `stringsBaseUrl` dari sumber bahasa adapter ini.

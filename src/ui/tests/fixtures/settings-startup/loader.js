@@ -29,7 +29,10 @@ export async function loadSettingsMount({
             location: {
                 pathname: "/settings",
                 hash: "",
-                replace: (url) => redirects.push(url),
+                replace: () =>
+                    assert.fail(
+                        "Settings must navigate through the SPA router",
+                    ),
             },
         },
     });
@@ -59,6 +62,11 @@ export async function loadSettingsMount({
         },
     );
     const overrides = {
+        navigateTo: async (path, options) => {
+            assert.equal(options.replace, true);
+            redirects.push(path);
+            return true;
+        },
         loadUiPreferences: preferences.loadUiPreferences,
         saveUiPreferences: preferences.saveUiPreferences,
         isOffline: () => false,

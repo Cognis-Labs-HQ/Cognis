@@ -1,5 +1,7 @@
 # Gateway- und Adapter-Leitfaden
 
+Komponentenübergreifende Benachrichtigungsverträge stammen aus `@cognis/core`. Aufrufer lösen `notify:dispatch` oder `notify:listSenders` über ctx auf; Adapter erhalten begrenzte Host-Fähigkeiten statt einer konkreten Gateway-Instanz.
+
 ## Überblick
 
 Ein Gateway ist die alleinige Autorität für eine abgegrenzte Domäne in Cognis.
@@ -213,3 +215,7 @@ Neues Gateway hinzufügen:
 1. `src/gateways/<id>/` mit `manifest.json`, `bootstrap.ts` und `gateway.ts` erstellen.
 2. `docs/index.en.md` und Sprachvarianten hinzufügen.
 3. Eintrag in `src/docs/index.<lang>.md` unter der Gateways-Tabelle hinzufügen.
+
+## Verträge der Adapter
+
+Gateways stellen ihren Adaptern dieselbe Registry `system:contracts` über `ctx.capabilities` bereit. Adapter können `defineContracts(ctx)` exportieren; der Host ruft die Funktion beim Adapter-Bootstrap vor der Initialisierung auf. Bestehende Bootstrap-Hooks können Verträge auch direkt deklarieren. Auth, Notify, TFA, Social, Study, Share und Calendar verwenden Adapterbereiche; die Fabriklader für DB, Files und Registration unterstützen den Definitions-Hook ebenfalls. Definitionen gehören zu `adapter:<gateway>:<adapter>` und folgen Rollback, Deaktivierung und Reaktivierung des Gateways. Verschachtelte Adapterberechtigungen enden mit dem übergeordneten Bootstrap, auch für abgekoppelte asynchrone Arbeit. Laufzeitanfragen können keine Verträge registrieren. Reine Typimporte aus dem öffentlichen Verzeichnis `contracts/` eines Anbieters dienen der Entwicklung; ausführbare komponentenübergreifende Aufrufe verwenden weiterhin ctx.

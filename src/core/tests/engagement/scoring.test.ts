@@ -119,6 +119,7 @@ test("engagement registration exposes provider capabilities and composes flows",
         "engagement:ledger",
         "engagement:recordActivity",
         "engagement:scoring",
+        "system:contracts",
     ]);
     const achievements = ctx.requireCapability<AchievementRegistry>(
         "engagement:achievements",

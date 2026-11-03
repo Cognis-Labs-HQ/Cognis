@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">Verifikasi gagal. Coba lagi.</string>
   <string name="ui.app.settings.emails_verify_rate_limited">Email verifikasi baru saja dikirim. Tunggu sebelum meminta yang lain.</string>
   <string name="ui.app.settings.emails_remove_primary_body">Ini adalah alamat email utama Anda. Tetapkan email lain sebagai utama sebelum menghapus yang ini.</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">Anda memerlukan alamat email utama yang terverifikasi untuk mengaktifkan notifikasi email. Tambahkan dan verifikasi alamat email di pengaturan umum Anda terlebih dahulu.</string>
+  <string name="ui.app.settings.notif_email_required_body">Anda memerlukan alamat email utama yang terverifikasi untuk mengaktifkan notifikasi email. Tambahkan dan verifikasi alamat email di pengaturan umum Anda terlebih dahulu.</string>
   <string name="ui.app.settings.notif_matrix_heading">Preferensi Notifikasi</string>
   <string name="ui.app.settings.notif_no_providers">Tidak ada adaptor notifikasi aktif.</string>
   <string name="ui.app.settings.notif_no_categories">Tidak ada kategori notifikasi yang terdaftar.</string>
@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">1 jam terakhir</string>
   <string name="ui.app.admin.logs.time_range.6h">6 jam terakhir</string>
   <string name="ui.app.admin.logs.time_range.24h">24 jam terakhir</string>
-  <string name="ui.app.admin.notif.smtp_host">Host SMTP</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Keamanan</string>
-  <string name="ui.app.admin.notif.smtp_from">Alamat Pengirim</string>
-  <string name="ui.app.admin.notif.smtp_user">Nama Pengguna</string>
-  <string name="ui.app.admin.notif.smtp_password">Kata Sandi</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">Tidak Ada</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Simpan Pengaturan</string>
   <string name="ui.app.admin.notif.test_email">Kirim Email Uji</string>
   <string name="ui.app.admin.notif.test_email_to">Alamat email penerima</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Alamat email penerima wajib diisi.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Mengganti variabel lingkungan</string>
   <string name="ui.app.admin.notif.required_field">Nilai Wajib</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Panjang Kode</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Nama Pengirim</string>
   <string name="ui.app.admin.security.title">Keamanan</string>
   <string name="ui.app.admin.security.trusted_domains_label">Domain Tepercaya</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain tepercaya yang dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain email, sementara tautan eksternal tetap dibatasi ke situs ini. Subdomain yang cocok juga diizinkan.</string>
@@ -474,8 +461,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">Metode Validasi Pengguna</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (tidak tersedia — aktifkan adaptor SMTP terlebih dahulu)</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">Email</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">Email (tidak tersedia — konfigurasikan penyedia pengiriman email terlebih dahulu)</string>
   <string name="ui.app.admin.security.password_policy_heading">Kebijakan Kata Sandi</string>
   <string name="ui.app.admin.security.policy_min_length">Panjang Minimum</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Minimum Huruf Kapital (0 = nonaktif)</string>
@@ -632,4 +619,10 @@
   <string name="ui.reuse.recheck_connectivity">Periksa Ulang Koneksi</string>
   <string name="ui.reuse.offline_no_cached_content">Tidak ada konten luring tersimpan yang tersedia.</string>
   <string name="ui.app.settings.language_offline_locked">Hubungkan untuk menambah atau menghapus bahasa antarmuka. Bahasa terpilih tetap dapat diurutkan ulang.</string>
+  <string name="ui.app.users.details_failed">Rincian pengguna ini tidak dapat dimuat. Silakan coba lagi.</string>
+  <string name="ui.app.users.refresh_failed">Perubahan tersimpan, tetapi daftar Pengguna tidak dapat diperbarui. Muat ulang halaman untuk melihat data terbaru.</string>
+  <string name="ui.reuse.none">Tidak Ada</string>
+  <string name="ui.reuse.unavailable">Tidak Tersedia</string>
+    <string name="ui.reuse.test">Uji</string>
+    <string name="ui.app.admin.security.validation_unavailable">Metode validasi ini tidak tersedia.</string>
 </resources>

@@ -64,5 +64,6 @@
     "../../reuse/offline-state.js": ["isOffline"],
     "./online-controls.js": ["bindOnlineSettingsControls"],
     "./language-redraw.js": ["createLanguageRedraw"],
-    "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"]
+    "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"],
+    "../../reuse/app-router.js": ["navigateTo"]
 }

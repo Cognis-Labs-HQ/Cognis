@@ -122,7 +122,9 @@ function createAdapterMock(): TfaMethodAdapter {
         verifyLogin: async ({ payload }) => ({
             verified: payload.code === "123456",
             message:
-                payload.code === "123456" ? undefined : "invalid_totp_code",
+                payload.code === "123456"
+                    ? undefined
+                    : "invalid_verification_code",
         }),
         beginLoginChallenge: async () => ({ ready: true }),
         getConfigSchema: () => [],
@@ -249,7 +251,7 @@ test("tfa gateway includes rate-limited smtp method with challenge metadata", as
         verifySetup: async () => ({ verified: true, state: {} }),
         beginLoginChallenge: async () => ({
             ready: true,
-            message: "smtp_rate_limited",
+            message: "email_rate_limited",
             retryAfterSeconds: 45,
             resendAvailableAt: "2026-01-01T00:00:45.000Z",
         }),
@@ -268,7 +270,7 @@ test("tfa gateway includes rate-limited smtp method with challenge metadata", as
     });
     const methods = await gateway.getLoginMethods("alice");
     assert.equal(methods[0]?.id, "smtp");
-    assert.equal(methods[0]?.challenge?.message, "smtp_rate_limited");
+    assert.equal(methods[0]?.challenge?.message, "email_rate_limited");
     assert.equal(methods[0]?.challenge?.retryAfterSeconds, 45);
     assert.equal(
         methods[0]?.challenge?.resendAvailableAt,

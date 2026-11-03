@@ -54,7 +54,10 @@ import {
     ensureHostUiProviders,
     loadWithSpaImportGuard,
 } from "./page-entry.js";
-import { getCurrentRoutePath } from "./route-path.js";
+import {
+    getCurrentRoutePath,
+    normalizeSameOriginRoutePath,
+} from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
     installRuntimeErrorHandlers,
@@ -100,6 +103,24 @@ const ROUTE_STYLE_BUNDLES = {
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
 }
+
+const routerState = (globalThis[Symbol.for("cognis.appRouterState")] ??= {
+    allRoutes: null,
+    allRoutesPromise: null,
+    routeCacheGeneration: 0,
+    root: null,
+    currentBase: null,
+    mountController: null,
+    commitPage: null,
+    navigationSequence: 0,
+    initialized: false,
+    historyIndex: 0,
+    committedPath: "",
+    lastSuccessfulPath: "",
+    previousSuccessfulPath: "",
+    restoringHistory: false,
+    guardBypassPath: null,
+});
 
 const CORE_COMPONENT_UUID = "b4d49c4a-61d0-5db2-84fd-f89b80fd6398";
 
@@ -252,10 +273,6 @@ installComponentPageBroker({
         ) ?? null,
 });
 
-let _allRoutes = null;
-let _allRoutesPromise = null;
-let _routeCacheGeneration = 0;
-
 function findMatchingRoute(routes, path) {
     const pathWithoutQueryOrFragment = normalizePath(path);
     return routes.find((route) =>
@@ -264,34 +281,34 @@ function findMatchingRoute(routes, path) {
 }
 
 async function loadAllRoutes() {
-    if (_allRoutes) return _allRoutes;
+    if (routerState.allRoutes) return routerState.allRoutes;
     if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
-    if (_allRoutesPromise) return _allRoutesPromise;
-    const loadGeneration = _routeCacheGeneration;
+    if (routerState.allRoutesPromise) return routerState.allRoutesPromise;
+    const loadGeneration = routerState.routeCacheGeneration;
     const loadPromise = (async () => {
         const dynamicRoutes = await loadSpaRoutes();
         const routes = [...STATIC_ROUTES, ...dynamicRoutes];
-        if (loadGeneration === _routeCacheGeneration) {
-            _allRoutes = routes;
+        if (loadGeneration === routerState.routeCacheGeneration) {
+            routerState.allRoutes = routes;
             prepareOfflineRouteAssets(
                 routes.filter((route) => offlineRouteAvailable(route)),
             );
         }
         return routes;
     })();
-    _allRoutesPromise = loadPromise;
+    routerState.allRoutesPromise = loadPromise;
     try {
         return await loadPromise;
     } finally {
-        if (_allRoutesPromise === loadPromise) {
-            _allRoutesPromise = null;
+        if (routerState.allRoutesPromise === loadPromise) {
+            routerState.allRoutesPromise = null;
         }
     }
 }
 
 function findRoute(path) {
-    if (_allRoutes) {
-        return findMatchingRoute(_allRoutes, path);
+    if (routerState.allRoutes) {
+        return findMatchingRoute(routerState.allRoutes, path);
     }
     return findMatchingRoute(STATIC_ROUTES, path);
 }
@@ -305,25 +322,11 @@ async function resolveRoute(path) {
     return findMatchingRoute(allRoutes, path);
 }
 
-let _root = null;
-let _currentBase = null;
-
 function resolveRouterRoot() {
-    if (_root) return _root;
-    _root = document.querySelector("#app");
-    return _root;
+    if (routerState.root) return routerState.root;
+    routerState.root = document.querySelector("#app");
+    return routerState.root;
 }
-
-let _mountController = null;
-let _commitPage = null;
-let _navigationSequence = 0;
-let _initialized = false;
-let _historyIndex = 0;
-let _committedPath = "";
-let _lastSuccessfulPath = "";
-let _previousSuccessfulPath = "";
-let _restoringHistory = false;
-let _guardBypassPath = null;
 
 function requestRouteNavigation(path, resume) {
     const navigationEvent = new CustomEvent("cognis:route-before-navigate", {
@@ -333,13 +336,29 @@ function requestRouteNavigation(path, resume) {
     return window.dispatchEvent(navigationEvent);
 }
 
+async function navigateToStandaloneRoute(path, bypassGuard = false) {
+    if (!(await allowOfflineRoute(null, path))) {
+        await restoreAfterOfflineFailure(path);
+        return false;
+    }
+    if (
+        !bypassGuard &&
+        !requestRouteNavigation(path, () =>
+            navigateToStandaloneRoute(path, true),
+        )
+    )
+        return false;
+    window.location.assign(path);
+    return true;
+}
+
 async function loadRoute(path) {
-    const navigationSequence = ++_navigationSequence;
-    if (_mountController) {
-        _mountController.abort();
+    const navigationSequence = ++routerState.navigationSequence;
+    if (routerState.mountController) {
+        routerState.mountController.abort();
     }
     const navigationController = new AbortController();
-    _mountController = navigationController;
+    routerState.mountController = navigationController;
     const { signal } = navigationController;
     const finishPageLoading = beginPageLoading();
     signal.addEventListener("abort", finishPageLoading, { once: true });
@@ -367,7 +386,7 @@ async function loadRouteContent(
     if (
         !route ||
         signal.aborted ||
-        navigationSequence !== _navigationSequence
+        navigationSequence !== routerState.navigationSequence
     ) {
         return false;
     }
@@ -393,7 +412,10 @@ async function loadRouteContent(
         if (!(await allowOfflineRoute(route, path, signal))) return false;
         mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
-        if (signal.aborted || navigationSequence !== _navigationSequence)
+        if (
+            signal.aborted ||
+            navigationSequence !== routerState.navigationSequence
+        )
             return false;
         console.error("[router] route load error for", path, error);
         finishPageLoading();
@@ -405,7 +427,10 @@ async function loadRouteContent(
         });
         return false;
     }
-    if (signal.aborted || navigationSequence !== _navigationSequence) {
+    if (
+        signal.aborted ||
+        navigationSequence !== routerState.navigationSequence
+    ) {
         return false;
     }
 
@@ -414,7 +439,10 @@ async function loadRouteContent(
         : await uiCtx.runFlow("authenticate-session", {
               routePath: path,
           });
-    if (signal.aborted || navigationSequence !== _navigationSequence) {
+    if (
+        signal.aborted ||
+        navigationSequence !== routerState.navigationSequence
+    ) {
         return false;
     }
     if (!(await allowOfflineRoute(route, path, signal))) return false;
@@ -423,7 +451,10 @@ async function loadRouteContent(
         : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
 
     if (!isOffline()) await ensureHostUiProviders();
-    if (signal.aborted || navigationSequence !== _navigationSequence) {
+    if (
+        signal.aborted ||
+        navigationSequence !== routerState.navigationSequence
+    ) {
         return false;
     }
 
@@ -476,7 +507,7 @@ async function loadRouteContent(
                 if (
                     committed ||
                     signal.aborted ||
-                    navigationSequence !== _navigationSequence ||
+                    navigationSequence !== routerState.navigationSequence ||
                     root !== routeRoot
                 )
                     return false;
@@ -485,10 +516,10 @@ async function loadRouteContent(
                 committed = true;
                 observer?.disconnect();
                 commitPageStylesheets();
-                _currentBase = route.base;
+                routerState.currentBase = route.base;
                 return true;
             };
-            _commitPage = commit;
+            routerState.commitPage = commit;
             window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
             uiCtx.capabilities.get("page:actions")?.reset?.();
             if (typeof MutationObserver !== "undefined") {
@@ -504,12 +535,16 @@ async function loadRouteContent(
                 signal,
                 shareContext: session?.shareContext ?? null,
             });
-            if (signal.aborted || navigationSequence !== _navigationSequence)
+            if (
+                signal.aborted ||
+                navigationSequence !== routerState.navigationSequence
+            )
                 return false;
             commit(routeRoot);
-            if (_lastSuccessfulPath !== path)
-                _previousSuccessfulPath = _lastSuccessfulPath;
-            _lastSuccessfulPath = path;
+            if (routerState.lastSuccessfulPath !== path)
+                routerState.previousSuccessfulPath =
+                    routerState.lastSuccessfulPath;
+            routerState.lastSuccessfulPath = path;
             uiCtx.capabilities.get("offline:recordRouteAssets")?.(route);
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
@@ -517,7 +552,8 @@ async function loadRouteContent(
                 console.error("[router] mount() error for", path, error);
                 finishPageLoading();
                 observer?.disconnect();
-                if (_commitPage === commit) _commitPage = null;
+                if (routerState.commitPage === commit)
+                    routerState.commitPage = null;
                 commitPageStylesheets?.cancel();
                 if (isOffline()) return false;
                 await openRuntimeErrorPopup({
@@ -544,7 +580,7 @@ async function loadRouteContent(
         return false;
     } finally {
         observer?.disconnect();
-        if (_commitPage === commit) _commitPage = null;
+        if (routerState.commitPage === commit) routerState.commitPage = null;
         commitPageStylesheets?.cancel();
     }
 }
@@ -572,24 +608,24 @@ export async function navigateTo(
     )
         return false;
     const previousRouterPage = getCurrentRoutePath();
-    if (!replace) _historyIndex += 1;
-    _committedPath = path;
+    if (!replace) routerState.historyIndex += 1;
+    routerState.committedPath = path;
     history[replace ? "replaceState" : "pushState"](
         {
             ...state,
             routerPage: path,
             previousRouterPage,
-            routerIndex: _historyIndex,
+            routerIndex: routerState.historyIndex,
         },
         "",
         path,
     );
-    const expectedSequence = _navigationSequence + 1;
+    const expectedSequence = routerState.navigationSequence + 1;
     const mounted = await loadRoute(path);
     if (
         !mounted &&
         isOffline() &&
-        expectedSequence === _navigationSequence &&
+        expectedSequence === routerState.navigationSequence &&
         recoverOfflineFailure
     )
         await restoreAfterOfflineFailure(path);
@@ -601,25 +637,28 @@ async function restoreAfterOfflineFailure(
     { notify = true, fallback } = {},
 ) {
     const previous =
-        (_lastSuccessfulPath !== path
-            ? _lastSuccessfulPath
-            : _previousSuccessfulPath) ||
+        (routerState.lastSuccessfulPath !== path
+            ? routerState.lastSuccessfulPath
+            : routerState.previousSuccessfulPath) ||
         history.state?.previousRouterPage ||
         internalNavigationPath(document.referrer);
-    let recoverySequence = _navigationSequence;
+    let recoverySequence = routerState.navigationSequence;
     return recoverOfflineNavigation({
         notify,
         fallback: () => {
-            if (isOffline() && recoverySequence === _navigationSequence)
+            if (
+                isOffline() &&
+                recoverySequence === routerState.navigationSequence
+            )
                 return fallback?.(
-                    () => recoverySequence === _navigationSequence,
+                    () => recoverySequence === routerState.navigationSequence,
                 );
         },
         restore: async () => {
             if (!previous || previous === path) return false;
             if (
                 getCurrentRoutePath() === previous &&
-                _lastSuccessfulPath === previous
+                routerState.lastSuccessfulPath === previous
             )
                 return true;
             if (
@@ -629,7 +668,7 @@ async function restoreAfterOfflineFailure(
                 ))
             )
                 return false;
-            recoverySequence = _navigationSequence + 1;
+            recoverySequence = routerState.navigationSequence + 1;
             return navigateTo(previous, {
                 replace: true,
                 bypassGuard: true,
@@ -659,7 +698,7 @@ uiCtx.capabilities.contribute(
  * @returns {void}
  */
 export function invalidateSpaRouteCache() {
-    _routeCacheGeneration += 1;
+    routerState.routeCacheGeneration += 1;
     clearSpaRouteCache();
     void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES")
         .then(
@@ -668,47 +707,47 @@ export function invalidateSpaRouteCache() {
                 offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
         )
         .catch(console.error);
-    _allRoutes = null;
-    _allRoutesPromise = null;
+    routerState.allRoutes = null;
+    routerState.allRoutesPromise = null;
 }
 
 export function getCurrentBase() {
-    return _currentBase;
+    return routerState.currentBase;
 }
 
 export function initRouter(root) {
-    if (root) _root = root;
-    if (_initialized) return;
-    _initialized = true;
+    if (root) routerState.root = root;
+    if (routerState.initialized) return;
+    routerState.initialized = true;
     const initialRoute = findRoute(window.location.pathname);
     adoptPageStylesheets(initialRoute?.stylesheets ?? []);
     uiCtx.capabilities.contribute("navigation:commitPage", (root, signal) => {
-        if (signal) return _commitPage?.(root, signal) ?? false;
+        if (signal) return routerState.commitPage?.(root, signal) ?? false;
         return false;
     });
     installRuntimeErrorHandlers();
     installOfflineNavigation();
 
-    _historyIndex = Number.isInteger(history.state?.routerIndex)
+    routerState.historyIndex = Number.isInteger(history.state?.routerIndex)
         ? history.state.routerIndex
         : 0;
-    _committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    routerState.committedPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (initialRoute && root?.childElementCount) {
-        _lastSuccessfulPath = _committedPath;
+        routerState.lastSuccessfulPath = routerState.committedPath;
         uiCtx.capabilities.get("offline:recordRouteAssets")?.(initialRoute);
     }
     history.replaceState(
-        { ...(history.state ?? {}), routerIndex: _historyIndex },
+        { ...(history.state ?? {}), routerIndex: routerState.historyIndex },
         "",
-        _committedPath,
+        routerState.committedPath,
     );
 
     void loadAllRoutes();
-    _currentBase = initialRoute ? initialRoute.base : null;
-    if (!_currentBase) {
+    routerState.currentBase = initialRoute ? initialRoute.base : null;
+    if (!routerState.currentBase) {
         void resolveRoute(window.location.pathname).then((resolvedRoute) => {
             if (resolvedRoute) {
-                _currentBase = resolvedRoute.base;
+                routerState.currentBase = resolvedRoute.base;
             }
         });
     }
@@ -739,30 +778,22 @@ export function initRouter(root) {
         event.preventDefault();
         const route = await resolveRoute(routePath);
         if (!route) {
-            if (!(await allowOfflineRoute(null, routePath))) {
-                await restoreAfterOfflineFailure(routePath);
-                return;
-            }
-            window.location.assign(routePath);
+            await navigateToStandaloneRoute(routePath);
             return;
         }
         await navigateTo(routePath);
     });
 
     window.addEventListener("popstate", async (event) => {
-        if (_restoringHistory) {
-            _restoringHistory = false;
+        if (routerState.restoringHistory) {
+            routerState.restoringHistory = false;
             return;
         }
         const path = window.location.pathname;
         const pathWithHash = getCurrentRoutePath();
         const route = await resolveRoute(path);
         if (!route) {
-            if (!(await allowOfflineRoute(null, pathWithHash))) {
-                await restoreAfterOfflineFailure(pathWithHash);
-                return;
-            }
-            window.location.assign(pathWithHash);
+            await navigateToStandaloneRoute(pathWithHash);
             return;
         }
         // If navigating within the same page section (e.g. docs internal
@@ -771,17 +802,18 @@ export function initRouter(root) {
         // `event.state?.routerPage` is set by navigateTo() via history.pushState,
         // so its presence means the router itself triggered this history entry and
         // must handle the transition even if the base path hasn't changed.
-        if (route.base === _currentBase && !event.state?.routerPage) return;
+        if (route.base === routerState.currentBase && !event.state?.routerPage)
+            return;
         const targetIndex = event.state?.routerIndex;
-        const bypassGuard = _guardBypassPath === pathWithHash;
-        if (bypassGuard) _guardBypassPath = null;
+        const bypassGuard = routerState.guardBypassPath === pathWithHash;
+        if (bypassGuard) routerState.guardBypassPath = null;
         const resume = () => {
             if (
                 Number.isInteger(targetIndex) &&
-                targetIndex !== _historyIndex
+                targetIndex !== routerState.historyIndex
             ) {
-                _guardBypassPath = pathWithHash;
-                history.go(targetIndex - _historyIndex);
+                routerState.guardBypassPath = pathWithHash;
+                history.go(targetIndex - routerState.historyIndex);
                 return;
             }
             return navigateTo(pathWithHash, { bypassGuard: true });
@@ -789,23 +821,26 @@ export function initRouter(root) {
         if (!bypassGuard && !requestRouteNavigation(pathWithHash, resume)) {
             if (
                 Number.isInteger(targetIndex) &&
-                targetIndex !== _historyIndex
+                targetIndex !== routerState.historyIndex
             ) {
-                _restoringHistory = true;
-                history.go(_historyIndex - targetIndex);
+                routerState.restoringHistory = true;
+                history.go(routerState.historyIndex - targetIndex);
             } else {
                 history.pushState(
-                    { routerPage: _committedPath, routerIndex: _historyIndex },
+                    {
+                        routerPage: routerState.committedPath,
+                        routerIndex: routerState.historyIndex,
+                    },
                     "",
-                    _committedPath,
+                    routerState.committedPath,
                 );
             }
             return;
         }
         if (Number.isInteger(event.state?.routerIndex)) {
-            _historyIndex = event.state.routerIndex;
+            routerState.historyIndex = event.state.routerIndex;
         }
-        _committedPath = pathWithHash;
+        routerState.committedPath = pathWithHash;
         if (!(await loadRoute(pathWithHash)) && isOffline())
             await restoreAfterOfflineFailure(pathWithHash);
     });
@@ -813,20 +848,10 @@ export function initRouter(root) {
 
 function internalNavigationPath(href) {
     if (!href || href.startsWith("#")) return null;
-    let destination;
-    try {
-        destination = new URL(href, window.location.href);
-    } catch {
-        return null;
-    }
-    if (
-        destination.origin !== window.location.origin ||
-        !["http:", "https:"].includes(destination.protocol) ||
-        destination.username ||
-        destination.password
-    )
-        return null;
-    return destination.pathname + destination.search + destination.hash;
+    return (
+        normalizeSameOriginRoutePath(href, { baseUrl: window.location.href }) ||
+        null
+    );
 }
 
 function installOfflineNavigation() {
@@ -887,8 +912,8 @@ function installOfflineNavigation() {
         const route = await resolveRoute(path);
         if (!isOffline() || path !== getCurrentRoutePath()) return;
         if (await allowOfflineRoute(route, path)) return;
-        ++_navigationSequence;
-        _mountController?.abort();
+        ++routerState.navigationSequence;
+        routerState.mountController?.abort();
         window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
         await restoreAfterOfflineFailure(path, {
             notify: false,

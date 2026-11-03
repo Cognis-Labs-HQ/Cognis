@@ -587,6 +587,12 @@ export function createFormBuilder(ctx, options) {
         const listenerOptions = attachOptions.signal
             ? { signal: attachOptions.signal }
             : undefined;
+        const preventNativeSubmission = (event) => event.preventDefault();
+        formElement.addEventListener(
+            "submit",
+            preventNativeSubmission,
+            listenerOptions,
+        );
 
         for (const fieldConfig of fields) {
             const fieldName = String(fieldConfig?.name ?? "").trim();
@@ -637,7 +643,13 @@ export function createFormBuilder(ctx, options) {
             validateAll,
             setFieldRequired,
             getValues: () => createFieldValues(formElement),
-            detach: detachSecretVisibility,
+            detach() {
+                formElement.removeEventListener(
+                    "submit",
+                    preventNativeSubmission,
+                );
+                detachSecretVisibility();
+            },
         };
     }
 

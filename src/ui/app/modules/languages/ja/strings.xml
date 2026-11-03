@@ -42,7 +42,7 @@
   <string name="ui.app.modules.provider">プロバイダー</string>
   <string name="ui.app.modules.namespace">組織またはグループ</string>
   <string name="ui.app.modules.base_url">API ベース URL</string>
-  <string name="ui.app.modules.pat">個人アクセストークン（任意）</string>
+  <string name="ui.app.modules.pat">個人アクセストークン</string>
   <string name="ui.app.modules.source_saved">モジュールソースを保存しました。</string>
   <string name="ui.app.modules.recommended_url">おすすめモジュール URL</string>
   <string name="ui.app.modules.settings_saved">モジュール設定を保存しました。</string>
@@ -96,4 +96,11 @@
   <string name="ui.app.modules.hard_dependency_blocked">続行する前に、すべての必須依存関係をインストールして有効にしてください。</string>
   <string name="ui.app.modules.configure_adapters">アダプターを設定</string>
   <string name="ui.app.modules.configure_later">後で</string>
+  <string name="ui.app.modules.credential_stored">安全に保存済み。空欄のままで維持</string>
+  <string name="ui.app.modules.credential_shared_hint">保存された認証情報は管理者全員と自動スキャンで共有されます。保存値を取得または表示することはできません。現在の値を維持するには空欄のままにしてください。</string>
+  <string name="ui.app.modules.remove_stored_pat">保存済みPATを削除</string>
+  <string name="ui.app.modules.credential_scope_changed">提供元、アドレス、名前空間を変更する前に、新しいトークンを設定するか保存済みの認証情報を削除してください。</string>
+  <string name="ui.app.modules.source_save_failed">モジュールソースを保存できませんでした。変更内容はこのフォームに残っています。</string>
+  <string name="ui.app.modules.source_refresh_failed">ソースは保存されましたが、一覧を更新できませんでした。設定を開き直して再試行してください。</string>
+  <string name="ui.app.modules.credential_storage_unavailable">共有認証情報には永続的なサーバー暗号鍵が必要です。DATA_ENCRYPTION_KEY を設定して再試行してください。</string>
 </resources>

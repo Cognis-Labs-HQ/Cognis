@@ -43,7 +43,8 @@ test("language binding consumes the current shell preferences without another re
     const toggle = {};
     globalThis.document = { querySelector: () => toggle };
     globalThis.localStorage = {
-        getItem() {
+        getItem(key) {
+            if (key === "cognis_access_token") return "opaque-session";
             throw new Error("unexpected separate preference read");
         },
     };
@@ -51,6 +52,21 @@ test("language binding consumes the current shell preferences without another re
         await bindLanguageToggle({
             preferences: Promise.resolve({ languagePriority: ["de"] }),
         });
+        assert.equal(toggle.hidden, true);
+    } finally {
+        globalThis.document = previousDocument;
+        globalThis.localStorage = previousStorage;
+    }
+});
+
+test("signed-out language binding hides account controls without fetching catalogs", async () => {
+    const previousDocument = globalThis.document;
+    const previousStorage = globalThis.localStorage;
+    const toggle = {};
+    globalThis.document = { querySelector: () => toggle };
+    globalThis.localStorage = { getItem: () => null };
+    try {
+        await bindLanguageToggle({});
         assert.equal(toggle.hidden, true);
     } finally {
         globalThis.document = previousDocument;

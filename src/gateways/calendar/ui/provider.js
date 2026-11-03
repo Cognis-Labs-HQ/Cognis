@@ -1,3 +1,4 @@
+import { registerSharedCalendarClient } from "./shared-client.js";
 import { registerCalendarClient, calendarFetch } from "./offline-client.js";
 import { calendarDashboardEvents } from "./calendar-api.js";
 import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
@@ -10,6 +11,7 @@ export function mountProvider(ctx) {
             signal: ctx.signal,
         });
     registerCalendarClient(ctx);
+    registerSharedCalendarClient(ctx);
     ctx.capabilities.contribute(
         "calendar:dashboardEvents",
         calendarDashboardEvents,

@@ -171,7 +171,7 @@ function close(server: import("node:http").Server): Promise<void> {
     });
 }
 
-test("module enablement rejects disabled gateway dependencies by name", () => {
+test("module enablement rejects disabled gateway dependencies by name", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "file",
@@ -179,7 +179,7 @@ test("module enablement rejects disabled gateway dependencies by name", () => {
         name: "File Gateway",
         version: "1.0.0",
     });
-    registry.disable("file");
+    await registry.disable("file");
     assert.throws(
         () =>
             assertModuleEnableDependencies(
@@ -192,7 +192,7 @@ test("module enablement rejects disabled gateway dependencies by name", () => {
     assert.equal(registry.get("file")?.status, "disabled");
 });
 
-test("module installation resolves active dependencies by component UUID", () => {
+test("module installation resolves active dependencies by component UUID", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "study",
@@ -208,7 +208,7 @@ test("module installation resolves active dependencies by component UUID", () =>
             registry,
         ),
     );
-    registry.disable("study");
+    await registry.disable("study");
     assert.throws(
         () =>
             assertModuleInstallDependencies(
@@ -232,7 +232,7 @@ test("module installation resolves active dependencies by component UUID", () =>
     );
 });
 
-test("module installation resolves adapter UUIDs through their owning gateway", () => {
+test("module installation resolves adapter UUIDs through their owning gateway", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "social",
@@ -257,7 +257,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
             components,
         ),
     );
-    registry.disable("social");
+    await registry.disable("social");
     assert.throws(
         () =>
             assertModuleInstallDependencies(
@@ -271,7 +271,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
     );
 });
 
-test("module enablement rejects disabled adapter dependencies by name", () => {
+test("module enablement rejects disabled adapter dependencies by name", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "social",
@@ -279,7 +279,7 @@ test("module enablement rejects disabled adapter dependencies by name", () => {
         name: "Social Gateway",
         version: "1.0.0",
     });
-    registry.disable("social");
+    await registry.disable("social");
     assert.throws(
         () =>
             assertModuleEnableDependencies(
@@ -386,7 +386,7 @@ test("buildServer returns gateway_disabled for disabled gateway prefixes", async
         required: false,
         hasAdapters: true,
     });
-    gatewayRegistry.disable("notify");
+    await gatewayRegistry.disable("notify");
 
     const server = buildServer({
         moduleRuntimeGateway: {

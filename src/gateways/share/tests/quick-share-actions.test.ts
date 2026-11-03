@@ -8,28 +8,24 @@ import {
 test("resolveQuickShareActions returns actions for active senders with matching capabilities", async () => {
     const capabilities = new Map<string, unknown>([
         [
-            "notify:gateway",
-            {
-                listSenders() {
-                    return [
-                        {
-                            senderId: "smtp",
-                            name: "SMTP Email",
-                            active: true,
-                        },
-                        {
-                            senderId: "internal",
-                            name: "Internal",
-                            active: true,
-                        },
-                        {
-                            senderId: "disabled",
-                            name: "Disabled",
-                            active: false,
-                        },
-                    ];
+            "notify:listSenders",
+            () => [
+                {
+                    senderId: "smtp",
+                    name: "SMTP Email",
+                    active: true,
                 },
-            },
+                {
+                    senderId: "internal",
+                    name: "Internal",
+                    active: true,
+                },
+                {
+                    senderId: "disabled",
+                    name: "Disabled",
+                    active: false,
+                },
+            ],
         ],
         [
             "notify:quickShare:smtp",

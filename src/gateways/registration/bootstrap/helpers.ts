@@ -10,7 +10,7 @@ export function inviteBaseUrl(): string {
 
 export function issueInviteErrorStatus(code: string): number {
     if (code === "invite_disabled") return 404;
-    if (code === "smtp_unavailable") return 503;
+    if (code === "email_delivery_unavailable") return 503;
     if (code === "founder_token_limit_reached") return 429;
     if (code === "invitee_email_required") return 400;
     if (code === "email_taken") return 409;

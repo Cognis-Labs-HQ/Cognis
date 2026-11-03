@@ -35,7 +35,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     let pendingInvitations = [];
     let canInviteExternal = false;
     let currentAccountId = "";
-    let jitsiAvailable = false;
     let selectedView = "month";
     let activeDate = new Date();
     let composer = null;
@@ -141,7 +140,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
             pendingInvitations = [];
             canInviteExternal = false;
             currentAccountId = "";
-            jitsiAvailable = false;
             return;
         }
         const invitationsPromise = calendarUi
@@ -158,7 +156,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
-        jitsiAvailable = Boolean(calendarState.meta?.jitsiAvailable);
         ensureSelectedCalendarId();
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
@@ -389,7 +386,10 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         getEventsByCalendar: () => eventsByCalendar,
         getCanInviteExternal: () => canInviteExternal,
         getCurrentAccountId: () => currentAccountId,
-        getJitsiAvailable: () => jitsiAvailable && !isOffline(),
+        getMeetingsAvailable: () =>
+            !isOffline() &&
+            typeof uiCtx.capabilities.get("meetings:createMeeting") ===
+                "function",
         reloadState,
         syncRouteSelection,
         refreshComposer: refreshCalendarComposer,

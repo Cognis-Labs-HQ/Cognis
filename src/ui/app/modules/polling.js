@@ -1,4 +1,5 @@
 const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
+const MARKETPLACE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
 
 export function startMarketplacePolling({
     signal,
@@ -7,8 +8,14 @@ export function startMarketplacePolling({
     reportError,
     setPending,
 }) {
+    if (signal.aborted) return;
     const run = () => {
-        if (signal.aborted || isBusy()) return;
+        if (
+            signal.aborted ||
+            globalThis.document?.visibilityState === "hidden" ||
+            isBusy()
+        )
+            return;
         setPending(true);
         void poll()
             .catch((error) => {
@@ -55,14 +62,32 @@ export function createModulesPagePolling({
     log,
     translate,
 }) {
-    let pollPending = false;
-    return (signal) =>
-        startMarketplacePolling({
+    return (signal) => {
+        let pollPending = false;
+        let nextScanAt = 0;
+        let lastSourceRevision;
+        return startMarketplacePolling({
             signal,
             isBusy: () => isRefreshPending() || pollPending,
             setPending: (pending) => (pollPending = pending),
-            poll: () =>
-                loadKnownModules(signal).then(() => discoverSources(signal)),
+            poll: async () => {
+                const state = await loadKnownModules(signal);
+                if (signal.aborted) return;
+                if (
+                    (state?.sourceRevision !== undefined &&
+                        state.sourceRevision !== lastSourceRevision) ||
+                    Date.now() >= nextScanAt
+                ) {
+                    nextScanAt = Date.now() + MARKETPLACE_SCAN_INTERVAL_MS;
+                    lastSourceRevision = state?.sourceRevision;
+                    try {
+                        await discoverSources(signal);
+                    } catch (error) {
+                        nextScanAt = Date.now() + 60_000;
+                        throw error;
+                    }
+                }
+            },
             reportError: (error) =>
                 log("error", translate("ui.app.modules.polling_failed"), {
                     component: "modules-page",
@@ -71,4 +96,5 @@ export function createModulesPagePolling({
                         error instanceof Error ? error.message : String(error),
                 }),
         });
+    };
 }

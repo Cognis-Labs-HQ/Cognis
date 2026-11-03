@@ -89,3 +89,13 @@ Flashcards bereitet jeden sichtbaren Stapel eingeschriebener Lern- und Unterrich
 ## Offline-Übungen
 
 Die Vorbereitung eingeschriebener Sprachen speichert den gemeinsamen Schemakatalog zusätzlich zu den sprachspezifischen Katalogen. Zeichnen und Flashcards können ihre üblichen Schemaabfragen ohne vorherigen Online-Seitenbesuch nutzen. Flashcards bereitet Share- und Study-Übersetzungen sowie die Galerievorlage vor und liest Sammlungen der ausgewählten Sprache mit denselben schemaqualifizierten Anfragen wie die Einschreibungsvorbereitung. Vorbereitete Stapel öffnen Galerie und Übungen offline. Audio, Wörterbuchabrufe, Inhaltsbearbeitung sowie Zugriffs- und Zustimmungsprüfungen behalten ihre bisherigen Beschränkungen.
+
+## Zuverlässige Freigaben und Tests
+
+Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse anderer Ressourcenanbieter. Link- und Kontofreigaben lassen sich dadurch bei aktivierten Anbietern erstellen und auflösen. Ladeansicht, Kontofreigabestatus und Kalender-Gastansicht verwenden responsive Mindestgrößen statt acht verpflichtender Rasterspalten und bleiben auf schmalen Bildschirmen nutzbar. Die Freigabewartung läuft nacheinander, bündelt überlappende Aufrufe, beendet fehlgeschlagene Durchläufe und versucht es nach fünfzehn Minuten erneut. Deaktivierung stoppt weitere Arbeit; Reaktivierung setzt die Planung fort.
+
+Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und deaktiviert Kontofunktionen sowie gespeicherte Layouteinstellungen. Sie liest oder schreibt keine Übungseinstellungen eines Kontos.
+
+## Prüfung und Lebenszyklus
+
+Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.

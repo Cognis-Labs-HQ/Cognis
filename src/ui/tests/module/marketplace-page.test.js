@@ -50,10 +50,6 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
-const credentialsSource = readFileSync(
-    resolve(ROOT, "src/ui/app/modules/credentials.js"),
-    "utf8",
-);
 
 const marketplaceSource =
     readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
@@ -71,7 +67,7 @@ test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /window\.setInterval\((?:poll|run)/);
     assert.match(
         marketplaceSource,
-        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
@@ -324,15 +320,10 @@ test("module marketplace identifies immutable trusted sources", () => {
         sourceSettingsSource,
         /const sourceValues = selectedSource\?\.trusted/,
     );
-    assert.match(sourceSettingsSource, /const STORED_PAT_MASK = "\*\*\*\*"/);
-    assert.match(sourceSettingsSource, /values\.token !== STORED_PAT_MASK/);
-    assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
-    assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
-    assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
-    assert.match(marketplaceSource, /promptWhenLocked:\s*forceRefresh/);
-    assert.match(credentialsSource, /keyring\?\.resolve\(source\.credentialId/);
-    assert.match(credentialsSource, /promptWhenLocked,/);
-    assert.doesNotMatch(credentialsSource, /keyring\?\.get/);
+    assert.match(sourceSettingsSource, /credentialConfigured/);
+    assert.match(sourceSettingsSource, /clearCredential/);
+    assert.match(sourceSettingsSource, /saveModuleSource/);
+    assert.match(sourceSettingsSource, /source_refresh_failed/);
 });
 
 test("recommended modules retain the published defaults", () => {
@@ -567,9 +558,12 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /id="module-source-refresh"/);
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
-    assert.match(source, /loadCachedModules\(\)/);
+    assert.match(
+        source,
+        /loadMarketplaceState\(marketplaceEtag, \{ signal \}\)/,
+    );
     assert.match(source, /async function discoverConfiguredSources/);
-    assert.match(source, /loadModuleSources\(\)/);
+    assert.match(source, /sources: loadedSources, installed, cached/);
     assert.match(
         source,
         /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
@@ -591,7 +585,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /button-loading module-icon-button-loading/);
     assert.match(
         source,
-        /loadKnownModules\(false, signal, false\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
     );
 });
 
@@ -730,7 +724,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
+        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /createSelectedBranchResolver/);

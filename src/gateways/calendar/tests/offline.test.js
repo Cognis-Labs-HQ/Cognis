@@ -1,3 +1,4 @@
+import { registerScopedUiActions } from "../../../ui/reuse/scoped-actions.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -102,10 +103,20 @@ test("Calendar refreshes its authenticated snapshots after preference cache inva
         host.imports,
         host.globals,
     );
+    const shared = loadTestModule(
+        new URL("../ui/shared-client.js", import.meta.url),
+        {
+            "/static/reuse/api-client.js":
+                host.imports["/static/reuse/api-client.js"],
+            "/static/reuse/scoped-actions.js": { registerScopedUiActions },
+        },
+        { AbortSignal },
+    );
     const provider = loadTestModule(
         new URL("../ui/provider.js", import.meta.url),
         {
             "./offline-client.js": client,
+            "./shared-client.js": shared,
             "/static/reuse/offline-snapshot.js":
                 host.imports["/static/reuse/offline-snapshot.js"],
             "./calendar-api.js": { calendarDashboardEvents: {} },

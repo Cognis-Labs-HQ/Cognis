@@ -16,7 +16,9 @@ export async function localizeModulePresentation(
         : module.id
           ? `/static/modules/${module.id}/languages`
           : undefined;
-    const moduleI18n = await extend(baseI18n, stringsBaseUrl);
+    const moduleI18n = await extend(baseI18n, stringsBaseUrl, {
+        revision: presentation.ui?.stringsRevision,
+    });
     module.localizedPresentation = {
         name: resolveManifestString(moduleI18n, presentation.name),
         summary: resolveManifestString(moduleI18n, presentation.summary),

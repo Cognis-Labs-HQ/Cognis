@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.saml.config.entrypoint">Entry Point URL</string>
+    <string name="adapter.saml.config.issuer">Issuer</string>
+    <string name="adapter.saml.config.certificate">Certificate</string>
+    <string name="adapter.saml.config.adminattribute">Admin Attribute</string>
+    <string name="adapter.saml.config.adminvalue">Admin Attribute Value</string>
+</resources>

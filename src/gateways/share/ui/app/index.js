@@ -11,7 +11,13 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { getShareRenderer } from "./renderer-registry.js";
+
+const log = (operation, error) =>
+    console.error("Share page operation failed.", {
+        component: "share",
+        operation,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+    });
 
 function renderFallbackBody(i18n, messageKey) {
     return `
@@ -32,7 +38,7 @@ function updatePageDescriptor(root, i18n, subtitleKey) {
     }
 }
 
-async function navigateToShareError(i18n, reason) {
+async function navigateToShareError(i18n, reason, showFallback) {
     const notFound = reason === "share_not_found";
     const code = notFound ? "404" : "410";
     const message = i18n.t(
@@ -42,13 +48,9 @@ async function navigateToShareError(i18n, reason) {
     try {
         if (await navigateTo(destination)) return;
     } catch (error) {
-        console.error("[share] failed to open share error route", {
-            operation: "navigate_share_error",
-            reason,
-            error,
-        });
+        log("navigateShareError", error);
     }
-    window.location.replace(destination);
+    showFallback(notFound ? "share.error.not_found" : "share.error.expired");
 }
 
 /**
@@ -65,7 +67,7 @@ function buildShareElement(state) {
         pinned: true,
         gridSize: {
             default: [12, 10],
-            min: [8, 5],
+            min: [1, 3],
             max: ["fill", "fill"],
         },
         render: () => {
@@ -81,16 +83,9 @@ function buildShareElement(state) {
                     </div>
                 `;
             }
-            if (state.errorKey) {
-                return `
-                    <div class="share-window card-elevated">
-                        ${renderFallbackBody(state.i18n, state.errorKey)}
-                    </div>
-                `;
-            }
             return `
                 <div class="share-window card-elevated">
-                    <section class="share-window-body">${state.renderedContent}</section>
+                    ${renderFallbackBody(state.i18n, state.errorKey || "share.error.renderer_missing")}
                 </div>
             `;
         },
@@ -101,17 +96,19 @@ export async function mount(
     root,
     { signal, shareContext: routedShareContext } = {},
 ) {
+    if (signal?.aborted) return;
     const state = {
         loading: true,
         errorKey: "",
-        renderedContent: "",
         i18n: await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
     };
+    if (signal?.aborted) return;
     applyDocumentTitle(state.i18n, "share.page_title");
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         i18n: state.i18n,
         preferenceKey: "share-page-layout",
@@ -136,7 +133,15 @@ export async function mount(
     });
 
     await composer.init();
+    if (signal?.aborted) return;
 
+    const showShareFallback = (messageKey) => {
+        if (signal?.aborted) return;
+        state.loading = false;
+        state.errorKey = messageKey;
+        updatePageDescriptor(root, state.i18n, messageKey);
+        composer.refresh([buildShareElement(state)]);
+    };
     installGuestNavigationGuard({ root, signal });
 
     const flowResult = routedShareContext
@@ -144,6 +149,7 @@ export async function mount(
         : await uiCtx.runFlow("authenticate-session", {
               routePath: `${window.location.pathname}${window.location.search}`,
           });
+    if (signal?.aborted) return;
     const session = routedShareContext
         ? { authenticated: true, shareContext: routedShareContext }
         : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
@@ -151,7 +157,11 @@ export async function mount(
 
     if (session?.shareAttempted && !session?.authenticated) {
         if (session.failureReason !== "share_access_denied") {
-            await navigateToShareError(state.i18n, session.failureReason);
+            await navigateToShareError(
+                state.i18n,
+                session.failureReason,
+                showShareFallback,
+            );
             return;
         }
         // A share token was present in the URL but failed to resolve
@@ -168,12 +178,17 @@ export async function mount(
         await navigateToShareError(
             state.i18n,
             shareContext === null ? "share_not_found" : "share_expired",
+            showShareFallback,
         );
         return;
     }
 
     if (!session?.authenticated) {
-        await navigateToShareError(state.i18n, "share_expired");
+        await navigateToShareError(
+            state.i18n,
+            "share_expired",
+            showShareFallback,
+        );
         return;
     }
 
@@ -181,9 +196,11 @@ export async function mount(
     await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.({
         force: true,
     });
+    if (signal?.aborted) return;
 
     if (shareContext.contentUrl && shareContext.directAccess === true) {
         const navigated = await navigateTo(shareContext.contentUrl);
+        if (signal?.aborted) return;
         if (navigated) return;
         state.loading = false;
         state.errorKey = "share.error.renderer_missing";
@@ -197,6 +214,7 @@ export async function mount(
             state.i18n,
             shareContext.page.stringsBaseUrl,
         );
+        if (signal?.aborted) return;
     }
 
     const stylesheetUrls = Array.isArray(shareContext.page?.stylesheetUrls)
@@ -206,6 +224,7 @@ export async function mount(
         await Promise.all(
             stylesheetUrls.map((url) => ensurePageStylesheet(String(url))),
         );
+        if (signal?.aborted) return;
     }
 
     if (shareContext.page?.mountScriptUrl) {
@@ -222,6 +241,7 @@ export async function mount(
                 globalThis.__spaRouter = false;
             }
         }
+        if (signal?.aborted) return;
         const mountSharedPage =
             typeof mountModule?.mount === "function" ? mountModule.mount : null;
         if (!mountSharedPage) {
@@ -241,54 +261,8 @@ export async function mount(
         return;
     }
 
-    if (shareContext.page?.rendererScriptUrl) {
-        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-        globalThis.__spaRouter = true;
-        try {
-            await import(String(shareContext.page.rendererScriptUrl));
-        } catch {
-            state.loading = false;
-            state.errorKey = "share.error.renderer_missing";
-            updatePageDescriptor(root, state.i18n, state.errorKey);
-            composer.refresh([buildShareElement(state)]);
-            return;
-        } finally {
-            globalThis.__spaRouterCount--;
-            if (globalThis.__spaRouterCount === 0) {
-                globalThis.__spaRouter = false;
-            }
-        }
-    }
-    const renderer = getShareRenderer(shareContext.resourceType);
-    if (!renderer) {
-        state.loading = false;
-        state.errorKey = "share.error.renderer_missing";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
-
-    let renderedContent = "";
-    try {
-        renderedContent = renderer({
-            data: shareContext.payload ?? {},
-            grantedCapabilities: shareContext.grantedCapabilities,
-            guestAccessToken: shareContext.guestAccessToken,
-            i18n: state.i18n,
-            signal,
-        });
-    } catch {
-        state.loading = false;
-        state.errorKey = "share.error.malformed_response";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
-        return;
-    }
-    state.loading = false;
-    state.errorKey = "";
-    state.renderedContent =
-        typeof renderedContent === "string" ? renderedContent : "";
-    composer.refresh([buildShareElement(state)]);
+    if (signal?.aborted) return;
+    showShareFallback("share.error.renderer_missing");
 }
 
 await mountWhenDirect(mount);

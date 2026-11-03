@@ -110,9 +110,15 @@ uiCtx.extendFlow(
     "logout",
     "clearSession",
     { id: "ui:clearOfflineRoutes" },
-    async () => {
-        await offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
-            (error) => console.error("[offline] account cleanup failed", error),
+    () => {
+        void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
+            (error) =>
+                console.error("[offline] account cleanup failed", {
+                    component: "ui",
+                    operation: "clearOfflineRoutes",
+                    errorName: error?.name,
+                    code: error?.message,
+                }),
         );
     },
 );

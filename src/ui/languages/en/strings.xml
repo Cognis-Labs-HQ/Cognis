@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">Verification failed. Please try again.</string>
   <string name="ui.app.settings.emails_verify_rate_limited">A verification email was sent recently. Please wait before requesting another.</string>
   <string name="ui.app.settings.emails_remove_primary_body">This is your primary email address. Set another email as primary before removing this one.</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">You need a verified primary email address to enable email notifications. Add and verify an email address in your general settings first.</string>
+  <string name="ui.app.settings.notif_email_required_body">You need a verified primary email address to enable email notifications. Add and verify an email address in your general settings first.</string>
   <string name="ui.app.settings.notif_matrix_heading">Notification Preferences</string>
   <string name="ui.app.settings.notif_no_providers">No notification adapters are active.</string>
   <string name="ui.app.settings.notif_no_categories">No notification categories are registered.</string>
@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">Last 1 hour</string>
   <string name="ui.app.admin.logs.time_range.6h">Last 6 hours</string>
   <string name="ui.app.admin.logs.time_range.24h">Last 24 hours</string>
-  <string name="ui.app.admin.notif.smtp_host">SMTP Host</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Security</string>
-  <string name="ui.app.admin.notif.smtp_from">From Address</string>
-  <string name="ui.app.admin.notif.smtp_user">Username</string>
-  <string name="ui.app.admin.notif.smtp_password">Password</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">None</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Save Settings</string>
   <string name="ui.app.admin.notif.test_email">Send Test Email</string>
   <string name="ui.app.admin.notif.test_email_to">Recipient email address</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Overriding env variable</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Code Length</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Sender Name</string>
   <string name="ui.app.admin.security.title">Security</string>
   <string name="ui.app.admin.security.trusted_domains_label">Trusted Domains</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of trusted domains. Leave empty to allow all email domains while external links remain limited to this site. Matching subdomains are also allowed.</string>
@@ -474,8 +461,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">User Validation Method</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (unavailable — enable the SMTP adapter first)</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">Email</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">Email (unavailable — configure an email delivery provider first)</string>
   <string name="ui.app.admin.security.password_policy_heading">Password Policy</string>
   <string name="ui.app.admin.security.policy_min_length">Minimum Length</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Minimum Uppercase Letters (0 = off)</string>
@@ -632,4 +619,10 @@
   <string name="ui.reuse.recheck_connectivity">Recheck Connectivity</string>
   <string name="ui.reuse.offline_no_cached_content">No offline cached content available.</string>
   <string name="ui.app.settings.language_offline_locked">Connect to add or remove UI languages. You can still reorder your selected languages.</string>
+  <string name="ui.app.users.details_failed">Could not load this user’s details. Please try again.</string>
+  <string name="ui.app.users.refresh_failed">The change was saved, but the Users list could not be refreshed. Refresh the page to see the latest data.</string>
+  <string name="ui.reuse.none">None</string>
+  <string name="ui.reuse.unavailable">Unavailable</string>
+    <string name="ui.reuse.test">Test</string>
+    <string name="ui.app.admin.security.validation_unavailable">This validation method is unavailable.</string>
 </resources>

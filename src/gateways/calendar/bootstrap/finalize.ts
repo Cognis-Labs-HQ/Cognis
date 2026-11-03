@@ -25,11 +25,10 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
         routeHelpers,
         adaptersRoot,
         getPreferenceStore,
-        resolveMeetingsProviderAvailability,
         resolveShareableUsers,
         resolveAccountId,
         resolveAccountDisplayName,
-        notificationResolver,
+        getDispatchNotification,
         systemCtx,
         gatewayRoot,
     } = input;
@@ -83,16 +82,11 @@ export async function finalizeCalendarBootstrap(input: any): Promise<void> {
             gateway,
             shareRegistry,
             routeContext,
-            resolveMeetingsProviderAvailability:
-                resolveMeetingsProviderAvailability ?? null,
             resolveShareableUsers,
             resolveAccountId: resolveAccountId ?? null,
             resolveAccountDisplayName,
             log: ctx.log,
-            getDispatchNotification: () =>
-                notificationResolver.getDispatchNotification(),
-            ensureNotificationCategory: () =>
-                notificationResolver.ensureCategory(),
+            getDispatchNotification,
             getCapability: <T>(capabilityId: string) =>
                 ctx.capabilities.get<T>(capabilityId),
             runUpcomingEventsFlow: async (input) => {

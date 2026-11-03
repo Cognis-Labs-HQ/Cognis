@@ -30,7 +30,7 @@ export function getCurrentRoutePath() {
 
 export function normalizeSameOriginRoutePath(
     routePath,
-    { logFailures = false } = {},
+    { logFailures = false, baseUrl = globalThis.window?.location?.origin } = {},
 ) {
     if (typeof routePath !== "string" || !routePath.trim()) {
         return "";
@@ -39,8 +39,14 @@ export function normalizeSameOriginRoutePath(
         return "";
     }
     try {
-        const routeUrl = new URL(routePath, window.location.origin);
-        if (routeUrl.origin !== window.location.origin) return "";
+        const routeUrl = new URL(routePath, baseUrl);
+        if (
+            routeUrl.origin !== window.location.origin ||
+            !["http:", "https:"].includes(routeUrl.protocol) ||
+            routeUrl.username ||
+            routeUrl.password
+        )
+            return "";
         return `${routeUrl.pathname}${routeUrl.search}${routeUrl.hash}`;
     } catch (error) {
         if (logFailures) {

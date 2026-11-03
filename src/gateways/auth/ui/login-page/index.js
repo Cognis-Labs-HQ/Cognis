@@ -66,12 +66,11 @@ export async function mount(root, { signal } = {}) {
         loadConfig: loadLoginUiConfig,
         loadClient: loadLoginIntegrationClient,
     } = createLoginIntegrationLoader();
-    const { loadTfaLoginClient, loadRequiredEmailEnforcementClient } =
-        createLoginClientLoaders({
-            loadClient: loadLoginIntegrationClient,
-            i18n,
-            root,
-        });
+    const { loadTfaLoginClient } = createLoginClientLoaders({
+        loadClient: loadLoginIntegrationClient,
+        i18n,
+        root,
+    });
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -339,22 +338,6 @@ export async function mount(root, { signal } = {}) {
         await uiCtx.runFlow("complete-login", {
             accountPassword: password,
         });
-        const requiresUserValidation =
-            data.requiredUserValidation === true &&
-            data.userValidationMode === "smtp";
-        if (requiresUserValidation) {
-            const requiredEmailClient =
-                await loadRequiredEmailEnforcementClient();
-            try {
-                await requiredEmailClient?.enforceRequiredEmailSetup({
-                    accountId: data.accountId,
-                    i18n,
-                });
-            } catch {
-                clearLoginSession();
-                return;
-            }
-        }
         await navigateAfterLogin(data.accountId);
     }
 
@@ -372,7 +355,7 @@ export async function mount(root, { signal } = {}) {
                 pendingKeyringPassword = password;
                 hideCredentialProviderSelector();
                 currentTfaLoginAttemptId =
-                    tfaLoginClient.switchToTfaPrompt(data);
+                    await tfaLoginClient.switchToTfaPrompt(data);
             } else {
                 persistSession(data);
                 await uiCtx.runFlow("complete-login", {
@@ -784,13 +767,13 @@ export async function mount(root, { signal } = {}) {
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
                         loadTfaLoginClient()
-                            .then((client) => {
+                            .then(async (client) => {
                                 if (client) {
                                     hideCredentialProviderSelector();
                                     currentTfaLoginAttemptId =
-                                        client.switchToTfaPrompt(
+                                        (await client.switchToTfaPrompt(
                                             lastTfaPayload,
-                                        ) ?? null;
+                                        )) ?? null;
                                     return;
                                 }
                                 lastTfaPayload = null;

@@ -1,9 +1,13 @@
 import {
-    DEFAULT_SMTP_VERIFICATION_CODE_LENGTH,
-    SMTP_VERIFICATION_RATE_LIMIT_MS,
-    clampSmtpVerificationCodeLength,
-    generateSmtpNumericCode,
-} from "@cognis/core";
+    clampVerificationCodeLength,
+    generateNumericVerificationCode,
+} from "../../../gateways/reuse/verification-codes.js";
+
+import type {
+    RegisterNotificationAction,
+    SendEmailAction,
+} from "../../notify/smtp/contracts/action-delivery.js";
+import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
@@ -11,6 +15,10 @@ const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 interface SmtpTfaAdapterContext {
     canSendVerificationEmail?: () => boolean;
+    getEmailDeliveryPolicy?: () => {
+        minimumIntervalMs: number;
+        codeLength: number;
+    };
     sendVerificationEmail?: (
         to: string,
         code: string,
@@ -50,20 +58,86 @@ function challengeKey(scope: "setup" | "login", accountId: string): string {
 
 class SmtpTfaAdapter implements TfaMethodAdapter {
     readonly id = "smtp";
+    readonly stringsBaseUrl = "/static/adapters/tfa/smtp/languages";
+    readonly loginUi = {
+        placeholderKey: "ui.app.login.tfa.code_placeholder_smtp",
+        supportsResend: true,
+        challengeOnSelect: true,
+    };
     readonly name = "Email Code";
 
     private readonly challenges = new Map<string, CodeChallenge>();
     private readonly loginChallengeLastSentAt = new Map<string, number>();
-    private codeLength = DEFAULT_SMTP_VERIFICATION_CODE_LENGTH;
+
+    private get codeLength() {
+        return clampVerificationCodeLength(
+            this.context.getEmailDeliveryPolicy?.().codeLength,
+        );
+    }
+
+    private get deliveryIntervalMs() {
+        return Math.max(
+            0,
+            this.context.getEmailDeliveryPolicy?.().minimumIntervalMs ?? 0,
+        );
+    }
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
 
+    async bootstrap(ctx: TfaAdapterBootstrapContext): Promise<void> {
+        this.context.getEmailDeliveryPolicy = () =>
+            ctx.capabilities.require<
+                () => { minimumIntervalMs: number; codeLength: number }
+            >("notify:emailDeliveryPolicy")();
+        const register = ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerEmailPurpose",
+        );
+        if (register) {
+            const purpose = await register("loginCode", (variables) => ({
+                subject: "Your Cognis verification code",
+                body: `Your verification code is ${variables.code}.`,
+            }));
+            const send = async (
+                to: string,
+                code: string,
+                _verifyUrl?: string,
+                _theme?: string,
+            ) =>
+                ctx.capabilities.require<SendEmailAction>("notify:sendEmail")({
+                    purpose,
+                    recipientEmail: to,
+                    variables: { code },
+                });
+            this.context.canSendVerificationEmail = () =>
+                ctx.capabilities.get<() => boolean>(
+                    "notify:emailAvailable",
+                )?.() === true;
+            this.context.sendVerificationEmail = async (...args) => {
+                await send(...args);
+            };
+            this.context.queueVerificationEmail = send;
+        }
+        this.context.getPrimaryEmail = ctx.capabilities.get<
+            (accountId: string) => Promise<string | null>
+        >("notify:getPrimaryEmail");
+        ctx.registerSyncTarget({ gatewayId: "notify", adapterId: "smtp" });
+        const setEnabled = ctx.capabilities.get<
+            (id: string, enabled: boolean) => Promise<void>
+        >("notify:setSenderEnabled");
+        if (setEnabled) {
+            ctx.onEnabledChange("tfa:smtpSync", async (enabled) => {
+                if (enabled) await setEnabled("smtp", true);
+            });
+            if (ctx.isEnabled()) await setEnabled("smtp", true);
+        }
+    }
+
     private assertEmailCodeAvailable(): void {
         if (typeof this.context.sendVerificationEmail !== "function") {
-            throw new Error("smtp_capability_missing");
+            throw new Error("email_delivery_unavailable");
         }
         if (this.context.canSendVerificationEmail?.() !== true) {
-            throw new Error("smtp_unavailable");
+            throw new Error("email_delivery_unavailable");
         }
     }
 
@@ -91,13 +165,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private issueCode(key: string): string {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
-        let code = generateSmtpNumericCode(this.codeLength);
+        let code = generateNumericVerificationCode(this.codeLength);
         let generationAttempts = 1;
         while (existingCode && code === existingCode) {
             if (generationAttempts >= MAX_CODE_GENERATION_ATTEMPTS) {
                 throw new Error("smtp_code_generation_failed");
             }
-            code = generateSmtpNumericCode(this.codeLength);
+            code = generateNumericVerificationCode(this.codeLength);
             generationAttempts += 1;
         }
         this.challenges.set(key, {
@@ -178,11 +252,9 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(
-                SMTP_VERIFICATION_RATE_LIMIT_MS / 1000,
-            ),
+            retryAfterSeconds: Math.ceil(this.deliveryIntervalMs / 1000),
             resendAvailableAt: new Date(
-                sentAtMs + SMTP_VERIFICATION_RATE_LIMIT_MS,
+                sentAtMs + this.deliveryIntervalMs,
             ).toISOString(),
         };
     }
@@ -264,7 +336,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_smtp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({
@@ -292,10 +364,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             typeof this.context.sendVerificationEmail !== "function" &&
             typeof this.context.queueVerificationEmail !== "function"
         ) {
-            return { ready: false, message: "smtp_capability_missing" };
+            return { ready: false, message: "email_delivery_unavailable" };
         }
         if (this.context.canSendVerificationEmail?.() !== true) {
-            return { ready: false, message: "smtp_unavailable" };
+            return { ready: false, message: "email_delivery_unavailable" };
         }
         try {
             if (typeof this.context.queueVerificationEmail === "function") {
@@ -325,7 +397,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     );
                     return {
                         ready: true,
-                        message: "smtp_rate_limited",
+                        message: "email_rate_limited",
                         retryAfterSeconds: retryMetadata.retryAfterSeconds,
                         resendAvailableAt: retryMetadata.resendAvailableAt,
                     };
@@ -341,7 +413,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                             error: queued.error ?? "queue_delivery_failed",
                         },
                     );
-                    return { ready: false, message: "smtp_unavailable" };
+                    return {
+                        ready: false,
+                        message: "email_delivery_unavailable",
+                    };
                 }
                 this.loginChallengeLastSentAt.set(
                     input.accountId,
@@ -365,17 +440,17 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            if (errorMessage === "smtp_rate_limited") {
+            if (errorMessage === "email_rate_limited") {
                 const now = Date.now();
                 const lastSentAt =
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
                 const retryMs = Math.max(
-                    SMTP_VERIFICATION_RATE_LIMIT_MS - (now - lastSentAt),
+                    this.deliveryIntervalMs - (now - lastSentAt),
                     0,
                 );
                 return {
                     ready: true,
-                    message: "smtp_rate_limited",
+                    message: "email_rate_limited",
                     retryAfterSeconds: Math.ceil(retryMs / 1000),
                     resendAvailableAt: new Date(now + retryMs).toISOString(),
                 };
@@ -390,7 +465,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     error: errorMessage,
                 },
             );
-            return { ready: false, message: "smtp_unavailable" };
+            return { ready: false, message: "email_delivery_unavailable" };
         }
     }
 
@@ -413,7 +488,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_smtp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({ verified: true });
@@ -428,22 +503,11 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     }
 
     getConfigSchema() {
-        return [
-            {
-                key: "codeLength",
-                label: "ui.app.admin.notif.smtp_code_length",
-                type: "number" as const,
-                required: false,
-            },
-        ];
+        return [];
     }
 
     getCodeLength(): number {
         return this.codeLength;
-    }
-
-    configure(config: Record<string, unknown>): void {
-        this.codeLength = clampSmtpVerificationCodeLength(config.codeLength);
     }
 }
 

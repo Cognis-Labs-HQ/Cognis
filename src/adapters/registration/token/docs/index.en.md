@@ -1,5 +1,7 @@
 # Registration Tokens
 
+The adapter declares its authorization script and language resources through `registrationUi`. The gateway loads that contribution only while the adapter and gateway are enabled.
+
 The mandatory Registration Token adapter owns invitation and account-creation authorization tokens. It sends single-use links through the active email notification provider and is the token source used by the Users page for administrator and founder invitations.
 
 ## Usage examples

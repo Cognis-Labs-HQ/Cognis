@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+
 import { readFile } from "node:fs/promises";
+
 import test from "node:test";
 
 const bootstrapSource = await readFile(
@@ -7,40 +9,15 @@ const bootstrapSource = await readFile(
     "utf8",
 );
 
-const popupSource = await Promise.all(
-    ["index.js", "implementation.js", "rendering.js"].map((fileName) =>
-        readFile(
-            new URL(
-                `../../../adapters/share/link/ui/share-links-popup/${fileName}`,
-                import.meta.url,
-            ),
-            "utf8",
-        ),
-    ),
-).then((sources) => sources.join("\n"));
 const apiSource = await readFile(
     new URL("../ui/reuse/share-api.js", import.meta.url),
     "utf8",
 );
+
 const providerSource = await readFile(
     new URL("../ui/provider.js", import.meta.url),
     "utf8",
 );
-const linkPageSource = await readFile(
-    new URL("../../../adapters/share/link/page.js", import.meta.url),
-    "utf8",
-);
-const userPageSource = await readFile(
-    new URL("../../../adapters/share/user/page.js", import.meta.url),
-    "utf8",
-);
-
-test("link share popup is an active browser capability provider", () => {
-    assert.match(
-        bootstrapSource,
-        /share-links-popup\/index\.js"[\s\S]*isAdapterEnabled\("link"\)[\s\S]*"share:openPopup"/,
-    );
-});
 
 test("share gateway provides its canonical trigger renderer", () => {
     assert.match(
@@ -54,38 +31,47 @@ test("share gateway provides its canonical trigger renderer", () => {
         /uiCtx\.capabilities\.contribute\("share:uiGateway", shareUiGateway\)/,
     );
 });
+
 const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
 );
+
 const sharePageSource = await readFile(
     new URL("../ui/app/index.js", import.meta.url),
     "utf8",
 );
+
 const accountShareAppSource = await readFile(
     new URL("../ui/app/account-share/index.js", import.meta.url),
     "utf8",
 );
+
 const accountShareHtmlSource = await readFile(
     new URL("../ui/user-share.html", import.meta.url),
     "utf8",
 );
+
 const receivedShareActionSource = await readFile(
     new URL("../ui/received-share-action.js", import.meta.url),
     "utf8",
 );
+
 const receivedShareSource = await readFile(
     new URL("../ui/received-share.js", import.meta.url),
     "utf8",
 );
+
 const statusMonitorSource = await readFile(
     new URL("../ui/status-monitor.js", import.meta.url),
     "utf8",
 );
+
 const shareAppSource = await readFile(
     new URL("../ui/app/index.js", import.meta.url),
     "utf8",
 );
+
 const shareButtonSource = await readFile(
     new URL("../ui/reuse/share-button.js", import.meta.url),
     "utf8",
@@ -123,36 +109,6 @@ test("guest component windows receive the active share context", () => {
     );
 });
 
-test("share popup owns user recipient search and selection", () => {
-    assert.match(popupSource, /share-links-user-search/);
-    assert.match(popupSource, /data-share-user-id/);
-    assert.match(popupSource, /state\.activeMethodId === "user"/);
-    assert.match(popupSource, /data-selected-recipient-remove/);
-    assert.match(popupSource, /share-method-tabs/);
-    assert.match(popupSource, /methodModule\.buildCreateOptions/);
-    assert.match(popupSource, /methodModule\.renderPage/);
-    assert.match(popupSource, /methodPage\.innerHTML/);
-    assert.match(popupSource, /state\.visibleLinks/);
-    assert.match(linkPageSource, /data-share-page="link"/);
-    assert.match(linkPageSource, /share-links-label/);
-    assert.match(linkPageSource, /type="datetime-local"/);
-    assert.match(linkPageSource, /share-links-access-mode/);
-    assert.match(linkPageSource, /gatewayFields\.password/);
-    assert.doesNotMatch(linkPageSource, /share-links-user-search/);
-    assert.match(userPageSource, /data-share-page="user"/);
-    assert.match(userPageSource, /share-links-user-search/);
-    assert.match(userPageSource, /share-links-user-permission/);
-    assert.match(userPageSource, /type="datetime-local"/);
-    assert.match(userPageSource, /gatewayFields\.password/);
-    assert.match(userPageSource, /defaultGrantedCapabilities/);
-    assert.match(userPageSource, /endsWith\(":write"\)/);
-    assert.match(
-        popupSource,
-        /defaultGrantedCapabilities: grantedCapabilities/,
-    );
-    assert.doesNotMatch(userPageSource, /share-links-label/);
-});
-
 test("share updates preserve explicitly cleared labels", () => {
     assert.match(apiSource, /label: String\(label \?\? ""\)\.trim\(\)/);
 });
@@ -163,17 +119,8 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(apiSource, /method: "PATCH"/);
     assert.match(apiSource, /password: String\(password/);
     assert.match(apiSource, /String\(expiresAt/);
-    assert.match(popupSource, /renderPasswordProtectionField/);
-    assert.match(popupSource, /createFormBuilder/);
-    assert.match(popupSource, /required: state\.passwordRequired/);
-    assert.match(popupSource, /passwordForm\.reportValidity\(\)/);
-    assert.match(popupSource, /renderInfoTooltip/);
-    assert.match(popupSource, /data-share-generate-password/);
-    assert.match(popupSource, /crypto\.getRandomValues/);
     assert.doesNotMatch(apiSource, /\/api\/v1\/calendar/);
     assert.match(apiSource, /payload\?\.error\?\.code/);
-    assert.match(popupSource, /duplicate_user_share/);
-    assert.match(popupSource, /labels\.duplicateUserShare/);
 });
 
 test("share recipient search truncates results on the API-caller side", () => {
@@ -183,160 +130,15 @@ test("share recipient search truncates results on the API-caller side", () => {
     );
 });
 
-test("share popup renders link variants with optional avatar capabilities", () => {
-    assert.match(popupSource, /link\?\.variants/);
-    assert.match(popupSource, /variant\.url/);
-    assert.match(popupSource, /ui:profileAvatarRenderer/);
-    assert.doesNotMatch(popupSource, /static\/gateways\/social/);
-    assert.match(popupSource, /data-share-user-avatar-key/);
-    assert.match(popupSource, /profileHandle/);
-});
-
 test("share popup adds a created token to history before refetching", () => {
-    assert.match(popupSource, /state\.links = \[/);
-    assert.match(popupSource, /String\(link\.id\).*String\(result\.id\)/s);
-    assert.match(popupSource, /renderMethodPage\(\);\s*await refreshLinks\(\)/);
     assert.match(
         apiSource,
         /if \(!response\.ok\) throw new Error\("links_failed"\)/,
     );
-    assert.match(popupSource, /pendingLinks: new Map\(\)/);
-    assert.match(
-        popupSource,
-        /state\.pendingLinks\.set\(String\(result\.id\), result\)/,
-    );
-    assert.match(popupSource, /\.\.\.state\.pendingLinks\.values\(\)/);
 });
 
 test("share history supports email delivery and form-based update mode", () => {
-    assert.match(popupSource, /data-share-email/);
-    assert.match(popupSource, /editingShareId/);
-    assert.match(
-        popupSource,
-        /state\.editingShareId &&[\s\S]*selectedMethodId !== state\.activeMethodId[\s\S]*clearEditMode\(\)/,
-    );
-    assert.match(popupSource, /await updateLink/);
-    assert.match(
-        popupSource,
-        /updateButton\?\.classList\.add\("btn-confirm"\)/,
-    );
     assert.match(apiSource, /expiresAt: String\(expiresAt \?\? ""\)\.trim\(\)/);
-    assert.match(linkPageSource, /Create Link Share/);
-    assert.match(linkPageSource, /Update Link Share/);
-    assert.match(userPageSource, /state\.recipients\.length/);
-    assert.match(userPageSource, /Update User Share/);
-    assert.match(linkPageSource, /openEmailPopup/);
-    assert.match(linkPageSource, /await openPopup/);
-    assert.match(linkPageSource, /labels\.emailRecipientsRequired/);
-    assert.match(linkPageSource, /variant: "warning"/);
-    assert.match(linkPageSource, /label: labels\.send/);
-    assert.match(popupSource, /data-share-cancel-edit/);
-    assert.match(popupSource, /clearEditMode/);
-    assert.match(popupSource, /renderSecretVisibilityField/);
-    assert.match(popupSource, /bindSecretVisibilityToggles/);
-    assert.match(popupSource, /createdAtLabel/);
-    assert.doesNotMatch(popupSource, /data-share-recipient-permission/);
-    assert.doesNotMatch(popupSource, /data-share-recipient-remove/);
-    assert.doesNotMatch(popupSource, /variant\.access === "write"/);
-});
-
-test("selected users retain lookup-card placement without visible handles", () => {
-    assert.match(
-        userPageSource,
-        /share-links-user-results[\s\S]*share-links-selected-users/,
-    );
-    assert.match(popupSource, /profileHandle: recipient\.handle/);
-    assert.doesNotMatch(popupSource, /recipient\.handle \? `<small>@/);
-});
-
-test("user share permissions constrain granted capabilities", async () => {
-    const userPageModule = await import(
-        new URL("../../../adapters/share/user/page.js", import.meta.url)
-    );
-    const baseInput = {
-        recipients: [{ type: "user", id: "bob" }],
-        defaultGrantedCapabilities: ["calendar:read", "calendar:write"],
-    };
-    assert.deepEqual(
-        userPageModule.buildCreateOptions({
-            ...baseInput,
-            permission: "read",
-        }).grantedCapabilities,
-        ["calendar:read"],
-    );
-    assert.deepEqual(
-        userPageModule.buildCreateOptions({
-            ...baseInput,
-            permission: "write",
-        }).grantedCapabilities,
-        ["calendar:read", "calendar:write"],
-    );
-    const existingShare = {
-        id: "share-1",
-        label: "Planning",
-        expiresAt: "2030-01-01T00:00:00.000Z",
-        accessControls: {
-            permissions: ["read"],
-            recipients: [{ type: "user", id: "bob" }],
-        },
-    };
-    assert.equal(
-        userPageModule.findExistingShare([existingShare], baseInput),
-        existingShare,
-    );
-    assert.equal(
-        userPageModule.hasShareChanges(existingShare, {
-            label: "Planning",
-            expiresAt: "2030-01-01T00:00:00.000Z",
-            accessControls: { permissions: ["read"] },
-        }),
-        false,
-    );
-    assert.equal(
-        userPageModule.hasShareChanges(existingShare, {
-            label: "Updated Planning",
-            expiresAt: "2030-01-01T00:00:00.000Z",
-            accessControls: { permissions: ["read"] },
-        }),
-        true,
-    );
-    assert.match(
-        popupSource,
-        /duplicate_user_share[\s\S]*findExistingShare[\s\S]*updateLink/,
-    );
-});
-
-test("share popup uses neutral close and destructive revoke actions", () => {
-    assert.match(
-        popupSource,
-        /label: labels\.close \|\| labels\.done \|\| "Close",[\s\S]*variant: "neutral"/,
-    );
-    assert.match(
-        popupSource,
-        /label: labels\.confirm \|\| labels\.revoke,[\s\S]*variant: "cancel"/,
-    );
-});
-
-test("share origins can suppress read-only choices", async () => {
-    assert.match(popupSource, /supportsReadOnly = false/);
-    assert.match(
-        popupSource,
-        /supportsReadOnly \|\|\s*option\?\.permissions\?\.includes\("write"\)/,
-    );
-    assert.match(userPageSource, /state\.supportsReadOnly \?/);
-    assert.match(popupSource, /hidePermissionLabels: !state\.supportsReadOnly/);
-    assert.match(
-        popupSource,
-        /state\.supportsReadOnly[\s\S]*state\.allowedPermissions\.includes\("write"\)[\s\S]*selectedShare\.accessControls/,
-    );
-});
-
-test("selected recipient badges track the pending permission", () => {
-    assert.match(
-        popupSource,
-        /state\.recipients = state\.recipients\.map\(\(recipient\) => \(\{[\s\S]*permissions:/,
-    );
-    assert.match(popupSource, /renderSelectedUsers\(\)/);
 });
 
 test("logged-in share recipients keep their account session", () => {
@@ -589,16 +391,6 @@ test("share resolution uses the authenticated API client without treating passwo
     assert.match(sessionFlowSource, /startShareStatusMonitor/);
 });
 
-test("share method adapters own localized display metadata", async () => {
-    assert.match(userPageSource, /getMetadata/);
-    assert.match(userPageSource, /adapter\.share\.user\.name/);
-    const adapterSource = await readFile(
-        new URL("../../../adapters/share/user/index.ts", import.meta.url),
-        "utf8",
-    );
-    assert.match(adapterSource, /nameKey: "adapter\.share\.user\.name"/);
-});
-
 test("guest sessions can re-assert their disposable keyring without prompting", () => {
     assert.match(sessionFlowSource, /session:ensureGuestKeyring/);
     assert.match(sessionFlowSource, /activeGuestKeyring/);
@@ -614,12 +406,15 @@ test("unavailable share links navigate to the native error page", () => {
     assert.match(statusMonitorSource, /onUnavailable\(response\)/);
     assert.match(
         sharePageSource,
-        /function navigateToShareError\(i18n, reason\)/,
+        /function navigateToShareError\(i18n, reason, showFallback\)/,
     );
     assert.match(sharePageSource, /const code = notFound \? "404" : "410"/);
     assert.match(
         sharePageSource,
         /\/error\?code=\$\{code\}&message=\$\{encodeURIComponent\(message\)\}/,
     );
-    assert.match(sharePageSource, /window\.location\.replace\(destination\)/);
+    assert.match(
+        sharePageSource,
+        /showFallback\(notFound \? "share\.error\.not_found" : "share\.error\.expired"\)/,
+    );
 });

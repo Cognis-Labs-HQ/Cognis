@@ -1,19 +1,11 @@
 export function createLoginClientLoaders({ loadClient, i18n, root }) {
     let tfaClientPromise = null;
-    let requiredEmailClientPromise = null;
     return {
         loadTfaLoginClient() {
             tfaClientPromise ??= loadClient("tfa", (module) =>
                 module.createTfaLoginClient({ baseI18n: i18n, root }),
             );
             return tfaClientPromise;
-        },
-        loadRequiredEmailEnforcementClient() {
-            requiredEmailClientPromise ??= loadClient(
-                "required-email-enforcement",
-                (module) => module.createRequiredEmailEnforcementClient(),
-            );
-            return requiredEmailClientPromise;
         },
     };
 }

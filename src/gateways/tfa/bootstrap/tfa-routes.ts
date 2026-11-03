@@ -157,7 +157,7 @@ export function createTfaRoutes(
                     providerId: string;
                     role: string;
                     isFounder: boolean;
-                    userValidationMode: "none" | "smtp";
+                    userValidationMode: "none" | "email";
                     requiredUserValidation: boolean;
                     ttlSeconds: number | null;
                 } | null

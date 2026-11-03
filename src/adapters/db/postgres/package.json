@@ -5,7 +5,7 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.5.4",
-        "@cognis/gateways": "<=0.2.0"
+        "@cognis/core": "<=0.6.1",
+        "@cognis/gateways": "<=0.4.3"
     }
 }

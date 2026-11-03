@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
+
+import type { NotificationEnvelope } from "../../../gateways/notify/contracts/sender.js";
 
 export interface InternalNotification {
     id: string;

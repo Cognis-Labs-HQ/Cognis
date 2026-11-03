@@ -16,6 +16,13 @@ export function createAdapter(deps: {
         id: "public",
         name: "Public Registration",
         defaultEnabled: false,
+        authTypingMessages: [
+            {
+                id: "registration-register-today",
+                textKey: "ui.app.login.typing.sample.7",
+                publicRegistrationOnly: true,
+            },
+        ],
         public: {
             async register(input: {
                 username: string;

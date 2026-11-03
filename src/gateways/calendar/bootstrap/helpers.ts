@@ -744,26 +744,6 @@ export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";
 }
 
-export async function resolveJitsiAvailability(
-    resolver: ((providerId: string) => Promise<boolean> | boolean) | null,
-    log?: CalendarLogger,
-): Promise<boolean> {
-    if (!resolver) return false;
-    try {
-        return Boolean(await resolver("jitsi-meet"));
-    } catch (error) {
-        log?.(
-            "warn",
-            "Failed to resolve meetings provider availability; defaulting to unavailable.",
-            {
-                component: "calendar-gateway",
-                error: error instanceof Error ? error.message : String(error),
-            },
-        );
-        return false;
-    }
-}
-
 export async function validateSharedCalendars(
     calendars: CalendarRecord[],
     recipientAccountId: string,

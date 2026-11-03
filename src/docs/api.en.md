@@ -317,7 +317,7 @@ Public asset reads share an in-flight download until its cache write finishes, s
 
 ## Session and Component Boundaries
 
-Only an identical consecutive mutation from the same delivery owner is suppressed; changes to methods, paths, media types or intervening operations retain their order. Offline enqueueing and replay require Auth’s `session:isOfflineValid` capability as well as current consent. The capability checks verified setup readiness, account, token and session expiry without network requests, including when storage locks delay persistence. An unavailable Auth contract fails closed. Settings binds account controls before optional email loading; disabling Notify hides email management and leaves Archive, Deactivate and Delete usable. Users and Administration consume Notify through scoped capabilities instead of concrete UI imports. Notify supplies administrator email reads, online-only resend and SMTP availability; absent email metadata is shown as unknown. Auth skips normal account setup for alternate guest sessions and uses Share’s classification capability to exempt share guests at the server boundary. Real account email/TFA setup remains enforced.
+Only an identical consecutive mutation from the same delivery owner is suppressed; changes to methods, paths, media types or intervening operations retain their order. Offline enqueueing and replay require Auth’s `session:isOfflineValid` capability as well as current consent. The capability checks verified setup readiness, account, token and session expiry without network requests, including when storage locks delay persistence. An unavailable Auth contract fails closed. Settings binds account controls before optional email loading; disabling Notify hides email management and leaves Archive, Deactivate and Delete usable. Users and Administration consume Notify through scoped capabilities instead of concrete UI imports. Notify supplies administrator email reads, online-only resend and email availability; absent email metadata is shown as unknown. Auth skips normal account setup for alternate guest sessions and uses Share’s classification capability to exempt share guests at the server boundary. Real account email/TFA setup remains enforced.
 
 ## Account-bound Queues
 
@@ -338,3 +338,15 @@ Users action menus resolve rows by immutable account ID rather than public usern
 ## Complete Cached Assets
 
 Range requests bypass the whole-file cache, and only complete HTTP 200 responses can populate or replace public assets. Partial responses leave existing complete bytes intact. Content-hashed font files use the same immutable caching and cross-generation reuse as hashed scripts and images, avoiding unnecessary downloads after worker updates.
+
+## Quiet Marketplace Polling
+
+The marketplace revalidates one administrator-only `/api/v1/modules/marketplace-state` snapshot every fifteen seconds. Its ETag covers sources, installed state, cached discoveries, recommendations and restart requirements. An unchanged response is `304` with no body; the page retains its prepared catalog without fetching translations or redrawing. Source discovery runs once after mounting, hourly, and after source changes; manual Refresh still forces a scan. Hidden, offline and busy pages pause polling, and unmount aborts requests and removes the timer.
+
+Catalog presentation includes a content-derived `ui.stringsRevision`. `extendI18n(base, stringsBaseUrl, { revision })` can reuse versioned authenticated bundles within the same account/session. Changed revisions fetch new strings; changed identities clear private bundles, late responses cannot repopulate another session, and failed loads can retry. Public bundles retain their existing cache and lifecycle invalidation.
+
+Recommendation feeds are shared by the marketplace service, coalesce concurrent reads and stay fresh for five minutes. Failed refreshes retain the last successful list and back off for one minute; changing the configured URL selects a separate result, and manual Refresh bypasses freshness.
+
+## Validation Discovery
+
+System security responses include `userValidationModes` metadata from Auth. Saving a changed policy validates the registered ID and current availability. Existing unavailable IDs are preserved when unrelated settings change. Adapter configuration responses include provider-owned schemas, language bases, conditional fields, stored-secret presence and test fields; the shared popup does not infer a transport from field names.

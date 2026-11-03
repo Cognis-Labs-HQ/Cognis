@@ -17,7 +17,7 @@ function buildStatusElement(i18n, messageKey) {
         pinned: true,
         gridSize: {
             default: [12, 10],
-            min: [8, 5],
+            min: [1, 3],
             max: ["fill", "fill"],
         },
         render: () =>
@@ -32,6 +32,7 @@ export async function mount(root, { signal } = {}) {
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "share.page_title");
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         i18n,
         preferenceKey: "account-share-page-layout",

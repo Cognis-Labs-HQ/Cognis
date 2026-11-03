@@ -1,5 +1,7 @@
 # Adapter Keyring Pengguna
 
+Pengaturan membaca `keyring:readState` melalui alur terdaftar dengan tahap pemuatan dan penyajian sebelum menampilkan status brankas. Bagian ini awalnya menampilkan pemuatan, membedakan metadata yang tidak tersedia dari brankas yang tidak ada, dan menyediakan percobaan ulang tanpa membuat brankas atau meminta kata sandi. Konsumen bundel dan pemuatan langsung berbagi satu penyedia. Navigasi, perubahan identitas dan penguncian membersihkan isi popup sensitif serta pendengar kejadian.
+
 PUT brankas memakai pembaca aliran JSON bersama milik API dengan anggaran brankas efektif dan tambahan 1 KiB untuk amplop. Kebijakan, galat 413, dan validasi data terserialisasi tetap dimiliki adaptor; tidak ada implementasi penyanggaan kedua.
 
 Batas bawaan brankas adalah 2 MiB dengan batas mutlak pemrosesan 8 MiB. Kebijakan efektif dikembalikan kepada klien. PUT menghitung byte masuk sebelum penyanggaan atau penguraian JSON dan menolak permintaan terlalu besar; GET memeriksa ukuran tersimpan sebelum penguraian. Amplop terenkripsi menggunakan baris utama serta baris lanjutan terbatas, dengan penggantian dan penghapusan atomik serta satu pembacaan gabungan. Tiap bagian tersimpan paling besar 60.000 byte UTF-8; server tetap tidak mendekripsi rahasia.
@@ -67,3 +69,11 @@ Membatalkan permintaan buka kunci beratribusi menolak semua penunggu bersamaan d
 ## Batasi Pertumbuhan Aktivitas
 
 Brankas terenkripsi menyimpan paling banyak 1.000 aktivitas terbaru dalam batas riwayat 64 KiB; nilai rahasia tidak pernah dihapus untuk memenuhi batas tersebut. Pembacaan berulang berbagi proses penyimpanan yang berjalan. GET terautentikasi dapat mengambil brankas yang ada hingga batas mutlak 8 MiB agar klien dapat meringkas riwayat meskipun batas penulisan lebih rendah. PUT tetap menerapkan batas yang dikonfigurasi. Kegagalan sinkronisasi latar belakang menampilkan notifikasi kesalahan dan mempertahankan salinan lokal terenkripsi.
+
+## Status Terkini Saat Dibuka
+
+Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunjungan pertama setelah masuk atau memuat ulang. Pembuatan katalog Settings tidak menyimpan hasil bahwa keyring belum ada. Tampilan memakai status yang telah dikonfirmasi; pembuatan atau penghapusan memperbarui bagian yang terlihat. Pergantian identitas dan navigasi tetap membatalkan render terlambat serta dialog sensitif.
+
+## Kolom Adaptor Terlokalisasi
+
+Konfigurasi Keyring mendeklarasikan paket bahasanya sendiri serta label terlokalisasi untuk ukuran maksimum brankas dan iterasi derivasi kata sandi. Popup Administrasi bersama menerjemahkan label tersebut melalui sumber daya XML yang sama dengan adaptor.

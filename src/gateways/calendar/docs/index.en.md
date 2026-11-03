@@ -47,3 +47,23 @@ Queued event creation and later edits appear in cached lists and detail popups. 
 ## Offline Status Styles
 
 The Calendar provider prepares the lazy event-status stylesheet for first use offline. Shared popup, toast and secret-visibility styles are prepared by the host, so opening a cached event does not depend on previously opening its details online.
+
+## Runtime Request Safety
+
+Language switching and consent refreshes no longer fail because Calendar attempts notification registration during ordinary HTTP requests. Calendar registers its category once during bootstrap completion, after notification providers are available. Share sends through its already registered category, and Auth uses its completion hook without duplicate early registration. SMTP registration remains restricted to bootstrap; runtime handlers only resolve and use existing delivery capabilities. Calendar is **1.5.5**.
+
+Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
+
+## Reliable Sharing and Tests
+
+Calendar and Flashcards sharing hooks tolerate unrelated resource providers returning no result, so both link and account shares can be created and resolved with all providers enabled. Share loading, account-share status and Calendar guest pages use responsive minimum sizes rather than requiring eight grid columns. Guest pages remain usable on narrow screens. Share maintenance runs sequentially, coalesces overlapping requests, ends a failed pass and retries at the next fifteen-minute interval. Disable stops subsequent work; reactivation resumes scheduling.
+
+## Review and Lifecycle Hardening
+
+Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
+
+## Owned Browser Actions
+
+Guest Calendar reads and mutations use the lifecycle-owned `calendar:sharedClient` capability and named `calendar:shared:*` flows. Requests retain explicit guest authority, combine page/provider cancellation, and never enter the account outbox. Consumers do not construct the shared endpoint.
+
+Calendar discovers `meetings:createMeeting` from the active browser provider. The provider owns its creation request and destination; Calendar resolves a valid HTTP(S) URL for the event without knowing a module ID or route. Missing providers fail closed and the meeting toggle remains unavailable offline.

@@ -1,5 +1,7 @@
 # TOTP Adapter
 
+This adapter owns the `COGNIS_TOTP_ISSUER` override. Invalid codes use the common `invalid_verification_code` error, so the gateway does not need provider-specific error handling.
+
 ## Purpose
 
 Provides time-based one-time password verification for the TFA gateway.
@@ -24,3 +26,5 @@ Provides time-based one-time password verification for the TFA gateway.
 The adapter exposes one admin setting:
 
 - `algorithm` — HMAC algorithm used for setup verification and login verification.
+
+The method declares its login placeholder, language base and configuration labels; the gateway renders that metadata without a provider-ID branch.

@@ -159,7 +159,7 @@ test("logging adapter level overrides reconfigure the running logger immediately
         assert.equal(
             fileConfigPayload.schema.find(
                 (field: { key: string }) => field.key === "rotateCompress",
-            )?.labelKey,
+            )?.label,
             "adapter.logging.file.rotate_compress",
         );
         assert.equal(
@@ -177,6 +177,24 @@ test("logging adapter level overrides reconfigure the running logger immediately
             catalogResponse as any,
             new URL("/api/v1/gateways/logging/adapters", "http://localhost"),
         );
+        for (const adapter of JSON.parse(catalogResponse.payload).data) {
+            const configResponse = new ResponseRecorder();
+            await adapterHandler(
+                new RequestRecorder("GET", token) as any,
+                configResponse as any,
+                new URL(adapter.controls.config, "http://localhost"),
+            );
+            assert.equal(configResponse.statusCode, 200);
+            const config = JSON.parse(configResponse.payload);
+            assert.equal(config.stringsBaseUrl, adapter.stringsBaseUrl);
+            assert.deepEqual(config.schema, adapter.schema);
+            for (const field of config.schema) {
+                assert.equal(typeof field.label, "string");
+                assert.ok(
+                    field.label.startsWith(`adapter.logging.${adapter.id}.`),
+                );
+            }
+        }
         const fileAdapter = JSON.parse(catalogResponse.payload).data.find(
             (adapter: { id: string }) => adapter.id === "file",
         );

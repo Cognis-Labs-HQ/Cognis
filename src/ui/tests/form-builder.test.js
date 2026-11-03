@@ -211,7 +211,7 @@ test("adapter config form updates required title markers when requirements chang
 
     assert.match(source, /data-provider-required=/);
     assert.match(source, /requiredMarker\.hidden = !isRequired/);
-    assert.match(source, /input\.toggleAttribute\("required", isRequired\)/);
+    assert.match(source, /input\.toggleAttribute\("required", requiresInput\)/);
     assert.match(
         source,
         /popupFormEl\.addEventListener\("input", \(\) => \{[\s\S]*updateRequiredHighlights\(\)/m,
@@ -229,7 +229,7 @@ test("adapter environment warnings render beside headings in orange", () => {
 
     assert.match(
         source,
-        /provider-field-title[^`]*\$\{requiredMarker\}\$\{conflictWarning\}<\/span>\$\{inputHtml\}/,
+        /provider-field-title[\s\S]*provider-field-env-warning[\s\S]*<\/span>\$\{input\}/,
     );
     assert.match(
         styles,
@@ -290,6 +290,7 @@ test("form builder can omit its submit button when includeSubmitButton is false"
 test("profile bio and post editors use form builder max-character fields", () => {
     const source =
         read("src/adapters/social/profile/ui/app.js") +
+        read("src/adapters/social/profile/ui/profile-edit-fields.js") +
         read("src/adapters/social/profile/ui/profile-config.js");
     const renderSource = read(
         "src/adapters/social/profile/ui/profile-render.js",
@@ -420,6 +421,8 @@ test("form builder updates textarea counters and captures edited values after at
         const bioCounter = new FakeHTMLElement();
         const bioFieldWrapper = new FakeHTMLElement();
         const fakeFormElement = {
+            addEventListener() {},
+            removeEventListener() {},
             elements: {
                 namedItem(fieldName) {
                     return fieldName === "bio" ? bioField : null;
@@ -467,4 +470,33 @@ test("form builder updates textarea counters and captures edited values after at
         globalThis.HTMLTextAreaElement = originalHTMLTextAreaElement;
         globalThis.HTMLSelectElement = originalHTMLSelectElement;
     }
+});
+
+test("form builder prevents implicit document submissions while preserving component submit handlers and lifetime cleanup", () => {
+    const builder = createFormBuilder(
+        { i18n: { t: String }, escapeHtml: String },
+        { formId: "review", fields: [] },
+    );
+    const form = Object.assign(new EventTarget(), {
+        querySelectorAll: () => [],
+        querySelector: () => null,
+        elements: { namedItem: () => null },
+    });
+    let delivered = 0;
+    form.addEventListener("submit", () => delivered++);
+    const owner = new AbortController();
+    const controller = builder.attach(form, { signal: owner.signal });
+    const submitted = new Event("submit", { cancelable: true });
+    form.dispatchEvent(submitted);
+    assert.equal(submitted.defaultPrevented, true);
+    assert.equal(delivered, 1);
+    controller.detach();
+    const detached = new Event("submit", { cancelable: true });
+    form.dispatchEvent(detached);
+    assert.equal(detached.defaultPrevented, false);
+    builder.attach(form, { signal: owner.signal });
+    owner.abort();
+    const disposed = new Event("submit", { cancelable: true });
+    form.dispatchEvent(disposed);
+    assert.equal(disposed.defaultPrevented, false);
 });

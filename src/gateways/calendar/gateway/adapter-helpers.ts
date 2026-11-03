@@ -1,3 +1,4 @@
+import { bootstrapAdapter } from "../../reuse/adapter-bootstrap.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { CoreCalendarGateway } from "./index.js";
@@ -306,7 +307,11 @@ export async function bootstrapAdapters(
             continue;
         }
 
-        if (typeof mod.bootstrapCalendarAdapter !== "function") continue;
+        if (
+            typeof mod.bootstrapCalendarAdapter !== "function" &&
+            mod.defineContracts === undefined
+        )
+            continue;
         const bootstrapFn = mod.bootstrapCalendarAdapter as (
             ctx: CalendarAdapterBootstrapCtx,
         ) => Promise<void> | void;
@@ -326,7 +331,16 @@ export async function bootstrapAdapters(
         };
 
         try {
-            await bootstrapFn(adapterCtx);
+            await bootstrapAdapter(
+                "calendar",
+                entry,
+                adapterCtx,
+                mod,
+                async () => {
+                    if (typeof bootstrapFn === "function")
+                        await bootstrapFn(adapterCtx);
+                },
+            );
         } catch (error) {
             baseCtx.log?.(
                 "error",

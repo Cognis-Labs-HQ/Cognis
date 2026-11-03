@@ -33,24 +33,38 @@ const STRINGS_BASE_PATH = "/static/languages";
 const cache = new Map();
 const stringRequestCache = new Map();
 const publicBundleCache = new Map();
+const privateBundleCache = new Map();
+let privateBundleOwner;
 const PUBLIC_BUNDLE_CACHE_LIMIT = 128;
 globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
     publicBundleCache.clear();
+    privateBundleCache.clear();
 });
 const STRING_REQUEST_TIMEOUT_MS = 15_000;
 
-async function fetchStrings(path) {
-    let request = stringRequestCache.get(path);
+async function fetchStrings(path, revision) {
+    const key = requestTargetsApi(path)
+        ? JSON.stringify([path, translationIdentity(), revision])
+        : JSON.stringify([path, revision]);
+    let request = stringRequestCache.get(key);
     if (!request) {
         const requestFunction = requestTargetsApi(path) ? apiFetch : fetch;
         request = requestFunction(path, {
+            ...(revision ? { cache: "reload" } : {}),
             signal: globalThis.AbortSignal?.timeout?.(
                 STRING_REQUEST_TIMEOUT_MS,
             ),
-        }).finally(() => stringRequestCache.delete(path));
-        stringRequestCache.set(path, request);
+        }).finally(() => stringRequestCache.delete(key));
+        stringRequestCache.set(key, request);
     }
     return (await request).clone();
+}
+
+function translationIdentity() {
+    return JSON.stringify([
+        globalThis.localStorage?.getItem("cognis_account"),
+        globalThis.localStorage?.getItem("cognis_access_token"),
+    ]);
 }
 
 const LANGUAGE_COOKIE = "cognis_lang_priority";
@@ -257,26 +271,47 @@ function parseStringsXml(xmlText) {
     return map;
 }
 
-async function readTranslationBundle(path) {
+async function readTranslationBundle(path, revision) {
     const url = new URL(path, window.location.origin);
     const cacheable =
         url.origin === window.location.origin &&
         url.pathname.startsWith("/static/");
-    if (cacheable && publicBundleCache.has(path))
-        return publicBundleCache.get(path);
-    const response = await fetchStrings(path);
-    if (!response.ok) {
-        throw Object.assign(new Error("translation_bundle_unavailable"), {
-            status: response.status,
-        });
+    const owner = translationIdentity();
+    if (owner !== privateBundleOwner) {
+        privateBundleOwner = owner;
+        privateBundleCache.clear();
     }
-    const parsed = parseStringsXml(await response.text());
-    if (cacheable) {
-        if (publicBundleCache.size >= PUBLIC_BUNDLE_CACHE_LIMIT)
-            publicBundleCache.delete(publicBundleCache.keys().next().value);
-        publicBundleCache.set(path, parsed);
+    const versioned = typeof revision === "string" && revision.length > 0;
+    const bundleCache = cacheable
+        ? publicBundleCache
+        : requestTargetsApi(path) && versioned
+          ? privateBundleCache
+          : undefined;
+    const key = JSON.stringify([path, revision]);
+    if (bundleCache?.has(key)) return bundleCache.get(key);
+    const load = async () => {
+        const response = await fetchStrings(path, revision);
+        if (!response.ok) {
+            throw Object.assign(new Error("translation_bundle_unavailable"), {
+                status: response.status,
+            });
+        }
+        const parsed = parseStringsXml(await response.text());
+        if (requestTargetsApi(path) && owner !== translationIdentity())
+            throw new Error("translation_identity_changed");
+        return parsed;
+    };
+    if (!bundleCache) return load();
+    if (bundleCache.size >= PUBLIC_BUNDLE_CACHE_LIMIT)
+        bundleCache.delete(bundleCache.keys().next().value);
+    const pending = load();
+    bundleCache.set(key, pending);
+    try {
+        return await pending;
+    } catch (error) {
+        if (bundleCache.get(key) === pending) bundleCache.delete(key);
+        throw error;
     }
-    return parsed;
 }
 
 async function loadLocaleStrings(locale) {
@@ -290,7 +325,7 @@ async function loadLocaleStrings(locale) {
     return parsed;
 }
 
-async function loadLocalizedStrings(activeLocale, pathForLocale) {
+async function loadLocalizedStrings(activeLocale, pathForLocale, revision) {
     const resolutionLocales = [...new Set([DEFAULT_LOCALE, activeLocale])];
     const locales = [
         ...new Set([...resolutionLocales, ...enabledUiLanguages()]),
@@ -299,7 +334,7 @@ async function loadLocalizedStrings(activeLocale, pathForLocale) {
         locales.map(async (locale) => {
             const path = pathForLocale(locale);
             try {
-                return await readTranslationBundle(path);
+                return await readTranslationBundle(path, revision);
             } catch (error) {
                 console.error("[i18n] translation_bundle_load_failed", {
                     component: "core",
@@ -339,13 +374,14 @@ async function loadModuleStrings(activeLocale, moduleIds) {
     return new Map(bundles.flat());
 }
 
-async function loadComponentStrings(activeLocale, baseUrls) {
+async function loadComponentStrings(activeLocale, baseUrls, revision) {
     if (!Array.isArray(baseUrls)) return new Map();
     const bundles = await Promise.all(
         baseUrls.map((baseUrl) =>
             loadLocalizedStrings(
                 activeLocale,
                 (locale) => `${baseUrl}/${locale}/strings.xml`,
+                revision,
             ),
         ),
     );
@@ -486,9 +522,10 @@ export function applyStaticTranslations(i18n, root = document) {
  *
  * @param {{ locale: string, t: Function }} baseI18n
  * @param {string|string[]|null|undefined} stringsBaseUrl - Base URL or URLs for component strings
+ * @param {{revision?: string}} options - Owner-provided content revision; authenticated bundles stay account/session scoped.
  * @returns {Promise<{ locale: string, t: Function }>}
  */
-export async function extendI18n(baseI18n, stringsBaseUrl) {
+export async function extendI18n(baseI18n, stringsBaseUrl, { revision } = {}) {
     const baseUrls = Array.isArray(stringsBaseUrl)
         ? stringsBaseUrl.filter(
               (entry) => typeof entry === "string" && entry.length > 0,
@@ -496,7 +533,11 @@ export async function extendI18n(baseI18n, stringsBaseUrl) {
         : typeof stringsBaseUrl === "string" && stringsBaseUrl.length > 0
           ? [stringsBaseUrl]
           : [];
-    const extra = await loadComponentStrings(baseI18n.locale, baseUrls);
+    const extra = await loadComponentStrings(
+        baseI18n.locale,
+        baseUrls,
+        revision,
+    );
     return {
         locale: baseI18n.locale,
         t(key) {

@@ -283,7 +283,7 @@ export function createAdapter(deps: {
         await ensureReady();
         const deliverEmail = input.deliverEmail !== false;
         if (deliverEmail && !canSendInviteEmail()) {
-            throw new Error("smtp_unavailable");
+            throw new Error("email_delivery_unavailable");
         }
         const inviteeEmail = normalizeEmail(input.inviteeEmail ?? "");
         if (deliverEmail && !inviteeEmail) {
@@ -690,6 +690,12 @@ export function createAdapter(deps: {
         name: "Registration Token",
         locked: true,
         defaultEnabled: true,
+        registrationUi: {
+            id: "registration-token-authorization",
+            scriptUrl:
+                "/static/adapters/registration/token/ui/authorization.js",
+            stringsBaseUrl: "/static/adapters/registration/token/languages",
+        },
         invite: {
             issueInvite,
             listInvites,

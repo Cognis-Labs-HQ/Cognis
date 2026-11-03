@@ -281,6 +281,7 @@ test("ctx listPublicCapabilities returns sorted list of public keys only", () =>
         "auth:routeContext",
         "db:executor",
         "logging:logger",
+        "system:contracts",
     ]);
     assert.equal(publicKeys.includes("z:private"), false);
 });
@@ -293,6 +294,7 @@ test("ctx lists every registered capability without exposing values", () => {
     assert.deepEqual(ctx.listCapabilities(), [
         "private:second",
         "public:first",
+        "system:contracts",
     ]);
 });
 

@@ -3,47 +3,32 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
-import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     loadModuleMarketplaceSettings,
     loadModuleSources,
     removeModuleSource,
     saveModuleMarketplaceSettings,
     saveModuleSource,
-    validateModuleSourceCredential,
 } from "./api.js";
 
-const STORED_PAT_MASK = "****";
 let sources = [];
 let sourceFormBuilder = null;
 let settingsFormBuilder = null;
 let sourceFormController = null;
 let settingsFormController = null;
 
-function reportCredentialValidation(i18n, validation, source, privateScan) {
-    if (!privateScan) {
-        showToast(i18n.t("ui.app.modules.credential_validation_warning"), {
-            type: "warning",
+async function reloadSources(i18n) {
+    try {
+        sources = await loadModuleSources();
+    } catch (error) {
+        console.error("modules_source_list_refresh_failed", {
+            component: "ui",
+            operation: "reloadSources",
+            errorName: error?.name,
         });
-        return;
-    }
-    const messageKeys = new Set(
-        validation.warnings.map((warning) =>
-            warning === "credential_empty"
-                ? "private_repository_credential_missing"
-                : warning === "private_repository_contents_read_missing" ||
-                    warning === "github_contents_read_missing"
-                  ? "private_repository_contents_access_failed"
-                  : "private_repository_access_failed",
-        ),
-    );
-    for (const messageKey of messageKeys) {
-        showToast(
-            i18n
-                .t(`ui.app.modules.${messageKey}`)
-                .replace("{{source}}", String(source.name ?? "")),
-            { type: "warning" },
-        );
+        showToast(i18n.t("ui.app.modules.source_refresh_failed"), {
+            variant: "warning",
+        });
     }
 }
 
@@ -60,7 +45,7 @@ function renderSourceManager(i18n) {
 }
 
 function renderSourceForm(i18n, source) {
-    const tokenValue = source?.credentialId ? STORED_PAT_MASK : "";
+    const configured = source?.credentialConfigured === true;
     const locked = source?.trusted === true;
     const scanPrivateRepos = source?.scanPrivateRepos === true;
     sourceFormBuilder = createFormBuilder(
@@ -124,15 +109,29 @@ function renderSourceForm(i18n, source) {
                     name: "token",
                     labelKey: "ui.app.modules.pat",
                     type: "password",
-                    value: tokenValue,
-                    required: scanPrivateRepos,
+                    value: "",
+                    placeholder: configured
+                        ? i18n.t("ui.app.modules.credential_stored")
+                        : "",
+                    required: scanPrivateRepos && !configured,
                     secret: true,
-                    attributes: { autocomplete: "off" },
+                    attributes: { autocomplete: "new-password" },
                     infoTooltip: {
-                        text: i18n.t("ui.app.modules.pat_permissions_hint"),
+                        text: `${i18n.t("ui.app.modules.pat_permissions_hint")} ${i18n.t("ui.app.modules.credential_shared_hint")}`,
                         ariaLabel: i18n.t("ui.reuse.more_information"),
                     },
                 },
+                ...(configured
+                    ? [
+                          {
+                              name: "clearCredential",
+                              type: "checkbox",
+                              slider: true,
+                              labelKey: "ui.app.modules.remove_stored_pat",
+                              value: "false",
+                          },
+                      ]
+                    : []),
             ],
         },
     );
@@ -160,11 +159,18 @@ function renderMarketplaceSettingsForm(i18n, settings) {
     return settingsFormBuilder.render();
 }
 
-export async function openMarketplaceSettings(i18n, initialPage = "settings") {
+export async function openMarketplaceSettings(
+    i18n,
+    initialPage = "settings",
+    { signal } = {},
+) {
+    signal?.throwIfAborted();
     sources = await loadModuleSources();
     let settings = await loadModuleMarketplaceSettings();
     let selectedSource = null;
+    if (signal?.aborted) return sources;
     await openPopup({
+        signal,
         title: i18n.t("ui.reuse.settings"),
         maxWidth: "760px",
         pages: [
@@ -206,14 +212,20 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                 sourceFormController = sourceFormBuilder?.attach(
                     overlay.querySelector("#module-source-form"),
                 );
-                overlay
-                    .querySelector('[name="scanPrivateRepos"]')
-                    ?.addEventListener("change", (event) => {
-                        sourceFormController?.setFieldRequired(
-                            "token",
-                            event.currentTarget.checked,
-                        );
-                    });
+                const syncRequired = () =>
+                    sourceFormController?.setFieldRequired(
+                        "token",
+                        overlay.querySelector('[name="scanPrivateRepos"]')
+                            .checked &&
+                            (!selectedSource?.credentialConfigured ||
+                                overlay.querySelector(
+                                    '[name="clearCredential"]',
+                                )?.checked),
+                    );
+                for (const name of ["scanPrivateRepos", "clearCredential"])
+                    overlay
+                        .querySelector(`[name="${name}"]`)
+                        ?.addEventListener("change", syncRequired);
                 return;
             }
             settingsFormController?.detach();
@@ -237,6 +249,7 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
             overlay.querySelectorAll("[data-remove-source]").forEach((button) =>
                 button.addEventListener("click", async () => {
                     const result = await openPopup({
+                        signal,
                         title: i18n.t("ui.app.modules.remove_source"),
                         body: `<p>${escapeHtml(i18n.t("ui.app.modules.remove_source_confirm"))}</p>`,
                         actions: [
@@ -254,12 +267,16 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                     });
                     if (result !== "remove") return;
                     await removeModuleSource(button.dataset.removeSource);
-                    sources = await loadModuleSources();
+                    sources = sources.filter(
+                        (source) => source.uuid !== button.dataset.removeSource,
+                    );
+                    await reloadSources(i18n);
                     api.setPage("settings");
                 }),
             );
         },
         onAction: async (action, overlay, api) => {
+            if (signal?.aborted) return false;
             if (action === "save-settings") {
                 const form = overlay.querySelector(
                     "#module-marketplace-settings-form",
@@ -269,7 +286,7 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                     Object.fromEntries(new FormData(form)),
                 );
                 showToast(i18n.t("ui.app.modules.settings_saved"), {
-                    type: "success",
+                    variant: "success",
                 });
                 return true;
             }
@@ -286,69 +303,51 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                 ? selectedSource
                 : values;
             const uuid = selectedSource?.uuid ?? crypto.randomUUID();
-            const tokenChanged =
-                values.token && values.token !== STORED_PAT_MASK;
-            const credentialId = tokenChanged
-                ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
-                : selectedSource?.credentialId;
-            const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
-                i18n.t("ui.app.modules.keyring_component"),
-            );
-            const privateScan = values.scanPrivateRepos === true;
-            const validationToken = tokenChanged
-                ? values.token
-                : credentialId
-                  ? await scope?.resolve(credentialId, {
-                        request: {
-                            action: i18n.t(
-                                "ui.app.modules.credential_validation_warning",
-                            ),
-                            process: sourceValues.namespace,
-                        },
-                        validate: (value) => Boolean(value.trim()),
-                    })
-                  : "";
-            if (tokenChanged || privateScan) {
-                const validation = await validateModuleSourceCredential(
-                    {
-                        uuid,
-                        name: sourceValues.name,
-                        provider: sourceValues.provider,
-                        namespace: sourceValues.namespace,
-                        baseUrl: sourceValues.baseUrl,
-                        scanPrivateRepos: privateScan,
-                    },
-                    validationToken ?? "",
-                );
-                if (!validation.valid) {
-                    reportCredentialValidation(
-                        i18n,
-                        validation,
-                        sourceValues,
-                        privateScan,
-                    );
-                    return false;
-                }
-            }
-            if (tokenChanged) {
-                await scope?.set(credentialId, values.token, {
-                    label: sourceValues.name,
-                    source: sourceValues.provider,
+            try {
+                const saved = await saveModuleSource({
+                    uuid,
+                    name: sourceValues.name,
+                    provider: sourceValues.provider,
+                    namespace: sourceValues.namespace,
+                    baseUrl: sourceValues.baseUrl,
+                    token: values.token || undefined,
+                    clearCredential:
+                        form.elements.clearCredential?.checked === true,
+                    scanPrivateRepos: values.scanPrivateRepos,
                 });
+                sources = [
+                    ...sources.filter((source) => source.uuid !== saved.uuid),
+                    saved,
+                ];
+            } catch (error) {
+                if (signal?.aborted) return false;
+                console.error("modules_source_save_failed", {
+                    component: "ui",
+                    operation: "saveSource",
+                    code: error?.code,
+                    status: error?.status,
+                });
+                const key =
+                    error?.code === "server_secret_encryption_unavailable"
+                        ? "credential_storage_unavailable"
+                        : error?.code === "module_source_credential_required"
+                          ? "credential_empty"
+                          : error?.code === "module_source_credential_invalid"
+                            ? "credential_invalid"
+                            : error?.code ===
+                                "module_source_credential_scope_changed"
+                              ? "credential_scope_changed"
+                              : "source_save_failed";
+                showToast(i18n.t(`ui.app.modules.${key}`), {
+                    variant: "error",
+                });
+                return false;
             }
-            await saveModuleSource({
-                uuid,
-                name: sourceValues.name,
-                provider: sourceValues.provider,
-                namespace: sourceValues.namespace,
-                baseUrl: sourceValues.baseUrl,
-                credentialId,
-                scanPrivateRepos: values.scanPrivateRepos,
-            });
-            sources = await loadModuleSources();
+            if (signal?.aborted) return false;
             showToast(i18n.t("ui.app.modules.source_saved"), {
-                type: "success",
+                variant: "success",
             });
+            await reloadSources(i18n);
             api.setPage("settings");
             return false;
         },

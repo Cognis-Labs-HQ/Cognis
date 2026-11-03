@@ -1,11 +1,11 @@
 {
     "name": "@cognis/api",
-    "version": "0.10.17",
+    "version": "0.11.5",
     "private": true,
     "type": "module",
     "main": "server.ts",
     "dependencies": {
-        "@cognis/core": "<=0.5.4",
+        "@cognis/core": "<=0.6.1",
         "mysql2": "^3.23.2",
         "pg": "^8.22.0"
     }

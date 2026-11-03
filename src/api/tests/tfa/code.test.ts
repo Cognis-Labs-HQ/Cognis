@@ -4,7 +4,7 @@ import {
     TfaCodeService,
     InMemoryTfaStore,
     generateNumericCode,
-} from "../../reuse/tfa-code.js";
+} from "../../../gateways/reuse/tfa-code.js";
 
 test("generateNumericCode returns correct length string", () => {
     const code = generateNumericCode(6);

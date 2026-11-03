@@ -40,3 +40,12 @@ test("SmtpRateLimiter tracks recipients independently", () => {
     assert.equal(limiter.isThrottled("a@example.com"), true);
     assert.equal(limiter.isThrottled("b@example.com"), false);
 });
+
+test("recipient cooldowns are normalized within their dedicated limiter", () => {
+    let now = 1000;
+    const limiter = new SmtpRateLimiter(15_000, () => now);
+    limiter.record("Alice@Example.com", now);
+    assert.equal(limiter.isThrottled(" alice@example.com "), true);
+    now += 15_000;
+    assert.equal(limiter.isThrottled("alice@example.com"), false);
+});

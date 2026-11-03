@@ -1,10 +1,11 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 import type {
     NotificationEnvelope,
     NotificationSender,
     NotifyAdapterBootstrapCtx,
-} from "../../../gateways/notify/gateway.js";
+} from "../../../gateways/notify/contracts/sender.js";
 import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,
@@ -82,7 +83,9 @@ export async function bootstrapNotifyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    ctx.gateway.registerAlwaysOnSender(SENDER_ID);
+    ctx.capabilities.require<(id: string) => void>(
+        "notify:registerAlwaysOnSender",
+    )(SENDER_ID);
     const dbExecutor = ctx.capabilities.get("db:executor");
 
     if (dbExecutor) {

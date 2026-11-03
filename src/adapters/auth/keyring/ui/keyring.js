@@ -1,3 +1,4 @@
+import { createEnvelopeLoader } from "./remote-envelope.js";
 import { createKeyringIdentityGuard } from "./identity-guard.js";
 import { createSessionUnlockCache } from "./session-unlock.js";
 import { keyringStorageKeys } from "./storage-keys.js";
@@ -65,6 +66,7 @@ let keyringAccessSuppressed = false;
 let persistenceQueue = Promise.resolve();
 let keyringStateVersion = 0;
 let keyringExists = false;
+let metadataResolved = false;
 
 function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
@@ -84,6 +86,7 @@ const identityGuard = createKeyringIdentityGuard({
         keyringStateVersion++;
         clearVault();
         keyringExists = false;
+        metadataResolved = false;
         temporaryKeyringAccountId = "";
         accountInstanceId = "";
         unlockRequestPromise = null;
@@ -107,7 +110,6 @@ function requestOptions(binding = identityGuard.currentBinding()) {
         signal: binding.actor.controller.signal,
     };
 }
-void retireSessionUnlockCache();
 
 function scheduleRelock({ resetDeadline = false } = {}) {
     clearTimeout(relockTimer);
@@ -138,59 +140,17 @@ function clearVault() {
     if (hadPlaintext) dispatchKeyringEvent("locked");
 }
 
-async function loadRemoteEnvelope() {
-    const actor = identityGuard.snapshot();
-    if (!actor) return { resolved: false, envelope: null };
-    try {
-        let data;
-        if (temporaryKeyringAccountId) {
-            data = {
-                accountId: actor.accountId,
-                accountInstanceId: `temporary:${actor.accountId}`,
-            };
-        } else {
-            const response = await apiFetch(KEYRING_API, {
-                accessToken: actor.token,
-                signal: actor.controller.signal,
-            });
-            identityGuard.assertCurrent(actor);
-            if (response.status === 401 || response.status === 403) {
-                identityGuard.reject(actor);
-                return { resolved: false, envelope: null };
-            }
-            if (!response.ok) throw new Error("keyring_metadata_unavailable");
-            data = (await response.json())?.data;
-        }
-        identityGuard.assertCurrent(actor);
-        if (data?.accountId !== actor.accountId || !data?.accountInstanceId) {
-            identityGuard.reject(actor);
-            return { resolved: false, envelope: null };
-        }
-        const binding = await identityGuard.verify(
-            actor,
-            data.accountInstanceId,
-        );
-        return {
-            resolved: true,
-            binding,
-            envelope: data.vault ?? null,
-            accountInstanceId: binding.accountInstanceId,
-            derivationIterations: Number(
-                data.policy?.derivationIterations ?? DEFAULT_ITERATIONS,
-            ),
-        };
-    } catch (error) {
-        if (error?.name === "AbortError") throw error;
-        identityGuard.assertCurrent(actor);
-        const binding = identityGuard.currentBinding();
-        return {
-            resolved: false,
-            envelope: null,
-            binding,
-            accountInstanceId: binding?.accountInstanceId,
-        };
-    }
-}
+const loadRemoteEnvelope = createEnvelopeLoader({
+    apiFetch,
+    identityGuard,
+    apiPath: KEYRING_API,
+    temporaryAccount: () => temporaryKeyringAccountId,
+    defaultIterations: DEFAULT_ITERATIONS,
+    onRead: (resolved) => {
+        metadataResolved = resolved;
+    },
+});
+
 function loadLocalEnvelope() {
     const binding = identityGuard.currentBinding();
     if (!binding) return null;
@@ -439,6 +399,20 @@ async function restoreCurrentSessionUnlock() {
 
 export async function restoreKeyringSession() {
     return isKeyringUnlocked() || restoreCurrentSessionUnlock();
+}
+
+export async function readKeyringState() {
+    await restoreKeyringSession();
+    if (
+        !identityGuard.currentBinding() ||
+        (!metadataResolved && !keyringExists)
+    ) {
+        throw new Error("keyring_metadata_unavailable");
+    }
+    return {
+        exists: keyringExists || Boolean(loadLocalEnvelope()),
+        unlocked: isKeyringUnlocked(),
+    };
 }
 
 export async function lockKeyring() {
@@ -907,7 +881,7 @@ const relockPreference = createRelockPreference({
 export const getKeyringRelockMinutes = relockPreference.getMinutes;
 export const setKeyringRelockMinutes = relockPreference.setMinutes;
 
-registerKeyringCapabilities(uiCtx, {
+const registered = registerKeyringCapabilities(uiCtx, {
     get: getKeyringValue,
     set: setKeyringValue,
     delete: deleteKeyringValue,
@@ -916,6 +890,7 @@ registerKeyringCapabilities(uiCtx, {
     clear: clearKeyringValues,
     destroy: destroyKeyring,
     create: createKeyring,
+    readState: readKeyringState,
     exists: () =>
         Boolean(identityGuard.currentBinding()) &&
         (keyringExists || Boolean(loadLocalEnvelope())),
@@ -938,9 +913,12 @@ registerKeyringCapabilities(uiCtx, {
     setRelockMinutes: setKeyringRelockMinutes,
 });
 
-registerKeyringLoginFlow(uiCtx, setupKeyringAfterLogin);
+if (registered) {
+    void retireSessionUnlockCache();
+    registerKeyringLoginFlow(uiCtx, setupKeyringAfterLogin);
+}
 
-if (typeof window !== "undefined") {
+if (registered && typeof window !== "undefined") {
     window.addEventListener("storage", () => identityGuard.snapshot());
     window.addEventListener("pagehide", () => {
         keyringStateVersion++;

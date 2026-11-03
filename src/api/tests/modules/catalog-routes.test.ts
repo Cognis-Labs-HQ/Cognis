@@ -200,7 +200,7 @@ test("module marketplace install forwards the selected branch", async () => {
         },
         undefined,
         {
-            install: async (_module, _token, branch, validateDependencies) => {
+            install: async (_module, branch, validateDependencies) => {
                 installedBranch = branch;
                 const manifest = {
                     id: "notes",
@@ -425,7 +425,7 @@ test("module install jobs expose dependency validation error codes", async () =>
         },
         undefined,
         {
-            install: async (_module, _token, _branch, validate) => {
+            install: async (_module, _branch, validate) => {
                 await validate({ id: "example", uuid: "module-uuid" } as any);
                 throw new Error("unreachable");
             },

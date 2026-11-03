@@ -370,3 +370,49 @@ test("registered availability URLs reach the adapter and return status without 4
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("account role synchronization resolves the profile handle from the immutable account ID", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("db:executor", executor);
+        const { ctx } = makeAdapterCtx({ capabilities });
+        capabilities.contribute(
+            "auth:getUsername",
+            async () => "public-person",
+        );
+        await bootstrapSocialAdapter(ctx);
+        await capabilities.require<
+            (accountId: string, handle: string) => Promise<void>
+        >("profile:createProfile")("u_private", "public-person");
+        const updateRole =
+            capabilities.require<
+                (accountId: string, role: string) => Promise<void>
+            >("profile:setRole");
+        await updateRole("u_private", "teacher");
+        const profile = await capabilities
+            .require<{
+                getProfile(
+                    accountId: string,
+                ): Promise<{ role: string; visibility: string } | null>;
+            }>("social:profileStore")
+            .getProfile("u_private");
+        assert.equal(profile?.role, "teacher");
+        assert.equal(profile?.visibility, "friends");
+        await updateRole("u_missing", "user");
+        assert.equal(
+            (
+                await capabilities
+                    .require<{
+                        getProfile(
+                            accountId: string,
+                        ): Promise<{ role: string } | null>;
+                    }>("social:profileStore")
+                    .getProfile("u_private")
+            )?.role,
+            "teacher",
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});

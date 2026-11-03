@@ -57,4 +57,5 @@
   <string name="gateway.notify.broadcast.acknowledge">Bestätigen</string>
   <string name="gateway.notify.broadcast.action_failed">Rundsendungsstatus konnte nicht aktualisiert werden.</string>
   <string name="gateway.notify.broadcast.invalid_redirect">Die Weiterleitungs-URL ist ungültig oder nicht vertrauenswürdig.</string>
+    <string name="gateway.notify.validation.email">Bestätigte E-Mail-Adresse</string>
 </resources>

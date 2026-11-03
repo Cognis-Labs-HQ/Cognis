@@ -1,3 +1,6 @@
+import { requireBootstrapScope, type Ctx } from "@cognis/core";
+import { createShareMaintenance } from "./maintenance.js";
+import type { RegisterNotificationAction } from "../../../adapters/notify/smtp/contracts/action-delivery.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -60,18 +63,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get.bind(ctx.capabilities),
         adapterConfigStore,
     );
-    const registerEmailTemplate = ctx.capabilities.get<
-        (
-            templateId: string,
-            template: (variables: Record<string, string>) => {
-                subject: string;
-                body: string;
-                senderName: string;
-                actionUrl: string;
-                actionLabel: string;
-            },
-        ) => boolean
-    >("notify:registerEmailTemplate");
+    const registerEmailAction =
+        ctx.capabilities.get<RegisterNotificationAction>(
+            "notify:registerEmailPurpose",
+        );
+    const emailPurpose = registerEmailAction
+        ? await registerEmailAction("shareLinks", (variables) => ({
+              subject: `${variables.senderName} shared ${variables.resourceName} with you`,
+              body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
+              senderName: "Cognis Share",
+              actionUrl: variables.url,
+              actionLabel: "Open Shared Item",
+          }))
+        : undefined;
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("share", "Share");
@@ -79,10 +83,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<
             (notification: Record<string, unknown>) => Promise<unknown>
         >("notify:dispatch");
-    const notifyExpiredShares = async (): Promise<void> => {
+    const notifyExpiredShares = async (signal: AbortSignal): Promise<void> => {
         if (!dispatchNotification) return;
         const expiredShares = await gateway.claimExpiredNotifications();
         for (const share of expiredShares) {
+            if (signal.aborted) return;
             const accountIds = new Set([
                 share.ownerAccountId,
                 ...share.accessControls.recipients
@@ -123,19 +128,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 );
                 continue;
             }
+            if (signal.aborted) return;
             await gateway.markExpirationNotificationSent(share.id);
         }
     };
-    registerEmailTemplate?.("share-link", (variables) => ({
-        subject: `${variables.senderName} shared ${variables.resourceName} with you`,
-        body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
-        senderName: "Cognis Share",
-        actionUrl: variables.url,
-        actionLabel: "Open Shared Item",
-    }));
     await gateway.ensureSchema();
     await adapterConfigStore.ensureSchema();
-    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
+    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT, ctx);
     await gateway.loadAdapterConfigs();
 
     ctx.capabilities.contribute(
@@ -258,6 +257,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     ctx.routeRegistry.register(
         createShareRoutes({
+            emailPurpose,
             gateway,
             routeContext,
             uiRoot: path.join(GATEWAY_ROOT, "ui"),
@@ -306,6 +306,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             adapter.id,
             path.join(SHARE_ADAPTERS_ROOT, adapter.id),
         );
+        for (const plugin of adapter.navbarPlugins ?? []) {
+            uiHooks.registerNavbarPlugin(
+                plugin.scriptUrl,
+                () => gateway.isAdapterEnabled(adapter.id),
+                plugin.providesCapabilities,
+            );
+        }
     }
     uiHooks.registerNavbarPlugin(
         "/static/gateways/share/ui/approval-poller.js",
@@ -322,11 +329,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/share/ui/provider.js",
         providesCapabilities: ["share:uiGateway"],
     });
-    uiHooks.registerNavbarPlugin(
-        "/static/adapters/share/link/ui/share-links-popup/index.js",
-        () => gateway.isAdapterEnabled("link"),
-        ["share:openPopup", "share:openLinksPopup"],
-    );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
@@ -337,47 +339,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs HQ",
     });
 
-    const cleanupTimer = setInterval(() => {
-        void notifyExpiredShares().catch((error) => {
-            ctx.log?.("error", "Failed to notify expired shares.", {
-                component: "share-gateway",
-                operation: "notify_expired_shares",
-                error: error instanceof Error ? error.message : String(error),
-            });
-        });
-        void gateway.purgeExpiredShareTokens().catch((error) => {
-            ctx.log?.("error", "Failed to purge expired share tokens.", {
-                component: "share-gateway",
+    const maintenance = createShareMaintenance(
+        ctx.capabilities.require<Ctx>("system:ctx"),
+        [
+            { operation: "notify_expired_shares", run: notifyExpiredShares },
+            {
                 operation: "purge_expired_share_tokens",
-                error: error instanceof Error ? error.message : String(error),
-            });
-        });
-        void gateway.purgeExpiredGuestProfiles().catch((error) => {
-            ctx.log?.("error", "Failed to purge expired guest profiles.", {
-                component: "share-gateway",
+                run: () => gateway.purgeExpiredShareTokens(),
+            },
+            {
                 operation: "purge_expired_guest_profiles",
-                error: error instanceof Error ? error.message : String(error),
-            });
-        });
-        void gateway.purgeExpiredApprovalRequests().catch((error) => {
-            ctx.log?.(
-                "error",
-                "Failed to purge expired share approval requests.",
-                {
-                    component: "share-gateway",
-                    operation: "purge_expired_approval_requests",
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                },
-            );
-        });
-    }, GUEST_PROFILE_CLEANUP_INTERVAL_MS);
-    cleanupTimer.unref?.();
-    void notifyExpiredShares().catch((error) => {
-        ctx.log?.("error", "Failed initial expired share notification scan.", {
-            component: "share-gateway",
-            operation: "notify_expired_shares_initial",
-            error: error instanceof Error ? error.message : String(error),
-        });
-    });
+                run: () => gateway.purgeExpiredGuestProfiles(),
+            },
+            {
+                operation: "purge_expired_approval_requests",
+                run: () => gateway.purgeExpiredApprovalRequests(),
+            },
+        ],
+        ctx.log,
+        GUEST_PROFILE_CLEANUP_INTERVAL_MS,
+    );
+    requireBootstrapScope().registerDisposer(maintenance);
+    void maintenance.run();
 }

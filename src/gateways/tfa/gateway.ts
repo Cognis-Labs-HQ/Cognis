@@ -1,74 +1,25 @@
+import type { CapabilityStore } from "@cognis/core";
+import {
+    bootstrapTfaAdapters,
+    type TfaAdapterBootstrapContext,
+} from "./adapter-bootstrap.js";
 import { randomBytes } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { DbTfaStore } from "./reuse/tfa-store.js";
 
-export interface TfaConfigField {
-    key: string;
-    label: string;
-    type: "text" | "password" | "number" | "boolean" | "select";
-    required: boolean;
-    envVar?: string;
-    options?: string[];
-}
-
-export interface TfaMethodSetupView {
-    prompt: string;
-    fields?: Array<{
-        key: string;
-        label: string;
-        type: "text" | "number" | "password";
-        inputMode?: "numeric" | "text";
-        maxLength?: number;
-    }>;
-    details?: Record<string, string>;
-}
-
-export interface TfaMethodAdapter {
-    readonly id: string;
-    readonly name: string;
-    readonly version?: string;
-    readonly publisher?: string;
-    readonly defaultEnabled?: boolean;
-    beginSetup(input: {
-        accountId: string;
-        displayName: string;
-        issuer: string;
-    }): Promise<{
-        pendingPayload: Record<string, unknown>;
-        view: TfaMethodSetupView;
-    }>;
-    verifySetup(input: {
-        accountId: string;
-        pendingPayload: Record<string, unknown>;
-        verification: Record<string, unknown>;
-    }): Promise<{
-        verified: boolean;
-        state?: Record<string, unknown>;
-        message?: string;
-    }>;
-    verifyLogin(input: {
-        accountId: string;
-        state: Record<string, unknown>;
-        payload: Record<string, unknown>;
-    }): Promise<{ verified: boolean; message?: string }>;
-    beginLoginChallenge?(input: {
-        accountId: string;
-        state: Record<string, unknown>;
-    }): Promise<{
-        ready: boolean;
-        message?: string;
-        retryAfterSeconds?: number;
-        resendAvailableAt?: string;
-    }>;
-    renderMethodDetails?(input: {
-        accountId: string;
-        state: Record<string, unknown>;
-        issuer: string;
-    }): Promise<{ details: Record<string, string> } | null>;
-    getConfigSchema(): TfaConfigField[];
-    configure(config: Record<string, unknown>): void;
-}
+import type {
+    TfaConfigField,
+    TfaMethodSetupView,
+    TfaLoginPresentation,
+    TfaMethodAdapter,
+} from "./contracts/method.js";
+export type {
+    TfaConfigField,
+    TfaMethodSetupView,
+    TfaLoginPresentation,
+    TfaMethodAdapter,
+} from "./contracts/method.js";
 
 /**
  * Factory function signature that TFA adapter modules must export as `createAdapter`.
@@ -83,6 +34,7 @@ export type TfaAdapterFactory = (
 ) => TfaMethodAdapter;
 
 export interface TfaAdapterInfo {
+    stringsBaseUrl?: string;
     id: string;
     name: string;
     version?: string;
@@ -131,6 +83,8 @@ export interface TfaLoginVerificationResult {
 }
 
 export interface TfaLoginMethod {
+    loginUi?: TfaLoginPresentation;
+    stringsBaseUrl?: string;
     id: string;
     name: string;
     challenge?: {
@@ -149,7 +103,7 @@ type NotifyDispatch = (envelope: {
 }) => Promise<unknown>;
 
 const TFA_SETUP_ID_BYTES = 18;
-const TFA_METHOD_ISSUER = process.env.COGNIS_TOTP_ISSUER || "Cognis";
+const TFA_METHOD_ISSUER = "Cognis";
 
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
@@ -214,6 +168,7 @@ export class CoreTfaGateway {
                 : {}),
             config: {},
             schema: adapter.getConfigSchema(),
+            stringsBaseUrl: adapter.stringsBaseUrl,
         }));
     }
 
@@ -223,7 +178,7 @@ export class CoreTfaGateway {
         for (const entry of configs) {
             const adapter = this.adapters.get(entry.adapterId);
             if (!adapter) continue;
-            adapter.configure(entry.config);
+            adapter.configure?.(entry.config);
             if (entry.enabled) {
                 this.enabledAdapters.add(entry.adapterId);
             } else {
@@ -262,7 +217,7 @@ export class CoreTfaGateway {
             enabledValue === 1;
         const { enabled: _omit, ...adapterConfig } = config;
         const wasEnabled = this.enabledAdapters.has(adapterId);
-        adapter.configure(adapterConfig);
+        adapter.configure?.(adapterConfig);
         if (enabled) {
             this.enabledAdapters.add(adapterId);
         } else {
@@ -324,8 +279,12 @@ export class CoreTfaGateway {
     onAdapterEnabledChange(
         listenerId: string,
         listener: (adapterId: string, enabled: boolean) => Promise<void> | void,
-    ): void {
+    ): () => void {
         this.adapterEnabledChangeListeners.set(listenerId, listener);
+        return () => {
+            if (this.adapterEnabledChangeListeners.get(listenerId) === listener)
+                this.adapterEnabledChangeListeners.delete(listenerId);
+        };
     }
 
     onAdapterConfigChange(
@@ -762,56 +721,74 @@ export class CoreTfaGateway {
         const initiateChallenge =
             candidateMethods.length === 1 && !hasUnusedRecoveryCodes;
         const resolvedMethods = await Promise.all(
-            candidateMethods.map(async (method) => {
-                const adapter = this.adapters.get(method.methodId)!;
-                if (!initiateChallenge) {
-                    return { id: adapter.id, name: adapter.name };
-                }
-                try {
-                    const challenge = await this.prepareLoginChallenge(
-                        accountId,
-                        method.methodId,
-                        method.state,
-                    );
-                    if (!challenge.ready) {
+            candidateMethods.map(
+                async (method): Promise<TfaLoginMethod | null> => {
+                    const adapter = this.adapters.get(method.methodId)!;
+                    if (!initiateChallenge) {
+                        return {
+                            id: adapter.id,
+                            name: adapter.name,
+                            loginUi: adapter.loginUi,
+                            stringsBaseUrl: adapter.stringsBaseUrl,
+                        };
+                    }
+                    try {
+                        const challenge = await this.prepareLoginChallenge(
+                            accountId,
+                            method.methodId,
+                            method.state,
+                        );
+                        if (!challenge.ready) {
+                            return null;
+                        }
+                        return {
+                            id: adapter.id,
+                            name: adapter.name,
+                            loginUi: adapter.loginUi,
+                            stringsBaseUrl: adapter.stringsBaseUrl,
+                            ...(this.buildLoginMethodChallengeMetadata(
+                                challenge,
+                            )
+                                ? {
+                                      challenge:
+                                          this.buildLoginMethodChallengeMetadata(
+                                              challenge,
+                                          ),
+                                  }
+                                : {}),
+                        };
+                    } catch (error) {
+                        this.options.log?.(
+                            "error",
+                            "Failed to prepare TFA login challenge.",
+                            {
+                                component: "tfa-gateway",
+                                operation: "prepare_login_challenge",
+                                accountId,
+                                methodId: method.methodId,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
                         return null;
                     }
-                    return {
-                        id: adapter.id,
-                        name: adapter.name,
-                        ...(this.buildLoginMethodChallengeMetadata(challenge)
-                            ? {
-                                  challenge:
-                                      this.buildLoginMethodChallengeMetadata(
-                                          challenge,
-                                      ),
-                              }
-                            : {}),
-                    };
-                } catch (error) {
-                    this.options.log?.(
-                        "error",
-                        "Failed to prepare TFA login challenge.",
-                        {
-                            component: "tfa-gateway",
-                            operation: "prepare_login_challenge",
-                            accountId,
-                            methodId: method.methodId,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    return null;
-                }
-            }),
+                },
+            ),
         );
         const methods = resolvedMethods.filter(
             (method): method is TfaLoginMethod => method != null,
         );
         if (hasUnusedRecoveryCodes) {
-            methods.push({ id: "recovery_code", name: "Recovery Code" });
+            methods.push({
+                id: "recovery_code",
+                name: "Recovery Code",
+                loginUi: {
+                    placeholderKey:
+                        "ui.app.login.tfa.code_placeholder_recovery",
+                },
+            });
         }
         return methods;
     }
@@ -876,6 +853,10 @@ export class CoreTfaGateway {
         }
     }
 
+    async bootstrapAdapters(capabilities: CapabilityStore): Promise<void> {
+        await bootstrapTfaAdapters(this.adapters.values(), capabilities, this);
+    }
+
     async discoverAdapters(tfaAdaptersRoot: string): Promise<void> {
         let entries: string[];
         try {
@@ -908,6 +889,10 @@ export class CoreTfaGateway {
                 const adapter = factory(
                     this.options.adapterFactoryContext ?? {},
                 );
+                if (module.defineContracts !== undefined)
+                    Object.assign(adapter, {
+                        defineContracts: module.defineContracts,
+                    });
                 if (packageJson.version) {
                     Object.assign(adapter, { version: packageJson.version });
                 }
@@ -928,3 +913,5 @@ export class CoreTfaGateway {
         }
     }
 }
+
+export type { TfaAdapterBootstrapContext } from "./adapter-bootstrap.js";

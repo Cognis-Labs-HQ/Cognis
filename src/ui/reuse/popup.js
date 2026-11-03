@@ -1,3 +1,4 @@
+import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
 /**
  * Reusable popup / modal dialog.
  *
@@ -95,6 +96,7 @@
  *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
+ *   signal?: AbortSignal,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
  *   closeButtonVariant?: 'cancel' | 'neutral',
@@ -439,6 +441,7 @@ export async function openPopup({
     onOpen,
     onAction,
     closeProtection = false,
+    signal,
     timeoutMs = 0,
     timeoutActionId = null,
     closeButtonVariant = "cancel",
@@ -448,6 +451,7 @@ export async function openPopup({
 } = {}) {
     await ensureStylesheet();
     const i18n = await getI18n();
+    if (signal?.aborted) return null;
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "popup-overlay";
@@ -529,9 +533,11 @@ export async function openPopup({
         }
 
         let dismissed = false;
+        let discardDecision;
         let timeoutHandle = null;
         let countdownInterval = null;
-        async function dismiss(actionId) {
+        async function dismiss(actionId, aborted = false) {
+            if (dismissed) return true;
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
                 manuallyDirty ||
@@ -540,30 +546,17 @@ export async function openPopup({
             if (
                 (actionId === null || actionId === "cancel") &&
                 closeProtection &&
+                !aborted &&
                 hasUnsavedChanges
             ) {
-                const i18n = await getI18n();
-                const confirmed = await openPopup({
-                    title: i18n.t("ui.reuse.unsaved_changes"),
-                    body: `<p>${escapeHtml(i18n.t("ui.reuse.close_form_warning"))}</p>`,
-                    variant: "warning",
-                    actions: [
-                        {
-                            id: "discard",
-                            label: i18n.t("ui.reuse.discard"),
-                            variant: "confirm",
-                        },
-                        {
-                            id: "keep",
-                            label: i18n.t("ui.reuse.cancel"),
-                            variant: "cancel",
-                        },
-                    ],
-                });
-                if (confirmed !== "discard") return;
+                discardDecision ??= confirmPopupDiscard(i18n, signal);
+                const confirmed = await discardDecision;
+                discardDecision = undefined;
+                if (!confirmed) return false;
             }
             if (dismissed) return;
             dismissed = true;
+            signal?.removeEventListener("abort", abortPopup);
             if (timeoutHandle !== null) {
                 clearTimeout(timeoutHandle);
                 timeoutHandle = null;
@@ -584,13 +577,17 @@ export async function openPopup({
                     unlockPageScroll();
                 }
             }
+            if (aborted) removeOverlay();
             overlay.addEventListener("transitionend", removeOverlay, {
                 once: true,
             });
             setTimeout(removeOverlay, 500); // fallback if no transition fires (line 109 above)
             overlay.classList.remove("popup-overlay--visible");
             resolve(actionId ?? null);
+            return true;
         }
+
+        const abortPopup = () => void dismiss(null, true);
 
         const popupPages =
             Array.isArray(pages) && pages.length > 0 ? pages : null;
@@ -866,6 +863,11 @@ export async function openPopup({
         fitPopupTitleRow();
         document.fonts?.ready.then(fitPopupTitleRow);
 
+        signal?.addEventListener("abort", abortPopup, { once: true });
+        if (signal?.aborted) {
+            abortPopup();
+            return;
+        }
         if (typeof onOpen === "function") {
             onOpen(overlay, () => dismiss(null), {
                 updateBody,
@@ -877,6 +879,7 @@ export async function openPopup({
                 },
             });
         }
+        if (dismissed) return;
         if (closeProtection) {
             closeProtectionTracker = createFormDirtyTracker(overlay, {
                 quiet: true,
@@ -912,6 +915,7 @@ export async function openPopup({
         }
 
         requestAnimationFrame(() => {
+            if (dismissed) return;
             overlay.classList.add("popup-overlay--visible");
         });
 

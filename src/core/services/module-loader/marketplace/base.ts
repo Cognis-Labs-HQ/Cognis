@@ -1,4 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { fetchMarketplaceResource } from "./request.js";
+import { readFile } from "node:fs/promises";
+import { writeMarketplaceSnapshot } from "./persistence.js";
 import type { ModuleManifest } from "../../../contracts/module-manifest.js";
 import type { MarketplaceModule, ModuleSource } from "./index.js";
 import { MarketplaceRepository } from "./repository.js";
@@ -74,7 +76,10 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                               )
                             : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
                     // default-manifest block: establishes the immutable UUID used for provenance lookup.
-                    const manifestResponse = await fetch(rawUrl, { headers });
+                    const manifestResponse = await fetchMarketplaceResource(
+                        rawUrl,
+                        { headers },
+                    );
                     if (manifestResponse.status === 404)
                         return { cloneUrl, module: null };
                     if (!manifestResponse.ok) {
@@ -115,16 +120,17 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                     );
                     let catalogRef = provenance?.branch || defaultBranch;
                     if (catalogRef !== defaultBranch) {
-                        const channelManifestResponse = await fetch(
-                            source.provider === "github"
-                                ? this.resolveGithubManifestUrl(
-                                      source,
-                                      projectPath,
-                                      catalogRef,
-                                  )
-                                : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogRef)}`,
-                            { headers },
-                        );
+                        const channelManifestResponse =
+                            await fetchMarketplaceResource(
+                                source.provider === "github"
+                                    ? this.resolveGithubManifestUrl(
+                                          source,
+                                          projectPath,
+                                          catalogRef,
+                                      )
+                                    : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogRef)}`,
+                                { headers },
+                            );
                         if (channelManifestResponse.ok) {
                             try {
                                 const channelManifest = this.parseManifest(
@@ -165,7 +171,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                             headers,
                         ),
                     ]);
-                    const readmeResponse = await fetch(
+                    const readmeResponse = await fetchMarketplaceResource(
                         this.resolveRepositoryAssetUrl(
                             source,
                             projectPath,
@@ -396,7 +402,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         headers: Record<string, string>,
     ): Promise<boolean> {
         for (const filename of ["LICENSE", "LICENSE.md", "LICENSE.txt"]) {
-            const response = await fetch(
+            const response = await fetchMarketplaceResource(
                 this.resolveRepositoryAssetUrl(
                     source,
                     projectPath,
@@ -443,65 +449,17 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         }
     }
 
-    protected async readCredentialBindings(): Promise<Record<string, string>> {
-        try {
-            const value = JSON.parse(
-                await readFile(this.credentialBindingsPath, "utf8"),
-            ) as unknown;
-            return value && typeof value === "object" && !Array.isArray(value)
-                ? (value as Record<string, string>)
-                : {};
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
-            throw error;
-        }
-    }
-
-    protected async saveCredentialBinding(
+    protected async recordScanAttempt(
         sourceUuid: string,
-        credentialId?: string,
+        revision?: string,
     ): Promise<void> {
         const update = async () => {
-            const bindings = await this.readCredentialBindings();
-            if (credentialId) bindings[sourceUuid] = credentialId;
-            else delete bindings[sourceUuid];
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.credentialBindingsPath,
-                JSON.stringify(bindings, null, 2),
-                { mode: 0o600 },
-            );
-        };
-        this.catalogMutation = this.catalogMutation.then(update, update);
-        await this.catalogMutation;
-    }
-
-    protected async recordScanAttempt(sourceUuid: string): Promise<void> {
-        const update = async () => {
             const attempts = await this.readScanAttempts();
-            attempts[sourceUuid] = new Date().toISOString();
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.scanAttemptsPath,
-                JSON.stringify(attempts, null, 2),
-                { mode: 0o600 },
-            );
-        };
-        this.catalogMutation = this.catalogMutation.then(update, update);
-        await this.catalogMutation;
-    }
-
-    protected async clearScanAttempt(sourceUuid: string): Promise<void> {
-        const update = async () => {
-            const attempts = await this.readScanAttempts();
-            if (!(sourceUuid in attempts)) return;
-            delete attempts[sourceUuid];
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.scanAttemptsPath,
-                JSON.stringify(attempts, null, 2),
-                { mode: 0o600 },
-            );
+            for (const key of Object.keys(attempts))
+                if (key.split(":")[0] === sourceUuid) delete attempts[key];
+            attempts[`${sourceUuid}:${revision ?? "default"}`] =
+                new Date().toISOString();
+            await writeMarketplaceSnapshot(this.scanAttemptsPath, attempts);
         };
         this.catalogMutation = this.catalogMutation.then(update, update);
         await this.catalogMutation;
@@ -510,31 +468,40 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
     protected async replaceCachedSource(
         sourceUuid: string,
         modules: MarketplaceModule[],
-        configuredSourceUuids: Set<string>,
-    ): Promise<void> {
+        configuredSources: () => Promise<ModuleSource[]>,
+        revision?: string,
+    ): Promise<boolean> {
         const replace = async () => {
+            const sources = await configuredSources();
+            if (
+                !sources.some(
+                    (source) =>
+                        source.uuid === sourceUuid &&
+                        source.revision === revision,
+                )
+            )
+                return false;
+            const configuredSourceUuids = new Set(
+                sources.map((source) => source.uuid),
+            );
             const cached = await this.readCachedCatalog();
             const retained = cached.filter(
                 (module) =>
                     module.sourceUuid !== sourceUuid &&
                     configuredSourceUuids.has(module.sourceUuid),
             );
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.catalogPath,
-                JSON.stringify(
-                    [
-                        ...retained,
-                        ...this.applyCachedSelectedBranches(modules, cached),
-                    ],
-                    null,
-                    2,
-                ),
-                { mode: 0o600 },
-            );
+            await writeMarketplaceSnapshot(this.catalogPath, [
+                ...retained,
+                ...this.applyCachedSelectedBranches(modules, cached),
+            ]);
+            return true;
         };
-        this.catalogMutation = this.catalogMutation.then(replace, replace);
-        await this.catalogMutation;
+        const mutation = this.catalogMutation.then(replace, replace);
+        this.catalogMutation = mutation.then(
+            () => undefined,
+            () => undefined,
+        );
+        return mutation;
     }
 
     protected async updateCachedInstallation(
@@ -554,12 +521,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                       }
                     : module,
             );
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.catalogPath,
-                JSON.stringify(modules, null, 2),
-                { mode: 0o600 },
-            );
+            await writeMarketplaceSnapshot(this.catalogPath, modules);
         };
         this.catalogMutation = this.catalogMutation.then(update, update);
         await this.catalogMutation;
@@ -583,12 +545,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
             if (!modules.some((module) => module.uuid === uuid)) {
                 throw new Error("module_not_found");
             }
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.catalogPath,
-                JSON.stringify(modules, null, 2),
-                { mode: 0o600 },
-            );
+            await writeMarketplaceSnapshot(this.catalogPath, modules);
         };
         this.catalogMutation = this.catalogMutation.then(update, update);
         await this.catalogMutation;
@@ -616,14 +573,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                       }
                     : module,
             );
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.catalogPath,
-                JSON.stringify(modules, null, 2),
-                {
-                    mode: 0o600,
-                },
-            );
+            await writeMarketplaceSnapshot(this.catalogPath, modules);
         };
         this.catalogMutation = this.catalogMutation.then(update, update);
         await this.catalogMutation;
@@ -637,12 +587,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
             const modules = cached.filter((module) =>
                 configuredSourceUuids.has(module.sourceUuid),
             );
-            await mkdir(this.cacheRoot, { recursive: true });
-            await writeFile(
-                this.catalogPath,
-                JSON.stringify(modules, null, 2),
-                { mode: 0o600 },
-            );
+            await writeMarketplaceSnapshot(this.catalogPath, modules);
         };
         this.catalogMutation = this.catalogMutation.then(prune, prune);
         await this.catalogMutation;

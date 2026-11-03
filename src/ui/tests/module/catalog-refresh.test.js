@@ -35,6 +35,8 @@ async function fixture(context) {
             return strings.get(key);
         },
     };
+    let snapshotVersion = 0;
+    let sourceList = [];
     const messages = [],
         errors = [],
         operations = [],
@@ -182,13 +184,25 @@ async function fixture(context) {
                 updateScreenshotCarousel: unused,
             },
             "./api.js": {
-                loadModuleSources: async () => [],
-                loadInstalledModules: async () => structuredClone(initial),
-                loadCachedModules: async () => structuredClone(initial),
-                loadAvailableModules: async () => ({
-                    modules: structuredClone(initial),
-                    sourceFailures: [],
-                }),
+                loadMarketplaceState: async (etag) => {
+                    operations.push("state-poll");
+                    const current = `"fixture-${snapshotVersion}"`;
+                    return etag === current
+                        ? null
+                        : {
+                              etag: current,
+                              sources: structuredClone(sourceList),
+                              installed: structuredClone(initial),
+                              cached: structuredClone(initial),
+                          };
+                },
+                loadAvailableModules: async () => {
+                    operations.push("source-scan");
+                    return {
+                        modules: structuredClone(initial),
+                        sourceFailures: [],
+                    };
+                },
                 installModule: async (module) => {
                     operations.push(`installed:${module.id}`);
                     return { version: "4.0.2" };
@@ -209,12 +223,6 @@ async function fixture(context) {
                 },
                 modulePreferenceLabels: unused,
             },
-            "./credentials.js": {
-                resolveSourceToken: async (_keyring, source) => {
-                    assert.equal(source, undefined);
-                    return undefined;
-                },
-            },
             "./presentation.js": {
                 ...presentation,
                 ...localized,
@@ -222,7 +230,10 @@ async function fixture(context) {
             },
             "./preferences.js": { openModulePreferences: unused },
             "./uninstall.js": { confirmModuleUninstall: unused },
-            "./source-settings.js": { openMarketplaceSettings: unused },
+            "./source-settings.js": {
+                openMarketplaceSettings: async () =>
+                    structuredClone(sourceList),
+            },
             "./assets.js": {
                 resolveModuleAssetUrl: () => "",
                 loadAuthenticatedModuleAssets: async (modules) =>
@@ -276,6 +287,7 @@ async function fixture(context) {
         localized,
         sidebar,
         stall: () => {
+            snapshotVersion++;
             let release;
             const promise = new Promise((resolve) => {
                 release = resolve;
@@ -283,11 +295,15 @@ async function fixture(context) {
             waitForStrings = () => promise;
             return release;
         },
-        clickUpdate: async () => {
+        changeSources: () => {
+            sourceList = [{ uuid: "new-source" }];
+            snapshotVersion++;
+        },
+        clickButton: async ({ id = "", attribute } = {}) => {
             const target = {
                 dataset: {},
-                id: "",
-                hasAttribute: (name) => name === "data-module-update",
+                id,
+                hasAttribute: (name) => name === attribute,
                 getAttribute: () => "study-language-ja",
                 closest: (selector) => (selector === "button" ? target : null),
             };
@@ -302,7 +318,7 @@ test("a Japanese update can redraw safely while another module's catalog transla
     context.after(release);
     state.handlers.get("poll")();
     await new Promise(setImmediate);
-    await state.clickUpdate();
+    await state.clickButton({ attribute: "data-module-update" });
     assert.deepEqual(state.errors, []);
     assert.ok(
         state.messages.some(
@@ -379,4 +395,51 @@ test("catalog metadata keeps its matching locale bundle when installed metadata 
         "/catalog/study-language-ja",
     );
     assert.equal(state.initial[0].status, "enabled");
+});
+
+test("an unchanged mounted marketplace performs only its state poll without redrawing", async (context) => {
+    const state = await fixture(context);
+    state.handlers.get("poll")();
+    await new Promise(setImmediate);
+    const pictures = state.operations.filter(
+        (operation) => operation === "pictures",
+    ).length;
+    const reads = state.operations.filter(
+        (operation) => operation === "state-poll",
+    ).length;
+    for (let interval = 0; interval < 10; interval++) {
+        state.handlers.get("poll")();
+        await new Promise(setImmediate);
+    }
+    assert.equal(
+        state.operations.filter((operation) => operation === "state-poll")
+            .length,
+        reads + 10,
+    );
+    assert.equal(
+        state.operations.filter((operation) => operation === "pictures").length,
+        pictures,
+    );
+    assert.deepEqual(state.errors, []);
+});
+
+test("saving source settings still triggers discovery after the visible source list has changed", async (context) => {
+    const state = await fixture(context);
+    state.handlers.get("poll")();
+    await new Promise(setImmediate);
+    const scans = state.operations.filter(
+        (operation) => operation === "source-scan",
+    ).length;
+    state.changeSources();
+    await state.clickButton({ id: "module-marketplace-settings" });
+    await state.clickButton({ attribute: "data-module-update" });
+    await new Promise(setImmediate);
+    state.handlers.get("poll")();
+    await new Promise(setImmediate);
+    assert.equal(
+        state.operations.filter((operation) => operation === "source-scan")
+            .length,
+        scans + 1,
+    );
+    assert.deepEqual(state.errors, []);
 });

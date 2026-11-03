@@ -134,7 +134,7 @@ Halaman terautentikasi mengizinkan media dari rute dengan asal yang sama dan URL
 
 ## Penyiapan Sesi
 
-Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi setelah pengalihan SSO. Pemilik notifikasi menyediakan penyiapan email wajib melalui `auth:getSetupIntegrations(accountId, role)`, yang mengembalikan skrip dari asal yang sama dengan ekspor `enforceSetup({ accountId })`. Penyiapan selesai sebelum sesi diizinkan bernavigasi atau digunakan luring. Gangguan SMTP tidak membatalkan kewajiban verifikasi; administrator pendiri awal tetap dikecualikan.
+Setiap sesi terautentikasi memeriksa `/api/v1/auth/setup-status`, termasuk sesi SSO yang dipulihkan. Auth memiliki `auth:getSetupIntegrations(accountId, role)` dan mengevaluasi mode validasi terdaftar. Penyedia menyediakan skrip asal sama yang mengekspor `enforceSetup({ accountId })`. Penyiapan wajib selesai sebelum navigasi atau penggunaan offline; penyedia tidak tersedia tidak membatalkan kebijakan. Pemulihan administrator pendiri tetap dikecualikan.
 
 ## Indikator Login
 
@@ -157,3 +157,13 @@ Auth menyediakan `session:isOfflineValid` sebagai otoritas sinkron tanpa jaringa
 ## Antrean Terikat Akun
 
 Catatan antrean menyertakan pengenal instans akun yang diverifikasi server. Auth mengembalikan `accountInstanceId` kanonis dalam status penyiapan terautentikasi dan hanya menyediakan `session:getOfflineIdentity` untuk sesi akun yang terverifikasi, selesai disiapkan, dan belum kedaluwarsa. Ketiadaan metadata otoritatif mencabut izin luring. Tampilan antrean serta pemeriksaan penyimpanan dan pengiriman terikat pada instans ini; catatan instans lama atau tanpa ikatan ditolak sebelum dikirim, termasuk setelah akun lokal dibuat ulang dengan ID akun yang sama. ID operasi tidak bertabrakan antarinstans akun. Token Bearer tidak pernah disimpan dalam antrean.
+
+## Percobaan Pendaftaran SSO Terbatas
+
+Identitas SSO yang memerlukan undangan ditahan sebelum akun, profil, atau surel dibuat. Percobaan yang dibatalkan atau kedaluwarsa tidak dapat dilanjutkan; pendaftaran dan autentikasi dua faktor kedaluwarsa tepat pada batas waktu. Adaptor pendaftaran publik yang aktif tetap mengizinkan pembuatan akun SSO secara terpisah dari pendaftaran akun lokal publik. Akun lama tidak dihapus berdasarkan penyedia atau usia.
+
+## Mode Validasi Terdaftar
+
+`auth:userValidationModes.register` menerima ID, label terjemahan, basis sumber opsional, bidang registrasi wajib, fungsi ketersediaan, fungsi validasi, dan integrasi penyiapan opsional. Registrasi hanya selama bootstrap dan mengikuti siklus hidup pemilik. Auth menjalankan fungsi terpilih melalui `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`), tanpa percabangan berdasarkan ID metode. Kebijakan terkonfigurasi yang hilang atau tidak tersedia menolak akses. Pemulihan administrator pendiri tetap dikecualikan. Administration menampilkan metadata terdaftar; pilihan tersimpan yang tidak tersedia dipertahankan.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).

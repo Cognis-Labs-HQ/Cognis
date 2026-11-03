@@ -17,6 +17,7 @@ export interface OidcClient {
 
 class OidcAuthAdapter implements AuthProviderAdapter {
     readonly id = "oidc";
+    readonly stringsBaseUrl = "/static/adapters/auth/oidc/languages";
     readonly name = "OIDC SSO";
 
     private client: OidcClient | null = null;
@@ -46,31 +47,31 @@ class OidcAuthAdapter implements AuthProviderAdapter {
         return [
             {
                 key: "providerName",
-                label: "Provider Name",
+                label: "adapter.oidc.config.providername",
                 type: "text",
                 required: true,
             },
             {
                 key: "clientId",
-                label: "Client ID",
+                label: "adapter.oidc.config.clientid",
                 type: "text",
                 required: true,
             },
             {
                 key: "clientSecret",
-                label: "Client Secret",
+                label: "adapter.oidc.config.clientsecret",
                 type: "password",
                 required: true,
             },
             {
                 key: "discoveryUrl",
-                label: "Discovery URL",
+                label: "adapter.oidc.config.discoveryurl",
                 type: "text",
                 required: true,
             },
             {
                 key: "adminRoles",
-                label: "Admin Roles (comma-separated)",
+                label: "adapter.oidc.config.adminroles",
                 type: "text",
                 required: false,
             },

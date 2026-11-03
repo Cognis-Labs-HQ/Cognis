@@ -244,3 +244,25 @@ test("loading the navigation utility again preserves providers registered by ano
         false,
     );
 });
+
+test("Logout finishes session clearing without waiting for an unresponsive offline worker", async () => {
+    let release;
+    const previous =
+        navigationImports["./offline-state.js"].offlineWorkerRequest;
+    navigationImports["./offline-state.js"].offlineWorkerRequest = () =>
+        new Promise((resolve) => {
+            release = resolve;
+        });
+    try {
+        let finished = false;
+        const logout = uiCtx.runFlow("logout", {}).then(() => {
+            finished = true;
+        });
+        await new Promise(setImmediate);
+        assert.equal(finished, true);
+        release?.([]);
+        await logout;
+    } finally {
+        navigationImports["./offline-state.js"].offlineWorkerRequest = previous;
+    }
+});

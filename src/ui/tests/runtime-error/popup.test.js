@@ -179,7 +179,7 @@ test("router stores previous route in history state during SPA navigation", () =
     assert.match(source, /previousRouterPage/);
     assert.match(
         source,
-        /history\.pushState\([\s\S]*\.\.\.state,[\s\S]*routerPage:\s*path,[\s\S]*previousRouterPage,[\s\S]*routerIndex:\s*_historyIndex/,
+        /history\.pushState\([\s\S]*\.\.\.state,[\s\S]*routerPage:\s*path,[\s\S]*previousRouterPage,[\s\S]*routerIndex:\s*routerState\.historyIndex/,
     );
 });
 

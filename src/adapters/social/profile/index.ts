@@ -357,6 +357,18 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    ctx.capabilities.contribute(
+        "profile:setRole",
+        async (accountId: string, role: string): Promise<void> => {
+            const profile = await profileStore.getProfile(accountId);
+            if (!profile) return;
+            await profileStore.setRoleByHandle(
+                profile.handle,
+                role as AccountRole,
+            );
+        },
+    );
+
     /**
      * profile:getRole — reads profile-owned role metadata without exposing the
      * profile store to consumers.

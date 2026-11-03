@@ -21,8 +21,15 @@ async function data(response) {
     return (await response.json()).data;
 }
 
-export async function loadInstalledModules() {
-    return data(await apiFetch("/api/v1/modules"));
+/** Revalidate displayed marketplace state without downloading unchanged catalogs. */
+export async function loadMarketplaceState(etag, { signal } = {}) {
+    const response = await apiFetch("/api/v1/modules/marketplace-state", {
+        signal,
+        cache: "no-store",
+        headers: etag ? { "if-none-match": etag } : {},
+    });
+    if (response.status === 304) return null;
+    return { etag: response.headers.get("etag"), ...(await data(response)) };
 }
 
 export async function loadModuleConfig(moduleId) {
@@ -83,16 +90,6 @@ export async function saveModuleSource(source) {
     );
 }
 
-export async function validateModuleSourceCredential(source, token) {
-    return data(
-        await apiFetch("/api/v1/modules/sources/validate-credential", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ source, token }),
-        }),
-    );
-}
-
 export async function removeModuleSource(uuid) {
     return data(
         await apiFetch(`/api/v1/modules/sources/${encodeURIComponent(uuid)}`, {
@@ -102,14 +99,15 @@ export async function removeModuleSource(uuid) {
 }
 
 export async function loadAvailableModules(
-    tokens,
     sourceUuids,
     forceRefresh = false,
+    { signal } = {},
 ) {
     const response = await apiFetch("/api/v1/modules/catalog", {
         method: "POST",
+        signal,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tokens, sourceUuids, forceRefresh }),
+        body: JSON.stringify({ sourceUuids, forceRefresh }),
     });
     if (!response.ok) await data(response);
     const payload = await response.json();
@@ -119,10 +117,6 @@ export async function loadAvailableModules(
             ? payload.meta.sourceFailures
             : [],
     };
-}
-
-export async function loadCachedModules() {
-    return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
 export async function saveModuleReleaseChannel(moduleUuid, branch) {
@@ -167,12 +161,12 @@ export async function loadModuleAsset(assetUrl, { signal } = {}) {
     }
 }
 
-export async function installModule(module, token, branch, wasEnabled) {
+export async function installModule(module, branch, wasEnabled) {
     const job = await data(
         await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ module, token, branch, wasEnabled }),
+            body: JSON.stringify({ module, branch, wasEnabled }),
             suppressConnectionRecoveryToast: true,
         }),
     );

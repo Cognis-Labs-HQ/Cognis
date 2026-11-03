@@ -16,8 +16,11 @@ export async function createPracticeModePreference({
     isActive,
     onChange,
     writingAvailable = true,
+    persist = true,
 }) {
-    const preferences = await runDeckAction("load", loadUiPreferences, signal);
+    const preferences = persist
+        ? await runDeckAction("load", loadUiPreferences, signal)
+        : null;
     let selected =
         mode ??
         (preferences?.studyPracticeMode === "writing" ? "writing" : "reading");
@@ -127,9 +130,10 @@ export async function createPracticeModePreference({
                                     )
                                         return;
                                 }
-                                await saveUiPreferences({
-                                    studyPracticeMode: next,
-                                });
+                                if (persist)
+                                    await saveUiPreferences({
+                                        studyPracticeMode: next,
+                                    });
                                 if (signal.aborted) return;
                                 selected = next;
                                 select.value = value();

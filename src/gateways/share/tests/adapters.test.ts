@@ -1,3 +1,4 @@
+import { createShareAdapterHost } from "./adapter-host.js";
 import assert from "node:assert/strict";
 import { mkdtemp, readFile } from "node:fs/promises";
 import os from "node:os";
@@ -31,9 +32,10 @@ test("share adapter manifests declare their parent gateway", async () => {
     );
 });
 
-test("share gateway discovers Link and User method adapters", async () => {
+test("share gateway discovers Link and User method adapters", async (t) => {
+    const host = createShareAdapterHost(t);
     const gateway = createGateway();
-    await gateway.discoverAdapters(path.resolve("src/adapters/share"));
+    await host.discover(gateway, path.resolve("src/adapters/share"));
     assert.deepEqual(
         gateway.listAdapters().map(({ id }) => id),
         ["link", "user"],
@@ -74,14 +76,16 @@ test("share gateway discovers Link and User method adapters", async () => {
     );
 });
 
-test("share gateway tolerates an absent adapter directory", async () => {
+test("share gateway tolerates an absent adapter directory", async (t) => {
+    const host = createShareAdapterHost(t);
     const gateway = createGateway();
     const temp = await mkdtemp(path.join(os.tmpdir(), "share-adapters-"));
-    await gateway.discoverAdapters(path.join(temp, "missing"));
+    await host.discover(gateway, path.join(temp, "missing"));
     assert.deepEqual(gateway.listAdapters(), []);
 });
 
-test("share adapter power state persists and blocks existing records", async () => {
+test("share adapter power state persists and blocks existing records", async (t) => {
+    const host = createShareAdapterHost(t);
     const configs = new Map<string, boolean>();
     const existingRecord = { metadata: { adapterId: "link" } };
     const createPersistentGateway = () =>
@@ -108,12 +112,12 @@ test("share adapter power state persists and blocks existing records", async () 
         );
 
     const firstGateway = createPersistentGateway();
-    await firstGateway.discoverAdapters(path.resolve("src/adapters/share"));
+    await host.discover(firstGateway, path.resolve("src/adapters/share"));
     await firstGateway.setAdapterEnabled("link", false);
     assert.equal(firstGateway.isAdapterEnabled("link"), false);
 
     const restartedGateway = createPersistentGateway();
-    await restartedGateway.discoverAdapters(path.resolve("src/adapters/share"));
+    await host.discover(restartedGateway, path.resolve("src/adapters/share"));
     await restartedGateway.loadAdapterConfigs();
     assert.equal(restartedGateway.isAdapterEnabled("link"), false);
     assert.equal(

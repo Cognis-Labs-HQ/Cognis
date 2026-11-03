@@ -47,3 +47,23 @@ Pembuatan acara dalam antrean dan suntingan berikutnya muncul di daftar serta po
 ## Gaya Status Luring
 
 Penyedia Calendar menyiapkan lembar gaya status acara yang dimuat tertunda untuk penggunaan luring pertama. Host menyiapkan gaya popup, toast, dan visibilitas rahasia bersama sehingga membuka acara tersimpan tidak bergantung pada pembukaan detailnya secara daring sebelumnya.
+
+## Keamanan Permintaan Runtime
+
+Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.
+
+Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+
+## Berbagi dan Pengujian Andal
+
+Hook berbagi Calendar dan Flashcards menangani hasil kosong dari penyedia sumber daya lain, sehingga tautan dan pembagian akun dapat dibuat serta dibuka ketika semua penyedia aktif. Tampilan pemuatan, status pembagian akun, dan kalender tamu memakai ukuran minimum responsif tanpa mewajibkan delapan kolom kisi, sehingga tetap dapat digunakan pada layar sempit. Pemeliharaan berbagi berjalan berurutan, menggabungkan permintaan yang tumpang tindih, menghentikan putaran yang gagal, dan mencoba lagi pada interval lima belas menit berikutnya. Penonaktifan menghentikan pekerjaan berikutnya; pengaktifan kembali melanjutkan jadwal.
+
+## Peninjauan dan Siklus Hidup
+
+Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi composer, pemuatan sesi dan penyedia, serta impor gaya dan renderer. Composer, popup Calendar, dan permintaan sumber daya memakai sinyal halaman. Halaman yang dibatalkan tidak dapat menimpa halaman berikutnya atau melaporkan hasil lama. Putaran pemeliharaan juga meneruskan sinyal pembatalan kepada tugasnya; penonaktifan Share mencegah notifikasi kedaluwarsa berikutnya dalam pemindaian yang sedang berjalan.
+
+## Aksi Milik Penyedia
+
+Pembacaan dan perubahan Calendar tamu memakai kapabilitas `calendar:sharedClient` yang terikat siklus hidup serta alur bernama `calendar:shared:*`. Permintaan mempertahankan wewenang tamu secara eksplisit, menggabungkan pembatalan halaman dan penyedia, serta tidak pernah masuk antrean akun. Konsumen tidak menyusun endpoint berbagi sendiri.
+
+Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Penyedia memiliki permintaan pembuatan dan tujuannya; Calendar menentukan URL HTTP(S) yang valid untuk acara tanpa mengetahui ID atau rute modul. Penyedia yang tidak tersedia ditolak dan opsi rapat tetap dinonaktifkan saat offline.

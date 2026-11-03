@@ -1,5 +1,7 @@
 # Gateway and Adapter
 
+Cross-component notification contracts are exported from `@cognis/core`. Callers resolve `notify:dispatch` or `notify:listSenders` through ctx; adapters receive bounded host capabilities rather than a concrete gateway instance.
+
 ## Overview
 
 A gateway is the sole authority for a bounded domain in Cognis. It owns the
@@ -325,11 +327,15 @@ gateway contributes `logging:log`.
 
 ```ts
 // Contribute (from a gateway or adapter bootstrap):
-ctx.capabilities.contribute("notify:gateway", gateway);
+ctx.capabilities.contribute("notify:dispatch", (message) =>
+    gateway.dispatch(message),
+);
 
 // Consume (in a later gateway's bootstrap):
-const notifyGateway =
-    ctx.capabilities.get<NotificationGateway>("notify:gateway");
+const dispatch =
+    ctx.capabilities.require<
+        (message: NotificationEnvelope) => Promise<NotificationDispatchResult>
+    >("notify:dispatch");
 ```
 
 Capability keys follow the convention `<gateway-id>:<name>`.
@@ -370,3 +376,7 @@ To add a new gateway:
 
 The `GatewayService` discovers the gateway directory at startup — no import in
 `server.ts` or `main.ts` is needed.
+
+## Adapter-owned Contracts
+
+Gateways expose the same `system:contracts` registry to their adapters through `ctx.capabilities`. An adapter may export `defineContracts(ctx)`; the host calls it during adapter bootstrap before initialization. Existing adapter bootstrap hooks can also declare contracts directly. Auth, Notify, TFA, Social, Study, Share and Calendar use adapter scopes; the DB, Files and Registration factory loaders also accept the definition hook. Each definition belongs to `adapter:<gateway>:<adapter>` and follows gateway rollback, disable and reactivation. Nested adapter authority expires with its parent bootstrap, including detached asynchronous work. Runtime requests cannot register new contracts. Type-only imports from a provider’s public `contracts/` directory are authoring aids; executable cross-component calls still use ctx.

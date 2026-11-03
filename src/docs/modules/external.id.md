@@ -63,7 +63,9 @@ Kunci pelokalan harus menggunakan titik sebagai pemisah kata: tulis `module.exam
 
 ### Sumber dan repositori pribadi
 
-Cognis menyertakan organisasi `https://github.com/Cognis-Labs-HQ` sebagai sumber tepercaya yang tidak dapat diubah secara default. Administrator dapat menambahkan lebih lanjut organisasi GitHub atau grup GitLab dari Modul di menu pengguna, lalu Sumber Modul. Cognis menanyakan API penyedia, memperlakukan setiap repositori yang berisi manifes root yang valid sebagai modul, dan mendapatkan katalog secara dinamis. Sumber dapat mereferensikan PAT opsional yang disimpan dalam keyring administrator yang masuk; catatan sumber hanya menyimpan pengidentifikasi keyring. Gunakan token dengan hak istimewa paling rendah dan hanya baca dengan akses repositori dan metadata. Token diberikan hanya untuk penemuan dan kloning dan tidak pernah ditulis ke konfigurasi sumber. Repositori privat dikecualikan kecuali **Pindai Repositori Privat** diaktifkan; mengaktifkannya membuat PAT wajib.
+Administrator mengelola satu registri sumber dan katalog modul bersama untuk seluruh instans. Kredensial sumber disembunyikan di server dan dienkripsi menggunakan `DATA_ENCRYPTION_KEY` yang persisten. Semua administrator dapat menggunakan, mengganti atau menghapusnya; API baca dan formulir hanya menampilkan apakah kredensial sudah dikonfigurasi. Kolom kata sandi kosong mempertahankan nilai tersimpan. Keyring browser tidak digunakan: atur kredensial bersama sekali di Sumber Modul. Pemindaian privat memerlukan PAT hanya baca dengan akses repositori dan metadata. Penemuan saat startup dan instalasi menggunakan kredensial tersimpan yang sama tanpa sesi browser. Lingkup enkripsi terikat pada identitas dan endpoint sumber; perubahannya memerlukan penggantian atau penghapusan. Pemindaian gagal mempertahankan katalog, pemindaian bersamaan digabungkan, dan hasil lama tidak menimpa konfigurasi sumber yang lebih baru. Permintaan penyedia menolak pengalihan dan memiliki batas waktu.
+
+API penyimpanan sumber menerima `token` dan `clearCredential` dan hanya mengembalikan metadata publik, `credentialConfigured` serta revisi. Penemuan dan instalasi tidak lagi menerima token dari pemanggil. Instalasi menggunakan metadata repositori otoritatif dalam cache dan kredensial tersimpan pada server.
 
 ### Izin PAT GitHub untuk pemindaian privat
 
@@ -244,3 +246,25 @@ Persiapan tetap diam ketika Mode Luring dinonaktifkan, koneksi terputus, atau pe
 ## Favorit Study Bersama
 
 Penyedia Study menyediakan `study:favourites` dengan operasi `load`, `toggle`, dan `has` yang mengikuti masa hidup penyedia. Utilitas tampilan memakai kapabilitas ctx ini, bukan cache terpisah per pemuat. Favorit disiapkan setelah autentikasi terverifikasi, menerapkan perubahan tertunda, dan berbagi keadaan terikat akun/sesi antara Explore, kartu belajar, dan impor berulang. Jika snapshot favorit opsional belum tersedia, pilihan kosong tetap menerapkan perubahan dalam antrean tanpa menyembunyikan konten atau menampilkan toast gagal memperbarui. Pergantian akun mengosongkan pilihan yang terlihat. Penolakan akses tidak pernah dianggap sebagai cache yang tidak ditemukan.
+
+## Bootstrap dan Kanal
+
+SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerEmailPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan atau templat aplikasi.
+
+```js
+const registerPurpose = ctx.getCapability("notify:registerEmailPurpose");
+const purpose = await registerPurpose("digest", (variables) => ({
+    subject: variables.subject,
+    body: variables.body,
+}));
+const sendEmail = ctx.getCapability("notify:sendEmail");
+await sendEmail({ purpose, recipientEmail, variables });
+```
+
+Setiap panggilan `notify:sendEmail` menyertakan tujuan yang sudah terdaftar dan variabel. `templateId` tidak digunakan lagi. Tujuan yang hilang atau tidak dikenal ditolak; aksi asinkron diperiksa kembali sebelum masuk antrean. Registrasi ditutup saat bootstrap selesai, gagal, atau melewati batas waktu. Hook penyelesaian gateway berjalan dengan pemilik yang sama setelah penyedia selesai melakukan bootstrap.
+
+Penonaktifan gateway dan pelepasan modul menghapus aksi miliknya serta membatalkan pengiriman tertunda. Aktivasi ulang memulihkan antrean baru tanpa mengirim ulang email yang dibatalkan. Kategori bersama tetap aktif selama pemilik terdaftar lainnya masih aktif. Penonaktifan pengirim SMTP juga menutup sesi dan membatalkan pengiriman tertunda; aktivasi ulang hanya memulihkan registrasi yang masih ada.
+
+## Pengikatan Kredensial Instalasi
+
+Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace yang sama dengan snapshot untuk memvalidasi URL repositori. Perubahan pengikatan sumber secara bersamaan membatalkan proses sebelum checkout, sehingga kredensial endpoint pengganti tidak dikirim ke host sebelumnya. Alias host API-ke-repositori GitHub hanya berlaku untuk sumber GitHub.

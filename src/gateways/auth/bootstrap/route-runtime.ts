@@ -48,7 +48,7 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             loginAttemptId,
             entry,
         ] of pendingTfaLoginAttempts.entries()) {
-            if (entry.expiresAt < now) {
+            if (entry.expiresAt <= now) {
                 pendingTfaLoginAttempts.delete(loginAttemptId);
             }
         }
@@ -56,7 +56,7 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
 
     function pruneExpiredAccountCreationAttempts(now = Date.now()): void {
         for (const [attemptId, entry] of pendingAccountCreationAttempts) {
-            if (entry.expiresAt < now) {
+            if (entry.expiresAt <= now) {
                 pendingAccountCreationAttempts.delete(attemptId);
             }
         }

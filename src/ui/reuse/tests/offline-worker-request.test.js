@@ -85,3 +85,23 @@ test("stopped or unresponsive workers clean up channels and allow subsequent req
     );
     assert.equal(state.timers.size, 0);
 });
+
+test("policy sync coalesces identical requests but preserves changed access decisions", async () => {
+    const state = fixture();
+    const first = state.module.offlineWorkerRequest("COGNIS_OFFLINE_ACCESS", {
+        allowed: true,
+    });
+    const second = state.module.offlineWorkerRequest("COGNIS_OFFLINE_ACCESS", {
+        allowed: true,
+    });
+    const revoked = state.module.offlineWorkerRequest("COGNIS_OFFLINE_ACCESS", {
+        allowed: false,
+    });
+    assert.equal(state.posted(), 2);
+    state.channels[0].port1.onmessage({ data: { result: "allowed" } });
+    state.channels[1].port1.onmessage({ data: { result: "revoked" } });
+    assert.equal(await first, "allowed");
+    assert.equal(await second, "allowed");
+    assert.equal(await revoked, "revoked");
+    assert.equal(state.timers.size, 0);
+});

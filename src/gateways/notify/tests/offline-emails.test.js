@@ -8,7 +8,9 @@ function clientFor(fixture) {
         new URL("../ui/email-client.js", import.meta.url),
         {
             ...fixture.imports,
-            "./smtp-adapter.js": { isSmtpAdapterActive: async () => true },
+            "./email-delivery.js": {
+                isEmailDeliveryAvailable: async () => true,
+            },
             "/static/reuse/trusted-domains.js": {
                 loadTrustedDomains: async () => ["example.org"],
             },
@@ -128,7 +130,7 @@ test("Notify's scoped administration methods own email discovery, resend and SMT
     context.after(() => fixture.controller.abort());
     clientFor(fixture).mountProvider(fixture.ctx);
     const client = fixture.ctx.capabilities.get("notify:emailClient");
-    assert.equal(await client.smtpAvailable(), true);
+    assert.equal(await client.emailAvailable(), true);
     const emails = await client.listUserEmails({ accountId: "other" });
     assert.equal(emails[0].email, "other@example.org");
     assert.equal(
@@ -158,6 +160,6 @@ test("Notify's scoped administration methods own email discovery, resend and SMT
     await assert.rejects(client.listUserEmails({ accountId: "other" }), {
         name: "AbortError",
     });
-    await assert.rejects(client.smtpAvailable(), { name: "AbortError" });
+    await assert.rejects(client.emailAvailable(), { name: "AbortError" });
     assert.equal(requests.length, 2);
 });

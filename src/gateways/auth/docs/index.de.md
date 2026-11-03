@@ -134,7 +134,7 @@ Authentifizierte Seiten erlauben Medien aus gleichursprünglichen Routen und bro
 
 ## Sitzungseinrichtung
 
-Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach einer SSO-Weiterleitung. Der Benachrichtigungsdienst liefert erforderliche E-Mail-Einrichtung über `auth:getSetupIntegrations(accountId, role)`: Skripte desselben Ursprungs mit dem Export `enforceSetup({ accountId })`. Die Einrichtung endet vor der Freigabe für Navigation oder Offline-Nutzung. SMTP-Ausfälle heben die Verifizierungspflicht nicht auf; der ursprüngliche Gründeradministrator bleibt ausgenommen.
+Jede authentifizierte Sitzung prüft `/api/v1/auth/setup-status`, auch nach SSO. Auth besitzt `auth:getSetupIntegrations(accountId, role)` und wertet den registrierten Prüfmodus aus. Der Anbieter liefert Skripte desselben Ursprungs mit `enforceSetup({ accountId })`. Einrichtung endet vor Navigation oder Offline-Nutzung; fehlende Verfügbarkeit hebt die Richtlinie nicht auf. Die Wiederherstellung durch den Gründeradministrator bleibt ausgenommen.
 
 ## Ladeanzeige bei Anmeldung
 
@@ -157,3 +157,13 @@ Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Insta
 ## Kontogebundene Warteschlangen
 
 Gepufferte Einträge enthalten die vom Server bestätigte Kontoinstanzkennung. Auth liefert die kanonische `accountInstanceId` im authentifizierten Einrichtungsstatus und veröffentlicht `session:getOfflineIdentity` nur für bestätigte, vollständig eingerichtete und nicht abgelaufene Kontositzungen. Fehlende verbindliche Metadaten widerrufen die Offline-Berechtigung. Warteschlangenansichten sowie Speicher- und Zustellungsprüfungen sind an diese Instanz gebunden. Einträge alter oder unbestätigter Instanzen werden vor der Übertragung abgewiesen, auch wenn ein lokales Konto mit derselben Konto-ID neu erstellt wurde. Vorgangskennungen können nicht zwischen Kontoinstanzen kollidieren. Bearer-Token werden niemals in der Warteschlange gespeichert.
+
+## Begrenzte SSO-Registrierungsversuche
+
+Einladungspflichtige SSO-Identitäten werden vor dem Anlegen von Konto, Profil oder E-Mail zurückgehalten. Abgebrochene oder abgelaufene Versuche können nicht fortgesetzt werden; Registrierung und Zwei-Faktor-Anmeldung laufen exakt zur Frist ab. Der aktivierte öffentliche Registrierungsadapter erlaubt weiterhin SSO-Kontoerstellung unabhängig von öffentlicher nativer Registrierung. Bestehende Konten werden nicht anhand von Anbieter oder Alter gelöscht.
+
+## Registrierte Kontoprüfungen
+
+`auth:userValidationModes.register` erhält Kennung, übersetzte Beschriftung, optionale Ressourcenbasis, erforderliche Registrierungsfelder, Verfügbarkeitsfunktion, Prüffunktion und optionale Einrichtung. Registrierung ist nur beim Bootstrap möglich und an den Lebenszyklus des Besitzers gebunden. Auth prüft die gewählte Funktion durch `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`), ohne Methodenkennungen fest einzubauen. Fehlende oder nicht verfügbare konfigurierte Richtlinien verweigern den Zugriff. Die Wiederherstellung durch den Gründeradministrator bleibt ausgenommen. Administration zeigt registrierte Metadaten; eine gespeicherte nicht verfügbare Auswahl bleibt erhalten.
+
+Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).

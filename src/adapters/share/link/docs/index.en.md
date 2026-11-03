@@ -1,5 +1,7 @@
 # Link sharing adapter
 
+The adapter declares the Link popup with `navbarPlugins`, including its provided capabilities. The gateway loads declared contributions and disables them with their owning adapter.
+
 ## Usage examples
 
 Creates public, expiring links through the Share gateway. The adapter owns link-specific input preparation and the Link page shown inside the gateway popup.

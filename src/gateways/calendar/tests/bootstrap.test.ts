@@ -13,7 +13,10 @@ import {
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
-import { bootstrap } from "../bootstrap.js";
+import {
+    bootstrapTestCalendar as bootstrap,
+    createCalendarHostFlow,
+} from "./bootstrap-host.js";
 
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const gatewayRegistry = new GatewayRegistry();
@@ -21,6 +24,18 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
+    for (const [flowId, stage] of [
+        ["mint-share-token", "validate-resource"],
+        ["resolve-share-token", "validate-token"],
+        ["resolve-share-token", "resolve-resource"],
+    ])
+        systemCtx.flow.extend(
+            flowId,
+            stage,
+            { id: `other:${stage}`, order: -100 },
+            () => null,
+        );
+
     const adminToken = issueAccessToken("calendar-admin", "admin", 60);
     const recipientToken = issueAccessToken("calendar-recipient", "user", 60);
     const authContext = createAuthContext(
@@ -66,6 +81,39 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         },
     );
     assert.equal(createCalendarResponse.statusCode, 201);
+    const calendarId = createCalendarResponse.body.data.id;
+    const minted = await systemCtx.flow.run("mint-share-token", {
+        resourceType: "calendar",
+        resourceId: calendarId,
+        ownerAccountId: "calendar-admin",
+        password: "review-password",
+    });
+    assert.ok(
+        minted.stageResults["authorize-minter"].some(
+            (result) => (result as { authorized?: boolean } | null)?.authorized,
+        ),
+    );
+    systemCtx.flow.extend(
+        "resolve-share-token",
+        "validate-token",
+        { id: "test:token" },
+        () => ({
+            valid: true,
+            tokenRecord: { resourceType: "calendar", resourceId: calendarId },
+        }),
+    );
+    const resolved = await systemCtx.flow.run("resolve-share-token", {});
+    assert.ok(
+        resolved.stageResults["resolve-resource"].some(
+            (result) => (result as { resolved?: boolean } | null)?.resolved,
+        ),
+    );
+    assert.ok(
+        resolved.stageResults["check-access"].some(
+            (result) => (result as { allowed?: boolean } | null)?.allowed,
+        ),
+    );
+
     const ownerEventResponse = await createJsonDispatcher(routeRegistry)(
         "POST",
         adminToken,
@@ -282,7 +330,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.equal(writeAfterExpiry.statusCode, 404);
 });
 
-test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
+test("calendar metadata resolves availability choices through its owner", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -292,10 +340,6 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
         new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
     );
     const systemCtx = createCtx();
-    systemCtx.contributePublicCapability(
-        "meetings:isProviderAvailable",
-        (providerId: string) => providerId === "jitsi-meet",
-    );
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", authContext);
     capabilities.contribute("social:getAvailabilityStatuses", () => [
@@ -310,7 +354,7 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
@@ -321,7 +365,6 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
     );
 
     assert.equal(calendarsResponse.statusCode, 200);
-    assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
     assert.deepEqual(calendarsResponse.body.meta.availabilityStatuses, [
         "free",
         "busy",
@@ -342,7 +385,7 @@ test("current events drive availability unless the user prevents updates", async
         gatewayRegistry: new GatewayRegistry(),
         capabilities,
         uiRegistry: new UIRegistry(),
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
     capabilities.contribute("preferences:store", preferences);
 
@@ -418,7 +461,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: createCalendarHostFlow(capabilities),
     } as any);
 
     const dispatchJson = (

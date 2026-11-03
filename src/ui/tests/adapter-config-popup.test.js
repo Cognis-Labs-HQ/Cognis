@@ -57,3 +57,88 @@ test("adapter config opener reports when an adapter has no settings popup", asyn
     );
     assert.equal(popupOpened, false);
 });
+
+for (const englishAvailable of [true, false]) {
+    test(`adapter configuration resolves provider labels with English availability ${englishAvailable}`, async () => {
+        const { readFile } = await import("node:fs/promises");
+        const { installI18nEnvironment } =
+            await import("../reuse/tests/fixtures/i18n-environment.js");
+        const { createI18n } = await import("../reuse/i18n.js");
+        const baseUrl = `/provider-labels/${englishAvailable}`;
+        installI18nEnvironment(async (path) => {
+            if (path.startsWith("/static/languages/")) {
+                const locale = path.split("/")[3];
+                return new Response(
+                    await readFile(
+                        new URL(
+                            `../languages/${locale}/strings.xml`,
+                            import.meta.url,
+                        ),
+                        "utf8",
+                    ),
+                );
+            }
+            return new Response(
+                path.includes("/en/") && englishAvailable
+                    ? '<resources><string name="example.adapter.label">Provider Field</string><string name="example.adapter.choice">Provider Choice</string></resources>'
+                    : '<resources><string name="example.adapter.label"> </string></resources>',
+            );
+        });
+        const i18n = await createI18n({
+            preferredLanguages: ["de"],
+            persistLocale: false,
+        });
+        let opened = false;
+        const popup = createAdapterConfigPopup({
+            i18n,
+            escapeHtml: String,
+            apiFetch: async () =>
+                Response.json({
+                    data: {},
+                    schema: [
+                        {
+                            key: "level",
+                            label: "example.adapter.label",
+                            type: "select",
+                            options: [
+                                {
+                                    value: "info",
+                                    labelKey: "example.adapter.choice",
+                                },
+                            ],
+                        },
+                    ],
+                    testSchema: [
+                        {
+                            key: "recipient",
+                            label: "example.adapter.label",
+                            type: "email",
+                        },
+                    ],
+                    stringsBaseUrl: baseUrl,
+                    supportsTest: true,
+                }),
+            openPopup: async ({ body }) => {
+                opened = true;
+                assert.match(body, /Provider Field/);
+                assert.match(body, /Provider Choice/);
+                assert.match(body, /data-provider-test-field/);
+            },
+            showToast: () =>
+                assert.fail("A valid configuration must open without a toast."),
+        });
+        const result = popup.openAdapterConfig("Provider", {
+            configUrl: "/config",
+        });
+        if (englishAvailable) {
+            assert.equal(await result, true);
+            assert.equal(opened, true);
+        } else {
+            await assert.rejects(result, {
+                code: "missing_translation",
+                key: "example.adapter.label",
+            });
+            assert.equal(opened, false);
+        }
+    });
+}

@@ -1,14 +1,28 @@
-import net from "node:net";
-import tls from "node:tls";
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { clampVerificationCodeLength } from "../../../gateways/reuse/verification-codes.js";
+import { bootstrapNotifyAdapter } from "./bootstrap.js";
+
+import type {
+    NotifyAdapterBootstrapCtx,
+    NotificationCategory,
+    NotificationChannelRegistration,
+} from "../../../gateways/notify/contracts/sender.js";
+
+import type {
+    EmailActionInput,
+    NotificationActionMessage,
+} from "./contracts/action-delivery.js";
+import type { BootstrapDisposer } from "@cognis/core";
+import { requireBootstrapScope } from "@cognis/core";
+import { openSession, upgradeToTls } from "./smtp-session.js";
 import { randomUUID } from "node:crypto";
+
 import type {
     NotificationEnvelope,
     NotificationSender,
     NotificationSenderQueueEntry,
-} from "@cognis/core";
-import { encodeBasicHtmlEntities } from "./html-entities.js";
+} from "../../../gateways/notify/contracts/sender.js";
+import { renderEmailLayout } from "./email-layout.js";
+import type { EmailPresentation } from "./email-templates.js";
 import {
     encodeHeaderPhrase,
     foldHeader,
@@ -26,12 +40,8 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import {
-    buildRegistrationInviteEmailMessage,
-    buildVerificationEmailMessage,
-} from "./message-builders.js";
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
-import { clampSmtpVerificationCodeLength } from "@cognis/core";
+import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
+
 export interface SmtpConfig {
     host: string;
     port: number;
@@ -54,66 +64,6 @@ export class SmtpTemporaryError extends Error {
         this.name = "SmtpTemporaryError";
     }
 }
-let cachedEmailTemplate: string | null = null;
-async function loadEmailTemplate(): Promise<string> {
-    if (cachedEmailTemplate !== null) return cachedEmailTemplate;
-    const templatePath = fileURLToPath(
-        new URL("./templates/notification.html", import.meta.url),
-    );
-    cachedEmailTemplate = await readFile(templatePath, "utf8");
-    return cachedEmailTemplate;
-}
-function escapeHtmlForEmail(text: string): string {
-    return encodeBasicHtmlEntities(text);
-}
-interface ThemePalette {
-    bgOuter: string;
-    bgHeader: string;
-    bgContent: string;
-    bgCard: string;
-    bgFooter: string;
-    colorAccent: string;
-    colorAccent2: string;
-    colorText: string;
-    colorBodyText: string;
-    colorMuted: string;
-    colorFooterText: string;
-    colorDivider: string;
-    colorDiamond: string;
-    shadowColor: string;
-}
-const DARK_PALETTE: ThemePalette = {
-    bgOuter: "#0a1628",
-    bgHeader: "linear-gradient(135deg,#071421 0%,#0f2d3a 60%,#112b25 100%)",
-    bgContent: "#0d1f35",
-    bgCard: "rgba(255,255,255,0.04)",
-    bgFooter: "#081529",
-    colorAccent: "#2a7f62",
-    colorAccent2: "#3aa783",
-    colorText: "#e2e8f0",
-    colorBodyText: "#c8d8e8",
-    colorMuted: "#4a8fa8",
-    colorFooterText: "#4a6a85",
-    colorDivider: "rgba(42,127,98,0.25)",
-    colorDiamond: "#2a5068",
-    shadowColor: "rgba(0,0,0,0.45)",
-};
-const LIGHT_PALETTE: ThemePalette = {
-    bgOuter: "#e8eef9",
-    bgHeader: "linear-gradient(135deg,#f0f7ff 0%,#e8f3ff 60%,#e8f5f0 100%)",
-    bgContent: "#ffffff",
-    bgCard: "rgba(248,250,255,0.96)",
-    bgFooter: "#f4f8ff",
-    colorAccent: "#0f766e",
-    colorAccent2: "#0d9488",
-    colorText: "#0f172a",
-    colorBodyText: "#1e293b",
-    colorMuted: "#475569",
-    colorFooterText: "#64748b",
-    colorDivider: "rgba(15,118,110,0.25)",
-    colorDiamond: "#94a3b8",
-    shadowColor: "rgba(15,23,42,0.15)",
-};
 const MAX_QP_LINE_LENGTH = 76;
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
@@ -163,6 +113,7 @@ async function buildMessage(
     body: string,
     options: {
         theme?: string;
+        presentation?: EmailPresentation;
         externalHost?: string;
         verifyUrl?: string;
         verifyButtonLabel?: string;
@@ -171,84 +122,11 @@ async function buildMessage(
         attachments?: MimeAttachment[];
     } = {},
 ): Promise<string> {
-    const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
-    const externalHost = options.externalHost ?? "";
-    const iconUrl = externalHost
-        ? `${externalHost}/assets/icons/cognis-icon.png`
-        : "";
-    const brandIcon = iconUrl
-        ? `<td style="vertical-align:middle;padding-right:12px;">
-              <img src="${escapeHtmlForEmail(iconUrl)}" alt="Cognis" width="36" height="36" border="0" style="display:block;border-radius:6px;outline:none;text-decoration:none;" />
-            </td>`
-        : "";
-    const footerBrandLink = externalHost
-        ? `<a href="${escapeHtmlForEmail(externalHost)}" style="color:${palette.colorAccent2};text-decoration:none;">Cognis</a>`
-        : `<span style="color:${palette.colorAccent2};">Cognis</span>`;
-
-    const verifyButton = options.verifyUrl
-        ? `<tr>
-            <td style="background:${palette.bgContent};padding:0 36px 24px;text-align:center;">
-              <a href="${escapeHtmlForEmail(options.verifyUrl)}"
-                style="display:inline-block;padding:13px 32px;background:${palette.colorAccent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:700;font-size:15px;letter-spacing:0.04em;font-family:Arial,Helvetica,sans-serif;">
-                ${escapeHtmlForEmail(options.verifyButtonLabel ?? "Verify Email Address")}
-              </a>
-            </td>
-          </tr>`
-        : "";
-
-    function renderBodyWithLinks(rawBody: string): string {
-        const urlPattern = /https?:\/\/[^\s<]+/g;
-        let html = "";
-        let cursor = 0;
-        for (const match of rawBody.matchAll(urlPattern)) {
-            const index = match.index ?? 0;
-            const rawUrl = match[0];
-            html += escapeHtmlForEmail(rawBody.slice(cursor, index));
-            const safeUrl = escapeHtmlForEmail(rawUrl);
-            html += `<a href="${safeUrl}" style="color:${palette.colorAccent2};text-decoration:underline;">${safeUrl}</a>`;
-            cursor = index + rawUrl.length;
-        }
-        html += escapeHtmlForEmail(rawBody.slice(cursor));
-        return html.replace(/\n/g, "<br>");
-    }
-
-    const template = await loadEmailTemplate();
-    const htmlBody = template
-        .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
-        .replace(/\{\{body\}\}/g, renderBodyWithLinks(body))
-        .replace(/\{\{verifyButton\}\}/g, verifyButton)
-        .replace(/\{\{brandIcon\}\}/g, brandIcon)
-        .replace(/\{\{footerBrandLink\}\}/g, footerBrandLink)
-        .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
-        .replace(/\{\{bgOuter\}\}/g, palette.bgOuter)
-        .replace(/\{\{bgHeader\}\}/g, palette.bgHeader)
-        .replace(/\{\{bgContent\}\}/g, palette.bgContent)
-        .replace(/\{\{bgCard\}\}/g, palette.bgCard)
-        .replace(/\{\{bgFooter\}\}/g, palette.bgFooter)
-        .replace(/\{\{colorAccent\}\}/g, palette.colorAccent)
-        .replace(/\{\{colorAccent2\}\}/g, palette.colorAccent2)
-        .replace(/\{\{colorText\}\}/g, palette.colorText)
-        .replace(/\{\{colorBodyText\}\}/g, palette.colorBodyText)
-        .replace(/\{\{colorMuted\}\}/g, palette.colorMuted)
-        .replace(/\{\{colorFooterText\}\}/g, palette.colorFooterText)
-        .replace(/\{\{colorDivider\}\}/g, palette.colorDivider)
-        .replace(/\{\{colorDiamond\}\}/g, palette.colorDiamond)
-        .replace(/\{\{shadowColor\}\}/g, palette.shadowColor);
-
-    const textBody = [
+    const { htmlBody, textBody } = await renderEmailLayout(
         subject,
-        "",
-        stripHtmlTags(renderBodyWithLinks(body)),
-        ...(options.verifyUrl
-            ? [
-                  "",
-                  `${options.verifyButtonLabel ?? "Verify Email Address"}: ${options.verifyUrl}`,
-              ]
-            : []),
-        "",
-        "-- ",
-        "Cognis automated notification. Please do not reply to this message.",
-    ].join("\n");
+        body,
+        options,
+    );
     const boundary = `cognis-${randomUUID()}`;
     const hasAttachments =
         Array.isArray(options.attachments) && options.attachments.length > 0;
@@ -309,118 +187,6 @@ async function buildMessage(
     return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
 
-interface SmtpResponse {
-    code: number;
-    text: string;
-}
-
-class SmtpSession {
-    private buf = "";
-    private pending: ((r: SmtpResponse) => void) | null = null;
-    private readonly listener: (d: string) => void;
-
-    constructor(private readonly sock: net.Socket | tls.TLSSocket) {
-        this.listener = (d: string) => {
-            this.buf += d;
-            this.processBuffer();
-        };
-        sock.setEncoding("utf8");
-        sock.on("data", this.listener);
-    }
-
-    private processBuffer(): void {
-        while (true) {
-            const end = this.buf.indexOf("\r\n");
-            if (end === -1) break;
-            const line = this.buf.slice(0, end);
-            this.buf = this.buf.slice(end + 2);
-            if (line.length < 3) continue;
-            const code = Number.parseInt(line.slice(0, 3), 10);
-            const isContinuation = line.length > 3 && line[3] === "-";
-            if (!isContinuation && this.pending) {
-                const resolve = this.pending;
-                this.pending = null;
-                resolve({ code, text: line.length > 4 ? line.slice(4) : "" });
-                return;
-            }
-        }
-    }
-
-    read(): Promise<SmtpResponse> {
-        return new Promise((resolve) => {
-            this.pending = resolve;
-            this.processBuffer();
-        });
-    }
-
-    cmd(command: string): Promise<SmtpResponse> {
-        this.sock.write(`${command}\r\n`);
-        return this.read();
-    }
-
-    writeRaw(data: string): void {
-        this.sock.write(data);
-    }
-
-    detach(): void {
-        this.sock.removeListener("data", this.listener);
-    }
-
-    get socket(): net.Socket | tls.TLSSocket {
-        return this.sock;
-    }
-
-    destroy(): void {
-        this.sock.destroy();
-    }
-}
-
-const SMTP_TIMEOUT_MS = 30_000;
-
-async function openSession(
-    host: string,
-    port: number,
-    secure: "tls" | "none" | "starttls",
-    allowSelfSigned?: boolean,
-): Promise<SmtpSession> {
-    if (secure === "tls") {
-        const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-            const tlsSock = tls.connect({
-                host,
-                port,
-                rejectUnauthorized: !allowSelfSigned,
-            });
-            tlsSock.once("secureConnect", () => resolve(tlsSock));
-            tlsSock.once("error", reject);
-        });
-        return new SmtpSession(sock);
-    }
-
-    const sock = await new Promise<net.Socket>((resolve, reject) => {
-        const plainSock = net.createConnection({ host, port });
-        plainSock.once("connect", () => resolve(plainSock));
-        plainSock.once("error", reject);
-    });
-    return new SmtpSession(sock);
-}
-
-async function upgradeToTls(
-    session: SmtpSession,
-    allowSelfSigned?: boolean,
-): Promise<SmtpSession> {
-    session.detach();
-    const rawSock = session.socket as net.Socket;
-    const tlsSock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-        const newTlsSock = tls.connect({
-            socket: rawSock,
-            rejectUnauthorized: !allowSelfSigned,
-        });
-        newTlsSock.once("secureConnect", () => resolve(newTlsSock));
-        newTlsSock.once("error", reject);
-    });
-    return new SmtpSession(tlsSock);
-}
-
 async function sendMail(
     config: SmtpConfig,
     to: string,
@@ -430,17 +196,18 @@ async function sendMail(
     verifyUrl?: string,
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
+    signal?: AbortSignal,
+    presentation?: EmailPresentation,
 ): Promise<void> {
     let session = await openSession(
         config.host,
         config.port,
         config.secure,
         config.allowSelfSigned,
+        signal,
     );
 
     try {
-        session.socket.setTimeout(SMTP_TIMEOUT_MS);
-
         const greeting = await session.read();
         if (greeting.code !== 220) {
             const msg = `smtp_unexpected_greeting:${greeting.code}`;
@@ -460,7 +227,12 @@ async function sendMail(
             if (starttls.code !== 220) {
                 throw new Error(`smtp_starttls_failed:${starttls.code}`);
             }
-            session = await upgradeToTls(session, config.allowSelfSigned);
+            session = await upgradeToTls(
+                session,
+                config.host,
+                config.allowSelfSigned,
+                signal,
+            );
             ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
             if (ehlo.code !== 250) {
                 throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
@@ -507,6 +279,7 @@ async function sendMail(
         session.writeRaw(
             await buildMessage(config.from, to, subject, body, {
                 theme,
+                presentation,
                 externalHost: config.externalHost,
                 verifyUrl,
                 verifyButtonLabel,
@@ -532,6 +305,25 @@ async function sendMail(
 const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
 
+async function waitForRetry(
+    sleep: (ms: number) => Promise<void>,
+    delay: number,
+    signal?: AbortSignal,
+): Promise<void> {
+    if (!signal) return sleep(delay);
+    signal.throwIfAborted();
+    let rejectAbort!: () => void;
+    const aborted = new Promise<never>((_resolve, reject) => {
+        rejectAbort = () => reject(signal.reason);
+        signal.addEventListener("abort", rejectAbort, { once: true });
+    });
+    try {
+        await Promise.race([sleep(delay), aborted]);
+    } finally {
+        signal.removeEventListener("abort", rejectAbort);
+    }
+}
+
 async function sendMailWithRetry(
     config: SmtpConfig,
     to: string,
@@ -542,6 +334,8 @@ async function sendMailWithRetry(
     verifyUrl?: string,
     verifyButtonLabel?: string,
     attachments?: MimeAttachment[],
+    signal?: AbortSignal,
+    presentation?: EmailPresentation,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -550,8 +344,9 @@ async function sendMailWithRetry(
     let lastError: unknown;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         if (attempt > 0) {
-            await sleep(delayMs);
+            await waitForRetry(sleep, delayMs, signal);
         }
+        signal?.throwIfAborted();
         try {
             await sendMail(
                 config,
@@ -562,9 +357,12 @@ async function sendMailWithRetry(
                 verifyUrl,
                 verifyButtonLabel,
                 attachments,
+                signal,
+                presentation,
             );
             return;
         } catch (err) {
+            signal?.throwIfAborted();
             if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
                 lastError = err;
                 continue;
@@ -577,41 +375,277 @@ async function sendMailWithRetry(
 
 export class SmtpNotificationSender implements NotificationSender {
     readonly senderId = "smtp";
+    readonly requiresVerifiedEmail = true;
     readonly senderName = "SMTP Email";
 
     private readonly envSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
-    private readonly rateLimiter: SmtpRateLimiter;
-    private readonly queue: SmtpNotificationQueue;
+    private deliveryEnabled = true;
+    private recipientTheme: (email: string) => Promise<"light" | "dark"> =
+        async () => "light";
+
+    setRecipientThemeResolver(
+        resolve: (email: string) => Promise<"light" | "dark">,
+    ): void {
+        this.recipientTheme = resolve;
+    }
+
+    async getRecipientTheme(email: string): Promise<"light" | "dark"> {
+        return (await this.recipientTheme(email)) === "dark" ? "dark" : "light";
+    }
+
+    private readonly purposeActivations = new Map<
+        string,
+        { activate(): void; suspend(): void; diagnostic: boolean }
+    >();
+    private readonly queues = new Map<string, SmtpNotificationQueue>();
+    private readonly createRateLimiter: () => SmtpRateLimiter;
 
     constructor(
         private config: SmtpConfig,
         envSnapshot?: Record<string, string | undefined>,
         sleep?: (ms: number) => Promise<void>,
-        rateLimiter?: SmtpRateLimiter,
+        createRateLimiter?: () => SmtpRateLimiter,
     ) {
         this.envSnapshot = envSnapshot ?? {};
         this.sleep =
             sleep ??
-            ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
-        this.rateLimiter =
-            rateLimiter ?? new SmtpRateLimiter(SMTP_VERIFICATION_RATE_LIMIT_MS);
-        this.queue = new SmtpNotificationQueue(
-            this.rateLimiter,
-            this.sleep,
-            async (payload) => {
-                await sendMailWithRetry(
-                    (payload.config as SmtpConfig | undefined) ?? this.config,
-                    payload.recipientEmail,
-                    payload.subject,
-                    payload.body,
-                    this.sleep,
-                    payload.theme,
-                    payload.verifyUrl,
-                    payload.verifyButtonLabel,
-                );
+            ((ms) =>
+                new Promise((resolve) => {
+                    const timer = setTimeout(resolve, ms);
+                    timer.unref();
+                }));
+        this.createRateLimiter =
+            createRateLimiter ??
+            (() => new SmtpRateLimiter(EMAIL_DELIVERY_RATE_LIMIT_MS));
+    }
+
+    async bootstrap(ctx: NotifyAdapterBootstrapCtx): Promise<void> {
+        await bootstrapNotifyAdapter(ctx, this);
+    }
+
+    test?: (to: string, config?: Record<string, unknown>) => Promise<void>;
+
+    registerChannel(
+        category: NotificationCategory,
+    ): NotificationChannelRegistration {
+        const purpose = `channel:${category.id}`;
+        return Object.assign(this.registerPurpose(purpose), {
+            send: (envelope: NotificationEnvelope) =>
+                this.send({ ...envelope, purpose }),
+            sendTracked: (envelope: NotificationEnvelope) =>
+                this.sendTracked({ ...envelope, purpose }),
+        });
+    }
+
+    registerPurpose(
+        purpose: string,
+        { diagnostic = false }: { diagnostic?: boolean } = {},
+    ): BootstrapDisposer {
+        requireBootstrapScope();
+        if (!purpose || this.purposeActivations.has(purpose))
+            throw new Error("smtp_purpose_conflict");
+        let queue: SmtpNotificationQueue | undefined;
+        let controller: AbortController | undefined;
+        const activate = () => {
+            if (this.queues.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            const activeController = new AbortController();
+            controller = activeController;
+            queue = new SmtpNotificationQueue(
+                this.createRateLimiter(),
+                this.sleep,
+                async (payload) => {
+                    await sendMailWithRetry(
+                        (payload.config as SmtpConfig | undefined) ??
+                            this.config,
+                        payload.recipientEmail,
+                        payload.subject,
+                        payload.body,
+                        this.sleep,
+                        payload.theme,
+                        payload.verifyUrl,
+                        payload.verifyButtonLabel,
+                        payload.attachments ?? [],
+                        activeController.signal,
+                        payload.presentation,
+                    );
+                },
+                purpose,
+            );
+            this.queues.set(purpose, queue);
+        };
+        const resource = {
+            diagnostic,
+            activate,
+            suspend: () => {
+                controller?.abort();
+                queue?.close();
+                if (this.queues.get(purpose) === queue)
+                    this.queues.delete(purpose);
             },
-        );
+        };
+        this.purposeActivations.set(purpose, resource);
+        if (this.deliveryEnabled || diagnostic) activate();
+        const dispose: BootstrapDisposer = () => {
+            resource.suspend();
+            if (this.purposeActivations.get(purpose) === resource)
+                this.purposeActivations.delete(purpose);
+        };
+        dispose.reactivate = () => {
+            if (this.purposeActivations.has(purpose))
+                throw new Error("smtp_purpose_conflict");
+            this.purposeActivations.set(purpose, resource);
+            if (this.deliveryEnabled || diagnostic) activate();
+        };
+        return dispose;
+    }
+
+    setDeliveryEnabled(enabled: boolean): void {
+        if (this.deliveryEnabled === enabled) return;
+        this.deliveryEnabled = enabled;
+        for (const resource of this.purposeActivations.values()) {
+            if (resource.diagnostic) continue;
+            if (enabled) resource.activate();
+            else resource.suspend();
+        }
+    }
+
+    async waitForEmail(purpose: string, notificationId: string): Promise<void> {
+        await this.requireQueue(purpose).waitForResult(notificationId);
+    }
+
+    async enqueueEmail(
+        input: EmailActionInput,
+        message: NotificationActionMessage,
+        theme?: "light" | "dark",
+    ): Promise<
+        NotificationSenderQueueEntry & { sent: true; notificationId: string }
+    > {
+        const queued = this.requireQueue(input.purpose).enqueue({
+            purpose: input.purpose,
+            recipientEmail: input.recipientEmail,
+            subject: message.subject,
+            body: message.body,
+            theme:
+                theme ?? (await this.getRecipientTheme(input.recipientEmail)),
+            presentation: message.presentation as EmailPresentation | undefined,
+            verifyUrl: message.actionUrl,
+            verifyButtonLabel: message.actionLabel,
+            config: {
+                ...this.resolveDeliveryConfig({
+                    ...input.config,
+                    ...(message.senderName
+                        ? { senderName: message.senderName }
+                        : {}),
+                }),
+            },
+        });
+        return {
+            sent: true,
+            ...this.requireQueue(input.purpose).getQueueItem(
+                queued.notificationId,
+            )!,
+        };
+    }
+
+    private resolveDeliveryConfig(
+        overrides?: Record<string, unknown>,
+    ): SmtpConfig {
+        const config = { ...this.config };
+        if (!overrides) return config;
+        for (const field of [
+            "host",
+            "from",
+            "senderName",
+            "user",
+            "password",
+        ] as const) {
+            const value = overrides[field];
+            if (
+                typeof value === "string" &&
+                (field !== "password" || value !== "")
+            )
+                config[field] = value;
+        }
+        if (
+            typeof overrides.port === "number" &&
+            Number.isInteger(overrides.port) &&
+            overrides.port > 0 &&
+            overrides.port <= 65535
+        )
+            config.port = overrides.port;
+        if (
+            overrides.secure === "none" ||
+            overrides.secure === "tls" ||
+            overrides.secure === "starttls"
+        )
+            config.secure = overrides.secure;
+        for (const field of ["allowSelfSigned", "authDisabled"] as const)
+            if (typeof overrides[field] === "boolean")
+                config[field] = overrides[field];
+        return config;
+    }
+
+    private requireQueue(purpose: unknown): SmtpNotificationQueue {
+        const queue =
+            typeof purpose === "string" ? this.queues.get(purpose) : undefined;
+        if (!queue) throw new Error("smtp_purpose_unregistered");
+        return queue;
+    }
+
+    readonly stringsBaseUrl = "/static/adapters/notify/smtp/languages";
+
+    getConfigSchema(): import("../../../gateways/notify/contracts/sender.js").NotificationConfigField[] {
+        const field = (
+            key: string,
+            type: "text" | "password" | "number" | "boolean" = "text",
+            label = key,
+        ) => ({ key, type, label: `adapter.smtp.config.${label}` });
+        const authentication = { field: "authDisabled", equals: false };
+        return [
+            field("host"),
+            field("port", "number"),
+            field("from"),
+            field("senderName", "text", "sender_name"),
+            {
+                ...field("secure"),
+                type: "select",
+                options: ["none", "starttls", "tls"].map((value) => ({
+                    value,
+                    labelKey: `adapter.smtp.config.secure_${value}`,
+                })),
+            },
+            field("authDisabled", "boolean", "auth_disabled"),
+            {
+                ...field("user"),
+                visibleWhen: authentication,
+                requiredWhen: authentication,
+            },
+            {
+                ...field("password", "password"),
+                visibleWhen: authentication,
+                requiredWhen: authentication,
+            },
+            field("allowSelfSigned", "boolean", "allow_self_signed"),
+            field("codeLength", "number", "code_length"),
+            field("greylistRetries", "number", "greylist_retries"),
+            field("greylistRetryDelayMs", "number", "greylist_retry_delay"),
+        ];
+    }
+
+    getConfiguredSecretFields(): string[] {
+        return this.config.password ? ["password"] : [];
+    }
+
+    getTestSchema(): import("../../../gateways/notify/contracts/sender.js").NotificationConfigField[] {
+        return [
+            {
+                key: "to",
+                label: "adapter.smtp.config.test_recipient",
+                type: "email",
+            },
+        ];
     }
 
     getEnvValues(): Record<string, string | undefined> {
@@ -651,7 +685,7 @@ export class SmtpNotificationSender implements NotificationSender {
     }
 
     getCodeLength(): number {
-        return clampSmtpVerificationCodeLength(this.config.codeLength);
+        return clampVerificationCodeLength(this.config.codeLength);
     }
 
     setConfig(config: Record<string, unknown>): void {
@@ -679,203 +713,52 @@ export class SmtpNotificationSender implements NotificationSender {
         if (typeof config.greylistRetryDelayMs === "number")
             this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
         if (typeof config.codeLength === "number") {
-            this.config.codeLength = clampSmtpVerificationCodeLength(
+            this.config.codeLength = clampVerificationCodeLength(
                 config.codeLength,
             );
         }
     }
 
     listQueue(): NotificationSenderQueueEntry[] {
-        return this.queue.listQueue();
+        return [...this.queues.values()]
+            .flatMap((queue) => queue.listQueue())
+            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
     }
 
     getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
-        return this.queue.getQueueItem(notificationId);
-    }
-
-    private async getQueueItemWithRetry(
-        notificationId: string,
-        retries = 1,
-        delayMs = 10,
-    ): Promise<NotificationSenderQueueEntry | null> {
-        let queueItem = this.queue.getQueueItem(notificationId);
-        let attemptsLeft = retries;
-        while (!queueItem && attemptsLeft > 0) {
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-            queueItem = this.queue.getQueueItem(notificationId);
-            attemptsLeft -= 1;
-        }
-        return queueItem;
-    }
-
-    async sendVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ): Promise<void> {
-        const queued = await this.queueVerificationEmail(
-            to,
-            code,
-            verifyUrl,
-            theme,
+        return (
+            [...this.queues.values()]
+                .map((queue) => queue.getQueueItem(notificationId))
+                .find(Boolean) ?? null
         );
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        await this.queue.waitForResult(notificationId);
-    }
-
-    async queueVerificationEmail(
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ) {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const messageType = verifyUrl
-            ? "email-address-verification"
-            : "verification-code";
-        const { subject, body } = buildVerificationEmailMessage(
-            messageType,
-            code,
-        );
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl,
-        });
-        const notificationId = queued.notificationId?.trim();
-        if (!notificationId) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        const queueItem = await this.getQueueItemWithRetry(notificationId);
-        if (!queueItem) {
-            throw new Error("smtp_queue_item_missing");
-        }
-        return queueItem;
-    }
-
-    async sendRegistrationInviteEmail(
-        to: string,
-        inviterDisplayName: string,
-        inviteUrl: string,
-        theme?: string,
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        const { subject, body } = buildRegistrationInviteEmailMessage(
-            inviterDisplayName,
-            inviteUrl,
-        );
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: inviteUrl,
-            verifyButtonLabel: "Sign Up",
-        });
-        await this.queue.waitForResult(queued.notificationId);
-    }
-
-    async sendOneTimeLoginEmail(
-        to: string,
-        loginUrl: string,
-        options?: {
-            theme?: string;
-            subject?: string;
-            body?: string;
-            actionLabel?: string;
-        },
-    ): Promise<void> {
-        if (!to) throw new Error("smtp_requires_recipient");
-        if (!loginUrl) throw new Error("smtp_requires_login_url");
-        const theme = options?.theme;
-        const subject = options?.subject?.trim();
-        const body = options?.body?.trim();
-        if (!subject || !body) {
-            throw new Error(
-                "One-time login email subject and body are required.",
-            );
-        }
-        const queued = this.queue.enqueue({
-            recipientEmail: to,
-            subject,
-            body,
-            theme,
-            verifyUrl: loginUrl,
-            verifyButtonLabel: options?.actionLabel,
-        });
-        await this.queue.waitForResult(queued.notificationId);
     }
 
     async sendTestEmail(
+        purpose: string,
         to: string,
         overrideConfig?: Record<string, unknown>,
     ): Promise<void> {
         if (!to) throw new Error("smtp_test_email_requires_recipient");
-        let cfg = this.config;
-        if (overrideConfig && typeof overrideConfig === "object") {
-            const merged: SmtpConfig = { ...this.config };
-            if (typeof overrideConfig.host === "string")
-                merged.host = overrideConfig.host;
-            if (typeof overrideConfig.port === "number")
-                merged.port = overrideConfig.port;
-            if (typeof overrideConfig.from === "string")
-                merged.from = overrideConfig.from;
-            if (typeof overrideConfig.senderName === "string")
-                merged.senderName = overrideConfig.senderName;
-            if (typeof overrideConfig.user === "string")
-                merged.user = overrideConfig.user;
-            if (typeof overrideConfig.password === "string")
-                merged.password = overrideConfig.password;
-            if (
-                overrideConfig.secure === "none" ||
-                overrideConfig.secure === "tls" ||
-                overrideConfig.secure === "starttls"
-            ) {
-                merged.secure = overrideConfig.secure;
-            }
-            if (typeof overrideConfig.allowSelfSigned === "boolean")
-                merged.allowSelfSigned = overrideConfig.allowSelfSigned;
-            if (typeof overrideConfig.authDisabled === "boolean")
-                merged.authDisabled = overrideConfig.authDisabled;
-            cfg = merged;
-        }
-        const queued = this.queue.enqueue({
+        const cfg = this.resolveDeliveryConfig(overrideConfig);
+        const theme = await this.getRecipientTheme(to);
+        const queued = this.requireQueue(purpose).enqueue({
+            purpose,
             recipientEmail: to,
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
-            config: cfg,
+            config: { ...cfg },
+            theme,
         });
-        await this.queue.waitForResult(queued.notificationId);
+        await this.requireQueue(purpose).waitForResult(queued.notificationId);
     }
 
     async send(envelope: NotificationEnvelope): Promise<void> {
         if (!envelope.recipientEmail) {
             throw new Error("smtp_sender_requires_recipient_email");
         }
-        if (this.rateLimiter.isThrottled(envelope.recipientEmail)) {
-            throw new Error("smtp_rate_limited");
-        }
-        this.rateLimiter.record(envelope.recipientEmail);
-        const theme =
-            typeof envelope.metadata?.theme === "string"
-                ? envelope.metadata.theme
-                : undefined;
-        await sendMailWithRetry(
-            this.config,
-            envelope.recipientEmail,
-            envelope.subject,
-            envelope.body,
-            this.sleep,
-            theme,
-            undefined,
-            undefined,
-            envelope.attachments ?? [],
+        const queued = await this.sendTracked(envelope);
+        await this.requireQueue(envelope.purpose).waitForResult(
+            queued.notificationId,
         );
     }
 
@@ -885,14 +768,15 @@ export class SmtpNotificationSender implements NotificationSender {
         if (!envelope.recipientEmail) {
             throw new Error("smtp_sender_requires_recipient_email");
         }
-        const theme =
-            typeof envelope.metadata?.theme === "string"
-                ? envelope.metadata.theme
-                : undefined;
-        return this.queue.enqueue({
+        const theme = await this.getRecipientTheme(envelope.recipientEmail);
+        return this.requireQueue(envelope.purpose).enqueue({
+            purpose: envelope.purpose!,
+            attachments: envelope.attachments,
             recipientEmail: envelope.recipientEmail,
             recipientUsername: envelope.recipientUsername,
             category: envelope.category,
+            presentation: envelope.presentation as
+                EmailPresentation | undefined,
             subject: envelope.subject,
             body: envelope.body,
             theme,

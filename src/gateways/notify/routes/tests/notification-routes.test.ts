@@ -6,7 +6,11 @@ import {
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
 import { issueAccessToken } from "../../../auth/access-tokens.js";
-import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
+
+import type {
+    NotificationEnvelope,
+    NotificationSender,
+} from "../../contracts/sender.js";
 
 function requestWithBody(
     method: string,

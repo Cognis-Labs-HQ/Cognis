@@ -12,26 +12,15 @@ import {
 } from "/static/reuse/secret-visibility-toggle.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
 export function createSettingsSection({ i18n, root, signal }) {
+    signal?.throwIfAborted();
     const settingsRoot = root ?? document;
     let dismissCurrentPopup = null;
+    let popupController;
     const actions = new AbortController();
     signal?.addEventListener("abort", () => actions.abort(), { once: true });
-    window.addEventListener(
-        "cognis:keyring-event",
-        (event) => {
-            if (event.detail?.type === "identityChanged") {
-                actions.abort();
-                settingsRoot
-                    .querySelector("#settings-keyring-manager")
-                    ?.replaceChildren();
-            } else if (event.detail?.type === "locked") {
-                dismissCurrentPopup?.();
-                dismissCurrentPopup = null;
-                rerender();
-            }
-        },
-        { signal: actions.signal },
-    );
+    actions.signal.addEventListener("abort", () => popupController?.abort(), {
+        once: true,
+    });
     const pagination = uiCtx.capabilities.get("ui:pagination");
     if (!pagination) {
         throw new Error("Required UI capability unavailable: ui:pagination");
@@ -52,7 +41,6 @@ export function createSettingsSection({ i18n, root, signal }) {
     const clearKeyringValues = uiCtx.capabilities.get("keyring:clear");
     const destroyKeyring = uiCtx.capabilities.get("keyring:destroy");
     const createKeyring = uiCtx.capabilities.get("keyring:create");
-    const keyringExists = uiCtx.capabilities.get("keyring:exists");
     const changeKeyringPassword = uiCtx.capabilities.get(
         "keyring:changePassword",
     );
@@ -60,17 +48,57 @@ export function createSettingsSection({ i18n, root, signal }) {
     const requestKeyringUnlock = uiCtx.capabilities.get(
         "keyring:requestUnlock",
     );
-    const restoreKeyringSession = uiCtx.capabilities.get(
-        "keyring:restoreSession",
-    );
     const setKeyringRelockMinutes = uiCtx.capabilities.get(
         "keyring:setRelockMinutes",
     );
-    const keyring = createKeyringScope("Authentication Gateway");
+    const readKeyringState = uiCtx.capabilities.get("keyring:readState");
+    if (!readKeyringState) throw new Error("keyring_state_reader_unavailable");
+    let loadState = "loading";
+    let loadSequence = 0;
+    let keyringPresent = false;
+    let watchingEvents = false;
+
+    function handleKeyringEvent(event) {
+        if (event.detail?.type === "identityChanged") {
+            actions.abort();
+            settingsRoot
+                .querySelector("#settings-keyring-manager")
+                ?.replaceChildren();
+        } else if (event.detail?.type === "locked") {
+            popupController?.abort();
+            dismissCurrentPopup = null;
+            rerender();
+        } else if (
+            ["created", "destroy"].includes(event.detail?.type) &&
+            settingsRoot.querySelector("#settings-keyring-manager")
+        ) {
+            void section.onRender();
+        }
+    }
+
+    const keyring = createKeyringScope(
+        i18n.t("adapter.auth.keyring.component_name"),
+    );
     let unbindSecretVisibility = null;
+    actions.signal.addEventListener("abort", () => unbindSecretVisibility?.(), {
+        once: true,
+    });
     const eventPagination = createPagination({ data: [], perPage: 10 });
     let keysExpanded = true;
     let logsExpanded = true;
+
+    async function openOwnedPopup(options) {
+        const controller = new AbortController();
+        popupController = controller;
+        try {
+            return await openPopup({
+                ...options,
+                signal: AbortSignal.any([actions.signal, controller.signal]),
+            });
+        } finally {
+            if (popupController === controller) popupController = undefined;
+        }
+    }
 
     function renderEntries(unlocked = isKeyringUnlocked()) {
         if (!unlocked) {
@@ -123,7 +151,11 @@ export function createSettingsSection({ i18n, root, signal }) {
     }
 
     function renderManager() {
-        if (!keyringExists()) {
+        if (loadState === "loading")
+            return `<p role="status">${escapeHtml(i18n.t("ui.reuse.loading"))}</p>`;
+        if (loadState === "unavailable")
+            return `<p role="status">${escapeHtml(i18n.t("gateway.auth.keyring.unavailable"))}</p><button type="button" id="settings-keyring-retry" class="btn-neutral">${escapeHtml(i18n.t("ui.reuse.retry"))}</button>`;
+        if (!keyringPresent) {
             return `<section class="settings-keyring-missing" role="status">
               <h3>${escapeHtml(i18n.t("gateway.auth.keyring.not_found"))}</h3>
               <p>${escapeHtml(i18n.t("gateway.auth.keyring.not_found_message"))}</p>
@@ -226,7 +258,7 @@ export function createSettingsSection({ i18n, root, signal }) {
         let labelInput = null;
         let idInput = null;
         let valueInput = null;
-        const result = await openPopup({
+        const result = await openOwnedPopup({
             title: i18n.t(
                 entry
                     ? "gateway.auth.keyring.edit_title"
@@ -283,7 +315,7 @@ export function createSettingsSection({ i18n, root, signal }) {
             ? "gateway.auth.keyring.destroy"
             : "gateway.auth.keyring.clear";
         return (
-            (await openPopup({
+            (await openOwnedPopup({
                 title: i18n.t(
                     destroy
                         ? "gateway.auth.keyring.destroy_title"
@@ -343,7 +375,7 @@ export function createSettingsSection({ i18n, root, signal }) {
             },
         );
         let formController = null;
-        const result = await openPopup({
+        const result = await openOwnedPopup({
             title: i18n.t("gateway.auth.keyring.change_password_title"),
             body: formBuilder.render(),
             actions: [
@@ -384,6 +416,15 @@ export function createSettingsSection({ i18n, root, signal }) {
     }
 
     function bindActions() {
+        settingsRoot.querySelector("#settings-keyring-retry")?.addEventListener(
+            "click",
+            () => {
+                loadState = "loading";
+                rerender();
+                void section.onRender();
+            },
+            { signal: actions.signal },
+        );
         unbindSecretVisibility?.();
         unbindSecretVisibility = bindSecretVisibilityToggles({
             root: settingsRoot.querySelector("#settings-keyring-manager"),
@@ -391,7 +432,7 @@ export function createSettingsSection({ i18n, root, signal }) {
         settingsRoot
             .querySelector("#settings-keyring-create")
             ?.addEventListener("click", async () => {
-                if (await createKeyring()) rerender();
+                if (await createKeyring()) await section.onRender();
             });
         settingsRoot
             .querySelector('[data-keyring-section="keys"]')
@@ -538,7 +579,7 @@ export function createSettingsSection({ i18n, root, signal }) {
         });
     }
 
-    return {
+    const section = {
         id: "keyring",
         label: i18n.t("gateway.auth.keyring.section_title"),
         heading: i18n.t("gateway.auth.keyring.section_title"),
@@ -546,13 +587,42 @@ export function createSettingsSection({ i18n, root, signal }) {
         renderContent: () =>
             `<section class="settings-keyring-manager" id="settings-keyring-manager">${renderManager()}</section>`,
         async onRender() {
+            if (actions.signal.aborted) return;
+            const sequence = ++loadSequence;
+            // Read on entry, not when the Settings catalog constructs this section.
+            // Snapshot the current actor before subscribing to later identity changes.
+            const reading = readKeyringState().then(
+                (state) => ({ state }),
+                (error) => ({ error }),
+            );
+            if (!watchingEvents) {
+                window.addEventListener(
+                    "cognis:keyring-event",
+                    handleKeyringEvent,
+                    { signal: actions.signal },
+                );
+                watchingEvents = true;
+            }
             await Promise.all([
                 ensurePageStylesheet(
                     "/static/adapters/auth/keyring/settings.css",
                 ),
                 ensurePageStylesheet("/static/styles/reuse/page-sections.css"),
             ]);
-            await restoreKeyringSession();
+            const result = await reading;
+            if (actions.signal.aborted || sequence !== loadSequence) return;
+            loadState = result.error ? "unavailable" : "ready";
+            if (result.state) keyringPresent = result.state.exists === true;
+            if (result.error) {
+                console.error("[keyring] settings metadata unavailable", {
+                    component: "auth-keyring",
+                    operation: "readSettings",
+                    errorName: result.error.name,
+                });
+                showToast(i18n.t("gateway.auth.keyring.unavailable"), {
+                    variant: "error",
+                });
+            }
             rerender();
         },
         isDirty: () => false,
@@ -560,4 +630,5 @@ export function createSettingsSection({ i18n, root, signal }) {
         commit() {},
         discard() {},
     };
+    return section;
 }

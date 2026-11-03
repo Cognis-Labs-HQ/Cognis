@@ -101,3 +101,5 @@ Components should prefer `files:namespace` for routine ctx file operations: bind
 ### Browser client capability
 
 `files:uiClient` is contributed by the Files UI provider and exposes namespaced file URL resolution for browser modules.
+
+Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).

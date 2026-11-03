@@ -62,7 +62,7 @@ for (const [locale, titles] of Object.entries(expectedTitles)) {
                 getCalendars: () => [calendar],
                 getSelectedCalendarId: () => calendar.id,
                 getCurrentAccountId: () => "owner",
-                getJitsiAvailable: () => false,
+                getMeetingsAvailable: () => false,
                 normalizeDateTimeInputValue: (value) => value,
                 openPopup: async (options) => {
                     popup = options;

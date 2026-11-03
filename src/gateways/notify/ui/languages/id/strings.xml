@@ -57,4 +57,5 @@
   <string name="gateway.notify.broadcast.acknowledge">Konfirmasi</string>
   <string name="gateway.notify.broadcast.action_failed">Gagal memperbarui status siaran.</string>
   <string name="gateway.notify.broadcast.invalid_redirect">URL pengalihan tidak valid atau tidak tepercaya.</string>
+    <string name="gateway.notify.validation.email">Alamat Email Terverifikasi</string>
 </resources>

@@ -1,3 +1,4 @@
+import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -24,6 +25,7 @@ import {
 async function loadLocalFileGateway(
     fileStorePath: string,
     adaptersRoot: string,
+    context: GatewayBootstrapContext,
 ): Promise<FileStorageGateway> {
     const localAdapterPath = path.resolve(
         adaptersRoot,
@@ -39,12 +41,22 @@ async function loadLocalFileGateway(
     if (!LocalAdapterGatewayClass) {
         throw new Error("local_file_adapter_missing_gateway_class");
     }
-    return new LocalAdapterGatewayClass(fileStorePath);
+    const create = () => new LocalAdapterGatewayClass(fileStorePath);
+    return localAdapterModule.defineContracts !== undefined
+        ? bootstrapAdapter(
+              "files",
+              "local",
+              context,
+              localAdapterModule,
+              create,
+          )
+        : create();
 }
 
 async function loadQuotaStore(
     getDb: () => DbExecutor | undefined,
     adaptersRoot: string,
+    context: GatewayBootstrapContext,
 ): Promise<FileQuotaStore> {
     const quotaAdapterPath = path.resolve(
         adaptersRoot,
@@ -61,7 +73,16 @@ async function loadQuotaStore(
     if (!DbFileQuotaStoreClass) {
         throw new Error("file_quota_adapter_missing_store_class");
     }
-    return new DbFileQuotaStoreClass(getDb);
+    const create = () => new DbFileQuotaStoreClass(getDb);
+    return quotaAdapterModule.defineContracts !== undefined
+        ? bootstrapAdapter(
+              "files",
+              "quota",
+              context,
+              quotaAdapterModule,
+              create,
+          )
+        : create();
 }
 
 /**
@@ -99,9 +120,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const fileStorePath = `${mediaLocation}/uploads`;
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
-    const rawGateway = await loadLocalFileGateway(fileStorePath, adaptersRoot);
+    const rawGateway = await loadLocalFileGateway(
+        fileStorePath,
+        adaptersRoot,
+        ctx,
+    );
     const getDb = () => ctx.capabilities.get<DbExecutor>("db:executor");
-    const quotaStore = await loadQuotaStore(getDb, adaptersRoot);
+    const quotaStore = await loadQuotaStore(getDb, adaptersRoot, ctx);
     const objectStore = new DbFileObjectStore(getDb);
     const registry = new NamespaceRegistry();
     const service = new NamespaceFileService(

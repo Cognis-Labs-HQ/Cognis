@@ -78,7 +78,7 @@ export async function verifyTfaSetup(
 }
 
 export async function cancelTfaSetup(apiFetch, methodId, setupId) {
-    await apiFetch(
+    const response = await apiFetch(
         `/api/v1/tfa/methods/${encodeURIComponent(methodId)}/setup/cancel`,
         {
             method: "POST",
@@ -86,6 +86,7 @@ export async function cancelTfaSetup(apiFetch, methodId, setupId) {
             body: JSON.stringify({ setupId }),
         },
     );
+    return response.ok || response.status === 404;
 }
 
 export async function disableTfaMethod(apiFetch, methodId) {

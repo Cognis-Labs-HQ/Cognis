@@ -9,8 +9,7 @@ import { readJson } from "../../../shared.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
 
 interface SecuritySettings {
-    registrationsEnabled: boolean;
-    userValidationMode: "none" | "smtp";
+    userValidationMode: string;
 }
 
 interface RegistrationRouteDependencies {
@@ -152,7 +151,7 @@ export function createRegistrationRoutes({
         const hasVerifiedEmail = capabilities.get<
             (accountId: string) => Promise<boolean>
         >("notify:hasVerifiedEmail");
-        if (hasVerifiedEmail && registrationValidationMode === "smtp") {
+        if (hasVerifiedEmail && registrationValidationMode === "email") {
             const fiveMinutesMs = 5 * 60 * 1000;
             const timer = setTimeout(async () => {
                 try {

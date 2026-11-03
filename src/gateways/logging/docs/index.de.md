@@ -71,3 +71,7 @@ Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokolli
 ### Browserprotokolle erfassen
 
 Authentifizierte Browserkomponenten senden strukturierte Einträge mit `POST /api/v1/logging/entries` im Format `{ level, message, meta }`. Das Gateway validiert Stufe und Nachricht, ergänzt das authentifizierte Konto sowie die Browserquelle und schreibt den Eintrag über `logging:log`.
+
+## Lokalisierte Adapterfelder
+
+Logging-Adapterdefinitionen verwenden `labelKey`. Das Gateway serialisiert Katalog- und Konfigurationsschemata mit dem browserseitigen Übersetzungsschlüssel `label` und liefert die jeweilige `stringsBaseUrl`. Typen, Optionen und Werte behalten ihre anbietereigene Bedeutung. Konfigurationen bleiben ausschließlich für Administratoren lesbar.

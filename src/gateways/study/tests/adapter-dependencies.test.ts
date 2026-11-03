@@ -1,3 +1,4 @@
+import { runBootstrapScope } from "@cognis/core";
 import { writeAdapterFixture } from "./reuse/adapters.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -83,31 +84,35 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
     const gateway = new CoreStudyGateway();
     await gateway.discoverAdapters(root);
     const capabilities = new CapabilityStore();
+    const systemCtx = createCtx();
+    capabilities.contribute("system:ctx", systemCtx);
     const registered: unknown[] = [];
-    await gateway.bootstrapAdapters(root, {
-        gateway,
-        capabilities,
-        gatewayRegistry: new GatewayRegistry(),
-        flow: createCtx().flow,
-        registerRoute: (...args) => {
-            registered.push(args);
-        },
-        registerStaticDir: (...args) => {
-            registered.push(args);
-        },
-        registerCapabilityProvider: (...args) => {
-            registered.push(args);
-        },
-        registerNavbarPlugin: (...args) => {
-            registered.push(args);
-        },
-        registerPageExtension: (...args) => {
-            registered.push(args);
-        },
-        log: (...args) => {
-            registered.push(args);
-        },
-    });
+    await runBootstrapScope(systemCtx, "gateway:study", () =>
+        gateway.bootstrapAdapters(root, {
+            gateway,
+            capabilities,
+            gatewayRegistry: new GatewayRegistry(),
+            flow: systemCtx.flow,
+            registerRoute: (...args) => {
+                registered.push(args);
+            },
+            registerStaticDir: (...args) => {
+                registered.push(args);
+            },
+            registerCapabilityProvider: (...args) => {
+                registered.push(args);
+            },
+            registerNavbarPlugin: (...args) => {
+                registered.push(args);
+            },
+            registerPageExtension: (...args) => {
+                registered.push(args);
+            },
+            log: (...args) => {
+                registered.push(args);
+            },
+        }),
+    );
     assert.equal(capabilities.get("boot:a-consumer"), true);
     assert.equal(gateway.isAdapterEnabled("a-consumer"), true);
     await gateway.disableAdapter("z-base");

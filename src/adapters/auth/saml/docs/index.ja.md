@@ -29,3 +29,5 @@ export interface SamlClient {
 | `certificate`    | IdP X.509署名証明書（PEM形式）     | はい   |
 | `adminAttribute` | 管理者チェック用のSAML属性名       | いいえ |
 | `adminValue`     | 管理者アクセスを付与する属性値     | いいえ |
+
+設定ラベルは `stringsBaseUrl` を通じてこのアダプターの言語リソースから取得します。

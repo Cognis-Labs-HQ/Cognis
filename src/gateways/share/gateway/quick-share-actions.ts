@@ -1,10 +1,8 @@
-type NotifyGatewayLike = {
-    listSenders(): Array<{
-        senderId: string;
-        name?: string;
-        active?: boolean;
-    }>;
-};
+type ListNotificationSenders = () => Array<{
+    senderId: string;
+    name?: string;
+    active?: boolean;
+}>;
 
 type QuickShareBuilder = (input: {
     shareUrl: string;
@@ -24,13 +22,14 @@ export async function resolveQuickShareActions(
         label?: string | null;
     },
 ): Promise<QuickShareAction[]> {
-    const notifyGateway = getCapability<NotifyGatewayLike>("notify:gateway");
-    if (!notifyGateway || typeof notifyGateway.listSenders !== "function") {
+    const listSenders =
+        getCapability<ListNotificationSenders>("notify:listSenders");
+    if (typeof listSenders !== "function") {
         return [];
     }
 
     const actions = await Promise.all(
-        notifyGateway.listSenders().map(async (sender) => {
+        listSenders().map(async (sender) => {
             if (!sender?.active) {
                 return null;
             }

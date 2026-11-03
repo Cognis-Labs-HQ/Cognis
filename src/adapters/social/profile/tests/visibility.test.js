@@ -18,10 +18,23 @@ const PROFILE_SYNC_SOURCE = readFileSync(
 
 test("profile editor disables private visibility choices for administrators", () => {
     assert.match(
-        PROFILE_APP_SOURCE,
+        readFileSync(
+            resolve(import.meta.dirname, "../ui/profile-edit-fields.js"),
+            "utf8",
+        ),
         /\[\s*"teacher",\s*"admin",\s*"owner",?\s*\]\.includes\(profile\?\.role\)/,
     );
-    assert.match(PROFILE_APP_SOURCE, /disabled: isRestrictedForProfileRole/);
+    assert.match(
+        readFileSync(
+            resolve(import.meta.dirname, "../ui/profile-edit-fields.js"),
+            "utf8",
+        ),
+        /disabled: isRestrictedForProfileRole/,
+    );
+    assert.match(
+        PROFILE_APP_SOURCE,
+        /fields: createProfileEditFields\(profile, i18n\)/,
+    );
 });
 
 test("profile block button uses the cancel button style", () => {

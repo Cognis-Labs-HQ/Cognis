@@ -112,6 +112,12 @@ function toOtpAuthUri(input: {
 
 class TotpAdapter implements TfaMethodAdapter {
     readonly id = "totp";
+    readonly stringsBaseUrl = "/static/adapters/tfa/totp/languages";
+    readonly loginUi = {
+        placeholderKey: "ui.app.login.tfa.code_placeholder_totp",
+        supportsResend: false,
+        challengeOnSelect: false,
+    };
     readonly name = "Authenticator App";
     readonly defaultEnabled = true;
 
@@ -123,7 +129,7 @@ class TotpAdapter implements TfaMethodAdapter {
         secret: string;
     }): Promise<Record<string, string>> {
         const otpAuthUri = toOtpAuthUri({
-            issuer: input.issuer,
+            issuer: process.env.COGNIS_TOTP_ISSUER || input.issuer,
             accountId: input.accountId,
             secret: input.secret,
             algorithm: this.algorithm,
@@ -205,7 +211,7 @@ class TotpAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_totp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({
@@ -239,7 +245,7 @@ class TotpAdapter implements TfaMethodAdapter {
         if (!verified) {
             return Promise.resolve({
                 verified: false,
-                message: "invalid_totp_code",
+                message: "invalid_verification_code",
             });
         }
         return Promise.resolve({ verified: true });
@@ -266,7 +272,7 @@ class TotpAdapter implements TfaMethodAdapter {
         return [
             {
                 key: "algorithm",
-                label: "HMAC Algorithm",
+                label: "adapter.totp.config.algorithm",
                 type: "select" as const,
                 required: false,
                 options: [...TOTP_ALGORITHMS],

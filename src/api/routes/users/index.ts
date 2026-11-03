@@ -40,7 +40,7 @@ function resolveEffectiveRole(
 export function createUserRoutes(
     accountStore: LocalAccountStore,
     preferenceStore: UserPreferenceStore | undefined,
-    setProfileRole?: (handle: string, role: string) => Promise<void>,
+    setProfileRole?: (accountId: string, role: string) => Promise<void>,
     log?: BootstrapLog,
     getProfileVisibility?: (
         accountId: string,

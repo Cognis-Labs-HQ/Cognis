@@ -95,10 +95,19 @@ export async function offlineWorkerRequest(type, options = {}) {
         "COGNIS_REFRESH_OFFLINE_ROUTES",
         "COGNIS_OFFLINE_ROUTES",
         "COGNIS_OFFLINE_REQUIREMENTS",
+        "COGNIS_INVALIDATE_OFFLINE_ROUTES",
+        "COGNIS_OFFLINE_ACCESS",
+        "COGNIS_OFFLINE_PREFERENCE",
     ].includes(type);
     const requests = (state.workerRequests ??= new Map());
     const previous = requests.get(type);
-    if (coalesced && previous?.worker === worker) return previous.promise;
+    const requestOptions = JSON.stringify(options);
+    if (
+        coalesced &&
+        previous?.worker === worker &&
+        previous.options === requestOptions
+    )
+        return previous.promise;
     const promise = new Promise((resolve, reject) => {
         const channel = new MessageChannel();
         const finish = (error, result) => {
@@ -125,7 +134,7 @@ export async function offlineWorkerRequest(type, options = {}) {
             finish(error);
         }
     });
-    const record = { worker, promise };
+    const record = { worker, promise, options: requestOptions };
     if (coalesced) requests.set(type, record);
     try {
         const result = await promise;

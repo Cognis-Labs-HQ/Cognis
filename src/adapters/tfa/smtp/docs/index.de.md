@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Der SMTP-TFA-Adapter ergänzt das TFA-Gateway um E-Mail-Codes als zweiten Faktor. Für Einrichtung und Anmeldung sendet er Einmalcodes an die primäre E-Mail-Adresse des Nutzers, wobei der Verifizierungs-E-Mail-Fluss des Notification-Gateways genutzt wird. Challenge-Codes sind flüchtig und werden nur im Prozessspeicher gehalten.
+Der Adapter registriert seine eigene Code-Nachrichtenaktion beim Bootstrap über `notify:registerEmailPurpose` und sendet über `notify:sendEmail`. Registrierung, Nachrichteninhalt und Senderabgleich gehören diesem Adapter. Das TFA-Gateway stellt nur neutrale Adapter-Lebenszyklus-Hooks bereit. Beim Deaktivieren des Gateways wird die eigene SMTP-Warteschlange beendet; die Aktivierung stellt die Registrierung wieder her.
 
 ## Voraussetzungen
 
@@ -12,9 +12,13 @@ Der SMTP-TFA-Adapter ergänzt das TFA-Gateway um E-Mail-Codes als zweiten Faktor
 
 ## Konfiguration
 
-- `codeLength` (Zahl, optional): Länge der generierten numerischen Codes. Werte werden auf 4–10 Stellen begrenzt.
+Die Codelänge wird beim E-Mail-Zustellanbieter konfiguriert; diese Methode liest dessen aktuelle Richtlinie.
 
 ## Laufzeitverhalten
 
 - Challenge-Codes werden im Prozessspeicher gespeichert. Ein Neustart der App macht ausstehende Setup-/Login-Codes ungültig.
 - In Multi-Instanz-Deployments sollte dieser Adapter nur verwendet werden, wenn Anfragen während eines Challenge-Fensters an dieselbe Instanz gebunden bleiben.
+
+## Zustellrichtlinie
+
+Codelänge und Versandintervall stammen aus `notify:emailDeliveryPolicy`. Der Adapter hat keine eigene Einstellung für die Codelänge. Gemeinsame Prüfhelfer erzeugen kryptografisch zufällige Ziffern; Darstellung und Sprachressourcen liefert diese Methode.

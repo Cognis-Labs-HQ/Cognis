@@ -1,8 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    createCtx,
+    runBootstrapScope,
+} from "@cognis/core";
+import type { NotificationEnvelope } from "../contracts/sender.js";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
-import { bootstrap } from "../bootstrap.js";
+import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeInMemoryDb() {
@@ -36,6 +42,14 @@ function makeResponse() {
 
 const adminToken = issueAccessToken("test-session", "admin", 60);
 
+async function bootstrap(input: Parameters<typeof bootstrapImplementation>[0]) {
+    const root =
+        input.capabilities.require<ReturnType<typeof createCtx>>("system:ctx");
+    return runBootstrapScope(root, "gateway:notify", () =>
+        bootstrapImplementation(input),
+    );
+}
+
 async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -43,13 +57,30 @@ async function makeCtx() {
     const db = makeInMemoryDb();
     const systemCtx = createCtx();
     capabilities.contribute("db:executor", db);
+    capabilities.contribute("system:ctx", systemCtx);
     return {
         gatewayRegistry,
         routeRegistry,
         capabilities,
         db,
         flow: systemCtx.flow,
+        systemCtx,
     };
+}
+
+async function bootstrapCapture(
+    context: Awaited<ReturnType<typeof makeCtx>>,
+    receive: (message: NotificationEnvelope) => void,
+) {
+    context.capabilities.contribute("test:receiveNotification", receive);
+    await runBootstrapScope(context.systemCtx, "gateway:notify", () =>
+        bootstrap({
+            ...context,
+            adaptersRoot: path.resolve(
+                "src/gateways/notify/tests/fixtures/adapters",
+            ),
+        }),
+    );
 }
 
 test("bootstrap registers notify gateway with GatewayRegistry", async () => {
@@ -95,31 +126,16 @@ test("bootstrap contributes LDAP email provisioning capability", async () => {
 });
 
 test("notify dispatch resolves profile handles to canonical account IDs", async () => {
-    const { gatewayRegistry, routeRegistry, capabilities, flow } =
-        await makeCtx();
+    const context = await makeCtx();
+    const { capabilities } = context;
     capabilities.contribute("social:profile:identity", {
         async resolveAccountId(handle: unknown) {
             return handle === "provider-handle" ? "sso-account-id" : null;
         },
     });
 
-    await bootstrap({
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        flow,
-    });
-
     const received: Array<{ recipientUsername: string }> = [];
-    const gateway = capabilities.require<any>("notify:gateway");
-    gateway.registerSender({
-        senderId: "capture",
-        async send(envelope: { recipientUsername: string }) {
-            received.push(envelope);
-        },
-    });
-    gateway.registerAlwaysOnSender("capture");
+    await bootstrapCapture(context, (message) => received.push(message));
     const dispatch =
         capabilities.require<
             (envelope: Record<string, unknown>) => Promise<unknown>
@@ -166,16 +182,10 @@ for (const [role, expected] of [
                 },
             ],
         });
-        await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
         const received: string[] = [];
-        const gateway = context.capabilities.require<any>("notify:gateway");
-        gateway.registerSender({
-            senderId: "capture",
-            async send(envelope: { recipientUsername: string }) {
-                received.push(envelope.recipientUsername);
-            },
-        });
-        gateway.registerAlwaysOnSender("capture");
+        await bootstrapCapture(context, (message) =>
+            received.push(message.recipientUsername),
+        );
         const dispatch = context.capabilities.require<any>(
             "notify:dispatchToRole",
         );
@@ -383,22 +393,23 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
     );
 });
 
-test("SSO restored sessions require primary email verification, including when SMTP is unavailable", async () => {
+test("notification email validation contributes its own account verifier to Auth", async () => {
     const { InMemoryTestExecutor } =
         await import("../../db/tests/in-memory-test-executor.js");
     const context = await makeCtx();
     context.capabilities.contribute("db:executor", new InMemoryTestExecutor());
-    let mode = "smtp";
-    context.capabilities.contribute("preferences:store", {
-        get: async () => JSON.stringify({ userValidationMode: mode }),
-    });
-    context.capabilities.contribute("auth:accountStore", {
-        isFounder: async (id: string) => id === "founder",
+    let policy: {
+        validate(account: { accountId: string }): Promise<boolean>;
+        requiredFields: string[];
+        integration: { scriptUrl: string };
+        available(): boolean;
+    };
+    context.capabilities.contribute("auth:userValidationModes", {
+        register(mode: typeof policy) {
+            policy = mode;
+        },
     });
     await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
-    const setup = context.capabilities.require<
-        (id: string, role: string) => Promise<Array<{ scriptUrl: string }>>
-    >("auth:getSetupIntegrations");
     const provision = context.capabilities.require<
         (id: string, emails: string[]) => Promise<void>
     >("notify:provisionUserEmails");
@@ -406,15 +417,13 @@ test("SSO restored sessions require primary email verification, including when S
         (id: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
     await provision("x:person", ["person@example.com"]);
+    assert.equal(await policy!.validate({ accountId: "x:person" }), false);
+    assert.deepEqual(policy!.requiredFields, ["email"]);
     assert.equal(
-        (await setup("x:person", "user"))[0].scriptUrl,
+        policy!.integration.scriptUrl,
         "/static/gateways/notify/login-required-email-flow.js",
     );
-    assert.equal((await setup("x:no-email", "user")).length, 1);
-    assert.deepEqual(await setup("founder", "owner"), []);
-    assert.equal((await setup("founder", "user")).length, 1);
+    assert.equal(policy!.available(), false);
     await verify("x:person", "person@example.com");
-    assert.deepEqual(await setup("x:person", "user"), []);
-    mode = "none";
-    assert.deepEqual(await setup("x:no-email", "user"), []);
+    assert.equal(await policy!.validate({ accountId: "x:person" }), true);
 });

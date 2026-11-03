@@ -1,3 +1,4 @@
+import { createSetupDismissalGuard } from "./setup-dismissal.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -26,7 +27,7 @@ import {
 
 let requiredSetupPromptActive = false;
 
-export function createSettingsSection({ i18n, root, markDirty }) {
+export function createSettingsSection({ i18n, root, markDirty, signal }) {
     const reprompt = createRepromptGuard({ i18n });
     let tfaStatus = null;
     let recoveryCodesStatus = {
@@ -82,17 +83,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     function resolveTranslatedTfaErrorMessage(message) {
         const normalizedMessage = String(message ?? "").trim();
         const messageKeyByCode = {
-            invalid_totp_code: "ui.app.login.tfa.error_invalid",
+            invalid_verification_code: "ui.app.login.tfa.error_invalid",
             invalid_recovery_code: "ui.app.login.tfa.error_invalid",
             code_required: "ui.app.login.tfa.error_invalid",
             recovery_code_required: "ui.app.login.tfa.error_invalid",
-            invalid_smtp_code: "ui.app.login.tfa.error_invalid",
-            smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
-            smtp_capability_missing:
+            email_delivery_unavailable:
                 "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.notif_smtp_no_email_body",
+            primary_email_required: "ui.app.settings.notif_email_required_body",
             primary_email_address_not_verified:
-                "ui.app.settings.notif_smtp_no_email_body",
+                "ui.app.settings.notif_email_required_body",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
@@ -275,6 +274,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     }
 
     async function runTfaSetupFlow(methodId) {
+        if (signal?.aborted) return false;
         const setup = await beginSetup(methodId);
         if (!setup?.setupId) {
             showToast(resolveTranslatedTfaErrorMessage(setup?.errorMessage), {
@@ -309,8 +309,25 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             )
             .join("");
         let popupResult = null;
+        let resumeNavigation;
+        let cancellationFailed = false;
+        const dismissal = createSetupDismissalGuard({
+            signal,
+            onError: (error) => {
+                console.error("[tfa] setup dismissal failed", {
+                    component: "tfa",
+                    operation: "dismissSetup",
+                    errorName: error?.name,
+                });
+                showToast(i18n.t("gateway.tfa.settings.setup_failed"), {
+                    variant: "error",
+                });
+            },
+        });
         try {
             popupResult = await openPopup({
+                signal,
+                closeProtection: true,
                 title: i18n.t("gateway.tfa.settings.setup_title"),
                 maxWidth: "520px",
                 body: () => `
@@ -336,7 +353,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         variant: "cancel",
                     },
                 ],
-                onOpen: (overlay) => {
+                onOpen: (overlay, requestClose, api) => {
+                    dismissal.onOpen(overlay, requestClose, api);
                     codeInput = overlay.querySelector("#settings-tfa-code");
                     bindSecretVisibilityToggles({ root: overlay });
                 },
@@ -369,10 +387,37 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 },
             });
         } finally {
+            resumeNavigation = dismissal.close();
             qrImage.revoke();
+            if (popupResult !== "confirm") {
+                try {
+                    cancellationFailed = !(await cancelSetup(
+                        methodId,
+                        setup.setupId,
+                    ));
+                } catch (error) {
+                    cancellationFailed = true;
+                    console.error("[tfa] enrollment cancellation failed", {
+                        component: "tfa",
+                        operation: "cancelSetup",
+                        errorName: error?.name,
+                    });
+                }
+            }
+        }
+        if (cancellationFailed) {
+            console.error(
+                "[tfa] enrollment cancellation was not acknowledged",
+                { component: "tfa", operation: "cancelSetup" },
+            );
+            if (!signal?.aborted)
+                showToast(i18n.t("gateway.tfa.settings.setup_failed"), {
+                    variant: "error",
+                });
+            return false;
         }
         if (popupResult !== "confirm") {
-            await cancelSetup(methodId, setup.setupId);
+            await resumeNavigation?.();
             return false;
         }
         return true;
@@ -399,6 +444,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         let action = null;
         try {
             action = await openPopup({
+                signal,
                 title: i18n.t("gateway.tfa.settings.method_manage_title"),
                 maxWidth: "520px",
                 body: () => `
@@ -549,19 +595,24 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     }
 
     async function enforceTfaSetupFlow() {
-        if (enforcingTfaSetup || requiredSetupPromptActive) return;
+        if (signal?.aborted || enforcingTfaSetup || requiredSetupPromptActive)
+            return;
         if (tfaStatus?.requiresSetup !== true) return;
         if ((tfaStatus?.enabledMethods?.length ?? 0) > 0) return;
         enforcingTfaSetup = true;
         requiredSetupPromptActive = true;
         try {
-            while ((tfaStatus?.enabledMethods?.length ?? 0) === 0) {
+            while (
+                !signal?.aborted &&
+                (tfaStatus?.enabledMethods?.length ?? 0) === 0
+            ) {
                 const available = resolveTfaLists().available;
                 if (available.length === 0) {
                     break;
                 }
                 let methodSelect = null;
                 const action = await openPopup({
+                    signal,
                     title: i18n.t("gateway.tfa.settings.required_title"),
                     body: () => `
                     <div class="stack">
@@ -599,6 +650,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 );
                 if (!setupCompleted) continue;
                 tfaStatus = await fetchTfaStatus();
+                if (signal?.aborted) return;
                 savedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
                     (method) => method.id,
                 );
@@ -759,6 +811,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         preferenceKey: "settings-tfa-layout",
         renderContent,
         async onRender() {
+            if (signal?.aborted) return;
             await ensurePageStylesheet("/static/gateways/tfa/settings.css");
             [tfaStatus, recoveryCodesStatus] = await Promise.all([
                 fetchTfaStatus(),

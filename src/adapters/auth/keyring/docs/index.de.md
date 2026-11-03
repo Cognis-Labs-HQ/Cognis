@@ -1,5 +1,7 @@
 # Benutzerschlüsselbund-Adapter
 
+Die Einstellungen lesen `keyring:readState` über den registrierten Ablauf mit Lade- und Darstellungsstufe, bevor der Tresorstatus angezeigt wird. Anfangs erscheint ein Ladezustand; nicht verfügbare Metadaten werden von einem fehlenden Tresor unterschieden. Ein erneuter Versuch erstellt keinen Tresor und fragt kein Passwort ab. Gebündelte und direkt geladene Verbraucher teilen einen Anbieter. Navigation, Identitätswechsel und Sperren entfernen sensible Dialoginhalte und Ereignisbehandler.
+
 PUT-Anfragen für Tresore verwenden den gemeinsamen JSON-Datenstromleser der API mit dem wirksamen Tresorbudget und 1 KiB zusätzlichem Platz für den Umschlag. Richtlinie, 413-Fehler und Prüfung der serialisierten Daten bleiben im Adapter; eine zweite Pufferimplementierung entfällt.
 
 Die Standardgrenze für Tresore beträgt 2 MiB, die absolute Verarbeitungsgrenze 8 MiB. Die wirksame Richtlinie wird an Clients zurückgegeben. PUT zählt eingehende Bytes vor dem Puffern oder Parsen und weist übergroße Anfragen zurück; GET prüft die gespeicherte Größe vor dem Parsen. Verschlüsselte Umschläge verwenden eine Basiszeile und begrenzte Folgezeilen mit atomarem Ersetzen und Löschen sowie einer gemeinsamen Leseabfrage. Jeder Abschnitt umfasst höchstens 60.000 UTF-8-Bytes; der Server entschlüsselt weiterhin keine Geheimnisse.
@@ -67,3 +69,11 @@ Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartend
 ## Aktivitätswachstum begrenzen
 
 Der verschlüsselte Tresor behält höchstens 1.000 aktuelle Aktivitäten innerhalb von 64 KiB. Geheimnisse werden dafür niemals entfernt. Wiederholte Lesezugriffe teilen einen laufenden Speichervorgang. Authentifizierte GET-Anfragen können bestehende Tresore bis zur festen Grenze von 8 MiB lesen, damit der Client den Verlauf kürzen kann, auch bei einem niedrigeren Schreiblimit. PUT erzwingt weiterhin das konfigurierte Limit. Fehler bei der Hintergrundsynchronisierung zeigen eine Fehlermeldung; die verschlüsselte lokale Kopie bleibt erhalten.
+
+## Aktueller Zustand beim Öffnen
+
+Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch beim ersten Öffnen nach Anmeldung oder Aktualisierung. Der Aufbau des Einstellungskatalogs speichert kein fehlendes Ergebnis zwischen. Die Darstellung verwendet den bestätigten Zustandsstand; Erstellung und Löschung aktualisieren den sichtbaren Abschnitt. Identitätswechsel und Navigation verhindern weiterhin verspätete Darstellung und schließen sensible Dialoge.
+
+## Lokalisierte Adapterfelder
+
+Die Keyring-Konfiguration deklariert ihr eigenes Sprachpaket und lokalisierte Bezeichnungen für maximale Tresorgröße und Iterationen zur Passwortableitung. Das gemeinsame Administrations-Popup löst diese Bezeichnungen über dieselben XML-Ressourcen wie der Adapter auf.

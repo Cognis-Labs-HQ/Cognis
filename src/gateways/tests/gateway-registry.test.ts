@@ -151,37 +151,37 @@ test("GatewayRegistry registered gateway has status active by default", () => {
     assert.equal(registry.get("notify")?.status, "active");
 });
 
-test("GatewayRegistry.disable sets status to disabled", () => {
+test("GatewayRegistry.disable sets status to disabled", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "notify",
         name: "Notification Gateway",
         version: "0.1.0",
     });
-    const result = registry.disable("notify");
+    const result = await registry.disable("notify");
     assert.ok(result);
     assert.equal(registry.get("notify")?.status, "disabled");
 });
 
-test("GatewayRegistry.enable restores status to active", () => {
+test("GatewayRegistry.enable restores status to active", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "notify",
         name: "Notification Gateway",
         version: "0.1.0",
     });
-    registry.disable("notify");
-    const result = registry.enable("notify");
+    await registry.disable("notify");
+    const result = await registry.enable("notify");
     assert.ok(result);
     assert.equal(registry.get("notify")?.status, "active");
 });
 
-test("GatewayRegistry.disable returns false for unknown gateway", () => {
+test("GatewayRegistry.disable returns false for unknown gateway", async () => {
     const registry = new GatewayRegistry();
-    assert.equal(registry.disable("unknown"), false);
+    assert.equal(await registry.disable("unknown"), false);
 });
 
-test("GatewayRegistry.enable returns false for unknown gateway", () => {
+test("GatewayRegistry.enable returns false for unknown gateway", async () => {
     const registry = new GatewayRegistry();
-    assert.equal(registry.enable("unknown"), false);
+    assert.equal(await registry.enable("unknown"), false);
 });

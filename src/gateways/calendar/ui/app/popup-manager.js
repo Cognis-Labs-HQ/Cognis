@@ -47,13 +47,14 @@ export function createCalendarPopupManager({
     getEventsByCalendar,
     getCanInviteExternal,
     getCurrentAccountId,
-    getJitsiAvailable,
+    getMeetingsAvailable,
     reloadState,
     syncRouteSelection,
     refreshComposer,
 }) {
     const submitEvent = createSubmitEvent({
-        getJitsiAvailable,
+        signal,
+        getMeetingsAvailable,
         calendarUi,
         showToast,
         i18n,
@@ -619,7 +620,7 @@ export function createCalendarPopupManager({
             renderParticipants(overlay);
             renderParticipantOptions(overlay);
         }
-        const showMeetingToggle = getJitsiAvailable() && !eventData;
+        const showMeetingToggle = getMeetingsAvailable() && !eventData;
         await openPopup({
             title: i18n.t(
                 eventData
@@ -830,15 +831,21 @@ export function createCalendarPopupManager({
                     getSelectedReminderOffsets(overlay);
                 if (eventData) {
                     let meetingUrl = eventData.event.meetingUrl ?? null;
-                    if (!meetingUrl && createMeeting && getJitsiAvailable()) {
+                    if (
+                        !meetingUrl &&
+                        createMeeting &&
+                        getMeetingsAvailable()
+                    ) {
                         try {
-                            meetingUrl = await calendarUi.createJitsiMeeting(
+                            meetingUrl = await calendarUi.createMeeting(
                                 attendees,
                                 {
                                     scheduledAt: values.startAt,
+                                    signal,
                                 },
                             );
                         } catch {
+                            if (signal?.aborted) return false;
                             showToast(
                                 i18n.t(
                                     "gateway.calendar.create_meeting_failed",
@@ -848,6 +855,7 @@ export function createCalendarPopupManager({
                             return false;
                         }
                     }
+                    if (signal?.aborted) return false;
                     const updated = await updateExistingEvent({
                         sourceCalendarId:
                             eventData.event.calendarId ?? eventData.calendar.id,

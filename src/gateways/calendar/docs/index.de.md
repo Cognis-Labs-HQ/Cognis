@@ -47,3 +47,23 @@ Vorgemerkte neue Termine und spätere Änderungen erscheinen in zwischengespeich
 ## Offline-Statusdarstellung
 
 Der Calendar-Provider bereitet das verzögert geladene Stylesheet für Ereignisstatus vor der ersten Offlineverwendung vor. Gemeinsame Popup-, Toast- und Geheimnis-Sichtbarkeitsstile bereitet der Host vor. Dadurch lassen sich gespeicherte Ereignisse öffnen, ohne ihre Details zuvor online geöffnet zu haben.
+
+## Sichere Laufzeitanfragen
+
+Sprachwechsel und Einwilligungsabfragen scheitern nicht mehr daran, dass Calendar bei normalen HTTP-Anfragen Benachrichtigungen registriert. Calendar registriert seine Kategorie einmal beim Bootstrap-Abschluss, nachdem die Benachrichtigungsanbieter verfügbar sind. Share verwendet seine bereits registrierte Kategorie; Auth nutzt seinen Abschluss-Hook ohne doppelte frühzeitige Registrierung. SMTP-Registrierungen bleiben auf den Bootstrap beschränkt. Laufzeit-Handler lösen nur vorhandene Zustellfunktionen auf und nutzen sie. Calendar ist **1.5.5**.
+
+Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Zuverlässige Freigaben und Tests
+
+Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse anderer Ressourcenanbieter. Link- und Kontofreigaben lassen sich dadurch bei aktivierten Anbietern erstellen und auflösen. Ladeansicht, Kontofreigabestatus und Kalender-Gastansicht verwenden responsive Mindestgrößen statt acht verpflichtender Rasterspalten und bleiben auf schmalen Bildschirmen nutzbar. Die Freigabewartung läuft nacheinander, bündelt überlappende Aufrufe, beendet fehlgeschlagene Durchläufe und versucht es nach fünfzehn Minuten erneut. Deaktivierung stoppt weitere Arbeit; Reaktivierung setzt die Planung fort.
+
+## Prüfung und Lebenszyklus
+
+Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.
+
+## Browsereigene Aktionen
+
+Lesezugriffe und Änderungen für Gastkalender verwenden die lebenszyklusgebundene Capability `calendar:sharedClient` und benannte Flows `calendar:shared:*`. Anfragen behalten die ausdrückliche Gastberechtigung bei, kombinieren Seiten- und Anbieterabbruch und gelangen nie in die Ausgangswarteschlange des Kontos. Verbraucher setzen den Freigabe-Endpunkt nicht selbst zusammen.
+
+Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbieter besitzt die Erstellungsanfrage und das Ziel; Calendar löst eine gültige HTTP(S)-URL für das Ereignis auf, ohne Modul-ID oder Route zu kennen. Fehlende Anbieter werden abgewiesen; offline bleibt die Besprechungsoption deaktiviert.

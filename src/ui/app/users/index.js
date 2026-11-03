@@ -22,12 +22,13 @@ let root = null;
 let i18n = null;
 let reprompt = null;
 let users = [];
-let smtpAdapterActive = false;
+let emailDeliveryAvailable = false;
 let composer = null;
 let elements = [];
 let leadingControlsHtml = "";
 let providerIcons = new Map();
 let readUserDetails;
+let pageSignal;
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -39,20 +40,6 @@ const QUOTA_UNITS = [
 
 function getCurrentRole() {
     return (localStorage.getItem("cognis_role") ?? "user").trim();
-}
-
-function getCurrentUsername() {
-    const token = localStorage.getItem("cognis_access_token");
-    if (!token) return null;
-    try {
-        const [, payload] = token.split(".");
-        const decoded = JSON.parse(
-            atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
-        );
-        return decoded.sub ?? null;
-    } catch {
-        return null;
-    }
 }
 
 function buildElements() {
@@ -73,8 +60,11 @@ function buildElements() {
 }
 
 async function loadUsers() {
-    const response = await apiFetch("/api/v1/users");
-    if (!response.ok) return [];
+    const response = await apiFetch("/api/v1/users", { signal: pageSignal });
+    if (!response.ok)
+        throw Object.assign(new Error("users_list_unavailable"), {
+            status: response.status,
+        });
     const payload = await response.json();
     return payload.data ?? [];
 }
@@ -261,11 +251,13 @@ async function promptStorageQuotas(username) {
 }
 
 async function refreshData() {
-    const [loadedUsers, isSmtpActive, loginMethods] = await Promise.all([
+    const requestSignal = pageSignal;
+    const [loadedUsers, isEmailAvailable, loginMethods] = await Promise.all([
         loadUsers(),
-        uiCtx.capabilities.get("notify:emailClient")?.smtpAvailable() ?? false,
+        uiCtx.capabilities.get("notify:emailClient")?.emailAvailable() ?? false,
         loadLoginMethods(),
     ]);
+    if (requestSignal !== pageSignal || requestSignal?.aborted) return;
     const providerNames = new Map(
         loginMethods.map((method) => [method.id, method.name]),
     );
@@ -273,7 +265,7 @@ async function refreshData() {
         ...user,
         providerLabel: providerNames.get(user.provider),
     }));
-    smtpAdapterActive = isSmtpActive;
+    emailDeliveryAvailable = isEmailAvailable;
     providerIcons = new Map(
         loginMethods
             .filter((method) => method.loginButton?.iconUrl)
@@ -282,10 +274,29 @@ async function refreshData() {
     buildElements();
 }
 
+async function refreshUsersAfterMutation() {
+    const signal = pageSignal;
+    try {
+        await refreshData();
+        if (signal !== pageSignal || signal?.aborted) return;
+        composer.refresh(elements);
+    } catch (error) {
+        if (signal !== pageSignal || signal?.aborted) return;
+        console.error("users_refresh_after_save_failed", {
+            component: "ui",
+            operation: "refreshUsersAfterMutation",
+            errorName: error?.name,
+        });
+        showToast(i18n.t("ui.app.users.refresh_failed"), {
+            variant: "warning",
+        });
+    }
+}
+
 function renderUsersList() {
-    const currentUsername = getCurrentUsername();
+    const currentAccountId = localStorage.getItem("cognis_account");
     const currentUser = users.find(
-        (user) => user.accountId === currentUsername,
+        (user) => user.accountId === currentAccountId,
     );
     const currentRole = currentUser?.role ?? getCurrentRole();
     const viewerCanManagePrivileged = currentRole === "owner";
@@ -294,7 +305,7 @@ function renderUsersList() {
         detailsLabel: i18n.t("ui.reuse.details"),
     });
     const rows = users.map((user) => {
-        const isSelf = user.accountId === currentUsername;
+        const isSelf = user.accountId === currentAccountId;
         const userRole = user.role ?? "user";
         const isOwner = userRole === "owner";
         const protectPrivilegedFromViewer =
@@ -371,7 +382,7 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "resend") {
-        if (!smtpAdapterActive) return;
+        if (!emailDeliveryAvailable) return;
         const emails =
             (await uiCtx.capabilities
                 .get("notify:emailClient")
@@ -484,8 +495,7 @@ async function runUserMenuAction(action, username) {
             { variant: res.ok ? "success" : "error" },
         );
         if (!res.ok) return;
-        await refreshData();
-        composer.refresh(elements);
+        await refreshUsersAfterMutation();
         return;
     }
 }
@@ -519,7 +529,7 @@ function bindUsersInteractions() {
                     operation: "readUserDetails",
                     errorName: error?.name,
                 });
-                showToast(i18n.t("ui.app.login.error.generic"), {
+                showToast(i18n.t("ui.app.users.details_failed"), {
                     variant: "error",
                 });
             }
@@ -552,8 +562,7 @@ function bindUsersInteractions() {
                 });
                 return;
             }
-            await refreshData();
-            composer.refresh(elements);
+            await refreshUsersAfterMutation();
         });
     });
 
@@ -561,17 +570,18 @@ function bindUsersInteractions() {
         btn.addEventListener("click", async () => {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
+            const isSelf = username === localStorage.getItem("cognis_account");
             const user = users.find((entry) => entry.accountId === username);
             if (!user) return;
-            const emails = smtpAdapterActive
-                ? ((await uiCtx.capabilities
-                      .get("notify:emailClient")
-                      ?.listUserEmails({ accountId: username })) ?? [])
-                : [];
+            const emails =
+                (await uiCtx.capabilities
+                    .get("notify:emailClient")
+                    ?.listUserEmails({ accountId: username })) ?? [];
             const hasUnverifiedEmails = emails.some((e) => !e.verified);
             const menuItems = [
                 {
                     id: user?.isFounder ? "unset-founder" : "set-founder",
+                    disabled: isSelf,
                     label: i18n.t(
                         user?.isFounder
                             ? "ui.app.users.unmark_founder"
@@ -582,7 +592,8 @@ function bindUsersInteractions() {
                     id: "password",
                     label: i18n.t("ui.app.users.reset_password"),
                     disabled:
-                        Boolean(user?.provider) && user.provider !== "local",
+                        isSelf ||
+                        (Boolean(user?.provider) && user.provider !== "local"),
                     title:
                         user?.provider && user.provider !== "local"
                             ? i18n.t("ui.app.users.external_password_managed")
@@ -640,8 +651,7 @@ function bindUsersInteractions() {
                 showToast(i18n.t("ui.app.users.role_updated"), {
                     variant: "success",
                 });
-                await refreshData();
-                composer.refresh(elements);
+                await refreshUsersAfterMutation();
             } else {
                 const responseBody = await res.json().catch(() => null);
                 const responseMessage =
@@ -650,14 +660,14 @@ function bindUsersInteractions() {
                 showToast(responseMessage, {
                     variant: "error",
                 });
-                await refreshData();
-                composer.refresh(elements);
+                await refreshUsersAfterMutation();
             }
         });
     });
 }
 
 export async function mount(rootEl, { signal } = {}) {
+    pageSignal = signal;
     root = rootEl;
     await ensurePageStylesheet("/static/styles/users.css", { signal });
     i18n = await createI18n();
@@ -666,7 +676,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     reprompt = createRepromptGuard({ i18n });
     users = [];
-    smtpAdapterActive = false;
+    emailDeliveryAvailable = false;
     leadingControlsHtml = "";
 
     await refreshData();

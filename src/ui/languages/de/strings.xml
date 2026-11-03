@@ -419,7 +419,7 @@
   <string name="ui.app.settings.emails_verify_failed">Bestätigung fehlgeschlagen. Bitte erneut versuchen.</string>
   <string name="ui.app.settings.emails_verify_rate_limited">Eine Bestätigungs-E-Mail wurde kürzlich gesendet. Bitte warte, bevor du eine weitere anforderst.</string>
   <string name="ui.app.settings.emails_remove_primary_body">Dies ist deine primäre E-Mail-Adresse. Setze eine andere E-Mail als primär, bevor du diese entfernst.</string>
-  <string name="ui.app.settings.notif_smtp_no_email_body">Du benötigst eine verifizierte primäre E-Mail-Adresse, um E-Mail-Benachrichtigungen zu aktivieren. Füge zuerst eine E-Mail-Adresse hinzu und bestätige sie in deinen allgemeinen Einstellungen.</string>
+  <string name="ui.app.settings.notif_email_required_body">Du benötigst eine verifizierte primäre E-Mail-Adresse, um E-Mail-Benachrichtigungen zu aktivieren. Füge zuerst eine E-Mail-Adresse hinzu und bestätige sie in deinen allgemeinen Einstellungen.</string>
   <string name="ui.app.settings.notif_matrix_heading">Benachrichtigungseinstellungen</string>
   <string name="ui.app.settings.notif_no_providers">Keine aktiven Benachrichtigungsadapter.</string>
   <string name="ui.app.settings.notif_no_categories">Keine Benachrichtigungskategorien registriert.</string>
@@ -444,15 +444,6 @@
   <string name="ui.app.admin.logs.time_range.1h">Letzte 1 Stunde</string>
   <string name="ui.app.admin.logs.time_range.6h">Letzte 6 Stunden</string>
   <string name="ui.app.admin.logs.time_range.24h">Letzte 24 Stunden</string>
-  <string name="ui.app.admin.notif.smtp_host">SMTP-Server</string>
-  <string name="ui.app.admin.notif.smtp_port">Port</string>
-  <string name="ui.app.admin.notif.smtp_secure">Sicherheit</string>
-  <string name="ui.app.admin.notif.smtp_from">Absenderadresse</string>
-  <string name="ui.app.admin.notif.smtp_user">Benutzername</string>
-  <string name="ui.app.admin.notif.smtp_password">Passwort</string>
-  <string name="ui.app.admin.notif.smtp_secure_none">Keine</string>
-  <string name="ui.app.admin.notif.smtp_secure_starttls">STARTTLS</string>
-  <string name="ui.app.admin.notif.smtp_secure_tls">TLS</string>
   <string name="ui.app.admin.notif.save_settings">Einstellungen speichern</string>
   <string name="ui.app.admin.notif.test_email">Test-E-Mail senden</string>
   <string name="ui.app.admin.notif.test_email_to">Empfänger-E-Mail-Adresse</string>
@@ -461,10 +452,6 @@
   <string name="ui.app.admin.notif.test_email_required">Eine Empfänger-E-Mail-Adresse ist erforderlich.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Umgebungsvariable wird überschrieben</string>
   <string name="ui.app.admin.notif.required_field">Erforderlicher Wert</string>
-  <string name="ui.app.admin.notif.smtp_allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
-  <string name="ui.app.admin.notif.smtp_auth_disabled">Authentifizierung deaktivieren</string>
-  <string name="ui.app.admin.notif.smtp_code_length">Codelänge</string>
-  <string name="ui.app.admin.notif.smtp_sender_name">Absendername</string>
   <string name="ui.app.admin.security.title">Sicherheit</string>
   <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige Domains</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Kommagetrennte Liste vertrauenswürdiger Domains. Leer lassen, um alle E-Mail-Domains zuzulassen, während externe Links auf diese Website beschränkt bleiben. Passende Subdomains sind ebenfalls erlaubt.</string>
@@ -474,8 +461,8 @@
   <string name="ui.app.admin.security.user_validation_mode_label">Benutzervalidierungsmethode</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.user_validation_mode.smtp_unavailable">SMTP (nicht verfügbar — zuerst den SMTP-Adapter aktivieren)</string>
+  <string name="ui.app.admin.security.user_validation_mode.email">E-Mail</string>
+  <string name="ui.app.admin.security.user_validation_mode.email_delivery_unavailable">E-Mail (nicht verfügbar — zuerst einen E-Mail-Dienst konfigurieren)</string>
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>
@@ -632,4 +619,10 @@
   <string name="ui.reuse.recheck_connectivity">Verbindung erneut prüfen</string>
   <string name="ui.reuse.offline_no_cached_content">Keine offline gespeicherten Inhalte verfügbar.</string>
   <string name="ui.app.settings.language_offline_locked">Verbinden Sie sich, um UI-Sprachen hinzuzufügen oder zu entfernen. Ausgewählte Sprachen können weiterhin umgeordnet werden.</string>
+  <string name="ui.app.users.details_failed">Die Kontodetails konnten nicht geladen werden. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.app.users.refresh_failed">Die Änderung wurde gespeichert, aber die Benutzerliste konnte nicht aktualisiert werden. Laden Sie die Seite neu, um die aktuellen Daten zu sehen.</string>
+  <string name="ui.reuse.none">Keine</string>
+  <string name="ui.reuse.unavailable">Nicht verfügbar</string>
+    <string name="ui.reuse.test">Testen</string>
+    <string name="ui.app.admin.security.validation_unavailable">Diese Bestätigungsmethode ist nicht verfügbar.</string>
 </resources>

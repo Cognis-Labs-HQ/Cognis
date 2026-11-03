@@ -39,6 +39,10 @@ export async function bindLanguageToggle({
 }) {
     const toggle = document.querySelector("#language-toggle");
     if (!toggle) return;
+    if (!globalThis.localStorage?.getItem("cognis_access_token")) {
+        toggle.hidden = true;
+        return;
+    }
 
     bindings.get(toggle)?.abort();
     const scope = new AbortController();

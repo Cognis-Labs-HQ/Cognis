@@ -1,5 +1,7 @@
 # TOTP-Adapter
 
+Dieser Adapter verwaltet die Überschreibung `COGNIS_TOTP_ISSUER`. Ungültige Codes verwenden den gemeinsamen Fehler `invalid_verification_code`, damit das Gateway keine anbieterspezifische Fehlerbehandlung benötigt.
+
 ## Zweck
 
 Stellt zeitbasierte Einmalpasswort-Prüfung für das TFA-Gateway bereit.
@@ -24,3 +26,5 @@ Stellt zeitbasierte Einmalpasswort-Prüfung für das TFA-Gateway bereit.
 Der Adapter bietet eine Admin-Einstellung:
 
 - `algorithm` — HMAC-Algorithmus für Setup- und Login-Prüfung.
+
+Die Methode deklariert Platzhalter, Sprachbasis und Konfigurationsbeschriftungen; das Gateway stellt diese ohne Verzweigung nach Anbieterkennung dar.

@@ -8,9 +8,6 @@
   <string name="ui.app.login.tfa.recovery_code_open_security">Open Security Settings</string>
   <string name="ui.app.login.tfa.required_prompt">Two-factor verification is required to continue.</string>
   <string name="ui.app.login.tfa.error_invalid">Invalid two-factor code.</string>
-  <string name="ui.app.login.tfa.smtp.resend_action">Resend email code</string>
-  <string name="ui.app.login.tfa.smtp.resend_rate_limited">Resend email code in {seconds}s</string>
-  <string name="ui.app.login.tfa.smtp.resend_sent">A new verification code has been sent to your email.</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_label">Require Two-Factor Authentication for All Users</string>
   <string name="ui.app.admin.security.tfa_enforce_all_users_hint">When enabled, users without a configured two-factor method will be redirected to settings until setup is complete.</string>
   <string name="ui.app.users.reset_tfa">Reset Two-Factor Authentication</string>
@@ -49,4 +46,9 @@
   <string name="gateway.tfa.settings.method_deactivated">{method} TFA method is no longer active.</string>
   <string name="gateway.tfa.settings.required_prompt">Select a method to configure before continuing.</string>
   <string name="gateway.tfa.settings.loading">Loading security settings…</string>
+  <string name="gateway.tfa.settings.qr_code_alt">Scan this QR code with your authenticator app</string>
+  <string name="ui.app.login.tfa.resend_action">Resend code</string>
+  <string name="ui.app.login.tfa.resend_rate_limited">Resend code in {seconds}s</string>
+  <string name="ui.app.login.tfa.resend_sent">A new verification code has been sent.</string>
+  <string name="ui.app.login.tfa.code_placeholder">Verification Code</string>
 </resources>
