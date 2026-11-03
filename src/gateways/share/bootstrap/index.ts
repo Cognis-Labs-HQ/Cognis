@@ -83,10 +83,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<
             (notification: Record<string, unknown>) => Promise<unknown>
         >("notify:dispatch");
-    const notifyExpiredShares = async (): Promise<void> => {
+    const notifyExpiredShares = async (signal: AbortSignal): Promise<void> => {
         if (!dispatchNotification) return;
         const expiredShares = await gateway.claimExpiredNotifications();
         for (const share of expiredShares) {
+            if (signal.aborted) return;
             const accountIds = new Set([
                 share.ownerAccountId,
                 ...share.accessControls.recipients
@@ -127,12 +128,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 );
                 continue;
             }
+            if (signal.aborted) return;
             await gateway.markExpirationNotificationSent(share.id);
         }
     };
     await gateway.ensureSchema();
     await adapterConfigStore.ensureSchema();
-    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
+    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT, ctx);
     await gateway.loadAdapterConfigs();
 
     ctx.capabilities.contribute(

@@ -2,6 +2,14 @@
 
 **Cabang Fitur:** fix-account-and-navigation-errors
 
+## Peninjauan dan Siklus Hidup
+
+Adapter Share dapat mengekspor `defineContracts(ctx)`. Share memanggilnya sebelum membentuk metode, memakai registri kontrak bersama dan lingkup bootstrap milik adapter. Metode yang tidak valid membatalkan definisinya dan mencatat metadata kegagalan yang aman. Definisi mengikuti penonaktifan dan pengaktifan kembali gateway.
+
+Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi composer, pemuatan sesi dan penyedia, serta impor gaya dan renderer. Composer, popup Calendar, dan permintaan sumber daya memakai sinyal halaman. Halaman yang dibatalkan tidak dapat menimpa halaman berikutnya atau melaporkan hasil lama. Putaran pemeliharaan juga meneruskan sinyal pembatalan kepada tugasnya; penonaktifan Share mencegah notifikasi kedaluwarsa berikutnya dalam pemindaian yang sedang berjalan.
+
+Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga puluh detik. Koneksi yang macet dihancurkan agar permintaan diagnostik tidak terus tertunda. TLS langsung dan STARTTLS memakai nama host yang dikonfigurasi untuk identitas TLS dan SNI nama DNS; alamat IP tidak dikirim sebagai nama SNI.
+
 ## Berbagi dan Pengujian Andal
 
 Hook berbagi Calendar dan Flashcards menangani hasil kosong dari penyedia sumber daya lain, sehingga tautan dan pembagian akun dapat dibuat serta dibuka ketika semua penyedia aktif. Tampilan pemuatan, status pembagian akun, dan kalender tamu memakai ukuran minimum responsif tanpa mewajibkan delapan kolom kisi, sehingga tetap dapat digunakan pada layar sempit. Pemeliharaan berbagi berjalan berurutan, menggabungkan permintaan yang tumpang tindih, menghentikan putaran yang gagal, dan mencoba lagi pada interval lima belas menit berikutnya. Penonaktifan menghentikan pekerjaan berikutnya; pengaktifan kembali melanjutkan jadwal.

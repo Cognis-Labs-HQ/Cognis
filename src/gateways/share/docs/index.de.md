@@ -19,3 +19,9 @@ Browserkomponenten, die eine Freigabeaktion darstellen, benötigen `share:uiGate
 Die Freigabe-Hooks von Calendar und Flashcards berücksichtigen leere Ergebnisse anderer Ressourcenanbieter. Link- und Kontofreigaben lassen sich dadurch bei aktivierten Anbietern erstellen und auflösen. Ladeansicht, Kontofreigabestatus und Kalender-Gastansicht verwenden responsive Mindestgrößen statt acht verpflichtender Rasterspalten und bleiben auf schmalen Bildschirmen nutzbar. Die Freigabewartung läuft nacheinander, bündelt überlappende Aufrufe, beendet fehlgeschlagene Durchläufe und versucht es nach fünfzehn Minuten erneut. Deaktivierung stoppt weitere Arbeit; Reaktivierung setzt die Planung fort.
 
 Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und deaktiviert Kontofunktionen sowie gespeicherte Layouteinstellungen. Sie liest oder schreibt keine Übungseinstellungen eines Kontos.
+
+## Prüfung und Lebenszyklus
+
+Share-Adapter können `defineContracts(ctx)` exportieren. Share ruft diese Funktion vor der Konstruktion der Methode mit der gemeinsamen Vertragsregistrierung und einem adaptereigenen Bootstrap-Bereich auf. Ungültige Methoden rollen ihre Definitionen zurück und protokollieren sichere Fehlermetadaten. Definitionen folgen der Deaktivierung und Reaktivierung des Gateways.
+
+Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.

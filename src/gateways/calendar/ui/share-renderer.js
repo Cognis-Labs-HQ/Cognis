@@ -11,6 +11,13 @@ import {
     toDateTimeLocalValue,
 } from "./calendar-ui-helpers.js";
 
+const log = (operation, error) =>
+    console.error("Shared calendar request failed.", {
+        component: "calendar",
+        operation,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+
 function shiftActiveDate(activeDate, selectedView, direction) {
     const shiftedDate = new Date(activeDate);
     if (selectedView === "day") return addDays(shiftedDate, direction);
@@ -72,11 +79,13 @@ async function mutateSharedEvent({
     guestAccessToken,
     method,
     body,
+    signal,
 }) {
     return fetch(
         `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
         {
             method,
+            signal,
             headers: {
                 "content-type": "application/json",
                 authorization: `Bearer ${guestAccessToken}`,
@@ -94,10 +103,12 @@ async function openEventEditor({
     i18n,
     onChanged,
     canWrite,
+    signal,
 }) {
     let form = null;
     const isEditing = Boolean(event?.id);
     const action = await openPopup({
+        signal,
         title: i18n.t(
             isEditing
                 ? "gateway.calendar.edit_event"
@@ -150,18 +161,27 @@ async function openEventEditor({
         onAction: (actionId) =>
             actionId !== "save" || form?.reportValidity() === true,
     });
-    if (action !== "save" && action !== "delete") return;
+    if (signal?.aborted || (action !== "save" && action !== "delete")) return;
     if (!(form instanceof HTMLFormElement)) return;
     const formData = Object.fromEntries(new FormData(form));
-    const response = await mutateSharedEvent({
-        calendarId,
-        guestAccessToken,
-        method: action === "delete" ? "DELETE" : isEditing ? "PATCH" : "POST",
-        body:
-            action === "delete"
-                ? { eventId: event.id }
-                : { ...formData, eventId: event?.id },
-    });
+    let response;
+    try {
+        response = await mutateSharedEvent({
+            calendarId,
+            guestAccessToken,
+            signal,
+            method:
+                action === "delete" ? "DELETE" : isEditing ? "PATCH" : "POST",
+            body:
+                action === "delete"
+                    ? { eventId: event.id }
+                    : { ...formData, eventId: event?.id },
+        });
+    } catch (error) {
+        if (signal?.aborted) return;
+        log("mutateEvent", error);
+    }
+    if (signal?.aborted) return;
     const successKey =
         action === "delete"
             ? "gateway.calendar.delete_event_success"
@@ -174,16 +194,17 @@ async function openEventEditor({
             : isEditing
               ? "gateway.calendar.update_event_failed"
               : "gateway.calendar.create_event_failed";
-    showToast(i18n.t(response.ok ? successKey : failureKey), {
-        variant: response.ok ? "success" : "error",
+    showToast(i18n.t(response?.ok ? successKey : failureKey), {
+        variant: response?.ok ? "success" : "error",
     });
-    if (response.ok) await onChanged();
+    if (response?.ok) await onChanged();
 }
 
 export async function mount(
     root,
     { shareContext, i18n, signal = new AbortController().signal } = {},
 ) {
+    if (signal.aborted) return;
     const calendar = shareContext?.payload?.calendar ?? {};
     let events = Array.isArray(shareContext?.payload?.events)
         ? shareContext.payload.events
@@ -203,19 +224,32 @@ export async function mount(
     );
 
     const reloadEvents = async () => {
-        const response = await fetch(
-            `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
-            { headers: { authorization: `Bearer ${guestAccessToken}` } },
-        );
-        if (!response.ok) {
+        try {
+            const response = await fetch(
+                `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
+                {
+                    signal,
+                    headers: { authorization: `Bearer ${guestAccessToken}` },
+                },
+            );
+            if (signal.aborted) return;
+            if (!response.ok) {
+                showToast(i18n.t("gateway.calendar.load_failed"), {
+                    variant: "error",
+                });
+                return;
+            }
+            const payload = await response.json();
+            if (signal.aborted) return;
+            events = Array.isArray(payload?.data) ? payload.data : [];
+            renderCalendar();
+        } catch (error) {
+            if (signal.aborted) return;
+            log("reloadEvents", error);
             showToast(i18n.t("gateway.calendar.load_failed"), {
                 variant: "error",
             });
-            return;
         }
-        const payload = await response.json();
-        events = Array.isArray(payload?.data) ? payload.data : [];
-        renderCalendar();
     };
 
     function renderCalendar() {
@@ -372,12 +406,14 @@ export async function mount(
                 i18n,
                 onChanged: reloadEvents,
                 canWrite,
+                signal,
             });
         },
         { signal },
     );
 
     composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         enableDomParking: false,
         elements: [buildCalendarElement()],
@@ -398,5 +434,6 @@ export async function mount(
     });
 
     await composer.init();
+    if (signal.aborted) return;
     requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 }

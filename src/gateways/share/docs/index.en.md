@@ -19,3 +19,9 @@ Browser components that render a Share action require `share:uiGateway` and call
 Calendar and Flashcards sharing hooks tolerate unrelated resource providers returning no result, so both link and account shares can be created and resolved with all providers enabled. Share loading, account-share status and Calendar guest pages use responsive minimum sizes rather than requiring eight grid columns. Guest pages remain usable on narrow screens. Share maintenance runs sequentially, coalesces overlapping requests, ends a failed pass and retries at the next fifteen-minute interval. Disable stops subsequent work; reactivation resumes scheduling.
 
 Guest Flashcard practice uses a temporary mode selection and disables account enhancements and persisted layout settings. It does not read or write account practice preferences.
+
+## Review and Lifecycle Hardening
+
+Share adapters may export `defineContracts(ctx)`. Share invokes this before constructing the method, using the shared contract registry and adapter-owned bootstrap scope. Invalid methods roll back their definitions and log safe failure metadata. Definitions follow gateway disable and reactivation.
+
+Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.

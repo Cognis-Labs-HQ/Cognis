@@ -2,6 +2,14 @@
 
 **Feature Branch:** fix-account-and-navigation-errors
 
+## Review and Lifecycle Hardening
+
+Share adapters may export `defineContracts(ctx)`. Share invokes this before constructing the method, using the shared contract registry and adapter-owned bootstrap scope. Invalid methods roll back their definitions and log safe failure metadata. Definitions follow gateway disable and reactivation.
+
+Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
+
+SMTP connection establishment and TLS negotiation each have a thirty-second deadline. A stalled connection is destroyed rather than leaving the diagnostic request pending. Direct TLS and STARTTLS use the configured hostname for TLS identity and DNS-name SNI; IP addresses are not sent as SNI names.
+
 ## Reliable Sharing and Tests
 
 Calendar and Flashcards sharing hooks tolerate unrelated resource providers returning no result, so both link and account shares can be created and resolved with all providers enabled. Share loading, account-share status and Calendar guest pages use responsive minimum sizes rather than requiring eight grid columns. Guest pages remain usable on narrow screens. Share maintenance runs sequentially, coalesces overlapping requests, ends a failed pass and retries at the next fifteen-minute interval. Disable stops subsequent work; reactivation resumes scheduling.

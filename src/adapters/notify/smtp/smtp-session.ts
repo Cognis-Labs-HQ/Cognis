@@ -33,6 +33,7 @@ export class SmtpSession {
         sock.on("error", this.onError);
         sock.on("close", this.onClose);
         sock.on("timeout", this.onTimeout);
+        sock.setTimeout(SMTP_TIMEOUT_MS);
     }
 
     private processBuffer(): void {
@@ -90,6 +91,35 @@ export class SmtpSession {
 
 export const SMTP_TIMEOUT_MS = 30_000;
 
+function awaitConnection<Socket extends net.Socket>(
+    socket: Socket,
+    event: "connect" | "secureConnect",
+): Promise<Socket> {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => socket.destroy(new Error("smtp_timeout")),
+            SMTP_TIMEOUT_MS,
+        );
+        timer.unref?.();
+        const cleanup = () => {
+            clearTimeout(timer);
+            socket.removeListener(event, connected);
+            socket.removeListener("error", failed);
+        };
+        const connected = () => {
+            cleanup();
+            resolve(socket);
+        };
+        const failed = (error: Error) => {
+            cleanup();
+            socket.destroy();
+            reject(error);
+        };
+        socket.once(event, connected);
+        socket.once("error", failed);
+    });
+}
+
 export async function openSession(
     host: string,
     port: number,
@@ -97,43 +127,41 @@ export async function openSession(
     allowSelfSigned?: boolean,
     signal?: AbortSignal,
 ): Promise<SmtpSession> {
-    if (secure === "tls") {
-        const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-            const tlsSock = tls.connect({
-                host,
-                port,
-                rejectUnauthorized: !allowSelfSigned,
-                signal,
-            });
-            tlsSock.once("secureConnect", () => resolve(tlsSock));
-            tlsSock.once("error", reject);
-        });
-        return new SmtpSession(sock);
-    }
-
-    const sock = await new Promise<net.Socket>((resolve, reject) => {
-        const plainSock = net.createConnection({ host, port, signal });
-        plainSock.once("connect", () => resolve(plainSock));
-        plainSock.once("error", reject);
-    });
-    return new SmtpSession(sock);
+    const socket =
+        secure === "tls"
+            ? await awaitConnection(
+                  tls.connect({
+                      host,
+                      port,
+                      servername: net.isIP(host) ? undefined : host,
+                      rejectUnauthorized: !allowSelfSigned,
+                      signal,
+                  }),
+                  "secureConnect",
+              )
+            : await awaitConnection(
+                  net.createConnection({ host, port, signal }),
+                  "connect",
+              );
+    return new SmtpSession(socket);
 }
 
 export async function upgradeToTls(
     session: SmtpSession,
+    host: string,
     allowSelfSigned?: boolean,
     signal?: AbortSignal,
 ): Promise<SmtpSession> {
     session.detach();
-    const rawSock = session.socket as net.Socket;
-    const tlsSock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-        const newTlsSock = tls.connect({
-            socket: rawSock,
+    const socket = await awaitConnection(
+        tls.connect({
+            socket: session.socket,
+            host,
+            servername: net.isIP(host) ? undefined : host,
             rejectUnauthorized: !allowSelfSigned,
             signal,
-        });
-        newTlsSock.once("secureConnect", () => resolve(newTlsSock));
-        newTlsSock.once("error", reject);
-    });
-    return new SmtpSession(tlsSock);
+        }),
+        "secureConnect",
+    );
+    return new SmtpSession(socket);
 }

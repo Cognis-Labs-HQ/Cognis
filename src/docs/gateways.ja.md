@@ -193,4 +193,4 @@ export async function bootstrapNotifyAdapter(
 
 ## アダプターが所有する契約
 
-ゲートウェイは `ctx.capabilities` を通じて、同じ `system:contracts` レジストリをアダプターへ公開します。アダプターは `defineContracts(ctx)` をエクスポートでき、ホストは初期化前のアダプターブートストラップで呼び出します。既存のブートストラップ関数から直接宣言することもできます。Auth、Notify、TFA、Social、Study、Calendarはアダプタースコープを使用し、DB、Files、Registrationのファクトリーローダーも定義フックを扱います。各定義の所有者は `adapter:<gateway>:<adapter>` で、ゲートウェイのロールバック、無効化、再有効化に従います。入れ子のアダプター権限は、切り離された非同期処理も含め親ブートストラップの終了時に失効します。実行時のリクエストでは新しい契約を登録できません。提供元の公開 `contracts/` ディレクトリへの型専用インポートは開発補助として利用でき、実行可能なコンポーネント間呼び出しはctxを使います。
+ゲートウェイは `ctx.capabilities` を通じて、同じ `system:contracts` レジストリをアダプターへ公開します。アダプターは `defineContracts(ctx)` をエクスポートでき、ホストは初期化前のアダプターブートストラップで呼び出します。既存のブートストラップ関数から直接宣言することもできます。Auth、Notify、TFA、Social、Study、Share、Calendarはアダプタースコープを使用し、DB、Files、Registrationのファクトリーローダーも定義フックを扱います。各定義の所有者は `adapter:<gateway>:<adapter>` で、ゲートウェイのロールバック、無効化、再有効化に従います。入れ子のアダプター権限は、切り離された非同期処理も含め親ブートストラップの終了時に失効します。実行時のリクエストでは新しい契約を登録できません。提供元の公開 `contracts/` ディレクトリへの型専用インポートは開発補助として利用でき、実行可能なコンポーネント間呼び出しはctxを使います。

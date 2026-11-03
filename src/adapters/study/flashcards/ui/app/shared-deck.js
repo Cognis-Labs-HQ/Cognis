@@ -12,6 +12,7 @@ import { runDeckAction } from "./actions.js";
 
 /** Authorized shared Library cards are new cards in a temporary session without granting Library access. */
 export async function mount(root, { shareContext, i18n, signal } = {}) {
+    if (signal?.aborted) return;
     const deck = shareContext.payload.deck;
     const schemas = deck.schemas;
     const queue = [
@@ -40,7 +41,9 @@ export async function mount(root, { shareContext, i18n, signal } = {}) {
             next();
         },
     });
+    if (signal?.aborted) return;
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         requireAccountSession: false,
         enableAccountEnhancements: false,

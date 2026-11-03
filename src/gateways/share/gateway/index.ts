@@ -1,3 +1,5 @@
+import { bootstrapAdapter } from "../../reuse/adapter-bootstrap.js";
+import type { GatewayBootstrapContext } from "../../shared.js";
 import type { RoleAccessPolicy } from "@cognis/core";
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
 import {
@@ -83,7 +85,10 @@ export class CoreShareGateway {
         return this.resolveCapability<T>(name);
     }
 
-    async discoverAdapters(adaptersRoot: string): Promise<void> {
+    async discoverAdapters(
+        adaptersRoot: string,
+        context: GatewayBootstrapContext,
+    ): Promise<void> {
         let entries: string[];
         try {
             entries = await readdir(adaptersRoot);
@@ -110,18 +115,34 @@ export class CoreShareGateway {
                     path.resolve(packageRoot, pkg.main)
                 );
                 if (typeof module.createShareAdapter !== "function") continue;
-                const adapter =
-                    module.createShareAdapter() as ShareMethodAdapter;
-                if (!adapter?.id || !adapter.name || !adapter.pageModuleUrl)
-                    continue;
-                this.adapters.set(adapter.id, {
-                    ...adapter,
-                    version: pkg.version,
-                    publisher: manifest.publisher,
-                    locked: manifest.locked === true,
+                const adapterContext = { ...context, adapterRoot: packageRoot };
+                const initialize = async () => {
+                    const adapter =
+                        module.createShareAdapter() as ShareMethodAdapter;
+                    if (!adapter?.id || !adapter.name || !adapter.pageModuleUrl)
+                        throw new Error("invalid_share_adapter");
+                    this.adapters.set(adapter.id, {
+                        ...adapter,
+                        version: pkg.version,
+                        publisher: manifest.publisher,
+                        locked: manifest.locked === true,
+                    });
+                };
+                await bootstrapAdapter(
+                    "share",
+                    entry,
+                    adapterContext,
+                    module,
+                    initialize,
+                );
+            } catch (error) {
+                context.log?.("error", "Share adapter initialization failed.", {
+                    component: "share-gateway",
+                    operation: "bootstrap_adapter",
+                    adapterId: entry,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
                 });
-            } catch {
-                // One unavailable sharing method must not disable the gateway.
             }
         }
     }

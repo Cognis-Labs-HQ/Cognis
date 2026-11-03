@@ -32,6 +32,7 @@ export async function mount(root, { signal } = {}) {
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "share.page_title");
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         i18n,
         preferenceKey: "account-share-page-layout",

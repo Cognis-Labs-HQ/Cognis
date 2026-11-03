@@ -77,3 +77,7 @@ SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und 
 ## Zuverlässige Freigaben und Tests
 
 SMTP-Konfigurationstests funktionieren bei deaktiviertem Sender, ohne normale Zustellung einzuschalten. Tests verwenden eine eigene, beim Bootstrap registrierte Diagnosewarteschlange und einen gestuften Ablauf; die Gateway-Deaktivierung beendet diese Warteschlange. Leere Passwortüberschreibungen behalten das gespeicherte, verborgene Passwort bei. Diagnoseprotokolle enthalten sichere Transportfehler- und Protokollantwortcodes, jedoch keine Zugangsdaten oder Serverantworttexte.
+
+## Prüfung und Lebenszyklus
+
+Für den SMTP-Verbindungsaufbau und die TLS-Aushandlung gilt jeweils eine Frist von dreißig Sekunden. Eine blockierte Verbindung wird geschlossen, statt die Diagnoseanfrage offen zu halten. Direktes TLS und STARTTLS verwenden den konfigurierten Hostnamen für die TLS-Identität und SNI mit DNS-Namen; IP-Adressen werden nicht als SNI-Namen gesendet.

@@ -13,7 +13,7 @@ import type {
 } from "./contracts/action-delivery.js";
 import type { BootstrapDisposer } from "@cognis/core";
 import { requireBootstrapScope } from "@cognis/core";
-import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "./smtp-session.js";
+import { openSession, upgradeToTls } from "./smtp-session.js";
 import { randomUUID } from "node:crypto";
 
 import type {
@@ -208,8 +208,6 @@ async function sendMail(
     );
 
     try {
-        session.socket.setTimeout(SMTP_TIMEOUT_MS);
-
         const greeting = await session.read();
         if (greeting.code !== 220) {
             const msg = `smtp_unexpected_greeting:${greeting.code}`;
@@ -231,6 +229,7 @@ async function sendMail(
             }
             session = await upgradeToTls(
                 session,
+                config.host,
                 config.allowSelfSigned,
                 signal,
             );

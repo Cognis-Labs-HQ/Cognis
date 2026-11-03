@@ -32,7 +32,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.1`    |
+| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.2`    |
 | Internal Notification      | `src/adapters/notify/internal/`     | `0.5.32`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.25`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.23`   |
@@ -57,7 +57,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.5`    |
 | Library (Study)            | `src/adapters/study/library/`       | `4.1.12`   |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.22`   |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.23`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.5`    |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
@@ -69,7 +69,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`    |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.0`    |
-| Share                 | `src/gateways/share/`         | `1.7.53`   |
+| Share                 | `src/gateways/share/`         | `1.8.0`    |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.0`    |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.1`    |
 | Social                | `src/gateways/social/`        | `1.4.0`    |
@@ -78,7 +78,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.14`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.5.0`    |
-| Calendar              | `src/gateways/calendar/`      | `1.6.1`    |
+| Calendar              | `src/gateways/calendar/`      | `1.6.2`    |
 
 ## コア契約
 
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.11.2`   |
+| API Server     | `src/api/` | `0.11.3`   |
 
 ## ツール
 

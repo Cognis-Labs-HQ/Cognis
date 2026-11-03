@@ -77,3 +77,7 @@ SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik tem
 ## Berbagi dan Pengujian Andal
 
 Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa mengaktifkan pengiriman biasa. Pengujian memakai antrean diagnostik khusus milik bootstrap dan alur bertahap; penonaktifan gateway membatalkan antrean tersebut. Penggantian kata sandi kosong mempertahankan kata sandi tersimpan yang disembunyikan. Log diagnostik memuat kode kesalahan transportasi dan respons protokol yang aman tanpa kredensial atau teks respons server.
+
+## Peninjauan dan Siklus Hidup
+
+Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga puluh detik. Koneksi yang macet dihancurkan agar permintaan diagnostik tidak terus tertunda. TLS langsung dan STARTTLS memakai nama host yang dikonfigurasi untuk identitas TLS dan SNI nama DNS; alamat IP tidak dikirim sebagai nama SNI.

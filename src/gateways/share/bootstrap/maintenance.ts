@@ -7,7 +7,7 @@ import type { BootstrapLog } from "../../shared.js";
 
 export function createShareMaintenance(
     root: Ctx,
-    jobs: Array<{ operation: string; run(): Promise<void> }>,
+    jobs: Array<{ operation: string; run(signal: AbortSignal): Promise<void> }>,
     log: BootstrapLog | undefined,
     intervalMs: number,
 ): BootstrapDisposer & { run(): Promise<void> } {
@@ -20,6 +20,7 @@ export function createShareMaintenance(
     let timer: ReturnType<typeof setTimeout> | undefined;
     let pending: Promise<void> | undefined;
     let generation = 0;
+    let controller = new AbortController();
     for (const job of jobs) {
         registration.extend(
             job.operation,
@@ -33,7 +34,7 @@ export function createShareMaintenance(
                 )
                     return;
                 try {
-                    await job.run();
+                    await job.run(controller.signal);
                 } catch (error) {
                     // End this pass on failure instead of adding work to an unavailable database.
                     data.failed = true;
@@ -93,6 +94,7 @@ export function createShareMaintenance(
     const dispose: BootstrapDisposer & { run(): Promise<void> } = Object.assign(
         () => {
             active = false;
+            controller.abort();
             generation++;
             clearTimeout(timer);
         },
@@ -101,6 +103,7 @@ export function createShareMaintenance(
     dispose.reactivate = () => {
         if (active) return;
         active = true;
+        controller = new AbortController();
         generation++;
         schedule();
     };

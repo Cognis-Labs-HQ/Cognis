@@ -13,6 +13,13 @@ import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.j
 import { navigateTo } from "/static/reuse/app-router.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
+const log = (operation, error) =>
+    console.error("Share page operation failed.", {
+        component: "share",
+        operation,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+
 function renderFallbackBody(i18n, messageKey) {
     return `
         <section class="share-window-body">
@@ -42,11 +49,7 @@ async function navigateToShareError(i18n, reason, showFallback) {
     try {
         if (await navigateTo(destination)) return;
     } catch (error) {
-        console.error("[share] failed to open share error route", {
-            operation: "navigate_share_error",
-            reason,
-            error,
-        });
+        log("navigateShareError", error);
     }
     showFallback(notFound ? "share.error.not_found" : "share.error.expired");
 }
@@ -101,6 +104,7 @@ export async function mount(
     root,
     { signal, shareContext: routedShareContext } = {},
 ) {
+    if (signal?.aborted) return;
     const state = {
         loading: true,
         errorKey: "",
@@ -109,9 +113,11 @@ export async function mount(
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
     };
+    if (signal?.aborted) return;
     applyDocumentTitle(state.i18n, "share.page_title");
 
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         i18n: state.i18n,
         preferenceKey: "share-page-layout",
@@ -136,6 +142,7 @@ export async function mount(
     });
 
     await composer.init();
+    if (signal?.aborted) return;
 
     const showShareFallback = (messageKey) => {
         if (signal?.aborted) return;
@@ -151,6 +158,7 @@ export async function mount(
         : await uiCtx.runFlow("authenticate-session", {
               routePath: `${window.location.pathname}${window.location.search}`,
           });
+    if (signal?.aborted) return;
     const session = routedShareContext
         ? { authenticated: true, shareContext: routedShareContext }
         : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
@@ -197,9 +205,11 @@ export async function mount(
     await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.({
         force: true,
     });
+    if (signal?.aborted) return;
 
     if (shareContext.contentUrl && shareContext.directAccess === true) {
         const navigated = await navigateTo(shareContext.contentUrl);
+        if (signal?.aborted) return;
         if (navigated) return;
         state.loading = false;
         state.errorKey = "share.error.renderer_missing";
@@ -213,6 +223,7 @@ export async function mount(
             state.i18n,
             shareContext.page.stringsBaseUrl,
         );
+        if (signal?.aborted) return;
     }
 
     const stylesheetUrls = Array.isArray(shareContext.page?.stylesheetUrls)
@@ -222,6 +233,7 @@ export async function mount(
         await Promise.all(
             stylesheetUrls.map((url) => ensurePageStylesheet(String(url))),
         );
+        if (signal?.aborted) return;
     }
 
     if (shareContext.page?.mountScriptUrl) {
@@ -238,6 +250,7 @@ export async function mount(
                 globalThis.__spaRouter = false;
             }
         }
+        if (signal?.aborted) return;
         const mountSharedPage =
             typeof mountModule?.mount === "function" ? mountModule.mount : null;
         if (!mountSharedPage) {
@@ -262,7 +275,9 @@ export async function mount(
         globalThis.__spaRouter = true;
         try {
             await import(String(shareContext.page.rendererScriptUrl));
-        } catch {
+        } catch (error) {
+            if (signal?.aborted) return;
+            log("loadRenderer", error);
             state.loading = false;
             state.errorKey = "share.error.renderer_missing";
             updatePageDescriptor(root, state.i18n, state.errorKey);
@@ -275,6 +290,7 @@ export async function mount(
             }
         }
     }
+    if (signal?.aborted) return;
     const renderer = getShareRenderer(shareContext.resourceType);
     if (!renderer) {
         state.loading = false;
@@ -293,7 +309,9 @@ export async function mount(
             i18n: state.i18n,
             signal,
         });
-    } catch {
+    } catch (error) {
+        if (signal?.aborted) return;
+        log("render", error);
         state.loading = false;
         state.errorKey = "share.error.malformed_response";
         updatePageDescriptor(root, state.i18n, state.errorKey);

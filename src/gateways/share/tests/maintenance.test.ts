@@ -75,6 +75,7 @@ test("disabled share maintenance skips remaining work and supports reactivation"
         release = resolve;
     });
     let purged = 0;
+    let jobSignal: AbortSignal | undefined;
     const maintenance = await runBootstrapScope(
         root,
         "gateway:share",
@@ -84,7 +85,8 @@ test("disabled share maintenance skips remaining work and supports reactivation"
                 [
                     {
                         operation: "scan",
-                        run: async () => {
+                        run: async (signal) => {
+                            jobSignal = signal;
                             entered();
                             await gate;
                         },
@@ -103,6 +105,7 @@ test("disabled share maintenance skips remaining work and supports reactivation"
     const running = maintenance.run();
     await ready;
     await maintenance();
+    assert.equal(jobSignal?.aborted, true);
     release();
     await running;
     assert.equal(purged, 0);
@@ -112,6 +115,7 @@ test("disabled share maintenance skips remaining work and supports reactivation"
     try {
         await maintenance.run();
         assert.equal(purged, 1);
+        assert.equal(jobSignal?.aborted, false);
     } finally {
         await maintenance();
     }
