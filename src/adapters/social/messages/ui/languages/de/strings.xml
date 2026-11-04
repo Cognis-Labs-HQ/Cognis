@@ -82,10 +82,10 @@
   <string name="module.social.messages.answer_call">Anruf annehmen</string>
   <string name="module.social.messages.decline_call">Anruf ablehnen</string>
     <string name="module.social.messages.tutorial.messages.title">Nachrichtenanleitung</string>
-    <string name="module.social.messages.tutorial.messages.step1.title">Räume</string>
-    <string name="module.social.messages.tutorial.messages.step1.body">Wählen Sie eine Unterhaltung oder beginnen Sie eine neue über die Seitenleiste.</string>
-    <string name="module.social.messages.tutorial.messages.step2.title">Raumverlauf</string>
-    <string name="module.social.messages.tutorial.messages.step2.body">Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.</string>
-    <string name="module.social.messages.tutorial.messages.step3.title">Verfassen und Vorschau</string>
-    <string name="module.social.messages.tutorial.messages.step3.body">Verfassen und prüfen Sie Entwürfe vor dem Senden; Anhänge und Anrufe haben eigene Bedienelemente.</string>
+    <string name="module.social.messages.tutorial.messages.rooms.title">Räume</string>
+    <string name="module.social.messages.tutorial.messages.rooms.body">Wählen Sie eine Unterhaltung oder beginnen Sie eine neue über die Seitenleiste.</string>
+    <string name="module.social.messages.tutorial.messages.room.history.title">Raumverlauf</string>
+    <string name="module.social.messages.tutorial.messages.room.history.body">Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Verfassen und Vorschau</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Verfassen und prüfen Sie Entwürfe vor dem Senden; Anhänge und Anrufe haben eigene Bedienelemente.</string>
 </resources>

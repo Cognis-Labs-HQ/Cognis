@@ -8,28 +8,28 @@ export const guides = [
                 titleKey: "module.study.classes.tutorial.classes.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "language-filter",
                         selector: ".classes-filter-row",
                         titleKey:
-                            "module.study.classes.tutorial.classes.step1.title",
+                            "module.study.classes.tutorial.classes.language.filter.title",
                         bodyKey:
-                            "module.study.classes.tutorial.classes.step1.body",
+                            "module.study.classes.tutorial.classes.language.filter.body",
                     },
                     {
-                        id: "step2",
+                        id: "class-membership",
                         selector: "#class-list",
                         titleKey:
-                            "module.study.classes.tutorial.classes.step2.title",
+                            "module.study.classes.tutorial.classes.class.membership.title",
                         bodyKey:
-                            "module.study.classes.tutorial.classes.step2.body",
+                            "module.study.classes.tutorial.classes.class.membership.body",
                     },
                     {
-                        id: "step3",
+                        id: "teaching-and-management",
                         selector: "#class-list",
                         titleKey:
-                            "module.study.classes.tutorial.classes.step3.title",
+                            "module.study.classes.tutorial.classes.teaching.and.management.title",
                         bodyKey:
-                            "module.study.classes.tutorial.classes.step3.body",
+                            "module.study.classes.tutorial.classes.teaching.and.management.body",
                     },
                 ],
                 scope: "#class-list",
@@ -40,20 +40,20 @@ export const guides = [
                 titleKey: "ui.reuse.classes",
                 steps: [
                     {
-                        id: "step1",
+                        id: "enrolled-classes",
                         selector: ".classes-enrolled-content",
                         titleKey:
-                            "module.study.classes.tutorial.membership.step1.title",
+                            "module.study.classes.tutorial.membership.enrolled.classes.title",
                         bodyKey:
-                            "module.study.classes.tutorial.membership.step1.body",
+                            "module.study.classes.tutorial.membership.enrolled.classes.body",
                     },
                     {
-                        id: "step2",
+                        id: "join-requests",
                         selector: ".classes-available-content",
                         titleKey:
-                            "module.study.classes.tutorial.membership.step2.title",
+                            "module.study.classes.tutorial.membership.join.requests.title",
                         bodyKey:
-                            "module.study.classes.tutorial.membership.step2.body",
+                            "module.study.classes.tutorial.membership.join.requests.body",
                     },
                 ],
             },

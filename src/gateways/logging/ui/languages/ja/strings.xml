@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gateway.logging.tutorial.logs.title">ログの確認</string>
-    <string name="gateway.logging.tutorial.logs.step1.title">ログを絞り込む</string>
-    <string name="gateway.logging.tutorial.logs.step1.body">重要度、キーワード、期間で、調査に必要なログを絞り込みます。</string>
-    <string name="gateway.logging.tutorial.logs.step2.title">ログの詳細を読む</string>
-    <string name="gateway.logging.tutorial.logs.step2.body">時刻と構造化された詳細を確認し、新しい状態が必要なら更新します。</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.title">ログを絞り込む</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.body">重要度、キーワード、期間で、調査に必要なログを絞り込みます。</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.title">ログの詳細を読む</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.body">時刻と構造化された詳細を確認し、新しい状態が必要なら更新します。</string>
 </resources>

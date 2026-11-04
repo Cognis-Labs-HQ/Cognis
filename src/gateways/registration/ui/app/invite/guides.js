@@ -8,20 +8,20 @@ export const guides = [
                 titleKey: "gateway.registration.tutorial.invitations.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "invite-options",
                         selector: ".invite-actions",
                         titleKey:
-                            "gateway.registration.tutorial.invitations.step1.title",
+                            "gateway.registration.tutorial.invitations.invite.options.title",
                         bodyKey:
-                            "gateway.registration.tutorial.invitations.step1.body",
+                            "gateway.registration.tutorial.invitations.invite.options.body",
                     },
                     {
-                        id: "step2",
+                        id: "invitation-history",
                         selector: ".users-table-wrap",
                         titleKey:
-                            "gateway.registration.tutorial.invitations.step2.title",
+                            "gateway.registration.tutorial.invitations.invitation.history.title",
                         bodyKey:
-                            "gateway.registration.tutorial.invitations.step2.body",
+                            "gateway.registration.tutorial.invitations.invitation.history.body",
                     },
                 ],
             },

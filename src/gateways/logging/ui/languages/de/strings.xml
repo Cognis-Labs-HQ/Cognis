@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gateway.logging.tutorial.logs.title">Protokolle prüfen</string>
-    <string name="gateway.logging.tutorial.logs.step1.title">Protokolle filtern</string>
-    <string name="gateway.logging.tutorial.logs.step1.body">Grenzen Sie Protokolle mit Schweregrad, Stichwort und Zeitraum für die Untersuchung ein.</string>
-    <string name="gateway.logging.tutorial.logs.step2.title">Protokolldetails lesen</string>
-    <string name="gateway.logging.tutorial.logs.step2.body">Prüfen Sie Zeitstempel und strukturierte Details; aktualisieren Sie für einen neuen Stand.</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.title">Protokolle filtern</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.body">Grenzen Sie Protokolle mit Schweregrad, Stichwort und Zeitraum für die Untersuchung ein.</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.title">Protokolldetails lesen</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.body">Prüfen Sie Zeitstempel und strukturierte Details; aktualisieren Sie für einen neuen Stand.</string>
 </resources>

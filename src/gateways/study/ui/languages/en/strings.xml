@@ -80,8 +80,8 @@
   <string name="gateway.study.drawing_open_card">Open Card in Explore?</string>
   <string name="gateway.study.drawing_open_card_body">Open the revealed card in Explore and leave this page?</string>
     <string name="gateway.study.tutorial.preferences.title">Study Preferences</string>
-    <string name="gateway.study.tutorial.preferences.step1.title">Learning Languages</string>
-    <string name="gateway.study.tutorial.preferences.step1.body">Choose the languages you want to learn from the installed language modules.</string>
-    <string name="gateway.study.tutorial.preferences.step2.title">Available Activities</string>
-    <string name="gateway.study.tutorial.preferences.step2.body">Your language selection determines the learning activities and navigation available to you.</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.title">Learning Languages</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.body">Choose the languages you want to learn from the installed language modules.</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.title">Available Activities</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.body">Your language selection determines the learning activities and navigation available to you.</string>
 </resources>

@@ -80,8 +80,8 @@
   <string name="gateway.study.drawing_open_card">Buka Kartu di Explore?</string>
   <string name="gateway.study.drawing_open_card_body">Buka kartu yang telah ditampilkan di Explore dan tinggalkan halaman ini?</string>
     <string name="gateway.study.tutorial.preferences.title">Preferensi Belajar</string>
-    <string name="gateway.study.tutorial.preferences.step1.title">Bahasa Belajar</string>
-    <string name="gateway.study.tutorial.preferences.step1.body">Pilih bahasa yang ingin dipelajari dari modul bahasa terpasang.</string>
-    <string name="gateway.study.tutorial.preferences.step2.title">Aktivitas Tersedia</string>
-    <string name="gateway.study.tutorial.preferences.step2.body">Pilihan bahasa menentukan aktivitas belajar dan navigasi yang tersedia.</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.title">Bahasa Belajar</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.body">Pilih bahasa yang ingin dipelajari dari modul bahasa terpasang.</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.title">Aktivitas Tersedia</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.body">Pilihan bahasa menentukan aktivitas belajar dan navigasi yang tersedia.</string>
 </resources>

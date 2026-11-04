@@ -23,8 +23,8 @@
   <string name="gateway.study.leaderboard_bronze">Bronze</string>
   <string name="gateway.study.leaderboard_classroom">Klassenpunkte</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.title">Ranglistenanleitung</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step1.title">Rangliste auswählen</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step1.body">Wählen Sie eine Rangliste für Teilnehmer und Wertungszeitraum.</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step2.title">Punkte und Veränderungen</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step2.body">Vergleichen Sie Punkte und Rangänderungen; markierte Zeilen zeigen gegebenenfalls Ihre Position.</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Rangliste auswählen</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Wählen Sie eine Rangliste für Teilnehmer und Wertungszeitraum.</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Punkte und Veränderungen</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Vergleichen Sie Punkte und Rangänderungen; markierte Zeilen zeigen gegebenenfalls Ihre Position.</string>
 </resources>

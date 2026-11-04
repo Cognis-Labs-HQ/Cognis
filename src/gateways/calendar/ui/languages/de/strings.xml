@@ -196,10 +196,10 @@
   <string name="gateway.calendar.delete_shared_calendar_confirm">Dieser geteilte Kalender wird von Ihrer Kalenderseite entfernt.</string>
   <string name="gateway.calendar.reminder_minutes">{minutes} Minuten vorher</string>
     <string name="gateway.calendar.tutorial.calendar.title">Kalenderanleitung</string>
-    <string name="gateway.calendar.tutorial.calendar.step1.title">Kalender</string>
-    <string name="gateway.calendar.tutorial.calendar.step1.body">Wählen Sie einen Kalender und prüfen Sie seine Sichtbarkeit vor dem Anlegen eines Termins.</string>
-    <string name="gateway.calendar.tutorial.calendar.step2.title">Kalenderansichten</string>
-    <string name="gateway.calendar.tutorial.calendar.step2.body">Wechseln Sie Ansichten und Zeiträume, um das gewünschte Datum zu finden.</string>
-    <string name="gateway.calendar.tutorial.calendar.step3.title">Termine und Einladungen</string>
-    <string name="gateway.calendar.tutorial.calendar.step3.body">Öffnen Sie Termine und prüfen Sie Details, Teilnehmer und Einladungsstatus vor Änderungen.</string>
+    <string name="gateway.calendar.tutorial.calendar.calendars.title">Kalender</string>
+    <string name="gateway.calendar.tutorial.calendar.calendars.body">Wählen Sie einen Kalender und prüfen Sie seine Sichtbarkeit vor dem Anlegen eines Termins.</string>
+    <string name="gateway.calendar.tutorial.calendar.calendar.views.title">Kalenderansichten</string>
+    <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Wechseln Sie Ansichten und Zeiträume, um das gewünschte Datum zu finden.</string>
+    <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Termine und Einladungen</string>
+    <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Öffnen Sie Termine und prüfen Sie Details, Teilnehmer und Einladungsstatus vor Änderungen.</string>
 </resources>

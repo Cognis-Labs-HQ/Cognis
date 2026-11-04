@@ -9,22 +9,22 @@ export const guides = [
                 titleKey: "gateway.study.tutorial.preferences.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "learning-languages",
                         selector:
                             ".study-language-grid, .study-lang-settings-wrap",
                         titleKey:
-                            "gateway.study.tutorial.preferences.step1.title",
+                            "gateway.study.tutorial.preferences.learning.languages.title",
                         bodyKey:
-                            "gateway.study.tutorial.preferences.step1.body",
+                            "gateway.study.tutorial.preferences.learning.languages.body",
                     },
                     {
-                        id: "step2",
+                        id: "available-activities",
                         selector:
                             ".study-language-grid, .study-lang-settings-wrap",
                         titleKey:
-                            "gateway.study.tutorial.preferences.step2.title",
+                            "gateway.study.tutorial.preferences.available.activities.title",
                         bodyKey:
-                            "gateway.study.tutorial.preferences.step2.body",
+                            "gateway.study.tutorial.preferences.available.activities.body",
                     },
                 ],
             },

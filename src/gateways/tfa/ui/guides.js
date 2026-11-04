@@ -8,22 +8,28 @@ export const guides = [
                 titleKey: "gateway.tfa.tutorial.methods.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "set-up-a-method",
                         selector: "#available-tfa-methods",
-                        titleKey: "gateway.tfa.tutorial.methods.step1.title",
-                        bodyKey: "gateway.tfa.tutorial.methods.step1.body",
+                        titleKey:
+                            "gateway.tfa.tutorial.methods.set.up.a.method.title",
+                        bodyKey:
+                            "gateway.tfa.tutorial.methods.set.up.a.method.body",
                     },
                     {
-                        id: "step2",
+                        id: "preferred-methods",
                         selector: "#preferred-tfa-methods",
-                        titleKey: "gateway.tfa.tutorial.methods.step2.title",
-                        bodyKey: "gateway.tfa.tutorial.methods.step2.body",
+                        titleKey:
+                            "gateway.tfa.tutorial.methods.preferred.methods.title",
+                        bodyKey:
+                            "gateway.tfa.tutorial.methods.preferred.methods.body",
                     },
                     {
-                        id: "step3",
+                        id: "recovery-codes",
                         selector: ".settings-auth-recovery-codes",
-                        titleKey: "gateway.tfa.tutorial.methods.step3.title",
-                        bodyKey: "gateway.tfa.tutorial.methods.step3.body",
+                        titleKey:
+                            "gateway.tfa.tutorial.methods.recovery.codes.title",
+                        bodyKey:
+                            "gateway.tfa.tutorial.methods.recovery.codes.body",
                     },
                 ],
                 scope: "#tfa-settings-panel",
@@ -39,18 +45,20 @@ export const guides = [
                 titleKey: "gateway.tfa.tutorial.enforcement.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "enforcement-policy",
                         selector: "#tfa-enforcement",
                         titleKey:
-                            "gateway.tfa.tutorial.enforcement.step1.title",
-                        bodyKey: "gateway.tfa.tutorial.enforcement.step1.body",
+                            "gateway.tfa.tutorial.enforcement.enforcement.policy.title",
+                        bodyKey:
+                            "gateway.tfa.tutorial.enforcement.enforcement.policy.body",
                     },
                     {
-                        id: "step2",
+                        id: "apply-policy",
                         selector: "#tfa-admin-save-btn",
                         titleKey:
-                            "gateway.tfa.tutorial.enforcement.step2.title",
-                        bodyKey: "gateway.tfa.tutorial.enforcement.step2.body",
+                            "gateway.tfa.tutorial.enforcement.apply.policy.title",
+                        bodyKey:
+                            "gateway.tfa.tutorial.enforcement.apply.policy.body",
                     },
                 ],
                 scope: "#tfa-enforcement",

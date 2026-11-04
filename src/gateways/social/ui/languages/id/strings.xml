@@ -367,8 +367,8 @@
   <string name="social.emoji.black_flag">bendera hitam</string>
   <string name="social.emoji.triangular_flag">bendera segitiga</string>
     <string name="gateway.social.tutorial.social.title">Administrasi Sosial</string>
-    <string name="gateway.social.tutorial.social.step1.title">Penyedia Sosial</string>
-    <string name="gateway.social.tutorial.social.step1.body">Periksa adapter sosial aktif dan pengaturan yang tersedia.</string>
-    <string name="gateway.social.tutorial.social.step2.title">Ubah Ketersediaan</string>
-    <string name="gateway.social.tutorial.social.step2.body">Tinjau fitur pengguna yang terdampak sebelum mengaktifkan, menonaktifkan, atau mengonfigurasi ulang penyedia.</string>
+    <string name="gateway.social.tutorial.social.social.providers.title">Penyedia Sosial</string>
+    <string name="gateway.social.tutorial.social.social.providers.body">Periksa adapter sosial aktif dan pengaturan yang tersedia.</string>
+    <string name="gateway.social.tutorial.social.change.availability.title">Ubah Ketersediaan</string>
+    <string name="gateway.social.tutorial.social.change.availability.body">Tinjau fitur pengguna yang terdampak sebelum mengaktifkan, menonaktifkan, atau mengonfigurasi ulang penyedia.</string>
 </resources>

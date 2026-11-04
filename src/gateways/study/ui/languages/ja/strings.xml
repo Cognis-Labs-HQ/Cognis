@@ -80,8 +80,8 @@
   <string name="gateway.study.drawing_open_card">Explore でカードを開きますか？</string>
   <string name="gateway.study.drawing_open_card_body">表示したカードを Explore で開き、このページを離れますか？</string>
     <string name="gateway.study.tutorial.preferences.title">学習の設定</string>
-    <string name="gateway.study.tutorial.preferences.step1.title">学習する言語</string>
-    <string name="gateway.study.tutorial.preferences.step1.body">導入済みの言語モジュールから、学習する言語を選びます。</string>
-    <string name="gateway.study.tutorial.preferences.step2.title">利用できる学習機能</string>
-    <string name="gateway.study.tutorial.preferences.step2.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.title">学習する言語</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.body">導入済みの言語モジュールから、学習する言語を選びます。</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.title">利用できる学習機能</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
 </resources>

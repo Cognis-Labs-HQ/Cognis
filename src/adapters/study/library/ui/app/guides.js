@@ -9,28 +9,28 @@ export const guides = [
                 titleKey: "adapter.study.library.tutorial.explore.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "browse-a-layer",
                         selector: "#study-library-layer",
                         titleKey:
-                            "adapter.study.library.tutorial.explore.step1.title",
+                            "adapter.study.library.tutorial.explore.browse.a.layer.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.explore.step1.body",
+                            "adapter.study.library.tutorial.explore.browse.a.layer.body",
                     },
                     {
-                        id: "step2",
+                        id: "details-and-relationships",
                         selector: "#study-library-layer",
                         titleKey:
-                            "adapter.study.library.tutorial.explore.step2.title",
+                            "adapter.study.library.tutorial.explore.details.and.relationships.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.explore.step2.body",
+                            "adapter.study.library.tutorial.explore.details.and.relationships.body",
                     },
                     {
-                        id: "step3",
+                        id: "favourites-and-contributions",
                         selector: "#study-library-layer",
                         titleKey:
-                            "adapter.study.library.tutorial.explore.step3.title",
+                            "adapter.study.library.tutorial.explore.favourites.and.contributions.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.explore.step3.body",
+                            "adapter.study.library.tutorial.explore.favourites.and.contributions.body",
                     },
                 ],
             },
@@ -41,20 +41,20 @@ export const guides = [
                 titleKey: "adapter.study.library.tutorial.search.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "search-results",
                         selector: "#dictionary-results",
                         titleKey:
-                            "adapter.study.library.tutorial.search.step1.title",
+                            "adapter.study.library.tutorial.search.search.results.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.search.step1.body",
+                            "adapter.study.library.tutorial.search.search.results.body",
                     },
                     {
-                        id: "step2",
+                        id: "inspect-before-importing",
                         selector: "#dictionary-results",
                         titleKey:
-                            "adapter.study.library.tutorial.search.step2.title",
+                            "adapter.study.library.tutorial.search.inspect.before.importing.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.search.step2.body",
+                            "adapter.study.library.tutorial.search.inspect.before.importing.body",
                     },
                 ],
             },
@@ -65,20 +65,20 @@ export const guides = [
                 titleKey: "adapter.study.library.tutorial.requests.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "request-status",
                         selector: "#study-library-requests",
                         titleKey:
-                            "adapter.study.library.tutorial.requests.step1.title",
+                            "adapter.study.library.tutorial.requests.request.status.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.requests.step1.body",
+                            "adapter.study.library.tutorial.requests.request.status.body",
                     },
                     {
-                        id: "step2",
+                        id: "review-details",
                         selector: "#study-library-requests",
                         titleKey:
-                            "adapter.study.library.tutorial.requests.step2.title",
+                            "adapter.study.library.tutorial.requests.review.details.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.requests.step2.body",
+                            "adapter.study.library.tutorial.requests.review.details.body",
                     },
                 ],
             },
@@ -94,28 +94,28 @@ export const guides = [
                 titleKey: "adapter.study.library.tutorial.administration.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "find-records",
                         selector: "[data-library-quick-search]",
                         titleKey:
-                            "adapter.study.library.tutorial.administration.step1.title",
+                            "adapter.study.library.tutorial.administration.find.records.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.administration.step1.body",
+                            "adapter.study.library.tutorial.administration.find.records.body",
                     },
                     {
-                        id: "step2",
+                        id: "create-and-edit",
                         selector: ".library-browser",
                         titleKey:
-                            "adapter.study.library.tutorial.administration.step2.title",
+                            "adapter.study.library.tutorial.administration.create.and.edit.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.administration.step2.body",
+                            "adapter.study.library.tutorial.administration.create.and.edit.body",
                     },
                     {
-                        id: "step3",
+                        id: "visibility-and-review",
                         selector: ".library-browser",
                         titleKey:
-                            "adapter.study.library.tutorial.administration.step3.title",
+                            "adapter.study.library.tutorial.administration.visibility.and.review.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.administration.step3.body",
+                            "adapter.study.library.tutorial.administration.visibility.and.review.body",
                     },
                 ],
                 scope: ".library-browser",

@@ -8,22 +8,28 @@ export const guides = [
                 titleKey: "ui.tutorial.marketplace.browse.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "discovery-and-sources",
                         selector: ".module-store-toolbar",
-                        titleKey: "ui.tutorial.marketplace.browse.step1.title",
-                        bodyKey: "ui.tutorial.marketplace.browse.step1.body",
+                        titleKey:
+                            "ui.tutorial.marketplace.browse.discovery.and.sources.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.browse.discovery.and.sources.body",
                     },
                     {
-                        id: "step2",
+                        id: "module-details",
                         selector: ".module-store-grid",
-                        titleKey: "ui.tutorial.marketplace.browse.step2.title",
-                        bodyKey: "ui.tutorial.marketplace.browse.step2.body",
+                        titleKey:
+                            "ui.tutorial.marketplace.browse.module.details.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.browse.module.details.body",
                     },
                     {
-                        id: "step3",
+                        id: "install-and-update",
                         selector: ".module-store-grid",
-                        titleKey: "ui.tutorial.marketplace.browse.step3.title",
-                        bodyKey: "ui.tutorial.marketplace.browse.step3.body",
+                        titleKey:
+                            "ui.tutorial.marketplace.browse.install.and.update.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.browse.install.and.update.body",
                     },
                 ],
                 scope: ".module-store-grid",

@@ -8,28 +8,28 @@ export const guides = [
                 titleKey: "module.social.profile.tutorial.profile.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "profile-identity",
                         selector: "#hero",
                         titleKey:
-                            "module.social.profile.tutorial.profile.step1.title",
+                            "module.social.profile.tutorial.profile.profile.identity.title",
                         bodyKey:
-                            "module.social.profile.tutorial.profile.step1.body",
+                            "module.social.profile.tutorial.profile.profile.identity.body",
                     },
                     {
-                        id: "step2",
+                        id: "posts",
                         selector: "#posts",
                         titleKey:
-                            "module.social.profile.tutorial.profile.step2.title",
+                            "module.social.profile.tutorial.profile.posts.title",
                         bodyKey:
-                            "module.social.profile.tutorial.profile.step2.body",
+                            "module.social.profile.tutorial.profile.posts.body",
                     },
                     {
-                        id: "step3",
+                        id: "social-actions",
                         selector: "#hero",
                         titleKey:
-                            "module.social.profile.tutorial.profile.step3.title",
+                            "module.social.profile.tutorial.profile.social.actions.title",
                         bodyKey:
-                            "module.social.profile.tutorial.profile.step3.body",
+                            "module.social.profile.tutorial.profile.social.actions.body",
                     },
                 ],
             },

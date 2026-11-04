@@ -111,8 +111,8 @@
   <string name="share.shares.detail_accessed">アクセス</string>
   <string name="share.shares.detail_expires">有効期限</string>
     <string name="share.tutorial.shares.title">共有の使い方</string>
-    <string name="share.tutorial.shares.step1.title">共有した項目</string>
-    <string name="share.tutorial.shares.step1.body">共有項目を確認し、一覧を絞り込んで目的の共有を探します。</string>
-    <string name="share.tutorial.shares.step2.title">共有相手とアクセス</string>
-    <string name="share.tutorial.shares.step2.body">共有相手、有効期限、アクセスを詳細で確認してから、変更や取り消しを行います。</string>
+    <string name="share.tutorial.shares.shared.items.title">共有した項目</string>
+    <string name="share.tutorial.shares.shared.items.body">共有項目を確認し、一覧を絞り込んで目的の共有を探します。</string>
+    <string name="share.tutorial.shares.recipients.and.access.title">共有相手とアクセス</string>
+    <string name="share.tutorial.shares.recipients.and.access.body">共有相手、有効期限、アクセスを詳細で確認してから、変更や取り消しを行います。</string>
 </resources>

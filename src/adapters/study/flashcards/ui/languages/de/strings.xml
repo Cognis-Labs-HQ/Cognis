@@ -39,10 +39,10 @@
   <string name="adapter.study.flashcards.practice_hint">Richtige Antwort zeigen</string>
   <string name="adapter.study.flashcards.practice_hint_answer">Richtige Antwort: {{ answer }}</string>
     <string name="adapter.study.flashcards.tutorial.decks.title">Karteikartenanleitung</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.title">Stapel auswählen</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.body">Wählen Sie einen Stapel und prüfen Sie Sprache und enthaltene Karten.</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.title">Lernmodi</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.body">Prüfen Sie verfügbare Lernmodi und Filter vor dem Üben.</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.title">Übung und Fortschritt</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.body">Nutzen Sie die Übungssteuerung zum Antworten und Wiederholen; Fortschritt gehört zu Ihrem Konto.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.title">Stapel auswählen</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.body">Wählen Sie einen Stapel und prüfen Sie Sprache und enthaltene Karten.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.title">Lernmodi</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">Prüfen Sie verfügbare Lernmodi und Filter vor dem Üben.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">Übung und Fortschritt</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">Nutzen Sie die Übungssteuerung zum Antworten und Wiederholen; Fortschritt gehört zu Ihrem Konto.</string>
 </resources>

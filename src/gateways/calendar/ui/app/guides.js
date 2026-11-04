@@ -8,28 +8,28 @@ export const guides = [
                 titleKey: "gateway.calendar.tutorial.calendar.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "calendars",
                         selector: "#calendar-toolbar-list",
                         titleKey:
-                            "gateway.calendar.tutorial.calendar.step1.title",
+                            "gateway.calendar.tutorial.calendar.calendars.title",
                         bodyKey:
-                            "gateway.calendar.tutorial.calendar.step1.body",
+                            "gateway.calendar.tutorial.calendar.calendars.body",
                     },
                     {
-                        id: "step2",
+                        id: "calendar-views",
                         selector: ".calendar-view-switcher",
                         titleKey:
-                            "gateway.calendar.tutorial.calendar.step2.title",
+                            "gateway.calendar.tutorial.calendar.calendar.views.title",
                         bodyKey:
-                            "gateway.calendar.tutorial.calendar.step2.body",
+                            "gateway.calendar.tutorial.calendar.calendar.views.body",
                     },
                     {
-                        id: "step3",
+                        id: "events-and-invitations",
                         selector: ".calendar-view-canvas",
                         titleKey:
-                            "gateway.calendar.tutorial.calendar.step3.title",
+                            "gateway.calendar.tutorial.calendar.events.and.invitations.title",
                         bodyKey:
-                            "gateway.calendar.tutorial.calendar.step3.body",
+                            "gateway.calendar.tutorial.calendar.events.and.invitations.body",
                     },
                 ],
             },

@@ -8,16 +8,18 @@ export const guides = [
                 titleKey: "share.tutorial.shares.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "shared-items",
                         selector: "#shares-overview",
-                        titleKey: "share.tutorial.shares.step1.title",
-                        bodyKey: "share.tutorial.shares.step1.body",
+                        titleKey: "share.tutorial.shares.shared.items.title",
+                        bodyKey: "share.tutorial.shares.shared.items.body",
                     },
                     {
-                        id: "step2",
+                        id: "recipients-and-access",
                         selector: "#shares-overview",
-                        titleKey: "share.tutorial.shares.step2.title",
-                        bodyKey: "share.tutorial.shares.step2.body",
+                        titleKey:
+                            "share.tutorial.shares.recipients.and.access.title",
+                        bodyKey:
+                            "share.tutorial.shares.recipients.and.access.body",
                     },
                 ],
             },

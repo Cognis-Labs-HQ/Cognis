@@ -8,20 +8,20 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.preferences.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "channels-and-categories",
                         selector: "#notif-matrix-container",
                         titleKey:
-                            "gateway.notify.tutorial.preferences.step1.title",
+                            "gateway.notify.tutorial.preferences.channels.and.categories.title",
                         bodyKey:
-                            "gateway.notify.tutorial.preferences.step1.body",
+                            "gateway.notify.tutorial.preferences.channels.and.categories.body",
                     },
                     {
-                        id: "step2",
+                        id: "save-preferences",
                         selector: "#notif-matrix-container",
                         titleKey:
-                            "gateway.notify.tutorial.preferences.step2.title",
+                            "gateway.notify.tutorial.preferences.save.preferences.title",
                         bodyKey:
-                            "gateway.notify.tutorial.preferences.step2.body",
+                            "gateway.notify.tutorial.preferences.save.preferences.body",
                     },
                 ],
                 scope: "#notif-matrix-container",
@@ -37,18 +37,20 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.delivery.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "delivery-diagnostics",
                         selector: "#notifications",
                         titleKey:
-                            "gateway.notify.tutorial.delivery.step1.title",
-                        bodyKey: "gateway.notify.tutorial.delivery.step1.body",
+                            "gateway.notify.tutorial.delivery.delivery.diagnostics.title",
+                        bodyKey:
+                            "gateway.notify.tutorial.delivery.delivery.diagnostics.body",
                     },
                     {
-                        id: "step2",
+                        id: "test-delivery",
                         selector: "#notifications",
                         titleKey:
-                            "gateway.notify.tutorial.delivery.step2.title",
-                        bodyKey: "gateway.notify.tutorial.delivery.step2.body",
+                            "gateway.notify.tutorial.delivery.test.delivery.title",
+                        bodyKey:
+                            "gateway.notify.tutorial.delivery.test.delivery.body",
                     },
                 ],
                 scope: "#notifications",
@@ -59,20 +61,20 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.broadcasts.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "audience-and-content",
                         selector: "#broadcasts",
                         titleKey:
-                            "gateway.notify.tutorial.broadcasts.step1.title",
+                            "gateway.notify.tutorial.broadcasts.audience.and.content.title",
                         bodyKey:
-                            "gateway.notify.tutorial.broadcasts.step1.body",
+                            "gateway.notify.tutorial.broadcasts.audience.and.content.body",
                     },
                     {
-                        id: "step2",
+                        id: "publication-state",
                         selector: "#broadcasts",
                         titleKey:
-                            "gateway.notify.tutorial.broadcasts.step2.title",
+                            "gateway.notify.tutorial.broadcasts.publication.state.title",
                         bodyKey:
-                            "gateway.notify.tutorial.broadcasts.step2.body",
+                            "gateway.notify.tutorial.broadcasts.publication.state.body",
                     },
                 ],
                 scope: "#broadcasts",

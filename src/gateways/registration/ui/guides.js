@@ -8,20 +8,20 @@ export const guides = [
                 titleKey: "gateway.registration.tutorial.policy.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "registration-access",
                         selector: "#registration",
                         titleKey:
-                            "gateway.registration.tutorial.policy.step1.title",
+                            "gateway.registration.tutorial.policy.registration.access.title",
                         bodyKey:
-                            "gateway.registration.tutorial.policy.step1.body",
+                            "gateway.registration.tutorial.policy.registration.access.body",
                     },
                     {
-                        id: "step2",
+                        id: "apply-registration-rules",
                         selector: "#registration",
                         titleKey:
-                            "gateway.registration.tutorial.policy.step2.title",
+                            "gateway.registration.tutorial.policy.apply.registration.rules.title",
                         bodyKey:
-                            "gateway.registration.tutorial.policy.step2.body",
+                            "gateway.registration.tutorial.policy.apply.registration.rules.body",
                     },
                 ],
                 scope: "#registration",

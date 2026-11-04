@@ -102,6 +102,21 @@ export async function mountTutorialProvider(
     const api = ctx.capabilities.get("ui:tutorials");
     if (typeof api?.mountPage !== "function")
         throw new Error("tutorial_host_unavailable");
+    // A page may have cached this catalog before its tutorial keys were published.
+    const revision = JSON.stringify(
+        [
+            ...new Set(
+                guides.flatMap((guide) =>
+                    guide.definitions.flatMap((play) => [
+                        play.titleKey,
+                        ...play.steps.flatMap((step) =>
+                            [step.titleKey, step.bodyKey].filter(Boolean),
+                        ),
+                    ]),
+                ),
+            ),
+        ].sort(),
+    );
     const release = [];
     const dispose = () => {
         for (const cleanup of release.splice(0).reverse()) cleanup();
@@ -114,14 +129,15 @@ export async function mountTutorialProvider(
                     root: document.body,
                     signal: ctx.signal,
                     i18n: async () => {
-                        const { createI18n } = await ctx.capabilities
-                            .get("ui:reuse")
-                            .importModule("i18n.js");
-                        return createI18n({
+                        const { createI18n, extendI18n } =
+                            await ctx.capabilities
+                                .get("ui:reuse")
+                                .importModule("i18n.js");
+                        const base = await createI18n({
                             persistLocale: false,
                             preferredLanguages: [document.documentElement.lang],
-                            componentStringBaseUrls: stringsBaseUrls,
                         });
+                        return extendI18n(base, stringsBaseUrls, { revision });
                     },
                 }),
             );

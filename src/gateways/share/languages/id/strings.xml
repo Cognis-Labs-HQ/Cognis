@@ -111,8 +111,8 @@
   <string name="share.shares.detail_accessed">Diakses</string>
   <string name="share.shares.detail_expires">Kedaluwarsa</string>
     <string name="share.tutorial.shares.title">Panduan Berbagi</string>
-    <string name="share.tutorial.shares.step1.title">Item Bersama</string>
-    <string name="share.tutorial.shares.step1.body">Periksa item yang dibagikan dan saring daftar untuk menemukan item tertentu.</string>
-    <string name="share.tutorial.shares.step2.title">Penerima dan Akses</string>
-    <string name="share.tutorial.shares.step2.body">Buka detail untuk memeriksa penerima, kedaluwarsa, dan akses sebelum mengubah atau mencabut berbagi.</string>
+    <string name="share.tutorial.shares.shared.items.title">Item Bersama</string>
+    <string name="share.tutorial.shares.shared.items.body">Periksa item yang dibagikan dan saring daftar untuk menemukan item tertentu.</string>
+    <string name="share.tutorial.shares.recipients.and.access.title">Penerima dan Akses</string>
+    <string name="share.tutorial.shares.recipients.and.access.body">Buka detail untuk memeriksa penerima, kedaluwarsa, dan akses sebelum mengubah atau mencabut berbagi.</string>
 </resources>

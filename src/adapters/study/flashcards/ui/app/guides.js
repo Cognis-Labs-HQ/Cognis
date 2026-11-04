@@ -9,28 +9,28 @@ export const guides = [
                 titleKey: "adapter.study.flashcards.tutorial.decks.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "deck-selection",
                         selector: ".side-menu",
                         titleKey:
-                            "adapter.study.flashcards.tutorial.decks.step1.title",
+                            "adapter.study.flashcards.tutorial.decks.deck.selection.title",
                         bodyKey:
-                            "adapter.study.flashcards.tutorial.decks.step1.body",
+                            "adapter.study.flashcards.tutorial.decks.deck.selection.body",
                     },
                     {
-                        id: "step2",
+                        id: "study-modes",
                         selector: "[data-study-deck]",
                         titleKey:
-                            "adapter.study.flashcards.tutorial.decks.step2.title",
+                            "adapter.study.flashcards.tutorial.decks.study.modes.title",
                         bodyKey:
-                            "adapter.study.flashcards.tutorial.decks.step2.body",
+                            "adapter.study.flashcards.tutorial.decks.study.modes.body",
                     },
                     {
-                        id: "step3",
+                        id: "practice-and-progress",
                         selector: "[data-study-deck]",
                         titleKey:
-                            "adapter.study.flashcards.tutorial.decks.step3.title",
+                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.title",
                         bodyKey:
-                            "adapter.study.flashcards.tutorial.decks.step3.body",
+                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.body",
                     },
                 ],
             },

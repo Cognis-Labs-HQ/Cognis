@@ -82,10 +82,10 @@
   <string name="module.social.messages.answer_call">Answer call</string>
   <string name="module.social.messages.decline_call">Decline call</string>
     <string name="module.social.messages.tutorial.messages.title">Messaging Guide</string>
-    <string name="module.social.messages.tutorial.messages.step1.title">Rooms</string>
-    <string name="module.social.messages.tutorial.messages.step1.body">Select a room or start a new one from the sidebar.</string>
-    <string name="module.social.messages.tutorial.messages.step2.title">Room History</string>
-    <string name="module.social.messages.tutorial.messages.step2.body">Read the room history and check the current participants and pending requests.</string>
-    <string name="module.social.messages.tutorial.messages.step3.title">Compose And Preview</string>
-    <string name="module.social.messages.tutorial.messages.step3.body">Write and preview a draft before sending; attachments and calls use their own controls.</string>
+    <string name="module.social.messages.tutorial.messages.rooms.title">Rooms</string>
+    <string name="module.social.messages.tutorial.messages.rooms.body">Select a room or start a new one from the sidebar.</string>
+    <string name="module.social.messages.tutorial.messages.room.history.title">Room History</string>
+    <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check the current participants and pending requests.</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; attachments and calls use their own controls.</string>
 </resources>

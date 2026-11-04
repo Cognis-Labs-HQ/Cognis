@@ -8,22 +8,28 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.general.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "email-addresses",
                         selector: "#email-list",
-                        titleKey: "ui.tutorial.settings.general.step1.title",
-                        bodyKey: "ui.tutorial.settings.general.step1.body",
+                        titleKey:
+                            "ui.tutorial.settings.general.email.addresses.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.email.addresses.body",
                     },
                     {
-                        id: "step2",
+                        id: "offline-access",
                         selector: "#pref-offline-enabled",
-                        titleKey: "ui.tutorial.settings.general.step2.title",
-                        bodyKey: "ui.tutorial.settings.general.step2.body",
+                        titleKey:
+                            "ui.tutorial.settings.general.offline.access.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.offline.access.body",
                     },
                     {
-                        id: "step3",
+                        id: "account-lifecycle",
                         selector: ".settings-danger-zone",
-                        titleKey: "ui.tutorial.settings.general.step3.title",
-                        bodyKey: "ui.tutorial.settings.general.step3.body",
+                        titleKey:
+                            "ui.tutorial.settings.general.account.lifecycle.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.account.lifecycle.body",
                     },
                 ],
                 scope: "#general",
@@ -34,22 +40,26 @@ export const guides = [
                 titleKey: "ui.reuse.appearance",
                 steps: [
                     {
-                        id: "step1",
+                        id: "font-and-size",
                         selector: "#pref-font-picker",
-                        titleKey: "ui.tutorial.settings.appearance.step1.title",
-                        bodyKey: "ui.tutorial.settings.appearance.step1.body",
+                        titleKey:
+                            "ui.tutorial.settings.appearance.font.and.size.title",
+                        bodyKey:
+                            "ui.tutorial.settings.appearance.font.and.size.body",
                     },
                     {
-                        id: "step2",
+                        id: "theme",
                         selector: "#pref-theme-selector",
-                        titleKey: "ui.tutorial.settings.appearance.step2.title",
-                        bodyKey: "ui.tutorial.settings.appearance.step2.body",
+                        titleKey: "ui.tutorial.settings.appearance.theme.title",
+                        bodyKey: "ui.tutorial.settings.appearance.theme.body",
                     },
                     {
-                        id: "step3",
+                        id: "message-layout",
                         selector: "#pref-message-style-selector",
-                        titleKey: "ui.tutorial.settings.appearance.step3.title",
-                        bodyKey: "ui.tutorial.settings.appearance.step3.body",
+                        titleKey:
+                            "ui.tutorial.settings.appearance.message.layout.title",
+                        bodyKey:
+                            "ui.tutorial.settings.appearance.message.layout.body",
                     },
                 ],
                 scope: "#appearance",
@@ -60,22 +70,28 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.language.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "available-languages",
                         selector: "#available-languages",
-                        titleKey: "ui.tutorial.settings.language.step1.title",
-                        bodyKey: "ui.tutorial.settings.language.step1.body",
+                        titleKey:
+                            "ui.tutorial.settings.language.available.languages.title",
+                        bodyKey:
+                            "ui.tutorial.settings.language.available.languages.body",
                     },
                     {
-                        id: "step2",
+                        id: "language-priority",
                         selector: "#preferred-languages",
-                        titleKey: "ui.tutorial.settings.language.step2.title",
-                        bodyKey: "ui.tutorial.settings.language.step2.body",
+                        titleKey:
+                            "ui.tutorial.settings.language.language.priority.title",
+                        bodyKey:
+                            "ui.tutorial.settings.language.language.priority.body",
                     },
                     {
-                        id: "step3",
+                        id: "browser-language",
                         selector: "#pref-language-sync-from-browser",
-                        titleKey: "ui.tutorial.settings.language.step3.title",
-                        bodyKey: "ui.tutorial.settings.language.step3.body",
+                        titleKey:
+                            "ui.tutorial.settings.language.browser.language.title",
+                        bodyKey:
+                            "ui.tutorial.settings.language.browser.language.body",
                     },
                 ],
                 scope: "#language",
@@ -86,16 +102,19 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.datetime.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "time-zone",
                         selector: "#pref-timezone-select",
-                        titleKey: "ui.tutorial.settings.datetime.step1.title",
-                        bodyKey: "ui.tutorial.settings.datetime.step1.body",
+                        titleKey:
+                            "ui.tutorial.settings.datetime.time.zone.title",
+                        bodyKey: "ui.tutorial.settings.datetime.time.zone.body",
                     },
                     {
-                        id: "step2",
+                        id: "time-format",
                         selector: "#pref-time-format-select",
-                        titleKey: "ui.tutorial.settings.datetime.step2.title",
-                        bodyKey: "ui.tutorial.settings.datetime.step2.body",
+                        titleKey:
+                            "ui.tutorial.settings.datetime.time.format.title",
+                        bodyKey:
+                            "ui.tutorial.settings.datetime.time.format.body",
                     },
                 ],
                 scope: "#datetime",
@@ -106,16 +125,20 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.advanced.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "preference-data",
                         selector: "#prefs-dump",
-                        titleKey: "ui.tutorial.settings.advanced.step1.title",
-                        bodyKey: "ui.tutorial.settings.advanced.step1.body",
+                        titleKey:
+                            "ui.tutorial.settings.advanced.preference.data.title",
+                        bodyKey:
+                            "ui.tutorial.settings.advanced.preference.data.body",
                     },
                     {
-                        id: "step2",
+                        id: "review-changes",
                         selector: "#advanced",
-                        titleKey: "ui.tutorial.settings.advanced.step2.title",
-                        bodyKey: "ui.tutorial.settings.advanced.step2.body",
+                        titleKey:
+                            "ui.tutorial.settings.advanced.review.changes.title",
+                        bodyKey:
+                            "ui.tutorial.settings.advanced.review.changes.body",
                     },
                 ],
                 scope: "#advanced",

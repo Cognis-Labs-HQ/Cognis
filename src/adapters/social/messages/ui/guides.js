@@ -8,28 +8,28 @@ export const guides = [
                 titleKey: "module.social.messages.tutorial.messages.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "rooms",
                         selector: "#messages-rooms-list",
                         titleKey:
-                            "module.social.messages.tutorial.messages.step1.title",
+                            "module.social.messages.tutorial.messages.rooms.title",
                         bodyKey:
-                            "module.social.messages.tutorial.messages.step1.body",
+                            "module.social.messages.tutorial.messages.rooms.body",
                     },
                     {
-                        id: "step2",
+                        id: "room-history",
                         selector: "#messages-thread-list",
                         titleKey:
-                            "module.social.messages.tutorial.messages.step2.title",
+                            "module.social.messages.tutorial.messages.room.history.title",
                         bodyKey:
-                            "module.social.messages.tutorial.messages.step2.body",
+                            "module.social.messages.tutorial.messages.room.history.body",
                     },
                     {
-                        id: "step3",
+                        id: "compose-and-preview",
                         selector: ".messages-composer-main",
                         titleKey:
-                            "module.social.messages.tutorial.messages.step3.title",
+                            "module.social.messages.tutorial.messages.compose.and.preview.title",
                         bodyKey:
-                            "module.social.messages.tutorial.messages.step3.body",
+                            "module.social.messages.tutorial.messages.compose.and.preview.body",
                     },
                 ],
             },

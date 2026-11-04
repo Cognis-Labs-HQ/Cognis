@@ -8,22 +8,28 @@ export const guides = [
                 titleKey: "ui.tutorial.users.directory.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "account-directory",
                         selector: "#users-table",
-                        titleKey: "ui.tutorial.users.directory.step1.title",
-                        bodyKey: "ui.tutorial.users.directory.step1.body",
+                        titleKey:
+                            "ui.tutorial.users.directory.account.directory.title",
+                        bodyKey:
+                            "ui.tutorial.users.directory.account.directory.body",
                     },
                     {
-                        id: "step2",
+                        id: "roles-and-access",
                         selector: ".users-list",
-                        titleKey: "ui.tutorial.users.directory.step2.title",
-                        bodyKey: "ui.tutorial.users.directory.step2.body",
+                        titleKey:
+                            "ui.tutorial.users.directory.roles.and.access.title",
+                        bodyKey:
+                            "ui.tutorial.users.directory.roles.and.access.body",
                     },
                     {
-                        id: "step3",
+                        id: "account-actions",
                         selector: ".users-list",
-                        titleKey: "ui.tutorial.users.directory.step3.title",
-                        bodyKey: "ui.tutorial.users.directory.step3.body",
+                        titleKey:
+                            "ui.tutorial.users.directory.account.actions.title",
+                        bodyKey:
+                            "ui.tutorial.users.directory.account.actions.body",
                     },
                 ],
             },

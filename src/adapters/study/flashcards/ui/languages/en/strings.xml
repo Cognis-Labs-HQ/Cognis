@@ -39,10 +39,10 @@
   <string name="adapter.study.flashcards.practice_hint">Show Correct Answer</string>
   <string name="adapter.study.flashcards.practice_hint_answer">Correct answer: {{ answer }}</string>
     <string name="adapter.study.flashcards.tutorial.decks.title">Flashcards Guide</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.title">Deck Selection</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.body">Choose a deck from the sidebar and check which language and cards it contains.</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.title">Study Modes</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.body">Review the available study modes and filters before beginning practice.</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.title">Practice And Progress</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.body">Use the practice controls to answer and review cards; progress belongs to your account.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.title">Deck Selection</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.body">Choose a deck from the sidebar and check which language and cards it contains.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.title">Study Modes</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">Review the available study modes and filters before beginning practice.</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">Practice And Progress</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">Use the practice controls to answer and review cards; progress belongs to your account.</string>
 </resources>

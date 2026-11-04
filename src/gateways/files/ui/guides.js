@@ -8,16 +8,20 @@ export const guides = [
                 titleKey: "gateway.files.tutorial.quotas.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "default-quota",
                         selector: "[data-files-quota-admin]",
-                        titleKey: "gateway.files.tutorial.quotas.step1.title",
-                        bodyKey: "gateway.files.tutorial.quotas.step1.body",
+                        titleKey:
+                            "gateway.files.tutorial.quotas.default.quota.title",
+                        bodyKey:
+                            "gateway.files.tutorial.quotas.default.quota.body",
                     },
                     {
-                        id: "step2",
+                        id: "namespace-limits",
                         selector: "[data-files-quota-admin]",
-                        titleKey: "gateway.files.tutorial.quotas.step2.title",
-                        bodyKey: "gateway.files.tutorial.quotas.step2.body",
+                        titleKey:
+                            "gateway.files.tutorial.quotas.namespace.limits.title",
+                        bodyKey:
+                            "gateway.files.tutorial.quotas.namespace.limits.body",
                     },
                 ],
                 scope: "[data-files-quota-admin]",

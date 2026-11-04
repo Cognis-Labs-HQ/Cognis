@@ -80,8 +80,8 @@
   <string name="gateway.study.drawing_open_card">Karte in Explore öffnen?</string>
   <string name="gateway.study.drawing_open_card_body">Die aufgedeckte Karte in Explore öffnen und diese Seite verlassen?</string>
     <string name="gateway.study.tutorial.preferences.title">Lerneinstellungen</string>
-    <string name="gateway.study.tutorial.preferences.step1.title">Lernsprachen</string>
-    <string name="gateway.study.tutorial.preferences.step1.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
-    <string name="gateway.study.tutorial.preferences.step2.title">Verfügbare Lernangebote</string>
-    <string name="gateway.study.tutorial.preferences.step2.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.title">Lernsprachen</string>
+    <string name="gateway.study.tutorial.preferences.learning.languages.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.title">Verfügbare Lernangebote</string>
+    <string name="gateway.study.tutorial.preferences.available.activities.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
 </resources>

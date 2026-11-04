@@ -121,3 +121,7 @@ createPageComposer(root, {
 ```
 
 [Tutorial Coverage](/docs/tutorials-coverage)
+
+## Tutorial Catalogs
+
+Tutorial locale catalogs are loaded under a revision of their declared translation keys, separately from earlier page catalog loads. This prevents an older in-memory catalog from rejecting newly published tutorial copy. Identical guide contracts reuse the catalog, including offline. Missing preferred-language text falls back to English; genuinely missing English keys still fail registration and roll back the owner. Step keys name their subject rather than their position.

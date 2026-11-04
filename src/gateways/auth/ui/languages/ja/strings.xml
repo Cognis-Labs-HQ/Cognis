@@ -94,8 +94,8 @@
   <string name="ui.app.login.reason.sso_callback_failed">シングルサインオンを完了できませんでした。もう一度お試しください。</string>
   <string name="ui.app.login.reason.sso_provider_unavailable">現在、サインインプロバイダーを利用できません。</string>
     <string name="gateway.auth.tutorial.security.title">アカウントの安全設定</string>
-    <string name="gateway.auth.tutorial.security.step1.title">パスワードの変更</string>
-    <string name="gateway.auth.tutorial.security.step1.body">認証方式に対応する操作でパスワードを変更します。本人確認が必要な場合があります。</string>
-    <string name="gateway.auth.tutorial.security.step2.title">セッションの期間</string>
-    <string name="gateway.auth.tutorial.security.step2.body">許可されたセッション期間を選ぶか全体の既定値に戻し、変更を保存します。</string>
+    <string name="gateway.auth.tutorial.security.password.changes.title">パスワードの変更</string>
+    <string name="gateway.auth.tutorial.security.password.changes.body">認証方式に対応する操作でパスワードを変更します。本人確認が必要な場合があります。</string>
+    <string name="gateway.auth.tutorial.security.session.duration.title">セッションの期間</string>
+    <string name="gateway.auth.tutorial.security.session.duration.body">許可されたセッション期間を選ぶか全体の既定値に戻し、変更を保存します。</string>
 </resources>

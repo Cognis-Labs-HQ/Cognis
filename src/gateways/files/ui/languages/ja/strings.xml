@@ -9,8 +9,8 @@
   <string name="gateway.files.admin.saved">既定クォータを保存しました。</string>
   <string name="gateway.files.admin.save_failed">既定クォータを保存できませんでした。</string>
     <string name="gateway.files.tutorial.quotas.title">保存容量の上限</string>
-    <string name="gateway.files.tutorial.quotas.step1.title">既定の上限</string>
-    <string name="gateway.files.tutorial.quotas.step1.body">全体の既定容量と、それを使用するコンポーネントの名前空間を確認します。</string>
-    <string name="gateway.files.tutorial.quotas.step2.title">名前空間ごとの上限</string>
-    <string name="gateway.files.tutorial.quotas.step2.body">名前空間の所有者と公開範囲を確認してから、容量の上限を変更して保存します。</string>
+    <string name="gateway.files.tutorial.quotas.default.quota.title">既定の上限</string>
+    <string name="gateway.files.tutorial.quotas.default.quota.body">全体の既定容量と、それを使用するコンポーネントの名前空間を確認します。</string>
+    <string name="gateway.files.tutorial.quotas.namespace.limits.title">名前空間ごとの上限</string>
+    <string name="gateway.files.tutorial.quotas.namespace.limits.body">名前空間の所有者と公開範囲を確認してから、容量の上限を変更して保存します。</string>
 </resources>

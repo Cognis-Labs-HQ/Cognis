@@ -8,22 +8,28 @@ export const guides = [
                 titleKey: "ui.tutorial.admin.components.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "gateways-and-adapters",
                         selector: "#components",
-                        titleKey: "ui.tutorial.admin.components.step1.title",
-                        bodyKey: "ui.tutorial.admin.components.step1.body",
+                        titleKey:
+                            "ui.tutorial.admin.components.gateways.and.adapters.title",
+                        bodyKey:
+                            "ui.tutorial.admin.components.gateways.and.adapters.body",
                     },
                     {
-                        id: "step2",
+                        id: "enable-and-disable",
                         selector: "#components",
-                        titleKey: "ui.tutorial.admin.components.step2.title",
-                        bodyKey: "ui.tutorial.admin.components.step2.body",
+                        titleKey:
+                            "ui.tutorial.admin.components.enable.and.disable.title",
+                        bodyKey:
+                            "ui.tutorial.admin.components.enable.and.disable.body",
                     },
                     {
-                        id: "step3",
+                        id: "configuration",
                         selector: "#components",
-                        titleKey: "ui.tutorial.admin.components.step3.title",
-                        bodyKey: "ui.tutorial.admin.components.step3.body",
+                        titleKey:
+                            "ui.tutorial.admin.components.configuration.title",
+                        bodyKey:
+                            "ui.tutorial.admin.components.configuration.body",
                     },
                 ],
                 scope: "#components",
@@ -34,16 +40,19 @@ export const guides = [
                 titleKey: "ui.tutorial.admin.status.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "health-and-integrity",
                         selector: "#status",
-                        titleKey: "ui.tutorial.admin.status.step1.title",
-                        bodyKey: "ui.tutorial.admin.status.step1.body",
+                        titleKey:
+                            "ui.tutorial.admin.status.health.and.integrity.title",
+                        bodyKey:
+                            "ui.tutorial.admin.status.health.and.integrity.body",
                     },
                     {
-                        id: "step2",
+                        id: "refresh-checks",
                         selector: "#rerun-status",
-                        titleKey: "ui.tutorial.admin.status.step2.title",
-                        bodyKey: "ui.tutorial.admin.status.step2.body",
+                        titleKey:
+                            "ui.tutorial.admin.status.refresh.checks.title",
+                        bodyKey: "ui.tutorial.admin.status.refresh.checks.body",
                     },
                 ],
                 scope: "#status",
@@ -54,16 +63,20 @@ export const guides = [
                 titleKey: "ui.tutorial.admin.security.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "session-policy",
                         selector: ".security-settings-form",
-                        titleKey: "ui.tutorial.admin.security.step1.title",
-                        bodyKey: "ui.tutorial.admin.security.step1.body",
+                        titleKey:
+                            "ui.tutorial.admin.security.session.policy.title",
+                        bodyKey:
+                            "ui.tutorial.admin.security.session.policy.body",
                     },
                     {
-                        id: "step2",
+                        id: "save-deliberately",
                         selector: "#security",
-                        titleKey: "ui.tutorial.admin.security.step2.title",
-                        bodyKey: "ui.tutorial.admin.security.step2.body",
+                        titleKey:
+                            "ui.tutorial.admin.security.save.deliberately.title",
+                        bodyKey:
+                            "ui.tutorial.admin.security.save.deliberately.body",
                     },
                 ],
                 scope: "#security",

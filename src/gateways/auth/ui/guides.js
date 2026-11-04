@@ -8,16 +8,20 @@ export const guides = [
                 titleKey: "gateway.auth.tutorial.security.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "password-changes",
                         selector: "#auth-security-reset-panel",
-                        titleKey: "gateway.auth.tutorial.security.step1.title",
-                        bodyKey: "gateway.auth.tutorial.security.step1.body",
+                        titleKey:
+                            "gateway.auth.tutorial.security.password.changes.title",
+                        bodyKey:
+                            "gateway.auth.tutorial.security.password.changes.body",
                     },
                     {
-                        id: "step2",
+                        id: "session-duration",
                         selector: "#settings-login-session-timeout",
-                        titleKey: "gateway.auth.tutorial.security.step2.title",
-                        bodyKey: "gateway.auth.tutorial.security.step2.body",
+                        titleKey:
+                            "gateway.auth.tutorial.security.session.duration.title",
+                        bodyKey:
+                            "gateway.auth.tutorial.security.session.duration.body",
                     },
                 ],
                 scope: "#auth-security-reset-panel",

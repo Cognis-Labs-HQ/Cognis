@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gateway.logging.tutorial.logs.title">Log Inspection</string>
-    <string name="gateway.logging.tutorial.logs.step1.title">Filter Logs</string>
-    <string name="gateway.logging.tutorial.logs.step1.body">Use severity, keyword and time-range filters to narrow the logs for an investigation.</string>
-    <string name="gateway.logging.tutorial.logs.step2.title">Read Log Details</string>
-    <string name="gateway.logging.tutorial.logs.step2.body">Inspect timestamps and structured details; refresh when you need a new snapshot.</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.title">Filter Logs</string>
+    <string name="gateway.logging.tutorial.logs.filter.logs.body">Use severity, keyword and time-range filters to narrow the logs for an investigation.</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.title">Read Log Details</string>
+    <string name="gateway.logging.tutorial.logs.read.log.details.body">Inspect timestamps and structured details; refresh when you need a new snapshot.</string>
 </resources>

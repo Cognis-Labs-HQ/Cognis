@@ -23,8 +23,8 @@
   <string name="gateway.study.leaderboard_bronze">perunggu</string>
   <string name="gateway.study.leaderboard_classroom">Skor Kelas</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.title">Panduan Papan Peringkat</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step1.title">Pilih Peringkat</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step1.body">Pilih peringkat untuk melihat peserta dan periode penilaiannya.</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step2.title">Skor dan Pergerakan</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.step2.body">Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Pilih Peringkat</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Pilih peringkat untuk melihat peserta dan periode penilaiannya.</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Skor dan Pergerakan</string>
+    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.</string>
 </resources>

@@ -8,16 +8,19 @@ export const guides = [
                 titleKey: "ui.tutorial.docs.read.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "read-the-current-page",
                         selector: "#doc",
-                        titleKey: "ui.tutorial.docs.read.step1.title",
-                        bodyKey: "ui.tutorial.docs.read.step1.body",
+                        titleKey:
+                            "ui.tutorial.docs.read.read.the.current.page.title",
+                        bodyKey:
+                            "ui.tutorial.docs.read.read.the.current.page.body",
                     },
                     {
-                        id: "step2",
+                        id: "document-versions",
                         selector: ".docs-version-bar",
-                        titleKey: "ui.tutorial.docs.read.step2.title",
-                        bodyKey: "ui.tutorial.docs.read.step2.body",
+                        titleKey:
+                            "ui.tutorial.docs.read.document.versions.title",
+                        bodyKey: "ui.tutorial.docs.read.document.versions.body",
                     },
                 ],
             },

@@ -8,16 +8,20 @@ export const guides = [
                 titleKey: "gateway.social.tutorial.social.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "social-providers",
                         selector: "#social",
-                        titleKey: "gateway.social.tutorial.social.step1.title",
-                        bodyKey: "gateway.social.tutorial.social.step1.body",
+                        titleKey:
+                            "gateway.social.tutorial.social.social.providers.title",
+                        bodyKey:
+                            "gateway.social.tutorial.social.social.providers.body",
                     },
                     {
-                        id: "step2",
+                        id: "change-availability",
                         selector: "#social",
-                        titleKey: "gateway.social.tutorial.social.step2.title",
-                        bodyKey: "gateway.social.tutorial.social.step2.body",
+                        titleKey:
+                            "gateway.social.tutorial.social.change.availability.title",
+                        bodyKey:
+                            "gateway.social.tutorial.social.change.availability.body",
                     },
                 ],
                 scope: "#social",

@@ -9,20 +9,20 @@ export const guides = [
                 titleKey: "adapter.study.leaderboard.tutorial.rankings.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "ranking-selection",
                         selector: "[data-leaderboard-definition]",
                         titleKey:
-                            "adapter.study.leaderboard.tutorial.rankings.step1.title",
+                            "adapter.study.leaderboard.tutorial.rankings.ranking.selection.title",
                         bodyKey:
-                            "adapter.study.leaderboard.tutorial.rankings.step1.body",
+                            "adapter.study.leaderboard.tutorial.rankings.ranking.selection.body",
                     },
                     {
-                        id: "step2",
+                        id: "scores-and-movement",
                         selector: ".leaderboard-table-scroll",
                         titleKey:
-                            "adapter.study.leaderboard.tutorial.rankings.step2.title",
+                            "adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title",
                         bodyKey:
-                            "adapter.study.leaderboard.tutorial.rankings.step2.body",
+                            "adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body",
                     },
                 ],
             },

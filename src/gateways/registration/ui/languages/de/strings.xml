@@ -70,13 +70,13 @@
   <string name="gateway.registration.invite_sent">Einladung gesendet.</string>
   <string name="gateway.registration.invite_failed">Einladung konnte nicht gesendet werden.</string>
     <string name="gateway.registration.tutorial.invitations.title">Einladungsanleitung</string>
-    <string name="gateway.registration.tutorial.invitations.step1.title">Einladungsoptionen</string>
-    <string name="gateway.registration.tutorial.invitations.step1.body">Wählen Sie eine erlaubte Methode; E-Mail-Einladungen und Registrierungstoken werden unterschiedlich zugestellt.</string>
-    <string name="gateway.registration.tutorial.invitations.step2.title">Einladungsverlauf</string>
-    <string name="gateway.registration.tutorial.invitations.step2.body">Prüfen Sie Status und Ablauf; kopieren Sie Token nur für vorgesehene Empfänger und widerrufen Sie unbenutzte Einladungen bei Bedarf.</string>
+    <string name="gateway.registration.tutorial.invitations.invite.options.title">Einladungsoptionen</string>
+    <string name="gateway.registration.tutorial.invitations.invite.options.body">Wählen Sie eine erlaubte Methode; E-Mail-Einladungen und Registrierungstoken werden unterschiedlich zugestellt.</string>
+    <string name="gateway.registration.tutorial.invitations.invitation.history.title">Einladungsverlauf</string>
+    <string name="gateway.registration.tutorial.invitations.invitation.history.body">Prüfen Sie Status und Ablauf; kopieren Sie Token nur für vorgesehene Empfänger und widerrufen Sie unbenutzte Einladungen bei Bedarf.</string>
     <string name="gateway.registration.tutorial.policy.title">Registrierungsregeln</string>
-    <string name="gateway.registration.tutorial.policy.step1.title">Registrierungszugang</string>
-    <string name="gateway.registration.tutorial.policy.step1.body">Prüfen Sie öffentliche Registrierung und Einladungsrechte, bevor Sie die Kontoerstellung ändern.</string>
-    <string name="gateway.registration.tutorial.policy.step2.title">Registrierungsregeln übernehmen</string>
-    <string name="gateway.registration.tutorial.policy.step2.body">Speichern Sie geprüfte Regeln und prüfen Sie Einladungsoptionen auf der Einladungsseite.</string>
+    <string name="gateway.registration.tutorial.policy.registration.access.title">Registrierungszugang</string>
+    <string name="gateway.registration.tutorial.policy.registration.access.body">Prüfen Sie öffentliche Registrierung und Einladungsrechte, bevor Sie die Kontoerstellung ändern.</string>
+    <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Registrierungsregeln übernehmen</string>
+    <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Speichern Sie geprüfte Regeln und prüfen Sie Einladungsoptionen auf der Einladungsseite.</string>
 </resources>

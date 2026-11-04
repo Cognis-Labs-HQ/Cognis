@@ -39,10 +39,10 @@
   <string name="adapter.study.flashcards.practice_hint">正解を表示</string>
   <string name="adapter.study.flashcards.practice_hint_answer">正解：{{ answer }}</string>
     <string name="adapter.study.flashcards.tutorial.decks.title">フラッシュカードの使い方</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.title">デッキを選ぶ</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step1.body">サイドバーからデッキを選び、言語と含まれるカードを確認します。</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.title">学習モード</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step2.body">練習を始める前に、利用できる学習モードと絞り込みを確認します。</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.title">練習と進捗</string>
-    <string name="adapter.study.flashcards.tutorial.decks.step3.body">練習の操作で回答と復習を進めます。進捗は自分のアカウントに記録されます。</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.title">デッキを選ぶ</string>
+    <string name="adapter.study.flashcards.tutorial.decks.deck.selection.body">サイドバーからデッキを選び、言語と含まれるカードを確認します。</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.title">学習モード</string>
+    <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">練習を始める前に、利用できる学習モードと絞り込みを確認します。</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">練習と進捗</string>
+    <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">練習の操作で回答と復習を進めます。進捗は自分のアカウントに記録されます。</string>
 </resources>

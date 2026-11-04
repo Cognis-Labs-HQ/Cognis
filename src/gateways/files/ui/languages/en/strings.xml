@@ -9,8 +9,8 @@
   <string name="gateway.files.admin.saved">Quota default saved.</string>
   <string name="gateway.files.admin.save_failed">Could not save the quota default.</string>
     <string name="gateway.files.tutorial.quotas.title">Storage Quotas</string>
-    <string name="gateway.files.tutorial.quotas.step1.title">Default Quota</string>
-    <string name="gateway.files.tutorial.quotas.step1.body">Review the global storage default and the component namespaces using it.</string>
-    <string name="gateway.files.tutorial.quotas.step2.title">Namespace Limits</string>
-    <string name="gateway.files.tutorial.quotas.step2.body">Check a namespace’s owner and visibility before changing its byte quota and saving.</string>
+    <string name="gateway.files.tutorial.quotas.default.quota.title">Default Quota</string>
+    <string name="gateway.files.tutorial.quotas.default.quota.body">Review the global storage default and the component namespaces using it.</string>
+    <string name="gateway.files.tutorial.quotas.namespace.limits.title">Namespace Limits</string>
+    <string name="gateway.files.tutorial.quotas.namespace.limits.body">Check a namespace’s owner and visibility before changing its byte quota and saving.</string>
 </resources>

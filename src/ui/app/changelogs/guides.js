@@ -8,16 +8,20 @@ export const guides = [
                 titleKey: "ui.tutorial.changelogs.releases.title",
                 steps: [
                     {
-                        id: "step1",
+                        id: "release-changes",
                         selector: "#doc",
-                        titleKey: "ui.tutorial.changelogs.releases.step1.title",
-                        bodyKey: "ui.tutorial.changelogs.releases.step1.body",
+                        titleKey:
+                            "ui.tutorial.changelogs.releases.release.changes.title",
+                        bodyKey:
+                            "ui.tutorial.changelogs.releases.release.changes.body",
                     },
                     {
-                        id: "step2",
+                        id: "compare-releases",
                         selector: "#doc",
-                        titleKey: "ui.tutorial.changelogs.releases.step2.title",
-                        bodyKey: "ui.tutorial.changelogs.releases.step2.body",
+                        titleKey:
+                            "ui.tutorial.changelogs.releases.compare.releases.title",
+                        bodyKey:
+                            "ui.tutorial.changelogs.releases.compare.releases.body",
                     },
                 ],
             },

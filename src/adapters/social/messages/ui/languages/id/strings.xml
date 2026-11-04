@@ -82,10 +82,10 @@
   <string name="module.social.messages.answer_call">Jawab panggilan</string>
   <string name="module.social.messages.decline_call">Tolak panggilan</string>
     <string name="module.social.messages.tutorial.messages.title">Panduan Pesan</string>
-    <string name="module.social.messages.tutorial.messages.step1.title">Ruang</string>
-    <string name="module.social.messages.tutorial.messages.step1.body">Pilih percakapan atau mulai percakapan baru dari bilah samping.</string>
-    <string name="module.social.messages.tutorial.messages.step2.title">Riwayat Ruang</string>
-    <string name="module.social.messages.tutorial.messages.step2.body">Baca percakapan dan periksa peserta serta permintaan tertunda.</string>
-    <string name="module.social.messages.tutorial.messages.step3.title">Tulis dan Pratinjau</string>
-    <string name="module.social.messages.tutorial.messages.step3.body">Tulis dan pratinjau draf sebelum mengirim; lampiran dan panggilan memiliki kontrol tersendiri.</string>
+    <string name="module.social.messages.tutorial.messages.rooms.title">Ruang</string>
+    <string name="module.social.messages.tutorial.messages.rooms.body">Pilih percakapan atau mulai percakapan baru dari bilah samping.</string>
+    <string name="module.social.messages.tutorial.messages.room.history.title">Riwayat Ruang</string>
+    <string name="module.social.messages.tutorial.messages.room.history.body">Baca percakapan dan periksa peserta serta permintaan tertunda.</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Tulis dan Pratinjau</string>
+    <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Tulis dan pratinjau draf sebelum mengirim; lampiran dan panggilan memiliki kontrol tersendiri.</string>
 </resources>
