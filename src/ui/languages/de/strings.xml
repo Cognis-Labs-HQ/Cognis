@@ -710,4 +710,6 @@
     <string name="ui.tutorial.changelogs.releases.release.changes.body">Wählen Sie eine Veröffentlichung für Änderungen und Implementierungsverweise ihrer Komponente.</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.title">Veröffentlichungen vergleichen</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.body">Prüfen Sie Versionshinweise vor einem Update, besonders bei geänderten Abläufen oder Anforderungen.</string>
+  <string name="ui.components.provider_failed">Die Komponente {{component}} ist fehlgeschlagen und wurde isoliert. Andere Komponenten bleiben verfügbar.</string>
+  <string name="ui.components.disabled_after_failures">Die Komponente {{component}} wurde nach wiederholten Fehlern deaktiviert. Reparieren und aktivieren Sie sie über die Komponentenverwaltung oder die Befehlszeile.</string>
 </resources>

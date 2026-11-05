@@ -122,6 +122,25 @@ test("module service blocks toggling core modules", async () => {
     await assert.rejects(() => service.enable("auth-core"));
 });
 
+test("required and critical modules can be enabled but cannot be disabled", async () => {
+    for (const protection of ["required", "critical"]) {
+        const service = new ModuleService(
+            runtime([
+                {
+                    id: "protected",
+                    class: "extension",
+                    [protection]: true,
+                },
+            ]),
+        );
+        assert.deepEqual(await service.enable("protected"), {
+            moduleId: "protected",
+            enabled: true,
+        });
+        await assert.rejects(service.disable("protected"), /critical_module/);
+    }
+});
+
 test("external modules require disclaimer acknowledgement", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-modules-"));
     const externalModulesPath = path.join(root, "external");

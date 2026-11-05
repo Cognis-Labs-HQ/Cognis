@@ -332,10 +332,18 @@ test("component:enable fails when API acknowledgement says module is still disab
     try {
         globalThis.fetch = async (input) => {
             const requestUrl = String(input);
-            if (requestUrl.endsWith("/api/v1/modules/demo/enable")) {
+            if (requestUrl.endsWith("/api/v1/components/actions")) {
                 return new Response(
                     JSON.stringify({
-                        data: { moduleId: "demo", enabled: false },
+                        data: {
+                            results: [
+                                {
+                                    target: { type: "module", id: "demo" },
+                                    status: "succeeded",
+                                    data: { moduleId: "demo", enabled: false },
+                                },
+                            ],
+                        },
                         message: "Module remains disabled",
                     }),
                     {
@@ -352,7 +360,7 @@ test("component:enable fails when API acknowledgement says module is still disab
                 apiBaseUrl: "http://localhost:3000",
                 getApiToken: async () => "token",
             }),
-            /Module "demo" was not enabled: Module remains disabled/,
+            /Module "demo" was not enabled/,
         );
     } finally {
         globalThis.fetch = originalFetch;

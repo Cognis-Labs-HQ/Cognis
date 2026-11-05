@@ -710,4 +710,6 @@
     <string name="ui.tutorial.changelogs.releases.release.changes.body">Pilih rilis untuk membaca perubahan dan rujukan implementasi komponennya.</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.title">Bandingkan Rilis</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.body">Periksa catatan rilis sebelum memperbarui komponen, terutama saat perilaku atau persyaratannya berubah.</string>
+  <string name="ui.components.provider_failed">Komponen {{component}} gagal dan telah diisolasi. Komponen lain tetap tersedia.</string>
+  <string name="ui.components.disabled_after_failures">Komponen {{component}} dinonaktifkan setelah kegagalan berulang. Gunakan pengelolaan komponen atau baris perintah untuk memperbaiki dan mengaktifkannya kembali.</string>
 </resources>

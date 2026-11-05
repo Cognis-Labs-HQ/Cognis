@@ -84,19 +84,19 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.6.1`    |
+| Core Package   | `src/core/` | `0.6.2`    |
 
 ## API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.12.9`   |
+| API Server     | `src/api/` | `0.13.0`   |
 
 ## ツール
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
-| Cognis CLI     | `src/tooling/cli/` | `0.2.5`    |
+| Cognis CLI     | `src/tooling/cli/` | `0.3.0`    |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json

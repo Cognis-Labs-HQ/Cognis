@@ -50,6 +50,14 @@ export interface PageElement {
  * `uiCtx.capabilities`.
  */
 export interface NavbarPlugin {
+    component?: {
+        type: "module" | "gateway" | "adapter";
+        id: string;
+        gatewayId?: string;
+        required: boolean;
+        critical: boolean;
+        version?: string;
+    };
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
     /** UI capabilities contributed when this plugin is imported. */
@@ -62,6 +70,8 @@ export interface NavbarPlugin {
 }
 
 export interface UiCapabilityProvider {
+    access?: RoleAccessPolicy;
+    component?: NavbarPlugin["component"];
     offlineAccessGuard?: string;
     scriptUrl: string;
     providesCapabilities: string[];
@@ -504,19 +514,53 @@ export class UIRegistry {
     }
 
     listNavbarPlugins(): NavbarPlugin[] {
-        return this.resolveDescriptor([...this.navbarPlugins]);
+        return this.resolveDescriptor(
+            this.navbarPlugins.map((provider) => this.ownedProvider(provider)),
+        );
     }
 
     listCapabilityProviders(): UiCapabilityProvider[] {
         return this.resolveDescriptor(
-            this.listActiveCapabilityProviders().filter(
-                (provider) => provider.providesCapabilities?.length,
-            ),
+            this.listActiveCapabilityProviders()
+                .filter((provider) => provider.providesCapabilities?.length)
+                .map((provider) => this.ownedProvider(provider)),
         );
     }
 
     registerCapabilityProvider(provider: UiCapabilityProvider): void {
         this.capabilityProviders.push(provider);
+    }
+
+    private ownedProvider<T extends NavbarPlugin | UiCapabilityProvider>(
+        provider: T,
+    ): T {
+        const url = new URL(provider.scriptUrl, "http://component.internal");
+        const gateway = url.pathname.match(
+            /^\/static\/gateways\/([a-z0-9-]+)\//,
+        );
+        const adapter = url.pathname.match(
+            /^\/static\/adapters\/([a-z0-9-]+)\/([a-z0-9-]+)\//,
+        );
+        const identity = provider.ownerId
+            ? { type: "module" as const, id: provider.ownerId }
+            : gateway && this.staticDirs.has(gateway[1])
+              ? { type: "gateway" as const, id: gateway[1] }
+              : adapter && this.getAdapterStaticDir(adapter[1], adapter[2])
+                ? {
+                      type: "adapter" as const,
+                      id: adapter[2],
+                      gatewayId: adapter[1],
+                  }
+                : undefined;
+        const result = { ...provider };
+        delete result.component;
+        if (identity)
+            result.component = {
+                ...identity,
+                required: true,
+                critical: true,
+            };
+        return result;
     }
 
     private listActiveCapabilityProviders(): UiCapabilityProvider[] {

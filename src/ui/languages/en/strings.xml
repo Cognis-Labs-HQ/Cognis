@@ -710,4 +710,6 @@
     <string name="ui.tutorial.changelogs.releases.release.changes.body">Select a release to read changes and implementation references for its component.</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.title">Compare Releases</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.body">Check release notes before updating a component, especially when its behavior or requirements change.</string>
+  <string name="ui.components.provider_failed">The {{component}} component failed and was isolated. Other components remain available.</string>
+  <string name="ui.components.disabled_after_failures">The {{component}} component was disabled after repeated failures. Use component management or the CLI to repair and re-enable it.</string>
 </resources>

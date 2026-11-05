@@ -149,6 +149,7 @@ async function main(): Promise<void> {
     if (result !== undefined) {
         printOutput(formatCommandOutput(command, result));
     }
+    process.exitCode = registry.get(command)?.exitCode?.(result) ?? 0;
 }
 
 const isDirectExecution =

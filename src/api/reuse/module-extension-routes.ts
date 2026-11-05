@@ -1,3 +1,4 @@
+import { attributeComponentFault } from "../components/fault.js";
 import {
     scopeCapabilityContracts,
     type CapabilityContracts,
@@ -902,7 +903,14 @@ export function createModuleExtensionRoutes(
             const claims = requireRoleAccess(req, res, match.access);
             if (!claims) return true;
         }
-        await match.handler(req, res);
+        try {
+            await match.handler(req, res);
+        } catch (error) {
+            throw attributeComponentFault(error, {
+                type: "module",
+                id: match.moduleId,
+            });
+        }
         return true;
     }
 

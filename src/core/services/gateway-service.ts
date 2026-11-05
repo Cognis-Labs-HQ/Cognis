@@ -30,6 +30,7 @@ export interface GatewayManifest {
      * starts accepting connections.
      */
     required?: boolean;
+    critical?: boolean;
     /**
      * Gateway IDs that this gateway depends on. All listed IDs must be present
      * in the GatewayRegistry after the bootstrap phase.

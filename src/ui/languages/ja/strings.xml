@@ -710,4 +710,6 @@
     <string name="ui.tutorial.changelogs.releases.release.changes.body">リリースを選ぶと、コンポーネントの変更点と実装への参照を読めます。</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.title">リリースを比較</string>
     <string name="ui.tutorial.changelogs.releases.compare.releases.body">動作や要件が変わる場合は特に、更新前にリリースノートを確認します。</string>
+  <string name="ui.components.provider_failed">コンポーネント {{component}} で障害が発生したため隔離しました。他のコンポーネントは引き続き利用できます。</string>
+  <string name="ui.components.disabled_after_failures">コンポーネント {{component}} で障害が繰り返されたため無効にしました。コンポーネント管理またはコマンドラインで修復し、再度有効にしてください。</string>
 </resources>

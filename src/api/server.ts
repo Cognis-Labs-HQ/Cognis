@@ -1,7 +1,11 @@
+import { recoverComponentRequest } from "./components/http-failure.js";
+import {
+    discoverCoreComponentDependencies,
+    type CoreComponentDependency,
+} from "./components/discovery.js";
 import { isModuleCapabilityAvailable } from "./reuse/module-capability-availability.js";
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
-import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -30,6 +34,7 @@ import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./reuse/route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { UIRegistry } from "./reuse/ui-registry.js";
+import { installComponentManagement } from "./components/bootstrap.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -133,58 +138,6 @@ export async function discoverModuleSourcesOnStartup(
             error: error instanceof Error ? error.message : String(error),
         });
     }
-}
-
-export interface CoreComponentDependency {
-    id: string;
-    uuid: string;
-    name: string;
-    gatewayId?: string;
-}
-
-export async function discoverCoreComponentDependencies(
-    roots: readonly string[],
-): Promise<CoreComponentDependency[]> {
-    const components: CoreComponentDependency[] = [];
-    const visit = async (root: string): Promise<void> => {
-        let entries;
-        try {
-            entries = await readdir(root, { withFileTypes: true });
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
-            throw error;
-        }
-        for (const entry of entries) {
-            const entryPath = path.join(root, entry.name);
-            if (entry.isDirectory()) {
-                await visit(entryPath);
-                continue;
-            }
-            if (entry.name !== "manifest.json") continue;
-            const manifest = JSON.parse(await readFile(entryPath, "utf8")) as {
-                id?: unknown;
-                uuid?: unknown;
-                name?: unknown;
-                gateway?: unknown;
-            };
-            if (
-                typeof manifest.id !== "string" ||
-                typeof manifest.uuid !== "string" ||
-                typeof manifest.name !== "string"
-            )
-                continue;
-            components.push({
-                id: manifest.id,
-                uuid: manifest.uuid,
-                name: manifest.name,
-                ...(typeof manifest.gateway === "string"
-                    ? { gatewayId: manifest.gateway }
-                    : {}),
-            });
-        }
-    };
-    for (const root of roots) await visit(root);
-    return components;
 }
 
 export function assertModuleEnableDependencies(
@@ -336,10 +289,14 @@ export function assertModuleCapabilityDependencies(
  * core-module requirement, persisted runtime override, then manifest default.
  */
 export function resolveInitialModuleEnabledState(
-    manifest: Pick<ModuleManifest, "id" | "class" | "enabledByDefault">,
+    manifest: Pick<
+        ModuleManifest,
+        "id" | "class" | "enabledByDefault" | "required" | "critical"
+    >,
     persistedState: boolean | undefined,
 ): boolean {
-    if (manifest.class === "core") return true;
+    if (manifest.class === "core" || manifest.required || manifest.critical)
+        return true;
     if (persistedState === true) return true;
     if (persistedState === false) return false;
     return manifest.enabledByDefault === true;
@@ -407,6 +364,22 @@ export function buildServer(deps: ApiDependencies) {
             getProtectedRoutePrefixes: () =>
                 deps.routeRegistry?.getClaimedPrefixes() ?? [],
             onBootstrapFailed: async (moduleId) => {
+                const manifest = (await moduleService.list()).find(
+                    (entry) => entry.id === moduleId,
+                );
+                if (
+                    manifest?.class === "core" ||
+                    manifest?.required ||
+                    manifest?.critical
+                ) {
+                    log("error", "Protected component bootstrap failed.", {
+                        component: "api",
+                        operation: "componentBootstrap",
+                        componentId: moduleId,
+                        fatal: true,
+                    });
+                    return;
+                }
                 enabledModules.delete(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, false);
                 await deps.persistModuleState?.(moduleId, false);
@@ -688,7 +661,7 @@ export function buildServer(deps: ApiDependencies) {
             }
             if (deps.gatewayRegistry) {
                 for (const entry of deps.gatewayRegistry.list()) {
-                    if (entry.required) continue;
+                    if (entry.required || entry.critical) continue;
                     const persisted = savedGateways.get(entry.id);
                     if (persisted === false) {
                         await deps.gatewayRegistry.disable(entry.id);
@@ -716,6 +689,23 @@ export function buildServer(deps: ApiDependencies) {
             });
         });
 
+    const managementCtx = routeContext.getCapability<Ctx>("system:ctx");
+    const componentManagementReady = managementCtx
+        ? installComponentManagement({
+              ctx: managementCtx,
+              routeContext,
+              modules: moduleService,
+              gateways: deps.gatewayRegistry,
+              uiRegistry: deps.uiRegistry,
+              components: () => coreComponentDependencies,
+              log,
+              handlers: () => [
+                  moduleRoutes,
+                  ...(gatewayRoutes ? [gatewayRoutes] : []),
+                  ...(deps.routeRegistry?.getHandlers() ?? []),
+              ],
+          })
+        : undefined;
     const server = createServer(async (req, res) => {
         await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
@@ -782,6 +772,12 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
+            const componentManagement = await componentManagementReady;
+            if (
+                componentManagement &&
+                (await componentManagement.routes(req, res, url))
+            )
+                return;
             const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
                 log("debug", "Request handled by module routes.", {
@@ -917,14 +913,12 @@ export function buildServer(deps: ApiDependencies) {
                 durationMs: Date.now() - startedAt,
             });
         } catch (error) {
-            res.writeHead(400, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    error: {
-                        code: "bad_request",
-                        message: "Request failed",
-                    },
-                }),
+            await recoverComponentRequest(
+                req,
+                res,
+                error,
+                componentManagementReady,
+                log,
             );
             log("error", "Request failed with handled error response.", {
                 method: req.method ?? "GET",
@@ -938,5 +932,17 @@ export function buildServer(deps: ApiDependencies) {
     server.headersTimeout = 15_000;
     server.keepAliveTimeout = 30_000;
     server.maxRequestsPerSocket = 500;
+    server.once("close", () => {
+        void Promise.resolve(componentManagementReady)
+            .then((management) => management?.dispose())
+            .catch((error) =>
+                log("error", "Component management cleanup failed.", {
+                    component: "api",
+                    operation: "disposeComponentManagement",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                }),
+            );
+    });
     return server;
 }

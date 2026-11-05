@@ -19,6 +19,7 @@ export interface CommandSpec {
     section: string;
     handler: CommandHandler;
     render?: CommandRenderer;
+    exitCode?: (payload: unknown) => number;
 }
 
 export interface RegisterCommandOptions {
@@ -26,4 +27,5 @@ export interface RegisterCommandOptions {
     description?: string;
     section?: string;
     render?: CommandRenderer;
+    exitCode?: (payload: unknown) => number;
 }
