@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Anleitungssteuerung Und Texte
 
-Enthält die Aktualisierung des übergeordneten Tutorial-Zweigs: Die Abdunklung spart schwebende Steuerung und Akzentring aus. Anleitungstexte beschreiben in allen vier Sprachen nützliche Seitenaktionen.
+Enthält die Aktualisierung des übergeordneten Tutorial-Zweigs: normales gemeinsames schwebendes Menü, funktionierende Wiederholungsauswahl am Seitenkopf, Aussparung von Steuerung und Broadcast-Bannern in der Abdunklung sowie schritteigene Navigationssperren. Die Dashboard-Anleitung hält Benutzer auf der Seite, während sie die Navigation erklärt.
 
 ## Commits
 

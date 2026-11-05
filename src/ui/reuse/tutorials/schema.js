@@ -82,6 +82,7 @@ export function validatePlay(input) {
             "placement",
             "padding",
             "interaction",
+            "preventNavigation",
             "advance",
             "missing",
             "enter",
@@ -146,6 +147,10 @@ export function validatePlay(input) {
                     typeof step.advance.accept === "function",
             );
         }
+        assert(
+            step.preventNavigation === undefined ||
+                typeof step.preventNavigation === "boolean",
+        );
         const missing = { timeoutMs: 5000, action: "cancel", ...step.missing };
         keys(missing, ["timeoutMs", "action"]);
         assert(

@@ -26,7 +26,7 @@ Die Sprachkataloge der Anleitungen werden mit einer Revision ihrer deklarierten 
 
 Hervorhebungen verwenden den sichtbaren Schnittbereich des Ziels, seiner abschneidenden oder scrollenden Vorfahren und des sichtbaren Ansichtsfensters. Seitenziele meiden Kopf- und Fußzeile; Anleitungen für diese Bedienelemente nutzen weiterhin deren eigenen Bereich. Bereits sichtbare übergroße Ziele behalten ihre Scrollposition. Hinweisfelder versuchen freie Seiten, bevor sie im sichtbaren Ziel erscheinen; irreführende Pfeile außerhalb des Bildes werden dann ausgeblendet. Die Tutorialsteuerung reserviert eigenen Platz, sodass lange Übersetzungen scrollbar bleiben und keine Navigationsschaltflächen verdecken.
 
-Das unabhängige gemeinsame schwebende Menü erhält eine deckende themenabhängige Fläche, Akzentrahmen und Schatten oberhalb der Abdunklung, unabhängig von der Ladereihenfolge der Stylesheets. Weiter und Abschließen sind kontrastreicher. Umbrechende Bedienelemente bleiben in hellen und dunklen Themen im Ansichtsfenster. Die Abbruchregeln für erste Besuche und Wiederholungen bleiben unverändert.
+Das unabhängige gemeinsame schwebende Menü behält sein normales Thema, Rahmen, Schaltflächen, Abstände und Hintergrundunschärfe. Es liegt oberhalb der Tutorialabdunklung, ebenso die Auswahl zur Wiederholung am Seitenkopf. Die Abdunklung spart Ziel, schwebende Steuerung und Broadcast-Banner aus; Hinweisfelder halten Abstand zu sichtbaren Bannern. Die Steuerung bleibt in hellen und dunklen Themen im Ansichtsfenster.
 
 ## Seitenbereitschaft
 
@@ -36,7 +36,11 @@ Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadines
 
 ## Klare Steuerung Und Texte
 
-Die Seitenabdunklung spart sowohl das hervorgehobene Ziel als auch das schwebende Anleitungsmenü samt Akzentring aus. Menü, Hervorhebung und Hinweisfeld teilen eine sitzungseigene Ebene; die Steuerung bleibt auch bei überlappenden Bereichen sichtbar und bedienbar. Anleitungstexte beschreiben verfügbare Aufgaben und Bedienelemente ohne sachfremde Zusicherungen über Berechtigungen oder nicht ausgeführte Aktionen.
+Anleitungstexte beschreiben verfügbare Aufgaben und Bedienelemente ohne sachfremde Zusicherungen über Berechtigungen oder nicht ausgeführte Aktionen.
+
+## Geschützte Navigation
+
+Schritte können mit `preventNavigation` auf der aktuellen Seite bleiben, während sie Navigationsbedienelemente erklären. Die Dashboard-Anleitung nutzt dies durchgehend. Linkaktivierung per Zeiger und Tastatur, programmgesteuerte Router-Navigation und vom Router verwaltete Verlaufsschritte beachten die Sperre. Weiter, Zurück und Abschließen bleiben verfügbar; von der Anleitung vorgesehene Routenwechsel sind erlaubt. Die Sperre endet mit dem Schritt oder der Sitzung.
 
 ## Commits
 
@@ -49,3 +53,4 @@ Die Seitenabdunklung spart sowohl das hervorgehobene Ziel als auch das schwebend
 - [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — Start-Popups vor Tutorials über die Seitenbereitschaft koordinieren.
 - [8a845efb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a845efb1cb16a1538a80cc456c82482af4a4c0e) — Bereitschaft beim erneuten Aufbau derselben URL nach Abbruch erneuern.
 - [e65144a29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e65144a29220e5ecc0b10272bf3739716ca52094)
+- [6fd10e6f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fd10e6f5b2287cfbe47848a49b749929e0e17c6)

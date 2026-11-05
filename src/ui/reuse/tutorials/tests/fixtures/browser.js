@@ -20,8 +20,39 @@ document.querySelector("#outside").addEventListener("click", () => {
 window.tutorialFixture = {
     counts,
     api,
+    broadcast() {
+        return uiCtx.capabilities.get("ui:broadcast").publish("tutorial-test", {
+            title: "Service notice",
+            bodyHtml: "Broadcast details remain visible during the tutorial.",
+        });
+    },
+    async chooser() {
+        localStorage.setItem(
+            "cognis_tutorial:tutorial-browser:browser:first-visit",
+            "completed",
+        );
+        localStorage.setItem(
+            "cognis_tutorial:tutorial-browser:browser:second-guide",
+            "completed",
+        );
+        await this.bindPage({ reset: false });
+        await owner.register({
+            version: 1,
+            page: ({ pathname }) => pathname === fixturePath,
+            id: "second-guide",
+            titleKey: "second-guide",
+            steps: [{ id: "one", titleKey: "second-guide" }],
+        });
+        await api.refreshPage();
+    },
+    async workspace() {
+        owner?.dispose();
+        const { mountWorkspace } = await import("./workspace.js");
+        return mountWorkspace();
+    },
     async start({
         effects,
+        preventNavigation = false,
         blocking = false,
         event = false,
         missing = "cancel",
@@ -57,6 +88,7 @@ window.tutorialFixture = {
             steps: [
                 {
                     id: "target",
+                    preventNavigation,
                     titleKey: "step",
                     bodyKey: "body",
                     target: published.id,

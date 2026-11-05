@@ -34,6 +34,7 @@ export async function mountProvider(ctx) {
                         ? "ui.tutorial.workspace.account.title"
                         : `ui.reuse.${name}`,
                 bodyKey: `ui.tutorial.workspace.${name}.body`,
+                preventNavigation: true,
                 effects: { callout: true, arrow: true, spotlight: true },
                 missing: { timeoutMs: 3000, action: "skip" },
             })),

@@ -634,7 +634,7 @@
   <string name="ui.tutorial.waiting">Menunggu elemen halaman. Anda dapat membatalkan kapan saja.</string>
   <string name="ui.tutorial.error">Tutorial tidak dapat dilanjutkan. Halaman Anda tetap tersedia.</string>
   <string name="ui.tutorial.workspace.title">Ruang Kerja Anda</string>
-  <string name="ui.tutorial.workspace.navigation.body">Gunakan navigasi utama untuk membuka halaman yang tersedia bagi akun Anda.</string>
+  <string name="ui.tutorial.workspace.navigation.body">Navigasi utama berisi tautan ke halaman yang tersedia bagi akun Anda.</string>
   <string name="ui.tutorial.workspace.search.body">Gunakan Pencarian untuk menemukan halaman dan konten dari komponen aktif.</string>
   <string name="ui.tutorial.workspace.account.title">Menu Akun</string>
   <string name="ui.tutorial.workspace.account.body">Buka menu akun untuk pengaturan, dokumentasi, dan tutorial. Anda dapat mengulang tutorial yang tersedia di sini.</string>

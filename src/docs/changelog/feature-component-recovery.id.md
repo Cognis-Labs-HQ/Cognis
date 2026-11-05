@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Kontrol Dan Teks Tutorial
 
-Menyertakan pembaruan tutorial dari cabang induk: peredupan mengecualikan kontrol mengambang dan cincin aksennya, serta teks tutorial berfokus pada tindakan halaman yang berguna dalam keempat bahasa.
+Menyertakan pembaruan tutorial dari cabang induk: gaya standar menu mengambang bersama, pemilih pengulangan dari judul halaman yang dapat digunakan, pengecualian kontrol dan banner siaran dari peredupan, serta penjagaan navigasi per langkah. Panduan Dasbor mempertahankan halaman saat menjelaskan navigasinya.
 
 ## Commit
 

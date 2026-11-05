@@ -167,7 +167,7 @@ export function createSession({
             if (route && document?.defaultView?.location.pathname !== route) {
                 if (!navigate)
                     throw new Error("tutorial_navigation_unavailable");
-                transitioningRoute = true;
+                transitioningRoute = route;
                 let moved;
                 try {
                     moved = await abortable(navigate(route), signal);
@@ -349,6 +349,10 @@ export function createSession({
         skip: () => (firstTime ? false : finish("skipped", "skip")),
         dispose: () => finish("cancelled", "disposed"),
         modal: () => finish("cancelled", "modal"),
+        blocksNavigation: (path) =>
+            !(transitioningRoute && path === transitioningRoute) &&
+            !disposed &&
+            record.play.steps[index]?.preventNavigation === true,
         navigation: () => {
             if (!transitioningRoute) finish("cancelled", "navigation");
         },

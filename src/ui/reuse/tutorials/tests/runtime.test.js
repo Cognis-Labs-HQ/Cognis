@@ -649,3 +649,104 @@ test("required dialogs release first-visit controls even though user cancellatio
     assert.ok(state.rendered.every((entry) => entry.disposed));
     assert.ok(state.events.includes("ui:tutorial:modal"));
 });
+
+test("step navigation guards block route requests and history until progression or disposal", async (context) => {
+    const state = host(context);
+    const owner = state.owner();
+    const registered = await owner.register(
+        play([
+            { id: "guarded", titleKey: "guarded", preventNavigation: true },
+            { id: "free", titleKey: "free" },
+        ]),
+    );
+    const request = () =>
+        state.window.dispatchEvent(
+            new CustomEvent("cognis:route-before-navigate", {
+                cancelable: true,
+                detail: { path: "/calendar" },
+            }),
+        );
+    assert.equal(request(), true);
+    const session = await registered.start({ firstTime: true });
+    await session.ready;
+    assert.equal(request(), false);
+    state.window.dispatchEvent(new Event("popstate"));
+    assert.equal(state.api.current().index, 0);
+    assert.equal(request(), false);
+    await session.next();
+    assert.equal(request(), true);
+    await session.back();
+    assert.equal(request(), false);
+    owner.abort();
+    assert.equal(request(), true);
+    assert.equal((await session.finished).reason, "ownerRemoved");
+});
+
+test("navigation guards allow tutorial-owned route changes and reject invalid policies", async (context) => {
+    const state = host(context);
+    const owner = state.owner();
+    await assert.rejects(
+        owner.register(
+            play([
+                {
+                    id: "invalid",
+                    titleKey: "invalid",
+                    preventNavigation: "yes",
+                },
+            ]),
+        ),
+        /invalid_tutorial_definition/,
+    );
+    let navigations = 0;
+    state.ctx.capabilities.contribute("ui:navigate", async (path) => {
+        const allowed = state.window.dispatchEvent(
+            new CustomEvent("cognis:route-before-navigate", {
+                cancelable: true,
+                detail: { path },
+            }),
+        );
+        assert.equal(allowed, true);
+        assert.equal(
+            state.window.dispatchEvent(
+                new CustomEvent("cognis:route-before-navigate", {
+                    cancelable: true,
+                    detail: { path: "/unrelated" },
+                }),
+            ),
+            false,
+        );
+        state.window.location.pathname = path;
+        navigations++;
+        return true;
+    });
+    const registered = await owner.register(
+        play([
+            {
+                id: "guarded",
+                titleKey: "guarded",
+                preventNavigation: true,
+                route: "/calendar",
+            },
+        ]),
+    );
+    const session = await registered.start();
+    await session.ready;
+    assert.equal(navigations, 1);
+    assert.equal(
+        state.window.dispatchEvent(
+            new CustomEvent("cognis:route-before-navigate", {
+                cancelable: true,
+            }),
+        ),
+        false,
+    );
+    await session.cancel();
+    assert.equal(
+        state.window.dispatchEvent(
+            new CustomEvent("cognis:route-before-navigate", {
+                cancelable: true,
+            }),
+        ),
+        true,
+    );
+});

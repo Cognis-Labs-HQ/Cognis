@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Tutorial Controls And Copy
 
-Includes the parent tutorial update: the shade excludes the floating controls and accent ring, and tutorial copy focuses on useful page actions in all four languages.
+Includes the parent tutorial update: standard shared floating-menu styling, a working page-header replay chooser, shade exclusions for controls and broadcast banners, and step-owned navigation guards. The Dashboard guide keeps users on the page while explaining its navigation.
 
 ## Commits
 
