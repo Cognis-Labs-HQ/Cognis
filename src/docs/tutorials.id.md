@@ -125,3 +125,9 @@ createPageComposer(root, {
 ## Katalog Tutorial
 
 Katalog bahasa tutorial dimuat dengan revisi berdasarkan kunci terjemahan yang dideklarasikan, terpisah dari pemuatan katalog halaman sebelumnya. Ini mencegah katalog lama dalam memori menolak teks tutorial yang baru diterbitkan. Kontrak panduan yang sama memakai kembali katalog, termasuk saat luring. Teks bahasa pilihan yang tidak tersedia memakai bahasa Inggris; kunci bahasa Inggris yang benar-benar hilang tetap menggagalkan pendaftaran dan membatalkan pemiliknya. Kunci langkah memakai nama topik, bukan urutannya.
+
+## Geometri Sorotan Terlihat
+
+Sorotan memakai irisan terlihat dari sasaran, leluhur yang memotong atau menggulir, dan viewport visual. Sasaran halaman menghindari header serta footer; panduan yang menargetkan kontrol tersebut tetap memakai wilayahnya sendiri. Sasaran besar yang sudah terlihat mempertahankan posisi gulir. Kotak petunjuk mencoba sisi yang tersedia sebelum ditempatkan di dalam sasaran terlihat, dengan panah di luar layar yang menyesatkan disembunyikan. Kontrol tutorial menyisihkan ruang sendiri agar teks terjemahan panjang dapat digulir tanpa menutupi tombol navigasi.
+
+Instans menu mengambang bersama memakai permukaan tema buram, batas aksen, dan bayangan di atas lapisan peredupan, tanpa bergantung pada urutan pemuatan stylesheet. Berikutnya dan Selesai memiliki kontras lebih kuat. Kontrol yang membungkus tetap berada di viewport pada tema terang maupun gelap. Aturan pembatalan kunjungan pertama dan pengulangan tidak berubah.

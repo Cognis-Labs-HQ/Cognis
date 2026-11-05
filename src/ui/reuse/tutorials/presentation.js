@@ -6,20 +6,10 @@
  */
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
+import { clipRect, tutorialViewport, visibleTargetRect } from "./geometry.js";
 
 const focusable =
     "button, a[href], input, select, textarea, [tabindex], [contenteditable='true']";
-
-function viewportBounds(window) {
-    return (
-        window.visualViewport ?? {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            offsetLeft: 0,
-            offsetTop: 0,
-        }
-    );
-}
 
 /** Place a bounded callout beside the target, clamping it to the visual viewport. */
 /**
@@ -38,30 +28,54 @@ export function placeCallout(
     padding = 10,
 ) {
     const gap = padding + 14;
-    const offsetLeft = viewport.offsetLeft ?? 0;
-    const offsetTop = viewport.offsetTop ?? 0;
-    let side = placement;
-    if (side === "auto")
-        side =
-            offsetTop + viewport.height - rect.bottom > box.height + gap
-                ? "bottom"
-                : "top";
-    let left = rect.left + rect.width / 2 - box.width / 2;
-    let top = side === "top" ? rect.top - box.height - gap : rect.bottom + gap;
-    if (side === "left" || side === "right") {
-        left = side === "left" ? rect.left - box.width - gap : rect.right + gap;
-        top = rect.top + rect.height / 2 - box.height / 2;
+    const leftEdge = (viewport.offsetLeft ?? 0) + 8;
+    const topEdge = (viewport.offsetTop ?? 0) + 8;
+    const rightEdge = (viewport.offsetLeft ?? 0) + viewport.width - 8;
+    const bottomEdge = (viewport.offsetTop ?? 0) + viewport.height - 8;
+    const horizontal = rect.left + rect.width / 2 - box.width / 2;
+    const vertical = rect.top + rect.height / 2 - box.height / 2;
+    const candidates = {
+        bottom: { left: horizontal, top: rect.bottom + gap },
+        top: { left: horizontal, top: rect.top - box.height - gap },
+        right: { left: rect.right + gap, top: vertical },
+        left: { left: rect.left - box.width - gap, top: vertical },
+    };
+    const sides = [
+        ...new Set([
+            ...(placement === "auto" ? [] : [placement]),
+            "bottom",
+            "top",
+            "right",
+            "left",
+        ]),
+    ];
+    for (const side of sides) {
+        const candidate = candidates[side];
+        const left = Math.max(
+            leftEdge,
+            Math.min(candidate.left, rightEdge - box.width),
+        );
+        const top = Math.max(
+            topEdge,
+            Math.min(candidate.top, bottomEdge - box.height),
+        );
+        const overlaps =
+            left < rect.right &&
+            left + box.width > rect.left &&
+            top < rect.bottom &&
+            top + box.height > rect.top;
+        if (
+            !overlaps &&
+            left + box.width <= rightEdge &&
+            top + box.height <= bottomEdge
+        )
+            return { side, left, top };
     }
+    // Oversized targets can fill every side. Keep copy readable inside the visible area without a misleading arrow.
     return {
-        side,
-        left: Math.max(
-            offsetLeft + 8,
-            Math.min(left, offsetLeft + viewport.width - box.width - 8),
-        ),
-        top: Math.max(
-            offsetTop + 8,
-            Math.min(top, offsetTop + viewport.height - box.height - 8),
-        ),
+        side: "inside",
+        left: Math.max(leftEdge, Math.min(horizontal, rightEdge - box.width)),
+        top: topEdge,
     };
 }
 
@@ -252,75 +266,99 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 lost?.(error);
                 return;
             }
-            const viewport = viewportBounds(window);
-            panel.style.maxHeight = `${Math.max(100, viewport.height - 24)}px`;
+            const viewport = tutorialViewport(window, document, target);
+            menu.element.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
+            menu.element.style.maxHeight = `${Math.max(48, viewport.height - 16)}px`;
+            const menuBox = menu.element.getBoundingClientRect();
+            const menuTop = Math.max(
+                viewport.offsetTop + 8,
+                viewport.offsetTop + viewport.height - menuBox.height - 12,
+            );
+            Object.assign(menu.element.style, {
+                left: `${viewport.offsetLeft + viewport.width / 2}px`,
+                top: `${menuTop}px`,
+                bottom: "auto",
+            });
+            const panelViewport = {
+                ...viewport,
+                height: Math.max(0, menuTop - viewport.offsetTop - 8),
+            };
+            panel.hidden = panelViewport.height < 56;
+            panel.style.maxHeight = `${Math.max(24, panelViewport.height - 16)}px`;
             panel.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
-            if (target) {
-                const rect = target.getBoundingClientRect();
-                const padding = step.padding ?? 8;
-                spotlight.hidden = !step.effects.spotlight;
+            const visible =
+                target &&
+                visibleTargetRect(target, viewport, step.padding ?? 8);
+            spotlight.hidden = !visible || !step.effects.spotlight;
+            if (visible)
                 Object.assign(spotlight.style, {
-                    left: `${rect.left - padding}px`,
-                    top: `${rect.top - padding}px`,
-                    width: `${rect.width + padding * 2}px`,
-                    height: `${rect.height + padding * 2}px`,
+                    left: `${visible.left}px`,
+                    top: `${visible.top}px`,
+                    width: `${visible.width}px`,
+                    height: `${visible.height}px`,
                 });
-                const box = panel.getBoundingClientRect();
-                const position = placeCallout(
-                    rect,
-                    box,
-                    viewport,
-                    step.placement,
-                    padding,
-                );
-                Object.assign(panel.style, {
-                    left: `${position.left}px`,
-                    top: `${position.top}px`,
+            const anchor =
+                visible &&
+                clipRect(visible, {
+                    left: panelViewport.offsetLeft,
+                    top: panelViewport.offsetTop,
+                    right: panelViewport.offsetLeft + panelViewport.width,
+                    bottom: panelViewport.offsetTop + panelViewport.height,
                 });
-                arrow.hidden = !step.effects.arrow;
+            const box = panel.getBoundingClientRect();
+            const position = anchor
+                ? placeCallout(anchor, box, panelViewport, step.placement, 0)
+                : {
+                      side: "inside",
+                      left:
+                          viewport.offsetLeft +
+                          Math.max(8, (viewport.width - box.width) / 2),
+                      top: viewport.offsetTop + 8,
+                  };
+            Object.assign(panel.style, {
+                left: `${position.left}px`,
+                top: `${position.top}px`,
+            });
+            arrow.hidden =
+                panel.hidden ||
+                !anchor ||
+                !step.effects.arrow ||
+                position.side === "inside";
+            if (!arrow.hidden) {
                 const x =
                     position.side === "left"
-                        ? rect.left - padding - 8
+                        ? anchor.left - 8
                         : position.side === "right"
-                          ? rect.right + padding + 8
-                          : Math.max(
-                                8,
-                                Math.min(
-                                    window.innerWidth - 8,
-                                    rect.left + rect.width / 2,
-                                ),
-                            );
-                arrow.dataset.side = position.side;
+                          ? anchor.right + 8
+                          : anchor.left + anchor.width / 2;
                 const y =
                     position.side === "top"
-                        ? rect.top - padding - 8
+                        ? anchor.top - 8
                         : position.side === "bottom"
-                          ? rect.bottom + padding + 8
-                          : rect.top + rect.height / 2;
-                Object.assign(arrow.style, {
-                    left: `${Math.max(viewport.offsetLeft + 8, Math.min(x, viewport.offsetLeft + viewport.width - 8))}px`,
-                    top: `${Math.max(viewport.offsetTop + 8, Math.min(y, viewport.offsetTop + viewport.height - 8))}px`,
-                });
-            } else {
-                spotlight.hidden = true;
-                arrow.hidden = true;
-                panel.style.left = "50%";
-                panel.style.top = "16px";
-                panel.style.transform = "translateX(-50%)";
+                          ? anchor.bottom + 8
+                          : anchor.top + anchor.height / 2;
+                arrow.dataset.side = position.side;
+                Object.assign(arrow.style, { left: `${x}px`, top: `${y}px` });
             }
             frame = window.requestAnimationFrame(update);
         }
         if (target && !waiting) {
             const rect = target.getBoundingClientRect();
-            const viewport = viewportBounds(window);
+            const viewport = tutorialViewport(window, document, target);
+            const visible = visibleTargetRect(target, viewport);
+            const fits =
+                rect.width <= viewport.width && rect.height <= viewport.height;
             if (
-                rect.top < viewport.offsetTop ||
-                rect.bottom > viewport.offsetTop + viewport.height ||
-                rect.left < viewport.offsetLeft ||
-                rect.right > viewport.offsetLeft + viewport.width
+                !visible ||
+                (fits &&
+                    (rect.top < viewport.offsetTop ||
+                        rect.bottom > viewport.offsetTop + viewport.height ||
+                        rect.left < viewport.offsetLeft ||
+                        rect.right > viewport.offsetLeft + viewport.width))
             )
                 target.scrollIntoView({
-                    block: "center",
+                    block:
+                        rect.height <= viewport.height ? "center" : "nearest",
                     inline: "nearest",
                     behavior: "instant",
                 });
@@ -400,6 +438,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 update();
             });
             resize.observe(panel);
+            resize.observe(menu.element);
             if (target) resize.observe(target);
         }
         scoped.addEventListener("abort", dispose, { once: true });

@@ -22,6 +22,12 @@ Tutorial keys preserve the manifest module ID as one namespace segment. Generic 
 
 Tutorial locale catalogs are loaded under a revision of their declared translation keys, separately from earlier page catalog loads. This prevents an older in-memory catalog from rejecting newly published tutorial copy. Identical guide contracts reuse the catalog, including offline. Missing preferred-language text falls back to English; genuinely missing English keys still fail registration and roll back the owner. Step keys name their subject rather than their position.
 
+## Visible Highlight Geometry
+
+Highlights use the visible intersection of the target, its clipping or scrolling ancestors and the visual viewport. Page targets avoid the site header and footer; guides targeting those controls still use their own full area. An oversized target that is already visible keeps its scroll position. Callouts try available sides before moving inside the visible target, where misleading offscreen arrows are hidden. Tutorial controls reserve their own space so long translated copy scrolls without covering navigation buttons.
+
+The independent shared floating menu uses an opaque themed surface, accent border and shadow above the dimming layer, regardless of stylesheet load order. Next and Finish have stronger contrast, and wrapping controls stay inside the viewport in light and dark themes. First-visit and replay cancellation rules remain unchanged.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
