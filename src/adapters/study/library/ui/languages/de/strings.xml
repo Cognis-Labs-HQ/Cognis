@@ -225,4 +225,14 @@
     <string name="adapter.study.library.tutorial.administration.create.and.edit.body">Prüfen Sie vollständige Beziehungen vor Bearbeitung, Zusammenführen oder Löschen.</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.title">Sichtbarkeit und Prüfung</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Prüfen Sie Besitz, Sichtbarkeit und offene Anfragen vor Veröffentlichung oder Änderung geteilter Inhalte.</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Sammlung eingrenzen</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Wählen Sie Sprache und Ebene und grenzen Sie Karten über verfügbare Filter ein. Öffnen Sie eine Karte für Lesungen, Bedeutungen und Beziehungen.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Hören und Schreiben üben</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Spielen Sie in den Kartendetails verfügbare Aussprache ab oder öffnen Sie die Schreibübung. Nutzen Sie Strichhilfe, Rückgängig und Zurücksetzen.</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Karten merken und ändern</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Merken Sie nützliche Karten als Favoriten. Schlagen Sie fehlende Inhalte oder Korrekturen vor und verfolgen Sie den Status unter Anfragen.</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Wörterbuchtreffer vergleichen</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Vergleichen Sie Schreibweise, Lesungen und Definitionen. Prüfen Sie Kandidaten vor dem Import, um den beabsichtigten Eintrag auszuwählen.</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Anfrage verfolgen</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Öffnen Sie Ihre Anfrage für vorgeschlagene Änderungen und die aktuelle Entscheidung. Beachten Sie Rückmeldungen vor einer korrigierten Anfrage.</string>
 </resources>

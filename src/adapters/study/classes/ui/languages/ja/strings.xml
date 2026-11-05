@@ -11,4 +11,8 @@
     <string name="module.study.classes.tutorial.membership.enrolled.classes.body">所属するクラスと言語を確認してから、クラスを開きます。</string>
     <string name="module.study.classes.tutorial.membership.join.requests.title">参加の申請</string>
     <string name="module.study.classes.tutorial.membership.join.requests.body">利用できるクラスと申請状況を確認し、同じ申請を重ねて送らないようにします。</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">クラスへの参加を申請する</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">学習言語に合うクラスの詳細を確認して参加を申請します。承認後に所属が更新されます。</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.title">読みやすいフォントを選ぶ</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.body">フォントを選び、保存前にプレビューします。文字サイズも読みやすく調整できます。</string>
 </resources>

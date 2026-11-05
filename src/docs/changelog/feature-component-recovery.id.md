@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Kontrol Dan Teks Tutorial
 
-Menyertakan pembaruan tutorial dari cabang induk: gaya standar menu mengambang bersama, pemilih pengulangan dari judul halaman yang dapat digunakan, pengecualian kontrol dan banner siaran dari peredupan, serta penjagaan navigasi per langkah. Panduan Dasbor mempertahankan halaman saat menjelaskan navigasinya.
+Menyertakan pembaruan panduan cabang induk: 55 panduan dan 167 langkah, termasuk 22 panduan administrator. Langkah pasif mencegah hover dan aktivasi, Dasbor menggunakan pencari asli, dan grup langkah melepaskan permukaan sementara saat pengguna melanjutkan atau menyelesaikan lebih awal. Kebijakan viewport, siaran, navigasi, dan kesiapan halaman tetap berlaku.
 
 ## Commit
 

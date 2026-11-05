@@ -24,6 +24,14 @@ export const guides = [
                         bodyKey:
                             "adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body",
                     },
+                    {
+                        id: "compare-progress",
+                        selector: ".leaderboard-table-scroll",
+                        titleKey:
+                            "adapter.study.leaderboard.tutorial.rankings.compare.progress.title",
+                        bodyKey:
+                            "adapter.study.leaderboard.tutorial.rankings.compare.progress.body",
+                    },
                 ],
             },
         ],

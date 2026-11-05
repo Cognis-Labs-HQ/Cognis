@@ -32,6 +32,30 @@ export const guides = [
                         bodyKey:
                             "adapter.study.library.tutorial.explore.favourites.and.contributions.body",
                     },
+                    {
+                        id: "filter-and-select",
+                        selector: "#study-library-layer",
+                        titleKey:
+                            "adapter.study.library.tutorial.explore.filter.and.select.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.explore.filter.and.select.body",
+                    },
+                    {
+                        id: "practise-writing",
+                        selector: "#study-library-layer",
+                        titleKey:
+                            "adapter.study.library.tutorial.explore.practise.writing.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.explore.practise.writing.body",
+                    },
+                    {
+                        id: "collect-and-request",
+                        selector: "#study-library-layer",
+                        titleKey:
+                            "adapter.study.library.tutorial.explore.collect.and.request.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.explore.collect.and.request.body",
+                    },
                 ],
             },
             {
@@ -56,6 +80,14 @@ export const guides = [
                         bodyKey:
                             "adapter.study.library.tutorial.search.inspect.before.importing.body",
                     },
+                    {
+                        id: "compare-dictionary-matches",
+                        selector: "#dictionary-results",
+                        titleKey:
+                            "adapter.study.library.tutorial.search.compare.dictionary.matches.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.search.compare.dictionary.matches.body",
+                    },
                 ],
             },
             {
@@ -79,6 +111,14 @@ export const guides = [
                             "adapter.study.library.tutorial.requests.review.details.title",
                         bodyKey:
                             "adapter.study.library.tutorial.requests.review.details.body",
+                    },
+                    {
+                        id: "follow-request-outcome",
+                        selector: "#study-library-requests",
+                        titleKey:
+                            "adapter.study.library.tutorial.requests.follow.request.outcome.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.requests.follow.request.outcome.body",
                     },
                 ],
             },

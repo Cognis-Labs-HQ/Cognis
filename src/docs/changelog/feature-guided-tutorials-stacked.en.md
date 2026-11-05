@@ -42,6 +42,12 @@ Tutorial text describes available tasks and controls without unrelated reassuran
 
 Steps can opt into `preventNavigation` to keep users on the current page while explaining navigation controls. The Dashboard guide uses it throughout. Pointer and keyboard link activation, programmatic router navigation and router-managed history traversal respect the guard. Next, Back and Finish remain available; authored tutorial route transitions are allowed. Guards release with the step or session.
 
+## Task Walkthroughs
+
+Coverage comprises 55 guides and 167 steps, including 22 administrator guides. Dashboard includes a hands-on search exercise: open the real search control, enter a query, inspect search options and results, and close the finder before continuing. Explanatory steps block accidental hover and activation; interactive steps explicitly allow their target. New contextual guides appear when a flashcard deck, practice session or module details are visible.
+
+Feature guides now cover starting and previewing messages, room membership, post previews, calendar navigation and event planning, recurring-event edits, share filtering and expiry, invitations, library filtering and dictionary comparisons, audio and writing practice, favourites and content requests, deck creation, practice feedback, deck editing/sharing/export, class enrollment, rankings, font preferences, unsaved changes, release notices, user lookup and module configuration/lifecycle. Forms and destructive confirmations remain deliberate feature-owned interactions; guides explain their entry points and yield to required dialogs.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -54,3 +60,4 @@ Steps can opt into `preventNavigation` to keep users on the current page while e
 - [8a845efb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a845efb1cb16a1538a80cc456c82482af4a4c0e) — Renew readiness when a cancelled page remounts the same URL.
 - [e65144a29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e65144a29220e5ecc0b10272bf3739716ca52094)
 - [6fd10e6f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fd10e6f5b2287cfbe47848a49b749929e0e17c6)
+- [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)

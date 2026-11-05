@@ -27,4 +27,6 @@
     <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">ランキングを選び、参加者と集計期間を確認します。</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">得点と順位の変化</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">得点と順位の変化を比較します。自分の位置がある場合は行が強調されます。</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">進捗を読み取る</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">選択したランキングで自分の行とスコアを確認します。ランキングを切り替えると、集計対象の活動も変わります。</string>
 </resources>

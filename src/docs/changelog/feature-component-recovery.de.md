@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Anleitungssteuerung Und Texte
 
-Enthält die Aktualisierung des übergeordneten Tutorial-Zweigs: normales gemeinsames schwebendes Menü, funktionierende Wiederholungsauswahl am Seitenkopf, Aussparung von Steuerung und Broadcast-Bannern in der Abdunklung sowie schritteigene Navigationssperren. Die Dashboard-Anleitung hält Benutzer auf der Seite, während sie die Navigation erklärt.
+Enthält die überarbeitete Anleitungssammlung des übergeordneten Zweigs: 55 Anleitungen mit 167 Schritten, darunter 22 Administratoranleitungen. Erklärende Schritte sperren Hover und Aktivierung, das Dashboard nutzt die echte Suche und Schrittgruppen geben vorübergehende Oberflächen beim Fortfahren oder frühen Abschluss frei. Die bestehenden Regeln für Ansichtsfenster, Broadcasts, Navigation und Seitenbereitschaft bleiben erhalten.
 
 ## Commits
 

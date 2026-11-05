@@ -31,6 +31,30 @@ export const guides = [
                         bodyKey:
                             "gateway.calendar.tutorial.calendar.events.and.invitations.body",
                     },
+                    {
+                        id: "navigate-dates",
+                        selector: "#calendar-toolbar-summary",
+                        titleKey:
+                            "gateway.calendar.tutorial.calendar.navigate.dates.title",
+                        bodyKey:
+                            "gateway.calendar.tutorial.calendar.navigate.dates.body",
+                    },
+                    {
+                        id: "plan-event",
+                        selector: ".calendar-view-canvas",
+                        titleKey:
+                            "gateway.calendar.tutorial.calendar.plan.event.title",
+                        bodyKey:
+                            "gateway.calendar.tutorial.calendar.plan.event.body",
+                    },
+                    {
+                        id: "review-upcoming",
+                        selector: "#calendar-toolbar-upcoming",
+                        titleKey:
+                            "gateway.calendar.tutorial.calendar.review.upcoming.title",
+                        bodyKey:
+                            "gateway.calendar.tutorial.calendar.review.upcoming.body",
+                    },
                 ],
             },
         ],

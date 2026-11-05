@@ -31,6 +31,14 @@ export const guides = [
                         bodyKey:
                             "module.study.classes.tutorial.classes.teaching.and.management.body",
                     },
+                    {
+                        id: "review-enrollment",
+                        selector: "#class-list",
+                        titleKey:
+                            "module.study.classes.tutorial.classes.review.enrollment.title",
+                        bodyKey:
+                            "module.study.classes.tutorial.classes.review.enrollment.body",
+                    },
                 ],
                 scope: "#class-list",
             },

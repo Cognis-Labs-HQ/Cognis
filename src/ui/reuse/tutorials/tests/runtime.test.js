@@ -750,3 +750,114 @@ test("navigation guards allow tutorial-owned route changes and reject invalid po
         true,
     );
 });
+
+test("passive descriptions block target interaction while interactive steps and overlay layers are explicit", async (context) => {
+    const state = host(context),
+        owner = state.owner();
+    await assert.rejects(
+        owner.register(
+            play([
+                {
+                    id: "invalid",
+                    titleKey: "invalid",
+                    interaction: "none",
+                    advance: { event: "click" },
+                },
+            ]),
+        ),
+        /invalid_tutorial_definition/,
+    );
+    await assert.rejects(
+        owner.register(
+            play([{ id: "invalid", titleKey: "invalid", layer: "arbitrary" }]),
+        ),
+        /invalid_tutorial_definition/,
+    );
+    let sessionSignal, stepSignal;
+    const registered = await owner.register(
+        play([
+            {
+                id: "read",
+                titleKey: "read",
+                enter({ signal, sessionSignal: lifetime }) {
+                    stepSignal = signal;
+                    sessionSignal = lifetime;
+                },
+            },
+            {
+                id: "overlay",
+                titleKey: "overlay",
+                layer: "overlay",
+                interaction: "free",
+            },
+        ]),
+    );
+    const session = await registered.start();
+    await session.ready;
+    assert.equal(state.rendered.at(-1).step.interaction, "none");
+    await session.next();
+    assert.equal(stepSignal.aborted, true);
+    assert.equal(sessionSignal.aborted, false);
+    assert.equal(state.rendered.at(-1).step.layer, "overlay");
+    assert.equal(state.rendered.at(-1).step.interaction, "free");
+    await session.next();
+    assert.equal(sessionSignal.aborted, true);
+});
+
+test("step groups retain transient surfaces, release before the next group and restart when returning to the first step", async (context) => {
+    const state = host(context),
+        owner = state.owner();
+    const signals = [];
+    const enter = ({ groupSignal }) => {
+        signals.push(groupSignal);
+    };
+    const registered = await owner.register(
+        play([
+            { id: "open", titleKey: "open", group: "finder", enter },
+            { id: "query", titleKey: "query", group: "finder", enter },
+            { id: "account", titleKey: "account", enter },
+        ]),
+    );
+    const session = await registered.start({ firstTime: true });
+    await session.ready;
+    await session.next();
+    assert.equal(signals[0], signals[1]);
+    assert.equal(signals[0].aborted, false);
+    await session.back();
+    assert.equal(signals[0].aborted, true);
+    assert.notEqual(signals[0], signals[2]);
+    await session.next();
+    await session.next();
+    assert.equal(signals[2].aborted, true);
+    assert.equal(signals.at(-1).aborted, false);
+    owner.abort();
+    assert.equal(signals.at(-1).aborted, true);
+});
+
+test("accepted interactions tolerate replaced targets while permission checks remain immediate", async (context) => {
+    const state = host(context),
+        owner = state.owner();
+    let permitted = true,
+        element = state.element();
+    const target = await owner.target("field", { resolve: () => element });
+    const registered = await owner.register({
+        ...play([
+            {
+                id: "field",
+                titleKey: "field",
+                target: target.id,
+                advance: { event: "click" },
+            },
+        ]),
+        available: () => permitted,
+    });
+    const session = await registered.start();
+    await session.ready;
+    const view = state.rendered.at(-1);
+    element = state.element();
+    assert.equal(view.valid(), false);
+    assert.equal(view.valid(true), true);
+    permitted = false;
+    assert.equal(view.valid(true), false);
+    await session.dispose();
+});

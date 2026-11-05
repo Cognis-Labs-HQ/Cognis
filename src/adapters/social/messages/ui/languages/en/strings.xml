@@ -88,4 +88,12 @@
     <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check the current participants and pending requests.</string>
     <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
     <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; attachments and calls use their own controls.</string>
+  <string name="module.social.messages.tutorial.messages.start.room.title">Start A Room</string>
+  <string name="module.social.messages.tutorial.messages.start.room.body">Create a direct or group room, select recipients, and check membership before sending the first message.</string>
+  <string name="module.social.messages.tutorial.messages.write.message.title">Write A Message</string>
+  <string name="module.social.messages.tutorial.messages.write.message.body">Write your message here. Use formatting and attachments as needed, then check the preview before sending.</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.title">Preview Before Sending</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.body">Switch to Preview to check formatting, links and attached content. Return to Compose to make corrections.</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.title">Manage The Room</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Review its available actions before changing membership or leaving.</string>
 </resources>

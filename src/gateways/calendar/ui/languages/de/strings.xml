@@ -202,4 +202,10 @@
     <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Wechseln Sie Ansichten und Zeiträume, um das gewünschte Datum zu finden.</string>
     <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Termine und Einladungen</string>
     <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Öffnen Sie Termine und prüfen Sie Details, Teilnehmer und Einladungsstatus vor Änderungen.</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Zum passenden Datum</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Wechseln Sie über die Datumsnavigation zwischen Zeiträumen und wählen Sie die passende Kalenderansicht.</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.title">Termin planen</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Wählen Sie Datum oder Uhrzeit für einen neuen Termin. Legen Sie Kalender, Zeit, Wiederholung, Sichtbarkeit und Erinnerungen vor dem Speichern fest.</string>
+  <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Anstehende Termine prüfen</string>
+  <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Öffnen Sie anstehende Termine für Details und Einladungen. Prüfen Sie bei Serien, ob Änderungen einen Termin oder die Serie betreffen.</string>
 </resources>

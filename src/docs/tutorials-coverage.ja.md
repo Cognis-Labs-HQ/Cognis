@@ -4,44 +4,48 @@
 
 ## 対応範囲
 
-| ページ・画面                                     | ガイド                   | アクセス           |
-| ------------------------------------------------ | ------------------------ | ------------------ |
-| `/settings` · `#general`                         | アカウント設定           | ログイン済み利用者 |
-| `/settings` · `#appearance`                      | 表示                     | ログイン済み利用者 |
-| `/settings` · `#language`                        | 言語設定                 | ログイン済み利用者 |
-| `/settings` · `#datetime`                        | 日時の設定               | ログイン済み利用者 |
-| `/settings` · `#advanced`                        | 詳細設定                 | ログイン済み利用者 |
-| `/administration` · `#components`                | コンポーネントの管理     | 管理者             |
-| `/administration` · `#status`                    | システムの状態           | 管理者             |
-| `/administration` · `#security`                  | セキュリティーポリシー   | 管理者             |
-| `/users`                                         | ユーザー管理             | 管理者             |
-| `/administration/modules` · `.module-store-grid` | モジュール一覧           | 管理者             |
-| `^/docs(?:/\|$)`                                 | ドキュメント             | ログイン済み利用者 |
-| `^/changelogs(?:/\|$)`                           | リリース履歴             | ログイン済み利用者 |
-| `/calendar`                                      | カレンダーの使い方       | ログイン済み利用者 |
-| `^/profile(?:/\|$)`                              | プロフィールと投稿       | ログイン済み利用者 |
-| `^/messages(?:/\|$)`                             | メッセージの使い方       | ログイン済み利用者 |
-| `/classes` · `#class-list`                       | クラスの使い方           | ログイン済み利用者 |
-| `/my-classes`                                    | 参加しているクラス       | ログイン済み利用者 |
-| `^/study/leaderboard(?:/\|$)`                    | ランキングの見方         | ログイン済み利用者 |
-| `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)`        | フラッシュカードの使い方 | ログイン済み利用者 |
-| `^/study/explore(?:/\|$)`                        | ライブラリーを探索       | ログイン済み利用者 |
-| `^/study/library/search(?:/\|$)`                 | 辞書の検索               | ログイン済み利用者 |
-| `^/study/(?:library/)?requests(?:/\|$)`          | ライブラリーへの申請     | ログイン済み利用者 |
-| `^/study/library(?:/\|$)` · `.library-browser`   | ライブラリーの管理       | 管理者             |
-| `^/study/(?:settings\|welcome)$`                 | 学習の設定               | ログイン済み利用者 |
-| `/shares`                                        | 共有の使い方             | ログイン済み利用者 |
-| `/invite`                                        | 招待の使い方             | ログイン済み利用者 |
-| `/settings` · `#auth-security-reset-panel`       | アカウントの安全設定     | ログイン済み利用者 |
-| `/settings` · `#tfa-settings-panel`              | 二要素認証               | ログイン済み利用者 |
-| `/administration` · `#tfa-enforcement`           | 二要素認証の必須設定     | 管理者             |
-| `/settings` · `#notif-matrix-container`          | 通知の設定               | ログイン済み利用者 |
-| `/administration` · `#notifications`             | 通知の配信               | 管理者             |
-| `/administration` · `#broadcasts`                | お知らせの管理           | 管理者             |
-| `/administration` · `[data-files-quota-admin]`   | 保存容量の上限           | 管理者             |
-| `/administration` · `#logs`                      | ログの確認               | 管理者             |
-| `/administration` · `#registration`              | 登録の方針               | 管理者             |
-| `/administration` · `#social`                    | 交流機能の管理           | 管理者             |
+| ページ・画面                                               | ガイド                     | アクセス           |
+| ---------------------------------------------------------- | -------------------------- | ------------------ |
+| `/settings` · `#general`                                   | アカウント設定             | ログイン済み利用者 |
+| `/settings` · `#appearance`                                | 表示                       | ログイン済み利用者 |
+| `/settings` · `#language`                                  | 言語設定                   | ログイン済み利用者 |
+| `/settings` · `#datetime`                                  | 日時の設定                 | ログイン済み利用者 |
+| `/settings` · `#advanced`                                  | 詳細設定                   | ログイン済み利用者 |
+| `/administration` · `#components`                          | コンポーネントの管理       | 管理者             |
+| `/administration` · `#status`                              | システムの状態             | 管理者             |
+| `/administration` · `#security`                            | セキュリティーポリシー     | 管理者             |
+| `/users`                                                   | ユーザー管理               | 管理者             |
+| `/administration/modules` · `.module-store-grid`           | モジュール一覧             | 管理者             |
+| `^/docs(?:/\|$)`                                           | ドキュメント               | ログイン済み利用者 |
+| `^/changelogs(?:/\|$)`                                     | リリース履歴               | ログイン済み利用者 |
+| `/calendar`                                                | カレンダーの使い方         | ログイン済み利用者 |
+| `^/profile(?:/\|$)`                                        | プロフィールと投稿         | ログイン済み利用者 |
+| `^/messages(?:/\|$)`                                       | メッセージの使い方         | ログイン済み利用者 |
+| `/classes` · `#class-list`                                 | クラスの使い方             | ログイン済み利用者 |
+| `/my-classes`                                              | 参加しているクラス         | ログイン済み利用者 |
+| `^/study/leaderboard(?:/\|$)`                              | ランキングの見方           | ログイン済み利用者 |
+| `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)`                  | フラッシュカードの使い方   | ログイン済み利用者 |
+| `^/study/explore(?:/\|$)`                                  | ライブラリーを探索         | ログイン済み利用者 |
+| `^/study/library/search(?:/\|$)`                           | 辞書の検索                 | ログイン済み利用者 |
+| `^/study/(?:library/)?requests(?:/\|$)`                    | ライブラリーへの申請       | ログイン済み利用者 |
+| `^/study/library(?:/\|$)` · `.library-browser`             | ライブラリーの管理         | 管理者             |
+| `^/study/(?:settings\|welcome)$`                           | 学習の設定                 | ログイン済み利用者 |
+| `/shares`                                                  | 共有の使い方               | ログイン済み利用者 |
+| `/invite`                                                  | 招待の使い方               | ログイン済み利用者 |
+| `/settings` · `#auth-security-reset-panel`                 | アカウントの安全設定       | ログイン済み利用者 |
+| `/settings` · `#tfa-settings-panel`                        | 二要素認証                 | ログイン済み利用者 |
+| `/administration` · `#tfa-enforcement`                     | 二要素認証の必須設定       | 管理者             |
+| `/settings` · `#notif-matrix-container`                    | 通知の設定                 | ログイン済み利用者 |
+| `/administration` · `#notifications`                       | 通知の配信                 | 管理者             |
+| `/administration` · `#broadcasts`                          | お知らせの管理             | 管理者             |
+| `/administration` · `[data-files-quota-admin]`             | 保存容量の上限             | 管理者             |
+| `/administration` · `#logs`                                | ログの確認                 | 管理者             |
+| `/administration` · `#registration`                        | 登録の方針                 | 管理者             |
+| `/administration` · `#social`                              | 交流機能の管理             | 管理者             |
+| `/dashboard`                                               | ワークスペースと検索の練習 | ログイン済み       |
+| Flashcards · `[data-study-session]`                        | デッキの管理               | ログイン済み       |
+| Flashcards · `[data-practice]`                             | デッキで練習               | ログイン済み       |
+| `/administration/modules/:uuid` · `.module-detail-release` | モジュールの詳細           | 管理者             |
 
 ## 外部モジュール
 
@@ -52,3 +56,9 @@
 ## 対象外となる画面
 
 閲覧専用のライセンス・エラーページ、オフライン起動処理、開発用の画面には操作ガイドを設けません。ログインのコールバック、必須の同意、パスワード確認、必須設定のダイアログは、それぞれの操作規則を維持します。共有先の状態画面から他のアカウントの内容を自動表示しません。埋め込み画面は、そのページコンテキスト内のチュートリアル操作を使います。
+
+## 作業別のガイド
+
+全体で55ガイド・167ステップとなり、管理者向け22ガイドを含みます。ダッシュボードでは実際の検索を開き、検索語を入力し、条件や結果を確認して閉じる練習ができます。説明ステップでは意図しないホバーや操作を防ぎ、操作ステップで対象を明示的に許可します。デッキ詳細、練習セッション、モジュール詳細が表示されると、それぞれのガイドが利用できます。
+
+メッセージの開始とプレビュー、ルームの参加者、投稿のプレビュー、カレンダー移動と予定作成、繰り返し予定の編集、共有の絞り込みと有効期限、招待、ライブラリーの絞り込みと辞書候補の比較、音声と書き取り、お気に入りと内容の修正依頼、デッキ作成、練習の結果確認、デッキ編集・共有・書き出し、クラス参加、ランキング、フォント、未保存の変更、更新通知、アカウント検索、モジュール設定と管理を案内します。フォーム入力や削除確認は利用者が機能本来の画面で行い、ガイドは入口を説明して必須ダイアログに譲ります。

@@ -27,4 +27,6 @@
     <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Wählen Sie eine Rangliste für Teilnehmer und Wertungszeitraum.</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Punkte und Veränderungen</string>
     <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Vergleichen Sie Punkte und Rangänderungen; markierte Zeilen zeigen gegebenenfalls Ihre Position.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">Fortschritt einordnen</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">Finden Sie Ihre Zeile und vergleichen Sie Punkte innerhalb der gewählten Rangliste. Andere Ranglisten messen andere Aktivitäten.</string>
 </resources>

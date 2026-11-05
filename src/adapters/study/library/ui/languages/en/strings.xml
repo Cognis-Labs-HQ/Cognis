@@ -225,4 +225,14 @@
     <string name="adapter.study.library.tutorial.administration.create.and.edit.body">Review a record’s complete relationships before editing, merging or deleting it.</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.title">Visibility And Review</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Check ownership, visibility and pending requests before publishing or changing shared content.</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Narrow Your Collection</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Choose a language and layer, then use available filters to narrow the cards. Open a matching card to inspect its readings, meanings and relationships.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Listen And Practise Writing</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">In a card’s details, play available pronunciation audio or open its drawing practice. Use the stroke guide, undo and reset controls while practising.</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Save Cards And Suggest Changes</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Favourite useful cards for later. Use contribution or request actions to suggest missing content or corrections, then follow their status in Requests.</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Compare Dictionary Matches</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Compare spelling, readings and definitions across matches. Inspect a candidate before importing it so you can choose the intended entry.</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Follow A Request</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Open your request to review its proposed changes and current decision. Check feedback before submitting a corrected request.</string>
 </resources>

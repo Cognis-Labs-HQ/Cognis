@@ -22,6 +22,8 @@ export function createSession({
     emit,
 }) {
     const controller = new AbortController();
+    let groupController = new AbortController();
+    let groupId, groupStart;
     const originalFocus = document?.activeElement;
     let index = -1,
         stepController,
@@ -67,6 +69,7 @@ export function createSession({
         if (disposed) return false;
         disposed = true;
         controller.abort();
+        groupController.abort();
         cleanStep();
         record.signal.removeEventListener("abort", ownerRemoved);
         const result = { ...status(), status: outcome, reason };
@@ -118,8 +121,20 @@ export function createSession({
         if (disposed || (busy && !interrupt)) return false;
         busy = true;
         cleanStep();
+        const previousIndex = index;
         index = nextIndex;
         const step = record.play.steps[index];
+        if (
+            !step?.group ||
+            step.group !== groupId ||
+            (index === groupStart && index < previousIndex)
+        ) {
+            groupController.abort();
+            groupController = new AbortController();
+            groupId = step?.group;
+            groupStart = index;
+        }
+        const groupSignal = groupController.signal;
         const current = new AbortController();
         stepController = current;
         const signal = AbortSignal.any([controller.signal, current.signal]);
@@ -224,7 +239,13 @@ export function createSession({
                 throw new Error("tutorial_embedded_lock_unsupported");
             if (step.enter) {
                 const work = Promise.resolve().then(() =>
-                    step.enter({ signal, target, stepId: step.id }),
+                    step.enter({
+                        signal,
+                        sessionSignal: controller.signal,
+                        groupSignal,
+                        target,
+                        stepId: step.id,
+                    }),
                 );
                 work.then((cleanup) => {
                     if (signal.aborted && typeof cleanup === "function")
@@ -251,9 +272,11 @@ export function createSession({
                 target,
                 signal,
                 actions,
-                valid: () =>
+                valid: (interacting = false) =>
                     allowed() &&
-                    (!step.target || resolve(step.target) === target),
+                    (interacting ||
+                        !step.target ||
+                        resolve(step.target) === target),
                 lost: (error) => {
                     if (error) fail(error);
                     else if (!busy && !disposed) void enter(index);
@@ -300,7 +323,13 @@ export function createSession({
             if (step.waitFor) {
                 void abortable(
                     Promise.resolve().then(() =>
-                        step.waitFor({ signal, target, stepId: step.id }),
+                        step.waitFor({
+                            signal,
+                            sessionSignal: controller.signal,
+                            groupSignal,
+                            target,
+                            stepId: step.id,
+                        }),
                     ),
                     signal,
                 )

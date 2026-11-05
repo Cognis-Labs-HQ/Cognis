@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Tutorial Controls And Copy
 
-Includes the parent tutorial update: standard shared floating-menu styling, a working page-header replay chooser, shade exclusions for controls and broadcast banners, and step-owned navigation guards. The Dashboard guide keeps users on the page while explaining its navigation.
+Includes the parent walkthrough update: 55 guides and 167 steps, with 22 administrator guides. Passive steps suppress hover and activation, the Dashboard uses the real search finder, and scoped groups release transient surfaces when users continue or finish early. Existing viewport, broadcast, navigation and readiness policies remain in place.
 
 ## Commits
 

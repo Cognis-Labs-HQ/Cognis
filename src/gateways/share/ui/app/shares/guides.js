@@ -21,6 +21,20 @@ export const guides = [
                         bodyKey:
                             "share.tutorial.shares.recipients.and.access.body",
                     },
+                    {
+                        id: "filter-sharing",
+                        selector: '[data-share-filter="sent"]',
+                        titleKey: "share.tutorial.shares.filter.sharing.title",
+                        bodyKey: "share.tutorial.shares.filter.sharing.body",
+                    },
+                    {
+                        id: "manage-share-access",
+                        selector: "#shares-overview",
+                        titleKey:
+                            "share.tutorial.shares.manage.share.access.title",
+                        bodyKey:
+                            "share.tutorial.shares.manage.share.access.body",
+                    },
                 ],
             },
         ],

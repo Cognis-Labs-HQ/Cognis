@@ -31,6 +31,14 @@ export const guides = [
                         bodyKey:
                             "module.social.profile.tutorial.profile.social.actions.body",
                     },
+                    {
+                        id: "preview-post",
+                        selector: "#profile-post-preview-toggle",
+                        titleKey:
+                            "module.social.profile.tutorial.profile.preview.post.title",
+                        bodyKey:
+                            "module.social.profile.tutorial.profile.preview.post.body",
+                    },
                 ],
             },
         ],

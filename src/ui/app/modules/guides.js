@@ -31,8 +31,49 @@ export const guides = [
                         bodyKey:
                             "ui.tutorial.marketplace.browse.install.and.update.body",
                     },
+                    {
+                        id: "review-source",
+                        selector: "#module-marketplace-settings",
+                        titleKey:
+                            "ui.tutorial.marketplace.browse.review.source.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.browse.review.source.body",
+                    },
                 ],
                 scope: ".module-store-grid",
+            },
+            {
+                id: "details",
+                page: ({ pathname }) =>
+                    /^\/administration\/modules(?:\/|$)/.test(pathname),
+                scope: ".module-detail-release",
+                titleKey: "ui.tutorial.marketplace.details.title",
+                steps: [
+                    {
+                        id: "review-release",
+                        selector: ".module-detail-release",
+                        titleKey:
+                            "ui.tutorial.marketplace.details.review.release.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.details.review.release.body",
+                    },
+                    {
+                        id: "configure-module",
+                        selector: "[data-module-preferences]",
+                        titleKey:
+                            "ui.tutorial.marketplace.details.configure.module.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.details.configure.module.body",
+                    },
+                    {
+                        id: "manage-lifecycle",
+                        selector: "[data-module-menu]",
+                        titleKey:
+                            "ui.tutorial.marketplace.details.manage.lifecycle.title",
+                        bodyKey:
+                            "ui.tutorial.marketplace.details.manage.lifecycle.body",
+                    },
+                ],
             },
         ],
         minRole: "admin",
