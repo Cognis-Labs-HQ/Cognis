@@ -132,6 +132,8 @@ Sorotan memakai irisan terlihat dari sasaran, leluhur yang memotong atau menggul
 
 Instans menu mengambang bersama memakai permukaan tema buram, batas aksen, dan bayangan di atas lapisan peredupan, tanpa bergantung pada urutan pemuatan stylesheet. Berikutnya dan Selesai memiliki kontras lebih kuat. Kontrol yang membungkus tetap berada di viewport pada tema terang maupun gelap. Aturan pembatalan kunjungan pertama dan pengulangan tidak berubah.
 
+Peredupan halaman mengecualikan target sorotan dan menu tutorial mengambang beserta cincin aksennya. Menu, sorotan, dan panel berada dalam lapisan milik sesi, sehingga kontrol tetap terlihat dan dapat digunakan saat area saling tumpang tindih. Teks tutorial menjelaskan tugas dan kontrol yang tersedia tanpa pernyataan tidak relevan tentang izin atau tindakan yang tidak dilakukan panduan.
+
 ## Kesiapan Halaman
 
 Host menjalankan `page:ready` setelah `page:mounted`, dengan tahap `prepare`, `blocking`, `ready`, dan `afterReady`. Perenderan selesai sementara tahap pemblokiran menunggu pekerjaan awal. Penyiapan login tertunda bergabung sebelum catatan rilis. Pemilik Changelogs menunggu preferensi, permintaan metadata, dan penutupan popup sebelum kesiapan diterbitkan. Pembatalan menutup popup lama tanpa menyimpan tanda sudah dibaca. Tutorial otomatis dan pengulangan dari judul halaman tetap ditunda sampai siap. Navigasi membatalkan halaman lama sehingga pekerjaan terlambat tidak dapat menyatakan halaman pengganti siap.

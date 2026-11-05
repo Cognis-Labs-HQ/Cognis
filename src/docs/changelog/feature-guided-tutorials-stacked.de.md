@@ -34,6 +34,10 @@ Nach `page:mounted` führt der Host `page:ready` mit den Phasen `prepare`, `bloc
 
 Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadinessBlocker` aus dem gemeinsamen Modul `page-readiness.js` einen Ablaufbeitrag anhängen. Übergeben Sie eine eindeutige Eigentümerkennung `id`, optional `order` und das Eigentümersignal `signal`. Geben Sie ein Promise zurück, das nach Prüfung oder Popup-Abschluss aufgelöst wird. Der Rückruf erhält `input.signal` mit Seiten- und Eigentümerabbruch. Ersetzungen und Bereinigung bleiben lebenszyklussicher. Verbraucher verwenden `ui:pageReadiness.isReady()` oder `afterReady`, um Benachrichtigungen und andere Seitenaktionen zurückzustellen.
 
+## Klare Steuerung Und Texte
+
+Die Seitenabdunklung spart sowohl das hervorgehobene Ziel als auch das schwebende Anleitungsmenü samt Akzentring aus. Menü, Hervorhebung und Hinweisfeld teilen eine sitzungseigene Ebene; die Steuerung bleibt auch bei überlappenden Bereichen sichtbar und bedienbar. Anleitungstexte beschreiben verfügbare Aufgaben und Bedienelemente ohne sachfremde Zusicherungen über Berechtigungen oder nicht ausgeführte Aktionen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

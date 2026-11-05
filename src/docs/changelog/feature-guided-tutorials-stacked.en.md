@@ -34,6 +34,10 @@ The host runs `page:ready` after `page:mounted`, with `prepare`, `blocking`, `re
 
 Future popup owners can append a staged blocker with `registerPageReadinessBlocker` from the shared `page-readiness.js` module before the page is mounted. Pass an owner-unique `id`, optional `order` and owner `signal`; return the promise that resolves when the check or popup finishes. The callback receives `input.signal`, combining page and owner cancellation. Registrations replace safely and dispose with their owner. Consumers use `ui:pageReadiness.isReady()` or the `afterReady` stage to defer non-blocking notifications and other page actions.
 
+## Clear Controls And Copy
+
+The page shade explicitly excludes both the highlighted target and the tutorial floating menu, including its accent ring. The menu, highlight and callout share a session-owned overlay, keeping controls visible and interactive even when regions overlap. Tutorial text describes available tasks and controls without unrelated reassurances about permissions or actions the guide does not perform.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

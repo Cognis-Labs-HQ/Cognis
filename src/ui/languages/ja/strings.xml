@@ -630,12 +630,12 @@
   <string name="ui.reuse.start">開始</string>
   <string name="ui.reuse.finish">完了</string>
   <string name="ui.tutorial.progress">全{{total}}ステップ中の{{current}}</string>
-  <string name="ui.tutorial.missing">対象の要素を利用できません。要素を表示して再試行するか、チュートリアルを中止してください。</string>
+  <string name="ui.tutorial.missing">対象の操作項目を利用できません。表示してから「再試行」を選んでください。</string>
   <string name="ui.tutorial.waiting">ページの要素を待っています。いつでも中止できます。</string>
   <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
   <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
-  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションからアカウントで利用できるページを開きます。このチュートリアルが権限を変更することはありません。</string>
-  <string name="ui.tutorial.workspace.search.body">有効なコンポーネントのページやコンテンツを検索します。ダイアログを開いたり別のページへ移動したりすると、安全にチュートリアルを終了します。</string>
+  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションからアカウントで利用できるページを開きます。</string>
+  <string name="ui.tutorial.workspace.search.body">検索を使って、有効なコンポーネントのページやコンテンツを探します。</string>
   <string name="ui.tutorial.workspace.account.title">アカウントメニュー</string>
   <string name="ui.tutorial.workspace.account.body">設定、ドキュメント、チュートリアルはアカウントメニューから開けます。利用できるチュートリアルはここで繰り返し実行できます。</string>
     <string name="ui.tutorial.replay">このページのチュートリアルを再生</string>

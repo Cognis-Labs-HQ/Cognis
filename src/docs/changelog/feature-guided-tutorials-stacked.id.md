@@ -34,6 +34,10 @@ Host menjalankan `page:ready` setelah `page:mounted`, dengan tahap `prepare`, `b
 
 Pemilik popup berikutnya dapat menambahkan pemblokir sebelum halaman dipasang melalui `registerPageReadinessBlocker` dari modul bersama `page-readiness.js`. Berikan `id` unik pemilik, `order` opsional, dan `signal` milik pemilik. Kembalikan promise yang selesai saat pemeriksaan atau popup selesai. Callback menerima `input.signal` yang menggabungkan pembatalan halaman dan pemilik. Registrasi aman diganti dan dibersihkan bersama pemiliknya. Konsumen memakai `ui:pageReadiness.isReady()` atau tahap `afterReady` untuk menunda notifikasi serta tindakan halaman lainnya.
 
+## Kontrol Dan Teks Yang Jelas
+
+Peredupan halaman mengecualikan target sorotan dan menu tutorial mengambang beserta cincin aksennya. Menu, sorotan, dan panel berada dalam lapisan milik sesi, sehingga kontrol tetap terlihat dan dapat digunakan saat area saling tumpang tindih. Teks tutorial menjelaskan tugas dan kontrol yang tersedia tanpa pernyataan tidak relevan tentang izin atau tindakan yang tidak dilakukan panduan.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

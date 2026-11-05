@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { clipRect, tutorialViewport, visibleTargetRect } from "../geometry.js";
+import {
+    clipRect,
+    shadeRegions,
+    tutorialViewport,
+    visibleTargetRect,
+} from "../geometry.js";
 
 const viewport = { offsetLeft: 60, offsetTop: 150, width: 390, height: 400 };
 
@@ -120,4 +125,28 @@ test("page targets avoid shell chrome while header targets retain their own view
         width: 800,
         height: 560,
     });
+});
+
+test("shade excludes controls and targets even when their regions overlap or extend offscreen", () => {
+    const bounds = { left: 0, top: 0, right: 120, bottom: 100 };
+    for (const highlight of [
+        { left: 10, top: 10, right: 110, bottom: 30 },
+        { left: -20, top: -20, right: 140, bottom: 85 },
+    ]) {
+        const menu = { left: 35, top: 75, right: 85, bottom: 95 };
+        const regions = shadeRegions(bounds, [highlight, menu]);
+        for (let row = 0; row < 100; row++) {
+            for (let column = 0; column < 120; column++) {
+                const contains = (rect) =>
+                    column >= rect.left &&
+                    column < rect.right &&
+                    row >= rect.top &&
+                    row < rect.bottom;
+                assert.equal(
+                    regions.filter(contains).length,
+                    contains(highlight) || contains(menu) ? 0 : 1,
+                );
+            }
+        }
+    }
 });

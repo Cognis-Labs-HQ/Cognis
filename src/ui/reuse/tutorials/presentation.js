@@ -6,7 +6,12 @@
  */
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
-import { clipRect, tutorialViewport, visibleTargetRect } from "./geometry.js";
+import {
+    clipRect,
+    shadeRegions,
+    tutorialViewport,
+    visibleTargetRect,
+} from "./geometry.js";
 
 const focusable =
     "button, a[href], input, select, textarea, [tabindex], [contenteditable='true']";
@@ -107,6 +112,9 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         const scoped = AbortSignal.any([signal, controls.signal]);
         const root = document.createElement("div");
         root.className = "tutorial-layer";
+        const shade = document.createElement("div");
+        shade.className = "tutorial-shade";
+        shade.setAttribute("aria-hidden", "true");
         const spotlight = document.createElement("div");
         spotlight.className = "tutorial-spotlight";
         spotlight.setAttribute("aria-hidden", "true");
@@ -199,7 +207,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         const arrow = document.createElement("div");
         arrow.className = "tutorial-arrow";
         arrow.setAttribute("aria-hidden", "true");
-        root.append(spotlight, arrow, panel);
+        root.append(shade, spotlight, arrow, panel, menu.element);
         document.body.append(root);
         let disposed = false,
             frame,
@@ -290,6 +298,34 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 target &&
                 visibleTargetRect(target, viewport, step.padding ?? 8);
             spotlight.hidden = !visible || !step.effects.spotlight;
+            shade.hidden = spotlight.hidden;
+            if (!shade.hidden) {
+                const controlsBox = menu.element.getBoundingClientRect();
+                const regions = shadeRegions(
+                    {
+                        left: 0,
+                        top: 0,
+                        right: window.innerWidth,
+                        bottom: window.innerHeight,
+                    },
+                    [
+                        visible,
+                        {
+                            left: controlsBox.left - 4,
+                            top: controlsBox.top - 4,
+                            right: controlsBox.right + 4,
+                            bottom: controlsBox.bottom + 4,
+                        },
+                    ],
+                );
+                const path = regions
+                    .map(
+                        ({ left, top, right, bottom }) =>
+                            `M${left},${top}H${right}V${bottom}H${left}Z`,
+                    )
+                    .join(" ");
+                shade.style.clipPath = `path("${path}")`;
+            }
             if (visible)
                 Object.assign(spotlight.style, {
                     left: `${visible.left}px`,

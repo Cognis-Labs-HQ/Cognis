@@ -1,7 +1,8 @@
 /**
  * Computes visible tutorial geometry without changing targets or scrolling their owners.
  * Public exports: clipRect — intersects rectangles; tutorialViewport — excludes shell chrome;
- * visibleTargetRect — clips a padded target to its scrolling ancestors and viewport.
+ * visibleTargetRect — clips a padded target to its scrolling ancestors and viewport;
+ * shadeRegions — subtracts highlight and control rectangles from the page shade.
  * @example const visible = visibleTargetRect(target, tutorialViewport(window, document, target), 8);
  */
 
@@ -102,4 +103,34 @@ export function visibleTargetRect(target, viewport, padding = 0) {
         parent = parent.parentElement ?? parent.getRootNode?.().host;
     }
     return visible;
+}
+
+/** @param {object} bounds Page bounds. @param {object[]} exclusions Unshaded rectangles. @returns {object[]} Non-overlapping shaded rectangles. */
+export function shadeRegions(bounds, exclusions) {
+    let regions = [bounds];
+    for (const exclusion of exclusions) {
+        regions = regions.flatMap((region) => {
+            const overlap = clipRect(region, exclusion);
+            if (!overlap) return [region];
+            return [
+                { ...region, bottom: overlap.top },
+                { ...region, top: overlap.bottom },
+                {
+                    left: region.left,
+                    right: overlap.left,
+                    top: overlap.top,
+                    bottom: overlap.bottom,
+                },
+                {
+                    left: overlap.right,
+                    right: region.right,
+                    top: overlap.top,
+                    bottom: overlap.bottom,
+                },
+            ].filter(
+                (part) => part.right > part.left && part.bottom > part.top,
+            );
+        });
+    }
+    return regions;
 }
