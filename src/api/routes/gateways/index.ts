@@ -141,7 +141,7 @@ export function createGatewayRoutes(
                 );
                 return true;
             }
-            if ((entry.required || entry.critical) && action === "disable") {
+            if (entry.required && action === "disable") {
                 log?.("warn", "Blocked attempt to disable required gateway.", {
                     ...logMeta,
                     accountId: claims.sub,

@@ -344,6 +344,7 @@ export function renderComponentsList(payload: unknown): string {
             version?: string;
             status?: string;
             gatewayId?: string;
+            adapterCatalogError?: string;
         }>;
     };
     const data = response.data ?? [];
@@ -357,6 +358,9 @@ export function renderComponentsList(payload: unknown): string {
                 { key: "version", label: "Version" },
                 { key: "status", label: "Status" },
                 { key: "gatewayId", label: "Gateway" },
+                ...(data.some((entry) => entry.adapterCatalogError)
+                    ? [{ key: "catalog", label: "Adapter catalog" }]
+                    : []),
             ],
             data.map((component) => ({
                 id: component.id ?? FIELD_EMPTY_PLACEHOLDER,
@@ -364,6 +368,7 @@ export function renderComponentsList(payload: unknown): string {
                 version: component.version ?? FIELD_EMPTY_PLACEHOLDER,
                 status: component.status ?? FIELD_EMPTY_PLACEHOLDER,
                 gatewayId: component.gatewayId ?? FIELD_EMPTY_PLACEHOLDER,
+                catalog: component.adapterCatalogError ? "Unavailable" : "OK",
             })),
             { emptyMessage: "No components found." },
         ),

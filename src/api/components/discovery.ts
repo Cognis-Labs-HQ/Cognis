@@ -8,7 +8,7 @@ export interface CoreComponentDependency {
     gatewayId?: string;
     version?: string;
     required?: boolean;
-    critical?: boolean;
+    adapterId?: string;
 }
 
 export async function discoverCoreComponentDependencies(
@@ -37,7 +37,7 @@ export async function discoverCoreComponentDependencies(
                 gateway?: unknown;
                 version?: string;
                 required?: boolean;
-                critical?: boolean;
+                adapterId?: string;
             };
             if (
                 typeof manifest.id !== "string" ||
@@ -53,11 +53,12 @@ export async function discoverCoreComponentDependencies(
                 ...(manifest.required !== undefined
                     ? { required: manifest.required }
                     : {}),
-                ...(manifest.critical !== undefined
-                    ? { critical: manifest.critical }
-                    : {}),
+
                 ...(typeof manifest.gateway === "string"
-                    ? { gatewayId: manifest.gateway }
+                    ? {
+                          gatewayId: manifest.gateway,
+                          adapterId: path.basename(root),
+                      }
                     : {}),
             });
         }

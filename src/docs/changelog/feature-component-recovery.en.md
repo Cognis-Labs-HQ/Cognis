@@ -4,19 +4,21 @@
 
 ## Failure Isolation
 
-Browser provider catalogs carry server-resolved module, gateway or adapter ownership. A failing optional owner loses all its provider capabilities, flows and listeners; healthy owners continue loading and the UI shows a localized error toast. The same catalog is quarantined until an explicit refresh or ownership revision changes. Required, critical, unknown-owner and offline-policy providers fail closed. Components marked required or critical are protected from automatic and manual disabling; protected consumers also prevent disabling their dependencies.
+Browser catalogs resolve provider ownership and installed versions from host registries. A failed optional owner loses its partial capabilities, flows and listeners while healthy owners continue. Explicit refresh or a revision change retries quarantined providers. Required host components retain their existing protection. External modules are always optional: module manifests cannot make Cognis fail closed or become a required host dependency.
 
-## Automatic Disabling
+Unexpected server route exceptions are attributed at the registered owner boundary. Expected client errors and malformed JSON do not count. Three distinct administrator-observed failures within five minutes invoke the normal authenticated disable operation. Reports are deduplicated, bounded in memory and scoped by installed version; ordinary-user reports cannot cause global disabling. Counters reset on server restart or window expiry. Repair or upgrade a disabled component before enabling it again.
 
-Three distinct administrator-reported provider failures within five minutes trigger the existing authenticated disable operation. Reports are matched to the current server registry, deduplicated by occurrence, bounded in memory and scoped by component version. Non-administrator reports do not count toward a global disable. Counters reset when the server restarts or their window expires. A successful disable persists through the normal lifecycle and emits a catalog refresh. Repair or upgrade the component before re-enabling it.
+## Management Operations
 
-## CLI Operations
-
-Use the commands below from the running Cognis container with its normal CLI credentials. Adapter selections use gateway ID followed by adapter ID. `--all` may be restricted to a type or an adapter gateway. Bulk operations respect dependency order, skip protected or host-managed targets, continue after individual failures, print every result and exit nonzero if any target failed. Single-target enable and disable now use the same results-array response. Configuration updates and repository imports remain individually scoped.
+`component:info`, `component:release-channel get|set|list`, `component:upgrade`, enable and disable support single targets and `--all`, optionally filtered by type or adapter gateway. Operations execute named `component:*` flows through the API-owned version-one `component:management` contract and existing authenticated management routes. The host's existing required/locked controls and dependency checks remain authoritative. Serialized mutations refresh state after acquiring their lock. Adapter-catalog failures stay visible on the owning gateway and as failed discovery results in applicable batches; healthy management and disabling that optional gateway still work. Authorization failures remain fatal.
 
 ## Channels And Upgrades
 
-Release-channel get, set and list use branches and releases from the configured marketplace source. Choices are persisted atomically in `config/component-channels.json`. Upgrade uses that choice or the installed branch and the existing installer, dependency checks, integrity policy and authorization. Previously enabled modules are temporarily disabled while updating. Pending install jobs are polled until completion; failed installs attempt normal validated re-enablement. Successful updates report any required server restart. A timeout leaves uncertain work disabled rather than activating it. Bundled gateways, adapters and core modules are upgraded with the host deployment; their independent channel list is empty and setting a channel is rejected.
+Marketplace branches and releases provide the available channels. Choices persist atomically in `config/component-channels.json`. Upgrades retain existing authorization, integrity, installer and dependency validation. Previously enabled modules are temporarily disabled. Failed installs attempt validated recovery with the caller's supplied disclaimer acknowledgement; uncertain timed-out installs stay disabled. Successful upgrades report restart requirements. Bundled gateways, adapters and core modules upgrade with the host deployment, expose no independent channels and are skipped by mass upgrade. Configuration updates and repository imports remain individually scoped.
+
+## Runtime Identity
+
+Adapter discovery retains canonical manifest IDs for dependencies and separately records runtime adapter IDs for provider ownership. Social profile, messages and call providers therefore keep their installed versions and optional status even though their manifest IDs have a `social-` prefix.
 
 ## CLI Output And Progress
 

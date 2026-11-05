@@ -47,6 +47,9 @@ export function requiredConsumer(
     target: ComponentInfo,
     entries: ComponentInfo[],
 ): boolean {
+    // An external module is always optional, including when a host advertises it as a dependency.
+    if (target.type === "module" && target.managedBy === "marketplace")
+        return false;
     const seen = new Set<string>();
     const dependsOn = (consumer: ComponentInfo): boolean => {
         const key = componentKey(consumer);
@@ -79,7 +82,7 @@ export function requiredConsumer(
         return (
             componentKey(consumer) !== componentKey(target) &&
             (consumer.required ||
-                consumer.critical ||
+                consumer.locked ||
                 consumer.class === "core") &&
             dependsOn(consumer)
         );

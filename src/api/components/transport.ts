@@ -101,3 +101,15 @@ export function createComponentTransport(
         };
     };
 }
+
+export function checked(response: ComponentResponse): unknown {
+    if (response.status >= 400)
+        throw Object.assign(
+            new Error(response.error?.code ?? "component_operation_failed"),
+            {
+                code: response.error?.code ?? "component_operation_failed",
+                status: response.status,
+            },
+        );
+    return response.data;
+}

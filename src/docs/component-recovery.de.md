@@ -2,37 +2,21 @@
 
 ## Fehler isolieren
 
-Browser-Anbieterkataloge enthalten serverseitig ermittelte Modul-, Gateway- oder Adapterzugehörigkeiten. Bei einem Fehler verliert ein optionaler Anbieter alle Fähigkeiten, Abläufe und Listener seiner Komponente. Andere Komponenten werden weiter geladen; eine übersetzte Fehlermeldung erscheint als Toast. Derselbe Katalog bleibt bis zu einer ausdrücklichen Aktualisierung oder einer neuen Eigentümerrevision isoliert. Erforderliche, kritische und unbekannte Eigentümer sowie Anbieter von Offline-Richtlinien sperren bei Fehlern den Zugriff. Erforderliche und kritische Komponenten dürfen weder automatisch noch manuell deaktiviert werden. Geschützte Verbraucher verhindern außerdem das Deaktivieren ihrer Abhängigkeiten.
+Browserkataloge ermitteln Anbieterzugehörigkeit und installierte Version aus Hostregistrierungen. Bei einem Fehler verliert eine optionale Komponente ihre teilweisen Fähigkeiten, Abläufe und Listener; andere Komponenten werden weiter geladen. Eine ausdrückliche Aktualisierung oder neue Revision erlaubt einen erneuten Versuch. Erforderliche Hostkomponenten behalten ihren bestehenden Schutz. Externe Module bleiben immer optional: Modulmanifeste können Cognis weder global sperren noch eine erforderliche Hostabhängigkeit erzeugen.
 
-Unerwartete Ausnahmen in Serverrouten werden dem registrierten Gateway, Adapter oder Modul zugeordnet. Erwartete Clientfehler und fehlerhaftes JSON zählen nicht zum Fehlerbudget. Von Administratoren beobachtete Serverfehler nutzen denselben Schutz vor wiederholten Fehlern. Anfragedaten können keinen anderen Eigentümer bestimmen. Antworten anderer Komponenten funktionieren weiterhin.
+Unerwartete Serverausnahmen werden dem registrierten Eigentümer zugeordnet. Erwartete Eingabefehler und ungültiges JSON zählen nicht. Drei unterschiedliche, von Administratoren beobachtete Fehler innerhalb von fünf Minuten lösen die normale authentifizierte Deaktivierung aus. Meldungen werden dedupliziert, im Speicher begrenzt und nach installierter Version getrennt. Andere Nutzer können keine globale Deaktivierung auslösen. Zähler werden beim Neustart oder nach Ablauf des Zeitfensters zurückgesetzt. Reparieren oder aktualisieren Sie eine deaktivierte Komponente vor dem erneuten Aktivieren.
 
-## Automatische Deaktivierung
+## Verwaltungsoperationen
 
-Drei unterschiedliche, von Administratoren gemeldete Anbieterfehler innerhalb von fünf Minuten lösen die vorhandene authentifizierte Deaktivierung aus. Meldungen werden mit der aktuellen Serverregistrierung abgeglichen, anhand ihrer Ereigniskennung dedupliziert, im Arbeitsspeicher begrenzt und nach Komponentenversion getrennt. Meldungen anderer Nutzer zählen nicht zur globalen Deaktivierung. Zähler werden beim Serverneustart oder nach Ablauf des Zeitfensters zurückgesetzt. Erfolgreiches Deaktivieren wird über den normalen Lebenszyklus gespeichert und aktualisiert den Katalog. Reparieren oder aktualisieren Sie die Komponente vor dem erneuten Aktivieren.
-
-## Befehlszeilenoperationen
-
-Verwenden Sie die folgenden Befehle im laufenden Cognis-Container mit dessen üblichen CLI-Zugangsdaten. Bei Adaptern folgt auf die Gateway-ID die Adapter-ID. `--all` lässt sich auf einen Typ oder die Adapter eines Gateways beschränken. Sammeloperationen beachten die Abhängigkeitsreihenfolge, überspringen geschützte oder vom Host verwaltete Ziele und fahren nach einzelnen Fehlern fort. Sie geben jedes Ergebnis aus und beenden sich bei einem fehlgeschlagenen Ziel mit einem Fehlerstatus. Aktivieren und Deaktivieren einzelner Ziele verwenden nun dasselbe Ergebnislistenformat. Konfigurationsänderungen und Repository-Importe bleiben auf einzelne Ziele beschränkt.
-
-```sh
-cognisctl component:info module study-language-en
-cognisctl component:info --all
-cognisctl component:release-channel list module study-language-en
-cognisctl component:release-channel set module study-language-en feature-guided-tutorials
-cognisctl component:release-channel get module study-language-en
-cognisctl component:upgrade module study-language-en
-cognisctl component:upgrade module --all
-cognisctl component:disable module --all
-cognisctl component:enable adapter study --all
-```
+`component:info`, `component:release-channel get|set|list`, `component:upgrade`, Aktivieren und Deaktivieren unterstützen einzelne Ziele und `--all`, optional nach Typ oder Adapter-Gateway gefiltert. Benannte `component:*`-Abläufe verwenden den API-eigenen Vertrag `component:management` in Version eins und vorhandene authentifizierte Verwaltungsrouten. Bestehende erforderliche oder gesperrte Hostkomponenten und Abhängigkeitsprüfungen bleiben maßgeblich. Serialisierte Änderungen lesen den Zustand nach dem Erwerb ihrer Sperre erneut. Fehlerhafte Adapterkataloge bleiben am Gateway und als fehlgeschlagene Ermittlung in passenden Sammelergebnissen sichtbar. Andere Komponenten und das Deaktivieren dieses optionalen Gateways funktionieren weiterhin. Berechtigungsfehler brechen die Operation ab.
 
 ## Kanäle und Aktualisierungen
 
-Abrufen, Setzen und Auflisten von Veröffentlichungskanälen verwendet Zweige und Veröffentlichungen der konfigurierten Marktplatzquelle. Die Auswahl wird atomar in `config/component-channels.json` gespeichert. Aktualisierungen verwenden diese Auswahl oder den installierten Zweig sowie den vorhandenen Installer, Abhängigkeitsprüfungen, Integritätsregeln und Berechtigungen. Zuvor aktive Module werden für die Aktualisierung vorübergehend deaktiviert. Laufende Installationsaufträge werden bis zum Abschluss abgefragt. Nach fehlgeschlagenen Installationen wird die regulär geprüfte Reaktivierung versucht. Erfolgreiche Aktualisierungen melden erforderliche Serverneustarts. Nach einer Zeitüberschreitung bleibt ungewisse Arbeit deaktiviert. Mitgelieferte Gateways, Adapter und Core-Module werden über die Host-Bereitstellung aktualisiert; ihre eigenständige Kanalliste ist leer und das Setzen eines Kanals wird abgewiesen.
+Verfügbare Kanäle stammen aus Marketplace-Zweigen und Veröffentlichungen. Die Auswahl wird atomar in `config/component-channels.json` gespeichert. Aktualisierungen behalten vorhandene Berechtigungs-, Integritäts-, Installations- und Abhängigkeitsprüfungen bei. Zuvor aktive Module werden vorübergehend deaktiviert. Nach fehlgeschlagener Installation versucht die Wiederherstellung eine geprüfte Aktivierung mit der vom Aufrufer gegebenen Haftungsausschlussbestätigung. Unklare Installationen bleiben nach Zeitüberschreitung deaktiviert. Erfolgreiche Aktualisierungen melden nötige Neustarts. Mitgelieferte Gateways, Adapter und Kernmodule werden mit dem Host aktualisiert, bieten keine eigenen Kanäle und werden bei Sammelaktualisierungen übersprungen. Konfigurationsänderungen und Repository-Importe bleiben einzeln.
 
-## Öffentliche Verträge
+## Laufzeitkennung
 
-Der Vertrag `component:management` in Version eins gehört zur API-Komponente und wird über `system:contracts` veröffentlicht. Abfragen, Kanalauswahl, Änderungen und Fehlermeldungen führen benannte `component:*`-Abläufe aus. `/api/v1/components` und seine Verwaltungsoperationen erfordern Administratorrechte. Authentifizierte Nutzer dürfen registrierte Anbieterfehler melden, können darüber jedoch keine Komponente global deaktivieren. Fachliche Aktionen verwenden weiterhin die ursprünglichen authentifizierten Verwaltungsrouten. Anbietermetadaten enthalten die kanonische Zugehörigkeit, Version sowie erforderlichen und kritischen Schutz, auch bei inhaltsgehashten Ressourcen.
+Die Adapterermittlung behält kanonische Manifestkennungen für Abhängigkeiten und erfasst gesonderte Laufzeitkennungen für Anbieter. Die Social-Anbieter profile, messages und call behalten dadurch ihre installierten Versionen und ihren optionalen Status trotz des Präfixes `social-` in ihren Manifestkennungen.
 
 ## CLI-Ausgabe und Fortschritt
 

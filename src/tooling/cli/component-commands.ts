@@ -1,66 +1,11 @@
 import { registerComponentOperations } from "./components/commands.ts";
-import {
-    ensureBooleanAcknowledgement,
-    mergePayloadFields,
-    requireArgs,
-} from "./command-utils.ts";
-import {
-    renderStructuredSummary,
-    renderComponentMutation,
-    renderComponentsList,
-} from "./formatters.ts";
-import { ApiRequestError, apiGet, apiPost, apiPut } from "./http.ts";
+import { requireArgs } from "./command-utils.ts";
+import { renderStructuredSummary, renderComponentsList } from "./formatters.ts";
+import { apiGet, apiPost, apiPut } from "./http.ts";
 import { register } from "./registry.ts";
-
-type ComponentType = "module" | "gateway" | "adapter";
-
-interface ComponentListEntry {
-    id: string;
-    type: ComponentType;
-    version?: string;
-    status?: string;
-    gatewayId?: string;
-}
-
-interface GatewayListEntry {
-    id: string;
-    version?: string;
-    status?: string;
-}
-
-interface AdapterListEntry {
-    id?: string;
-    adapterId?: string;
-    senderId?: string;
-    name?: string;
-    version?: string;
-    status?: string;
-    enabled?: boolean;
-    active?: boolean;
-}
 
 function encodePath(value: string): string {
     return encodeURIComponent(value);
-}
-
-function normalizeAdapterId(adapter: AdapterListEntry): string {
-    return (
-        adapter.adapterId ??
-        adapter.senderId ??
-        adapter.id ??
-        adapter.name ??
-        "adapter"
-    );
-}
-
-function normalizeAdapterStatus(adapter: AdapterListEntry): string | undefined {
-    if (typeof adapter.enabled === "boolean") {
-        return adapter.enabled ? "enabled" : "disabled";
-    }
-    if (typeof adapter.active === "boolean") {
-        return adapter.active ? "enabled" : "disabled";
-    }
-    return adapter.status;
 }
 
 interface ComponentConfigPayload {
@@ -210,77 +155,15 @@ function resolveConfigTarget(
     );
 }
 
-async function loadAdapterComponents(
-    apiBaseUrl: string,
-    token: string,
-    gateway: GatewayListEntry,
-): Promise<ComponentListEntry[]> {
-    let payload: { data?: AdapterListEntry[] };
-
-    try {
-        payload = (await apiGet(
-            apiBaseUrl,
-            `/api/v1/gateways/${encodePath(gateway.id)}/adapters`,
-            token,
-        )) as { data?: AdapterListEntry[] };
-    } catch (error) {
-        if (error instanceof ApiRequestError && error.status === 404) {
-            return [];
-        }
-        throw error;
-    }
-
-    return (payload.data ?? []).map((adapter) => ({
-        id: normalizeAdapterId(adapter),
-        type: "adapter",
-        version: adapter.version,
-        status: normalizeAdapterStatus(adapter),
-        gatewayId: gateway.id,
-    }));
-}
-
-async function loadComponentList(
-    apiBaseUrl: string,
-    token: string,
-): Promise<ComponentListEntry[]> {
-    const [modulePayload, gatewayPayload] = (await Promise.all([
-        apiGet(apiBaseUrl, "/api/v1/modules", token),
-        apiGet(apiBaseUrl, "/api/v1/gateways", token),
-    ])) as [
-        { data?: Array<{ id: string; version?: string; status?: string }> },
-        { data?: GatewayListEntry[] },
-    ];
-    const gateways = gatewayPayload.data ?? [];
-    const adapterComponents = await Promise.all(
-        gateways.map((gateway) =>
-            loadAdapterComponents(apiBaseUrl, token, gateway),
-        ),
-    );
-
-    return [
-        ...(modulePayload.data ?? []).map((moduleEntry) => ({
-            id: moduleEntry.id,
-            type: "module" as const,
-            version: moduleEntry.version,
-            status: moduleEntry.status,
-        })),
-        ...gateways.map((gateway) => ({
-            id: gateway.id,
-            type: "gateway" as const,
-            version: gateway.version,
-            status: gateway.status,
-        })),
-        ...adapterComponents.flat(),
-    ];
-}
-
 export function registerComponentCommands(): void {
     register(
         "component:list",
         async ({ apiBaseUrl, getApiToken }) => {
-            return {
-                data: await loadComponentList(apiBaseUrl, await getApiToken()),
-            };
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/components",
+                await getApiToken(),
+            );
         },
         {
             usage: "cognisctl component:list",

@@ -55,7 +55,6 @@ export interface NavbarPlugin {
         id: string;
         gatewayId?: string;
         required: boolean;
-        critical: boolean;
         version?: string;
     };
     /** Browser-absolute URL of the ES module to dynamically import. */
@@ -557,8 +556,7 @@ export class UIRegistry {
         if (identity)
             result.component = {
                 ...identity,
-                required: true,
-                critical: true,
+                required: false,
             };
         return result;
     }

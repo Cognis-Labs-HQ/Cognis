@@ -33,7 +33,7 @@ export async function installComponentManagement(options: {
             gatewayId?: string;
             version?: string;
             required?: boolean;
-            critical?: boolean;
+            adapterId?: string;
         }>
     >;
     log: BootstrapLog;
@@ -95,30 +95,19 @@ export async function installComponentManagement(options: {
                               ? options.gateways?.get(identity.id)
                               : components.find(
                                     (entry) =>
-                                        entry.id === identity.id &&
+                                        (entry.adapterId ?? entry.id) ===
+                                            identity.id &&
                                         entry.gatewayId === identity.gatewayId,
                                 );
-                    // Unresolved ownership cannot opt a provider into recovery.
-                    if (!manifest)
-                        return {
-                            ...provider,
-                            component: {
-                                ...identity,
-                                required: true,
-                                critical: true,
-                            },
-                        };
                     const owner: ComponentOwner = {
                         ...identity,
                         version: manifest?.version,
                         required:
-                            manifest?.required === true ||
-                            ("class" in (manifest ?? {}) &&
-                                (manifest as { class?: string }).class ===
-                                    "core"),
-                        critical:
-                            manifest?.critical === true ||
-                            Boolean(provider.offlineAccessGuard),
+                            identity.type === "module"
+                                ? (manifest as { class?: string } | undefined)
+                                      ?.class === "core"
+                                : identity.type === "gateway" &&
+                                  manifest?.required === true,
                     };
                     return { ...provider, component: owner };
                 });
@@ -211,7 +200,6 @@ export async function installComponentManagement(options: {
                                 component: {
                                     ...target,
                                     required: false,
-                                    critical: false,
                                 },
                             },
                         ])

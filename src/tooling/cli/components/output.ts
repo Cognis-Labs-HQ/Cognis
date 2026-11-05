@@ -2,7 +2,9 @@ import { conciseText } from "../reuse/output-summary.ts";
 import { renderStructuredSummary } from "../formatters.ts";
 
 const explanations: Record<string, string> = {
-    component_protected: "Required or critical component; kept enabled.",
+    component_adapter_catalog_failed:
+        "Adapter catalog unavailable; inspect or disable the owning gateway.",
+    component_protected: "Required host component; kept enabled.",
     component_required_dependency:
         "Needed by a protected component; kept enabled.",
     component_managed_by_host:
@@ -31,7 +33,7 @@ export function renderComponentResults(payload: unknown): string {
             raw?.data && typeof raw.data === "object"
                 ? (raw.data as Record<string, unknown>)
                 : raw;
-        const identity = `${target.type ?? "component"} ${[target.gatewayId, target.id ?? "unknown"].filter(Boolean).join("/")}`;
+        const identity = `${target.type ?? "component"} ${[target.gatewayId, target.id ?? "unknown", result.scope === "adapters" ? "adapters" : undefined].filter(Boolean).join("/")}`;
         const details = [
             result.code
                 ? (explanations[String(result.code)] ??

@@ -289,14 +289,10 @@ export function assertModuleCapabilityDependencies(
  * core-module requirement, persisted runtime override, then manifest default.
  */
 export function resolveInitialModuleEnabledState(
-    manifest: Pick<
-        ModuleManifest,
-        "id" | "class" | "enabledByDefault" | "required" | "critical"
-    >,
+    manifest: Pick<ModuleManifest, "id" | "class" | "enabledByDefault">,
     persistedState: boolean | undefined,
 ): boolean {
-    if (manifest.class === "core" || manifest.required || manifest.critical)
-        return true;
+    if (manifest.class === "core") return true;
     if (persistedState === true) return true;
     if (persistedState === false) return false;
     return manifest.enabledByDefault === true;
@@ -367,11 +363,7 @@ export function buildServer(deps: ApiDependencies) {
                 const manifest = (await moduleService.list()).find(
                     (entry) => entry.id === moduleId,
                 );
-                if (
-                    manifest?.class === "core" ||
-                    manifest?.required ||
-                    manifest?.critical
-                ) {
+                if (manifest?.class === "core") {
                     log("error", "Protected component bootstrap failed.", {
                         component: "api",
                         operation: "componentBootstrap",
@@ -661,7 +653,7 @@ export function buildServer(deps: ApiDependencies) {
             }
             if (deps.gatewayRegistry) {
                 for (const entry of deps.gatewayRegistry.list()) {
-                    if (entry.required || entry.critical) continue;
+                    if (entry.required) continue;
                     const persisted = savedGateways.get(entry.id);
                     if (persisted === false) {
                         await deps.gatewayRegistry.disable(entry.id);

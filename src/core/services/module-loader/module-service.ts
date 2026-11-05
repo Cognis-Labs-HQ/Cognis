@@ -102,8 +102,6 @@ export class ModuleService {
         }
 
         this.assertToggleAllowed(found);
-        if (found.required || found.critical)
-            throw new Error("critical_module");
         if (this.resolver) {
             await this.removePointer(moduleId);
             await rm(path.join(this.runtimeExtractPath, moduleId), {

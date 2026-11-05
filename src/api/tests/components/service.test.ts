@@ -14,7 +14,16 @@ import { createComponentRoutes } from "../../routes/components/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { readJson } from "../../reuse/read-json.js";
 
-async function fixture(context: import("node:test").TestContext) {
+async function fixture(
+    context: import("node:test").TestContext,
+    options: {
+        catalogFailure?: number | Error;
+        pauseDisable?: Promise<void>;
+        onDisable?: () => void;
+        requireAcknowledgement?: boolean;
+        gatewayRequired?: boolean;
+    } = {},
+) {
     const directory = await mkdtemp(
         path.join(os.tmpdir(), "component-recovery-"),
     );
@@ -24,6 +33,7 @@ async function fixture(context: import("node:test").TestContext) {
         path: string;
         method?: string;
         body?: Record<string, unknown>;
+        acknowledgement?: string | string[];
     }> = [];
     const rows = [
         {
@@ -37,7 +47,7 @@ async function fixture(context: import("node:test").TestContext) {
         {
             id: "protected",
             uuid: "22222222-2222-4222-8222-222222222222",
-            class: "extension",
+            class: "core",
             required: true,
             version: "1.0.0",
             status: "enabled",
@@ -49,10 +59,25 @@ async function fixture(context: import("node:test").TestContext) {
         async (request, response, url) => {
             const body =
                 request.method === "POST" ? await readJson(request) : undefined;
-            calls.push({ path: url.pathname, method: request.method, body });
+            calls.push({
+                path: url.pathname,
+                method: request.method,
+                body,
+                acknowledgement:
+                    request.headers["x-cognis-external-module-disclaimer"],
+            });
             if (request.headers.authorization !== "Bearer administrator") {
                 response.writeHead(403);
                 response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            if (url.pathname.endsWith("/adapters") && options.catalogFailure) {
+                if (options.catalogFailure instanceof Error)
+                    throw options.catalogFailure;
+                response.writeHead(options.catalogFailure);
+                response.end(
+                    JSON.stringify({ error: { code: "catalog_unavailable" } }),
+                );
                 return true;
             }
             let data: unknown;
@@ -61,7 +86,7 @@ async function fixture(context: import("node:test").TestContext) {
                 data = [
                     {
                         id: "storage",
-                        required: true,
+                        required: options.gatewayRequired ?? true,
                         status: "active",
                         hasAdapters: true,
                     },
@@ -120,10 +145,29 @@ async function fixture(context: import("node:test").TestContext) {
                           },
                       };
                 pending = false;
-            } else if (url.pathname.endsWith("/disable"))
+            } else if (url.pathname.endsWith("/disable")) {
+                options.onDisable?.();
+                await options.pauseDisable;
+                if (url.pathname.startsWith("/api/v1/modules/"))
+                    rows[0].status = "disabled";
                 data = { enabled: false };
-            else if (url.pathname.endsWith("/enable")) data = { enabled: true };
-            else return false;
+            } else if (url.pathname.endsWith("/enable")) {
+                if (
+                    options.requireAcknowledgement &&
+                    request.headers["x-cognis-external-module-disclaimer"] !==
+                        "accepted"
+                ) {
+                    response.writeHead(409);
+                    response.end(
+                        JSON.stringify({
+                            error: { code: "module_disclaimer_required" },
+                        }),
+                    );
+                    return true;
+                }
+                rows[0].status = "enabled";
+                data = { enabled: true };
+            } else return false;
             response.writeHead(200);
             response.end(JSON.stringify({ data }));
             return true;
@@ -282,15 +326,18 @@ test("bulk disable keeps required owners active and disables children before par
 });
 
 test("a failed installation restores an enabled module through normal validation", async (context) => {
-    const host = await fixture(context);
+    const host = await fixture(context, { requireAcknowledgement: true });
     host.setFailed();
     const result = (await host.service.apply(host.request, {
         action: "upgrade",
         target: { type: "module", id: "language" },
+        acknowledge: true,
     })) as { results: Array<{ status: string; code: string }> };
     assert.equal(result.results[0].status, "failed");
     assert.equal(result.results[0].code, "invalid_module_manifest");
     assert.equal(host.calls.at(-1)?.path, "/api/v1/modules/language/enable");
+    assert.equal(host.calls.at(-1)?.acknowledgement, "accepted");
+    assert.equal(host.rows[0].status, "enabled");
 });
 
 test("failure reports are deduplicated, version-bound, protected and require administrator authority to disable globally", async (context) => {
@@ -340,14 +387,14 @@ test("failure reports are deduplicated, version-bound, protected and require adm
         1,
     );
     owner.version = "1.1.0";
-    owner.critical = true;
+    owner.required = true;
     for (let count = 4; count < 8; count++)
         await report(host.request, input(String(count)), true);
     assert.equal(
         host.calls.filter((call) => call.path.endsWith("/disable")).length,
         1,
     );
-    owner.critical = false;
+    owner.required = false;
     now = 400_000;
     const fresh = (await report(host.request, input("8"), true)) as {
         failures: number;
@@ -377,14 +424,117 @@ test("management transport preserves authentication and rejects non-management d
     await assert.rejects(host.service.list(host.request), /forbidden/);
 });
 
-test("a protected dependent prevents disabling its optional dependency", async (context) => {
+test("external modules stay optional even when protection flags or host dependency metadata name them", async (context) => {
     const host = await fixture(context);
+    Object.assign(host.rows[0], {
+        required: true,
+        critical: true,
+        locked: true,
+    });
     Object.assign(host.rows[1], { hardDependencies: [host.rows[0].uuid] });
     const result = (await host.service.apply(host.request, {
         action: "disable",
         target: { type: "module", id: "language" },
     })) as { results: Array<{ status: string; code: string }> };
-    assert.equal(result.results[0].status, "failed");
+    assert.equal(result.results[0].status, "succeeded");
+    assert.ok(host.calls.some((call) => call.path.endsWith("/disable")));
+});
+
+test("queued enable refreshes state after a concurrent disable releases its lock", async (context) => {
+    const entered = Promise.withResolvers<void>();
+    const release = Promise.withResolvers<void>();
+    const queued = Promise.withResolvers<void>();
+    const host = await fixture(context, {
+        pauseDisable: release.promise,
+        onDisable: () => entered.resolve(),
+    });
+    const target = { type: "module", id: "language" };
+    const disabling = host.service.apply(host.request, {
+        action: "disable",
+        target,
+    });
+    await entered.promise;
+    const enabling = host.service.apply(
+        host.request,
+        { action: "enable", target },
+        {
+            onProgress: (event) => {
+                if (event.phase === "queued") queued.resolve();
+            },
+        },
+    );
+    await queued.promise;
+    release.resolve();
+    await Promise.all([disabling, enabling]);
+    assert.equal(host.rows[0].status, "enabled");
+    assert.deepEqual(
+        host.calls
+            .filter((call) => /\/(enable|disable)$/.test(call.path))
+            .map((call) => call.path),
+        ["/api/v1/modules/language/disable", "/api/v1/modules/language/enable"],
+    );
+});
+
+test("optional adapter catalog failures remain owned and do not block healthy management or gateway recovery", async (context) => {
+    for (const catalogFailure of [500, new Error("catalog_broken")]) {
+        const host = await fixture(context, {
+            catalogFailure,
+            gatewayRequired: false,
+        });
+        const inventory = (await host.service.list(host.request)) as Array<
+            Record<string, unknown>
+        >;
+        assert.equal(
+            inventory.find((entry) => entry.id === "storage")
+                ?.adapterCatalogError,
+            "component_adapter_catalog_failed",
+        );
+        const disabled = (await host.service.apply(host.request, {
+            action: "disable",
+            target: { type: "module", id: "language" },
+        })) as { results: Array<{ status: string }> };
+        assert.equal(disabled.results[0].status, "succeeded");
+        const recovered = (await host.service.apply(host.request, {
+            action: "disable",
+            target: { type: "gateway", id: "storage" },
+        })) as { results: Array<{ status: string }> };
+        assert.equal(recovered.results[0].status, "succeeded");
+        const batch = (await host.service.apply(host.request, {
+            action: "disable",
+            all: true,
+        })) as {
+            results: Array<{ scope?: string; code?: string; status: string }>;
+        };
+        assert.ok(
+            batch.results.some(
+                (entry) =>
+                    entry.scope === "adapters" &&
+                    entry.status === "failed" &&
+                    entry.code === "component_adapter_catalog_failed",
+            ),
+        );
+        assert.ok(batch.results.some((entry) => entry.status === "succeeded"));
+    }
+    for (const catalogFailure of [401, 403]) {
+        const host = await fixture(context, { catalogFailure });
+        await assert.rejects(
+            host.service.list(host.request),
+            (error) => (error as { status: number }).status === catalogFailure,
+        );
+    }
+});
+
+test("host dependencies retain the existing required-component protection", async (context) => {
+    const host = await fixture(context, { gatewayRequired: false });
+    Object.assign(host.rows[1], { requires: ["storage"] });
+    const result = (await host.service.apply(host.request, {
+        action: "disable",
+        target: { type: "gateway", id: "storage" },
+    })) as { results: Array<{ code: string }> };
     assert.equal(result.results[0].code, "component_required_dependency");
-    assert.ok(!host.calls.some((call) => call.path.endsWith("/disable")));
+    assert.ok(
+        !host.calls.some(
+            (call) => call.path === "/api/v1/gateways/storage/disable",
+        ),
+    );
 });

@@ -1,7 +1,8 @@
 import { orderComponents, requiredConsumer } from "./ordering.js";
 import type { Ctx, BootstrapLog } from "@cognis/core";
 import type { IncomingMessage } from "node:http";
-import type { ComponentTransport, ComponentResponse } from "./transport.js";
+import { checked, type ComponentTransport } from "./transport.js";
+import { loadComponentInventory } from "./inventory.js";
 import {
     componentKey,
     componentPath,
@@ -11,17 +12,6 @@ import {
 } from "./types.js";
 import type { createComponentState } from "./state.js";
 
-export function checked(response: ComponentResponse): unknown {
-    if (response.status >= 400)
-        throw Object.assign(
-            new Error(response.error?.code ?? "component_operation_failed"),
-            {
-                code: response.error?.code ?? "component_operation_failed",
-                status: response.status,
-            },
-        );
-    return response.data;
-}
 export type ComponentProgress = (event: Record<string, unknown>) => void;
 export type ComponentOperation = (
     request: IncomingMessage,
@@ -36,37 +26,6 @@ export interface ComponentService {
     apply: ComponentOperation;
     dispose(): void;
 }
-function publicMetadata(
-    entry: Record<string, unknown>,
-): Record<string, unknown> {
-    const allowed = new Set([
-        "id",
-        "uuid",
-        "name",
-        "version",
-        "status",
-        "enabled",
-        "active",
-        "required",
-        "critical",
-        "locked",
-        "class",
-        "controls",
-        "hasAdapters",
-        "requires",
-        "hardDependencies",
-        "capabilities",
-        "installedBranch",
-        "installedCommit",
-        "restartRequired",
-        "description",
-        "publisher",
-    ]);
-    return Object.fromEntries(
-        Object.entries(entry).filter(([key]) => allowed.has(key)),
-    );
-}
-
 export function createComponentService(
     ctx: Ctx,
     transport: ComponentTransport,
@@ -113,63 +72,36 @@ export function createComponentService(
             return result.data.result;
         };
     }
-    const list = action("list", async (request) => {
-        const [modules, gateways] = await Promise.all([
-            transport(request, "/api/v1/modules"),
-            transport(request, "/api/v1/gateways"),
-        ]);
-        const moduleRows = [
-            ...(checked(modules) as ComponentInfo[]),
-            ...((await hostModules?.()) ?? []),
-        ];
-        const gatewayRows = checked(gateways) as ComponentInfo[];
-        const adapters = await Promise.all(
-            gatewayRows.map(async (gateway) => {
-                if (!gateway.hasAdapters) return [];
-                const response = await transport(
-                    request,
-                    `/api/v1/gateways/${encodeURIComponent(gateway.id)}/adapters`,
-                );
-                return (checked(response) as ComponentInfo[]).map(
-                    (adapter) => ({
-                        ...publicMetadata(adapter),
-                        id: String(
-                            adapter.adapterId ?? adapter.senderId ?? adapter.id,
-                        ),
-                        type: "adapter",
-                        gatewayId: gateway.id,
-                        managedBy: "host",
-                    }),
-                );
-            }),
-        );
-        return [
-            ...moduleRows.map((entry) => ({
-                ...publicMetadata(entry),
-                type: "module",
-                managedBy: entry.class === "core" ? "host" : "marketplace",
-                required: entry.required === true || entry.class === "core",
-            })),
-            ...gatewayRows.map((entry) => ({
-                ...publicMetadata(entry),
-                type: "gateway",
-                managedBy: "host",
-            })),
-            ...adapters.flat(),
-        ];
-    });
+    const list = action("list", (request) =>
+        loadComponentInventory(transport, request, log, hostModules),
+    );
     async function resolve(
         request: IncomingMessage,
         input: unknown,
     ): Promise<ComponentInfo> {
         const target = validateTarget(input);
-        const item = ((await list(request)) as ComponentInfo[]).find(
+        const entries = (await list(request)) as ComponentInfo[];
+        const item = entries.find(
             (entry) => componentKey(entry) === componentKey(target),
         );
-        if (!item)
-            throw Object.assign(new Error("component_not_found"), {
-                status: 404,
-            });
+        if (!item) {
+            const unavailable =
+                target.type === "adapter" &&
+                entries.some(
+                    (entry) =>
+                        entry.type === "gateway" &&
+                        entry.id === target.gatewayId &&
+                        entry.adapterCatalogError,
+                );
+            throw Object.assign(
+                new Error(
+                    unavailable
+                        ? "component_adapter_catalog_failed"
+                        : "component_not_found",
+                ),
+                { status: unavailable ? 409 : 404 },
+            );
+        }
         return item;
     }
     async function catalog(request: IncomingMessage, item: ComponentInfo) {
@@ -261,10 +193,7 @@ export function createComponentService(
     ) {
         if (
             operation === "disable" &&
-            (item.required ||
-                item.critical ||
-                item.class === "core" ||
-                item.locked)
+            (item.required || item.class === "core" || item.locked)
         )
             throw Object.assign(new Error("component_protected"), {
                 status: 409,
@@ -316,7 +245,7 @@ export function createComponentService(
                 );
             return data;
         }
-        if (item.required || item.critical || item.class === "core")
+        if (item.required || item.locked || item.class === "core")
             throw Object.assign(new Error("component_protected"), {
                 status: 409,
             });
@@ -399,6 +328,13 @@ export function createComponentService(
                             request,
                             `${componentPath(item)}/enable`,
                             "POST",
+                            undefined,
+                            acknowledge
+                                ? {
+                                      "x-cognis-external-module-disclaimer":
+                                          "accepted",
+                                  }
+                                : {},
                         ),
                     );
                 } catch (restoreError) {
@@ -449,7 +385,26 @@ export function createComponentService(
                               item.gatewayId === input.gatewayId),
                   )
                 : [await resolve(request, input.target)];
-        const results = [];
+        const results: Array<Record<string, unknown>> = [];
+        if (input.all === true && (!input.type || input.type === "adapter")) {
+            for (const entry of entries.filter(
+                (entry) =>
+                    entry.adapterCatalogError &&
+                    (!input.gatewayId || input.gatewayId === entry.id),
+            )) {
+                results.push({
+                    target: { type: "gateway", id: entry.id },
+                    scope: "adapters",
+                    status: "failed",
+                    code: "component_adapter_catalog_failed",
+                });
+                progress?.({
+                    phase: "failed",
+                    target: { type: "gateway", id: entry.id },
+                    code: "component_adapter_catalog_failed",
+                });
+            }
+        }
         for (const item of orderComponents(
             targets,
             input.action === "disable",
@@ -475,24 +430,34 @@ export function createComponentService(
                                 : "UnknownError",
                     });
                 })
-                .then(() =>
-                    (input.action === "disable" ||
-                        input.action === "upgrade") &&
-                    requiredConsumer(item, entries)
-                        ? Promise.reject(
-                              Object.assign(
-                                  new Error("component_required_dependency"),
-                                  { status: 409 },
-                              ),
-                          )
-                        : mutate(
-                              request,
-                              item,
-                              String(input.action),
-                              input.acknowledge === true,
-                              emit,
-                          ),
-                );
+                .then(async () => {
+                    const currentEntries = (await list(
+                        request,
+                    )) as ComponentInfo[];
+                    const current = currentEntries.find(
+                        (entry) => componentKey(entry) === key,
+                    );
+                    if (!current)
+                        throw Object.assign(new Error("component_not_found"), {
+                            status: 404,
+                        });
+                    if (
+                        (input.action === "disable" ||
+                            input.action === "upgrade") &&
+                        requiredConsumer(current, currentEntries)
+                    )
+                        throw Object.assign(
+                            new Error("component_required_dependency"),
+                            { status: 409 },
+                        );
+                    return mutate(
+                        request,
+                        current,
+                        String(input.action),
+                        input.acknowledge === true,
+                        emit,
+                    );
+                });
             locks.set(key, next);
             try {
                 results.push({

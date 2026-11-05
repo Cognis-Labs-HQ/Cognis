@@ -378,14 +378,14 @@ test("a failed optional component loses all scoped contributions while other pro
     assert.equal(uiCtx.capabilities.get("test:healthyRecovery"), undefined);
 });
 
-test("required and offline-policy providers fail closed and roll back earlier registrations from the same owner", async () => {
+test("required host providers fail closed while optional module policy metadata stays isolated", async () => {
     for (const protection of [
         { required: true },
         { critical: true },
         { offlineAccessGuard: "policy" },
     ]) {
         const component = {
-            type: "gateway",
+            type: protection.required ? "gateway" : "module",
             id: "protected",
             version: "1",
             required: false,
@@ -405,13 +405,14 @@ test("required and offline-policy providers fail closed and roll back earlier re
                 },
             }),
         });
-        await assert.rejects(
+        const reconcile = () =>
             lifecycle.reconcile([
                 { scriptUrl: "/protected-first.js", component },
                 { scriptUrl: "/protected-bad.js", component, ...protection },
-            ]),
-            /policy_failed/,
-        );
+            ]);
+        if (protection.required)
+            await assert.rejects(reconcile(), /policy_failed/);
+        else await assert.doesNotReject(reconcile());
         assert.equal(
             uiCtx.capabilities.get("test:protectedPartial"),
             undefined,

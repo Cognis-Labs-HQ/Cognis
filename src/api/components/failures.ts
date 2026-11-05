@@ -103,7 +103,6 @@ export function createComponentFailures(
                         phase: input.phase,
                         failures: record.occurrences.size,
                         required: owner.required,
-                        critical: owner.critical,
                     });
                 },
                 recover: async (stage) => {
@@ -114,7 +113,6 @@ export function createComponentFailures(
                     if (
                         canDisable &&
                         !owner.required &&
-                        !owner.critical &&
                         record.occurrences.size >= THRESHOLD &&
                         !record.disabled
                     ) {
@@ -137,7 +135,7 @@ export function createComponentFailures(
                         failures: record.occurrences.size,
                         threshold: THRESHOLD,
                         disabled: record.disabled === true,
-                        protected: owner.required || owner.critical,
+                        protected: owner.required,
                     };
                 },
             },

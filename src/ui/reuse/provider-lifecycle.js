@@ -86,12 +86,7 @@ export function createProviderLifecycle({
                 active.delete(url);
                 ownership.delete(url);
             }
-            if (
-                entry.component.required ||
-                entry.component.critical ||
-                entry.offlineAccessGuard
-            )
-                throw error;
+            if (entry.component.required) throw error;
             quarantined.set(key, signatures.get(key));
             uiCtx.capabilities.get("ui:log")?.(
                 "error",

@@ -12,7 +12,6 @@ export interface ComponentInfo extends ComponentTarget {
     status?: string;
     enabled?: boolean;
     required?: boolean;
-    critical?: boolean;
     locked?: boolean;
     class?: string;
     controls?: Record<string, string>;
@@ -21,7 +20,6 @@ export interface ComponentInfo extends ComponentTarget {
 }
 export interface ComponentOwner extends ComponentTarget {
     required: boolean;
-    critical: boolean;
     version?: string;
 }
 export interface ProviderDescriptor {

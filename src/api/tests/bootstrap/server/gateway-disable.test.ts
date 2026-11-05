@@ -314,6 +314,7 @@ test("core component discovery reads adapter dependency identities", async () =>
             uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
             name: "Profile Adapter",
             gatewayId: "social",
+            adapterId: "profile",
             version: JSON.parse(
                 await readFile(
                     new URL(

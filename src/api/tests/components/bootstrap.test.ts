@@ -1,3 +1,6 @@
+import path from "node:path";
+import { readFile } from "node:fs/promises";
+import { discoverCoreComponentDependencies } from "../../components/discovery.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -49,15 +52,17 @@ test("provider ownership and protection come from server registries, and managem
                     name: "Example",
                     version: "2",
                     class: "extension",
+                    required: true,
+                    critical: true,
                 } as ModuleManifest,
             ],
         },
         components: async () => [
             {
-                id: "driver",
+                id: "storage-driver",
+                adapterId: "driver",
                 gatewayId: "storage",
                 version: "3",
-                critical: true,
             },
         ],
         handlers: () => [],
@@ -75,14 +80,12 @@ test("provider ownership and protection come from server registries, and managem
                 id: "example",
                 version: "2",
                 required: false,
-                critical: false,
             },
             {
                 type: "gateway",
                 id: "storage",
                 version: "1",
                 required: true,
-                critical: false,
             },
             {
                 type: "adapter",
@@ -90,7 +93,6 @@ test("provider ownership and protection come from server registries, and managem
                 gatewayId: "storage",
                 version: "3",
                 required: false,
-                critical: true,
             },
         ],
     );
@@ -109,4 +111,60 @@ test("provider ownership and protection come from server registries, and managem
         () => contracts.resolve("component:management", 1),
         /capability_contract_unavailable/,
     );
+});
+
+test("Social provider owners use runtime IDs while retaining canonical manifest identity and version", async () => {
+    const ctx = createCtx();
+    const registry = new UIRegistry();
+    const ids = ["profile", "messages", "call"];
+    for (const id of ids) {
+        registry.registerAdapterStaticDir(
+            "social",
+            id,
+            path.resolve("src/adapters/social", id),
+        );
+        registry.registerCapabilityProvider({
+            scriptUrl: `/static/adapters/social/${id}/provider.js`,
+            providesCapabilities: [`social:${id}`],
+        });
+    }
+    const components = await discoverCoreComponentDependencies([
+        path.resolve("src/adapters/social"),
+    ]);
+    const management = await installComponentManagement({
+        ctx,
+        routeContext: createDefaultRouteContext(),
+        modules: { list: async () => [] },
+        uiRegistry: registry,
+        components: async () => components,
+        handlers: () => [],
+        log: () => {},
+    });
+    try {
+        const providers = await management.capability.describeProviders(
+            registry.listCapabilityProviders(),
+            "capabilities",
+        );
+        for (const [index, id] of ids.entries()) {
+            const manifest = JSON.parse(
+                await readFile(
+                    path.resolve("src/adapters/social", id, "manifest.json"),
+                    "utf8",
+                ),
+            );
+            assert.equal(
+                components.find((entry) => entry.adapterId === id)?.id,
+                manifest.id,
+            );
+            assert.deepEqual(providers[index].component, {
+                type: "adapter",
+                gatewayId: "social",
+                id,
+                version: manifest.version,
+                required: false,
+            });
+        }
+    } finally {
+        await management.dispose();
+    }
 });
