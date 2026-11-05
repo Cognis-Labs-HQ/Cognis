@@ -33,3 +33,16 @@ Abrufen, Setzen und Auflisten von Veröffentlichungskanälen verwendet Zweige un
 ## Öffentliche Verträge
 
 Der Vertrag `component:management` in Version eins gehört zur API-Komponente und wird über `system:contracts` veröffentlicht. Abfragen, Kanalauswahl, Änderungen und Fehlermeldungen führen benannte `component:*`-Abläufe aus. `/api/v1/components` und seine Verwaltungsoperationen erfordern Administratorrechte. Authentifizierte Nutzer dürfen registrierte Anbieterfehler melden, können darüber jedoch keine Komponente global deaktivieren. Fachliche Aktionen verwenden weiterhin die ursprünglichen authentifizierten Verwaltungsrouten. Anbietermetadaten enthalten die kanonische Zugehörigkeit, Version sowie erforderlichen und kritischen Schutz, auch bei inhaltsgehashten Ressourcen.
+
+## CLI-Ausgabe und Fortschritt
+
+Alle CLI-Befehle geben standardmäßig kurze, verständliche Ergebnisse aus. Listen zeigen höchstens zwanzig Einträge; große Felder und verschachtelte Daten werden zusammengefasst. Lebenszyklusergebnisse nennen jedes Ziel, Erfolg, Überspringen oder Fehler, installierte Version und nötigen Neustart. Leere Ergebnisse werden ausdrücklich genannt. `-v` oder `--verbose` vor oder nach dem Befehlsnamen zeigt die vollständige Antwort, auch bei registrierten Gateway-, Adapter- und Modulbefehlen. Ein wörtliches Argument, das einem globalen Schalter entspricht, folgt auf `--`.
+
+`-v` bedeutet jetzt ausführliche Ausgabe; `--version` zeigt die CLI-Version. Skripte lesen strukturierte Antworten aus stdout. Fortschritt erscheint auf stderr, beginnt bei der Befehlsausführung und nennt bei längeren Vorgängen die verstrichene Zeit. Modulaktualisierungen übertragen zusätzlich tatsächliche Zustände für Auswahl, vorübergehendes Deaktivieren, Installation, Warten, Wiederherstellung und Ergebnis. Es werden keine erfundenen Downloadprozente angezeigt. Ältere Server mit reiner JSON-Antwort unterstützen weiterhin die Zeitanzeige. Unterbrochene Übertragungen führen zu einem Fehler mit dem Hinweis, vor einem erneuten Versuch den Komponentenzustand zu prüfen. Sammelfehler behalten in beiden Ausgabemodi einen Fehlerstatus.
+
+```sh
+cognisctl component:upgrade module study-language-en
+cognisctl component:upgrade module --all -v
+cognisctl -v component:info module study-language-en
+cognisctl --version
+```

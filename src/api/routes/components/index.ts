@@ -39,12 +39,38 @@ export function createComponentRoutes(
             else if (
                 url.pathname === "/api/v1/components/actions" &&
                 request.method === "POST"
-            )
+            ) {
+                const input = await readJson(request, { maxBytes: 8192 });
+                const streaming =
+                    request.headers.accept === "application/x-ndjson";
+                const send = (event: Record<string, unknown>) => {
+                    if (response.destroyed || response.writableEnded) return;
+                    if (!response.headersSent) {
+                        response.writeHead(200, {
+                            "content-type": "application/x-ndjson",
+                            "cache-control": "no-store",
+                            "x-accel-buffering": "no",
+                        });
+                        response.flushHeaders();
+                    }
+                    response.write(JSON.stringify(event) + "\n");
+                };
                 data = await service.apply(
                     request,
-                    await readJson(request, { maxBytes: 8192 }),
+                    input,
+                    streaming
+                        ? {
+                              onProgress: (event) =>
+                                  send({ ...event, type: "progress" }),
+                          }
+                        : undefined,
                 );
-            else if (match) {
+                if (streaming) {
+                    send({ type: "result", payload: { data } });
+                    response.end();
+                    return true;
+                }
+            } else if (match) {
                 const target = {
                     type: match[1],
                     id: match[3] ?? match[2],
@@ -102,6 +128,22 @@ export function createComponentRoutes(
                 errorName: error instanceof Error ? error.name : "UnknownError",
                 status,
             });
+            if (response.headersSent) {
+                if (!response.destroyed && !response.writableEnded)
+                    response.end(
+                        JSON.stringify({
+                            type: "error",
+                            status,
+                            error: {
+                                code:
+                                    status < 500 && error instanceof Error
+                                        ? error.message
+                                        : "component_management_failed",
+                            },
+                        }) + "\n",
+                    );
+                return true;
+            }
             response.writeHead(status, { "content-type": "application/json" });
             response.end(
                 JSON.stringify({

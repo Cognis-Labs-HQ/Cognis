@@ -2,11 +2,15 @@ export interface CommandContext {
     args: string[];
     apiBaseUrl: string;
     getApiToken: () => Promise<string>;
+    verbose?: boolean;
+    reportProgress?: (progress: Record<string, unknown>) => void;
 }
 
 export interface CommandExecutionOptions {
     apiBaseUrl: string;
     getApiToken: () => Promise<string>;
+    verbose?: boolean;
+    reportProgress?: (progress: Record<string, unknown>) => void;
 }
 
 export type CommandHandler = (ctx: CommandContext) => Promise<unknown>;

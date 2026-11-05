@@ -22,9 +22,11 @@ export function checked(response: ComponentResponse): unknown {
         );
     return response.data;
 }
+export type ComponentProgress = (event: Record<string, unknown>) => void;
 export type ComponentOperation = (
     request: IncomingMessage,
     input?: Record<string, unknown>,
+    options?: { onProgress?: ComponentProgress },
 ) => Promise<unknown>;
 export interface ComponentService {
     list: ComponentOperation;
@@ -79,6 +81,7 @@ export function createComponentService(
         execute: (
             request: IncomingMessage,
             input: Record<string, unknown>,
+            progress?: ComponentProgress,
         ) => Promise<unknown>,
     ) {
         const id = `component:${name}`;
@@ -89,11 +92,16 @@ export function createComponentService(
         return async (
             request: IncomingMessage,
             input: Record<string, unknown> = {},
+            options?: { onProgress?: ComponentProgress },
         ): Promise<unknown> => {
             const result = await ctx.runFlow(id, input, {
                 handlers: {
                     execute: async (stage) => {
-                        stage.data.result = await execute(request, input);
+                        stage.data.result = await execute(
+                            request,
+                            input,
+                            options?.onProgress,
+                        );
                     },
                     after: () =>
                         log("info", "Component operation completed.", {
@@ -249,6 +257,7 @@ export function createComponentService(
         item: ComponentInfo,
         operation: string,
         acknowledge: boolean,
+        progress?: ComponentProgress,
     ) {
         if (
             operation === "disable" &&
@@ -324,7 +333,8 @@ export function createComponentService(
                 status: 409,
             });
         const wasEnabled = item.status === "enabled" || item.enabled === true;
-        if (wasEnabled)
+        if (wasEnabled) {
+            progress?.({ phase: "disabling" });
             checked(
                 await transport(
                     request,
@@ -334,8 +344,10 @@ export function createComponentService(
                     { "x-cognis-module-lifecycle": "temporary-update" },
                 ),
             );
+        }
         let installationStarted = false;
         try {
+            progress?.({ phase: "installing", channel: choice });
             const started = checked(
                 await transport(request, "/api/v1/modules/install", "POST", {
                     module: entry,
@@ -344,7 +356,9 @@ export function createComponentService(
                 }),
             ) as { jobId: string };
             installationStarted = true;
-            const deadline = Date.now() + 300_000;
+            const began = Date.now();
+            const deadline = began + 300_000;
+            let lastProgress = 0;
             while (Date.now() < deadline) {
                 const result = await transport(
                     request,
@@ -360,6 +374,13 @@ export function createComponentService(
                             (payload.data as Record<string, unknown>)
                                 ?.restartRequired === true,
                     };
+                if (Date.now() - lastProgress >= 5_000) {
+                    progress?.({
+                        phase: "waiting",
+                        elapsedSeconds: Math.floor((Date.now() - began) / 1000),
+                    });
+                    lastProgress = Date.now();
+                }
                 await new Promise((accept) => setTimeout(accept, 250));
             }
             throw Object.assign(new Error("component_upgrade_timeout"), {
@@ -372,6 +393,7 @@ export function createComponentService(
                     (error as { status?: number }).status === 422)
             ) {
                 try {
+                    progress?.({ phase: "restoring" });
                     checked(
                         await transport(
                             request,
@@ -398,7 +420,8 @@ export function createComponentService(
             throw error;
         }
     }
-    const apply = action("apply", async (request, input) => {
+    const apply = action("apply", async (request, input, progress) => {
+        progress?.({ phase: "preparing" });
         if (
             (input.all !== undefined && typeof input.all !== "boolean") ||
             (input.all && input.target) ||
@@ -432,6 +455,14 @@ export function createComponentService(
             input.action === "disable",
         )) {
             const key = componentKey(item);
+            const target = {
+                type: item.type,
+                id: item.id,
+                gatewayId: item.gatewayId,
+            };
+            const emit: ComponentProgress = (event) =>
+                progress?.({ ...event, target, action: input.action });
+            emit({ phase: locks.has(key) ? "queued" : "starting" });
             const prior = locks.get(key) ?? Promise.resolve();
             const next = prior
                 .catch((error) => {
@@ -459,6 +490,7 @@ export function createComponentService(
                               item,
                               String(input.action),
                               input.acknowledge === true,
+                              emit,
                           ),
                 );
             locks.set(key, next);
@@ -503,6 +535,11 @@ export function createComponentService(
                     code,
                 });
             } finally {
+                const result = results.at(-1)!;
+                emit({
+                    phase: result.status,
+                    code: "code" in result ? result.code : undefined,
+                });
                 if (locks.get(key) === next) locks.delete(key);
             }
         }

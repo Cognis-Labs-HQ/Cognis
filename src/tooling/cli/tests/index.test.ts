@@ -56,13 +56,19 @@ test("formatStructured pretty-prints object payloads and handles empty output", 
     assert.equal(formatStructured(undefined), "");
 });
 
-test("ApiRequestError formats JSON payloads for readable CLI errors", () => {
+test("ApiRequestError keeps concise messages and preserves verbose payload details", () => {
     const error = new ApiRequestError(400, "Bad Request", {
         error: { code: "invalid", message: "Invalid payload" },
     });
 
-    assert.match(error.message, /\n  "error": \{/);
-    assert.match(error.message, /\n    "message": "Invalid payload"/);
+    assert.equal(
+        error.message,
+        "API request failed (400 Bad Request): Invalid payload",
+    );
+    assert.equal(
+        JSON.stringify(error.payload),
+        '{"error":{"code":"invalid","message":"Invalid payload"}}',
+    );
 
     const rendered = renderApiErrorPayload({
         status: error.status,

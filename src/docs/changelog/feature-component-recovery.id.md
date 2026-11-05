@@ -18,6 +18,19 @@ Gunakan perintah berikut dari kontainer Cognis yang berjalan dengan kredensial C
 
 Pengambilan, penetapan, dan pencatatan kanal rilis memakai cabang serta rilis dari sumber pasar yang dikonfigurasi. Pilihan disimpan secara atomik dalam `config/component-channels.json`. Peningkatan memakai pilihan itu atau cabang terpasang beserta pemasang, pemeriksaan dependensi, kebijakan integritas, dan otorisasi yang sudah ada. Modul yang sebelumnya aktif dinonaktifkan sementara selama peningkatan. Tugas pemasangan tertunda dipantau sampai selesai; pemasangan gagal mencoba pengaktifan kembali melalui validasi normal. Peningkatan berhasil melaporkan kebutuhan memulai ulang server. Waktu habis membiarkan pekerjaan yang belum pasti tetap nonaktif. Gateway, adaptor, dan modul inti bawaan ditingkatkan melalui penerapan host; daftar kanal mandirinya kosong dan penetapan kanal ditolak.
 
+## Keluaran Dan Progres CLI
+
+Semua perintah CLI menampilkan keluaran manusia yang ringkas secara bawaan. Daftar menampilkan paling banyak dua puluh entri; kolom besar dan muatan bertingkat diringkas. Hasil siklus hidup menyebut setiap sasaran, keberhasilan, pelewatan atau kegagalan, versi terpasang, dan kebutuhan memulai ulang. Hasil kosong dinyatakan dengan jelas. Gunakan `-v` atau `--verbose` sebelum atau sesudah nama perintah untuk respons lengkap, termasuk perintah gateway, adaptor, dan modul terdaftar. Tempatkan `--` sebelum argumen literal yang sama dengan opsi global.
+
+`-v` kini berarti keluaran terperinci; gunakan `--version` untuk versi CLI. Skrip membaca respons terstruktur dari stdout. Progres ditulis ke stderr, dimulai saat perintah dijalankan, dan menampilkan waktu berlalu untuk operasi panjang. Peningkatan modul juga mengalirkan status nyata pemilihan, penonaktifan sementara, pemasangan, penantian, pemulihan, dan hasil. Persentase unduhan tidak dikarang. Server lama yang hanya mengembalikan JSON tetap mendukung tampilan waktu berlalu. Aliran terputus menghasilkan kesalahan dan saran memeriksa status komponen sebelum mencoba lagi. Kegagalan kelompok tetap menghasilkan kode keluar bukan nol dalam kedua mode keluaran.
+
+```sh
+cognisctl component:upgrade module study-language-en
+cognisctl component:upgrade module --all -v
+cognisctl -v component:info module study-language-en
+cognisctl --version
+```
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

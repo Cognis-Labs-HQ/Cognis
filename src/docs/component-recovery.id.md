@@ -33,3 +33,16 @@ Pengambilan, penetapan, dan pencatatan kanal rilis memakai cabang serta rilis da
 ## Kontrak Publik
 
 Kontrak `component:management` versi satu dimiliki komponen API dan diterbitkan melalui `system:contracts`. Inspeksi, pilihan rilis, mutasi, dan laporan kegagalan menjalankan alur `component:*` bernama. `/api/v1/components` dan operasi pengelolaannya memerlukan otorisasi administrator; pengguna terautentikasi dapat melaporkan kegagalan penyedia terdaftar, tetapi tidak dapat memakai laporan itu untuk menonaktifkan komponen secara global. Tindakan domain tetap melewati rute pengelolaan terautentikasi semula. Metadata penyedia mencakup kepemilikan kanonis, versi, serta perlindungan wajib atau kritis, termasuk aset dengan hash konten.
+
+## Keluaran Dan Progres CLI
+
+Semua perintah CLI menampilkan keluaran manusia yang ringkas secara bawaan. Daftar menampilkan paling banyak dua puluh entri; kolom besar dan muatan bertingkat diringkas. Hasil siklus hidup menyebut setiap sasaran, keberhasilan, pelewatan atau kegagalan, versi terpasang, dan kebutuhan memulai ulang. Hasil kosong dinyatakan dengan jelas. Gunakan `-v` atau `--verbose` sebelum atau sesudah nama perintah untuk respons lengkap, termasuk perintah gateway, adaptor, dan modul terdaftar. Tempatkan `--` sebelum argumen literal yang sama dengan opsi global.
+
+`-v` kini berarti keluaran terperinci; gunakan `--version` untuk versi CLI. Skrip membaca respons terstruktur dari stdout. Progres ditulis ke stderr, dimulai saat perintah dijalankan, dan menampilkan waktu berlalu untuk operasi panjang. Peningkatan modul juga mengalirkan status nyata pemilihan, penonaktifan sementara, pemasangan, penantian, pemulihan, dan hasil. Persentase unduhan tidak dikarang. Server lama yang hanya mengembalikan JSON tetap mendukung tampilan waktu berlalu. Aliran terputus menghasilkan kesalahan dan saran memeriksa status komponen sebelum mencoba lagi. Kegagalan kelompok tetap menghasilkan kode keluar bukan nol dalam kedua mode keluaran.
+
+```sh
+cognisctl component:upgrade module study-language-en
+cognisctl component:upgrade module --all -v
+cognisctl -v component:info module study-language-en
+cognisctl --version
+```

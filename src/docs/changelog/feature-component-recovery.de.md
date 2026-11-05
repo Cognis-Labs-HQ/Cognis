@@ -18,6 +18,19 @@ Verwenden Sie die folgenden Befehle im laufenden Cognis-Container mit dessen üb
 
 Abrufen, Setzen und Auflisten von Veröffentlichungskanälen verwendet Zweige und Veröffentlichungen der konfigurierten Marktplatzquelle. Die Auswahl wird atomar in `config/component-channels.json` gespeichert. Aktualisierungen verwenden diese Auswahl oder den installierten Zweig sowie den vorhandenen Installer, Abhängigkeitsprüfungen, Integritätsregeln und Berechtigungen. Zuvor aktive Module werden für die Aktualisierung vorübergehend deaktiviert. Laufende Installationsaufträge werden bis zum Abschluss abgefragt. Nach fehlgeschlagenen Installationen wird die regulär geprüfte Reaktivierung versucht. Erfolgreiche Aktualisierungen melden erforderliche Serverneustarts. Nach einer Zeitüberschreitung bleibt ungewisse Arbeit deaktiviert. Mitgelieferte Gateways, Adapter und Core-Module werden über die Host-Bereitstellung aktualisiert; ihre eigenständige Kanalliste ist leer und das Setzen eines Kanals wird abgewiesen.
 
+## CLI-Ausgabe und Fortschritt
+
+Alle CLI-Befehle geben standardmäßig kurze, verständliche Ergebnisse aus. Listen zeigen höchstens zwanzig Einträge; große Felder und verschachtelte Daten werden zusammengefasst. Lebenszyklusergebnisse nennen jedes Ziel, Erfolg, Überspringen oder Fehler, installierte Version und nötigen Neustart. Leere Ergebnisse werden ausdrücklich genannt. `-v` oder `--verbose` vor oder nach dem Befehlsnamen zeigt die vollständige Antwort, auch bei registrierten Gateway-, Adapter- und Modulbefehlen. Ein wörtliches Argument, das einem globalen Schalter entspricht, folgt auf `--`.
+
+`-v` bedeutet jetzt ausführliche Ausgabe; `--version` zeigt die CLI-Version. Skripte lesen strukturierte Antworten aus stdout. Fortschritt erscheint auf stderr, beginnt bei der Befehlsausführung und nennt bei längeren Vorgängen die verstrichene Zeit. Modulaktualisierungen übertragen zusätzlich tatsächliche Zustände für Auswahl, vorübergehendes Deaktivieren, Installation, Warten, Wiederherstellung und Ergebnis. Es werden keine erfundenen Downloadprozente angezeigt. Ältere Server mit reiner JSON-Antwort unterstützen weiterhin die Zeitanzeige. Unterbrochene Übertragungen führen zu einem Fehler mit dem Hinweis, vor einem erneuten Versuch den Komponentenzustand zu prüfen. Sammelfehler behalten in beiden Ausgabemodi einen Fehlerstatus.
+
+```sh
+cognisctl component:upgrade module study-language-en
+cognisctl component:upgrade module --all -v
+cognisctl -v component:info module study-language-en
+cognisctl --version
+```
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

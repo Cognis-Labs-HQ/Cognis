@@ -1,21 +1,8 @@
+import { readProgressResponse } from "./reuse/progress-stream.ts";
+import { ApiRequestError } from "./reuse/api-error.ts";
 import { readFile } from "node:fs/promises";
 
-function formatPayloadForError(payload: unknown): string {
-    if (typeof payload === "string") return payload;
-    return JSON.stringify(payload, null, 2);
-}
-
-export class ApiRequestError extends Error {
-    constructor(
-        readonly status: number,
-        readonly statusText: string,
-        readonly payload: unknown,
-    ) {
-        super(
-            `API request failed (${status} ${statusText}): ${formatPayloadForError(payload)}`,
-        );
-    }
-}
+export { ApiRequestError } from "./reuse/api-error.ts";
 
 function buildHeaders(
     apiToken?: string,
@@ -30,16 +17,28 @@ function buildHeaders(
 export async function apiRequest(
     apiBaseUrl: string,
     route: string,
-    options?: { method?: string; body?: unknown; apiToken?: string },
+    options?: {
+        method?: string;
+        body?: unknown;
+        apiToken?: string;
+        reportProgress?: (event: Record<string, unknown>) => void;
+    },
 ): Promise<unknown> {
     const method = options?.method ?? "GET";
     const body = options?.body;
     const response = await fetch(`${apiBaseUrl}${route}`, {
         method,
-        headers: buildHeaders(options?.apiToken, body !== undefined),
+        headers: {
+            ...buildHeaders(options?.apiToken, body !== undefined),
+            ...(options?.reportProgress
+                ? { accept: "application/x-ndjson" }
+                : {}),
+        },
         body: body !== undefined ? JSON.stringify(body) : undefined,
     });
 
+    if (options?.reportProgress)
+        return readProgressResponse(response, options.reportProgress);
     const contentType = response.headers.get("content-type") ?? "";
     const payload = contentType.includes("application/json")
         ? await response.json()

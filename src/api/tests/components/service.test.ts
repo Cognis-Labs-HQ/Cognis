@@ -173,10 +173,15 @@ test("component operations execute real flows, persist channels and poll upgrade
         ).get(JSON.stringify(["module", "", "language"])),
         "preview",
     );
-    const result = (await host.service.apply(host.request, {
-        action: "upgrade",
-        target,
-    })) as {
+    const progress: Array<Record<string, unknown>> = [];
+    const result = (await host.service.apply(
+        host.request,
+        {
+            action: "upgrade",
+            target,
+        },
+        { onProgress: (event) => progress.push(event) },
+    )) as {
         results: Array<{
             status: string;
             data: { version: string; restartRequired: boolean };
@@ -185,6 +190,26 @@ test("component operations execute real flows, persist channels and poll upgrade
     assert.equal(result.results[0].status, "succeeded");
     assert.equal(result.results[0].data.version, "1.1.0");
     assert.equal(result.results[0].data.restartRequired, true);
+    assert.deepEqual(
+        progress.map((event) => event.phase),
+        [
+            "preparing",
+            "starting",
+            "disabling",
+            "installing",
+            "waiting",
+            "succeeded",
+        ],
+    );
+    assert.equal(
+        progress.find((event) => event.phase === "installing")?.channel,
+        "preview",
+    );
+    assert.deepEqual(progress.at(-1)?.target, {
+        type: "module",
+        id: "language",
+        gatewayId: undefined,
+    });
     assert.equal(
         host.calls.find((call) => call.path === "/api/v1/modules/install")?.body
             ?.branch,

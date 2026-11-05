@@ -1,6 +1,7 @@
+import { renderComponentResults } from "./output.ts";
 import { ensureBooleanAcknowledgement } from "../command-utils.ts";
 import { register } from "../registry.ts";
-import { apiGet, apiPost, apiPut } from "../http.ts";
+import { apiGet, apiRequest, apiPut } from "../http.ts";
 import { renderStructuredSummary } from "../formatters.ts";
 import {
     selectComponents,
@@ -13,17 +14,23 @@ export function registerComponentOperations(): void {
     for (const action of ["enable", "disable", "upgrade"])
         register(
             `component:${action}`,
-            async ({ args, apiBaseUrl, getApiToken }) => {
+            async ({ args, apiBaseUrl, getApiToken, reportProgress }) => {
                 const selection = selectComponents(args);
-                const payload = await apiPost(
+                const payload = await apiRequest(
                     apiBaseUrl,
                     "/api/v1/components/actions",
                     {
-                        ...selection,
-                        action,
-                        acknowledge: args.includes("--ack-external-disclaimer"),
+                        method: "POST",
+                        body: {
+                            ...selection,
+                            action,
+                            acknowledge: args.includes(
+                                "--ack-external-disclaimer",
+                            ),
+                        },
+                        apiToken: await getApiToken(),
+                        reportProgress,
                     },
-                    await getApiToken(),
                 );
                 const results = (
                     payload as {
@@ -58,7 +65,7 @@ export function registerComponentOperations(): void {
                 usage: `cognisctl component:${action} [<module|gateway> <id> | adapter <gatewayId> <adapterId> | [<type>] --all] [--ack-external-disclaimer]`,
                 description: `${action[0].toUpperCase() + action.slice(1)} a module, gateway, or adapter, or all selected components.`,
                 section: "Components",
-                render: renderStructuredSummary,
+                render: renderComponentResults,
                 exitCode: batchExitCode,
             },
         );
@@ -158,7 +165,7 @@ export function registerComponentOperations(): void {
             usage: "cognisctl component:release-channel <get|set|list> [<type> <id> [adapterId] | [<type>] --all] [channel]",
             description: "Read, choose or list component release channels.",
             section: "Components",
-            render: renderStructuredSummary,
+            render: renderComponentResults,
             exitCode: batchExitCode,
         },
     );
