@@ -125,9 +125,12 @@ export function createPageTutorials({
         }
         help.setAttribute("aria-label", i18n.t("ui.tutorial.replay"));
         help.setAttribute("title", i18n.t("ui.tutorial.replay"));
-        help.disabled = Boolean(api.current());
+        const ready = ctx.capabilities.get("ui:pageReadiness");
+        if (!ready) throw new Error("page_readiness_unavailable");
+        help.disabled = Boolean(api.current()) || !ready.isReady();
         if (
             !actor ||
+            !ready.isReady() ||
             api.current() ||
             document.querySelector(".popup-overlay--visible")
         )
@@ -170,6 +173,7 @@ export function createPageTutorials({
             revision !== epoch ||
             account() !== actor ||
             api.current() ||
+            !ctx.capabilities.get("ui:pageReadiness").isReady() ||
             !plays.length
         )
             return false;
@@ -255,6 +259,7 @@ export function createPageTutorials({
         window.addEventListener("storage", schedule, { signal });
         for (const [flow, stage] of [
             ["page:mounted", "publish"],
+            ["page:ready", "afterReady"],
             ["authenticate-session", "afterSession"],
         ]) {
             if (!ctx.flowExists(flow)) continue;

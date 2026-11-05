@@ -1,3 +1,4 @@
+import { installPageReadiness } from "../../../page-readiness.js";
 import { tutorialHost } from "./host.js";
 import { createPageTutorials } from "../../page.js";
 
@@ -42,6 +43,16 @@ export function pageHost(context, values = new Map()) {
         identity: () => actor,
     });
     state.ctx.registerFlow("page:mounted", ["publish"]);
+    state.ctx.registerFlow("page:ready", [
+        "prepare",
+        "blocking",
+        "ready",
+        "afterReady",
+    ]);
+    const readiness = installPageReadiness(state.ctx, { window: state.window });
+    void state.ctx.runFlow("page:mounted", {
+        pathname: state.window.location.pathname,
+    });
     const header = new Element("h1");
     state.document.createElement = (tag) => new Element(tag);
     state.document.body = new Element("body");
@@ -72,6 +83,7 @@ export function pageHost(context, values = new Map()) {
     return {
         ...state,
         page,
+        readiness,
         header,
         values,
         errors,

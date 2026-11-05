@@ -1,3 +1,4 @@
+import { installPageReadiness } from "../page-readiness.js";
 import { installTutorials } from "../tutorials/index.js";
 import { createTopBanners } from "../top-banners.js";
 import { registerOfflineRuntime } from "../offline-runtime.js";
@@ -23,6 +24,7 @@ function loadUiCtxForTests() {
         {
             "./flow-contracts.js": context,
             "./tutorials/index.js": { installTutorials },
+            "./page-readiness.js": { installPageReadiness },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
             "./top-banners.js": { createTopBanners },

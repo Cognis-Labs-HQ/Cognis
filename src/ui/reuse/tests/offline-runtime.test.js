@@ -1,3 +1,4 @@
+import { installPageReadiness } from "../page-readiness.js";
 import { installTutorials } from "../tutorials/index.js";
 import { createTopBanners } from "../top-banners.js";
 import { registerOfflineAssets } from "../offline-assets.js";
@@ -62,6 +63,7 @@ function fixture({ browser = false } = {}) {
     );
     const { uiCtx } = loadTestModule(new URL("../ui-ctx.js", import.meta.url), {
         "./tutorials/index.js": { installTutorials },
+        "./page-readiness.js": { installPageReadiness },
         "./offline-runtime.js": runtime,
         "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
         "./resources.js": { createReuseResources },

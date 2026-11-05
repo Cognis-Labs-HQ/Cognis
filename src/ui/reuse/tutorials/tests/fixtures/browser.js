@@ -108,6 +108,9 @@ window.tutorialFixture = {
                 { id: "two", titleKey: "two" },
             ],
         });
+        await uiCtx.runFlow("page:mounted", {
+            pathname: window.location.pathname,
+        });
         await api.refreshPage();
         return this.status();
     },

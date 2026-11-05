@@ -96,3 +96,33 @@ test("SPA page mount publication resumes discovery after navigation has replaced
     await tick();
     assert.equal(state.api.current().firstTime, true);
 });
+
+test("pending page blockers prevent automatic and replay tutorials until dismissal", async (context) => {
+    const state = pageHost(context);
+    await tick();
+    state.window.dispatchEvent(new Event("cognis:route-will-change"));
+    const dismissed = Promise.withResolvers();
+    const id = "test:initialPopup";
+    state.ctx.extendFlow(
+        "page:ready",
+        "blocking",
+        { id },
+        () => dismissed.promise,
+    );
+    context.after(() => state.ctx.removeFlowHook("page:ready", "blocking", id));
+    state.page.connect();
+    await state.owner().register(play());
+    await state.ctx.runFlow("page:mounted", {
+        pathname: state.window.location.pathname,
+    });
+    await state.api.refreshPage();
+    assert.equal(state.readiness.isReady(), false);
+    assert.equal(state.api.current(), null);
+    assert.equal(await state.api.openPage(), false);
+    assert.equal(state.header.children[0].disabled, true);
+    dismissed.resolve();
+    await tick();
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    assert.equal(state.api.current().firstTime, true);
+});

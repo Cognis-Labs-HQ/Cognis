@@ -28,6 +28,12 @@ Hervorhebungen verwenden den sichtbaren Schnittbereich des Ziels, seiner abschne
 
 Das unabhängige gemeinsame schwebende Menü erhält eine deckende themenabhängige Fläche, Akzentrahmen und Schatten oberhalb der Abdunklung, unabhängig von der Ladereihenfolge der Stylesheets. Weiter und Abschließen sind kontrastreicher. Umbrechende Bedienelemente bleiben in hellen und dunklen Themen im Ansichtsfenster. Die Abbruchregeln für erste Besuche und Wiederholungen bleiben unverändert.
 
+## Seitenbereitschaft
+
+Nach `page:mounted` führt der Host `page:ready` mit den Phasen `prepare`, `blocking`, `ready` und `afterReady` aus. Die Darstellung wird abgeschlossen, während die blockierende Phase auf Startaufgaben wartet. Nachgelagerte Anmeldeeinrichtung steht dabei vor den Versionshinweisen. Deren Eigentümer wartet auf Einstellungen, Metadaten und das Schließen des Popups, bevor die Seite bereit gemeldet wird. Ein Abbruch schließt ein veraltetes Popup ohne Lesebestätigung. Automatische Tutorials und Wiederholungen über die Seitenüberschrift bleiben bis zur Bereitschaft zurückgestellt. Navigation verwirft die alte Seite; verspätete Arbeit kann die neue Seite nicht freigeben.
+
+Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadinessBlocker` aus dem gemeinsamen Modul `page-readiness.js` einen Ablaufbeitrag anhängen. Übergeben Sie eine eindeutige Eigentümerkennung `id`, optional `order` und das Eigentümersignal `signal`. Geben Sie ein Promise zurück, das nach Prüfung oder Popup-Abschluss aufgelöst wird. Der Rückruf erhält `input.signal` mit Seiten- und Eigentümerabbruch. Ersetzungen und Bereinigung bleiben lebenszyklussicher. Verbraucher verwenden `ui:pageReadiness.isReady()` oder `afterReady`, um Benachrichtigungen und andere Seitenaktionen zurückzustellen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
