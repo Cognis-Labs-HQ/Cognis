@@ -48,3 +48,5 @@ cognisctl component:disable module analytics --force
 - [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Add concise CLI output, verbose mode and live upgrade progress.
 - [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Fix review findings and keep external modules optional.
 - [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Skip redundant component actions unless forced and normalize CLI casing.
+- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Synchronize tutorial viewport presentation and host version.
+- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Synchronize startup popup readiness from the tutorials branch.
