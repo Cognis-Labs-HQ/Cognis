@@ -79,4 +79,6 @@
     <string name="gateway.registration.tutorial.policy.registration.access.body">アカウントを作成できる人を変更する前に、公開登録と招待の許可を確認します。</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">登録方針を適用</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">方針を見直して保存し、招待ページに表示される操作を確認します。</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">発行した招待を管理する</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">招待をコピー・共有する前に宛先と状態を確認し、不要な招待は無効にします。</string>
 </resources>

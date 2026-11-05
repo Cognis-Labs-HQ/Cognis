@@ -31,6 +31,22 @@ export const guides = [
                         bodyKey:
                             "ui.tutorial.settings.general.account.lifecycle.body",
                     },
+                    {
+                        id: "save-preferences",
+                        selector: "#general",
+                        titleKey:
+                            "ui.tutorial.settings.general.save.preferences.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.save.preferences.body",
+                    },
+                    {
+                        id: "release-notes",
+                        selector: "#pref-release-changelog-show",
+                        titleKey:
+                            "ui.tutorial.settings.general.release.notes.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.release.notes.body",
+                    },
                 ],
                 scope: "#general",
             },
@@ -60,6 +76,14 @@ export const guides = [
                             "ui.tutorial.settings.appearance.message.layout.title",
                         bodyKey:
                             "ui.tutorial.settings.appearance.message.layout.body",
+                    },
+                    {
+                        id: "choose-font",
+                        selector: "#pref-font-picker",
+                        titleKey:
+                            "module.study.classes.tutorial.membership.choose.font.title",
+                        bodyKey:
+                            "module.study.classes.tutorial.membership.choose.font.body",
                     },
                 ],
                 scope: "#appearance",

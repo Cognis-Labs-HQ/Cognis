@@ -79,4 +79,6 @@
     <string name="gateway.registration.tutorial.policy.registration.access.body">Tinjau pendaftaran publik dan izin undangan sebelum mengubah siapa yang dapat membuat akun.</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Terapkan Aturan Pendaftaran</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Simpan perubahan kebijakan yang ditinjau lalu periksa opsi pada halaman undangan.</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">Kelola Undangan Terkirim</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">Periksa penerima dan status undangan sebelum menyalin atau membagikannya. Cabut undangan yang tidak boleh digunakan lagi.</string>
 </resources>

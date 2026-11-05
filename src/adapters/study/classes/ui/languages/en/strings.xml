@@ -11,4 +11,8 @@
     <string name="module.study.classes.tutorial.membership.enrolled.classes.body">Review the classes you belong to and check the language before opening a class.</string>
     <string name="module.study.classes.tutorial.membership.join.requests.title">Join Requests</string>
     <string name="module.study.classes.tutorial.membership.join.requests.body">Browse available classes and check whether a join request is pending before applying again.</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">Request Class Membership</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">Choose a class matching your language and review its details before requesting to join. Your membership updates when the request is approved.</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.title">Choose A Comfortable Font</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.body">Choose a font and preview it before saving. Use the size controls to make text comfortable to read.</string>
 </resources>

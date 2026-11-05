@@ -31,6 +31,14 @@ export const guides = [
                         bodyKey:
                             "ui.tutorial.users.directory.account.actions.body",
                     },
+                    {
+                        id: "find-account",
+                        selector: "#users-input",
+                        titleKey:
+                            "ui.tutorial.users.directory.find.account.title",
+                        bodyKey:
+                            "ui.tutorial.users.directory.find.account.body",
+                    },
                 ],
             },
         ],

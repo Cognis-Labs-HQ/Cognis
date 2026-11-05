@@ -79,4 +79,6 @@
     <string name="gateway.registration.tutorial.policy.registration.access.body">Prüfen Sie öffentliche Registrierung und Einladungsrechte, bevor Sie die Kontoerstellung ändern.</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Registrierungsregeln übernehmen</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Speichern Sie geprüfte Regeln und prüfen Sie Einladungsoptionen auf der Einladungsseite.</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">Ausgestellte Einladungen</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">Prüfen Sie Empfänger und Status, bevor Sie eine Einladung kopieren oder weitergeben. Widerrufen Sie nicht mehr benötigte Einladungen.</string>
 </resources>

@@ -112,6 +112,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         const scoped = AbortSignal.any([signal, controls.signal]);
         const root = document.createElement("div");
         root.className = "tutorial-layer";
+        if (step.layer === "overlay") root.style.zIndex = "2200";
         const shade = document.createElement("div");
         shade.className = "tutorial-shade";
         shade.setAttribute("aria-hidden", "true");
@@ -209,6 +210,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         arrow.setAttribute("aria-hidden", "true");
         root.append(shade, spotlight, arrow, panel, menu.element);
         document.body.append(root);
+        let interactionPending = false;
         let disposed = false,
             frame,
             resize;
@@ -226,12 +228,13 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         const contains = (node, event) =>
             panel.contains(node) ||
             menu.element.contains(node) ||
-            (target &&
+            (step.interaction !== "none" &&
+                target &&
                 (target.contains(node) ||
                     event?.composedPath?.().includes(target)));
         const candidates = () =>
             [
-                ...(target
+                ...(target && step.interaction !== "none"
                     ? [target, ...target.querySelectorAll(focusable)]
                     : []),
                 ...panel.querySelectorAll(focusable),
@@ -264,7 +267,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 return;
             }
             try {
-                if (valid && !valid()) {
+                if (valid && !valid(interactionPending)) {
                     dispose();
                     lost?.();
                     return;
@@ -401,20 +404,40 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     inline: "nearest",
                     behavior: "instant",
                 });
-            if (step.advance)
+            if (step.advance) {
+                let advanceTimer;
+                scoped.addEventListener(
+                    "abort",
+                    () => window.clearTimeout(advanceTimer),
+                    { once: true },
+                );
                 document.addEventListener(
                     step.advance.event,
                     (event) => {
                         if (
-                            contains(event.target, event) &&
-                            !panel.contains(event.target) &&
-                            !menu.element.contains(event.target) &&
-                            !event.defaultPrevented
+                            !contains(event.target, event) ||
+                            panel.contains(event.target) ||
+                            menu.element.contains(event.target)
                         )
-                            interacted?.(event);
+                            return;
+                        window.clearTimeout(advanceTimer);
+                        interactionPending = true;
+                        advanceTimer = window.setTimeout(() => {
+                            if (scoped.aborted || event.defaultPrevented) {
+                                interactionPending = false;
+                                return;
+                            }
+                            Promise.resolve()
+                                .then(() => interacted?.(event))
+                                .catch((error) => lost?.(error))
+                                .finally(() => {
+                                    interactionPending = false;
+                                });
+                        }, 0);
                     },
-                    { signal: scoped },
+                    { capture: true, signal: scoped },
                 );
+            }
         }
         if (step.preventNavigation) {
             for (const type of ["click", "auxclick"])
@@ -439,9 +462,30 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 );
         }
         const blocking = Boolean(
-            !waiting && target && step.interaction === "target",
+            !waiting &&
+            (step.interaction === "none" ||
+                (target && step.interaction === "target")),
         );
         root.dataset.blocking = String(blocking);
+        if (step.interaction === "none") {
+            spotlight.style.pointerEvents = "auto";
+            for (const type of [
+                "mouseover",
+                "mouseenter",
+                "pointerover",
+                "pointerenter",
+                "mousemove",
+                "pointermove",
+            ])
+                document.addEventListener(
+                    type,
+                    (event) => {
+                        if (!contains(event.target, event))
+                            event.stopImmediatePropagation();
+                    },
+                    { capture: true, signal: scoped },
+                );
+        }
         if (blocking) {
             for (const type of [
                 "pointerdown",
@@ -476,6 +520,15 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     return;
                 }
                 if (!blocking) return;
+                if (
+                    step.interaction === "none" &&
+                    !["Tab", "Enter", " "].includes(event.key)
+                ) {
+                    event.stopImmediatePropagation();
+                    if (event.ctrlKey || event.metaKey || event.altKey)
+                        event.preventDefault();
+                    return;
+                }
                 if (event.key === "Tab") {
                     const options = candidates();
                     let focused = document.activeElement;

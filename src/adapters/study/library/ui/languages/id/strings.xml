@@ -225,4 +225,14 @@
     <string name="adapter.study.library.tutorial.administration.create.and.edit.body">Tinjau seluruh hubungan rekaman sebelum menyunting, menggabungkan, atau menghapusnya.</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.title">Visibilitas dan Tinjauan</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Periksa kepemilikan, visibilitas, dan permintaan tertunda sebelum menerbitkan atau mengubah konten bersama.</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Persempit Koleksi</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Pilih bahasa dan lapisan, lalu gunakan filter untuk mempersempit kartu. Buka kartu untuk memeriksa bacaan, arti, dan hubungannya.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Dengarkan Dan Latih Tulisan</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Di detail kartu, putar audio pelafalan atau buka latihan menulis. Gunakan panduan goresan, urungkan, dan reset saat berlatih.</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Simpan Kartu Dan Usulkan Perubahan</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Favoritkan kartu yang berguna. Usulkan konten yang belum ada atau koreksi melalui kontribusi, lalu pantau statusnya di Permintaan.</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Bandingkan Hasil Kamus</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Bandingkan ejaan, bacaan, dan definisi hasil. Periksa kandidat sebelum mengimpor agar Anda memilih entri yang dimaksud.</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Pantau Permintaan</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Buka permintaan untuk meninjau perubahan yang diusulkan dan keputusannya. Periksa umpan balik sebelum mengirim permintaan yang diperbaiki.</string>
 </resources>

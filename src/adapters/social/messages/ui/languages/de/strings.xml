@@ -88,4 +88,12 @@
     <string name="module.social.messages.tutorial.messages.room.history.body">Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.</string>
     <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Verfassen und Vorschau</string>
     <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Verfassen und prüfen Sie Entwürfe vor dem Senden; Anhänge und Anrufe haben eigene Bedienelemente.</string>
+  <string name="module.social.messages.tutorial.messages.start.room.title">Gespräch beginnen</string>
+  <string name="module.social.messages.tutorial.messages.start.room.body">Erstellen Sie ein Direktgespräch oder einen Raum, wählen Sie Empfänger und prüfen Sie vor der ersten Nachricht die Mitgliedschaft.</string>
+  <string name="module.social.messages.tutorial.messages.write.message.title">Nachricht verfassen</string>
+  <string name="module.social.messages.tutorial.messages.write.message.body">Verfassen Sie hier die Nachricht. Nutzen Sie bei Bedarf Formatierung und Anhänge und prüfen Sie vor dem Senden die Vorschau.</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.title">Vor dem Senden prüfen</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.body">Wechseln Sie zur Vorschau, um Formatierung, Links und Anhänge zu prüfen. Korrigieren Sie den Text unter Verfassen.</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.title">Gespräch verwalten</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">Der Gesprächskopf zeigt Raum und Teilnehmer. Prüfen Sie verfügbare Aktionen, bevor Sie Mitglieder ändern oder austreten.</string>
 </resources>

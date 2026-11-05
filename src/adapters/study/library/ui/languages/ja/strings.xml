@@ -225,4 +225,14 @@
     <string name="adapter.study.library.tutorial.administration.create.and.edit.body">編集、統合、削除の前に、項目の関連情報全体を確認します。</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.title">公開範囲と審査</string>
     <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">共有コンテンツの公開や変更を行う前に、所有者、公開範囲、未処理の申請を確認します。</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.title">コレクションを絞り込む</string>
+  <string name="adapter.study.library.tutorial.explore.filter.and.select.body">言語と階層を選び、利用できるフィルターでカードを絞ります。カードを開いて読み、意味、関連項目を確認します。</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">音声と書き取りを練習する</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">カードの詳細から発音音声や書き取り練習を開きます。練習中は筆順ガイド、取り消し、リセットを使えます。</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.title">カードの保存と修正提案</string>
+  <string name="adapter.study.library.tutorial.explore.collect.and.request.body">役立つカードをお気に入りに保存します。不足する内容や修正を提案し、リクエストで状況を確認できます。</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">辞書の候補を比較する</string>
+  <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">表記、読み、意味を比較し、取り込む前に目的の項目かを確認します。</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">リクエストの結果を確認する</string>
+  <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">リクエストを開いて変更案と判断結果を確認し、修正して再提出する前にフィードバックを読みます。</string>
 </resources>

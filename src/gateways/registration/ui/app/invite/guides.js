@@ -23,6 +23,14 @@ export const guides = [
                         bodyKey:
                             "gateway.registration.tutorial.invitations.invitation.history.body",
                     },
+                    {
+                        id: "manage-issued-invitations",
+                        selector: ".users-table-wrap",
+                        titleKey:
+                            "gateway.registration.tutorial.invitations.manage.issued.invitations.title",
+                        bodyKey:
+                            "gateway.registration.tutorial.invitations.manage.issued.invitations.body",
+                    },
                 ],
             },
         ],

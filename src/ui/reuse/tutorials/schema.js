@@ -82,6 +82,8 @@ export function validatePlay(input) {
             "placement",
             "padding",
             "interaction",
+            "layer",
+            "group",
             "preventNavigation",
             "advance",
             "missing",
@@ -90,6 +92,7 @@ export function validatePlay(input) {
             "route",
         ]);
         validateName(step.id);
+        if (step.group !== undefined) validateName(step.group);
         assert(!ids.has(step.id));
         ids.add(step.id);
         assert(
@@ -125,8 +128,13 @@ export function validatePlay(input) {
         );
         assert(
             step.interaction === undefined ||
-                ["free", "target"].includes(step.interaction),
+                ["free", "target", "none"].includes(step.interaction),
         );
+        assert(
+            step.layer === undefined ||
+                ["page", "overlay"].includes(step.layer),
+        );
+        assert(step.interaction !== "none" || !step.advance);
         assert(
             step.target ||
                 (!effects.arrow &&
@@ -169,6 +177,7 @@ export function validatePlay(input) {
         );
         return Object.freeze({
             ...step,
+            interaction: step.interaction ?? (step.advance ? "target" : "none"),
             effects: Object.freeze(effects),
             missing: Object.freeze(missing),
             advance: step.advance

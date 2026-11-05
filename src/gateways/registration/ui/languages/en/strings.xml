@@ -79,4 +79,6 @@
     <string name="gateway.registration.tutorial.policy.registration.access.body">Review public registration and invitation permissions before changing who can create accounts.</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Apply Registration Rules</string>
     <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Save reviewed policy changes and check the invitation page for the resulting options.</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">Manage Issued Invitations</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">Review each invitation’s recipient and status before copying or sharing it. Revoke invitations that should no longer be used.</string>
 </resources>

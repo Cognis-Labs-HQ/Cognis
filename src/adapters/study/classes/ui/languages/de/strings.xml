@@ -11,4 +11,8 @@
     <string name="module.study.classes.tutorial.membership.enrolled.classes.body">Prüfen Sie belegte Kurse und deren Sprache vor dem Öffnen.</string>
     <string name="module.study.classes.tutorial.membership.join.requests.title">Beitrittsanfragen</string>
     <string name="module.study.classes.tutorial.membership.join.requests.body">Prüfen Sie verfügbare Kurse und offene Beitrittsanfragen vor einer erneuten Bewerbung.</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">Klassenmitgliedschaft anfragen</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">Wählen Sie eine passende Sprachklasse und prüfen Sie Details vor der Beitrittsanfrage. Nach Genehmigung wird die Mitgliedschaft aktualisiert.</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.title">Gut lesbare Schrift wählen</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.body">Wählen Sie eine Schrift und prüfen Sie die Vorschau vor dem Speichern. Passen Sie die Textgröße für gute Lesbarkeit an.</string>
 </resources>

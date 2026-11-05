@@ -11,4 +11,8 @@
     <string name="module.study.classes.tutorial.membership.enrolled.classes.body">Periksa kelas yang diikuti dan bahasanya sebelum membuka kelas.</string>
     <string name="module.study.classes.tutorial.membership.join.requests.title">Permintaan Bergabung</string>
     <string name="module.study.classes.tutorial.membership.join.requests.body">Jelajahi kelas tersedia dan periksa permintaan tertunda sebelum mengajukan lagi.</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">Minta Keanggotaan Kelas</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">Pilih kelas sesuai bahasa dan tinjau detailnya sebelum meminta bergabung. Keanggotaan diperbarui setelah permintaan disetujui.</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.title">Pilih Fon Yang Nyaman</string>
+  <string name="module.study.classes.tutorial.membership.choose.font.body">Pilih fon dan pratinjau sebelum menyimpan. Gunakan kontrol ukuran agar teks nyaman dibaca.</string>
 </resources>

@@ -42,6 +42,12 @@ Anleitungstexte beschreiben verfügbare Aufgaben und Bedienelemente ohne sachfre
 
 Schritte können mit `preventNavigation` auf der aktuellen Seite bleiben, während sie Navigationsbedienelemente erklären. Die Dashboard-Anleitung nutzt dies durchgehend. Linkaktivierung per Zeiger und Tastatur, programmgesteuerte Router-Navigation und vom Router verwaltete Verlaufsschritte beachten die Sperre. Weiter, Zurück und Abschließen bleiben verfügbar; von der Anleitung vorgesehene Routenwechsel sind erlaubt. Die Sperre endet mit dem Schritt oder der Sitzung.
 
+## Aufgabenanleitungen
+
+Die Abdeckung umfasst 55 Anleitungen mit 167 Schritten, darunter 22 Administratoranleitungen. Das Dashboard bietet eine praktische Suchübung: echte Suche öffnen, Suchtext eingeben, Optionen und Treffer prüfen und die Suche vor dem Fortfahren schließen. Erklärende Schritte verhindern versehentliches Hover-Verhalten und Aktivierungen; interaktive Schritte erlauben ihr Ziel ausdrücklich. Kontextanleitungen erscheinen bei sichtbaren Stapeldetails, Übungen oder Moduldetails.
+
+Die Anleitungen behandeln Nachrichtenstart und Vorschau, Raummitglieder, Beitragsvorschau, Kalendernavigation und Terminplanung, Serienänderungen, Freigabefilter und Ablauf, Einladungen, Bibliotheksfilter und Wörterbuchvergleich, Hör- und Schreibübung, Favoriten und Inhaltsanfragen, Stapelerstellung, Übungsrückmeldung, Stapelbearbeitung/Freigabe/Export, Klassenbeitritt, Ranglisten, Schriftwahl, ungespeicherte Änderungen, Versionshinweise, Kontosuche sowie Modulkonfiguration und Lebenszyklus. Formulare und Löschbestätigungen bleiben bewusste komponenteneigene Interaktionen; Anleitungen erklären ihre Einstiegspunkte und weichen erforderlichen Dialogen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

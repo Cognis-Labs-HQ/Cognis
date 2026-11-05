@@ -45,4 +45,20 @@
     <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">Review the available study modes and filters before beginning practice.</string>
     <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">Practice And Progress</string>
     <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">Use the practice controls to answer and review cards; progress belongs to your account.</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">Build A Deck</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">Create a deck, give it a useful name, and select library cards for it. Check the selected cards before saving.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.title">Practise A Deck</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">Choose A Practice Mode</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">Choose an available mode for reading, listening or writing. Mode availability depends on the selected card’s content.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">Answer The Card</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">Read the prompt and enter or choose an answer. In writing practice, use the drawing controls and stroke hints to work through the character.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">Check Feedback And Continue</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.body">After answering, compare the feedback and revealed answer. Continue through the cards and use previous/next controls when available.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.title">Manage A Deck</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.title">Edit Deck Contents</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.body">Edit a deck you own to change its name or selected cards. Review the selection before saving and keep useful cards for your next practice.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.title">Share With Learners</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.body">Use the sharing control to choose recipients and access. Review the sharing dialog before confirming who can use the deck.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.title">Export Your Deck</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.body">Deck creators and administrators can export available decks. Keep the exported file if you want to use the cards in another supported study tool.</string>
 </resources>
