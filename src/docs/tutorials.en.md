@@ -132,6 +132,8 @@ Highlights use the visible intersection of the target, its clipping or scrolling
 
 The independent shared floating menu uses an opaque themed surface, accent border and shadow above the dimming layer, regardless of stylesheet load order. Next and Finish have stronger contrast, and wrapping controls stay inside the viewport in light and dark themes. First-visit and replay cancellation rules remain unchanged.
 
+The page shade explicitly excludes both the highlighted target and the tutorial floating menu, including its accent ring. The menu, highlight and callout share a session-owned overlay, keeping controls visible and interactive even when regions overlap. Tutorial text describes available tasks and controls without unrelated reassurances about permissions or actions the guide does not perform.
+
 ## Page Readiness
 
 The host runs `page:ready` after `page:mounted`, with `prepare`, `blocking`, `ready` and `afterReady` stages. Rendering completes while the blocking stage awaits startup work. Deferred login setup joins this stage before release notes. The Changelogs owner awaits its preferences, metadata request and popup dismissal before readiness is published. Cancellation closes an obsolete popup without recording acknowledgement. Automatic tutorials and header replays remain deferred until readiness; navigation invalidates the old page and late work cannot release the replacement.

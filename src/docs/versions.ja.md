@@ -77,7 +77,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.2.2`    |
 | Logging               | `src/gateways/logging/`       | `1.5.17`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.6.3`    |
+| Study                 | `src/gateways/study/`         | `2.6.4`    |
 | Calendar              | `src/gateways/calendar/`      | `1.7.2`    |
 
 ## コア契約
@@ -90,7 +90,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.3`   |
+| API Server     | `src/api/` | `0.13.4`   |
 
 ## ツール
 

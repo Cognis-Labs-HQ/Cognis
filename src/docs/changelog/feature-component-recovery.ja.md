@@ -42,6 +42,10 @@ cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
 
+## チュートリアルの表示と説明
+
+親ブランチの更新を含みます。暗幕はフローティング操作項目とアクセントの輪郭を除外し、説明は全四言語でページの操作に役立つ内容に絞ります。
+
 ## コミット
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.

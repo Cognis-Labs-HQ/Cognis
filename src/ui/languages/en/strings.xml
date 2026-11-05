@@ -630,12 +630,12 @@
   <string name="ui.reuse.start">Start</string>
   <string name="ui.reuse.finish">Finish</string>
   <string name="ui.tutorial.progress">Step {{current}} of {{total}}</string>
-  <string name="ui.tutorial.missing">The target is unavailable. Make it available, then choose Retry, or cancel this tutorial.</string>
+  <string name="ui.tutorial.missing">The control is unavailable. Make it available, then choose Retry.</string>
   <string name="ui.tutorial.waiting">Waiting for the page element. You can cancel at any time.</string>
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
-  <string name="ui.tutorial.workspace.navigation.body">Use the main navigation to open the pages available to your account. This tutorial never changes your permissions.</string>
-  <string name="ui.tutorial.workspace.search.body">Search finds pages and content across enabled components. Opening a dialog or leaving the page safely ends this tutorial.</string>
+  <string name="ui.tutorial.workspace.navigation.body">Use the main navigation to open the pages available to your account.</string>
+  <string name="ui.tutorial.workspace.search.body">Use Search to find pages and content across enabled components.</string>
   <string name="ui.tutorial.workspace.account.title">Account Menu</string>
   <string name="ui.tutorial.workspace.account.body">Open your account menu for settings, documentation and tutorials. You can replay any available tutorial here.</string>
     <string name="ui.tutorial.replay">Replay This Page’s Tutorial</string>

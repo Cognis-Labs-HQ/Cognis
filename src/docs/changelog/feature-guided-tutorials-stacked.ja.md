@@ -34,6 +34,10 @@
 
 今後のポップアップの所有元は、ページのマウント前に共通の `page-readiness.js` の `registerPageReadinessBlocker` で処理を登録できます。所有元固有の `id`、任意の `order`、所有元の `signal` を指定し、確認やポップアップの終了まで待つ Promise を返します。コールバックの `input.signal` はページと所有元のキャンセルを統合します。登録の置換と終了処理も所有元の寿命に従います。通知などの後続処理は `ui:pageReadiness.isReady()` または `afterReady` 段階で実行を延期できます。
 
+## 操作項目と説明の明確化
+
+ページの暗幕は、強調対象とチュートリアルのフローティングメニューおよびアクセントの輪郭を除外します。メニュー、強調枠、説明パネルはセッション専用のレイヤーに配置し、領域が重なっても操作項目を見やすく操作可能に保ちます。説明は利用できる操作や作業に絞り、権限やガイドが実行しない操作についての不要な説明を省きます。
+
 ## コミット
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -44,3 +48,4 @@
 - [0583f247d](https://github.com/Cognis-Labs-HQ/Cognis/commit/0583f247d44676b179a70fe408804b730e73878b) — 大きな対象の強調を画面内に収め案内操作を見やすく改善.
 - [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — ページ準備フローで起動時のポップアップを終えてから案内を開始.
 - [8a845efb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a845efb1cb16a1538a80cc456c82482af4a4c0e) — キャンセル後に同じ URL を再マウントした際の準備フローを更新.
+- [e65144a29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e65144a29220e5ecc0b10272bf3739716ca52094)

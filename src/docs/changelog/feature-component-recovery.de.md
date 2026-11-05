@@ -42,6 +42,10 @@ cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
 
+## Anleitungssteuerung Und Texte
+
+Enthält die Aktualisierung des übergeordneten Tutorial-Zweigs: Die Abdunklung spart schwebende Steuerung und Akzentring aus. Anleitungstexte beschreiben in allen vier Sprachen nützliche Seitenaktionen.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

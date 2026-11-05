@@ -34,7 +34,8 @@
 }
 .tutorial-actions.floating-toolbar {
     box-sizing: border-box;
-    z-index: 1801;
+    z-index: 2;
+    pointer-events: auto;
     flex-wrap: wrap;
     justify-content: center;
     padding: 16px 24px;
@@ -73,12 +74,17 @@
     mask: url("/static/assets/reuse/icons/tutorial-help.svg") center / contain
         no-repeat;
 }
+.tutorial-shade {
+    position: fixed;
+    inset: 0;
+    background: #0006;
+    pointer-events: none;
+}
 .tutorial-spotlight {
     position: fixed;
     box-sizing: border-box;
     border: 3px solid var(--tutorial-accent);
     border-radius: 8px;
-    box-shadow: 0 0 0 100vmax #0006;
     pointer-events: none;
 }
 .tutorial-arrow {

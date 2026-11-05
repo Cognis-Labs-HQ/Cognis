@@ -42,6 +42,10 @@ cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
 
+## Kontrol Dan Teks Tutorial
+
+Menyertakan pembaruan tutorial dari cabang induk: peredupan mengecualikan kontrol mengambang dan cincin aksennya, serta teks tutorial berfokus pada tindakan halaman yang berguna dalam keempat bahasa.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

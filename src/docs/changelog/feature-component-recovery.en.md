@@ -42,6 +42,10 @@ cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
 
+## Tutorial Controls And Copy
+
+Includes the parent tutorial update: the shade excludes the floating controls and accent ring, and tutorial copy focuses on useful page actions in all four languages.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

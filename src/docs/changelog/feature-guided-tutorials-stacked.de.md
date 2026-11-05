@@ -34,6 +34,10 @@ Nach `page:mounted` führt der Host `page:ready` mit den Phasen `prepare`, `bloc
 
 Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadinessBlocker` aus dem gemeinsamen Modul `page-readiness.js` einen Ablaufbeitrag anhängen. Übergeben Sie eine eindeutige Eigentümerkennung `id`, optional `order` und das Eigentümersignal `signal`. Geben Sie ein Promise zurück, das nach Prüfung oder Popup-Abschluss aufgelöst wird. Der Rückruf erhält `input.signal` mit Seiten- und Eigentümerabbruch. Ersetzungen und Bereinigung bleiben lebenszyklussicher. Verbraucher verwenden `ui:pageReadiness.isReady()` oder `afterReady`, um Benachrichtigungen und andere Seitenaktionen zurückzustellen.
 
+## Klare Steuerung Und Texte
+
+Die Seitenabdunklung spart sowohl das hervorgehobene Ziel als auch das schwebende Anleitungsmenü samt Akzentring aus. Menü, Hervorhebung und Hinweisfeld teilen eine sitzungseigene Ebene; die Steuerung bleibt auch bei überlappenden Bereichen sichtbar und bedienbar. Anleitungstexte beschreiben verfügbare Aufgaben und Bedienelemente ohne sachfremde Zusicherungen über Berechtigungen oder nicht ausgeführte Aktionen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -44,3 +48,4 @@ Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadines
 - [0583f247d](https://github.com/Cognis-Labs-HQ/Cognis/commit/0583f247d44676b179a70fe408804b730e73878b) — Übergroße Hervorhebungen sichtbar halten und Tutorialsteuerung hervorheben.
 - [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — Start-Popups vor Tutorials über die Seitenbereitschaft koordinieren.
 - [8a845efb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a845efb1cb16a1538a80cc456c82482af4a4c0e) — Bereitschaft beim erneuten Aufbau derselben URL nach Abbruch erneuern.
+- [e65144a29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e65144a29220e5ecc0b10272bf3739716ca52094)
