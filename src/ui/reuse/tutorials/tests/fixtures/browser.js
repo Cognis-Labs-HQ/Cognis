@@ -34,7 +34,7 @@ window.tutorialFixture = {
         pendingCallback = undefined;
         counts.inside = 0;
         counts.outside = 0;
-        document.querySelector("#launcher").focus();
+        document.querySelector("#launcher").focus({ preventScroll: true });
         const lifetime = new AbortController();
         owner = api.owner("browser", {
             signal: lifetime.signal,

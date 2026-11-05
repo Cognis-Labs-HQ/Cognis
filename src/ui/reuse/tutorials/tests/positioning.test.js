@@ -30,3 +30,37 @@ test("placement follows a scrolled visual viewport and keeps long translated pan
         assert.ok(panel.top + 220 <= viewport.offsetTop + viewport.height - 8);
     }
 });
+
+test("oversized visible targets use a bounded inset callout rather than an offscreen arrow", () => {
+    const viewport = {
+        offsetLeft: 60,
+        offsetTop: 150,
+        width: 390,
+        height: 400,
+    };
+    const result = placeCallout(
+        {
+            left: 68,
+            top: 158,
+            right: 442,
+            bottom: 542,
+            width: 374,
+            height: 384,
+        },
+        { width: 360, height: 220 },
+        viewport,
+    );
+    assert.equal(result.side, "inside");
+    assert.equal(result.top, 158);
+    assert.ok(result.left >= 68 && result.left + 360 <= 442);
+});
+
+test("a tall target uses available side space before falling back inside", () => {
+    const result = placeCallout(
+        { left: 20, top: 8, right: 100, bottom: 492, width: 80, height: 484 },
+        { width: 220, height: 180 },
+        { offsetLeft: 0, offsetTop: 0, width: 800, height: 500 },
+    );
+    assert.equal(result.side, "right");
+    assert.ok(result.left > 100);
+});
