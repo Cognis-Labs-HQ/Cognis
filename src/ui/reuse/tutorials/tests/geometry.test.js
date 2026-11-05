@@ -150,3 +150,33 @@ test("shade excludes controls and targets even when their regions overlap or ext
         }
     }
 });
+
+test("broadcast notices reserve visible space for callouts while retaining header highlights", () => {
+    const banner = {
+        contains: () => false,
+        getBoundingClientRect: () => ({
+            left: 0,
+            top: 0,
+            right: 800,
+            bottom: 64,
+            width: 800,
+            height: 64,
+        }),
+    };
+    const document = {
+        querySelector: (selector) =>
+            selector === "#site-top-banners" ? banner : null,
+    };
+    const window = { innerWidth: 800, innerHeight: 600 };
+    const viewport = tutorialViewport(window, document, {
+        contains: () => false,
+    });
+    assert.equal(viewport.offsetTop, 64);
+    assert.equal(viewport.height, 536);
+    assert.deepEqual(
+        shadeRegions({ left: 0, top: 0, right: 800, bottom: 600 }, [
+            banner.getBoundingClientRect(),
+        ]),
+        [{ left: 0, top: 64, right: 800, bottom: 600 }],
+    );
+});

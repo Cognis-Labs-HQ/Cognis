@@ -26,7 +26,7 @@ Katalog bahasa tutorial dimuat dengan revisi berdasarkan kunci terjemahan yang d
 
 Sorotan memakai irisan terlihat dari sasaran, leluhur yang memotong atau menggulir, dan viewport visual. Sasaran halaman menghindari header serta footer; panduan yang menargetkan kontrol tersebut tetap memakai wilayahnya sendiri. Sasaran besar yang sudah terlihat mempertahankan posisi gulir. Kotak petunjuk mencoba sisi yang tersedia sebelum ditempatkan di dalam sasaran terlihat, dengan panah di luar layar yang menyesatkan disembunyikan. Kontrol tutorial menyisihkan ruang sendiri agar teks terjemahan panjang dapat digulir tanpa menutupi tombol navigasi.
 
-Instans menu mengambang bersama memakai permukaan tema buram, batas aksen, dan bayangan di atas lapisan peredupan, tanpa bergantung pada urutan pemuatan stylesheet. Berikutnya dan Selesai memiliki kontras lebih kuat. Kontrol yang membungkus tetap berada di viewport pada tema terang maupun gelap. Aturan pembatalan kunjungan pertama dan pengulangan tidak berubah.
+Instans menu mengambang bersama mempertahankan tema, batas, tombol, jarak, dan blur latar standarnya. Menu berada di atas peredupan tutorial, termasuk pemilih pengulangan dari judul halaman. Peredupan mengecualikan target, kontrol mengambang, dan banner siaran; panel memberi ruang di bawah banner yang terlihat. Kontrol tetap berada dalam viewport pada tema terang dan gelap.
 
 ## Kesiapan Halaman
 
@@ -36,7 +36,11 @@ Pemilik popup berikutnya dapat menambahkan pemblokir sebelum halaman dipasang me
 
 ## Kontrol Dan Teks Yang Jelas
 
-Peredupan halaman mengecualikan target sorotan dan menu tutorial mengambang beserta cincin aksennya. Menu, sorotan, dan panel berada dalam lapisan milik sesi, sehingga kontrol tetap terlihat dan dapat digunakan saat area saling tumpang tindih. Teks tutorial menjelaskan tugas dan kontrol yang tersedia tanpa pernyataan tidak relevan tentang izin atau tindakan yang tidak dilakukan panduan.
+Teks tutorial menjelaskan tugas dan kontrol yang tersedia tanpa pernyataan tidak relevan tentang izin atau tindakan yang tidak dilakukan panduan.
+
+## Navigasi Yang Dijaga
+
+Langkah dapat memakai `preventNavigation` untuk mempertahankan halaman saat menjelaskan kontrol navigasi. Panduan Dasbor menggunakannya di seluruh langkah. Aktivasi tautan melalui penunjuk dan papan ketik, navigasi router terprogram, serta perpindahan riwayat yang dikelola router mengikuti penjagaan ini. Berikutnya, Kembali, dan Selesai tetap tersedia; transisi rute milik tutorial diizinkan. Penjagaan berakhir bersama langkah atau sesi.
 
 ## Komit
 

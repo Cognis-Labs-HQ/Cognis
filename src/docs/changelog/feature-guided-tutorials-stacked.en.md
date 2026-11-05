@@ -26,7 +26,7 @@ Tutorial locale catalogs are loaded under a revision of their declared translati
 
 Highlights use the visible intersection of the target, its clipping or scrolling ancestors and the visual viewport. Page targets avoid the site header and footer; guides targeting those controls still use their own full area. An oversized target that is already visible keeps its scroll position. Callouts try available sides before moving inside the visible target, where misleading offscreen arrows are hidden. Tutorial controls reserve their own space so long translated copy scrolls without covering navigation buttons.
 
-The independent shared floating menu uses an opaque themed surface, accent border and shadow above the dimming layer, regardless of stylesheet load order. Next and Finish have stronger contrast, and wrapping controls stay inside the viewport in light and dark themes. First-visit and replay cancellation rules remain unchanged.
+The independent shared floating menu keeps its standard theme, border, buttons, padding and backdrop blur. It sits above the tutorial shade, including the page-header replay chooser. The shade excludes the target, floating controls and broadcast banners; callouts reserve space below visible banners. Controls remain within the viewport in light and dark themes.
 
 ## Page Readiness
 
@@ -36,7 +36,11 @@ Future popup owners can append a staged blocker with `registerPageReadinessBlock
 
 ## Clear Controls And Copy
 
-The page shade explicitly excludes both the highlighted target and the tutorial floating menu, including its accent ring. The menu, highlight and callout share a session-owned overlay, keeping controls visible and interactive even when regions overlap. Tutorial text describes available tasks and controls without unrelated reassurances about permissions or actions the guide does not perform.
+Tutorial text describes available tasks and controls without unrelated reassurances about permissions or actions the guide does not perform.
+
+## Guarded Navigation
+
+Steps can opt into `preventNavigation` to keep users on the current page while explaining navigation controls. The Dashboard guide uses it throughout. Pointer and keyboard link activation, programmatic router navigation and router-managed history traversal respect the guard. Next, Back and Finish remain available; authored tutorial route transitions are allowed. Guards release with the step or session.
 
 ## Commits
 

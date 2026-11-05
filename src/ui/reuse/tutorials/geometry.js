@@ -35,6 +35,7 @@ export function tutorialViewport(window, document, target) {
     const footer = document.querySelector(".global-footer");
     for (const [element, edge] of [
         [header, "top"],
+        [document.querySelector("#site-top-banners"), "top"],
         [footer, "bottom"],
     ]) {
         if (!element || element.contains(target) || target?.contains(element))

@@ -310,6 +310,9 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     },
                     [
                         visible,
+                        ...[
+                            ...document.querySelectorAll("#site-top-banners"),
+                        ].map((banner) => banner.getBoundingClientRect()),
                         {
                             left: controlsBox.left - 4,
                             top: controlsBox.top - 4,
@@ -411,6 +414,28 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                             interacted?.(event);
                     },
                     { signal: scoped },
+                );
+        }
+        if (step.preventNavigation) {
+            for (const type of ["click", "auxclick"])
+                document.addEventListener(
+                    type,
+                    (event) => {
+                        const link = event
+                            .composedPath()
+                            .find((node) =>
+                                node.matches?.("a[href], area[href]"),
+                            );
+                        if (
+                            !link ||
+                            panel.contains(link) ||
+                            menu.element.contains(link)
+                        )
+                            return;
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                    },
+                    { capture: true, signal: scoped },
                 );
         }
         const blocking = Boolean(

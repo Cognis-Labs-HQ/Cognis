@@ -379,8 +379,22 @@ export function registerTutorials(
         { signal: ctx.signal },
     );
     document?.defaultView?.addEventListener(
+        "cognis:route-before-navigate",
+        (event) => {
+            if (!active?.blocksNavigation(event.detail?.path)) return;
+            event.preventDefault();
+            log("info", "Tutorial blocked page navigation.", {
+                operation: "guardNavigation",
+                tutorialId: active.id,
+            });
+        },
+        { signal: ctx.signal },
+    );
+    document?.defaultView?.addEventListener(
         "popstate",
-        () => active?.cancel("history"),
+        () => {
+            if (!active?.blocksNavigation()) active?.cancel("history");
+        },
         { signal: ctx.signal },
     );
     document?.defaultView?.addEventListener(
