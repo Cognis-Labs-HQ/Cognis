@@ -19,3 +19,5 @@ Gunakan perintah berikut dari kontainer Cognis yang berjalan dengan kredensial C
 Pengambilan, penetapan, dan pencatatan kanal rilis memakai cabang serta rilis dari sumber pasar yang dikonfigurasi. Pilihan disimpan secara atomik dalam `config/component-channels.json`. Peningkatan memakai pilihan itu atau cabang terpasang beserta pemasang, pemeriksaan dependensi, kebijakan integritas, dan otorisasi yang sudah ada. Modul yang sebelumnya aktif dinonaktifkan sementara selama peningkatan. Tugas pemasangan tertunda dipantau sampai selesai; pemasangan gagal mencoba pengaktifan kembali melalui validasi normal. Peningkatan berhasil melaporkan kebutuhan memulai ulang server. Waktu habis membiarkan pekerjaan yang belum pasti tetap nonaktif. Gateway, adaptor, dan modul inti bawaan ditingkatkan melalui penerapan host; daftar kanal mandirinya kosong dan penetapan kanal ditolak.
 
 ## Commit
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

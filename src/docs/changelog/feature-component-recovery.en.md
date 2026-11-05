@@ -19,3 +19,5 @@ Use the commands below from the running Cognis container with its normal CLI cre
 Release-channel get, set and list use branches and releases from the configured marketplace source. Choices are persisted atomically in `config/component-channels.json`. Upgrade uses that choice or the installed branch and the existing installer, dependency checks, integrity policy and authorization. Previously enabled modules are temporarily disabled while updating. Pending install jobs are polled until completion; failed installs attempt normal validated re-enablement. Successful updates report any required server restart. A timeout leaves uncertain work disabled rather than activating it. Bundled gateways, adapters and core modules are upgraded with the host deployment; their independent channel list is empty and setting a channel is rejected.
 
 ## Commits
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.
