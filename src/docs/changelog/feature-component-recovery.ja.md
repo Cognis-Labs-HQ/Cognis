@@ -54,3 +54,4 @@ cognisctl component:disable module analytics --force
 - [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — 強制指定のない重複操作を省略し CLI 表記を統一.
 - [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — チュートリアルの表示範囲とホストのバージョンを同期.
 - [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — 案内ブランチの起動時ポップアップ準備フローを同期.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)

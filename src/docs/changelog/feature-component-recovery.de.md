@@ -54,3 +54,4 @@ Enthält die Aktualisierung des übergeordneten Tutorial-Zweigs: Die Abdunklung 
 - [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Unnötige Komponentenaktionen ohne Zwang überspringen und CLI-Schreibweise vereinheitlichen.
 - [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Tutorial-Ansicht und Hostversion synchronisieren.
 - [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Bereitschaft für Start-Popups aus dem Tutorial-Zweig übernehmen.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
