@@ -48,3 +48,4 @@ Die Seitenabdunklung spart sowohl das hervorgehobene Ziel als auch das schwebend
 - [0583f247d](https://github.com/Cognis-Labs-HQ/Cognis/commit/0583f247d44676b179a70fe408804b730e73878b) — Übergroße Hervorhebungen sichtbar halten und Tutorialsteuerung hervorheben.
 - [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — Start-Popups vor Tutorials über die Seitenbereitschaft koordinieren.
 - [8a845efb1](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a845efb1cb16a1538a80cc456c82482af4a4c0e) — Bereitschaft beim erneuten Aufbau derselben URL nach Abbruch erneuern.
+- [e65144a29](https://github.com/Cognis-Labs-HQ/Cognis/commit/e65144a29220e5ecc0b10272bf3739716ca52094)
