@@ -145,3 +145,26 @@ test("blocker replacement is lifetime safe and ordered before readiness consumer
     await tick();
     assert.deepEqual(calls, ["setup", "latest", "ready"]);
 });
+
+test("a cancelled mount can remount the same URL with a fresh readiness cycle", async (context) => {
+    const state = fixture(context);
+    const first = new AbortController();
+    const second = new AbortController();
+    let cycles = 0;
+    state.extend("blocking", () => cycles++);
+    await uiCtx.runFlow("page:mounted", {
+        pathname: state.window.location.pathname,
+        signal: first.signal,
+    });
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    first.abort();
+    assert.equal(state.readiness.isReady(), false);
+    await uiCtx.runFlow("page:mounted", {
+        pathname: state.window.location.pathname,
+        signal: second.signal,
+    });
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    assert.equal(cycles, 2);
+});

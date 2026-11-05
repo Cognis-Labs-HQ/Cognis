@@ -53,10 +53,11 @@ export function installPageReadiness(ctx, { window = globalThis.window } = {}) {
         ({ input }) => {
             if (
                 signal.aborted ||
-                current.started ||
                 (window && input.pathname !== window.location.pathname)
             )
                 return;
+            if (current.started && current.lifetime?.aborted) reset();
+            if (current.started) return;
             const page = current;
             page.started = true;
             const lifetime = AbortSignal.any([
