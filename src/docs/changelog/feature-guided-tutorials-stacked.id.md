@@ -28,6 +28,12 @@ Sorotan memakai irisan terlihat dari sasaran, leluhur yang memotong atau menggul
 
 Instans menu mengambang bersama memakai permukaan tema buram, batas aksen, dan bayangan di atas lapisan peredupan, tanpa bergantung pada urutan pemuatan stylesheet. Berikutnya dan Selesai memiliki kontras lebih kuat. Kontrol yang membungkus tetap berada di viewport pada tema terang maupun gelap. Aturan pembatalan kunjungan pertama dan pengulangan tidak berubah.
 
+## Kesiapan Halaman
+
+Host menjalankan `page:ready` setelah `page:mounted`, dengan tahap `prepare`, `blocking`, `ready`, dan `afterReady`. Perenderan selesai sementara tahap pemblokiran menunggu pekerjaan awal. Penyiapan login tertunda bergabung sebelum catatan rilis. Pemilik Changelogs menunggu preferensi, permintaan metadata, dan penutupan popup sebelum kesiapan diterbitkan. Pembatalan menutup popup lama tanpa menyimpan tanda sudah dibaca. Tutorial otomatis dan pengulangan dari judul halaman tetap ditunda sampai siap. Navigasi membatalkan halaman lama sehingga pekerjaan terlambat tidak dapat menyatakan halaman pengganti siap.
+
+Pemilik popup berikutnya dapat menambahkan pemblokir sebelum halaman dipasang melalui `registerPageReadinessBlocker` dari modul bersama `page-readiness.js`. Berikan `id` unik pemilik, `order` opsional, dan `signal` milik pemilik. Kembalikan promise yang selesai saat pemeriksaan atau popup selesai. Callback menerima `input.signal` yang menggabungkan pembatalan halaman dan pemilik. Registrasi aman diganti dan dibersihkan bersama pemiliknya. Konsumen memakai `ui:pageReadiness.isReady()` atau tahap `afterReady` untuk menunda notifikasi serta tindakan halaman lainnya.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -36,3 +42,4 @@ Instans menu mengambang bersama memakai permukaan tema buram, batas aksen, dan b
 - [9bd2026](https://github.com/Cognis-Labs-HQ/Cognis/commit/9bd2026bf195a4e815b5822f968b94796b99244a)
 - [1df4bc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1df4bc68d8ad108c236caaeb67e09337f9f3d169)
 - [0583f247d](https://github.com/Cognis-Labs-HQ/Cognis/commit/0583f247d44676b179a70fe408804b730e73878b) — Pertahankan sorotan besar tetap terlihat dan pertegas kontrol tutorial.
+- [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — Koordinasikan popup awal melalui kesiapan halaman sebelum tutorial dimulai.

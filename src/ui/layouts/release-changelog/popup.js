@@ -11,6 +11,7 @@
  *
  * @param {{ t: (key: string) => string }} i18n Localization instance with string
  * translation function returning plain text for each i18n key.
+ * @param {object} options Optional cancellation signal for the active page.
  * @returns {Promise<void>}
  */
 import { apiFetch } from "../../reuse/api-client.js";
@@ -75,14 +76,22 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
     `;
 }
 
-export async function maybeShowReleaseChangelogPopup(i18n) {
+export async function maybeShowReleaseChangelogPopup(i18n, { signal } = {}) {
+    signal?.throwIfAborted();
     if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
     const accountId = localStorage.getItem("cognis_account");
     if (!accountId) return;
 
+    const active = () => {
+        signal?.throwIfAborted();
+        if (localStorage.getItem("cognis_account") !== accountId)
+            throw new DOMException("account_changed", "AbortError");
+    };
     const prefs = (await loadUiPreferences()) ?? {};
+    active();
     if (prefs.releaseChangelogShow === false) return;
     const changelogState = await loadReleaseChangelogState();
+    active();
     if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
 
     let changelogPayload;
@@ -90,12 +99,24 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
         const langs = readPreferredLanguages().join(",");
         const response = await apiFetch(
             `/api/v1/system/release-changelog?langs=${encodeURIComponent(langs)}`,
+            { signal },
         );
         if (!response.ok) return;
         changelogPayload = await response.json();
-    } catch {
+    } catch (error) {
+        if (signal?.aborted) throw error;
+        uiCtx.capabilities.get("ui:log")?.(
+            "error",
+            "release_changelog_request_failed",
+            {
+                component: "ui",
+                operation: "releaseChangelog",
+                errorName: error?.name,
+            },
+        );
         return;
     }
+    active();
     if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
     const releaseVersion = String(
         changelogPayload?.data?.releaseVersion ?? "",
@@ -118,7 +139,9 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
         unseenEntries.length > 0 ? unseenEntries : releaseEntries;
 
     let neverShowAgainChecked = false;
+    active();
     const action = await openPopup({
+        signal,
         title: i18n
             .t("ui.reuse.release_notes_title")
             .replace("{version}", releaseVersion || i18n.t("ui.reuse.unknown")),
@@ -147,9 +170,11 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
         },
     });
 
+    active();
     await saveUiPreferences({
         releaseChangelogShow: !neverShowAgainChecked,
     });
+    active();
     await saveReleaseChangelogState({
         seenSlugs: releaseSlugs,
         lastVersion: releaseVersion || null,

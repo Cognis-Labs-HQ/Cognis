@@ -28,6 +28,12 @@ Hervorhebungen verwenden den sichtbaren Schnittbereich des Ziels, seiner abschne
 
 Das unabhängige gemeinsame schwebende Menü erhält eine deckende themenabhängige Fläche, Akzentrahmen und Schatten oberhalb der Abdunklung, unabhängig von der Ladereihenfolge der Stylesheets. Weiter und Abschließen sind kontrastreicher. Umbrechende Bedienelemente bleiben in hellen und dunklen Themen im Ansichtsfenster. Die Abbruchregeln für erste Besuche und Wiederholungen bleiben unverändert.
 
+## Seitenbereitschaft
+
+Nach `page:mounted` führt der Host `page:ready` mit den Phasen `prepare`, `blocking`, `ready` und `afterReady` aus. Die Darstellung wird abgeschlossen, während die blockierende Phase auf Startaufgaben wartet. Nachgelagerte Anmeldeeinrichtung steht dabei vor den Versionshinweisen. Deren Eigentümer wartet auf Einstellungen, Metadaten und das Schließen des Popups, bevor die Seite bereit gemeldet wird. Ein Abbruch schließt ein veraltetes Popup ohne Lesebestätigung. Automatische Tutorials und Wiederholungen über die Seitenüberschrift bleiben bis zur Bereitschaft zurückgestellt. Navigation verwirft die alte Seite; verspätete Arbeit kann die neue Seite nicht freigeben.
+
+Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadinessBlocker` aus dem gemeinsamen Modul `page-readiness.js` einen Ablaufbeitrag anhängen. Übergeben Sie eine eindeutige Eigentümerkennung `id`, optional `order` und das Eigentümersignal `signal`. Geben Sie ein Promise zurück, das nach Prüfung oder Popup-Abschluss aufgelöst wird. Der Rückruf erhält `input.signal` mit Seiten- und Eigentümerabbruch. Ersetzungen und Bereinigung bleiben lebenszyklussicher. Verbraucher verwenden `ui:pageReadiness.isReady()` oder `afterReady`, um Benachrichtigungen und andere Seitenaktionen zurückzustellen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -36,3 +42,4 @@ Das unabhängige gemeinsame schwebende Menü erhält eine deckende themenabhäng
 - [9bd2026](https://github.com/Cognis-Labs-HQ/Cognis/commit/9bd2026bf195a4e815b5822f968b94796b99244a)
 - [1df4bc6](https://github.com/Cognis-Labs-HQ/Cognis/commit/1df4bc68d8ad108c236caaeb67e09337f9f3d169)
 - [0583f247d](https://github.com/Cognis-Labs-HQ/Cognis/commit/0583f247d44676b179a70fe408804b730e73878b) — Übergroße Hervorhebungen sichtbar halten und Tutorialsteuerung hervorheben.
+- [ae593b178](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae593b1781496a4985d787b32b647d95fa595547) — Start-Popups vor Tutorials über die Seitenbereitschaft koordinieren.
