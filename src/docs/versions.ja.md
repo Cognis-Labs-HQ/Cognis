@@ -90,13 +90,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.1`   |
+| API Server     | `src/api/` | `0.13.2`   |
 
 ## ツール
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
-| Cognis CLI     | `src/tooling/cli/` | `0.4.0`    |
+| Cognis CLI     | `src/tooling/cli/` | `0.4.1`    |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json

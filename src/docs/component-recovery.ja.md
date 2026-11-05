@@ -30,3 +30,12 @@ cognisctl component:upgrade module --all -v
 cognisctl -v component:info module study-language-en
 cognisctl --version
 ```
+
+## 状態が変わらない操作
+
+状態メッセージは文として自然な大文字表記に統一し、コンポーネントの識別子は変更しません。有効化と無効化は、対象が既に指定状態なら処理を省略します。更新では無効化やインストールの前に、導入済みコミットと選択したカタログのブランチまたはリリースのコミットを比較します。バージョン番号が同じでもコードが同一とは限りません。公開先を明示しない場合は導入済みの公開先を維持します。新しいソースのリビジョンを検出するにはマーケットプレイスのカタログを更新してください。リビジョン情報がない場合は無条件に再インストールせず、明示的な `--force` を要求します。有効化、無効化、更新の `--force` は `--all` とも併用でき、認可、整合性、依存関係、必須ホストの保護を維持したまま操作を再実行します。
+
+```sh
+cognisctl component:upgrade module analytics --force
+cognisctl component:disable module analytics --force
+```

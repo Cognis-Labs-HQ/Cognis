@@ -5,7 +5,7 @@ import { registry } from "../registry.ts";
 import { loadModuleCliPlugins } from "../plugins.ts";
 import { renderApiErrorPayload } from "../formatters.ts";
 import { readProgressResponse } from "../reuse/progress-stream.ts";
-import { withCommandProgress } from "../reuse/progress.ts";
+import { describeProgress, withCommandProgress } from "../reuse/progress.ts";
 
 const manifest = {
     id: "example",
@@ -108,10 +108,10 @@ test("bulk summaries identify each outcome and give actionable restart and host-
     });
     assert.match(
         output,
-        /module example: succeeded.*Version 2.0.0.*Restart Cognis/,
+        /Module example: succeeded.*version 2.0.0.*Restart Cognis/,
     );
-    assert.match(output, /gateway auth: skipped.*host deployment/);
-    assert.match(output, /module broken: failed.*check component:info/);
+    assert.match(output, /Gateway auth: skipped.*host deployment/);
+    assert.match(output, /Module broken: failed.*check component:info/);
     assert.match(output, /1 succeeded, 1 skipped, 1 failed/);
     assert.doesNotMatch(output, /manifest-detail/);
 });
@@ -158,7 +158,7 @@ test("progress starts immediately and timers are disposed on success and failure
             }),
         (line) => lines.push(line),
     );
-    assert.match(lines[0], /working/);
+    assert.equal(lines[0], "Component upgrade: working…");
     context.mock.timers.tick(10_000);
     assert.match(lines[1], /10s elapsed/);
     finish();
@@ -234,4 +234,36 @@ test("progress readers reject interrupted and failed operations and handle split
         readProgressResponse(response("not-json\n"), () => {}),
         SyntaxError,
     );
+});
+
+test("progress and unchanged results use sentence case and describe the actual no-op", () => {
+    assert.equal(
+        describeProgress({
+            target: { type: "module", id: "analytics" },
+            phase: "installing",
+            channel: "master",
+        }),
+        "Module analytics: installing selected release (master)",
+    );
+    for (const [reason, message] of [
+        ["already_enabled", "Already enabled."],
+        ["already_disabled", "Already disabled."],
+        ["up_to_date", "Up to date."],
+    ]) {
+        const output = formatCommandOutput("component:upgrade", {
+            data: {
+                results: [
+                    {
+                        target: { type: "module", id: "analytics" },
+                        status: "succeeded",
+                        data: { unchanged: true, reason },
+                    },
+                ],
+            },
+        });
+        assert.ok(output.startsWith("Module analytics: succeeded"));
+        assert.ok(output.includes(message));
+        if (reason !== "already_enabled")
+            assert.ok(!output.includes("Already enabled."));
+    }
 });

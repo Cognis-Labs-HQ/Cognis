@@ -22,6 +22,8 @@ async function fixture(
         onDisable?: () => void;
         requireAcknowledgement?: boolean;
         gatewayRequired?: boolean;
+        installedCommit?: string | null;
+        catalogBranch?: string;
     } = {},
 ) {
     const directory = await mkdtemp(
@@ -109,8 +111,30 @@ async function fixture(
                     {
                         ...rows[0],
                         defaultBranch: "main",
-                        branches: [{ name: "main" }, { name: "preview" }],
-                        releases: [{ name: "v1" }],
+                        installedCommit:
+                            options.installedCommit === null
+                                ? undefined
+                                : (options.installedCommit ?? "old-commit"),
+                        installedBranch: options.catalogBranch ?? "main",
+                        branches: [
+                            {
+                                name: "main",
+                                commit: "latest-commit",
+                                version: "1.0.0",
+                            },
+                            {
+                                name: "preview",
+                                commit: "preview-commit",
+                                version: "1.0.0",
+                            },
+                        ],
+                        releases: [
+                            {
+                                name: "v1",
+                                commit: "release-commit",
+                                version: "1.0.0",
+                            },
+                        ],
                     },
                 ];
             else if (url.pathname === "/api/v1/modules/install") {
@@ -536,5 +560,126 @@ test("host dependencies retain the existing required-component protection", asyn
         !host.calls.some(
             (call) => call.path === "/api/v1/gateways/storage/disable",
         ),
+    );
+});
+
+test("unchanged enable and disable skip mutation unless explicitly forced", async (context) => {
+    for (const action of ["enable", "disable"]) {
+        const host = await fixture(context);
+        host.rows[0].status = action === "enable" ? "enabled" : "disabled";
+        const target = { type: "module", id: "language" };
+        const result = (await host.service.apply(host.request, {
+            action,
+            target,
+        })) as {
+            results: Array<{ data: { unchanged?: boolean; reason?: string } }>;
+        };
+        assert.equal(result.results[0].data.unchanged, true);
+        assert.equal(
+            result.results[0].data.reason,
+            `already_${action === "enable" ? "enabled" : "disabled"}`,
+        );
+        assert.ok(!host.calls.some((call) => call.method === "POST"));
+        await host.service.apply(host.request, { action, target, force: true });
+        assert.equal(
+            host.calls.filter((call) => call.path.endsWith(`/${action}`))
+                .length,
+            1,
+        );
+    }
+});
+
+test("up-to-date upgrades do not disable or install, while force reinstalls the selected revision", async (context) => {
+    const host = await fixture(context, { installedCommit: "latest-commit" });
+    const target = { type: "module", id: "language" };
+    const result = (await host.service.apply(host.request, {
+        action: "upgrade",
+        target,
+    })) as {
+        results: Array<{ data: { unchanged?: boolean; reason?: string } }>;
+    };
+    assert.equal(result.results[0].data.reason, "up_to_date");
+    assert.equal(result.results[0].data.unchanged, true);
+    assert.ok(!host.calls.some((call) => call.method === "POST"));
+    await host.service.apply(host.request, {
+        action: "upgrade",
+        target,
+        force: true,
+    });
+    assert.equal(
+        host.calls.filter((call) => call.path === "/api/v1/modules/install")
+            .length,
+        1,
+    );
+    assert.equal(
+        host.calls.filter((call) => call.path.endsWith("/disable")).length,
+        1,
+    );
+});
+
+test("disabled modules upgrade without disable and commits distinguish changes at the same version", async (context) => {
+    const host = await fixture(context);
+    host.rows[0].status = "disabled";
+    const result = (await host.service.apply(host.request, {
+        action: "upgrade",
+        target: { type: "module", id: "language" },
+    })) as {
+        results: Array<{ status: string; data: { wasEnabled: boolean } }>;
+    };
+    assert.equal(result.results[0].status, "succeeded");
+    assert.equal(result.results[0].data.wasEnabled, false);
+    assert.equal(
+        host.calls.filter((call) => call.path === "/api/v1/modules/install")
+            .length,
+        1,
+    );
+    assert.ok(!host.calls.some((call) => call.path.endsWith("/disable")));
+});
+
+test("catalog provenance preserves the installed channel and missing revisions require explicit force", async (context) => {
+    const current = await fixture(context, {
+        installedCommit: "preview-commit",
+        catalogBranch: "preview",
+    });
+    Reflect.deleteProperty(current.rows[0], "installedBranch");
+    const target = { type: "module", id: "language" };
+    const noop = (await current.service.apply(current.request, {
+        action: "upgrade",
+        target,
+    })) as {
+        results: Array<{ data: { channel: string; unchanged: boolean } }>;
+    };
+    assert.equal(noop.results[0].data.channel, "preview");
+    assert.equal(noop.results[0].data.unchanged, true);
+    const unknown = await fixture(context, { installedCommit: null });
+    const failed = (await unknown.service.apply(unknown.request, {
+        action: "upgrade",
+        target,
+    })) as { results: Array<{ code: string }> };
+    assert.equal(failed.results[0].code, "component_revision_unavailable");
+    assert.ok(!unknown.calls.some((call) => call.method === "POST"));
+    await unknown.service.apply(unknown.request, {
+        action: "upgrade",
+        target,
+        force: true,
+    });
+    assert.equal(
+        unknown.calls.filter((call) => call.path === "/api/v1/modules/install")
+            .length,
+        1,
+    );
+    const protectedTarget = (await unknown.service.apply(unknown.request, {
+        action: "disable",
+        target: { type: "module", id: "protected" },
+        force: true,
+    })) as { results: Array<{ code: string }> };
+    assert.equal(protectedTarget.results[0].code, "component_protected");
+    await assert.rejects(
+        unknown.service.apply(unknown.request, {
+            action: "enable",
+            target,
+            force: "yes",
+        }),
+        /invalid_component_selection/,
     );
 });

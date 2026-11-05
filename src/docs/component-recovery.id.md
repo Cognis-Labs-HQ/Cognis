@@ -30,3 +30,12 @@ cognisctl component:upgrade module --all -v
 cognisctl -v component:info module study-language-en
 cognisctl --version
 ```
+
+## Status Yang Tidak Berubah
+
+Pesan menggunakan kapitalisasi kalimat dan mempertahankan ID komponen. Aktivasi dan penonaktifan melewati sasaran yang sudah sesuai. Sebelum menonaktifkan atau memasang, peningkatan membandingkan commit terpasang dengan commit cabang atau rilis katalog terpilih; nomor versi yang sama belum tentu berarti kode yang sama. Kanal terpasang dipertahankan jika tidak ada pilihan eksplisit. Segarkan katalog marketplace untuk menemukan revisi sumber baru. Informasi revisi yang hilang memerlukan `--force`, bukan pemasangan ulang tanpa pemeriksaan. `--force` mengulangi aktivasi, penonaktifan, atau peningkatan, termasuk bersama `--all`, tanpa melewati pemeriksaan otorisasi, integritas, ketergantungan, dan perlindungan host wajib.
+
+```sh
+cognisctl component:upgrade module analytics --force
+cognisctl component:disable module analytics --force
+```

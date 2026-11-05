@@ -15,7 +15,7 @@ export function registerComponentOperations(): void {
         register(
             `component:${action}`,
             async ({ args, apiBaseUrl, getApiToken, reportProgress }) => {
-                const selection = selectComponents(args);
+                const selection = selectComponents(args, { allowForce: true });
                 const payload = await apiRequest(
                     apiBaseUrl,
                     "/api/v1/components/actions",
@@ -24,6 +24,9 @@ export function registerComponentOperations(): void {
                         body: {
                             ...selection,
                             action,
+                            ...(args.includes("--force")
+                                ? { force: true }
+                                : {}),
                             acknowledge: args.includes(
                                 "--ack-external-disclaimer",
                             ),
@@ -62,7 +65,7 @@ export function registerComponentOperations(): void {
                 return payload;
             },
             {
-                usage: `cognisctl component:${action} [<module|gateway> <id> | adapter <gatewayId> <adapterId> | [<type>] --all] [--ack-external-disclaimer]`,
+                usage: `cognisctl component:${action} [<module|gateway> <id> | adapter <gatewayId> <adapterId> | [<type>] --all] [--ack-external-disclaimer] [--force]`,
                 description: `${action[0].toUpperCase() + action.slice(1)} a module, gateway, or adapter, or all selected components.`,
                 section: "Components",
                 render: renderComponentResults,

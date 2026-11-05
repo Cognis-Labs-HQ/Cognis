@@ -30,3 +30,12 @@ cognisctl component:upgrade module --all -v
 cognisctl -v component:info module study-language-en
 cognisctl --version
 ```
+
+## Unchanged Operations
+
+Lifecycle messages use sentence case and preserve component identifiers. Enable and disable skip targets already in the requested state. Upgrade compares the installed commit with the selected catalog branch or release commit before disabling or installing anything; equal version strings alone do not imply equal code. Installed channel provenance is retained when no explicit channel is selected. Refresh the marketplace catalog to discover newer source revisions. Missing revision information requires an explicit `--force` rather than a blind reinstall. `--force` on enable, disable or upgrade repeats the selected operation, including with `--all`, while retaining authorization, integrity, dependency and required-host protections.
+
+```sh
+cognisctl component:upgrade module analytics --force
+cognisctl component:disable module analytics --force
+```

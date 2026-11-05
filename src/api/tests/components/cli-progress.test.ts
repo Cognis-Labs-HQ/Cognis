@@ -113,7 +113,7 @@ test(
             });
             child.stderr.on("data", (chunk) => {
                 stderr += chunk;
-                if (stderr.includes("Installing selected release"))
+                if (stderr.includes("installing selected release"))
                     progress.resolve();
             });
             const completed = new Promise<number | null>((resolve, reject) => {
@@ -131,7 +131,7 @@ test(
             assert.equal(await completed, failed ? 1 : 0);
             assert.match(
                 stderr,
-                /module example: Installing selected release \(main\)/,
+                /Module example: installing selected release \(main\)/,
             );
             if (args.includes("-v")) {
                 assert.equal(
@@ -141,7 +141,7 @@ test(
             } else {
                 assert.match(
                     stdout,
-                    /module example: succeeded.*Version 2.0.0.*Restart Cognis/,
+                    /Module example: succeeded.*version 2.0.0.*Restart Cognis/,
                 );
                 assert.doesNotMatch(stdout, /internal-manifest-detail/);
             }

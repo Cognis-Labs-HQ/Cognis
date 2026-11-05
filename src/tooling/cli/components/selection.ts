@@ -5,11 +5,19 @@ export interface Selection {
     target?: { type: string; id: string; gatewayId?: string };
 }
 
-export function selectComponents(args: string[]): Selection {
+export function selectComponents(
+    args: string[],
+    options: { allowForce?: boolean } = {},
+): Selection {
     const flags = args.filter((value) => value.startsWith("--"));
     if (
         flags.some(
-            (flag) => !["--all", "--ack-external-disclaimer"].includes(flag),
+            (flag) =>
+                ![
+                    "--all",
+                    "--ack-external-disclaimer",
+                    ...(options.allowForce ? ["--force"] : []),
+                ].includes(flag),
         ) ||
         new Set(flags).size !== flags.length
     )

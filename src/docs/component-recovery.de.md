@@ -30,3 +30,12 @@ cognisctl component:upgrade module --all -v
 cognisctl -v component:info module study-language-en
 cognisctl --version
 ```
+
+## Unveränderte Zustände
+
+Statusmeldungen verwenden normale Satzschreibung und behalten Komponentenkennungen bei. Aktivieren und Deaktivieren überspringen bereits passende Zustände. Vor dem Deaktivieren oder Installieren vergleicht Aktualisieren den installierten Commit mit dem gewählten Katalogzweig oder Release. Gleiche Versionsnummern bedeuten nicht zwingend gleichen Code. Ohne ausdrückliche Auswahl bleibt der installierte Kanal erhalten. Aktualisieren Sie den Marketplace-Katalog, um neue Quellrevisionen zu entdecken. Fehlende Revisionsangaben erfordern `--force`, statt blind neu zu installieren. `--force` wiederholt Aktivieren, Deaktivieren oder Aktualisieren, auch mit `--all`; Berechtigungs-, Integritäts-, Abhängigkeits- und erforderliche Hostprüfungen bleiben bestehen.
+
+```sh
+cognisctl component:upgrade module analytics --force
+cognisctl component:disable module analytics --force
+```

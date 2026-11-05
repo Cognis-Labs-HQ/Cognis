@@ -89,3 +89,32 @@ test("component commands preserve selection, channels, acknowledgements and part
         gatewayId: "study",
     });
 });
+
+test("force is forwarded for lifecycle operations and rejected for read-only selections", async (context) => {
+    let body: Record<string, unknown> | undefined;
+    context.mock.method(globalThis, "fetch", async (_url, options) => {
+        body = JSON.parse(String(options?.body));
+        return Response.json({
+            data: {
+                results: [
+                    {
+                        target: { type: "module", id: "example" },
+                        status: "succeeded",
+                        data: { enabled: true },
+                    },
+                ],
+            },
+        });
+    });
+    await executeRegisteredCommand(
+        "component:upgrade",
+        ["module", "example", "--force"],
+        { apiBaseUrl: "http://test", getApiToken: async () => "fixture" },
+    );
+    assert.equal(body?.force, true);
+    assert.deepEqual(body?.target, { type: "module", id: "example" });
+    assert.throws(
+        () => selectComponents(["module", "example", "--force"]),
+        /Invalid component option/,
+    );
+});

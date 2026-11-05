@@ -189,6 +189,7 @@ export function createComponentService(
         item: ComponentInfo,
         operation: string,
         acknowledge: boolean,
+        force: boolean,
         progress?: ComponentProgress,
     ) {
         if (
@@ -202,13 +203,29 @@ export function createComponentService(
             throw Object.assign(new Error("component_protected"), {
                 status: 409,
             });
+        const enabled =
+            item.status === "enabled" ||
+            item.status === "active" ||
+            item.enabled === true ||
+            item.active === true;
+        const disabled =
+            item.status === "disabled" ||
+            item.status === "available" ||
+            item.enabled === false ||
+            item.active === false;
         if (
-            operation === "enable" &&
-            (item.status === "enabled" ||
-                item.status === "active" ||
-                item.enabled === true)
+            !force &&
+            ((operation === "enable" && enabled) ||
+                (operation === "disable" && !enabled && disabled))
         )
-            return { unchanged: true };
+            return {
+                unchanged: true,
+                reason:
+                    operation === "enable"
+                        ? "already_enabled"
+                        : "already_disabled",
+                enabled: operation === "enable",
+            };
         if (operation !== "upgrade") {
             const endpoint =
                 item.type === "adapter"
@@ -253,15 +270,39 @@ export function createComponentService(
         const choice =
             (await state.get(componentKey(item))) ??
             item.installedBranch ??
+            entry.installedBranch ??
             entry.defaultBranch;
-        if (
-            typeof choice !== "string" ||
-            !(await channels(request, item)).includes(choice)
-        )
+        const selected = [
+            ...((entry.branches as Array<{ name: string; commit?: string }>) ??
+                []),
+            ...((entry.releases as Array<{ name: string; commit?: string }>) ??
+                []),
+        ].find((release) => release.name === choice);
+        if (typeof choice !== "string" || !selected)
             throw Object.assign(new Error("invalid_component_channel"), {
                 status: 409,
             });
-        const wasEnabled = item.status === "enabled" || item.enabled === true;
+        const installedCommit = entry.installedCommit ?? item.installedCommit;
+        if (!force) {
+            if (selected?.commit && installedCommit) {
+                if (selected.commit === installedCommit)
+                    return {
+                        unchanged: true,
+                        reason: "up_to_date",
+                        version: item.version,
+                        channel: choice,
+                        restartRequired:
+                            item.restartRequired === true ||
+                            entry.restartRequired === true,
+                    };
+            } else {
+                throw Object.assign(
+                    new Error("component_revision_unavailable"),
+                    { status: 409 },
+                );
+            }
+        }
+        const wasEnabled = enabled;
         if (wasEnabled) {
             progress?.({ phase: "disabling" });
             checked(
@@ -359,6 +400,7 @@ export function createComponentService(
     const apply = action("apply", async (request, input, progress) => {
         progress?.({ phase: "preparing" });
         if (
+            (input.force !== undefined && typeof input.force !== "boolean") ||
             (input.all !== undefined && typeof input.all !== "boolean") ||
             (input.all && input.target) ||
             (input.type &&
@@ -455,6 +497,7 @@ export function createComponentService(
                         current,
                         String(input.action),
                         input.acknowledge === true,
+                        input.force === true,
                         emit,
                     );
                 });
