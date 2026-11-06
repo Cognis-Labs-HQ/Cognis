@@ -51,6 +51,7 @@ export function installTutorials(ctx) {
                 { variant: "error" },
             );
         },
+        onComplete: (actor, id) => page?.complete(actor, id),
         page: () => page?.refresh(),
         openPage: () => page?.open(),
     });

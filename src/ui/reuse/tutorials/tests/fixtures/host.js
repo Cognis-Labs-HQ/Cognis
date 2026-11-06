@@ -9,6 +9,7 @@ export function tutorialHost({
     role,
     page,
     openPage,
+    onComplete,
 } = {}) {
     const controller = new AbortController();
     const { core, ctx, events } = flowHost(controller.signal);
@@ -42,6 +43,7 @@ export function tutorialHost({
         role,
         page,
         openPage,
+        onComplete,
         view: async (options) => {
             const entry = {
                 ...options,

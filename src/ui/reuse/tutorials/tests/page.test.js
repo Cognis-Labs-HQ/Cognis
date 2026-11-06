@@ -21,6 +21,10 @@ test("first visits persist completion per account, survive remounting, and offer
         state.header.children[0].attributes.get("aria-label"),
         "ui.tutorial.replay",
     );
+    await state.api.refreshPage();
+    assert.equal(state.header.children[0].disabled, false);
+    assert.equal(await state.api.openPage(), false);
+    assert.equal(state.api.current().firstTime, true);
     await complete(state);
     assert.equal(state.values.size, 1);
     await state.api.refreshPage();
@@ -125,4 +129,46 @@ test("pending page blockers prevent automatic and replay tutorials until dismiss
     await tick();
     assert.equal(state.readiness.isReady(), true);
     assert.equal(state.api.current().firstTime, true);
+});
+
+test("completed guides survive content updates and remounts for every audience and replay only on request", async (context) => {
+    for (const role of ["user", "teacher", "moderator", "admin", "owner"]) {
+        const first = pageHost(context, new Map(), role);
+        await first.owner().register(play());
+        await first.api.refreshPage();
+        await complete(first);
+        first.page.dispose();
+        first.dispose();
+        const updated = pageHost(context, first.values, role);
+        await updated.owner().register({
+            ...play([{ id: "revised", titleKey: "owner.revised" }]),
+            titleKey: "owner.updated.title",
+        });
+        await updated.api.refreshPage();
+        await tick();
+        assert.equal(updated.api.current(), null);
+        const replay = await updated.api.openPage();
+        await replay.ready;
+        assert.equal(replay.state().firstTime, false);
+        assert.equal(replay.state().stepId, "revised");
+        await complete(updated);
+        await updated.api.refreshPage();
+        assert.equal(updated.api.current(), null);
+    }
+});
+
+test("a provider-started guide records completion before automatic page discovery resumes", async (context) => {
+    const state = pageHost(context);
+    const registration = await state.owner().register(play());
+    const session = await registration.start({ firstTime: true });
+    await session.ready;
+    state.page.connect();
+    await state.api.refreshPage();
+    await complete(state);
+    await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+    assert.equal(state.values.size, 1);
+    const replay = await state.api.openPage();
+    await replay.ready;
+    assert.equal(replay.state().firstTime, false);
 });
