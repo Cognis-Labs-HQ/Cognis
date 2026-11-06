@@ -19,7 +19,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "module-details",
-                        selector: ".module-store-grid",
+                        selector: ".module-store-card",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.marketplace.browse.module.details.title",
                         bodyKey:
@@ -28,7 +29,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "install-and-update",
-                        selector: ".module-store-grid",
+                        selector:
+                            ".module-store-card-actions>button:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.marketplace.browse.install.and.update.title",
                         bodyKey:

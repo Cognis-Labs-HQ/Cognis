@@ -175,3 +175,122 @@ test("a failed composed page rolls back all earlier tutorial owners and permits 
     assert.deepEqual(await state.api.list(), []);
     assert.ok(state.events.includes("ui:tutorial:mountPage"));
 });
+
+test("explicit first-match targets select the first usable control while unique matching stays strict", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const hidden = state.element();
+    hidden.getClientRects = () => [];
+    const disabled = state.element();
+    disabled.matches = () => true;
+    const first = state.element();
+    const second = state.element();
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => true,
+        querySelectorAll: () => [hidden, disabled, first, second],
+    };
+    const owner = new AbortController();
+    await state.api.mountPage({
+        owner: "ui.precise",
+        root,
+        signal: owner.signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "controls",
+                page: "/dashboard",
+                titleKey: "controls",
+                steps: [
+                    {
+                        id: "power",
+                        selector: ".editable-control",
+                        targetMatch: "first",
+                        titleKey: "power",
+                    },
+                    {
+                        id: "ambiguous",
+                        selector: ".editable-control",
+                        titleKey: "ambiguous",
+                        missing: { timeoutMs: 0, action: "skip" },
+                    },
+                    { id: "after", titleKey: "after" },
+                ],
+            },
+        ],
+    });
+    const session = await state.api.start("ui.precise:controls");
+    await session.ready;
+    assert.equal(state.rendered.at(-1).target, first);
+    await session.next();
+    assert.equal(session.state().stepId, "after");
+    await session.dispose();
+    await assert.rejects(
+        state.api.mountPage({
+            owner: "ui.invalid",
+            root,
+            signal: owner.signal,
+            i18n: { t: (key) => key },
+            definitions: [
+                {
+                    id: "controls",
+                    page: "/dashboard",
+                    titleKey: "controls",
+                    steps: [
+                        {
+                            id: "power",
+                            selector: ".control",
+                            targetMatch: "last",
+                            titleKey: "power",
+                        },
+                    ],
+                },
+            ],
+        }),
+        /invalid_tutorial_target_match/,
+    );
+});
+
+test("first-match selection cannot highlight another section's controls", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const inside = state.element();
+    const outside = state.element();
+    const boundary = state.element();
+    boundary.contains = (element) => element === inside;
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => true,
+        querySelectorAll: (selector) =>
+            selector === ".panel" ? [boundary] : [outside, inside],
+    };
+    await state.api.mountPage({
+        owner: "ui.scoped",
+        root,
+        signal: new AbortController().signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "controls",
+                page: "/dashboard",
+                scope: ".panel",
+                titleKey: "controls",
+                steps: [
+                    {
+                        id: "power",
+                        selector: ".control",
+                        targetMatch: "first",
+                        titleKey: "power",
+                    },
+                ],
+            },
+        ],
+    });
+    const session = await state.api.start("ui.scoped:controls");
+    await session.ready;
+    assert.equal(state.rendered.at(-1).target, inside);
+});

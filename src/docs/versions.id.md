@@ -55,7 +55,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Link Share            | `src/adapters/share/link/`          | `1.1.38` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.9`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.16` |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.17` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
 | Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.27` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
@@ -69,12 +69,12 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.3`  |
-| Share                 | `src/gateways/share/`         | `1.9.4`  |
+| Share                 | `src/gateways/share/`         | `1.9.5`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.3`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.4`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.5`  |
 | Social                | `src/gateways/social/`        | `1.4.3`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.3.3`  |
-| Registration          | `src/gateways/registration/`  | `1.2.4`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.3.4`  |
+| Registration          | `src/gateways/registration/`  | `1.2.5`  |
 | Logging               | `src/gateways/logging/`       | `1.5.18` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.5`  |
@@ -90,7 +90,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.12.18` |
+| API Server | `src/api/` | `0.12.19` |
 
 ## Peralatan
 

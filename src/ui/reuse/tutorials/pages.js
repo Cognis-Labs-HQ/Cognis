@@ -17,11 +17,17 @@ export async function mountPageTutorials(
 ) {
     const document = root.ownerDocument;
     const owner = api.owner(ownerId, { signal, i18n });
-    const resolve = (selector) => {
-        const matches = [...root.querySelectorAll(selector)].filter((element) =>
-            usableTarget(element, document),
+    const resolve = (selector, match = "unique", boundary) => {
+        const matches = [...root.querySelectorAll(selector)].filter(
+            (element) =>
+                (!boundary || boundary.contains(element)) &&
+                usableTarget(element, document),
         );
-        return matches.length === 1 ? matches[0] : null;
+        return match === "first"
+            ? (matches[0] ?? null)
+            : matches.length === 1
+              ? matches[0]
+              : null;
     };
     try {
         for (const definition of definitions) {
@@ -32,11 +38,20 @@ export async function mountPageTutorials(
                     : page.pathname === play.page) &&
                 (!scope || Boolean(resolve(scope)));
             const registeredSteps = [];
-            for (const { selector, ...step } of steps) {
+            for (const { selector, targetMatch = "unique", ...step } of steps) {
+                if (!["unique", "first"].includes(targetMatch))
+                    throw new TypeError("invalid_tutorial_target_match");
                 const target = selector
                     ? await owner.target(`${play.id}.${step.id}`, {
                           root: () => root,
-                          resolve: () => resolve(selector),
+                          resolve: () => {
+                              const boundary = scope
+                                  ? resolve(scope)
+                                  : undefined;
+                              return scope && !boundary
+                                  ? null
+                                  : resolve(selector, targetMatch, boundary);
+                          },
                       })
                     : null;
                 registeredSteps.push({

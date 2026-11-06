@@ -673,9 +673,9 @@
     <string name="ui.tutorial.admin.components.gateways.and.adapters.title">ゲートウェイとアダプター</string>
     <string name="ui.tutorial.admin.components.gateways.and.adapters.body">コンポーネントを開き、バージョン、依存関係、設定を確認します。</string>
     <string name="ui.tutorial.admin.components.enable.and.disable.title">有効化と無効化</string>
-    <string name="ui.tutorial.admin.components.enable.and.disable.body">電源操作で利用状態を変更します。依存関係の警告から、操作できない理由を確認できます。</string>
+    <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチで表示中のコンポーネントを有効または無効にします。変更を確定する前に依存関係の警告を確認してください。</string>
     <string name="ui.tutorial.admin.components.configuration.title">設定内容</string>
-    <string name="ui.tutorial.admin.components.configuration.body">設定を開いたら、保存やコンポーネントの削除を行う前に内容を確認します。</string>
+    <string name="ui.tutorial.admin.components.configuration.body">アダプター名を選ぶと利用可能な設定を開きます。保存する前に入力項目と未保存の変更を確認してください。</string>
     <string name="ui.tutorial.admin.status.title">システムの状態</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.title">稼働状態と整合性</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.body">稼働状態とファイル整合性の結果から、対応が必要なコンポーネントを探します。</string>

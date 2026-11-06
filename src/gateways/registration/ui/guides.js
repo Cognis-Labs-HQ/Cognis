@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "registration-access",
-                        selector: "#registration",
+                        selector: "#registration-policy-form",
                         titleKey:
                             "gateway.registration.tutorial.policy.registration.access.title",
                         bodyKey:
@@ -19,7 +19,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "apply-registration-rules",
-                        selector: "#registration",
+                        selector: 'a[href="/invite"]',
+                        targetMatch: "first",
                         titleKey:
                             "gateway.registration.tutorial.policy.apply.registration.rules.title",
                         bodyKey:

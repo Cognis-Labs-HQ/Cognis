@@ -38,6 +38,12 @@ window.tutorialFixture = {
             });
         return banner;
     },
+    async components(options) {
+        owner?.dispose();
+        const { mountComponentExample } =
+            await import("../../../../app/administration/tests/fixtures/tutorials.js");
+        return mountComponentExample(api, options);
+    },
     async cue(highlightNext) {
         owner?.dispose();
         owner = api.owner("browser.cue", {

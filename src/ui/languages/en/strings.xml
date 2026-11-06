@@ -673,9 +673,9 @@
     <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateways And Adapters</string>
     <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Expand a component to inspect its version, dependencies, and available configuration.</string>
     <string name="ui.tutorial.admin.components.enable.and.disable.title">Enable And Disable</string>
-    <string name="ui.tutorial.admin.components.enable.and.disable.body">Power controls change component availability; dependency warnings explain when an action is unavailable.</string>
+    <string name="ui.tutorial.admin.components.enable.and.disable.body">This power switch enables or disables the displayed component. Review dependency warnings before confirming a change.</string>
     <string name="ui.tutorial.admin.components.configuration.title">Configuration</string>
-    <string name="ui.tutorial.admin.components.configuration.body">Open configuration deliberately and review changes before saving or removing a component.</string>
+    <string name="ui.tutorial.admin.components.configuration.body">Select an adapter’s name to open its available settings. Review the fields and pending changes before saving.</string>
     <string name="ui.tutorial.admin.status.title">System Status</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.title">Health And Integrity</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.body">Read component health and file-integrity results to locate the component needing attention.</string>

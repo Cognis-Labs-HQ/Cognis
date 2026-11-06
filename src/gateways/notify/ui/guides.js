@@ -10,7 +10,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "channels-and-categories",
-                        selector: "#notif-matrix-container",
+                        selector:
+                            ".notif-matrix>tbody>tr>td>input:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.notify.tutorial.preferences.channels.and.categories.title",
                         bodyKey:
@@ -50,7 +52,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "test-delivery",
-                        selector: "#notifications",
+                        selector: ".notif-debug-send:not(:disabled)",
                         titleKey:
                             "gateway.notify.tutorial.delivery.test.delivery.title",
                         bodyKey:
@@ -67,7 +69,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "audience-and-content",
-                        selector: "#broadcasts",
+                        selector: ".notif-broadcast-role-options",
                         titleKey:
                             "gateway.notify.tutorial.broadcasts.audience.and.content.title",
                         bodyKey:
@@ -76,7 +78,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "publication-state",
-                        selector: "#broadcasts",
+                        selector: ".notif-broadcast-toggle:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.notify.tutorial.broadcasts.publication.state.title",
                         bodyKey:

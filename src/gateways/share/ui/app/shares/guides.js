@@ -17,7 +17,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "recipients-and-access",
-                        selector: "#shares-overview",
+                        selector: "tr[data-share-expandable]",
+                        targetMatch: "first",
                         titleKey:
                             "share.tutorial.shares.recipients.and.access.title",
                         bodyKey:
@@ -33,7 +34,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "manage-share-access",
-                        selector: "#shares-overview",
+                        selector: "[data-share-manage]",
+                        targetMatch: "first",
                         titleKey:
                             "share.tutorial.shares.manage.share.access.title",
                         bodyKey:

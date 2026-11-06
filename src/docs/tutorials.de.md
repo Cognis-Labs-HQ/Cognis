@@ -161,3 +161,7 @@ Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußze
 Jeder Tutorial-Schritt legt `highlightNext` ausdrücklich fest: Erklärungen, die Weiter oder Fertig benötigen, aktivieren den Hinweis; interaktive und wartebasierte Übungen deaktivieren ihn. Bei reduzierter Bewegung bleibt eine statische Umrandung. Alle bestehenden Anleitungen wurden darauf geprüft, einschließlich Suchergebnissen und Benachrichtigungen.
 
 Das optionale boolesche Feld `highlightNext` ist standardmäßig `false`; der Host leitet es nicht aus Interaktionen oder Wartebedingungen ab. Legen Sie es in der Schrittdefinition ausdrücklich fest. Aktivierte Hinweise erscheinen nach der Vorbereitung und beachten reduzierte Bewegung.
+
+Zurück von außerhalb einer abgeschlossenen Schrittgruppe oder eines Abhängigkeitszweigs führt zu dessen Einstieg und setzt die Ergebnisse zurück. Innerhalb eines Zweigs bleibt Zurück schrittweise. So wird ein geschlossener Suchdialog nicht erneut aufgerufen und automatisch übersprungen.
+
+Seitenschritte können mit `targetMatch: "first"` den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt wählen. Standardmäßig ist weiterhin ein eindeutiger Treffer erforderlich. Fehlende oder deaktivierte Ziele folgen der festgelegten Überspringregel. Aktionsbezogene Hervorhebungen zeigen jetzt auf bearbeitbare Schalter, Rollenfelder, Speicherquoten, Benachrichtigungstests, Freigaben, Datensätze und Modulaktionen. Komponenten verwendet einen bearbeitbaren sichtbaren Schalter; notwendige und versteckte Steuerelemente sind ausgeschlossen.

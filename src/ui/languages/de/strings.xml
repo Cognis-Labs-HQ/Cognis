@@ -673,9 +673,9 @@
     <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateways und Adapter</string>
     <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Öffnen Sie eine Komponente, um Version, Abhängigkeiten und Konfiguration zu prüfen.</string>
     <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktivieren und deaktivieren</string>
-    <string name="ui.tutorial.admin.components.enable.and.disable.body">Schalter ändern die Verfügbarkeit; Abhängigkeitswarnungen erklären gesperrte Aktionen.</string>
+    <string name="ui.tutorial.admin.components.enable.and.disable.body">Dieser Schalter aktiviert oder deaktiviert die angezeigte Komponente. Prüfen Sie Abhängigkeitswarnungen, bevor Sie eine Änderung bestätigen.</string>
     <string name="ui.tutorial.admin.components.configuration.title">Konfiguration</string>
-    <string name="ui.tutorial.admin.components.configuration.body">Öffnen Sie die Konfiguration bewusst und prüfen Sie Änderungen vor dem Speichern oder Entfernen.</string>
+    <string name="ui.tutorial.admin.components.configuration.body">Wählen Sie den Namen eines Adapters, um seine verfügbaren Einstellungen zu öffnen. Prüfen Sie die Felder und ausstehenden Änderungen vor dem Speichern.</string>
     <string name="ui.tutorial.admin.status.title">Systemstatus</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.title">Zustand und Integrität</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.body">Lesen Sie Zustand und Dateiintegrität, um betroffene Komponenten zu finden.</string>
