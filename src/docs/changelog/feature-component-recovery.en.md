@@ -54,6 +54,18 @@ Restart Tutorial is the persistent recovery action; the tutorial no longer rende
 
 Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
 
+## Animation-only Next cue
+
+The Next/Finish cue uses only the breathing animation, without a permanent outline. Reduced-motion preferences disable the animation; normal keyboard focus remains visible.
+
+## Precise tutorial targets
+
+Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
+
+## Completion survives updates
+
+Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

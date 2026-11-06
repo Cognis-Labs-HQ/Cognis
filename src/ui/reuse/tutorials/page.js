@@ -3,7 +3,7 @@
  * Public export: createPageTutorials — creates a lifecycle-owned page coordinator.
  * @example const page = createPageTutorials(dependencies); page.connect();
  * @param {object} dependencies Public ctx, tutorial, document, storage and localization boundaries.
- * @returns {{refresh: Function, open: Function, connect: Function, dispose: Function}} Page operations.
+ * @returns {{refresh: Function, open: Function, complete: Function, connect: Function, dispose: Function}} Page operations.
  */
 import { createFloatingMenu } from "../floating-menu.js";
 
@@ -32,6 +32,7 @@ export function createPageTutorials({
         navigating = false;
     let epoch = 0;
     const location = () => ({ pathname: window.location.pathname });
+    // Completion follows the stable owner/tutorial ID, never content or package revisions.
     const key = (actor, id) =>
         `cognis_tutorial:${encodeURIComponent(actor)}:${id}`;
     function seen(actor, id) {
@@ -127,7 +128,7 @@ export function createPageTutorials({
         help.setAttribute("title", i18n.t("ui.tutorial.replay"));
         const ready = ctx.capabilities.get("ui:pageReadiness");
         if (!ready) throw new Error("page_readiness_unavailable");
-        help.disabled = Boolean(api.current()) || !ready.isReady();
+        help.disabled = !ready.isReady();
         if (
             !actor ||
             !ready.isReady() ||
@@ -147,21 +148,19 @@ export function createPageTutorials({
         const firstTime = Boolean(actor && !seen(actor, id));
         attempted.add(key(actor, id));
         const session = await api.start(id, { firstTime });
-        void session.finished
-            .then((result) => {
-                if (result.status === "completed" && actor) {
-                    const name = key(actor, id);
-                    completed.add(name);
-                    try {
-                        storage()?.setItem(name, "completed");
-                    } catch (error) {
-                        report(error);
-                    }
-                }
-                schedule();
-            })
-            .catch(report);
+        void session.finished.then(schedule).catch(report);
         return session;
+    }
+    function complete(actor, id) {
+        if (!actor || signal.aborted) return;
+        const name = key(actor, id);
+        completed.add(name);
+        try {
+            storage()?.setItem(name, "completed");
+        } catch (error) {
+            report(error);
+        }
+        schedule();
     }
     async function open() {
         const revision = epoch;
@@ -286,5 +285,11 @@ export function createPageTutorials({
         }
         schedule();
     }
-    return { refresh, open, connect, dispose: () => controller.abort() };
+    return {
+        refresh,
+        open,
+        complete,
+        connect,
+        dispose: () => controller.abort(),
+    };
 }

@@ -104,3 +104,17 @@ Floating menus use the version-one `ui:floatingMenus` capability and the staged 
 
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
 - [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
+
+## Animation-only Next cue
+
+The Next/Finish cue uses only the breathing animation, without a permanent outline. Reduced-motion preferences disable the animation; normal keyboard focus remains visible.
+
+## Precise tutorial targets
+
+Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
+
+## Completion survives updates
+
+Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
+
+- [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)

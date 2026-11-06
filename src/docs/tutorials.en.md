@@ -158,9 +158,9 @@ Step paths support `minRole`, a synchronous `when({ firstTime, completed, skippe
 
 Broadcast-banner buttons, links and keyboard activation remain available throughout a tutorial. Activating a banner action yields the tutorial through `ui:tutorial:priority` before any action-owned popup or navigation. Banner focus targets participate in keyboard traversal.
 
-Search overlay steps use the overlay viewport, so shell headers and footers do not clip the search input highlight. Clicking any refinement pill completes the filter exercise. Steps requiring Next (or Finish) highlight that action with a breathing outline; reduced-motion preferences retain a static outline. Waiting and automatically advancing steps do not show this cue.
+Search overlay steps use the overlay viewport, so shell headers and footers do not clip the search input highlight. Clicking any refinement pill completes the filter exercise. Steps requiring Next (or Finish) use a breathing animation without a permanent outline; reduced-motion preferences disable it. Waiting and automatically advancing steps do not show this cue.
 
-Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
+Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. Reduced motion disables the animation; normal keyboard focus remains visible. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
 
 The optional boolean `highlightNext` defaults to `false`; the host never infers it from the step’s interaction or wait condition. Set it explicitly in the step definition. Enabled cues appear after preparation and respect reduced-motion preferences.
 
@@ -171,3 +171,7 @@ Page steps can declare `targetMatch: "first"` to select the first visible, usabl
 Restart Tutorial is the persistent recovery action; the tutorial no longer renders a Retry button. UI-facing introductory steps now highlight their referenced regions, including empty Jitsi meeting lists and Find Participants. Learning providers use published Study language targets and the public workspace target. Explicit `highlightNext` remains enabled on explanatory steps and disabled on event-driven stages.
 
 Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
+
+Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
+
+Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.

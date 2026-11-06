@@ -23,6 +23,7 @@ export function registerTutorials(
         log = () => {},
         page,
         openPage,
+        onComplete = () => {},
         localize,
         identity = () => null,
         role = () => null,
@@ -257,6 +258,13 @@ export function registerTutorials(
                         .then((lease) => lease.dispose())
                         .catch(report);
                     if (active === session) active = undefined;
+                    if (result.status === "completed") {
+                        try {
+                            onComplete(actor, id);
+                        } catch (error) {
+                            report(error);
+                        }
+                    }
                     if (result.status === "failed") notifyFailure();
                 },
                 emit: (name, detail) => {

@@ -33,14 +33,16 @@ class Element extends EventTarget {
     focus() {}
 }
 
-export function pageHost(context, values = new Map()) {
+export function pageHost(context, values = new Map(), role = "user") {
     let page;
     let actor = "first-account";
     let popup = false;
     const state = tutorialHost({
         page: () => page.refresh(),
         openPage: () => page.open(),
+        onComplete: (actor, id) => page.complete(actor, id),
         identity: () => actor,
+        role: () => role,
     });
     state.ctx.registerFlow("page:mounted", ["publish"]);
     state.ctx.registerFlow("page:ready", [

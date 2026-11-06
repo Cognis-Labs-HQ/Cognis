@@ -64,3 +64,38 @@ test("a tall target uses available side space before falling back inside", () =>
     assert.equal(result.side, "right");
     assert.ok(result.left > 100);
 });
+
+test("dock callouts retain low anchors and avoid the actual floating controls", () => {
+    for (const width of [390, 1179, 1565]) {
+        const viewport = { offsetLeft: 0, offsetTop: 80, width, height: 654 };
+        const menu = { left: 16, right: 380, top: 650, bottom: 722 };
+        for (const top of [610, 666, 722]) {
+            const target = {
+                left: width - 58,
+                right: width - 14,
+                top,
+                bottom: top + 44,
+                width: 44,
+                height: 44,
+            };
+            const result = placeCallout(
+                target,
+                { width: Math.min(360, width - 16), height: 180 },
+                viewport,
+                "auto",
+                0,
+                [menu],
+            );
+            assert.notEqual(result.side, "inside");
+            assert.ok(result.top >= 88);
+            assert.ok(result.top + 180 <= 726);
+            assert.ok(
+                result.left + Math.min(360, width - 16) <= menu.left ||
+                    result.left >= menu.right ||
+                    result.top + 180 <= menu.top ||
+                    result.top >= menu.bottom,
+            );
+            if (result.side === "top") assert.ok(result.top + 180 <= top - 14);
+        }
+    }
+});

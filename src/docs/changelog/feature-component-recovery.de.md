@@ -54,6 +54,18 @@ Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbut
 
 Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
 
+## Weiter-Hinweis nur mit Animation
+
+Der Hinweis für Weiter/Fertig verwendet nur die pulsierende Animation ohne dauerhafte Umrandung. Reduzierte Bewegung deaktiviert die Animation; der normale Tastaturfokus bleibt sichtbar.
+
+## Genaue Tutorial-Ziele
+
+Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten Menübereichs als Anker und meiden das tatsächliche Aktionsmenü. Der Wiederholungsschritt hebt den ?-Button selbst hervor. Dieser behält während Tutorials die Textfarbe des Themes; die Wiederholung ersetzt keine laufende Anleitung.
+
+## Abschluss bleibt nach Updates erhalten
+
+Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

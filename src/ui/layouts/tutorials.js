@@ -24,7 +24,7 @@ export async function mountProvider(ctx) {
         "dock-theme": "#theme-toggle",
         "dock-layout": "#composer-edit-toggle",
         widgets: ".main-window",
-        replay: ".page-context",
+        replay: ".page-context .tutorial-help",
     };
     const attachOpenedSurface =
         (selector) =>

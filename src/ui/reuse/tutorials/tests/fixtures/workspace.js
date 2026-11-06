@@ -106,5 +106,10 @@ export async function mountWorkspace({
         .get("ui:workspaceTutorial")
         .start({ firstTime });
     await session.ready;
+    await uiCtx.runFlow("page:mounted", {
+        pathname: window.location.pathname,
+        signal: lifetime.signal,
+    });
+    await uiCtx.capabilities.get("ui:tutorials").refreshPage();
     return session.state();
 }

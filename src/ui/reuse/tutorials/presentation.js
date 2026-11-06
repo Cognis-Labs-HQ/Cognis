@@ -7,7 +7,6 @@
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
 import {
-    clipRect,
     shadeRegions,
     tutorialViewport,
     visibleTargetRect,
@@ -23,6 +22,7 @@ const focusable =
  * @param {object} viewport Visual viewport dimensions and offsets.
  * @param {string} placement Preferred side.
  * @param {number} padding Target spacing.
+ * @param {object[]} exclusions Reserved control rectangles.
  * @returns {{side: string, left: number, top: number}} Clamped placement.
  */
 export function placeCallout(
@@ -31,6 +31,7 @@ export function placeCallout(
     viewport,
     placement = "auto",
     padding = 10,
+    exclusions = [],
 ) {
     const gap = padding + 14;
     const leftEdge = (viewport.offsetLeft ?? 0) + 8;
@@ -60,16 +61,34 @@ export function placeCallout(
             leftEdge,
             Math.min(candidate.left, rightEdge - box.width),
         );
-        const top = Math.max(
+        let top = Math.max(
             topEdge,
             Math.min(candidate.top, bottomEdge - box.height),
         );
-        const overlaps =
-            left < rect.right &&
-            left + box.width > rect.left &&
-            top < rect.bottom &&
-            top + box.height > rect.top;
+        for (const reserved of exclusions) {
+            if (
+                left < reserved.right &&
+                left + box.width > reserved.left &&
+                top < reserved.bottom &&
+                top + box.height > reserved.top
+            )
+                top = Math.max(topEdge, reserved.top - box.height - 8);
+        }
+        const fitsSide = {
+            bottom: top >= rect.bottom + gap,
+            top: top + box.height <= rect.top - gap,
+            right: left >= rect.right + gap,
+            left: left + box.width <= rect.left - gap,
+        }[side];
+        const overlaps = exclusions.some(
+            (reserved) =>
+                left < reserved.right &&
+                left + box.width > reserved.left &&
+                top < reserved.bottom &&
+                top + box.height > reserved.top,
+        );
         if (
+            fitsSide &&
             !overlaps &&
             left + box.width <= rightEdge &&
             top + box.height <= bottomEdge
@@ -381,17 +400,12 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                     width: `${visible.width}px`,
                     height: `${visible.height}px`,
                 });
-            const anchor =
-                visible &&
-                clipRect(visible, {
-                    left: panelViewport.offsetLeft,
-                    top: panelViewport.offsetTop,
-                    right: panelViewport.offsetLeft + panelViewport.width,
-                    bottom: panelViewport.offsetTop + panelViewport.height,
-                });
+            const anchor = visible;
             const box = panel.getBoundingClientRect();
             const position = anchor
-                ? placeCallout(anchor, box, panelViewport, step.placement, 0)
+                ? placeCallout(anchor, box, viewport, step.placement, 0, [
+                      menu.element.getBoundingClientRect(),
+                  ])
                 : {
                       side: "inside",
                       left:
