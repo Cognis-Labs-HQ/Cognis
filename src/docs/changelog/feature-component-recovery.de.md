@@ -46,6 +46,14 @@ cognisctl component:disable module analytics --force
 
 Enthält die verfeinerte Dashboard-Anleitung mit 18 Schritten: Bewusste Klickübungen öffnen Benachrichtigungen und Kontomenü, während Hover und andere Aktionen gesperrt bleiben. Die Anleitung erklärt Seitenaktionsleiste, Sprache, Darstellung und Layout. Die gemeinsame elementgebundene Lebensdauer schließt nur die passende Oberfläche beim Gruppenende; fehlende Bedienelemente werden auch beim ersten Besuch gemäß Skip-Regel ausgelassen. Der Katalog umfasst 55 Anleitungen mit 175 Schritten, darunter 22 Administratoranleitungen.
 
+## Tutorial-Wiederherstellung und Ziele
+
+Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
+
+## Warteschlange für schwebende Menüs
+
+Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

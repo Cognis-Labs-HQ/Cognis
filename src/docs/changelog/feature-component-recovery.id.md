@@ -46,6 +46,14 @@ cognisctl component:disable module analytics --force
 
 Menyertakan penyempurnaan Dasbor 18 langkah: latihan klik membuka panel notifikasi dan menu akun, sementara hover dan tindakan lain tetap dibatasi. Panduan menjelaskan dok tindakan halaman, bahasa, tampilan, dan tata letak. Kepemilikan permukaan berdasarkan elemen hanya menutup panel yang cocok saat grup berakhir; kontrol yang tidak tersedia mengikuti aturan lewati pada kunjungan pertama. Katalog memiliki 55 panduan dan 175 langkah, termasuk 22 panduan administrator.
 
+## Pemulihan dan sorotan tutorial
+
+Mulai Ulang Tutorial tetap menjadi tindakan pemulihan; tombol Coba Lagi tidak lagi ditampilkan. Langkah pengantar menyoroti bagian yang dirujuk, termasuk daftar rapat Jitsi kosong dan Cari Peserta. Penyedia pembelajaran memakai target bahasa Study dan ruang kerja publik yang terdaftar. `highlightNext` tetap aktif untuk penjelasan dan nonaktif untuk langkah berbasis peristiwa.
+
+## Antrean menu mengambang
+
+Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap `ui:floatingMenu:request`, `present`, `dismiss`, serta `release`. Prioritas sama mengikuti urutan permintaan; prioritas lebih tinggi menangguhkan menu di bawahnya. Reservasi menyediakan `ready` untuk izin pertama atau pembatalan, `present(element, { visible })`, `dismiss(element)`, dan `dispose()`. Tutorial menahan prioritas 100 sampai selesai, dibatalkan, atau pemilik dilepas, termasuk di antara langkah. Slot komposer dan pemilih pemutaran ulang memakai antrean yang sama. Permintaan batal dan tampilan lama tidak dapat menggantikan menu baru; slot kosong mengalah, dan pelepasan halaman membersihkan observer serta reservasi.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

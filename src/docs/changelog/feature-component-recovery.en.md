@@ -46,6 +46,14 @@ cognisctl component:disable module analytics --force
 
 Includes the 18-step Dashboard refinement: intentional click exercises open the notification pane and account menu while hover and unrelated actions stay blocked. The guide explains the page-action dock, language, appearance and layout controls. Shared element-scoped surface ownership closes only the matching pane when its group ends, and unavailable controls honour skip policies on first visits. The full catalog has 55 guides and 175 steps, including 22 administrator guides.
 
+## Tutorial recovery and highlights
+
+Restart Tutorial is the persistent recovery action; the tutorial no longer renders a Retry button. UI-facing introductory steps now highlight their referenced regions, including empty Jitsi meeting lists and Find Participants. Learning providers use published Study language targets and the public workspace target. Explicit `highlightNext` remains enabled on explanatory steps and disabled on event-driven stages.
+
+## Queued floating menus
+
+Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.
