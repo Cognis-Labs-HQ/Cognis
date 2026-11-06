@@ -39,3 +39,5 @@ Statusmeldungen verwenden normale Satzschreibung und behalten Komponentenkennung
 cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
+
+Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests und gegebenenfalls dessen Übersetzungskatalog. Der Name wird als unveränderter Text eingesetzt. Metadaten zum Anbieterbesitz enthalten optional `name` und `stringsBaseUrl`. Betriebsfehler und automatische Deaktivierungen verwenden `minRole: "admin"` und erscheinen nur für Administratoren und Eigentümer; normale Benachrichtigungen behalten ihre Zielgruppe.

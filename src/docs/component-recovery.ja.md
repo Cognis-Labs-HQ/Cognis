@@ -39,3 +39,5 @@ cognisctl --version
 cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
+
+コンポーネント復旧のトーストには、正式なマニフェストの表示名と、指定がある場合はコンポーネントの翻訳カタログを使います。名前は一度だけそのままのテキストとして挿入します。提供元の所有者メタデータに任意の `name` と `stringsBaseUrl` を追加しました。運用エラーや反復障害による無効化のトーストは `minRole: "admin"` で管理者と所有者だけに表示し、通常の通知の対象は変更しません。

@@ -34,6 +34,8 @@ export async function installComponentManagement(options: {
             version?: string;
             required?: boolean;
             adapterId?: string;
+            name?: string;
+            ui?: { stringsBaseUrl?: string };
         }>
     >;
     log: BootstrapLog;
@@ -102,6 +104,10 @@ export async function installComponentManagement(options: {
                     const owner: ComponentOwner = {
                         ...identity,
                         version: manifest?.version,
+                        ...(manifest?.name ? { name: manifest.name } : {}),
+                        ...(manifest?.ui?.stringsBaseUrl
+                            ? { stringsBaseUrl: manifest.ui.stringsBaseUrl }
+                            : {}),
                         required:
                             identity.type === "module"
                                 ? (manifest as { class?: string } | undefined)

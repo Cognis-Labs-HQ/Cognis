@@ -59,3 +59,5 @@ cognisctl component:disable module analytics --force
 - [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
 - [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
 - [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
+
+コンポーネント復旧のトーストには、正式なマニフェストの表示名と、指定がある場合はコンポーネントの翻訳カタログを使います。名前は一度だけそのままのテキストとして挿入します。提供元の所有者メタデータに任意の `name` と `stringsBaseUrl` を追加しました。運用エラーや反復障害による無効化のトーストは `minRole: "admin"` で管理者と所有者だけに表示し、通常の通知の対象は変更しません。スタックには条件付きチュートリアル経路、役割別の進捗、再開始、実際のドック寸法、バナー操作の優先処理も含まれます。

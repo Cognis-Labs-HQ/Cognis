@@ -39,3 +39,5 @@ Lifecycle messages use sentence case and preserve component identifiers. Enable 
 cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
+
+Component recovery toasts now use the authoritative manifest display name and, when supplied, its component translation catalog. Interpolation preserves the name as opaque text. Provider ownership metadata includes optional `name` and `stringsBaseUrl` fields. Operational failure and repeated-failure disable toasts request `minRole: "admin"`, so only administrators and owners see them; ordinary notifications retain their normal audience.

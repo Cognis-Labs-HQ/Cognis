@@ -37,7 +37,14 @@ export function createComponentRecovery(ctx) {
         }
     };
     const notify = async ({ input, data }) => {
-        const i18n = await createI18n({ persistLocale: false });
+        const { name, stringsBaseUrl } = input.component;
+        if (typeof name !== "string" || !name.trim())
+            throw new TypeError("component_display_name_missing");
+        const i18n = await createI18n({
+            persistLocale: false,
+            componentStringBaseUrls: stringsBaseUrl ? [stringsBaseUrl] : [],
+        });
+        const displayName = stringsBaseUrl ? i18n.t(name) : name;
         ctx.capabilities.get("ui:showToast")(
             i18n
                 .t(
@@ -45,8 +52,8 @@ export function createComponentRecovery(ctx) {
                         ? "ui.components.disabled_after_failures"
                         : "ui.components.provider_failed",
                 )
-                .replace("{{component}}", input.component.id),
-            { variant: "error" },
+                .replace("{{component}}", () => displayName),
+            { variant: "error", minRole: "admin" },
         );
         if (data.recovery?.disabled)
             window.dispatchEvent(

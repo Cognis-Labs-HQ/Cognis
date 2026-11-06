@@ -39,3 +39,5 @@ Pesan menggunakan kapitalisasi kalimat dan mempertahankan ID komponen. Aktivasi 
 cognisctl component:upgrade module analytics --force
 cognisctl component:disable module analytics --force
 ```
+
+Toast pemulihan komponen memakai nama tampilan manifest yang otoritatif dan katalog terjemahan komponen bila tersedia. Nama disisipkan sebagai teks utuh. Metadata pemilik penyedia memiliki kolom opsional `name` dan `stringsBaseUrl`. Toast kegagalan operasional dan penonaktifan setelah kegagalan berulang memakai `minRole: "admin"`, sehingga hanya administrator dan pemilik yang melihatnya; notifikasi biasa tetap memakai audiens normal.

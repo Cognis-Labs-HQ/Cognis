@@ -19,6 +19,8 @@ export interface ComponentInfo extends ComponentTarget {
     [key: string]: unknown;
 }
 export interface ComponentOwner extends ComponentTarget {
+    name?: string;
+    stringsBaseUrl?: string;
     required: boolean;
     version?: string;
 }

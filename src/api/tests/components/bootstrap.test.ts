@@ -49,7 +49,8 @@ test("provider ownership and protection come from server registries, and managem
                 {
                     id: "example",
                     uuid: "11111111-1111-4111-8111-111111111111",
-                    name: "Example",
+                    name: "module.example.name",
+                    ui: { stringsBaseUrl: "/static/modules/example/languages" },
                     version: "2",
                     class: "extension",
                     required: true,
@@ -78,12 +79,15 @@ test("provider ownership and protection come from server registries, and managem
             {
                 type: "module",
                 id: "example",
+                name: "module.example.name",
+                stringsBaseUrl: "/static/modules/example/languages",
                 version: "2",
                 required: false,
             },
             {
                 type: "gateway",
                 id: "storage",
+                name: "Storage",
                 version: "1",
                 required: true,
             },
@@ -161,6 +165,7 @@ test("Social provider owners use runtime IDs while retaining canonical manifest 
                 gatewayId: "social",
                 id,
                 version: manifest.version,
+                name: manifest.name,
                 required: false,
             });
         }
