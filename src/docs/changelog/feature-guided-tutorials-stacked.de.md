@@ -138,4 +138,3 @@ Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für Stri
 Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
 
 - [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)
-- [5c40f2f60](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c40f2f60c99b241c9465b03c32d886df7cd896a)
