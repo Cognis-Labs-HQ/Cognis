@@ -161,3 +161,7 @@ Search overlay steps use the overlay viewport, so shell headers and footers do n
 Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
 
 The optional boolean `highlightNext` defaults to `false`; the host never infers it from the step’s interaction or wait condition. Set it explicitly in the step definition. Enabled cues appear after preparation and respect reduced-motion preferences.
+
+Back from outside a completed step group or dependency branch returns to its opener and clears its outcomes. Back within a branch remains sequential. This avoids revisiting a closed Search panel and automatically skipping to the exit.
+
+Page steps can declare `targetMatch: "first"` to select the first visible, usable match inside their declared section. The default remains unique matching. Missing or disabled targets are skipped according to the authored policy. Action-specific highlights now point to editable power switches, role selectors, quota fields, notification tests, share controls, records and module actions. Components uses an editable displayed power switch; required and hidden controls are excluded.

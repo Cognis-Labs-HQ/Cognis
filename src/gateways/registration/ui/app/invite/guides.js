@@ -10,7 +10,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "invite-options",
-                        selector: ".invite-actions",
+                        selector: "#invite-email-btn,#invite-token-btn",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.registration.tutorial.invitations.invite.options.title",
                         bodyKey:
@@ -28,7 +29,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "manage-issued-invitations",
-                        selector: ".users-table-wrap",
+                        selector: ".invite-revoke-btn:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.registration.tutorial.invitations.manage.issued.invitations.title",
                         bodyKey:

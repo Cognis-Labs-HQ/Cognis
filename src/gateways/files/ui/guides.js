@@ -10,7 +10,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "default-quota",
-                        selector: "[data-files-quota-admin]",
+                        selector:
+                            '[data-files-quota-admin]>label>input[name="global"]',
                         titleKey:
                             "gateway.files.tutorial.quotas.default.quota.title",
                         bodyKey:
@@ -19,7 +20,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "namespace-limits",
-                        selector: "[data-files-quota-admin]",
+                        selector: "[data-files-save-namespace]",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.files.tutorial.quotas.namespace.limits.title",
                         bodyKey:

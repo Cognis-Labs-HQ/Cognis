@@ -104,6 +104,9 @@ export function tutorialHost({
             width: 40,
             height: 40,
         }),
+        contains(candidate) {
+            return candidate === this;
+        },
         matches: () => false,
         closest: () => null,
     });

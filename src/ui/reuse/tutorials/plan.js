@@ -26,15 +26,38 @@ export function createStepPlan(steps, { role, firstTime }) {
             throw new TypeError("invalid_tutorial_condition");
         return result;
     }
+    const positions = new Map(steps.map((step, index) => [step.id, index]));
+    function branchStart(index) {
+        const step = steps[index];
+        if (!step) return index;
+        if (step.group) {
+            while (index > 0 && steps[index - 1].group === step.group) index--;
+            return index;
+        }
+        return step.dependsOn.reduce(
+            (first, id) => Math.min(first, branchStart(positions.get(id))),
+            index,
+        );
+    }
     const indices = () =>
         steps.flatMap((_, index) => (eligible(index) ? [index] : []));
     return {
         eligible,
         indices,
-        previous: (index) =>
-            indices()
+        previous(index) {
+            const path = indices();
+            const previous = path
                 .filter((candidate) => candidate < index)
-                .at(-1),
+                .at(-1);
+            if (previous === undefined) return undefined;
+            const start = branchStart(previous);
+            return start === branchStart(index)
+                ? previous
+                : path.find(
+                      (candidate) =>
+                          candidate >= start && candidate <= previous,
+                  );
+        },
         mark(index, interacted = false) {
             const step = steps[index];
             if (!step) return;

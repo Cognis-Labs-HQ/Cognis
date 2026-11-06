@@ -673,9 +673,9 @@
     <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateway dan Adapter</string>
     <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Buka komponen untuk memeriksa versi, dependensi, dan konfigurasinya.</string>
     <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktifkan dan Nonaktifkan</string>
-    <string name="ui.tutorial.admin.components.enable.and.disable.body">Kontrol daya mengubah ketersediaan komponen; peringatan dependensi menjelaskan aksi yang tidak tersedia.</string>
+    <string name="ui.tutorial.admin.components.enable.and.disable.body">Sakelar daya ini mengaktifkan atau menonaktifkan komponen yang ditampilkan. Tinjau peringatan dependensi sebelum mengonfirmasi perubahan.</string>
     <string name="ui.tutorial.admin.components.configuration.title">Konfigurasi</string>
-    <string name="ui.tutorial.admin.components.configuration.body">Buka konfigurasi dengan sengaja dan tinjau perubahan sebelum menyimpan atau menghapus komponen.</string>
+    <string name="ui.tutorial.admin.components.configuration.body">Pilih nama adaptor untuk membuka pengaturan yang tersedia. Tinjau kolom dan perubahan yang belum disimpan sebelum menyimpan.</string>
     <string name="ui.tutorial.admin.status.title">Status Sistem</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.title">Kesehatan dan Integritas</string>
     <string name="ui.tutorial.admin.status.health.and.integrity.body">Baca kesehatan komponen dan integritas berkas untuk menemukan bagian yang perlu ditangani.</string>

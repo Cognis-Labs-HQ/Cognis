@@ -20,7 +20,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "details-and-relationships",
-                        selector: "#study-library-layer",
+                        selector: ".library-entry-card[data-library-entry]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.explore.details.and.relationships.title",
                         bodyKey:
@@ -29,7 +30,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "favourites-and-contributions",
-                        selector: "#study-library-layer",
+                        selector:
+                            '[data-study-favourite][data-study-favourite-kind="library"]',
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.explore.favourites.and.contributions.title",
                         bodyKey:
@@ -38,7 +41,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "filter-and-select",
-                        selector: "#study-library-layer",
+                        selector: ".library-filters",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.explore.filter.and.select.title",
                         bodyKey:
@@ -47,7 +51,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "practise-writing",
-                        selector: "#study-library-layer",
+                        selector: ".library-entry-card[data-library-entry]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.explore.practise.writing.title",
                         bodyKey:
@@ -56,7 +61,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "collect-and-request",
-                        selector: "#study-library-layer",
+                        selector:
+                            '[data-study-favourite][data-study-favourite-kind="library"]',
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.explore.collect.and.request.title",
                         bodyKey:
@@ -82,7 +89,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "inspect-before-importing",
-                        selector: "#dictionary-results",
+                        selector: "[data-dictionary-result]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.search.inspect.before.importing.title",
                         bodyKey:
@@ -91,7 +99,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compare-dictionary-matches",
-                        selector: "#dictionary-results",
+                        selector: "[data-dictionary-result]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.search.compare.dictionary.matches.title",
                         bodyKey:
@@ -117,7 +126,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "review-details",
-                        selector: "#study-library-requests",
+                        selector: "[data-library-request]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.requests.review.details.title",
                         bodyKey:
@@ -126,7 +136,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "follow-request-outcome",
-                        selector: "#study-library-requests",
+                        selector: "[data-library-request]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.requests.follow.request.outcome.title",
                         bodyKey:
@@ -157,7 +168,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "create-and-edit",
-                        selector: ".library-browser",
+                        selector: "[data-library-admin-edit]",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.administration.create.and.edit.title",
                         bodyKey:
@@ -166,7 +178,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "visibility-and-review",
-                        selector: ".library-browser",
+                        selector: ".library-entry-card-status",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.administration.visibility.and.review.title",
                         bodyKey:

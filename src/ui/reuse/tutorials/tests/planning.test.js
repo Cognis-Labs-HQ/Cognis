@@ -190,3 +190,63 @@ test("losing the required role invalidates a privileged stage and removes it fro
     assert.equal(session.state().total, 1);
     assert.equal(session.state().index, 0);
 });
+
+for (const grouped of [true, false]) {
+    test(`Back reopens the beginning of a completed ${grouped ? "group" : "dependency branch"}`, async (context) => {
+        const state = tutorialHost();
+        context.after(state.dispose);
+        const owner = state.owner();
+        await owner.target("opener", { resolve: state.element });
+        const registration = await owner.register(
+            play([
+                {
+                    id: "open",
+                    titleKey: "open",
+                    target: "example:opener",
+                    advance: { event: "click" },
+                    ...(grouped ? { group: "finder" } : {}),
+                },
+                {
+                    id: "query",
+                    titleKey: "query",
+                    dependsOn: ["open"],
+                    ...(grouped ? { group: "finder" } : {}),
+                },
+                {
+                    id: "close",
+                    titleKey: "close",
+                    dependsOn: ["open"],
+                    ...(grouped ? { group: "finder" } : {}),
+                },
+                { id: "after", titleKey: "after" },
+            ]),
+        );
+        const session = await registration.start({ firstTime: true });
+        await session.ready;
+        await state.rendered.at(-1).interacted({ type: "click" });
+        await tick();
+        await session.next();
+        await session.back();
+        assert.equal(
+            session.state().stepId,
+            "query",
+            "Back inside a branch remains sequential",
+        );
+        await session.next();
+        await session.next();
+        assert.equal(session.state().stepId, "after");
+        await session.back();
+        assert.equal(session.state().stepId, "open");
+        assert.equal(
+            session.state().total,
+            2,
+            "the closed branch outcomes are reset",
+        );
+        await tick();
+        assert.equal(
+            session.state().stepId,
+            "open",
+            "the branch cannot auto-skip back to its exit",
+        );
+    });
+}

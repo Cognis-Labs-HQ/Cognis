@@ -19,7 +19,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "roles-and-access",
-                        selector: ".users-list",
+                        selector: ".users-role-select:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.users.directory.roles.and.access.title",
                         bodyKey:
@@ -28,7 +29,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "account-actions",
-                        selector: ".users-list",
+                        selector: ".users-menu-btn:not(:disabled)",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.users.directory.account.actions.title",
                         bodyKey:

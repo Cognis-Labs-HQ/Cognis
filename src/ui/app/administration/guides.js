@@ -10,7 +10,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "gateways-and-adapters",
-                        selector: "#components",
+                        selector: ".module-row-summary>[data-details-toggle]",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.admin.components.gateways.and.adapters.title",
                         bodyKey:
@@ -19,7 +20,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "enable-and-disable",
-                        selector: "#components",
+                        selector:
+                            ".module-row-controls>.switch--inline:has(input[type='checkbox']:not(:disabled))",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.admin.components.enable.and.disable.title",
                         bodyKey:
@@ -28,7 +31,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "configuration",
-                        selector: "#components",
+                        selector:
+                            ".adapter-inline-summary>.collapsible-section-title",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.admin.components.configuration.title",
                         bodyKey:
