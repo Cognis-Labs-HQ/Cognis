@@ -861,3 +861,56 @@ test("accepted interactions tolerate replaced targets while permission checks re
     assert.equal(view.valid(true), false);
     await session.dispose();
 });
+
+test("click exercises can suppress hover without unlocking the rest of the page", async (context) => {
+    const state = host(context),
+        owner = state.owner();
+    const element = state.element();
+    const target = await owner.target("opener", { resolve: () => element });
+    await assert.rejects(
+        owner.register(
+            play([{ id: "bad", titleKey: "bad", suppressHover: "yes" }]),
+        ),
+        /invalid_tutorial_definition/,
+    );
+    const registered = await owner.register(
+        play([
+            {
+                id: "open",
+                titleKey: "open",
+                target: target.id,
+                interaction: "target",
+                suppressHover: true,
+                advance: { event: "click" },
+            },
+        ]),
+    );
+    const session = await registered.start();
+    await session.ready;
+    assert.equal(state.rendered.at(-1).step.suppressHover, true);
+    assert.equal(state.rendered.at(-1).step.interaction, "target");
+    assert.equal(state.rendered.at(-1).step.advance.event, "click");
+    await session.cancel();
+});
+
+test("first visits honour skip policies for unavailable and role-hidden controls", async (context) => {
+    const state = host(context),
+        owner = state.owner();
+    const registered = await owner.register(
+        play([
+            {
+                id: "unavailable",
+                titleKey: "unavailable",
+                target: "example:hidden",
+                missing: { timeoutMs: 0, action: "skip" },
+            },
+            { id: "visible", titleKey: "visible" },
+        ]),
+    );
+    const session = await registered.start({ firstTime: true });
+    await session.ready;
+    assert.equal(session.state().stepId, "visible");
+    assert.equal(session.state().firstTime, true);
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+});

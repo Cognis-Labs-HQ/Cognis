@@ -637,7 +637,7 @@
   <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account.</string>
   <string name="ui.tutorial.workspace.search.body">Open Search to try finding a page, setting or action on the current page.</string>
   <string name="ui.tutorial.workspace.account.title">Account Menu</string>
-  <string name="ui.tutorial.workspace.account.body">Your account menu contains Settings, Documentation and the pages available to your role. Use Logout when you finish on a shared device.</string>
+  <string name="ui.tutorial.workspace.account.body">Click your avatar to open the account menu.</string>
     <string name="ui.tutorial.replay">Replay This Page’s Tutorial</string>
     <string name="ui.tutorial.settings.general.title">Account Preferences</string>
     <string name="ui.tutorial.settings.general.email.addresses.title">Email Addresses</string>
@@ -727,9 +727,9 @@
   <string name="ui.tutorial.workspace.close.title">Close Search</string>
   <string name="ui.tutorial.workspace.close.body">Close Search to return to your workspace.</string>
   <string name="ui.tutorial.workspace.notifications.title">Review Notifications</string>
-  <string name="ui.tutorial.workspace.notifications.body">The bell shows unread notifications. Open it after the guide to review updates and follow their links.</string>
-  <string name="ui.tutorial.workspace.widgets.title">Arrange Your Dashboard</string>
-  <string name="ui.tutorial.workspace.widgets.body">Your dashboard combines account information, clocks and upcoming events. Use its layout controls to arrange available widgets, then save or discard your changes.</string>
+  <string name="ui.tutorial.workspace.notifications.body">Click the bell to open your notification pane.</string>
+  <string name="ui.tutorial.workspace.widgets.title">Dashboard Widgets</string>
+  <string name="ui.tutorial.workspace.widgets.body">Your workspace combines account details, clocks and upcoming events. The upcoming-events widget links to the corresponding calendar entries.</string>
   <string name="ui.tutorial.workspace.replay.title">Replay Page Guides</string>
   <string name="ui.tutorial.workspace.replay.body">Use the question mark beside a page title to replay its guides. Pages with several guides let you choose the task you want to learn.</string>
   <string name="ui.tutorial.marketplace.details.title">Module Details And Releases</string>
@@ -739,4 +739,15 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">Open Settings to review this module’s configuration. Check required fields and concealed credentials before saving.</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">Manage Installation And Updates</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">Advanced actions include release-channel changes and removal where available. Review dependencies and content-deletion options before confirming a removal.</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Review updates in this pane. Open an item to follow its link, mark all items read to clear the unread count, or use Clear to dismiss notifications.</string>
+  <string name="ui.tutorial.workspace.account.options.title">Account Menu Links</string>
+  <string name="ui.tutorial.workspace.account.options.body">Settings manages your account, language and appearance preferences. Documentation opens the help library. Use the profile link, when shown, to open your profile page.</string>
+  <string name="ui.tutorial.workspace.account.administration.body">Administration manages system settings and policies. Modules manages installed add-ons and their configuration; Users manages accounts and access.</string>
+  <string name="ui.tutorial.workspace.account.logout.title">Finish Your Session</string>
+  <string name="ui.tutorial.workspace.account.logout.body">Use Logout when you finish, especially on a shared device. After signing out, you must sign in again to access your account.</string>
+  <string name="ui.tutorial.workspace.dock.body">This dock collects actions for the current page. Its controls include interface language, appearance and layout editing, plus actions contributed by the page.</string>
+  <string name="ui.tutorial.workspace.dock.language.body">Use the language switcher to change the interface language. Manage the order of your preferred languages in Settings.</string>
+  <string name="ui.tutorial.workspace.dock.theme.body">The appearance button switches between light and dark themes. Right-click it to open the appearance settings for more options.</string>
+  <string name="ui.tutorial.workspace.dock.layout.title">Arrange Page Widgets</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Use the layout editor to move or resize widgets and add available elements. Review the arrangement, then use the floating actions to save or discard the layout changes.</string>
 </resources>

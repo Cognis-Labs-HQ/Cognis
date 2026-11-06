@@ -32,7 +32,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
-import { bindUserMenuIntegrity } from "./user-menu.js";
+import { bindAccountMenu, bindUserMenuIntegrity } from "./user-menu.js";
 import { footerLinks, mountFooterLinks } from "../reuse/footer-links.js";
 import { ensurePersistentStylesheet } from "../reuse/page-styles.js";
 import {
@@ -279,30 +279,8 @@ function bindTopbarActions() {
         }
     })();
 
-    const openMenu = () => {
-        dropdown?.classList.remove("hidden");
-        profileMenu?.classList.add("open");
-        toggle?.classList.add("active");
-        toggle?.setAttribute("aria-expanded", "true");
-    };
-
-    const closeMenu = () => {
-        dropdown?.classList.add("hidden");
-        profileMenu?.classList.remove("open");
-        toggle?.classList.remove("active");
-        toggle?.setAttribute("aria-expanded", "false");
-    };
-
-    toggle?.setAttribute("aria-expanded", "false");
-    toggle?.addEventListener("mouseenter", openMenu);
-    toggle?.addEventListener("click", (event) => {
-        event.stopPropagation();
-        openMenu();
-    });
-
-    document.addEventListener("click", (event) => {
-        if (!profileMenu?.contains(event.target)) closeMenu();
-    });
+    if (toggle && dropdown && profileMenu)
+        bindAccountMenu({ toggle, dropdown, menu: profileMenu });
 
     logout?.addEventListener("click", async () => {
         if (isOffline()) return;

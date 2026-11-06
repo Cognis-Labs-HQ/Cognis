@@ -82,6 +82,7 @@ export function validatePlay(input) {
             "placement",
             "padding",
             "interaction",
+            "suppressHover",
             "layer",
             "group",
             "preventNavigation",
@@ -129,6 +130,10 @@ export function validatePlay(input) {
         assert(
             step.interaction === undefined ||
                 ["free", "target", "none"].includes(step.interaction),
+        );
+        assert(
+            step.suppressHover === undefined ||
+                typeof step.suppressHover === "boolean",
         );
         assert(
             step.layer === undefined ||

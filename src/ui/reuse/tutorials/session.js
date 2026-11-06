@@ -206,7 +206,7 @@ export function createSession({
             if (step.target && !target) {
                 rendering?.dispose();
                 rendering = null;
-                if (!firstTime && step.missing.action === "skip") {
+                if (step.missing.action === "skip") {
                     busy = false;
                     return enter(index + 1);
                 }

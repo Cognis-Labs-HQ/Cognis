@@ -168,7 +168,11 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             items.push({
                 id,
                 label: hostI18n.t(key),
-                execute,
+                execute(event) {
+                    // Progression can dispose this menu before the click bubbles.
+                    event.stopPropagation();
+                    execute();
+                },
                 disabled,
                 variant,
             });
@@ -225,9 +229,10 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         }
         const isPopup = () =>
             Boolean(document.querySelector(".popup-overlay--visible"));
+        const containsControls = (node) =>
+            panel.contains(node) || menu.element.contains(node);
         const contains = (node, event) =>
-            panel.contains(node) ||
-            menu.element.contains(node) ||
+            containsControls(node) ||
             (step.interaction !== "none" &&
                 target &&
                 (target.contains(node) ||
@@ -467,8 +472,8 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 (target && step.interaction === "target")),
         );
         root.dataset.blocking = String(blocking);
-        if (step.interaction === "none") {
-            spotlight.style.pointerEvents = "auto";
+        if (step.interaction === "none") spotlight.style.pointerEvents = "auto";
+        if (step.interaction === "none" || step.suppressHover) {
             for (const type of [
                 "mouseover",
                 "mouseenter",
@@ -480,7 +485,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 document.addEventListener(
                     type,
                     (event) => {
-                        if (!contains(event.target, event))
+                        if (!containsControls(event.target))
                             event.stopImmediatePropagation();
                     },
                     { capture: true, signal: scoped },

@@ -45,10 +45,10 @@ window.tutorialFixture = {
         });
         await api.refreshPage();
     },
-    async workspace() {
+    async workspace(options) {
         owner?.dispose();
         const { mountWorkspace } = await import("./workspace.js");
-        return mountWorkspace();
+        return mountWorkspace(options);
     },
     async start({
         effects,

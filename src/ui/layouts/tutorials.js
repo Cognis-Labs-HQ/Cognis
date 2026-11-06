@@ -11,28 +11,41 @@ export async function mountProvider(ctx) {
         results: ".search-popup-results",
         close: ".search-popup-close",
         notifications: "#notification-toggle",
+        "notification-pane": ".notification-panel",
         account: "#profile-toggle",
+        "account-options": "#profile-dropdown",
+        "account-administration":
+            "#profile-dropdown>li>a[href='/administration']",
+        "account-logout": "#profile-logout",
+        dock: "[data-page-action-dock]",
+        "dock-language": "#language-toggle",
+        "dock-theme": "#theme-toggle",
+        "dock-layout": "#composer-edit-toggle",
         widgets: ".main-window",
         replay: ".page-context",
     };
+    const attachOpenedSurface =
+        (selector) =>
+        ({ signal, groupSignal, target }) => {
+            const surfaces = ctx.capabilities.get("ui:transientSurfaces");
+            if (typeof surfaces?.attachLifetime !== "function")
+                throw new Error("transient_surfaces_unavailable");
+            target.addEventListener(
+                "click",
+                () => {
+                    const surface = document.querySelector(selector);
+                    if (surface) surfaces.attachLifetime(surface, groupSignal);
+                },
+                { signal },
+            );
+        };
     const steps = [
         { id: "navigation" },
         {
             id: "search",
             interaction: "target",
             advance: { event: "click" },
-            enter({ signal, groupSignal, target }) {
-                const popup = ctx.capabilities.get("ui:searchPopup");
-                if (typeof popup?.attachLifetime !== "function")
-                    throw new Error("search_popup_unavailable");
-                target.addEventListener(
-                    "click",
-                    () => {
-                        popup.attachLifetime(groupSignal);
-                    },
-                    { signal },
-                );
-            },
+            enter: attachOpenedSurface(".search-popup-overlay"),
         },
         {
             id: "query",
@@ -51,8 +64,38 @@ export async function mountProvider(ctx) {
             layer: "overlay",
             advance: { event: "click" },
         },
-        { id: "notifications" },
-        { id: "account" },
+        {
+            id: "notifications",
+            group: "inbox",
+            interaction: "target",
+            suppressHover: true,
+            advance: { event: "click" },
+            enter: attachOpenedSurface(".notification-panel"),
+        },
+        {
+            id: "notification-pane",
+            group: "inbox",
+            titleKey: "ui.reuse.notifications",
+        },
+        {
+            id: "account",
+            group: "account-menu",
+            interaction: "target",
+            suppressHover: true,
+            advance: { event: "click" },
+            enter: attachOpenedSurface("#profile-dropdown"),
+        },
+        { id: "account-options", group: "account-menu" },
+        {
+            id: "account-administration",
+            group: "account-menu",
+            titleKey: "ui.reuse.administration",
+        },
+        { id: "account-logout", group: "account-menu" },
+        { id: "dock", titleKey: "ui.reuse.actions" },
+        { id: "dock-language", titleKey: "ui.reuse.language" },
+        { id: "dock-theme", titleKey: "ui.reuse.appearance" },
+        { id: "dock-layout" },
         { id: "widgets" },
         { id: "replay" },
     ];
@@ -81,10 +124,12 @@ export async function mountProvider(ctx) {
                     : {}),
                 route: "/dashboard",
                 target: `ui.workspace:${step.id}`,
-                titleKey: ["navigation", "search"].includes(step.id)
-                    ? `ui.reuse.${step.id}`
-                    : `ui.tutorial.workspace.${step.id}.title`,
-                bodyKey: `ui.tutorial.workspace.${step.id}.body`,
+                titleKey:
+                    step.titleKey ??
+                    (["navigation", "search"].includes(step.id)
+                        ? `ui.reuse.${step.id}`
+                        : `ui.tutorial.workspace.${step.id.replaceAll("-", ".")}.title`),
+                bodyKey: `ui.tutorial.workspace.${step.id.replaceAll("-", ".")}.body`,
                 preventNavigation: true,
                 effects: { callout: true, arrow: true, spotlight: true },
                 missing: { timeoutMs: 1500, action: "skip" },

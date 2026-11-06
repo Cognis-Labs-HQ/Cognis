@@ -637,7 +637,7 @@
   <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションには、アカウントで利用できるページへのリンクがあります。</string>
   <string name="ui.tutorial.workspace.search.body">検索を開いて、ページ、設定、現在のページの操作を探してみます。</string>
   <string name="ui.tutorial.workspace.account.title">アカウントメニュー</string>
-  <string name="ui.tutorial.workspace.account.body">アカウントメニューから設定、ドキュメント、役割に応じたページを開けます。共用端末では使用後にログアウトします。</string>
+  <string name="ui.tutorial.workspace.account.body">アバターをクリックしてアカウントメニューを開きます。</string>
     <string name="ui.tutorial.replay">このページのチュートリアルを再生</string>
     <string name="ui.tutorial.settings.general.title">アカウント設定</string>
     <string name="ui.tutorial.settings.general.email.addresses.title">メールアドレス</string>
@@ -727,9 +727,9 @@
   <string name="ui.tutorial.workspace.close.title">検索を閉じる</string>
   <string name="ui.tutorial.workspace.close.body">検索を閉じてワークスペースに戻ります。</string>
   <string name="ui.tutorial.workspace.notifications.title">通知を確認する</string>
-  <string name="ui.tutorial.workspace.notifications.body">ベルで未読の通知を確認できます。ガイド終了後に開き、更新内容や関連リンクを確認します。</string>
-  <string name="ui.tutorial.workspace.widgets.title">ダッシュボードを配置する</string>
-  <string name="ui.tutorial.workspace.widgets.body">ダッシュボードにはアカウント情報、時計、今後の予定が表示されます。レイアウト操作でウィジェットを並べ、変更を保存または破棄できます。</string>
+  <string name="ui.tutorial.workspace.notifications.body">ベルをクリックして通知パネルを開きます。</string>
+  <string name="ui.tutorial.workspace.widgets.title">ダッシュボードのウィジェット</string>
+  <string name="ui.tutorial.workspace.widgets.body">ワークスペースにはアカウント情報、時計、今後の予定が表示されます。予定のウィジェットから対応するカレンダー項目を開けます。</string>
   <string name="ui.tutorial.workspace.replay.title">ページのガイドを再生する</string>
   <string name="ui.tutorial.workspace.replay.body">ページ見出しの疑問符からガイドを再生できます。複数ある場合は、学びたい作業を選びます。</string>
   <string name="ui.tutorial.marketplace.details.title">モジュールの詳細とリリース</string>
@@ -739,4 +739,15 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">設定からモジュールの構成を確認します。必須項目と認証情報を確認してから保存します。</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">インストールと更新を管理する</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">詳細操作からチャンネル変更や削除を行えます。削除前に依存関係とデータ削除の選択を確認します。</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">このパネルで更新を確認します。項目からリンクを開く、すべて既読にして未読数を消す、クリアで通知を削除する操作ができます。</string>
+  <string name="ui.tutorial.workspace.account.options.title">アカウントメニューのリンク</string>
+  <string name="ui.tutorial.workspace.account.options.body">設定からアカウント、言語、表示を調整し、ドキュメントからヘルプを開けます。プロフィールのリンクが表示されていれば、自分のページを開けます。</string>
+  <string name="ui.tutorial.workspace.account.administration.body">管理画面ではシステム設定とポリシー、モジュールでは拡張機能と構成、ユーザーではアカウントとアクセスを管理します。</string>
+  <string name="ui.tutorial.workspace.account.logout.title">セッションを終了する</string>
+  <string name="ui.tutorial.workspace.account.logout.body">特に共用端末では、使用後にログアウトします。ログアウト後にアカウントを使うには再度ログインが必要です。</string>
+  <string name="ui.tutorial.workspace.dock.body">このドックには現在のページの操作が集まります。表示言語、テーマ、レイアウト編集のほか、ページ固有の操作も表示されます。</string>
+  <string name="ui.tutorial.workspace.dock.language.body">言語切り替えで表示言語を変更できます。優先する言語の順番は設定で管理します。</string>
+  <string name="ui.tutorial.workspace.dock.theme.body">表示ボタンでライトテーマとダークテーマを切り替えます。右クリックすると表示設定を開けます。</string>
+  <string name="ui.tutorial.workspace.dock.layout.title">ページのウィジェットを配置する</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">レイアウト編集でウィジェットの移動、サイズ変更、項目追加ができます。配置を確認し、フローティングメニューで保存または破棄します。</string>
 </resources>

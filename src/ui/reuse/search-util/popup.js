@@ -15,7 +15,7 @@
  * @module reuse/search-util/popup
  */
 
-import { searchPopupLifetime } from "./lifetime.js";
+import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import {
@@ -554,7 +554,7 @@ export function openSearchPopup({
         }, 140);
     };
 
-    searchPopupLifetime.track(closeOverlay, eventController.signal);
+    transientSurfaces.register(overlay, closeOverlay, eventController.signal);
     overlay.__closeSearchPopup = closeOverlay;
 
     const onKeyDown = (event) => {
