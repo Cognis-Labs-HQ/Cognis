@@ -79,3 +79,5 @@ Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden
 - [f681187ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f681187ca572fa4270f9b398d429a3d1177c62d3)
 
 Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußzeilen die Hervorhebung des Eingabefelds nicht abschneiden. Jede Filter-Schaltfläche beendet die Filterübung. Schritte, die Weiter oder Fertig benötigen, heben die Aktion mit einer pulsierenden Umrandung hervor; bei reduzierter Bewegung bleibt sie statisch. Wartende und automatisch fortschreitende Schritte zeigen diesen Hinweis nicht.
+
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
