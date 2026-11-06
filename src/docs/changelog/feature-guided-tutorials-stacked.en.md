@@ -8,7 +8,7 @@ The host owns rendering, accessibility, event gates, target resolution and lifec
 
 ## Page Binding And First Visits
 
-All tutorial action buttons live in an independent instance of the shared floating menu. First-time sessions have no Cancel or Skip action; Escape does not dismiss them. Next remains available during target waits, asynchronous work and event-driven steps, so repeatedly pressing it always reaches completion. Replays expose cancellation with `btn-cancel`. Unrelated navigation, history, account/access loss, provider removal and required popups still release every session. Tutorials never confirm dialogs, submit privileged forms or initiate calls.
+All tutorial action buttons live in an independent instance of the shared floating menu. First-time sessions have no Cancel or Skip action; Escape does not dismiss them. Next remains available during target waits, asynchronous work and event-driven steps, so repeatedly pressing it always reaches completion. Replays use Skip to leave the guide. Unrelated navigation, history, account/access loss, provider removal and required popups still release every session. Tutorials never confirm dialogs, submit privileged forms or initiate calls.
 
 ## Component-Owned Page Guides
 
@@ -118,3 +118,7 @@ Dock callouts retain visible control anchors below the menu reservation and avoi
 Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
 
 - [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
+
+## Replay exit action
+
+Tutorial replays offer Skip as their single exit button; the redundant Cancel button is removed. First-time guides retain their existing progression controls.

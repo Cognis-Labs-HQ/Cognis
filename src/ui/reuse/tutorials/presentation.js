@@ -210,16 +210,7 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             !firstTime && waiting && !missing,
             "neutral",
         );
-        if (!firstTime) {
-            button("skip", "ui.reuse.skip", actions.skip);
-            button(
-                "cancel",
-                "ui.reuse.cancel",
-                actions.cancel,
-                false,
-                "cancel",
-            );
-        }
+        if (!firstTime) button("skip", "ui.reuse.skip", actions.skip);
         const menu = createFloatingMenu({
             document,
             label: hostI18n.t("ui.reuse.tutorials"),

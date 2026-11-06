@@ -8,7 +8,7 @@ Der Host verwaltet Darstellung, Barrierefreiheit, Ereignissperren, Zielauflösun
 
 ## Seitenbindung und erster Besuch
 
-Alle Aktionsbuttons stehen in einer eigenen Instanz des gemeinsamen schwebenden Menüs. Erstdurchläufe haben weder Abbrechen noch Überspringen; Escape beendet sie nicht. Weiter bleibt während Zielsuche, asynchroner Arbeit und ereignisgesteuerter Schritte verfügbar, sodass wiederholtes Weiter immer zum Ende führt. Wiederholungen bieten Abbrechen mit `btn-cancel`. Andere Navigation, Verlauf, Konto- oder Berechtigungsverlust, entfernte Anbieter und Pflichtdialoge räumen weiterhin jede Sitzung auf. Anleitungen bestätigen keine Dialoge, senden keine privilegierten Formulare und starten keine Anrufe.
+Alle Aktionsbuttons stehen in einer eigenen Instanz des gemeinsamen schwebenden Menüs. Erstdurchläufe haben weder Abbrechen noch Überspringen; Escape beendet sie nicht. Weiter bleibt während Zielsuche, asynchroner Arbeit und ereignisgesteuerter Schritte verfügbar, sodass wiederholtes Weiter immer zum Ende führt. Wiederholungen verwenden Überspringen zum Beenden. Andere Navigation, Verlauf, Konto- oder Berechtigungsverlust, entfernte Anbieter und Pflichtdialoge räumen weiterhin jede Sitzung auf. Anleitungen bestätigen keine Dialoge, senden keine privilegierten Formulare und starten keine Anrufe.
 
 ## Komponenteneigene Anleitungen
 
@@ -118,3 +118,7 @@ Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten M
 Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos. Jede erfolgreich abgeschlossene Sitzung speichert den Abschluss vor der erneuten Seitenerkennung, auch beim direkten Start über das öffentliche Anbieter-Handle.
 
 - [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
+
+## Wiederholungen beenden
+
+Wiederholungen bieten Überspringen als einzigen Beenden-Button; der redundante Abbrechen-Button entfällt. Erstdurchläufe behalten ihre bisherigen Schrittaktionen.
