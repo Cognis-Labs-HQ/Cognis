@@ -94,8 +94,13 @@ Seitenschritte können mit `targetMatch: "first"` den ersten sichtbaren, nutzbar
 
 - [c7eefff5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7eefff5ad35c79574c1067ee97032cc6a76045a)
 
+## Sichtbare Tutorial-Ziele und Wiederherstellung
+
 Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
+
+## Gemeinsame Warteschlange für schwebende Menüs
 
 Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
 
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
+- [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
