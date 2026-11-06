@@ -97,3 +97,7 @@ The tutorial stack now returns Back to the start of a completed group or depende
 - [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
 - [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
 - [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
+
+## Replay exit action
+
+Tutorial replays use Skip as their single exit button. The redundant Cancel button is removed.
