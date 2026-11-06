@@ -115,3 +115,5 @@ XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai t
 ## Kesiapan Saat Riwayat Dokumen
 
 Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
+
+- [4cbb4166f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cbb4166fd7d228e460882e4d445d7ef4af1f9b6)

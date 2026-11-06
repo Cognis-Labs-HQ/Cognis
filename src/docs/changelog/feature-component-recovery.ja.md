@@ -115,3 +115,5 @@ cognisctl component:disable module analytics --force
 ## 文書履歴での準備状態
 
 ドキュメントや変更履歴内の戻る・進むでは、現在のページの準備状態を維持します。確定したルート置換やページの寿命終了では引き続き無効にし、文書内の履歴操作で起動時の待機処理を再実行しません。
+
+- [4cbb4166f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cbb4166fd7d228e460882e4d445d7ef4af1f9b6)

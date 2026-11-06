@@ -115,3 +115,5 @@ Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für Stri
 ## Bereitschaft beim Dokumentverlauf
 
 Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
+
+- [4cbb4166f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cbb4166fd7d228e460882e4d445d7ef4af1f9b6)

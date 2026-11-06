@@ -115,3 +115,5 @@ Locale XML touched by the tutorial PR uses consistent two-space string indentati
 ## Readiness During Document History
 
 Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.
+
+- [4cbb4166f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4cbb4166fd7d228e460882e4d445d7ef4af1f9b6)
