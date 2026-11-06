@@ -122,3 +122,5 @@ Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan is
 ## Tindakan keluar pemutaran ulang
 
 Pemutaran ulang tutorial menyediakan Lewati sebagai satu-satunya tombol keluar; tombol Batal yang berlebihan dihapus. Panduan pertama mempertahankan kontrol kemajuan yang ada.
+
+- [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)

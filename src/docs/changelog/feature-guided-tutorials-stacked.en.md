@@ -122,3 +122,5 @@ Completion belongs to the stable account and owner/tutorial ID. Content and pack
 ## Replay exit action
 
 Tutorial replays offer Skip as their single exit button; the redundant Cancel button is removed. First-time guides retain their existing progression controls.
+
+- [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
