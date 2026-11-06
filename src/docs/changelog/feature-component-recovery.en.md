@@ -71,3 +71,7 @@ The tutorial stack fixes search input highlighting above shell headers, advances
 The tutorial stack now uses an explicit optional boolean `highlightNext` on each stage, defaulting to false. Existing explanations opt in and automatic exercises opt out. Host and module contributor instructions require user-first tutorial coverage and review whenever UI features change.
 
 - [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+
+The tutorial stack now returns Back to the start of a completed group or dependency branch. Action-specific highlights use the first visible, usable match inside their declared section where explicitly requested, while unique matching remains the default. Components highlights an editable power switch and skips the step when none is available. The content review refined 34 targets across the host and companion modules.
+
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)

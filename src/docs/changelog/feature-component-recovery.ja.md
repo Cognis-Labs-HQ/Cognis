@@ -71,3 +71,7 @@ cognisctl component:disable module analytics --force
 チュートリアルの各ステップは任意の真偽値 `highlightNext` を使い、省略時は false です。既存の説明では有効にし、自動で進む練習では無効にします。ホストとモジュールの開発ガイドラインは、利用者を中心にしたチュートリアルの網羅と UI 機能変更時の見直しを求めます。
 
 - [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+
+完了したステップ群や依存分岐から戻ると、その開始点へ移動します。明示した場合だけ、指定セクション内で利用可能な最初の対象を強調し、省略時は一意の一致を保ちます。コンポーネントでは変更可能な電源スイッチを示し、存在しなければステップを飛ばします。ホストと関連モジュールの内容を見直し、34 個の対象を具体化しました。
+
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)

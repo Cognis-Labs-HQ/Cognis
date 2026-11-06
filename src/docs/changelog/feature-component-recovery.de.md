@@ -71,3 +71,7 @@ Der Tutorial-Stack korrigiert die Hervorhebung des Sucheingabefelds über Kopfze
 Der Tutorial-Stack verwendet jetzt das optionale boolesche Feld `highlightNext` pro Schritt mit Standardwert false. Bestehende Erklärungen aktivieren es; automatische Übungen deaktivieren es. Die Beitragsrichtlinien für Host und Module verlangen nutzerorientierte Tutorial-Abdeckung und deren Prüfung bei UI-Änderungen.
 
 - [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+
+Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen oder Abhängigkeitszweige. Aktionsbezogene Hervorhebungen verwenden auf ausdrücklichen Wunsch den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt; standardmäßig bleibt die Zuordnung eindeutig. Komponenten hebt einen bearbeitbaren Schalter hervor und überspringt den Schritt, wenn keiner verfügbar ist. Die Inhaltsprüfung präzisierte 34 Ziele im Host und den Begleitmodulen.
+
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)

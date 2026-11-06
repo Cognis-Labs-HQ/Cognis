@@ -71,3 +71,7 @@ Stack tutorial memperbaiki sorotan input pencarian di atas header, melanjutkan s
 Stack tutorial kini memakai boolean opsional `highlightNext` per langkah dengan nilai bawaan false. Penjelasan yang ada mengaktifkannya, sedangkan latihan otomatis menonaktifkannya. Panduan kontribusi host dan modul mewajibkan cakupan tutorial yang berfokus pada pengguna dan peninjauan setiap kali fitur antarmuka berubah.
 
 - [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+
+Stack tutorial kini mengarahkan Kembali ke awal grup atau cabang dependensi yang selesai. Sorotan tindakan dapat memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan jika diminta secara eksplisit; pencocokan unik tetap menjadi bawaan. Komponen menyoroti sakelar daya yang dapat diubah dan melewati langkah jika tidak tersedia. Tinjauan konten memperjelas 34 target di host dan modul pendamping.
+
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
