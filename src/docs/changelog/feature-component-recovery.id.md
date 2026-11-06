@@ -61,3 +61,5 @@ Menyertakan penyempurnaan Dasbor 18 langkah: latihan klik membuka panel notifika
 - [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
 
 Toast pemulihan komponen memakai nama tampilan manifest yang otoritatif dan katalog terjemahan komponen bila tersedia. Nama disisipkan sebagai teks utuh. Metadata pemilik penyedia memiliki kolom opsional `name` dan `stringsBaseUrl`. Toast kegagalan operasional dan penonaktifan setelah kegagalan berulang memakai `minRole: "admin"`, sehingga hanya administrator dan pemilik yang melihatnya; notifikasi biasa tetap memakai audiens normal. Stack juga mencakup jalur tutorial bersyarat, kemajuan sesuai peran, mulai ulang, geometri dok aktual, dan prioritas tindakan banner.
+
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)

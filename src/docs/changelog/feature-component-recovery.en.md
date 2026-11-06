@@ -61,3 +61,5 @@ Includes the 18-step Dashboard refinement: intentional click exercises open the 
 - [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
 
 Component recovery toasts now use the authoritative manifest display name and, when supplied, its component translation catalog. Interpolation preserves the name as opaque text. Provider ownership metadata includes optional `name` and `stringsBaseUrl` fields. Operational failure and repeated-failure disable toasts request `minRole: "admin"`, so only administrators and owners see them; ordinary notifications retain their normal audience. The stack also includes conditional tutorial paths, role-filtered progress, restart actions, live dock geometry and broadcast action priority.
+
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
