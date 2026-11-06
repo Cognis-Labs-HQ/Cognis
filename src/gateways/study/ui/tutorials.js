@@ -70,6 +70,7 @@ export async function mountProvider(ctx) {
                 ctx.capabilities.get("session:isAuthenticated")?.() === true,
             requires: ["ui:navigate", "study:navigation"],
             steps: ["navigation", "languages", "modules"].map((name) => ({
+                highlightNext: true,
                 id: name,
                 route: "/study",
                 target: ids[name],

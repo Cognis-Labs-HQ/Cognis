@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "ui.tutorial.docs.read.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "read-the-current-page",
                         selector: "#doc",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "ui.tutorial.docs.read.read.the.current.page.body",
                     },
                     {
+                        highlightNext: true,
                         id: "document-versions",
                         selector: ".docs-version-bar",
                         titleKey:

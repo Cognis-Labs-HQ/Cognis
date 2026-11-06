@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "ui.tutorial.marketplace.browse.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "discovery-and-sources",
                         selector: ".module-store-toolbar",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "ui.tutorial.marketplace.browse.discovery.and.sources.body",
                     },
                     {
+                        highlightNext: true,
                         id: "module-details",
                         selector: ".module-store-grid",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "ui.tutorial.marketplace.browse.module.details.body",
                     },
                     {
+                        highlightNext: true,
                         id: "install-and-update",
                         selector: ".module-store-grid",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "ui.tutorial.marketplace.browse.install.and.update.body",
                     },
                     {
+                        highlightNext: true,
                         id: "review-source",
                         selector: "#module-marketplace-settings",
                         titleKey:
@@ -50,6 +54,7 @@ export const guides = [
                 titleKey: "ui.tutorial.marketplace.details.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "review-release",
                         selector: ".module-detail-release",
                         titleKey:
@@ -58,6 +63,7 @@ export const guides = [
                             "ui.tutorial.marketplace.details.review.release.body",
                     },
                     {
+                        highlightNext: true,
                         id: "configure-module",
                         selector: "[data-module-preferences]",
                         titleKey:
@@ -66,6 +72,7 @@ export const guides = [
                             "ui.tutorial.marketplace.details.configure.module.body",
                     },
                     {
+                        highlightNext: true,
                         id: "manage-lifecycle",
                         selector: "[data-module-menu]",
                         titleKey:

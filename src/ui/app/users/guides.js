@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "ui.tutorial.users.directory.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "account-directory",
                         selector: "#users-table",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "ui.tutorial.users.directory.account.directory.body",
                     },
                     {
+                        highlightNext: true,
                         id: "roles-and-access",
                         selector: ".users-list",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "ui.tutorial.users.directory.roles.and.access.body",
                     },
                     {
+                        highlightNext: true,
                         id: "account-actions",
                         selector: ".users-list",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "ui.tutorial.users.directory.account.actions.body",
                     },
                     {
+                        highlightNext: true,
                         id: "find-account",
                         selector: "#users-input",
                         titleKey:

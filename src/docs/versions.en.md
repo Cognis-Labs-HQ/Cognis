@@ -49,17 +49,17 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.9`  |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.33` |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.35` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.10` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.34` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.36` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.38` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.8`  |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.15` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.9`  |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.16` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.26` |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.27` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
-| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.8`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.9`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
@@ -68,17 +68,17 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.2`  |
-| Share                 | `src/gateways/share/`         | `1.9.3`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.2`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.3`  |
-| Social                | `src/gateways/social/`        | `1.4.2`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.3.2`  |
-| Registration          | `src/gateways/registration/`  | `1.2.3`  |
-| Logging               | `src/gateways/logging/`       | `1.5.17` |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.3`  |
+| Share                 | `src/gateways/share/`         | `1.9.4`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.3`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.4`  |
+| Social                | `src/gateways/social/`        | `1.4.3`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.3.3`  |
+| Registration          | `src/gateways/registration/`  | `1.2.4`  |
+| Logging               | `src/gateways/logging/`       | `1.5.18` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.6.4`  |
-| Calendar              | `src/gateways/calendar/`      | `1.7.3`  |
+| Study                 | `src/gateways/study/`         | `2.6.5`  |
+| Calendar              | `src/gateways/calendar/`      | `1.7.4`  |
 
 ## Core contracts
 
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.12.17` |
+| API Server | `src/api/` | `0.12.18` |
 
 ## Tooling
 

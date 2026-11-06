@@ -157,3 +157,7 @@ Schrittpfade unterstützen `minRole`, das synchrone boolesche Prädikat `when({ 
 Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden die Anleitung über `ui:tutorial:priority`, bevor eigene Dialoge oder Navigation beginnen. Banneraktionen sind per Tab erreichbar.
 
 Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußzeilen die Hervorhebung des Eingabefelds nicht abschneiden. Jede Filter-Schaltfläche beendet die Filterübung. Schritte, die Weiter oder Fertig benötigen, heben die Aktion mit einer pulsierenden Umrandung hervor; bei reduzierter Bewegung bleibt sie statisch. Wartende und automatisch fortschreitende Schritte zeigen diesen Hinweis nicht.
+
+Jeder Tutorial-Schritt legt `highlightNext` ausdrücklich fest: Erklärungen, die Weiter oder Fertig benötigen, aktivieren den Hinweis; interaktive und wartebasierte Übungen deaktivieren ihn. Bei reduzierter Bewegung bleibt eine statische Umrandung. Alle bestehenden Anleitungen wurden darauf geprüft, einschließlich Suchergebnissen und Benachrichtigungen.
+
+Das optionale boolesche Feld `highlightNext` ist standardmäßig `false`; der Host leitet es nicht aus Interaktionen oder Wartebedingungen ab. Legen Sie es in der Schrittdefinition ausdrücklich fest. Aktivierte Hinweise erscheinen nach der Vorbereitung und beachten reduzierte Bewegung.

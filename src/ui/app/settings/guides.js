@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.general.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "email-addresses",
                         selector: "#email-list",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "ui.tutorial.settings.general.email.addresses.body",
                     },
                     {
+                        highlightNext: true,
                         id: "offline-access",
                         selector: "#pref-offline-enabled",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "ui.tutorial.settings.general.offline.access.body",
                     },
                     {
+                        highlightNext: true,
                         id: "account-lifecycle",
                         selector: ".settings-danger-zone",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "ui.tutorial.settings.general.account.lifecycle.body",
                     },
                     {
+                        highlightNext: true,
                         id: "save-preferences",
                         selector: "#general",
                         titleKey:
@@ -40,6 +44,7 @@ export const guides = [
                             "ui.tutorial.settings.general.save.preferences.body",
                     },
                     {
+                        highlightNext: true,
                         id: "release-notes",
                         selector: "#pref-release-changelog-show",
                         titleKey:
@@ -56,6 +61,7 @@ export const guides = [
                 titleKey: "ui.reuse.appearance",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "font-and-size",
                         selector: "#pref-font-picker",
                         titleKey:
@@ -64,12 +70,14 @@ export const guides = [
                             "ui.tutorial.settings.appearance.font.and.size.body",
                     },
                     {
+                        highlightNext: true,
                         id: "theme",
                         selector: "#pref-theme-selector",
                         titleKey: "ui.tutorial.settings.appearance.theme.title",
                         bodyKey: "ui.tutorial.settings.appearance.theme.body",
                     },
                     {
+                        highlightNext: true,
                         id: "message-layout",
                         selector: "#pref-message-style-selector",
                         titleKey:
@@ -78,6 +86,7 @@ export const guides = [
                             "ui.tutorial.settings.appearance.message.layout.body",
                     },
                     {
+                        highlightNext: true,
                         id: "choose-font",
                         selector: "#pref-font-picker",
                         titleKey:
@@ -94,6 +103,7 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.language.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "available-languages",
                         selector: "#available-languages",
                         titleKey:
@@ -102,6 +112,7 @@ export const guides = [
                             "ui.tutorial.settings.language.available.languages.body",
                     },
                     {
+                        highlightNext: true,
                         id: "language-priority",
                         selector: "#preferred-languages",
                         titleKey:
@@ -110,6 +121,7 @@ export const guides = [
                             "ui.tutorial.settings.language.language.priority.body",
                     },
                     {
+                        highlightNext: true,
                         id: "browser-language",
                         selector: "#pref-language-sync-from-browser",
                         titleKey:
@@ -126,6 +138,7 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.datetime.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "time-zone",
                         selector: "#pref-timezone-select",
                         titleKey:
@@ -133,6 +146,7 @@ export const guides = [
                         bodyKey: "ui.tutorial.settings.datetime.time.zone.body",
                     },
                     {
+                        highlightNext: true,
                         id: "time-format",
                         selector: "#pref-time-format-select",
                         titleKey:
@@ -149,6 +163,7 @@ export const guides = [
                 titleKey: "ui.tutorial.settings.advanced.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "preference-data",
                         selector: "#prefs-dump",
                         titleKey:
@@ -157,6 +172,7 @@ export const guides = [
                             "ui.tutorial.settings.advanced.preference.data.body",
                     },
                     {
+                        highlightNext: true,
                         id: "review-changes",
                         selector: "#advanced",
                         titleKey:

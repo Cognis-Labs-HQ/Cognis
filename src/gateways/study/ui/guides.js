@@ -9,6 +9,7 @@ export const guides = [
                 titleKey: "gateway.study.tutorial.preferences.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "learning-languages",
                         selector:
                             ".study-language-grid, .study-lang-settings-wrap",
@@ -18,6 +19,7 @@ export const guides = [
                             "gateway.study.tutorial.preferences.learning.languages.body",
                     },
                     {
+                        highlightNext: true,
                         id: "available-activities",
                         selector:
                             ".study-language-grid, .study-lang-settings-wrap",

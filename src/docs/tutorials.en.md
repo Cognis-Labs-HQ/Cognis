@@ -157,3 +157,7 @@ Step paths support `minRole`, a synchronous `when({ firstTime, completed, skippe
 Broadcast-banner buttons, links and keyboard activation remain available throughout a tutorial. Activating a banner action yields the tutorial through `ui:tutorial:priority` before any action-owned popup or navigation. Banner focus targets participate in keyboard traversal.
 
 Search overlay steps use the overlay viewport, so shell headers and footers do not clip the search input highlight. Clicking any refinement pill completes the filter exercise. Steps requiring Next (or Finish) highlight that action with a breathing outline; reduced-motion preferences retain a static outline. Waiting and automatically advancing steps do not show this cue.
+
+Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
+
+The optional boolean `highlightNext` defaults to `false`; the host never infers it from the step’s interaction or wait condition. Set it explicitly in the step definition. Enabled cues appear after preparation and respect reduced-motion preferences.

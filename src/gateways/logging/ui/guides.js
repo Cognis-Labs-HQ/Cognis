@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.logging.tutorial.logs.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "filter-logs",
                         selector: ".logs-stream-filters",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.logging.tutorial.logs.filter.logs.body",
                     },
                     {
+                        highlightNext: true,
                         id: "read-log-details",
                         selector: ".logs-stream-results",
                         titleKey:

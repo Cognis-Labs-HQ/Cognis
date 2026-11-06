@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.registration.tutorial.invitations.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "invite-options",
                         selector: ".invite-actions",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.registration.tutorial.invitations.invite.options.body",
                     },
                     {
+                        highlightNext: true,
                         id: "invitation-history",
                         selector: ".users-table-wrap",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "gateway.registration.tutorial.invitations.invitation.history.body",
                     },
                     {
+                        highlightNext: true,
                         id: "manage-issued-invitations",
                         selector: ".users-table-wrap",
                         titleKey:

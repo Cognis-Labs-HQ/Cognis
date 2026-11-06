@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.auth.tutorial.security.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "password-changes",
                         selector: "#auth-security-reset-panel",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.auth.tutorial.security.password.changes.body",
                     },
                     {
+                        highlightNext: true,
                         id: "session-duration",
                         selector: "#settings-login-session-timeout",
                         titleKey:

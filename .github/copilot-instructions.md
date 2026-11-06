@@ -52,6 +52,10 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 - Batch delete has one confirmation. Downgrading shared visibility requires confirmation/review and complete cascade handling; notify affected users in the Study category. Success creates/requests show a toast.
 - Browse pages show all visible items, concise empty states, sort/favourite controls and clean selected-detail results. Keep preview favourites clear of child hints, toast successful favourite changes, and use Escape to exit multi-selection. Show one contextual favourite control during study. Deck exports are available only to their creator or an administrator. Flashcards own their adapter, use Cognis sharing, and permit provider starter decks.
 
+### Tutorial coverage and maintenance
+
+Every UI-facing component must have a component-owned, page- or URL-bound tutorial explaining user goals, useful actions and expected outcomes. Cover user and administrator surfaces, optional controls and empty states with appropriate audience restrictions, conditions and dependencies. Review existing tutorials for every new feature or UI change and update affected steps, targets, branches, translations and coverage documentation in the same change. Set each step’s `highlightNext` flag explicitly: true for explanations requiring Next/Finish, false for interaction- or wait-driven progression. Keep copy user-first, avoid implementation details and irrelevant reassurance, and verify real progression, replay, restart, accessibility and lifecycle cleanup through public contracts.
+
 ### Verification and documentation
 
 - Test observable behavior through real registered flow execution and public-contract fakes. Source-only assertions are supplemental; they cannot prove a capability works. Never use silent no-op runners, unrelated tests or altered assertions to hide failures.

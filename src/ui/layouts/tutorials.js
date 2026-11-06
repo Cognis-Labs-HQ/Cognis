@@ -42,14 +42,19 @@ export async function mountProvider(ctx) {
             );
         };
     const steps = [
-        { id: "navigation" },
         {
+            highlightNext: true,
+            id: "navigation",
+        },
+        {
+            highlightNext: false,
             id: "search",
             interaction: "target",
             advance: { event: "click" },
             enter: attachOpenedSurface(".search-popup-overlay"),
         },
         {
+            highlightNext: false,
             id: "query",
             dependsOn: ["search"],
             interaction: "target",
@@ -60,6 +65,7 @@ export async function mountProvider(ctx) {
             },
         },
         {
+            highlightNext: false,
             id: "options",
             dependsOn: ["search"],
             interaction: "target",
@@ -70,8 +76,14 @@ export async function mountProvider(ctx) {
                     Boolean(event.target.closest?.(".search-popup-option")),
             },
         },
-        { id: "results", dependsOn: ["search"], layer: "overlay" },
         {
+            highlightNext: true,
+            id: "results",
+            dependsOn: ["search"],
+            layer: "overlay",
+        },
+        {
+            highlightNext: false,
             id: "close",
             dependsOn: ["search"],
             interaction: "target",
@@ -79,6 +91,7 @@ export async function mountProvider(ctx) {
             advance: { event: "click" },
         },
         {
+            highlightNext: false,
             id: "notifications",
             group: "inbox",
             interaction: "target",
@@ -87,12 +100,14 @@ export async function mountProvider(ctx) {
             enter: attachOpenedSurface(".notification-panel"),
         },
         {
+            highlightNext: true,
             id: "notification-pane",
             dependsOn: ["notifications"],
             group: "inbox",
             titleKey: "ui.reuse.notifications",
         },
         {
+            highlightNext: false,
             id: "account",
             group: "account-menu",
             interaction: "target",
@@ -101,24 +116,52 @@ export async function mountProvider(ctx) {
             enter: attachOpenedSurface("#profile-dropdown"),
         },
         {
+            highlightNext: true,
             id: "account-options",
             dependsOn: ["account"],
             group: "account-menu",
         },
         {
+            highlightNext: true,
             id: "account-administration",
             minRole: "admin",
             dependsOn: ["account"],
             group: "account-menu",
             titleKey: "ui.reuse.administration",
         },
-        { id: "account-logout", dependsOn: ["account"], group: "account-menu" },
-        { id: "dock", titleKey: "ui.reuse.actions" },
-        { id: "dock-language", titleKey: "ui.reuse.language" },
-        { id: "dock-theme", titleKey: "ui.reuse.appearance" },
-        { id: "dock-layout" },
-        { id: "widgets" },
-        { id: "replay" },
+        {
+            highlightNext: true,
+            id: "account-logout",
+            dependsOn: ["account"],
+            group: "account-menu",
+        },
+        {
+            highlightNext: true,
+            id: "dock",
+            titleKey: "ui.reuse.actions",
+        },
+        {
+            highlightNext: true,
+            id: "dock-language",
+            titleKey: "ui.reuse.language",
+        },
+        {
+            highlightNext: true,
+            id: "dock-theme",
+            titleKey: "ui.reuse.appearance",
+        },
+        {
+            highlightNext: true,
+            id: "dock-layout",
+        },
+        {
+            highlightNext: true,
+            id: "widgets",
+        },
+        {
+            highlightNext: true,
+            id: "replay",
+        },
     ];
     try {
         for (const [name, selector] of Object.entries(selectors))

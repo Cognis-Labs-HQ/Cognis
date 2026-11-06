@@ -9,6 +9,7 @@ export const guides = [
                 titleKey: "adapter.study.flashcards.tutorial.decks.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "deck-selection",
                         selector: ".side-menu",
                         titleKey:
@@ -17,6 +18,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.decks.deck.selection.body",
                     },
                     {
+                        highlightNext: true,
                         id: "study-modes",
                         selector: "[data-study-deck]",
                         titleKey:
@@ -25,6 +27,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.decks.study.modes.body",
                     },
                     {
+                        highlightNext: true,
                         id: "practice-and-progress",
                         selector: "[data-study-deck]",
                         titleKey:
@@ -33,6 +36,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.decks.practice.and.progress.body",
                     },
                     {
+                        highlightNext: true,
                         id: "build-a-deck",
                         selector: '[data-deck-action="add"]',
                         titleKey:
@@ -50,6 +54,7 @@ export const guides = [
                 titleKey: "adapter.study.flashcards.tutorial.practice.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "choose-mode",
                         selector: ".study-practice-modes",
                         titleKey:
@@ -58,6 +63,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.practice.choose.mode.body",
                     },
                     {
+                        highlightNext: true,
                         id: "answer-task",
                         selector: "[data-practice-task]",
                         titleKey:
@@ -66,6 +72,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.practice.answer.task.body",
                     },
                     {
+                        highlightNext: true,
                         id: "check-feedback",
                         selector: "[data-practice]",
                         titleKey:
@@ -83,6 +90,7 @@ export const guides = [
                 titleKey: "adapter.study.flashcards.tutorial.manage.deck.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "edit-cards",
                         selector: '[data-deck-action="edit"]',
                         titleKey:
@@ -91,6 +99,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.manage.deck.edit.cards.body",
                     },
                     {
+                        highlightNext: true,
                         id: "share-deck",
                         selector: "[data-deck-share]",
                         titleKey:
@@ -99,6 +108,7 @@ export const guides = [
                             "adapter.study.flashcards.tutorial.manage.deck.share.deck.body",
                     },
                     {
+                        highlightNext: true,
                         id: "export-deck",
                         selector: '[data-deck-action="export"]',
                         titleKey:

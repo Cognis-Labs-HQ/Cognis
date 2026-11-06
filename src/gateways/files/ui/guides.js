@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.files.tutorial.quotas.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "default-quota",
                         selector: "[data-files-quota-admin]",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.files.tutorial.quotas.default.quota.body",
                     },
                     {
+                        highlightNext: true,
                         id: "namespace-limits",
                         selector: "[data-files-quota-admin]",
                         titleKey:

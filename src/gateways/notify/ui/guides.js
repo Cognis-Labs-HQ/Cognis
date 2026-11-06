@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.preferences.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "channels-and-categories",
                         selector: "#notif-matrix-container",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.notify.tutorial.preferences.channels.and.categories.body",
                     },
                     {
+                        highlightNext: true,
                         id: "save-preferences",
                         selector: "#notif-matrix-container",
                         titleKey:
@@ -37,6 +39,7 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.delivery.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "delivery-diagnostics",
                         selector: "#notifications",
                         titleKey:
@@ -45,6 +48,7 @@ export const guides = [
                             "gateway.notify.tutorial.delivery.delivery.diagnostics.body",
                     },
                     {
+                        highlightNext: true,
                         id: "test-delivery",
                         selector: "#notifications",
                         titleKey:
@@ -61,6 +65,7 @@ export const guides = [
                 titleKey: "gateway.notify.tutorial.broadcasts.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "audience-and-content",
                         selector: "#broadcasts",
                         titleKey:
@@ -69,6 +74,7 @@ export const guides = [
                             "gateway.notify.tutorial.broadcasts.audience.and.content.body",
                     },
                     {
+                        highlightNext: true,
                         id: "publication-state",
                         selector: "#broadcasts",
                         titleKey:
