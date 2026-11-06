@@ -103,3 +103,4 @@ Restart Tutorial is the persistent recovery action; the tutorial no longer rende
 Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
 
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
+- [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)

@@ -103,3 +103,4 @@
 フローティングメニューはバージョン 1 の `ui:floatingMenus` と、段階付きフロー `ui:floatingMenu:request`、`present`、`dismiss`、`release` を使います。同じ優先度は要求順に処理し、高い優先度は低いメニューを一時停止します。予約は初回の許可または取消を示す `ready`、`present(element, { visible })`、`dismiss(element)`、`dispose()` を提供します。チュートリアルは完了、取消、所有者の解除まで、ステップ間も含め優先度 100 を保ちます。コンポーザーのスロットと再実行の選択も同じ待ち行列を使います。取り消した要求や古い表示処理は新しいメニューを置き換えません。空のスロットは表示を譲り、ページ解除時は監視と予約を破棄します。
 
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
+- [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
