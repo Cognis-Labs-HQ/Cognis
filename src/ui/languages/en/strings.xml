@@ -721,7 +721,7 @@
   <string name="ui.tutorial.workspace.query.title">Search For A Page</string>
   <string name="ui.tutorial.workspace.query.body">Type at least two characters from a page or setting name. Matching pages and content appear below.</string>
   <string name="ui.tutorial.workspace.options.title">Refine Your Search</string>
-  <string name="ui.tutorial.workspace.options.body">Use search options to match case, whole words or patterns. The page finder locates text and available controls on the current page.</string>
+  <string name="ui.tutorial.workspace.options.body">Use search options to match case, whole words or patterns. The page finder locates text and available controls on the current page. Click any filter pill to try a search refinement and continue.</string>
   <string name="ui.tutorial.workspace.results.title">Use Search Results</string>
   <string name="ui.tutorial.workspace.results.body">Review result categories and labels. After the guide, select a page to navigate or an on-page result to locate its control.</string>
   <string name="ui.tutorial.workspace.close.title">Close Search</string>

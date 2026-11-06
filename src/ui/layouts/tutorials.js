@@ -64,6 +64,11 @@ export async function mountProvider(ctx) {
             dependsOn: ["search"],
             interaction: "target",
             layer: "overlay",
+            advance: {
+                event: "click",
+                accept: (event) =>
+                    Boolean(event.target.closest?.(".search-popup-option")),
+            },
         },
         { id: "results", dependsOn: ["search"], layer: "overlay" },
         {

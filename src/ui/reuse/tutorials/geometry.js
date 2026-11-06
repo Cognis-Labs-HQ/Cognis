@@ -24,8 +24,8 @@ export function clipRect(rect, bounds) {
         : null;
 }
 
-/** @param {Window} window Browser window. @param {Document} document Owner document. @param {Element} target Tutorial target. @returns {object} Visible page viewport. */
-export function tutorialViewport(window, document, target) {
+/** @param {Window} window Browser window. @param {Document} document Owner document. @param {Element} target Tutorial target. @param {string} layer Target layer; overlays are not obscured by shell chrome. @returns {object} Visible page viewport. */
+export function tutorialViewport(window, document, target, layer = "page") {
     const visual = window.visualViewport;
     const left = visual?.offsetLeft ?? 0;
     let top = visual?.offsetTop ?? 0;
@@ -38,6 +38,8 @@ export function tutorialViewport(window, document, target) {
         [document.querySelector("#site-top-banners"), "top"],
         [footer, "bottom"],
     ]) {
+        if (layer === "overlay" && (element === header || element === footer))
+            continue;
         if (!element || element.contains(target) || target?.contains(element))
             continue;
         const rect = element.getBoundingClientRect();
