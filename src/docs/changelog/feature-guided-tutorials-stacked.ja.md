@@ -138,3 +138,4 @@
 ドキュメントや変更履歴内の戻る・進むでは、現在のページの準備状態を維持します。確定したルート置換やページの寿命終了では引き続き無効にし、文書内の履歴操作で起動時の待機処理を再実行しません。
 
 - [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)
+- [5c40f2f60](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c40f2f60c99b241c9465b03c32d886df7cd896a)
