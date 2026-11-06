@@ -83,3 +83,4 @@ cognisctl component:disable module analytics --force
 完了したステップ群や依存分岐から戻ると、その開始点へ移動します。明示した場合だけ、指定セクション内で利用可能な最初の対象を強調し、省略時は一意の一致を保ちます。コンポーネントでは変更可能な電源スイッチを示し、存在しなければステップを飛ばします。ホストと関連モジュールの内容を見直し、34 個の対象を具体化しました。
 
 - [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)

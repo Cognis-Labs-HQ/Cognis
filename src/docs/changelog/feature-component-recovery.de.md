@@ -83,3 +83,4 @@ Der Tutorial-Stack verwendet jetzt das optionale boolesche Feld `highlightNext` 
 Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen oder Abhängigkeitszweige. Aktionsbezogene Hervorhebungen verwenden auf ausdrücklichen Wunsch den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt; standardmäßig bleibt die Zuordnung eindeutig. Komponenten hebt einen bearbeitbaren Schalter hervor und überspringt den Schritt, wenn keiner verfügbar ist. Die Inhaltsprüfung präzisierte 34 Ziele im Host und den Begleitmodulen.
 
 - [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)

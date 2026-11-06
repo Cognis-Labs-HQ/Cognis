@@ -83,3 +83,4 @@ The tutorial stack now uses an explicit optional boolean `highlightNext` on each
 The tutorial stack now returns Back to the start of a completed group or dependency branch. Action-specific highlights use the first visible, usable match inside their declared section where explicitly requested, while unique matching remains the default. Components highlights an editable power switch and skips the step when none is available. The content review refined 34 targets across the host and companion modules.
 
 - [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
