@@ -18,57 +18,38 @@
 | `/administration/modules` · `.module-store-grid`           | モジュール一覧             | 管理者             |
 | `^/docs(?:/\|$)`                                           | ドキュメント               | ログイン済み利用者 |
 | `^/changelogs(?:/\|$)`                                     | リリース履歴               | ログイン済み利用者 |
-| `/calendar`                                                | カレンダーの使い方         | ログイン済み利用者 |
-| `^/profile(?:/\|$)`                                        | プロフィールと投稿         | ログイン済み利用者 |
-| `^/messages(?:/\|$)`                                       | メッセージの使い方         | ログイン済み利用者 |
-| `/classes` · `#class-list`                                 | クラスの使い方             | ログイン済み利用者 |
-| `/my-classes`                                              | 参加しているクラス         | ログイン済み利用者 |
-| `^/study/leaderboard(?:/\|$)`                              | ランキングの見方           | ログイン済み利用者 |
-| `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)`                  | フラッシュカードの使い方   | ログイン済み利用者 |
-| `^/study/explore(?:/\|$)`                                  | ライブラリーを探索         | ログイン済み利用者 |
-| `^/study/library/search(?:/\|$)`                           | 辞書の検索                 | ログイン済み利用者 |
-| `^/study/(?:library/)?requests(?:/\|$)`                    | ライブラリーへの申請       | ログイン済み利用者 |
-| `^/study/library(?:/\|$)` · `.library-browser`             | ライブラリーの管理         | 管理者             |
-| `^/study/(?:settings\|welcome)$`                           | 学習の設定                 | ログイン済み利用者 |
-| `/shares`                                                  | 共有の使い方               | ログイン済み利用者 |
-| `/invite`                                                  | 招待の使い方               | ログイン済み利用者 |
-| `/settings` · `#auth-security-reset-panel`                 | アカウントの安全設定       | ログイン済み利用者 |
-| `/settings` · `#tfa-settings-panel`                        | 二要素認証                 | ログイン済み利用者 |
-| `/administration` · `#tfa-enforcement`                     | 二要素認証の必須設定       | 管理者             |
-| `/settings` · `#notif-matrix-container`                    | 通知の設定                 | ログイン済み利用者 |
-| `/administration` · `#notifications`                       | 通知の配信                 | 管理者             |
-| `/administration` · `#broadcasts`                          | お知らせの管理             | 管理者             |
-| `/administration` · `[data-files-quota-admin]`             | 保存容量の上限             | 管理者             |
-| `/administration` · `#logs`                                | ログの確認                 | 管理者             |
-| `/administration` · `#registration`                        | 登録の方針                 | 管理者             |
-| `/administration` · `#social`                              | 交流機能の管理             | 管理者             |
 | `/dashboard`                                               | ワークスペースと検索の練習 | ログイン済み       |
-| Flashcards · `[data-study-session]`                        | デッキの管理               | ログイン済み       |
-| Flashcards · `[data-practice]`                             | デッキで練習               | ログイン済み       |
 | `/administration/modules/:uuid` · `.module-detail-release` | モジュールの詳細           | 管理者             |
+
+## コンポーネント別ガイド
+
+機能ごとのページ、対象、アクセス要件は所有するコンポーネントに記載します。任意のコンポーネントからコアのページに翻訳やチュートリアル定義を提供しません。
+
+- [カレンダーの使い方](/docs/gateways/calendar/tutorials)
+- [プロフィールと投稿](/docs/adapters/social/profile/tutorials)
+- [メッセージの使い方](/docs/adapters/social/messages/tutorials)
+- [クラスの使い方](/docs/adapters/study/classes/tutorials)
+- [ランキングの見方](/docs/adapters/study/leaderboard/tutorials)
+- [フラッシュカードの使い方](/docs/adapters/study/flashcards/tutorials)
+- [ライブラリーを探索](/docs/adapters/study/library/tutorials)
+- [学習の設定](/docs/gateways/study/tutorials)
+- [共有の使い方](/docs/gateways/share/tutorials)
+- [招待の使い方](/docs/gateways/registration/tutorials)
+- [アカウントの安全設定](/docs/gateways/auth/tutorials)
+- [二要素認証](/docs/gateways/tfa/tutorials)
+- [通知の設定](/docs/gateways/notify/tutorials)
+- [保存容量の上限](/docs/gateways/files/tutorials)
+- [ログの確認](/docs/gateways/logging/tutorials)
+- [交流機能の管理](/docs/gateways/social/tutorials)
 
 ## 外部モジュール
 
-連携する各モジュールは、Analytics、ElevenLabs、英語と日本語の学習、Jitsi の会議と管理、3 種類の法的文書、X と LINE のログイン設定、Whiteboard のキャンバス・設定・管理に対応します。ガイドは各リポジトリーで所有し、配布します。
-
-法的文書の管理セクションには、公開と同意状況の一覧を説明する管理者限定のガイドもあります。
+外部モジュールの対象範囲は各リポジトリーの `docs/` でプロバイダーとともに管理します。連携契約は[外部モジュール](/docs/modules/external)を参照してください。
 
 ## 対象外となる画面
 
 閲覧専用のライセンス・エラーページ、オフライン起動処理、開発用の画面には操作ガイドを設けません。ログインのコールバック、必須の同意、パスワード確認、必須設定のダイアログは、それぞれの操作規則を維持します。共有先の状態画面から他のアカウントの内容を自動表示しません。埋め込み画面は、そのページコンテキスト内のチュートリアル操作を使います。
 
-## 作業別のガイド
-
-全体で55ガイド・175ステップとなり、管理者向け22ガイドを含みます。ダッシュボードでは実際の検索を開き、検索語を入力し、条件や結果を確認して閉じる練習ができます。説明ステップでは意図しないホバーや操作を防ぎ、操作ステップで対象を明示的に許可します。デッキ詳細、練習セッション、モジュール詳細が表示されると、それぞれのガイドが利用できます。
-
-メッセージの開始とプレビュー、ルームの参加者、投稿のプレビュー、カレンダー移動と予定作成、繰り返し予定の編集、共有の絞り込みと有効期限、招待、ライブラリーの絞り込みと辞書候補の比較、音声と書き取り、お気に入りと内容の修正依頼、デッキ作成、練習の結果確認、デッキ編集・共有・書き出し、クラス参加、ランキング、フォント、未保存の変更、更新通知、アカウント検索、モジュール設定と管理を案内します。フォーム入力や削除確認は利用者が機能本来の画面で行い、ガイドは入口を説明して必須ダイアログに譲ります。
-
 ## ダッシュボードのパネルと操作
 
 ダッシュボードのガイドは18ステップになり、実際のクリック処理で通知パネルとアカウントメニューを開きます。クリック練習中はホバーを防ぎ、パネルやメニューの説明中は削除やページ移動を行う操作を無効にします。設定、ドキュメント、役割に応じた管理リンク、ログアウトを説明し、ページ操作ドックの言語切り替え、表示、レイアウト編集も案内します。
-
-各ステップで `highlightNext` を明示します。「次へ」や「完了」が必要な説明では有効にし、操作や待機条件で進む練習では無効にします。動きを減らす設定では静的な枠を表示します。検索結果と通知の説明を含むすべての既存チュートリアルを見直しました。
-
-完了したステップ群や依存分岐の外から「戻る」を選ぶと、分岐の開始点に戻り、その結果を取り消します。分岐内では前のステップへ順に戻ります。閉じた検索画面に戻って終了位置まで自動で飛ばされることを防ぎます。
-
-ページのステップは `targetMatch: "first"` で、指定したセクション内の表示中かつ利用可能な最初の対象を選べます。省略時は一意の一致が必要です。存在しない対象や無効な対象は指定のスキップ方針に従います。操作説明の強調を、変更可能なスイッチ、役割選択、容量設定、通知テスト、共有、レコード、モジュール操作へ絞りました。コンポーネントでは変更可能な電源スイッチを示し、必須または非表示の操作部は対象外です。

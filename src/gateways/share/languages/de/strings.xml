@@ -110,11 +110,11 @@
   <string name="share.shares.detail_updated">Aktualisiert</string>
   <string name="share.shares.detail_accessed">Aufgerufen</string>
   <string name="share.shares.detail_expires">Läuft ab</string>
-    <string name="share.tutorial.shares.title">Freigabeanleitung</string>
-    <string name="share.tutorial.shares.shared.items.title">Geteilte Inhalte</string>
-    <string name="share.tutorial.shares.shared.items.body">Prüfen Sie Freigaben und filtern Sie die Liste nach gewünschten Inhalten.</string>
-    <string name="share.tutorial.shares.recipients.and.access.title">Empfänger und Zugriff</string>
-    <string name="share.tutorial.shares.recipients.and.access.body">Öffnen Sie Details für Empfänger, Ablauf und Zugriff, bevor Sie eine Freigabe ändern oder widerrufen.</string>
+  <string name="share.tutorial.shares.title">Freigabeanleitung</string>
+  <string name="share.tutorial.shares.shared.items.title">Geteilte Inhalte</string>
+  <string name="share.tutorial.shares.shared.items.body">Prüfen Sie Freigaben und filtern Sie die Liste nach gewünschten Inhalten.</string>
+  <string name="share.tutorial.shares.recipients.and.access.title">Empfänger und Zugriff</string>
+  <string name="share.tutorial.shares.recipients.and.access.body">Öffnen Sie Details für Empfänger, Ablauf und Zugriff, bevor Sie eine Freigabe ändern oder widerrufen.</string>
   <string name="share.tutorial.shares.filter.sharing.title">Gesendete Freigaben finden</string>
   <string name="share.tutorial.shares.filter.sharing.body">Filtern Sie gesendete oder empfangene Freigaben, um Zugriffsgeber und Ihre eigenen Freigaben zu finden.</string>
   <string name="share.tutorial.shares.manage.share.access.title">Ablauf und Zugriff prüfen</string>

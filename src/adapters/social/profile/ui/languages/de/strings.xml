@@ -15,13 +15,13 @@
   <string name="ui.app.profile.provider_sync">Mit {{ provider }} synchronisieren</string>
   <string name="ui.app.profile.provider_sync_complete">Profil synchronisiert.</string>
   <string name="ui.app.profile.provider_sync_failed">Profil konnte nicht synchronisiert werden.</string>
-    <string name="module.social.profile.tutorial.profile.title">Profile und Beiträge</string>
-    <string name="module.social.profile.tutorial.profile.profile.identity.title">Profilidentität</string>
-    <string name="module.social.profile.tutorial.profile.profile.identity.body">Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen.</string>
-    <string name="module.social.profile.tutorial.profile.posts.title">Beiträge</string>
-    <string name="module.social.profile.tutorial.profile.posts.body">Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen.</string>
-    <string name="module.social.profile.tutorial.profile.social.actions.title">Soziale Aktionen</string>
-    <string name="module.social.profile.tutorial.profile.social.actions.body">Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person.</string>
+  <string name="module.social.profile.tutorial.profile.title">Profile und Beiträge</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.title">Profilidentität</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.body">Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen.</string>
+  <string name="module.social.profile.tutorial.profile.posts.title">Beiträge</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.title">Soziale Aktionen</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Beitrag prüfen</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Verfassen Sie einen Beitrag und prüfen Sie Formatierung und Anhänge in der Vorschau. Kontrollieren Sie vor dem Veröffentlichen die Zielgruppe.</string>
 </resources>

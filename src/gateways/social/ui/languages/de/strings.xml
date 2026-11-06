@@ -366,9 +366,9 @@
   <string name="social.emoji.white_flag">weiße flagge</string>
   <string name="social.emoji.black_flag">schwarze flagge</string>
   <string name="social.emoji.triangular_flag">dreieckige flagge</string>
-    <string name="gateway.social.tutorial.social.title">Soziale Funktionen verwalten</string>
-    <string name="gateway.social.tutorial.social.social.providers.title">Anbieter sozialer Funktionen</string>
-    <string name="gateway.social.tutorial.social.social.providers.body">Prüfen Sie aktive soziale Adapter und deren Einstellungen.</string>
-    <string name="gateway.social.tutorial.social.change.availability.title">Verfügbarkeit ändern</string>
-    <string name="gateway.social.tutorial.social.change.availability.body">Prüfen Sie betroffene Benutzerfunktionen vor Aktivierung, Deaktivierung oder Neukonfiguration.</string>
+  <string name="gateway.social.tutorial.social.title">Soziale Funktionen verwalten</string>
+  <string name="gateway.social.tutorial.social.social.providers.title">Anbieter sozialer Funktionen</string>
+  <string name="gateway.social.tutorial.social.social.providers.body">Prüfen Sie aktive soziale Adapter und deren Einstellungen.</string>
+  <string name="gateway.social.tutorial.social.change.availability.title">Verfügbarkeit ändern</string>
+  <string name="gateway.social.tutorial.social.change.availability.body">Prüfen Sie betroffene Benutzerfunktionen vor Aktivierung, Deaktivierung oder Neukonfiguration.</string>
 </resources>

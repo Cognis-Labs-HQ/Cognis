@@ -124,3 +124,15 @@ Completion belongs to the stable account and owner/tutorial ID. Content and pack
 Tutorial replays offer Skip as their single exit button; the redundant Cancel button is removed. First-time guides retain their existing progression controls.
 
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
+
+## Isolated Settings Guide
+
+The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage lives in each owner’s docs; the host inventory links those documents.
+
+## Consistent Locale Indentation
+
+Locale XML touched by the tutorial PR uses consistent two-space string indentation. Formatting preserves translation values; the font-step strings move from Classes to Settings in all four languages.
+
+## Readiness During Document History
+
+Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.

@@ -93,9 +93,9 @@
   <string name="ui.app.login.sso_callback_failed">Single Sign-on konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.login.reason.sso_callback_failed">Single Sign-on konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.login.reason.sso_provider_unavailable">Der Anmeldeanbieter ist derzeit nicht verfügbar.</string>
-    <string name="gateway.auth.tutorial.security.title">Kontosicherheit</string>
-    <string name="gateway.auth.tutorial.security.password.changes.title">Passwortänderungen</string>
-    <string name="gateway.auth.tutorial.security.password.changes.body">Verwenden Sie die Passwortfunktion Ihres Anbieters; eine Änderung kann eine Identitätsbestätigung erfordern.</string>
-    <string name="gateway.auth.tutorial.security.session.duration.title">Sitzungsdauer</string>
-    <string name="gateway.auth.tutorial.security.session.duration.body">Wählen Sie eine erlaubte Sitzungsdauer oder den globalen Standard und speichern Sie Änderungen.</string>
+  <string name="gateway.auth.tutorial.security.title">Kontosicherheit</string>
+  <string name="gateway.auth.tutorial.security.password.changes.title">Passwortänderungen</string>
+  <string name="gateway.auth.tutorial.security.password.changes.body">Verwenden Sie die Passwortfunktion Ihres Anbieters; eine Änderung kann eine Identitätsbestätigung erfordern.</string>
+  <string name="gateway.auth.tutorial.security.session.duration.title">Sitzungsdauer</string>
+  <string name="gateway.auth.tutorial.security.session.duration.body">Wählen Sie eine erlaubte Sitzungsdauer oder den globalen Standard und speichern Sie Änderungen.</string>
 </resources>

@@ -110,11 +110,11 @@
   <string name="share.shares.detail_updated">Diperbarui</string>
   <string name="share.shares.detail_accessed">Diakses</string>
   <string name="share.shares.detail_expires">Kedaluwarsa</string>
-    <string name="share.tutorial.shares.title">Panduan Berbagi</string>
-    <string name="share.tutorial.shares.shared.items.title">Item Bersama</string>
-    <string name="share.tutorial.shares.shared.items.body">Periksa item yang dibagikan dan saring daftar untuk menemukan item tertentu.</string>
-    <string name="share.tutorial.shares.recipients.and.access.title">Penerima dan Akses</string>
-    <string name="share.tutorial.shares.recipients.and.access.body">Buka detail untuk memeriksa penerima, kedaluwarsa, dan akses sebelum mengubah atau mencabut berbagi.</string>
+  <string name="share.tutorial.shares.title">Panduan Berbagi</string>
+  <string name="share.tutorial.shares.shared.items.title">Item Bersama</string>
+  <string name="share.tutorial.shares.shared.items.body">Periksa item yang dibagikan dan saring daftar untuk menemukan item tertentu.</string>
+  <string name="share.tutorial.shares.recipients.and.access.title">Penerima dan Akses</string>
+  <string name="share.tutorial.shares.recipients.and.access.body">Buka detail untuk memeriksa penerima, kedaluwarsa, dan akses sebelum mengubah atau mencabut berbagi.</string>
   <string name="share.tutorial.shares.filter.sharing.title">Temukan Pembagian</string>
   <string name="share.tutorial.shares.filter.sharing.body">Saring pembagian terkirim atau diterima untuk mengetahui pemberi akses dan item yang Anda bagikan.</string>
   <string name="share.tutorial.shares.manage.share.access.title">Tinjau Kedaluwarsa Dan Akses</string>

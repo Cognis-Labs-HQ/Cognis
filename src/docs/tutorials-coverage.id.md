@@ -18,57 +18,38 @@ Daftar berikut mencakup halaman dasbor interaktif dan bagian administrasi milik 
 | `/administration/modules` · `.module-store-grid`           | Marketplace Modul                 | Administrator  |
 | `^/docs(?:/\|$)`                                           | Dokumentasi                       | Pengguna masuk |
 | `^/changelogs(?:/\|$)`                                     | Riwayat Rilis                     | Pengguna masuk |
-| `/calendar`                                                | Panduan Kalender                  | Pengguna masuk |
-| `^/profile(?:/\|$)`                                        | Profil dan Postingan              | Pengguna masuk |
-| `^/messages(?:/\|$)`                                       | Panduan Pesan                     | Pengguna masuk |
-| `/classes` · `#class-list`                                 | Panduan Kelas                     | Pengguna masuk |
-| `/my-classes`                                              | Kelas Saya                        | Pengguna masuk |
-| `^/study/leaderboard(?:/\|$)`                              | Panduan Papan Peringkat           | Pengguna masuk |
-| `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)`                  | Panduan Kartu Belajar             | Pengguna masuk |
-| `^/study/explore(?:/\|$)`                                  | Jelajahi Pustaka                  | Pengguna masuk |
-| `^/study/library/search(?:/\|$)`                           | Pencarian Kamus                   | Pengguna masuk |
-| `^/study/(?:library/)?requests(?:/\|$)`                    | Permintaan Pustaka                | Pengguna masuk |
-| `^/study/library(?:/\|$)` · `.library-browser`             | Administrasi Pustaka              | Administrator  |
-| `^/study/(?:settings\|welcome)$`                           | Preferensi Belajar                | Pengguna masuk |
-| `/shares`                                                  | Panduan Berbagi                   | Pengguna masuk |
-| `/invite`                                                  | Panduan Undangan                  | Pengguna masuk |
-| `/settings` · `#auth-security-reset-panel`                 | Keamanan Akun                     | Pengguna masuk |
-| `/settings` · `#tfa-settings-panel`                        | Keamanan Dua Faktor               | Pengguna masuk |
-| `/administration` · `#tfa-enforcement`                     | Kewajiban Dua Faktor              | Administrator  |
-| `/settings` · `#notif-matrix-container`                    | Preferensi Notifikasi             | Pengguna masuk |
-| `/administration` · `#notifications`                       | Pengiriman Notifikasi             | Administrator  |
-| `/administration` · `#broadcasts`                          | Administrasi Siaran               | Administrator  |
-| `/administration` · `[data-files-quota-admin]`             | Kuota Penyimpanan                 | Administrator  |
-| `/administration` · `#logs`                                | Pemeriksaan Log                   | Administrator  |
-| `/administration` · `#registration`                        | Kebijakan Pendaftaran             | Administrator  |
-| `/administration` · `#social`                              | Administrasi Sosial               | Administrator  |
 | `/dashboard`                                               | Ruang Kerja Dan Latihan Pencarian | Pengguna masuk |
-| Flashcards · `[data-study-session]`                        | Kelola Dek                        | Pengguna masuk |
-| Flashcards · `[data-practice]`                             | Latihan Dengan Dek                | Pengguna masuk |
 | `/administration/modules/:uuid` · `.module-detail-release` | Detail Modul                      | Administrator  |
+
+## Panduan Komponen
+
+Halaman, target, dan persyaratan akses setiap fitur didokumentasikan bersama komponen pemiliknya. Komponen opsional tidak menyediakan terjemahan atau definisi tutorial untuk halaman inti.
+
+- [Panduan Kalender](/docs/gateways/calendar/tutorials)
+- [Profil dan Postingan](/docs/adapters/social/profile/tutorials)
+- [Panduan Pesan](/docs/adapters/social/messages/tutorials)
+- [Panduan Kelas](/docs/adapters/study/classes/tutorials)
+- [Panduan Papan Peringkat](/docs/adapters/study/leaderboard/tutorials)
+- [Panduan Kartu Belajar](/docs/adapters/study/flashcards/tutorials)
+- [Jelajahi Pustaka](/docs/adapters/study/library/tutorials)
+- [Preferensi Belajar](/docs/gateways/study/tutorials)
+- [Panduan Berbagi](/docs/gateways/share/tutorials)
+- [Panduan Undangan](/docs/gateways/registration/tutorials)
+- [Keamanan Akun](/docs/gateways/auth/tutorials)
+- [Keamanan Dua Faktor](/docs/gateways/tfa/tutorials)
+- [Preferensi Notifikasi](/docs/gateways/notify/tutorials)
+- [Kuota Penyimpanan](/docs/gateways/files/tutorials)
+- [Pemeriksaan Log](/docs/gateways/logging/tutorials)
+- [Administrasi Sosial](/docs/gateways/social/tutorials)
 
 ## Modul Eksternal
 
-Modul pendamping mencakup Analytics, ElevenLabs, pembelajaran Inggris dan Jepang, pertemuan dan administrasi Jitsi, ketiga halaman dokumen hukum, konfigurasi masuk X dan LINE, serta kanvas, konfigurasi, dan administrasi Whiteboard. Panduan tetap dimiliki dan dikemas oleh repositorinya.
-
-Bagian administrasi Hukum juga memiliki panduan terbatas untuk penerbitan dan laporan persetujuan.
+Cakupan modul eksternal dipelihara di direktori `docs/` masing-masing repositori bersama penyedianya. Lihat [modul eksternal](/docs/modules/external) untuk kontrak integrasi.
 
 ## Batas yang Disengaja
 
 Halaman lisensi dan kesalahan yang hanya dibaca, kode awal luring, serta fixture pengembangan tidak memiliki tur aksi. Callback masuk, persetujuan wajib, konfirmasi kata sandi, dan dialog penyiapan wajib mempertahankan aturan interaksinya. Halaman status penerima berbagi tidak otomatis mengungkap konten akun lain. Tampilan tertanam memakai kontrol tutorial dalam konteks halamannya sendiri.
 
-## Panduan Tugas
-
-Cakupan mencakup 55 panduan dan 175 langkah, termasuk 22 panduan administrator. Dasbor memiliki latihan pencarian langsung: buka kontrol pencarian asli, masukkan kueri, periksa opsi dan hasil, lalu tutup pencari sebelum melanjutkan. Langkah penjelasan mencegah hover dan aktivasi yang tidak disengaja; langkah interaktif mengizinkan targetnya secara eksplisit. Panduan kontekstual muncul saat detail dek, sesi latihan, atau detail modul terlihat.
-
-Panduan fitur mencakup memulai dan mempratinjau pesan, anggota ruang, pratinjau kiriman, navigasi kalender dan perencanaan acara, perubahan acara berulang, filter pembagian dan kedaluwarsa, undangan, filter pustaka dan perbandingan kamus, latihan audio dan menulis, favorit dan permintaan konten, pembuatan dek, umpan balik latihan, edit/bagikan/ekspor dek, pendaftaran kelas, peringkat, fon, perubahan belum disimpan, pemberitahuan rilis, pencarian akun, serta konfigurasi dan siklus hidup modul. Formulir dan konfirmasi penghapusan tetap menjadi tindakan sadar milik fitur; panduan menjelaskan titik masuknya dan mengalah pada dialog wajib.
-
 ## Panel Dan Tindakan Dasbor
 
 Panduan Dasbor memiliki 18 langkah dan membuka panel notifikasi serta menu akun melalui penangan klik aslinya. Latihan klik mencegah hover, sedangkan penjelasan panel dan menu membiarkan tindakan penghapusan atau navigasi tidak aktif. Menu akun menjelaskan Pengaturan, Dokumentasi, tautan administrasi sesuai peran, dan Keluar. Panduan juga mencakup dok tindakan halaman, pengalihan bahasa, tampilan, dan penyuntingan tata letak.
-
-Setiap langkah tutorial kini menetapkan `highlightNext` secara eksplisit: penjelasan yang memerlukan Berikutnya atau Selesai mengaktifkannya, sedangkan latihan berbasis interaksi atau penantian menonaktifkannya. Pengurangan gerakan mempertahankan garis tepi statis. Semua tutorial ditinjau, termasuk hasil pencarian dan penjelasan notifikasi.
-
-Kembali dari luar grup langkah atau cabang dependensi yang selesai akan menuju pembukanya dan menghapus hasil cabang. Di dalam cabang, Kembali tetap berurutan. Ini mencegah kunjungan ulang ke panel Pencarian yang sudah ditutup lalu melompat otomatis ke akhir.
-
-Langkah halaman dapat memakai `targetMatch: "first"` untuk memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan. Pencocokan unik tetap menjadi bawaan. Target yang hilang atau nonaktif mengikuti kebijakan pelewatan penulis. Sorotan tindakan kini mengarah ke sakelar yang dapat diubah, pemilih peran, kuota, pengujian notifikasi, kontrol berbagi, rekaman, dan tindakan modul. Komponen menyorot sakelar daya yang dapat diubah; kontrol wajib dan tersembunyi dikecualikan.

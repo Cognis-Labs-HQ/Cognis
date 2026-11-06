@@ -90,9 +90,9 @@ export const guides = [
                         id: "choose-font",
                         selector: "#pref-font-picker",
                         titleKey:
-                            "module.study.classes.tutorial.membership.choose.font.title",
+                            "ui.tutorial.settings.appearance.choose.font.title",
                         bodyKey:
-                            "module.study.classes.tutorial.membership.choose.font.body",
+                            "ui.tutorial.settings.appearance.choose.font.body",
                     },
                 ],
                 scope: "#appearance",

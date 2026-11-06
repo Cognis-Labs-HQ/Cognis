@@ -55,7 +55,7 @@
   <string name="gateway.study.library_components">Bestandteile</string>
   <string name="gateway.study.library_used_by">Verwendet von</string>
   <string name="gateway.study.library_no_relationships">Keine verbundenen Einträge.</string>
-    <string name="gateway.study.library_fields">Felder</string>
+  <string name="gateway.study.library_fields">Felder</string>
   <string name="gateway.study.library_definitions">Definitionen</string>
   <string name="gateway.study.library_alternate_definitions">Alternative Definitionen</string>
   <string name="gateway.study.library_provenance">Herkunft</string>
@@ -70,7 +70,7 @@
   <string name="gateway.study.favourite_failed">Study-Favoriten konnten nicht aktualisiert werden.</string>
   <string name="gateway.study.favourite_added">Zu Favoriten hinzugefügt.</string>
   <string name="gateway.study.favourite_removed">Aus Favoriten entfernt.</string>
-<string name="gateway.study.drawing.title">Schreibübung</string>
+  <string name="gateway.study.drawing.title">Schreibübung</string>
   <string name="gateway.study.drawing.guidance">Vollständige Anleitung zeigen</string>
   <string name="gateway.study.drawing.well_done">Gut gemacht</string>
   <string name="gateway.study.drawing.loser">Verloren!</string>
@@ -79,9 +79,9 @@
   <string name="gateway.study.drawing.reveal">Zeichen anzeigen</string>
   <string name="gateway.study.drawing_open_card">Karte in Explore öffnen?</string>
   <string name="gateway.study.drawing_open_card_body">Die aufgedeckte Karte in Explore öffnen und diese Seite verlassen?</string>
-    <string name="gateway.study.tutorial.preferences.title">Lerneinstellungen</string>
-    <string name="gateway.study.tutorial.preferences.learning.languages.title">Lernsprachen</string>
-    <string name="gateway.study.tutorial.preferences.learning.languages.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
-    <string name="gateway.study.tutorial.preferences.available.activities.title">Verfügbare Lernangebote</string>
-    <string name="gateway.study.tutorial.preferences.available.activities.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
+  <string name="gateway.study.tutorial.preferences.title">Lerneinstellungen</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.title">Lernsprachen</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.title">Verfügbare Lernangebote</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
 </resources>
