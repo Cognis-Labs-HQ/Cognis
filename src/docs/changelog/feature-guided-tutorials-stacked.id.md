@@ -116,3 +116,5 @@ Balon penjelasan tetap memakai kontrol dok yang terlihat di bawah ruang menu seb
 ## Penyelesaian bertahan setelah pembaruan
 
 Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan isi dan paket tidak pernah mengatur ulang penyelesaian. Tutorial yang selesai hanya diulang melalui kontrol ? di judul halaman. Pertahankan ID saat merevisi panduan; penyelesaian tetap disimpan di penyimpanan peramban akun. Setiap sesi yang berhasil menyimpan penyelesaian sebelum penemuan halaman dilanjutkan, termasuk panduan yang dimulai langsung melalui handle publik penyedia.
+
+- [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)

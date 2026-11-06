@@ -116,3 +116,5 @@ Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten M
 ## Abschluss bleibt nach Updates erhalten
 
 Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos. Jede erfolgreich abgeschlossene Sitzung speichert den Abschluss vor der erneuten Seitenerkennung, auch beim direkten Start über das öffentliche Anbieter-Handle.
+
+- [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
