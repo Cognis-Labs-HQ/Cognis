@@ -67,3 +67,7 @@ Toast pemulihan komponen memakai nama tampilan manifest yang otoritatif dan kata
 Stack tutorial memperbaiki sorotan input pencarian di atas header, melanjutkan setelah klik pil filter mana pun, dan memberi isyarat lembut pada Berikutnya/Selesai untuk langkah manual dengan dukungan pengurangan gerakan.
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+
+Stack tutorial kini memakai boolean opsional `highlightNext` per langkah dengan nilai bawaan false. Penjelasan yang ada mengaktifkannya, sedangkan latihan otomatis menonaktifkannya. Panduan kontribusi host dan modul mewajibkan cakupan tutorial yang berfokus pada pengguna dan peninjauan setiap kali fitur antarmuka berubah.
+
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)

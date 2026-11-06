@@ -67,3 +67,7 @@ Component recovery toasts now use the authoritative manifest display name and, w
 The tutorial stack fixes search input highlighting above shell headers, advances refinement after any filter-pill click and adds a breathing Next/Finish cue for manual steps with reduced-motion support.
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+
+The tutorial stack now uses an explicit optional boolean `highlightNext` on each stage, defaulting to false. Existing explanations opt in and automatic exercises opt out. Host and module contributor instructions require user-first tutorial coverage and review whenever UI features change.
+
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)

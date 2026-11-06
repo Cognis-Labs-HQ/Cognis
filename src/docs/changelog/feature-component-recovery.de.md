@@ -67,3 +67,7 @@ Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests
 Der Tutorial-Stack korrigiert die Hervorhebung des Sucheingabefelds über Kopfzeilen, setzt nach jedem Filter-Klick fort und zeigt für manuelle Schritte einen pulsierenden Weiter/Fertig-Hinweis mit Unterstützung reduzierter Bewegung.
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+
+Der Tutorial-Stack verwendet jetzt das optionale boolesche Feld `highlightNext` pro Schritt mit Standardwert false. Bestehende Erklärungen aktivieren es; automatische Übungen deaktivieren es. Die Beitragsrichtlinien für Host und Module verlangen nutzerorientierte Tutorial-Abdeckung und deren Prüfung bei UI-Änderungen.
+
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)

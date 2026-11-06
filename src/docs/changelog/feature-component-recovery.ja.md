@@ -67,3 +67,7 @@ cognisctl component:disable module analytics --force
 チュートリアルのスタックで、ヘッダー上の検索入力欄の強調を修正し、各フィルターのクリックで次へ進むようにしました。手動で進めるステップには「次へ」や「完了」の強調を追加し、動きを減らす設定にも対応します。
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+
+チュートリアルの各ステップは任意の真偽値 `highlightNext` を使い、省略時は false です。既存の説明では有効にし、自動で進む練習では無効にします。ホストとモジュールの開発ガイドラインは、利用者を中心にしたチュートリアルの網羅と UI 機能変更時の見直しを求めます。
+
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
