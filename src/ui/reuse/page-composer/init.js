@@ -42,6 +42,7 @@ import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
+import { mountComposerFloatingMenu } from "./floating-menu.js";
 import { mountComposerTutorials } from "../tutorials/pages.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
@@ -610,39 +611,13 @@ export function createPageComposer(
         await focusControl.mount();
         if (composerDestroyed) return;
 
-        if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
-            const floatingToolbar = root.querySelector(".floating-toolbar");
-            if (floatingToolbar) {
-                floatingToolbar.innerHTML = "";
-                for (const item of floatingMenu) {
-                    const slot = document.createElement("div");
-                    slot.dataset.floatingSlot = item.id;
-                    slot.hidden = true;
-                    slot.innerHTML = item.render();
-                    floatingToolbar.appendChild(slot);
-                }
-                const updateToolbarVisibility = () => {
-                    const anyVisible = [
-                        ...floatingToolbar.querySelectorAll(
-                            "[data-floating-slot]",
-                        ),
-                    ].some((s) => !s.hidden);
-                    floatingToolbar.hidden = !anyVisible;
-                };
-                const slotObserver = new MutationObserver(
-                    updateToolbarVisibility,
-                );
-                floatingToolbar
-                    .querySelectorAll("[data-floating-slot]")
-                    .forEach((slot) => {
-                        slotObserver.observe(slot, {
-                            attributes: true,
-                            attributeFilter: ["hidden"],
-                        });
-                    });
-                updateToolbarVisibility();
-            }
-        }
+        if (Array.isArray(floatingMenu) && floatingMenu.length > 0)
+            mountComposerFloatingMenu({
+                root,
+                items: floatingMenu,
+                signal: tutorialLifetime.signal,
+                ctx: uiCtx,
+            });
 
         const mainWindow = root.querySelector(".main-window");
         contentGrid = root.querySelector(".content-grid");

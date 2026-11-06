@@ -2,7 +2,7 @@
  * Presents tutorial effects and localized controls in independently owned floating menus.
  * Public exports: placeCallout — clamps a callout to the visual viewport;
  * createTutorialView — creates a renderer with session-scoped cleanup.
- * @example const view = createTutorialView({ document, hostI18n, loadStyles });
+ * @example const view = createTutorialView({ document, hostI18n, loadStyles, ctx });
  */
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
@@ -89,7 +89,7 @@ export function placeCallout(
  * @param {object} dependencies Document, host localization and stylesheet loader.
  * @returns {Function} An asynchronous renderer returning session-owned cleanup.
  */
-export function createTutorialView({ document, hostI18n, loadStyles }) {
+export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
     return async ({
         step,
         text,
@@ -104,6 +104,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         valid,
         lost,
         interacted,
+        menuLease,
     }) => {
         await loadStyles();
         signal.throwIfAborted();
@@ -183,7 +184,6 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             (waiting && !missing) || index === 0,
         );
         button("restart", "ui.tutorial.restart", actions.restart);
-        if (missing) button("retry", "ui.reuse.retry", actions.retry);
         button(
             "next",
             index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
@@ -206,6 +206,8 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             label: hostI18n.t("ui.reuse.tutorials"),
             signal: scoped,
             items,
+            lease: menuLease,
+            ctx,
         });
         menu.element.classList.add("tutorial-actions");
         menu.element
@@ -219,7 +221,19 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         arrow.className = "tutorial-arrow";
         arrow.setAttribute("aria-hidden", "true");
         root.append(shade, spotlight, arrow, panel, menu.element);
+        scoped.addEventListener("abort", () => root.remove(), { once: true });
+        root.hidden = true;
         document.body.append(root);
+        try {
+            if (!(await menu.ready))
+                throw new Error("floating_menu_lease_cancelled");
+            signal.throwIfAborted();
+            root.hidden = false;
+        } catch (error) {
+            menu.dispose();
+            root.remove();
+            throw error;
+        }
         let interactionPending = false;
         let disposed = false,
             frame,

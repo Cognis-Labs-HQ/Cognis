@@ -17,6 +17,7 @@ export async function mountProvider(ctx) {
             steps: [
                 {
                     id: "inspect",
+                    highlightNext: true,
                     target: target.id,
                     titleKey: "module.fixture.inspect",
                     effects: { arrow: true, spotlight: true },

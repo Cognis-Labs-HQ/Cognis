@@ -29,6 +29,7 @@ export async function mountProvider(ctx) {
             steps: [
                 {
                     id: "primary",
+                    highlightNext: false,
                     target: target.id,
                     titleKey: "module.example.tutorial.primary.title",
                     bodyKey: "module.example.tutorial.primary.body",
@@ -75,7 +76,7 @@ Bei Ersetzung und während der Anzeige werden Ziele erneut aufgelöst. Offene Sh
 - `advance`: `click`, `change`, `input`, `submit` oder `keydown`, optional `key` und synchrones/asynchrones `accept(event)`. Wiederholte Eingabe schaltet nur einmal weiter; asynchrone Prüfungen müssen `true` liefern.
 - `enter({ signal, target, stepId })` ist vertrauenswürdiger Vorbereitungscode und kann eine Bereinigungsfunktion zurückgeben. `waitFor` erhält denselben Kontext und schaltet nach Erfüllung weiter. Beide sind auf fünfzehn Sekunden begrenzt und folgen dem Schrittabbruch. Asynchrone Bereinigungsfehler werden protokolliert; eigene Arbeit soll das Signal beachten.
 - `route` ist ein interner Pfad ohne Abfragedaten oder ein vertrauenswürdiger Callback dafür. `ui:navigate` erhält Autorisierung, Offline-Regeln und Schutz ungespeicherter Änderungen. Study löst eigene Pfade über `study:tutorialTargets.route({ language, area })` mit `overview`, `explore` oder `flashcards` auf.
-- `missing` enthält `timeoutMs` von 0 bis 15000, standardmäßig 5000, und `action`: `cancel`, `skip` oder `retry`. Skip überspringt den fehlenden Schritt, Retry zeigt einen ausdrücklichen Wiederholungsbutton. Warten sperrt die Seite nicht.
+- `missing` enthält `timeoutMs` von 0 bis 15000, standardmäßig 5000, und `action`: `cancel`, `skip` oder `retry`. Skip überspringt den fehlenden Schritt, Retry belässt die Ansicht mit Tutorial neu starten und Weiter. Warten sperrt die Seite nicht.
 
 Definitionen benötigen Version 1, eindeutige Schritt-IDs, übersetzte Titel und höchstens 100 Schritte. Unbekannte Versionen, Felder und ungültige Optionen werden abgelehnt. Callbacks sind vertrauenswürdiger Komponentencode; heruntergeladene Skripttexte dürfen nicht ausgewertet werden.
 
@@ -112,6 +113,7 @@ createPageComposer(root, {
                     steps: [
                         {
                             id: "options",
+                            highlightNext: true,
                             selector: ".example-options",
                             titleKey: "example.tutorial.options.title",
                             bodyKey: "example.tutorial.options.body",
@@ -165,3 +167,7 @@ Das optionale boolesche Feld `highlightNext` ist standardmäßig `false`; der Ho
 Zurück von außerhalb einer abgeschlossenen Schrittgruppe oder eines Abhängigkeitszweigs führt zu dessen Einstieg und setzt die Ergebnisse zurück. Innerhalb eines Zweigs bleibt Zurück schrittweise. So wird ein geschlossener Suchdialog nicht erneut aufgerufen und automatisch übersprungen.
 
 Seitenschritte können mit `targetMatch: "first"` den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt wählen. Standardmäßig ist weiterhin ein eindeutiger Treffer erforderlich. Fehlende oder deaktivierte Ziele folgen der festgelegten Überspringregel. Aktionsbezogene Hervorhebungen zeigen jetzt auf bearbeitbare Schalter, Rollenfelder, Speicherquoten, Benachrichtigungstests, Freigaben, Datensätze und Modulaktionen. Komponenten verwendet einen bearbeitbaren sichtbaren Schalter; notwendige und versteckte Steuerelemente sind ausgeschlossen.
+
+Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
+
+Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
