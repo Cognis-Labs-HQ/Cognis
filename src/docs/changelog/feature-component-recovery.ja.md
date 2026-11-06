@@ -101,3 +101,5 @@ cognisctl component:disable module analytics --force
 ## 再実行の終了操作
 
 再実行ではスキップを唯一の終了ボタンとし、重複する中止ボタンを削除します。
+
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)

@@ -101,3 +101,5 @@ Stack tutorial kini mengarahkan Kembali ke awal grup atau cabang dependensi yang
 ## Tindakan keluar pemutaran ulang
 
 Pemutaran ulang memakai Lewati sebagai satu-satunya tombol keluar. Tombol Batal yang berlebihan dihapus.
+
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)

@@ -101,3 +101,5 @@ Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen ode
 ## Wiederholungen beenden
 
 Wiederholungen verwenden Überspringen als einzigen Beenden-Button. Der redundante Abbrechen-Button entfällt.
+
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
