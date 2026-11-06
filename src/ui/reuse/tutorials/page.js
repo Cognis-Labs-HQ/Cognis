@@ -185,6 +185,8 @@ export function createPageTutorials({
             return false;
         menu = createFloatingMenu({
             document,
+            priority: 100,
+            ctx,
             label: i18n.t("ui.reuse.tutorials"),
             signal,
             items: [
@@ -205,7 +207,15 @@ export function createPageTutorials({
             ],
         });
         menu.element.classList.add("tutorial-actions");
-        menu.element.querySelector("button")?.focus();
+        const chooser = menu;
+        if (
+            !(await chooser.ready) ||
+            menu !== chooser ||
+            signal.aborted ||
+            revision !== epoch
+        )
+            return false;
+        chooser.element.querySelector("button")?.focus();
         return true;
     }
     function connect() {

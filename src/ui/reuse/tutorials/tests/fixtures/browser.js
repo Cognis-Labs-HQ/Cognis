@@ -6,6 +6,7 @@ const fixturePath = window.location.pathname;
 const counts = { inside: 0, outside: 0, cleanup: 0 };
 let owner, session, pendingCallback;
 let sequence = 0;
+let menuLifetime;
 let permitted = true;
 let target = document.querySelector("#target");
 const connectTarget = () =>
@@ -37,6 +38,49 @@ window.tutorialFixture = {
                 counts.broadcast = (counts.broadcast ?? 0) + 1;
             });
         return banner;
+    },
+    async menuQueue() {
+        menuLifetime?.abort();
+        menuLifetime = new AbortController();
+        const { mountComposerFloatingMenu } =
+            await import("../../../page-composer/floating-menu.js");
+        document.querySelector("#queue-example")?.remove();
+        const root = document.createElement("section");
+        root.id = "queue-example";
+        root.innerHTML = '<div class="floating-toolbar" hidden></div>';
+        document.body.append(root);
+        mountComposerFloatingMenu({
+            root,
+            signal: menuLifetime.signal,
+            ctx: uiCtx,
+            items: [
+                {
+                    id: "module-actions",
+                    render: () =>
+                        '<button id="queued-module-action" type="button">Module action</button>',
+                },
+            ],
+        });
+        const slot = root.querySelector("[data-floating-slot]");
+        slot.hidden = false;
+        counts.menuActions = 0;
+        slot.querySelector("button").addEventListener(
+            "click",
+            () => counts.menuActions++,
+        );
+        await this.cue(true);
+    },
+    updateQueuedMenu() {
+        const slot = document
+            .querySelector(
+                "#queue-example>[hidden],#queue-example>.floating-toolbar",
+            )
+            .querySelector("[data-floating-slot]");
+        slot.hidden = true;
+        slot.hidden = false;
+    },
+    disposeQueuedMenu() {
+        menuLifetime?.abort();
     },
     async components(options) {
         owner?.dispose();

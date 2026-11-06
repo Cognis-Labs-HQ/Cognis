@@ -56,6 +56,8 @@ Read this file before changing Cognis or its modules. Apply these preferences pr
 
 Every UI-facing component must have a component-owned, page- or URL-bound tutorial explaining user goals, useful actions and expected outcomes. Cover user and administrator surfaces, optional controls and empty states with appropriate audience restrictions, conditions and dependencies. Review existing tutorials for every new feature or UI change and update affected steps, targets, branches, translations and coverage documentation in the same change. Set each step’s `highlightNext` flag explicitly: true for explanations requiring Next/Finish, false for interaction- or wait-driven progression. Keep copy user-first, avoid implementation details and irrelevant reassurance, and verify real progression, replay, restart, accessibility and lifecycle cleanup through public contracts.
 
+Use the shared `ui:floatingMenus` queue and its staged flows for floating actions. Bind menu ownership to its page/component lifetime, preserve tutorial reservations across steps, and let page menus wait for the tutorial to yield rather than independently changing toolbar visibility.
+
 ### Verification and documentation
 
 - Test observable behavior through real registered flow execution and public-contract fakes. Source-only assertions are supplemental; they cannot prove a capability works. Never use silent no-op runners, unrelated tests or altered assertions to hide failures.

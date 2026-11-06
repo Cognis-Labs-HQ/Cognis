@@ -29,6 +29,7 @@ export async function mountProvider(ctx) {
             steps: [
                 {
                     id: "primary",
+                    highlightNext: false,
                     target: target.id,
                     titleKey: "module.example.tutorial.primary.title",
                     bodyKey: "module.example.tutorial.primary.body",
@@ -75,7 +76,7 @@ Study は `study:tutorialTargets.matchesPage({ pathname, language })` を公開�
 - `advance` は `click`、`change`、`input`、`submit`、`keydown` に対応し、任意の `key` と同期・非同期の `accept(event)` を指定できます。連続入力でも進むのは一度です。非同期の判定は `true` を返す必要があります。
 - `enter({ signal, target, stepId })` は信頼された準備処理で、解除関数を返せます。`waitFor` は同じ引数を受け取り、完了すると次へ進みます。両方とも十五秒で制限され、ステップの中止に従います。非同期の解除エラーは記録し、所有する非同期処理には signal を使用します。
 - `route` はクエリを含まない内部パス、またはそのパスを解決する信頼された関数です。`ui:navigate` により認可、オフライン制約、未保存変更の保護を維持します。Study のパスは `study:tutorialTargets.route({ language, area })` が解決し、area は `overview`、`explore`、`flashcards` です。
-- `missing` は `timeoutMs` を 0～15000（既定 5000）、`action` を `cancel`、`skip`、`retry` で指定します。Skip は欠けたステップを飛ばし、Retry は明示的な再試行ボタンを表示します。待機中にページをロックしません。
+- `missing` は `timeoutMs` を 0～15000（既定 5000）、`action` を `cancel`、`skip`、`retry` で指定します。Skip は欠けたステップを飛ばし、Retry は最初からやり直す操作と「次へ」を表示し続けます。待機中にページをロックしません。
 
 定義にはバージョン 1、一意なステップ ID、翻訳されたタイトルが必要で、最大 100 ステップです。未対応のバージョン、フィールド、不正な設定は拒否します。コールバックは信頼されたコンポーネントコードです。ダウンロードしたスクリプト文字列を評価してはいけません。
 
@@ -112,6 +113,7 @@ createPageComposer(root, {
                     steps: [
                         {
                             id: "options",
+                            highlightNext: true,
                             selector: ".example-options",
                             titleKey: "example.tutorial.options.title",
                             bodyKey: "example.tutorial.options.body",
@@ -165,3 +167,7 @@ createPageComposer(root, {
 完了したステップ群や依存分岐の外から「戻る」を選ぶと、分岐の開始点に戻り、その結果を取り消します。分岐内では前のステップへ順に戻ります。閉じた検索画面に戻って終了位置まで自動で飛ばされることを防ぎます。
 
 ページのステップは `targetMatch: "first"` で、指定したセクション内の表示中かつ利用可能な最初の対象を選べます。省略時は一意の一致が必要です。存在しない対象や無効な対象は指定のスキップ方針に従います。操作説明の強調を、変更可能なスイッチ、役割選択、容量設定、通知テスト、共有、レコード、モジュール操作へ絞りました。コンポーネントでは変更可能な電源スイッチを示し、必須または非表示の操作部は対象外です。
+
+最初からやり直す操作を継続して提供し、再試行ボタンは表示しません。導入ステップも対象領域を強調し、空の Jitsi 会議一覧や参加者検索を示します。学習プロバイダーは公開された Study の言語対象とワークスペース対象を使います。説明では `highlightNext` を有効にし、操作で進むステップでは無効にします。
+
+フローティングメニューはバージョン 1 の `ui:floatingMenus` と、段階付きフロー `ui:floatingMenu:request`、`present`、`dismiss`、`release` を使います。同じ優先度は要求順に処理し、高い優先度は低いメニューを一時停止します。予約は初回の許可または取消を示す `ready`、`present(element, { visible })`、`dismiss(element)`、`dispose()` を提供します。チュートリアルは完了、取消、所有者の解除まで、ステップ間も含め優先度 100 を保ちます。コンポーザーのスロットと再実行の選択も同じ待ち行列を使います。取り消した要求や古い表示処理は新しいメニューを置き換えません。空のスロットは表示を譲り、ページ解除時は監視と予約を破棄します。

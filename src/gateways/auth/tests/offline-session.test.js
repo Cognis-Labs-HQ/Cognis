@@ -1,3 +1,4 @@
+import { registerFloatingMenus } from "../../../ui/reuse/floating-menu-queue.js";
 import { installPageReadiness } from "../../../ui/reuse/page-readiness.js";
 import { installTutorials } from "../../../ui/reuse/tutorials/index.js";
 import { createTopBanners } from "../../../ui/reuse/top-banners.js";
@@ -30,6 +31,7 @@ function fixture() {
             "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
             "./tutorials/index.js": { installTutorials },
             "./page-readiness.js": { installPageReadiness },
+            "./floating-menu-queue.js": { registerFloatingMenus },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": { createReuseResources },
             "./top-banners.js": { createTopBanners },

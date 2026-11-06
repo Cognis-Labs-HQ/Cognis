@@ -1,4 +1,5 @@
-import { createCtx, CapabilityStore } from "@cognis/core";
+import { flowHost } from "../../../tests/fixtures/flow-host.js";
+import { registerFloatingMenus } from "../../../floating-menu-queue.js";
 import { registerTutorials } from "../../runtime.js";
 
 /** Real staged flows with an explicit presentation/DOM contract fake. */
@@ -9,8 +10,8 @@ export function tutorialHost({
     page,
     openPage,
 } = {}) {
-    const core = createCtx();
     const controller = new AbortController();
+    const { core, ctx, events } = flowHost(controller.signal);
     const window = new EventTarget();
     window.CustomEvent = CustomEvent;
     window.location = { pathname: "/dashboard" };
@@ -32,33 +33,9 @@ export function tutorialHost({
         querySelector: () => null,
     };
     const rendered = [],
-        events = [],
         logs = [],
         feedback = [];
-    const store = new CapabilityStore();
-    const ctx = {
-        signal: controller.signal,
-        capabilities: {
-            get: (id) => store.get(id),
-            contribute: (id, value) => {
-                if (store.has(id)) return false;
-                store.contribute(id, value);
-                return true;
-            },
-            remove: (id, value) => store.get(id) === value && store.remove(id),
-        },
-        registerFlow: (id, stages) => {
-            core.registerFlow({ id, stages });
-            return () => core.unregisterFlow(id);
-        },
-        removeFlowHook: (...args) => core.removeFlowStageHook(...args),
-        flowExists: (id) => core.hasFlow(id),
-        extendFlow: (...args) => core.flow.extend(...args),
-        runFlow: (id, input) => {
-            events.push(id);
-            return core.flow.run(id, input);
-        },
-    };
+    registerFloatingMenus(ctx);
     const api = registerTutorials(ctx, {
         document,
         identity,

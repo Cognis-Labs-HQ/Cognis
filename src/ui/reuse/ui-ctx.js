@@ -27,6 +27,7 @@
  * ```
  */
 
+import { registerFloatingMenus } from "./floating-menu-queue.js";
 import { installPageReadiness } from "./page-readiness.js";
 import { installTutorials } from "./tutorials/index.js";
 import { createTopBanners } from "./top-banners.js";
@@ -186,6 +187,7 @@ for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
 
 registerOfflineRuntime(uiCtx);
 installPageReadiness(uiCtx);
+registerFloatingMenus(uiCtx);
 installTutorials(uiCtx);
 
 export const { registerFlow, extendFlow, removeFlowHook, runFlow, flowExists } =

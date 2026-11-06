@@ -235,6 +235,12 @@ export function registerTutorials(
             if (document?.querySelector?.(".popup-overlay--visible"))
                 throw new Error("tutorial_modal_active");
             active?.cancel("replaced");
+            const queue = ctx.capabilities.get("ui:floatingMenus");
+            if (!queue) throw new Error("floating_menu_queue_unavailable");
+            const menuLease = queue.request({
+                priority: 100,
+                signal: record.signal,
+            });
             const session = createSession({
                 record: { ...record, i18n },
                 firstTime,
@@ -243,10 +249,13 @@ export function registerTutorials(
                 allowed: () => allowed(record) && identity() === actor,
                 resolve: (target) =>
                     resolveTarget(targets, target, record.owner, document),
-                view,
+                view: (options) => view({ ...options, menuLease }),
                 navigate: ctx.capabilities.get("ui:navigate"),
                 log,
                 onFinish(result) {
+                    void menuLease
+                        .then((lease) => lease.dispose())
+                        .catch(report);
                     if (active === session) active = undefined;
                     if (result.status === "failed") notifyFailure();
                 },

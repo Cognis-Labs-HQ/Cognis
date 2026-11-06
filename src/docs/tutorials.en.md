@@ -29,6 +29,7 @@ export async function mountProvider(ctx) {
             steps: [
                 {
                     id: "primary",
+                    highlightNext: false,
                     target: target.id,
                     titleKey: "module.example.tutorial.primary.title",
                     bodyKey: "module.example.tutorial.primary.body",
@@ -75,7 +76,7 @@ Resolvers are re-evaluated after replacement and while the view is active. Open 
 - `advance`: a `click`, `change`, `input`, `submit` or `keydown` event, optional keyboard `key`, and optional synchronous/asynchronous `accept(event)` predicate. Repeated input advances once. An async predicate must resolve to `true`.
 - `enter({ signal, target, stepId })`: trusted setup callback, optionally returning a cleanup function. `waitFor` receives the same context and advances on fulfillment. Both are bounded to fifteen seconds and cancelled with the step. Async cleanup failures are logged; owners should cancel their asynchronous work through the supplied signal.
 - `route`: a same-origin path without query data, or a trusted callback resolving such a path. Navigation uses `ui:navigate` and preserves its authorization, offline and unsaved-change decisions. Route callbacks let feature owners resolve their own navigation; Study exposes this through `study:tutorialTargets.route({ language, area })`, where area is `overview`, `explore` or `flashcards`.
-- `missing`: `timeoutMs` from 0 to 15000, default 5000, and `action` of `cancel`, `skip` or `retry`. Skip advances past the missing step; retry presents an explicit Retry control. Waiting never locks the page.
+- `missing`: `timeoutMs` from 0 to 15000, default 5000, and `action` of `cancel`, `skip` or `retry`. Skip advances past the missing step; retry keeps the missing-target view available with Restart Tutorial and Next. Waiting never locks the page.
 
 Definitions declare version 1, unique step IDs, localized title keys and at most 100 steps. Unsupported versions, unknown fields and malformed options are rejected. Callbacks are trusted component code; never compile or evaluate downloaded script strings.
 
@@ -112,6 +113,7 @@ createPageComposer(root, {
                     steps: [
                         {
                             id: "options",
+                            highlightNext: true,
                             selector: ".example-options",
                             titleKey: "example.tutorial.options.title",
                             bodyKey: "example.tutorial.options.body",
@@ -165,3 +167,7 @@ The optional boolean `highlightNext` defaults to `false`; the host never infers 
 Back from outside a completed step group or dependency branch returns to its opener and clears its outcomes. Back within a branch remains sequential. This avoids revisiting a closed Search panel and automatically skipping to the exit.
 
 Page steps can declare `targetMatch: "first"` to select the first visible, usable match inside their declared section. The default remains unique matching. Missing or disabled targets are skipped according to the authored policy. Action-specific highlights now point to editable power switches, role selectors, quota fields, notification tests, share controls, records and module actions. Components uses an editable displayed power switch; required and hidden controls are excluded.
+
+Restart Tutorial is the persistent recovery action; the tutorial no longer renders a Retry button. UI-facing introductory steps now highlight their referenced regions, including empty Jitsi meeting lists and Find Participants. Learning providers use published Study language targets and the public workspace target. Explicit `highlightNext` remains enabled on explanatory steps and disabled on event-driven stages.
+
+Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.

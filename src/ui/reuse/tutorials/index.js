@@ -31,6 +31,7 @@ export function installTutorials(ctx) {
     const prepare = async () => {
         const i18n = await localize();
         const view = createTutorialView({
+            ctx,
             document,
             hostI18n: i18n,
             loadStyles: prepareStyles,

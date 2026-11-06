@@ -29,6 +29,7 @@ export async function mountProvider(ctx) {
             steps: [
                 {
                     id: "primary",
+                    highlightNext: false,
                     target: target.id,
                     titleKey: "module.example.tutorial.primary.title",
                     bodyKey: "module.example.tutorial.primary.body",
@@ -75,7 +76,7 @@ Resolver dijalankan ulang setelah penggantian dan selama tampilan aktif. Target 
 - `advance`: event `click`, `change`, `input`, `submit`, atau `keydown`, dengan `key` serta predikat sinkron/asinkron `accept(event)` opsional. Input berulang hanya memajukan sekali. Predikat asinkron harus menghasilkan `true`.
 - `enter({ signal, target, stepId })` adalah kode persiapan tepercaya dan dapat mengembalikan fungsi pembersihan. `waitFor` menerima konteks yang sama dan memajukan setelah terpenuhi. Keduanya dibatasi lima belas detik dan dibatalkan bersama langkah. Kegagalan pembersihan asinkron dicatat; pekerjaan milik pemilik harus mematuhi signal.
 - `route` adalah jalur internal tanpa data kueri atau callback tepercaya yang menghasilkannya. `ui:navigate` mempertahankan otorisasi, aturan luring, dan penjaga perubahan belum disimpan. Study menentukan jalurnya melalui `study:tutorialTargets.route({ language, area })`, dengan area `overview`, `explore`, atau `flashcards`.
-- `missing` memuat `timeoutMs` 0–15000, bawaan 5000, dan `action`: `cancel`, `skip`, atau `retry`. Skip melewati langkah yang hilang; Retry menampilkan tombol coba lagi. Menunggu tidak mengunci halaman.
+- `missing` memuat `timeoutMs` 0–15000, bawaan 5000, dan `action`: `cancel`, `skip`, atau `retry`. Skip melewati langkah yang hilang; Retry mempertahankan tampilan dengan Mulai Ulang Tutorial dan Berikutnya. Menunggu tidak mengunci halaman.
 
 Definisi memerlukan versi 1, ID langkah unik, judul terlokalisasi, dan paling banyak 100 langkah. Versi, field, atau opsi yang tidak didukung ditolak. Callback adalah kode komponen tepercaya; jangan mengevaluasi string skrip unduhan.
 
@@ -112,6 +113,7 @@ createPageComposer(root, {
                     steps: [
                         {
                             id: "options",
+                            highlightNext: true,
                             selector: ".example-options",
                             titleKey: "example.tutorial.options.title",
                             bodyKey: "example.tutorial.options.body",
@@ -165,3 +167,7 @@ Boolean opsional `highlightNext` bernilai `false` secara bawaan; host tidak meny
 Kembali dari luar grup langkah atau cabang dependensi yang selesai akan menuju pembukanya dan menghapus hasil cabang. Di dalam cabang, Kembali tetap berurutan. Ini mencegah kunjungan ulang ke panel Pencarian yang sudah ditutup lalu melompat otomatis ke akhir.
 
 Langkah halaman dapat memakai `targetMatch: "first"` untuk memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan. Pencocokan unik tetap menjadi bawaan. Target yang hilang atau nonaktif mengikuti kebijakan pelewatan penulis. Sorotan tindakan kini mengarah ke sakelar yang dapat diubah, pemilih peran, kuota, pengujian notifikasi, kontrol berbagi, rekaman, dan tindakan modul. Komponen menyorot sakelar daya yang dapat diubah; kontrol wajib dan tersembunyi dikecualikan.
+
+Mulai Ulang Tutorial tetap menjadi tindakan pemulihan; tombol Coba Lagi tidak lagi ditampilkan. Langkah pengantar menyoroti bagian yang dirujuk, termasuk daftar rapat Jitsi kosong dan Cari Peserta. Penyedia pembelajaran memakai target bahasa Study dan ruang kerja publik yang terdaftar. `highlightNext` tetap aktif untuk penjelasan dan nonaktif untuk langkah berbasis peristiwa.
+
+Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap `ui:floatingMenu:request`, `present`, `dismiss`, serta `release`. Prioritas sama mengikuti urutan permintaan; prioritas lebih tinggi menangguhkan menu di bawahnya. Reservasi menyediakan `ready` untuk izin pertama atau pembatalan, `present(element, { visible })`, `dismiss(element)`, dan `dispose()`. Tutorial menahan prioritas 100 sampai selesai, dibatalkan, atau pemilik dilepas, termasuk di antara langkah. Slot komposer dan pemilih pemutaran ulang memakai antrean yang sama. Permintaan batal dan tampilan lama tidak dapat menggantikan menu baru; slot kosong mengalah, dan pelepasan halaman membersihkan observer serta reservasi.
