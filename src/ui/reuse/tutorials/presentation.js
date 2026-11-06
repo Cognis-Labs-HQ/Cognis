@@ -212,9 +212,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             .querySelector('[data-action="next"]')
             .classList.toggle(
                 "tutorial-next-prompt",
-                Boolean(
-                    missing || (!waiting && !step.advance && !step.waitFor),
-                ),
+                Boolean(step.highlightNext === true && (!waiting || missing)),
             );
         panel.append(progress, title, body);
         const arrow = document.createElement("div");

@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "module.social.messages.tutorial.messages.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "rooms",
                         selector: "#messages-rooms-list",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.rooms.body",
                     },
                     {
+                        highlightNext: true,
                         id: "room-history",
                         selector: "#messages-thread-list",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.room.history.body",
                     },
                     {
+                        highlightNext: true,
                         id: "compose-and-preview",
                         selector: ".messages-composer-main",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.compose.and.preview.body",
                     },
                     {
+                        highlightNext: true,
                         id: "start-room",
                         selector: "#messages-new-btn",
                         titleKey:
@@ -40,6 +44,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.start.room.body",
                     },
                     {
+                        highlightNext: true,
                         id: "write-message",
                         selector: "#messages-composer-input",
                         titleKey:
@@ -48,6 +53,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.write.message.body",
                     },
                     {
+                        highlightNext: true,
                         id: "preview-message",
                         selector: "#messages-composer-preview-toggle",
                         titleKey:
@@ -56,6 +62,7 @@ export const guides = [
                             "module.social.messages.tutorial.messages.preview.message.body",
                     },
                     {
+                        highlightNext: true,
                         id: "manage-room",
                         selector: "#messages-thread-header",
                         titleKey:

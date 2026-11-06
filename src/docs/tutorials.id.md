@@ -157,3 +157,7 @@ Jalur langkah mendukung `minRole`, predikat boolean sinkron `when({ firstTime, c
 Tombol, tautan, dan aktivasi papan ketik pada banner tetap tersedia. Aktivasi menghentikan tutorial melalui `ui:tutorial:priority` sebelum dialog atau navigasi milik tindakan berjalan. Kontrol banner dapat dicapai dengan Tab.
 
 Langkah overlay pencarian memakai area tampilan overlay agar header dan footer tidak memotong sorotan input. Klik pil penyempurnaan mana pun menyelesaikan latihan filter. Langkah yang memerlukan Berikutnya atau Selesai menyoroti tindakan itu dengan garis tepi beranimasi lembut; preferensi pengurangan gerakan mempertahankan garis statis. Langkah yang menunggu atau maju otomatis tidak menampilkan isyarat ini.
+
+Setiap langkah tutorial kini menetapkan `highlightNext` secara eksplisit: penjelasan yang memerlukan Berikutnya atau Selesai mengaktifkannya, sedangkan latihan berbasis interaksi atau penantian menonaktifkannya. Pengurangan gerakan mempertahankan garis tepi statis. Semua tutorial ditinjau, termasuk hasil pencarian dan penjelasan notifikasi.
+
+Boolean opsional `highlightNext` bernilai `false` secara bawaan; host tidak menyimpulkannya dari interaksi atau kondisi tunggu. Tetapkan secara eksplisit dalam definisi langkah. Isyarat aktif muncul setelah persiapan dan menghormati pengurangan gerakan.

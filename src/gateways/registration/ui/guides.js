@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.registration.tutorial.policy.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "registration-access",
                         selector: "#registration",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.registration.tutorial.policy.registration.access.body",
                     },
                     {
+                        highlightNext: true,
                         id: "apply-registration-rules",
                         selector: "#registration",
                         titleKey:

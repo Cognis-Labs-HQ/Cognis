@@ -81,3 +81,9 @@ Tombol, tautan, dan aktivasi papan ketik pada banner tetap tersedia. Aktivasi me
 Langkah overlay pencarian memakai area tampilan overlay agar header dan footer tidak memotong sorotan input. Klik pil penyempurnaan mana pun menyelesaikan latihan filter. Langkah yang memerlukan Berikutnya atau Selesai menyoroti tindakan itu dengan garis tepi beranimasi lembut; preferensi pengurangan gerakan mempertahankan garis statis. Langkah yang menunggu atau maju otomatis tidak menampilkan isyarat ini.
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
+
+Setiap langkah tutorial kini menetapkan `highlightNext` secara eksplisit: penjelasan yang memerlukan Berikutnya atau Selesai mengaktifkannya, sedangkan latihan berbasis interaksi atau penantian menonaktifkannya. Pengurangan gerakan mempertahankan garis tepi statis. Semua tutorial ditinjau, termasuk hasil pencarian dan penjelasan notifikasi.
+
+Setiap komponen antarmuka wajib dicakup tutorial. Panduan kontribusi mengharuskan alur tugas yang berfokus pada pengguna dan peninjauan tutorial setiap kali fitur atau perilaku antarmuka berubah.
+
+- [f578b8115](https://github.com/Cognis-Labs-HQ/Cognis/commit/f578b8115e452d8afae8ef21dbbd86dd5756eceb)

@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.tfa.tutorial.methods.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "set-up-a-method",
                         selector: "#available-tfa-methods",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.tfa.tutorial.methods.set.up.a.method.body",
                     },
                     {
+                        highlightNext: true,
                         id: "preferred-methods",
                         selector: "#preferred-tfa-methods",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "gateway.tfa.tutorial.methods.preferred.methods.body",
                     },
                     {
+                        highlightNext: true,
                         id: "recovery-codes",
                         selector: ".settings-auth-recovery-codes",
                         titleKey:
@@ -45,6 +48,7 @@ export const guides = [
                 titleKey: "gateway.tfa.tutorial.enforcement.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "enforcement-policy",
                         selector: "#tfa-enforcement",
                         titleKey:
@@ -53,6 +57,7 @@ export const guides = [
                             "gateway.tfa.tutorial.enforcement.enforcement.policy.body",
                     },
                     {
+                        highlightNext: true,
                         id: "apply-policy",
                         selector: "#tfa-admin-save-btn",
                         titleKey:

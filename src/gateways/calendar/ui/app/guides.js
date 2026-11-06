@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.calendar.tutorial.calendar.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "calendars",
                         selector: "#calendar-toolbar-list",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.calendar.tutorial.calendar.calendars.body",
                     },
                     {
+                        highlightNext: true,
                         id: "calendar-views",
                         selector: ".calendar-view-switcher",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "gateway.calendar.tutorial.calendar.calendar.views.body",
                     },
                     {
+                        highlightNext: true,
                         id: "events-and-invitations",
                         selector: ".calendar-view-canvas",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "gateway.calendar.tutorial.calendar.events.and.invitations.body",
                     },
                     {
+                        highlightNext: true,
                         id: "navigate-dates",
                         selector: "#calendar-toolbar-summary",
                         titleKey:
@@ -40,6 +44,7 @@ export const guides = [
                             "gateway.calendar.tutorial.calendar.navigate.dates.body",
                     },
                     {
+                        highlightNext: true,
                         id: "plan-event",
                         selector: ".calendar-view-canvas",
                         titleKey:
@@ -48,6 +53,7 @@ export const guides = [
                             "gateway.calendar.tutorial.calendar.plan.event.body",
                     },
                     {
+                        highlightNext: true,
                         id: "review-upcoming",
                         selector: "#calendar-toolbar-upcoming",
                         titleKey:

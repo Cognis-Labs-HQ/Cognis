@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "gateway.social.tutorial.social.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "social-providers",
                         selector: "#social",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "gateway.social.tutorial.social.social.providers.body",
                     },
                     {
+                        highlightNext: true,
                         id: "change-availability",
                         selector: "#social",
                         titleKey:

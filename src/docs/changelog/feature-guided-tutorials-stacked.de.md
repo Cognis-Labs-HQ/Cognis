@@ -81,3 +81,9 @@ Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden
 Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußzeilen die Hervorhebung des Eingabefelds nicht abschneiden. Jede Filter-Schaltfläche beendet die Filterübung. Schritte, die Weiter oder Fertig benötigen, heben die Aktion mit einer pulsierenden Umrandung hervor; bei reduzierter Bewegung bleibt sie statisch. Wartende und automatisch fortschreitende Schritte zeigen diesen Hinweis nicht.
 
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
+
+Jeder Tutorial-Schritt legt `highlightNext` ausdrücklich fest: Erklärungen, die Weiter oder Fertig benötigen, aktivieren den Hinweis; interaktive und wartebasierte Übungen deaktivieren ihn. Bei reduzierter Bewegung bleibt eine statische Umrandung. Alle bestehenden Anleitungen wurden darauf geprüft, einschließlich Suchergebnissen und Benachrichtigungen.
+
+Alle UI-Komponenten benötigen eine Anleitung. Die Beitragsrichtlinien verlangen nutzerorientierte Aufgabenabläufe und eine Prüfung bestehender Anleitungen bei neuen Funktionen oder geänderter Bedienung.
+
+- [f578b8115](https://github.com/Cognis-Labs-HQ/Cognis/commit/f578b8115e452d8afae8ef21dbbd86dd5756eceb)

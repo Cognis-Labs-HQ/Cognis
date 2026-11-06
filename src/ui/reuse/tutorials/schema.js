@@ -85,6 +85,7 @@ export function validatePlay(input) {
             "padding",
             "interaction",
             "suppressHover",
+            "highlightNext",
             "layer",
             "group",
             "preventNavigation",
@@ -147,6 +148,10 @@ export function validatePlay(input) {
                 ["free", "target", "none"].includes(step.interaction),
         );
         assert(
+            step.highlightNext === undefined ||
+                typeof step.highlightNext === "boolean",
+        );
+        assert(
             step.suppressHover === undefined ||
                 typeof step.suppressHover === "boolean",
         );
@@ -197,6 +202,7 @@ export function validatePlay(input) {
         );
         return Object.freeze({
             ...step,
+            highlightNext: step.highlightNext ?? false,
             dependsOn: Object.freeze([...(step.dependsOn ?? [])]),
             interaction: step.interaction ?? (step.advance ? "target" : "none"),
             effects: Object.freeze(effects),

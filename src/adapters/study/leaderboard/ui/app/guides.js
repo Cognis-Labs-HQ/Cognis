@@ -9,6 +9,7 @@ export const guides = [
                 titleKey: "adapter.study.leaderboard.tutorial.rankings.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "ranking-selection",
                         selector: "[data-leaderboard-definition]",
                         titleKey:
@@ -17,6 +18,7 @@ export const guides = [
                             "adapter.study.leaderboard.tutorial.rankings.ranking.selection.body",
                     },
                     {
+                        highlightNext: true,
                         id: "scores-and-movement",
                         selector: ".leaderboard-table-scroll",
                         titleKey:
@@ -25,6 +27,7 @@ export const guides = [
                             "adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body",
                     },
                     {
+                        highlightNext: true,
                         id: "compare-progress",
                         selector: ".leaderboard-table-scroll",
                         titleKey:

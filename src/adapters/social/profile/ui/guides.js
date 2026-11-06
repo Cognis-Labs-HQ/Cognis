@@ -8,6 +8,7 @@ export const guides = [
                 titleKey: "module.social.profile.tutorial.profile.title",
                 steps: [
                     {
+                        highlightNext: true,
                         id: "profile-identity",
                         selector: "#hero",
                         titleKey:
@@ -16,6 +17,7 @@ export const guides = [
                             "module.social.profile.tutorial.profile.profile.identity.body",
                     },
                     {
+                        highlightNext: true,
                         id: "posts",
                         selector: "#posts",
                         titleKey:
@@ -24,6 +26,7 @@ export const guides = [
                             "module.social.profile.tutorial.profile.posts.body",
                     },
                     {
+                        highlightNext: true,
                         id: "social-actions",
                         selector: "#hero",
                         titleKey:
@@ -32,6 +35,7 @@ export const guides = [
                             "module.social.profile.tutorial.profile.social.actions.body",
                     },
                     {
+                        highlightNext: true,
                         id: "preview-post",
                         selector: "#profile-post-preview-toggle",
                         titleKey:

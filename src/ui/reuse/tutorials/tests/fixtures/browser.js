@@ -38,6 +38,29 @@ window.tutorialFixture = {
             });
         return banner;
     },
+    async cue(highlightNext) {
+        owner?.dispose();
+        owner = api.owner("browser.cue", {
+            signal: new AbortController().signal,
+            i18n: { t: (key) => key },
+        });
+        const registration = await owner.register({
+            version: 1,
+            id: "cue",
+            page: window.location.pathname,
+            titleKey: "Cue",
+            steps: [
+                {
+                    id: "manual",
+                    titleKey: "Continue",
+                    ...(highlightNext === undefined ? {} : { highlightNext }),
+                },
+            ],
+        });
+        session = await registration.start();
+        await session.ready;
+        return session.state();
+    },
     async chooser() {
         localStorage.setItem(
             "cognis_tutorial:tutorial-browser:browser:first-visit",

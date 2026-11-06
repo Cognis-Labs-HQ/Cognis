@@ -66,3 +66,5 @@ Feature guides now cover starting and previewing messages, room membership, post
 ## Dashboard Panels And Actions
 
 The Dashboard walkthrough has 18 steps and deliberately opens the notification pane and account dropdown through their real click handlers. Click exercises suppress hover, while the pane and menu explanations keep destructive or navigational actions inactive. The account guide explains Settings, Documentation, role-specific administration links and Logout. It also covers the page-action dock, language switching, appearance and layout editing.
+
+Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
