@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Kontrol Dan Teks Tutorial
 
-Menyertakan pembaruan panduan cabang induk: 55 panduan dan 167 langkah, termasuk 22 panduan administrator. Langkah pasif mencegah hover dan aktivasi, Dasbor menggunakan pencari asli, dan grup langkah melepaskan permukaan sementara saat pengguna melanjutkan atau menyelesaikan lebih awal. Kebijakan viewport, siaran, navigasi, dan kesiapan halaman tetap berlaku.
+Menyertakan penyempurnaan Dasbor 18 langkah: latihan klik membuka panel notifikasi dan menu akun, sementara hover dan tindakan lain tetap dibatasi. Panduan menjelaskan dok tindakan halaman, bahasa, tampilan, dan tata letak. Kepemilikan permukaan berdasarkan elemen hanya menutup panel yang cocok saat grup berakhir; kontrol yang tidak tersedia mengikuti aturan lewati pada kunjungan pertama. Katalog memiliki 55 panduan dan 175 langkah, termasuk 22 panduan administrator.
 
 ## Commit
 

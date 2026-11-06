@@ -44,9 +44,15 @@ Steps can opt into `preventNavigation` to keep users on the current page while e
 
 ## Task Walkthroughs
 
-Coverage comprises 55 guides and 167 steps, including 22 administrator guides. Dashboard includes a hands-on search exercise: open the real search control, enter a query, inspect search options and results, and close the finder before continuing. Explanatory steps block accidental hover and activation; interactive steps explicitly allow their target. New contextual guides appear when a flashcard deck, practice session or module details are visible.
+Coverage comprises 55 guides and 175 steps, including 22 administrator guides. Dashboard includes a hands-on search exercise: open the real search control, enter a query, inspect search options and results, and close the finder before continuing. Explanatory steps block accidental hover and activation; interactive steps explicitly allow their target. New contextual guides appear when a flashcard deck, practice session or module details are visible.
 
 Feature guides now cover starting and previewing messages, room membership, post previews, calendar navigation and event planning, recurring-event edits, share filtering and expiry, invitations, library filtering and dictionary comparisons, audio and writing practice, favourites and content requests, deck creation, practice feedback, deck editing/sharing/export, class enrollment, rankings, font preferences, unsaved changes, release notices, user lookup and module configuration/lifecycle. Forms and destructive confirmations remain deliberate feature-owned interactions; guides explain their entry points and yield to required dialogs.
+
+## Dashboard Panels And Actions
+
+The Dashboard walkthrough has 18 steps and deliberately opens the notification pane and account dropdown through their real click handlers. Click exercises suppress hover, while the pane and menu explanations keep destructive or navigational actions inactive. The account guide explains Settings, Documentation, role-specific administration links and Logout. It also covers the page-action dock, language switching, appearance and layout editing.
+
+Transient surfaces publish their element, close operation and owner signal through `ui:transientSurfaces.register(element, close, signal)`. A guide uses `attachLifetime(element, groupSignal)` to release only the matching finder, notification pane or dropdown when its group ends. Tutorial action clicks do not reach background click-away handlers, so menus remain open throughout their explanations.
 
 ## Commits
 
@@ -62,3 +68,4 @@ Feature guides now cover starting and previewing messages, room membership, post
 - [6fd10e6f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fd10e6f5b2287cfbe47848a49b749929e0e17c6)
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
+- [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)

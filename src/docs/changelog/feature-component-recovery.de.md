@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Anleitungssteuerung Und Texte
 
-Enthält die überarbeitete Anleitungssammlung des übergeordneten Zweigs: 55 Anleitungen mit 167 Schritten, darunter 22 Administratoranleitungen. Erklärende Schritte sperren Hover und Aktivierung, das Dashboard nutzt die echte Suche und Schrittgruppen geben vorübergehende Oberflächen beim Fortfahren oder frühen Abschluss frei. Die bestehenden Regeln für Ansichtsfenster, Broadcasts, Navigation und Seitenbereitschaft bleiben erhalten.
+Enthält die verfeinerte Dashboard-Anleitung mit 18 Schritten: Bewusste Klickübungen öffnen Benachrichtigungen und Kontomenü, während Hover und andere Aktionen gesperrt bleiben. Die Anleitung erklärt Seitenaktionsleiste, Sprache, Darstellung und Layout. Die gemeinsame elementgebundene Lebensdauer schließt nur die passende Oberfläche beim Gruppenende; fehlende Bedienelemente werden auch beim ersten Besuch gemäß Skip-Regel ausgelassen. Der Katalog umfasst 55 Anleitungen mit 175 Schritten, darunter 22 Administratoranleitungen.
 
 ## Commits
 

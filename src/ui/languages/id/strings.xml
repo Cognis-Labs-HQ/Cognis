@@ -637,7 +637,7 @@
   <string name="ui.tutorial.workspace.navigation.body">Navigasi utama berisi tautan ke halaman yang tersedia bagi akun Anda.</string>
   <string name="ui.tutorial.workspace.search.body">Buka Pencarian untuk mencoba menemukan halaman, pengaturan, atau tindakan di halaman ini.</string>
   <string name="ui.tutorial.workspace.account.title">Menu Akun</string>
-  <string name="ui.tutorial.workspace.account.body">Menu akun berisi Pengaturan, Dokumentasi, dan halaman sesuai peran Anda. Keluar setelah selesai menggunakan perangkat bersama.</string>
+  <string name="ui.tutorial.workspace.account.body">Klik avatar untuk membuka menu akun.</string>
     <string name="ui.tutorial.replay">Ulangi Tutorial Halaman Ini</string>
     <string name="ui.tutorial.settings.general.title">Preferensi Akun</string>
     <string name="ui.tutorial.settings.general.email.addresses.title">Alamat Email</string>
@@ -729,9 +729,9 @@
   <string name="ui.tutorial.workspace.close.title">Tutup Pencarian</string>
   <string name="ui.tutorial.workspace.close.body">Tutup Pencarian untuk kembali ke ruang kerja.</string>
   <string name="ui.tutorial.workspace.notifications.title">Tinjau Notifikasi</string>
-  <string name="ui.tutorial.workspace.notifications.body">Lonceng menunjukkan notifikasi belum dibaca. Buka setelah panduan untuk meninjau pembaruan dan mengikuti tautannya.</string>
-  <string name="ui.tutorial.workspace.widgets.title">Atur Dasbor Anda</string>
-  <string name="ui.tutorial.workspace.widgets.body">Dasbor menggabungkan informasi akun, jam, dan acara mendatang. Atur widget melalui kontrol tata letak, lalu simpan atau buang perubahan.</string>
+  <string name="ui.tutorial.workspace.notifications.body">Klik lonceng untuk membuka panel notifikasi.</string>
+  <string name="ui.tutorial.workspace.widgets.title">Widget Dasbor</string>
+  <string name="ui.tutorial.workspace.widgets.body">Ruang kerja menggabungkan detail akun, jam, dan acara mendatang. Widget acara mendatang menautkan entri kalender terkait.</string>
   <string name="ui.tutorial.workspace.replay.title">Ulangi Panduan Halaman</string>
   <string name="ui.tutorial.workspace.replay.body">Gunakan tanda tanya di samping judul halaman untuk mengulang panduan. Jika tersedia beberapa panduan, pilih tugas yang ingin dipelajari.</string>
   <string name="ui.tutorial.marketplace.details.title">Detail Modul Dan Rilis</string>
@@ -741,4 +741,15 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">Buka Pengaturan untuk meninjau konfigurasi modul. Periksa kolom wajib dan kredensial tersembunyi sebelum menyimpan.</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">Kelola Instalasi Dan Pembaruan</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">Tindakan lanjutan mencakup perubahan kanal dan penghapusan bila tersedia. Tinjau dependensi dan opsi penghapusan konten sebelum mengonfirmasi.</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Tinjau pembaruan di panel ini. Buka item melalui tautannya, tandai semua sudah dibaca untuk menghapus hitungan belum dibaca, atau gunakan Bersihkan untuk menghapus notifikasi.</string>
+  <string name="ui.tutorial.workspace.account.options.title">Tautan Menu Akun</string>
+  <string name="ui.tutorial.workspace.account.options.body">Pengaturan mengelola akun, bahasa, dan tampilan. Dokumentasi membuka pustaka bantuan. Gunakan tautan profil jika ditampilkan untuk membuka halaman profil.</string>
+  <string name="ui.tutorial.workspace.account.administration.body">Administrasi mengelola pengaturan dan kebijakan sistem. Modul mengelola pengaya serta konfigurasinya; Pengguna mengelola akun dan akses.</string>
+  <string name="ui.tutorial.workspace.account.logout.title">Akhiri Sesi</string>
+  <string name="ui.tutorial.workspace.account.logout.body">Gunakan Keluar setelah selesai, terutama di perangkat bersama. Setelah keluar, masuk lagi untuk mengakses akun.</string>
+  <string name="ui.tutorial.workspace.dock.body">Dok ini mengumpulkan tindakan untuk halaman saat ini, termasuk bahasa antarmuka, tampilan, penyuntingan tata letak, dan tindakan dari halaman.</string>
+  <string name="ui.tutorial.workspace.dock.language.body">Gunakan pengalih bahasa untuk mengganti bahasa antarmuka. Atur urutan bahasa pilihan di Pengaturan.</string>
+  <string name="ui.tutorial.workspace.dock.theme.body">Tombol tampilan beralih antara tema terang dan gelap. Klik kanan untuk membuka pengaturan tampilan lainnya.</string>
+  <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Gunakan editor tata letak untuk memindahkan atau mengubah ukuran widget dan menambah elemen. Tinjau susunan, lalu simpan atau buang perubahan melalui tindakan mengambang.</string>
 </resources>

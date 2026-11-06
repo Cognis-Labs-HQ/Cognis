@@ -44,7 +44,7 @@ cognisctl component:disable module analytics --force
 
 ## Tutorial Controls And Copy
 
-Includes the parent walkthrough update: 55 guides and 167 steps, with 22 administrator guides. Passive steps suppress hover and activation, the Dashboard uses the real search finder, and scoped groups release transient surfaces when users continue or finish early. Existing viewport, broadcast, navigation and readiness policies remain in place.
+Includes the 18-step Dashboard refinement: intentional click exercises open the notification pane and account menu while hover and unrelated actions stay blocked. The guide explains the page-action dock, language, appearance and layout controls. Shared element-scoped surface ownership closes only the matching pane when its group ends, and unavailable controls honour skip policies on first visits. The full catalog has 55 guides and 175 steps, including 22 administrator guides.
 
 ## Commits
 

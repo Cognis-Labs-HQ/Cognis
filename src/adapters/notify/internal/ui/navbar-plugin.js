@@ -12,6 +12,7 @@
  *
  * @module notify-internal/navbar-plugin
  */
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -320,6 +321,7 @@ async function deleteAllNotifications() {
 }
 
 let panelVisible = false;
+let panelController;
 let pollTimer = null;
 let relativeTimeTimer = null;
 let badgeEl = null;
@@ -430,6 +432,9 @@ async function refreshCount() {
 async function openPanel(i18n) {
     if (!panelEl || !listEl) return;
     closeProfileMenu();
+    panelController?.abort();
+    panelController = new AbortController();
+    transientSurfaces.register(panelEl, closePanel, panelController.signal);
     panelEl.hidden = false;
     if (mobileBackdropEl) mobileBackdropEl.hidden = false;
     panelVisible = true;
@@ -484,6 +489,7 @@ async function refreshOpenPanel(i18n) {
 }
 
 function closePanel() {
+    panelController?.abort();
     if (!panelEl) return;
     panelEl.hidden = true;
     if (mobileBackdropEl) mobileBackdropEl.hidden = true;

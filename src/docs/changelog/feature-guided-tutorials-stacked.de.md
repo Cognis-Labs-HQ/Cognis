@@ -44,9 +44,15 @@ Schritte können mit `preventNavigation` auf der aktuellen Seite bleiben, währe
 
 ## Aufgabenanleitungen
 
-Die Abdeckung umfasst 55 Anleitungen mit 167 Schritten, darunter 22 Administratoranleitungen. Das Dashboard bietet eine praktische Suchübung: echte Suche öffnen, Suchtext eingeben, Optionen und Treffer prüfen und die Suche vor dem Fortfahren schließen. Erklärende Schritte verhindern versehentliches Hover-Verhalten und Aktivierungen; interaktive Schritte erlauben ihr Ziel ausdrücklich. Kontextanleitungen erscheinen bei sichtbaren Stapeldetails, Übungen oder Moduldetails.
+Die Abdeckung umfasst 55 Anleitungen mit 175 Schritten, darunter 22 Administratoranleitungen. Das Dashboard bietet eine praktische Suchübung: echte Suche öffnen, Suchtext eingeben, Optionen und Treffer prüfen und die Suche vor dem Fortfahren schließen. Erklärende Schritte verhindern versehentliches Hover-Verhalten und Aktivierungen; interaktive Schritte erlauben ihr Ziel ausdrücklich. Kontextanleitungen erscheinen bei sichtbaren Stapeldetails, Übungen oder Moduldetails.
 
 Die Anleitungen behandeln Nachrichtenstart und Vorschau, Raummitglieder, Beitragsvorschau, Kalendernavigation und Terminplanung, Serienänderungen, Freigabefilter und Ablauf, Einladungen, Bibliotheksfilter und Wörterbuchvergleich, Hör- und Schreibübung, Favoriten und Inhaltsanfragen, Stapelerstellung, Übungsrückmeldung, Stapelbearbeitung/Freigabe/Export, Klassenbeitritt, Ranglisten, Schriftwahl, ungespeicherte Änderungen, Versionshinweise, Kontosuche sowie Modulkonfiguration und Lebenszyklus. Formulare und Löschbestätigungen bleiben bewusste komponenteneigene Interaktionen; Anleitungen erklären ihre Einstiegspunkte und weichen erforderlichen Dialogen.
+
+## Dashboard-Menüs Und Aktionen
+
+Die Dashboard-Anleitung hat 18 Schritte und öffnet Benachrichtigungen und Kontomenü bewusst über deren echte Klick-Handler. Klickübungen unterdrücken Hover; Erklärungen zu den Menüs lassen löschende oder navigierende Aktionen inaktiv. Das Kontomenü erklärt Einstellungen, Dokumentation, rollenabhängige Verwaltungslinks und Abmeldung. Die Anleitung behandelt außerdem die Seitenaktionsleiste, Sprachwechsel, Darstellung und Layoutbearbeitung.
+
+Vorübergehende Oberflächen registrieren Element, Schließaktion und Eigentümersignal über `ui:transientSurfaces.register(element, close, signal)`. Eine Anleitung bindet mit `attachLifetime(element, groupSignal)` nur die passende Suche, Benachrichtigungsansicht oder das Kontomenü an die Schrittgruppe. Klicks auf Tutorialaktionen erreichen keine Hintergrund-Handler zum Schließen bei Außenklicks; Menüs bleiben während ihrer Erklärungen offen.
 
 ## Commits
 
@@ -62,3 +68,4 @@ Die Anleitungen behandeln Nachrichtenstart und Vorschau, Raummitglieder, Beitrag
 - [6fd10e6f5](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fd10e6f5b2287cfbe47848a49b749929e0e17c6)
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
+- [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)

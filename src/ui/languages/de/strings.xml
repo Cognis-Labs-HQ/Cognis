@@ -637,7 +637,7 @@
   <string name="ui.tutorial.workspace.navigation.body">Die Hauptnavigation führt zu den für Ihr Konto verfügbaren Seiten.</string>
   <string name="ui.tutorial.workspace.search.body">Öffnen Sie die Suche und suchen Sie eine Seite, Einstellung oder Aktion der aktuellen Seite.</string>
   <string name="ui.tutorial.workspace.account.title">Kontomenü</string>
-  <string name="ui.tutorial.workspace.account.body">Das Kontomenü enthält Einstellungen, Dokumentation und Seiten für Ihre Rolle. Melden Sie sich auf gemeinsam genutzten Geräten anschließend ab.</string>
+  <string name="ui.tutorial.workspace.account.body">Klicken Sie auf Ihren Avatar, um das Kontomenü zu öffnen.</string>
     <string name="ui.tutorial.replay">Tutorial dieser Seite wiederholen</string>
     <string name="ui.tutorial.settings.general.title">Kontoeinstellungen</string>
     <string name="ui.tutorial.settings.general.email.addresses.title">E-Mail-Adressen</string>
@@ -729,9 +729,9 @@
   <string name="ui.tutorial.workspace.close.title">Suche schließen</string>
   <string name="ui.tutorial.workspace.close.body">Schließen Sie die Suche, um zum Arbeitsbereich zurückzukehren.</string>
   <string name="ui.tutorial.workspace.notifications.title">Benachrichtigungen prüfen</string>
-  <string name="ui.tutorial.workspace.notifications.body">Die Glocke zeigt ungelesene Benachrichtigungen. Öffnen Sie sie nach der Anleitung für Neuigkeiten und weiterführende Links.</string>
-  <string name="ui.tutorial.workspace.widgets.title">Dashboard anordnen</string>
-  <string name="ui.tutorial.workspace.widgets.body">Das Dashboard kombiniert Kontoinformationen, Uhren und anstehende Termine. Ordnen Sie verfügbare Elemente über die Layoutsteuerung an und speichern oder verwerfen Sie Änderungen.</string>
+  <string name="ui.tutorial.workspace.notifications.body">Klicken Sie auf die Glocke, um Ihre Benachrichtigungen zu öffnen.</string>
+  <string name="ui.tutorial.workspace.widgets.title">Dashboard-Elemente</string>
+  <string name="ui.tutorial.workspace.widgets.body">Ihr Arbeitsbereich kombiniert Kontodetails, Uhren und anstehende Termine. Die Terminübersicht verlinkt die zugehörigen Kalendereinträge.</string>
   <string name="ui.tutorial.workspace.replay.title">Seitenanleitungen wiederholen</string>
   <string name="ui.tutorial.workspace.replay.body">Über das Fragezeichen neben dem Seitentitel wiederholen Sie Anleitungen. Bei mehreren Anleitungen wählen Sie die gewünschte Aufgabe.</string>
   <string name="ui.tutorial.marketplace.details.title">Moduldetails und Versionen</string>
@@ -741,4 +741,15 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">Öffnen Sie Einstellungen für die Modulkonfiguration. Prüfen Sie Pflichtfelder und verdeckte Zugangsdaten vor dem Speichern.</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">Installation und Updates</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">Erweiterte Aktionen bieten je nach Modul Kanalwechsel und Entfernung. Prüfen Sie Abhängigkeiten und Datenlöschung vor einer Entfernung.</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Prüfen Sie hier neue Meldungen. Öffnen Sie einen Eintrag über seinen Link, markieren Sie alle als gelesen oder entfernen Sie Benachrichtigungen mit Leeren.</string>
+  <string name="ui.tutorial.workspace.account.options.title">Links im Kontomenü</string>
+  <string name="ui.tutorial.workspace.account.options.body">Einstellungen verwaltet Konto, Sprache und Darstellung. Dokumentation öffnet die Hilfebibliothek. Ein angezeigter Profillink öffnet Ihre Profilseite.</string>
+  <string name="ui.tutorial.workspace.account.administration.body">Administration verwaltet Systemeinstellungen und Richtlinien. Module verwaltet Erweiterungen und deren Konfiguration; Benutzer verwaltet Konten und Zugriff.</string>
+  <string name="ui.tutorial.workspace.account.logout.title">Sitzung beenden</string>
+  <string name="ui.tutorial.workspace.account.logout.body">Melden Sie sich nach der Nutzung ab, besonders auf gemeinsam genutzten Geräten. Danach müssen Sie sich für den Kontozugriff erneut anmelden.</string>
+  <string name="ui.tutorial.workspace.dock.body">Diese Leiste sammelt Aktionen der aktuellen Seite: Sprache, Darstellung, Layoutbearbeitung und von der Seite bereitgestellte Aktionen.</string>
+  <string name="ui.tutorial.workspace.dock.language.body">Wechseln Sie hier die Sprache der Oberfläche. Die Reihenfolge bevorzugter Sprachen verwalten Sie in den Einstellungen.</string>
+  <string name="ui.tutorial.workspace.dock.theme.body">Die Darstellungsschaltfläche wechselt zwischen hellem und dunklem Thema. Ein Rechtsklick öffnet weitere Darstellungsoptionen in den Einstellungen.</string>
+  <string name="ui.tutorial.workspace.dock.layout.title">Seitenelemente anordnen</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Verschieben oder skalieren Sie Elemente im Layouteditor und fügen Sie verfügbare Elemente hinzu. Prüfen Sie die Anordnung und speichern oder verwerfen Sie sie über die schwebenden Aktionen.</string>
 </resources>
