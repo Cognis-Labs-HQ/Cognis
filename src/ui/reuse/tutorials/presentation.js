@@ -182,13 +182,13 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             actions.back,
             (waiting && !missing) || index === 0,
         );
+        button("restart", "ui.tutorial.restart", actions.restart);
         if (missing) button("retry", "ui.reuse.retry", actions.retry);
         button(
             "next",
             index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
             actions.next,
-            !firstTime &&
-                Boolean(waiting || step.waitFor || step.advance || missing),
+            !firstTime && waiting && !missing,
             "neutral",
         );
         if (!firstTime) {
@@ -229,8 +229,17 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         }
         const isPopup = () =>
             Boolean(document.querySelector(".popup-overlay--visible"));
+        const isBroadcast = (node, event) =>
+            Boolean(
+                node?.closest?.("#site-top-banners") ||
+                event
+                    ?.composedPath?.()
+                    .some((element) => element.id === "site-top-banners"),
+            );
         const containsControls = (node) =>
-            panel.contains(node) || menu.element.contains(node);
+            panel.contains(node) ||
+            menu.element.contains(node) ||
+            isBroadcast(node);
         const contains = (node, event) =>
             containsControls(node) ||
             (step.interaction !== "none" &&
@@ -244,6 +253,9 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     : []),
                 ...panel.querySelectorAll(focusable),
                 ...menu.element.querySelectorAll(focusable),
+                ...(document
+                    .querySelector("#site-top-banners")
+                    ?.querySelectorAll(focusable) ?? []),
             ].filter(
                 (item) =>
                     !item.disabled &&
@@ -444,6 +456,20 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 );
             }
         }
+        document.addEventListener(
+            "click",
+            (event) => {
+                const control = event
+                    .composedPath()
+                    .find((element) =>
+                        element.matches?.(
+                            "button, a[href], input, select, textarea, [role='button']",
+                        ),
+                    );
+                if (isBroadcast(control)) actions.priority();
+            },
+            { capture: true, signal: scoped },
+        );
         if (step.preventNavigation) {
             for (const type of ["click", "auxclick"])
                 document.addEventListener(
@@ -456,6 +482,7 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                             );
                         if (
                             !link ||
+                            isBroadcast(link, event) ||
                             panel.contains(link) ||
                             menu.element.contains(link)
                         )
@@ -518,6 +545,8 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                     actions.modal();
                     return;
                 }
+                if (isBroadcast(event.target, event) && event.key !== "Tab")
+                    return;
                 if (event.key === "Escape") {
                     event.preventDefault();
                     event.stopImmediatePropagation();

@@ -5,6 +5,7 @@
  * @param {object} dependencies Registration, presentation, navigation and lifecycle boundaries.
  * @returns {object} Session state, completion promises and step operations.
  */
+import { createStepPlan } from "./plan.js";
 import { abortable } from "./async.js";
 import { waitForTarget } from "./targets.js";
 import { validateRoute } from "./schema.js";
@@ -12,6 +13,7 @@ import { validateRoute } from "./schema.js";
 export function createSession({
     record,
     firstTime = false,
+    role,
     resolve,
     view,
     navigate,
@@ -21,7 +23,9 @@ export function createSession({
     onFinish,
     emit,
 }) {
+    const plan = createStepPlan(record.play.steps, { role, firstTime });
     const controller = new AbortController();
+    let priorityPending = false;
     let groupController = new AbortController();
     let groupId, groupStart;
     const originalFocus = document?.activeElement;
@@ -38,12 +42,13 @@ export function createSession({
     const prepared = new Promise((resolve) => {
         ready = resolve;
     });
+    let path = [];
     const status = () => ({
         id: record.id,
         firstTime,
         stepId: record.play.steps[index]?.id ?? null,
-        index,
-        total: record.play.steps.length,
+        index: path.indexOf(index),
+        total: path.length,
     });
     function cleanStep() {
         stepController?.abort();
@@ -122,7 +127,15 @@ export function createSession({
         busy = true;
         cleanStep();
         const previousIndex = index;
-        index = nextIndex;
+        try {
+            path = plan.indices();
+            index =
+                path.find((candidate) => candidate >= nextIndex) ??
+                record.play.steps.length;
+        } catch (error) {
+            fail(error);
+            return false;
+        }
         const step = record.play.steps[index];
         if (
             !step?.group ||
@@ -154,7 +167,14 @@ export function createSession({
                 cancel: () => emit("cancel"),
                 skip: () => emit("skip"),
                 retry: () => emit("retry"),
+                restart: () => emit("restart"),
                 modal: () => emit("modal"),
+                priority: () => {
+                    priorityPending = true;
+                    Promise.resolve(emit("priority")).finally(() => {
+                        priorityPending = false;
+                    });
+                },
             };
             rendering = await present({
                 step,
@@ -207,6 +227,7 @@ export function createSession({
                 rendering?.dispose();
                 rendering = null;
                 if (step.missing.action === "skip") {
+                    plan.skip(index);
                     busy = false;
                     return enter(index + 1);
                 }
@@ -274,6 +295,7 @@ export function createSession({
                 actions,
                 valid: (interacting = false) =>
                     allowed() &&
+                    (!step.minRole || plan.eligible(index)) &&
                     (interacting ||
                         !step.target ||
                         resolve(step.target) === target),
@@ -303,7 +325,8 @@ export function createSession({
                             )) !== true
                         )
                             return;
-                        if (!signal.aborted && !busy && allowed()) emit("next");
+                        if (!signal.aborted && !busy && allowed())
+                            emit("next", { interacted: true });
                     } catch (error) {
                         if (!signal.aborted) fail(error);
                     } finally {
@@ -334,7 +357,8 @@ export function createSession({
                     signal,
                 )
                     .then(() => {
-                        if (!signal.aborted && !busy) emit("next");
+                        if (!signal.aborted && !busy)
+                            emit("next", { interacted: true });
                     })
                     .catch((error) => {
                         if (!signal.aborted) fail(error);
@@ -370,15 +394,34 @@ export function createSession({
         state: status,
         targetId: () => record.play.steps[index]?.target,
         begin: () => enter(0),
-        next: () => enter(index + 1, firstTime),
-        back: () => (busy || index <= 0 ? false : enter(index - 1)),
+        next: (interacted = false) => {
+            if (disposed || (busy && !firstTime)) return false;
+            plan.mark(index, interacted);
+            return enter(index + 1, firstTime);
+        },
+        back: () => {
+            if (busy || disposed) return false;
+            const previous = plan.previous(index);
+            if (previous === undefined) return false;
+            plan.rewind(previous);
+            return enter(previous);
+        },
+        restart: () => {
+            if (disposed) return false;
+            plan.rewind();
+            groupController.abort();
+            groupId = undefined;
+            return enter(0, true);
+        },
         retry: () => enter(index),
         cancel: (reason) =>
             firstTime && !reason ? false : finish("cancelled", reason),
         skip: () => (firstTime ? false : finish("skipped", "skip")),
         dispose: () => finish("cancelled", "disposed"),
         modal: () => finish("cancelled", "modal"),
+        priority: () => finish("cancelled", "priorityAction"),
         blocksNavigation: (path) =>
+            !priorityPending &&
             !(transitioningRoute && path === transitioningRoute) &&
             !disposed &&
             record.play.steps[index]?.preventNavigation === true,

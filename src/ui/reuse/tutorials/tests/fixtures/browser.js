@@ -20,11 +20,23 @@ document.querySelector("#outside").addEventListener("click", () => {
 window.tutorialFixture = {
     counts,
     api,
-    broadcast() {
-        return uiCtx.capabilities.get("ui:broadcast").publish("tutorial-test", {
-            title: "Service notice",
-            bodyHtml: "Broadcast details remain visible during the tutorial.",
-        });
+    async broadcast() {
+        await uiCtx.capabilities.get("ui:broadcast").prepare();
+        const banner = uiCtx.capabilities
+            .get("ui:broadcast")
+            .publish("tutorial-test", {
+                title: "Service notice",
+                bodyHtml:
+                    "Broadcast details remain visible during the tutorial.",
+                actionsHtml:
+                    '<button id="banner-action" type="button">Broadcast action</button>',
+            });
+        banner.element
+            .querySelector("#banner-action")
+            .addEventListener("click", () => {
+                counts.broadcast = (counts.broadcast ?? 0) + 1;
+            });
+        return banner;
     },
     async chooser() {
         localStorage.setItem(
@@ -44,6 +56,13 @@ window.tutorialFixture = {
             steps: [{ id: "one", titleKey: "second-guide" }],
         });
         await api.refreshPage();
+    },
+    async startWorkspace() {
+        session = await uiCtx.capabilities
+            .get("ui:workspaceTutorial")
+            .start({ firstTime: true });
+        await session.ready;
+        return session.state();
     },
     async workspace(options) {
         owner?.dispose();

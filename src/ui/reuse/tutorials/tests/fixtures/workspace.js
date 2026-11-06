@@ -14,6 +14,8 @@ export async function mountWorkspace({
     firstTime = true,
     notifications = true,
     autoMenuLifetime = false,
+    language = true,
+    editable = true,
 } = {}) {
     lifetime?.abort();
     dispose?.();
@@ -41,7 +43,12 @@ export async function mountWorkspace({
     dock.querySelectorAll("button").forEach((button) => {
         button.hidden = false;
     });
+    dock.querySelector("#language-toggle").hidden = !language;
+    dock.querySelector("#composer-edit-toggle").hidden = !editable;
     document.body.append(dock);
+    document.body.append(
+        template.querySelector(".global-footer").cloneNode(true),
+    );
     document.querySelector("main").classList.add("main-window");
     const i18n = await createI18n();
     applyStaticTranslations(i18n, header);

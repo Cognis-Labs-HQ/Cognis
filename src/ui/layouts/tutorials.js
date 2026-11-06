@@ -1,4 +1,6 @@
 /** Workspace walkthrough. Each interactive exercise uses the shell's real controls. */
+import { usableTarget } from "../reuse/tutorials/targets.js";
+
 export async function mountProvider(ctx) {
     const owner = ctx.capabilities
         .get("ui:tutorials")
@@ -49,6 +51,7 @@ export async function mountProvider(ctx) {
         },
         {
             id: "query",
+            dependsOn: ["search"],
             interaction: "target",
             layer: "overlay",
             advance: {
@@ -56,10 +59,16 @@ export async function mountProvider(ctx) {
                 accept: (event) => event.target.value.trim().length >= 2,
             },
         },
-        { id: "options", interaction: "target", layer: "overlay" },
-        { id: "results", layer: "overlay" },
+        {
+            id: "options",
+            dependsOn: ["search"],
+            interaction: "target",
+            layer: "overlay",
+        },
+        { id: "results", dependsOn: ["search"], layer: "overlay" },
         {
             id: "close",
+            dependsOn: ["search"],
             interaction: "target",
             layer: "overlay",
             advance: { event: "click" },
@@ -74,6 +83,7 @@ export async function mountProvider(ctx) {
         },
         {
             id: "notification-pane",
+            dependsOn: ["notifications"],
             group: "inbox",
             titleKey: "ui.reuse.notifications",
         },
@@ -85,13 +95,19 @@ export async function mountProvider(ctx) {
             advance: { event: "click" },
             enter: attachOpenedSurface("#profile-dropdown"),
         },
-        { id: "account-options", group: "account-menu" },
+        {
+            id: "account-options",
+            dependsOn: ["account"],
+            group: "account-menu",
+        },
         {
             id: "account-administration",
+            minRole: "admin",
+            dependsOn: ["account"],
             group: "account-menu",
             titleKey: "ui.reuse.administration",
         },
-        { id: "account-logout", group: "account-menu" },
+        { id: "account-logout", dependsOn: ["account"], group: "account-menu" },
         { id: "dock", titleKey: "ui.reuse.actions" },
         { id: "dock-language", titleKey: "ui.reuse.language" },
         { id: "dock-theme", titleKey: "ui.reuse.appearance" },
@@ -117,6 +133,16 @@ export async function mountProvider(ctx) {
                 ctx.capabilities.get("session:isAuthenticated")?.() === true,
             steps: steps.map((step) => ({
                 ...step,
+                ...(step.id.startsWith("dock") ||
+                ["search", "notifications", "account"].includes(step.id)
+                    ? {
+                          when: () =>
+                              usableTarget(
+                                  document.querySelector(selectors[step.id]),
+                                  document,
+                              ),
+                      }
+                    : {}),
                 ...(["search", "query", "options", "results", "close"].includes(
                     step.id,
                 )

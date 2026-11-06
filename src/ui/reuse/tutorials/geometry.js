@@ -69,6 +69,11 @@ export function tutorialViewport(window, document, target) {
 /** @param {Element} target Tutorial target. @param {object} viewport Visible page viewport. @param {number} padding Target padding. @returns {object|null} Visible padded target. */
 export function visibleTargetRect(target, viewport, padding = 0) {
     const rect = target.getBoundingClientRect();
+    const window = target.ownerDocument.defaultView;
+    const visual = window.visualViewport;
+    const bottom = target.closest?.("[data-page-action-dock]")
+        ? (visual?.offsetTop ?? 0) + (visual?.height ?? window.innerHeight)
+        : viewport.offsetTop + viewport.height;
     let visible = clipRect(
         {
             left: rect.left - padding,
@@ -80,7 +85,7 @@ export function visibleTargetRect(target, viewport, padding = 0) {
             left: viewport.offsetLeft + 8,
             top: viewport.offsetTop + 8,
             right: viewport.offsetLeft + viewport.width - 8,
-            bottom: viewport.offsetTop + viewport.height - 8,
+            bottom: bottom - 8,
         },
     );
     let parent = target.parentElement ?? target.getRootNode?.().host;

@@ -81,7 +81,7 @@ Definitions declare version 1, unique step IDs, localized title keys and at most
 
 ## Sessions And Flows
 
-`await owner.register(play)` returns `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` reads permitted plays for that page. `refreshPage()` refreshes discovery; `openPage()` starts the only matching play or offers the matching plays in a shared floating menu. `await tutorials.start(id)` or `start()` returns `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` and `dispose()`. `current()` is a read-only snapshot.
+`await owner.register(play)` returns `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` reads permitted plays for that page. `refreshPage()` refreshes discovery; `openPage()` starts the only matching play or offers the matching plays in a shared floating menu. `await tutorials.start(id)` or `start()` returns `ready`, `finished`, `state()`, `next()`, `back()`, `restart()`, `retry()`, `skip()`, `cancel()` and `dispose()`. `current()` is a read-only snapshot.
 
 Only one session is active. A competing start rejects unless `{ replace: true }` explicitly cancels it. Registration, targets, discovery, page entry, replay, start and step actions use `ui:tutorial:<action>` flows with `validate`, `execute` and `after` stages. Consumers must not bypass these capabilities.
 
@@ -146,8 +146,12 @@ Future popup owners can append a staged blocker with `registerPageReadinessBlock
 
 ## Dashboard Panels And Actions
 
-The Dashboard walkthrough has 18 steps and deliberately opens the notification pane and account dropdown through their real click handlers. Click exercises suppress hover, while the pane and menu explanations keep destructive or navigational actions inactive. The account guide explains Settings, Documentation, role-specific administration links and Logout. It also covers the page-action dock, language switching, appearance and layout editing.
+The Dashboard walkthrough has up to 18 steps and deliberately opens the notification pane and account dropdown through their real click handlers. Click exercises suppress hover, while the pane and menu explanations keep destructive or navigational actions inactive. The account guide explains Settings, Documentation, role-specific administration links and Logout. It also covers the page-action dock, language switching, appearance and layout editing.
 
 Transient surfaces publish their element, close operation and owner signal through `ui:transientSurfaces.register(element, close, signal)`. A guide uses `attachLifetime(element, groupSignal)` to release only the matching finder, notification pane or dropdown when its group ends. Tutorial action clicks do not reach background click-away handlers, so menus remain open throughout their explanations.
 
 Missing controls configured with `missing.action: "skip"` are omitted on first visits as well as replays, including role-hidden menu entries.
+
+Step paths support `minRole`, a synchronous `when({ firstTime, completed, skipped })` boolean predicate, and `dependsOn: ["earlier-step-id"]`. Unauthorized and false-condition stages are excluded from progress. Dependencies must reference earlier stages; unknown, duplicate, self and forward references are rejected. Interaction stages satisfy dependencies only after their event or wait condition succeeds; manually choosing Next skips their dependent branch. Static stages satisfy dependencies with Next. Outcomes passed to conditions are immutable snapshots. Counts reflect the currently eligible path and can expand after an interaction opens a branch. Back rewinds outcomes from its destination; `restart()` and the Restart Tutorial action reset all outcomes and release transient surfaces without replacing the session. The Dashboard Search, notification and account branches require opening their respective controls. Administration requires `minRole: "admin"`; optional dock controls have visibility conditions. Dock highlights follow the live dock bounds, including controls below the footer boundary, while callouts keep their reserved viewport.
+
+Broadcast-banner buttons, links and keyboard activation remain available throughout a tutorial. Activating a banner action yields the tutorial through `ui:tutorial:priority` before any action-owned popup or navigation. Banner focus targets participate in keyboard traversal.

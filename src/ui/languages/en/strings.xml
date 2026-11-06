@@ -750,4 +750,5 @@
   <string name="ui.tutorial.workspace.dock.theme.body">The appearance button switches between light and dark themes. Right-click it to open the appearance settings for more options.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Arrange Page Widgets</string>
   <string name="ui.tutorial.workspace.dock.layout.body">Use the layout editor to move or resize widgets and add available elements. Review the arrangement, then use the floating actions to save or discard the layout changes.</string>
+  <string name="ui.tutorial.restart">Restart Tutorial</string>
 </resources>
