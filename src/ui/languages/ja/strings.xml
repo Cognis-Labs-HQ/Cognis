@@ -752,4 +752,5 @@
   <string name="ui.tutorial.workspace.dock.theme.body">表示ボタンでライトテーマとダークテーマを切り替えます。右クリックすると表示設定を開けます。</string>
   <string name="ui.tutorial.workspace.dock.layout.title">ページのウィジェットを配置する</string>
   <string name="ui.tutorial.workspace.dock.layout.body">レイアウト編集でウィジェットの移動、サイズ変更、項目追加ができます。配置を確認し、フローティングメニューで保存または破棄します。</string>
+  <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
 </resources>

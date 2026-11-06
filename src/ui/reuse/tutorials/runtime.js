@@ -83,9 +83,20 @@ export function registerTutorials(
     };
     const emit = (name, detail) => {
         if (
-            ["next", "back", "skip", "cancel", "retry", "modal"].includes(name)
+            [
+                "next",
+                "back",
+                "skip",
+                "cancel",
+                "retry",
+                "restart",
+                "modal",
+                "priority",
+            ].includes(name)
         ) {
-            void operations[name]({ session: active }).catch(report);
+            return operations[name]({ session: active, ...detail }).catch(
+                report,
+            );
         } else
             document?.defaultView?.dispatchEvent(
                 new document.defaultView.CustomEvent(
@@ -227,6 +238,7 @@ export function registerTutorials(
             const session = createSession({
                 record: { ...record, i18n },
                 firstTime,
+                role,
                 document,
                 allowed: () => allowed(record) && identity() === actor,
                 resolve: (target) =>
@@ -244,7 +256,7 @@ export function registerTutorials(
                         name === "presented" ||
                         active === session
                     )
-                        emit(name, detail);
+                        return emit(name, detail);
                 },
             });
             active = session;
@@ -258,20 +270,25 @@ export function registerTutorials(
                 next: () => operations.next({ session }),
                 back: () => operations.back({ session }),
                 retry: () => operations.retry({ session }),
+                restart: () => operations.restart({ session }),
                 skip: () => operations.skip({ session }),
                 cancel: () => operations.cancel({ session }),
                 dispose: () => operations.dispose({ session }),
             });
         },
     );
+    operations.next = action("next", ({ session, interacted = false }) =>
+        active === session && session ? session.next(interacted) : false,
+    );
     for (const name of [
-        "next",
         "back",
         "skip",
         "cancel",
         "retry",
+        "restart",
         "dispose",
         "modal",
+        "priority",
     ])
         operations[name] = action(name, ({ session }) =>
             active === session && session ? session[name]() : false,
@@ -405,6 +422,7 @@ export function registerTutorials(
                 active.cancel("modal");
                 return;
             }
+            if (event.target?.closest?.("#site-top-banners")) return;
             event.preventDefault();
             event.stopImmediatePropagation();
             if (!active.state().firstTime) active.cancel("escape");

@@ -752,4 +752,5 @@
   <string name="ui.tutorial.workspace.dock.theme.body">Die Darstellungsschaltfläche wechselt zwischen hellem und dunklem Thema. Ein Rechtsklick öffnet weitere Darstellungsoptionen in den Einstellungen.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Seitenelemente anordnen</string>
   <string name="ui.tutorial.workspace.dock.layout.body">Verschieben oder skalieren Sie Elemente im Layouteditor und fügen Sie verfügbare Elemente hinzu. Prüfen Sie die Anordnung und speichern oder verwerfen Sie sie über die schwebenden Aktionen.</string>
+  <string name="ui.tutorial.restart">Tutorial neu starten</string>
 </resources>

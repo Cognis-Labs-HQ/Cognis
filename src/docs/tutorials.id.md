@@ -81,7 +81,7 @@ Definisi memerlukan versi 1, ID langkah unik, judul terlokalisasi, dan paling ba
 
 ## Sesi dan Flow
 
-`await owner.register(play)` menghasilkan `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` membaca panduan yang diizinkan pada halaman itu. `refreshPage()` memperbarui pencarian; `openPage()` memulai satu panduan yang cocok atau menawarkan pilihannya dalam menu mengambang bersama. `start()` menghasilkan `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()`, dan `dispose()`. `current()` merupakan snapshot hanya baca.
+`await owner.register(play)` menghasilkan `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` membaca panduan yang diizinkan pada halaman itu. `refreshPage()` memperbarui pencarian; `openPage()` memulai satu panduan yang cocok atau menawarkan pilihannya dalam menu mengambang bersama. `start()` menghasilkan `ready`, `finished`, `state()`, `next()`, `back()`, `restart()`, `retry()`, `skip()`, `cancel()`, dan `dispose()`. `current()` merupakan snapshot hanya baca.
 
 Hanya satu sesi aktif. Mulai bersamaan ditolak kecuali `{ replace: true }` secara eksplisit membatalkan sesi lama. Registrasi, target, pencarian, kunjungan halaman, pemutaran ulang, mulai, dan aksi langkah menggunakan flow `ui:tutorial:<action>` dengan tahap `validate`, `execute`, dan `after`. Konsumen tidak boleh melewati kapabilitas ini.
 
@@ -146,8 +146,12 @@ Pemilik popup berikutnya dapat menambahkan pemblokir sebelum halaman dipasang me
 
 ## Panel Dan Tindakan Dasbor
 
-Panduan Dasbor memiliki 18 langkah dan membuka panel notifikasi serta menu akun melalui penangan klik aslinya. Latihan klik mencegah hover, sedangkan penjelasan panel dan menu membiarkan tindakan penghapusan atau navigasi tidak aktif. Menu akun menjelaskan Pengaturan, Dokumentasi, tautan administrasi sesuai peran, dan Keluar. Panduan juga mencakup dok tindakan halaman, pengalihan bahasa, tampilan, dan penyuntingan tata letak.
+Panduan Dasbor memiliki hingga 18 langkah dan membuka panel notifikasi serta menu akun melalui penangan klik aslinya. Latihan klik mencegah hover, sedangkan penjelasan panel dan menu membiarkan tindakan penghapusan atau navigasi tidak aktif. Menu akun menjelaskan Pengaturan, Dokumentasi, tautan administrasi sesuai peran, dan Keluar. Panduan juga mencakup dok tindakan halaman, pengalihan bahasa, tampilan, dan penyuntingan tata letak.
 
 Permukaan sementara mendaftarkan elemen, tindakan tutup, dan sinyal pemilik melalui `ui:transientSurfaces.register(element, close, signal)`. Panduan memakai `attachLifetime(element, groupSignal)` untuk melepaskan pencari, panel notifikasi, atau menu yang cocok saat grup berakhir. Klik tindakan tutorial tidak mencapai penangan klik luar di latar, sehingga menu tetap terbuka selama penjelasannya.
 
 Kontrol yang tidak tersedia dengan `missing.action: "skip"` dilewati pada kunjungan pertama maupun pengulangan, termasuk entri menu yang disembunyikan berdasarkan peran.
+
+Jalur langkah mendukung `minRole`, predikat boolean sinkron `when({ firstTime, completed, skipped })`, dan `dependsOn: ["earlier-step-id"]`. Langkah tanpa izin atau dengan kondisi salah tidak masuk hitungan kemajuan. Dependensi harus menunjuk langkah sebelumnya; referensi tidak dikenal, duplikat, diri sendiri, dan langkah berikutnya ditolak. Langkah interaktif memenuhi dependensi hanya setelah peristiwa atau kondisi tunggunya berhasil. Memilih Berikutnya melewati cabang dependennya; langkah statis dipenuhi dengan Berikutnya. Kondisi menerima salinan hasil yang tidak dapat diubah. Jumlah mencerminkan jalur yang tersedia dan dapat bertambah ketika interaksi membuka cabang. Kembali menghapus hasil mulai dari tujuannya. `restart()` dan Mulai Ulang Tutorial menghapus seluruh hasil dan menutup permukaan sementara dalam sesi yang sama. Cabang Pencarian, notifikasi, dan akun memerlukan pembukaan kontrol terkait. Administrasi memerlukan `minRole: "admin"`; kontrol dok opsional disaring menurut visibilitas. Sorotan mengikuti ukuran dok aktual, termasuk bagian di bawah batas footer, sementara balon penjelasan tetap memakai area tampilan yang dicadangkan.
+
+Tombol, tautan, dan aktivasi papan ketik pada banner tetap tersedia. Aktivasi menghentikan tutorial melalui `ui:tutorial:priority` sebelum dialog atau navigasi milik tindakan berjalan. Kontrol banner dapat dicapai dengan Tab.

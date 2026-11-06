@@ -752,4 +752,5 @@
   <string name="ui.tutorial.workspace.dock.theme.body">Tombol tampilan beralih antara tema terang dan gelap. Klik kanan untuk membuka pengaturan tampilan lainnya.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
   <string name="ui.tutorial.workspace.dock.layout.body">Gunakan editor tata letak untuk memindahkan atau mengubah ukuran widget dan menambah elemen. Tinjau susunan, lalu simpan atau buang perubahan melalui tindakan mengambang.</string>
+  <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
 </resources>

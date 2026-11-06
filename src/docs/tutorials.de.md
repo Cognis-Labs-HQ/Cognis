@@ -81,7 +81,7 @@ Definitionen benötigen Version 1, eindeutige Schritt-IDs, übersetzte Titel und
 
 ## Sitzungen und Flows
 
-`await owner.register(play)` liefert `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` liest zulässige Abläufe dieser Seite. `refreshPage()` aktualisiert die Erkennung; `openPage()` startet den einzigen passenden Ablauf oder bietet die Auswahl im gemeinsamen schwebenden Menü an. `start()` liefert `ready`, `finished`, `state()`, `next()`, `back()`, `retry()`, `skip()`, `cancel()` und `dispose()`. `current()` liefert eine schreibgeschützte Momentaufnahme.
+`await owner.register(play)` liefert `{ id, start, dispose }`. `await tutorials.list({ page: { pathname } })` liest zulässige Abläufe dieser Seite. `refreshPage()` aktualisiert die Erkennung; `openPage()` startet den einzigen passenden Ablauf oder bietet die Auswahl im gemeinsamen schwebenden Menü an. `start()` liefert `ready`, `finished`, `state()`, `next()`, `back()`, `restart()`, `retry()`, `skip()`, `cancel()` und `dispose()`. `current()` liefert eine schreibgeschützte Momentaufnahme.
 
 Es gibt nur eine aktive Sitzung. Ein konkurrierender Start scheitert, außer `{ replace: true }` beendet ausdrücklich die alte Sitzung. Registrierung, Ziele, Erkennung, Seiteneintritt, Wiederholung, Start und Schrittaktionen verwenden `ui:tutorial:<action>` mit `validate`, `execute` und `after`. Verbraucher dürfen diese Verträge nicht umgehen.
 
@@ -146,8 +146,12 @@ Weitere Popup-Eigentümer können vor dem Seitenaufbau mit `registerPageReadines
 
 ## Dashboard-Menüs Und Aktionen
 
-Die Dashboard-Anleitung hat 18 Schritte und öffnet Benachrichtigungen und Kontomenü bewusst über deren echte Klick-Handler. Klickübungen unterdrücken Hover; Erklärungen zu den Menüs lassen löschende oder navigierende Aktionen inaktiv. Das Kontomenü erklärt Einstellungen, Dokumentation, rollenabhängige Verwaltungslinks und Abmeldung. Die Anleitung behandelt außerdem die Seitenaktionsleiste, Sprachwechsel, Darstellung und Layoutbearbeitung.
+Die Dashboard-Anleitung hat bis zu 18 Schritte und öffnet Benachrichtigungen und Kontomenü bewusst über deren echte Klick-Handler. Klickübungen unterdrücken Hover; Erklärungen zu den Menüs lassen löschende oder navigierende Aktionen inaktiv. Das Kontomenü erklärt Einstellungen, Dokumentation, rollenabhängige Verwaltungslinks und Abmeldung. Die Anleitung behandelt außerdem die Seitenaktionsleiste, Sprachwechsel, Darstellung und Layoutbearbeitung.
 
 Vorübergehende Oberflächen registrieren Element, Schließaktion und Eigentümersignal über `ui:transientSurfaces.register(element, close, signal)`. Eine Anleitung bindet mit `attachLifetime(element, groupSignal)` nur die passende Suche, Benachrichtigungsansicht oder das Kontomenü an die Schrittgruppe. Klicks auf Tutorialaktionen erreichen keine Hintergrund-Handler zum Schließen bei Außenklicks; Menüs bleiben während ihrer Erklärungen offen.
 
 Fehlende Bedienelemente mit `missing.action: "skip"` werden sowohl beim ersten Besuch als auch bei Wiederholungen ausgelassen, einschließlich rollenbedingt verborgener Menüeinträge.
+
+Schrittpfade unterstützen `minRole`, das synchrone boolesche Prädikat `when({ firstTime, completed, skipped })` und `dependsOn: ["earlier-step-id"]`. Nicht berechtigte oder bedingt ausgeschlossene Schritte zählen nicht zum Fortschritt. Abhängigkeiten müssen auf frühere Schritte zeigen; unbekannte, doppelte, eigene und spätere Verweise werden abgewiesen. Interaktive Schritte erfüllen Abhängigkeiten erst nach erfolgreichem Ereignis oder Wartezustand. Weiter überspringt sonst den abhängigen Zweig; statische Schritte werden durch Weiter erfüllt. Bedingungen erhalten unveränderliche Ergebnislisten. Die Gesamtzahl zeigt den aktuell verfügbaren Pfad und kann nach Interaktionen wachsen. Zurück setzt Ergebnisse ab dem Ziel zurück. `restart()` und Tutorial neu starten setzen alle Ergebnisse zurück und schließen temporäre Oberflächen innerhalb derselben Sitzung. Suche, Benachrichtigungen und Kontomenü erfordern das Öffnen des jeweiligen Steuerelements. Verwaltung verlangt `minRole: "admin"`; optionale Dock-Steuerelemente werden nach Sichtbarkeit gefiltert. Die Hervorhebung folgt den tatsächlichen Dock-Grenzen auch unterhalb der Fußzeilengrenze; Erklärungskarten behalten ihren reservierten Ansichtsbereich.
+
+Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden die Anleitung über `ui:tutorial:priority`, bevor eigene Dialoge oder Navigation beginnen. Banneraktionen sind per Tab erreichbar.

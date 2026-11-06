@@ -180,3 +180,25 @@ test("broadcast notices reserve visible space for callouts while retaining heade
         [{ left: 0, top: 64, right: 800, bottom: 600 }],
     );
 });
+
+test("floating dock highlights follow actual control height below the reserved footer boundary", () => {
+    for (const buttons of [1, 2, 3]) {
+        const bounds = {
+            left: 330,
+            right: 374,
+            top: 600 - 18 - buttons * 44 - (buttons - 1) * 10,
+            bottom: 582,
+        };
+        const element = target(bounds);
+        element.closest = () => element;
+        element.ownerDocument.defaultView.innerHeight = 600;
+        const visible = visibleTargetRect(
+            element,
+            { offsetLeft: 0, offsetTop: 80, width: 390, height: 480 },
+            8,
+        );
+        assert.equal(visible.top, bounds.top - 8);
+        assert.equal(visible.bottom, bounds.bottom + 8);
+        assert.equal(visible.height, bounds.bottom - bounds.top + 16);
+    }
+});

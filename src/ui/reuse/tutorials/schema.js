@@ -5,6 +5,8 @@
  * validatePlay — validates and freezes a tutorial definition.
  * @example const play = validatePlay(definition);
  */
+import { ACCESS_ROLES } from "../access-role.js";
+
 const NAME_PATTERN = /^[a-z][a-z0-9.-]{0,79}$/;
 const TARGET = /^[a-z][a-z0-9.-]{0,79}:[a-z][a-z0-9.-]{0,79}$/;
 const EVENTS = new Set(["click", "change", "input", "submit", "keydown"]);
@@ -91,10 +93,23 @@ export function validatePlay(input) {
             "enter",
             "waitFor",
             "route",
+            "minRole",
+            "when",
+            "dependsOn",
         ]);
         validateName(step.id);
         if (step.group !== undefined) validateName(step.group);
         assert(!ids.has(step.id));
+        assert(
+            step.minRole === undefined || ACCESS_ROLES.includes(step.minRole),
+        );
+        assert(step.when === undefined || typeof step.when === "function");
+        assert(
+            step.dependsOn === undefined ||
+                (Array.isArray(step.dependsOn) &&
+                    new Set(step.dependsOn).size === step.dependsOn.length &&
+                    step.dependsOn.every((id) => ids.has(id))),
+        );
         ids.add(step.id);
         assert(
             step.target === undefined ||
@@ -182,6 +197,7 @@ export function validatePlay(input) {
         );
         return Object.freeze({
             ...step,
+            dependsOn: Object.freeze([...(step.dependsOn ?? [])]),
             interaction: step.interaction ?? (step.advance ? "target" : "none"),
             effects: Object.freeze(effects),
             missing: Object.freeze(missing),

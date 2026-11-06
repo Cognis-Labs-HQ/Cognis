@@ -69,3 +69,11 @@ Vorübergehende Oberflächen registrieren Element, Schließaktion und Eigentüme
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
 - [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)
+
+Schrittpfade unterstützen `minRole`, das synchrone boolesche Prädikat `when({ firstTime, completed, skipped })` und `dependsOn: ["earlier-step-id"]`. Nicht berechtigte oder bedingt ausgeschlossene Schritte zählen nicht zum Fortschritt. Abhängigkeiten müssen auf frühere Schritte zeigen; unbekannte, doppelte, eigene und spätere Verweise werden abgewiesen. Interaktive Schritte erfüllen Abhängigkeiten erst nach erfolgreichem Ereignis oder Wartezustand. Weiter überspringt sonst den abhängigen Zweig; statische Schritte werden durch Weiter erfüllt. Bedingungen erhalten unveränderliche Ergebnislisten. Die Gesamtzahl zeigt den aktuell verfügbaren Pfad und kann nach Interaktionen wachsen. Zurück setzt Ergebnisse ab dem Ziel zurück. `restart()` und Tutorial neu starten setzen alle Ergebnisse zurück und schließen temporäre Oberflächen innerhalb derselben Sitzung. Suche, Benachrichtigungen und Kontomenü erfordern das Öffnen des jeweiligen Steuerelements. Verwaltung verlangt `minRole: "admin"`; optionale Dock-Steuerelemente werden nach Sichtbarkeit gefiltert. Die Hervorhebung folgt den tatsächlichen Dock-Grenzen auch unterhalb der Fußzeilengrenze; Erklärungskarten behalten ihren reservierten Ansichtsbereich.
+
+Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden die Anleitung über `ui:tutorial:priority`, bevor eigene Dialoge oder Navigation beginnen. Banneraktionen sind per Tab erreichbar.
+
+`showToast(message, { minRole: "admin" })` beschränkt Betriebsinformationen auf Administratoren und Eigentümer. Andere oder unbekannte Rollen erzeugen weder Toast-DOM noch Timer oder Schließ-Callbacks. Ohne `minRole` bleibt normales Feedback für alle sichtbar. Diese Anzeigeoption ersetzt keine serverseitige Berechtigung.
+
+- [f681187ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f681187ca572fa4270f9b398d429a3d1177c62d3)
