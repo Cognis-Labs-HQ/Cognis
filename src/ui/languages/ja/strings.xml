@@ -723,7 +723,7 @@
   <string name="ui.tutorial.workspace.query.title">ページを検索する</string>
   <string name="ui.tutorial.workspace.query.body">ページ名や設定名を二文字以上入力すると、下に候補が表示されます。</string>
   <string name="ui.tutorial.workspace.options.title">検索を絞り込む</string>
-  <string name="ui.tutorial.workspace.options.body">大文字・小文字、単語全体、パターンの条件を選べます。ページ内検索では、このページの文字や操作項目を探せます。</string>
+  <string name="ui.tutorial.workspace.options.body">大文字・小文字、単語全体、パターンの条件を選べます。ページ内検索では、このページの文字や操作項目を探せます。 いずれかのフィルターをクリックして検索条件を試すと、次のステップに進みます。</string>
   <string name="ui.tutorial.workspace.results.title">検索結果を使う</string>
   <string name="ui.tutorial.workspace.results.body">結果の分類と名前を確認します。ガイド終了後にページを選んで移動したり、ページ内の結果から操作項目を探したりできます。</string>
   <string name="ui.tutorial.workspace.close.title">検索を閉じる</string>

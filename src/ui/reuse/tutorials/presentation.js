@@ -208,6 +208,14 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
             items,
         });
         menu.element.classList.add("tutorial-actions");
+        menu.element
+            .querySelector('[data-action="next"]')
+            .classList.toggle(
+                "tutorial-next-prompt",
+                Boolean(
+                    missing || (!waiting && !step.advance && !step.waitFor),
+                ),
+            );
         panel.append(progress, title, body);
         const arrow = document.createElement("div");
         arrow.className = "tutorial-arrow";
@@ -294,7 +302,12 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
                 lost?.(error);
                 return;
             }
-            const viewport = tutorialViewport(window, document, target);
+            const viewport = tutorialViewport(
+                window,
+                document,
+                target,
+                step.layer,
+            );
             menu.element.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
             menu.element.style.maxHeight = `${Math.max(48, viewport.height - 16)}px`;
             const menuBox = menu.element.getBoundingClientRect();
@@ -403,7 +416,12 @@ export function createTutorialView({ document, hostI18n, loadStyles }) {
         }
         if (target && !waiting) {
             const rect = target.getBoundingClientRect();
-            const viewport = tutorialViewport(window, document, target);
+            const viewport = tutorialViewport(
+                window,
+                document,
+                target,
+                step.layer,
+            );
             const visible = visibleTargetRect(target, viewport);
             const fits =
                 rect.width <= viewport.width && rect.height <= viewport.height;

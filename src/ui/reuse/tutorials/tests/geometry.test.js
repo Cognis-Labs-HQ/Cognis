@@ -12,6 +12,7 @@ const viewport = { offsetLeft: 60, offsetTop: 150, width: 390, height: 400 };
 function target(bounds, parent) {
     return {
         getBoundingClientRect: () => bounds,
+        contains: () => false,
         parentElement: parent,
         ownerDocument: {
             defaultView: { getComputedStyle: (element) => element.style },
@@ -201,4 +202,36 @@ test("floating dock highlights follow actual control height below the reserved f
         assert.equal(visible.bottom, bounds.bottom + 8);
         assert.equal(visible.height, bounds.bottom - bounds.top + 16);
     }
+});
+
+test("overlay input highlights retain their full height when covering shell chrome", () => {
+    const header = {
+        contains: () => false,
+        getBoundingClientRect: () => ({
+            left: 0,
+            right: 800,
+            top: 0,
+            bottom: 140,
+            width: 800,
+            height: 140,
+        }),
+    };
+    const document = {
+        querySelector: (selector) =>
+            selector === ".site-header" ? header : null,
+    };
+    const window = { innerWidth: 800, innerHeight: 600 };
+    const input = target({ left: 100, right: 620, top: 100, bottom: 144 });
+    const overlayViewport = tutorialViewport(
+        window,
+        document,
+        input,
+        "overlay",
+    );
+    assert.equal(overlayViewport.offsetTop, 0);
+    const highlight = visibleTargetRect(input, overlayViewport, 8);
+    assert.equal(highlight.top, 92);
+    assert.equal(highlight.bottom, 152);
+    assert.equal(highlight.height, 60);
+    assert.equal(tutorialViewport(window, document, input).offsetTop, 140);
 });

@@ -723,7 +723,7 @@
   <string name="ui.tutorial.workspace.query.title">Cari Halaman</string>
   <string name="ui.tutorial.workspace.query.body">Ketik minimal dua karakter nama halaman atau pengaturan. Hasil yang cocok tampil di bawah.</string>
   <string name="ui.tutorial.workspace.options.title">Persempit Pencarian</string>
-  <string name="ui.tutorial.workspace.options.body">Gunakan opsi untuk mencocokkan huruf besar, kata utuh, atau pola. Pencari halaman menemukan teks dan kontrol yang tersedia di halaman ini.</string>
+  <string name="ui.tutorial.workspace.options.body">Gunakan opsi untuk mencocokkan huruf besar, kata utuh, atau pola. Pencari halaman menemukan teks dan kontrol yang tersedia di halaman ini. Klik pil filter mana pun untuk mencoba penyempurnaan pencarian dan melanjutkan.</string>
   <string name="ui.tutorial.workspace.results.title">Gunakan Hasil Pencarian</string>
   <string name="ui.tutorial.workspace.results.body">Tinjau kategori dan label hasil. Setelah panduan, pilih halaman untuk membukanya atau hasil di halaman ini untuk menemukan kontrolnya.</string>
   <string name="ui.tutorial.workspace.close.title">Tutup Pencarian</string>

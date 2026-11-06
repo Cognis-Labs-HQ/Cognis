@@ -63,3 +63,7 @@ Enthält die verfeinerte Dashboard-Anleitung mit 18 Schritten: Bewusste Klicküb
 Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests und gegebenenfalls dessen Übersetzungskatalog. Der Name wird als unveränderter Text eingesetzt. Metadaten zum Anbieterbesitz enthalten optional `name` und `stringsBaseUrl`. Betriebsfehler und automatische Deaktivierungen verwenden `minRole: "admin"` und erscheinen nur für Administratoren und Eigentümer; normale Benachrichtigungen behalten ihre Zielgruppe. Der Stack enthält außerdem bedingte Tutorialpfade, rollenabhängigen Fortschritt, Neustart, aktuelle Dock-Geometrie und Vorrang für Banneraktionen.
 
 - [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
+
+Der Tutorial-Stack korrigiert die Hervorhebung des Sucheingabefelds über Kopfzeilen, setzt nach jedem Filter-Klick fort und zeigt für manuelle Schritte einen pulsierenden Weiter/Fertig-Hinweis mit Unterstützung reduzierter Bewegung.
+
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)

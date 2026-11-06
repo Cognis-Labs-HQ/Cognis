@@ -723,7 +723,7 @@
   <string name="ui.tutorial.workspace.query.title">Nach einer Seite suchen</string>
   <string name="ui.tutorial.workspace.query.body">Geben Sie mindestens zwei Zeichen eines Seiten- oder Einstellungsnamens ein. Treffer erscheinen darunter.</string>
   <string name="ui.tutorial.workspace.options.title">Suche eingrenzen</string>
-  <string name="ui.tutorial.workspace.options.body">Passen Sie Großschreibung, ganze Wörter oder Muster an. Die Seitensuche findet Text und verfügbare Bedienelemente auf der aktuellen Seite.</string>
+  <string name="ui.tutorial.workspace.options.body">Passen Sie Großschreibung, ganze Wörter oder Muster an. Die Seitensuche findet Text und verfügbare Bedienelemente auf der aktuellen Seite. Klicken Sie auf eine Filter-Schaltfläche, um die Suche anzupassen und fortzufahren.</string>
   <string name="ui.tutorial.workspace.results.title">Suchtreffer nutzen</string>
   <string name="ui.tutorial.workspace.results.body">Prüfen Sie Kategorien und Beschriftungen. Wählen Sie nach der Anleitung eine Seite zum Öffnen oder einen Seitentreffer für das Bedienelement.</string>
   <string name="ui.tutorial.workspace.close.title">Suche schließen</string>
