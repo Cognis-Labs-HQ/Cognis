@@ -103,3 +103,15 @@ The tutorial stack now returns Back to the start of a completed group or depende
 Tutorial replays use Skip as their single exit button. The redundant Cancel button is removed.
 
 - [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+
+## Isolated Settings Guide
+
+The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage lives in each owner’s docs; the host inventory links those documents.
+
+## Consistent Locale Indentation
+
+Locale XML touched by the tutorial PR uses consistent two-space string indentation. Formatting preserves translation values; the font-step strings move from Classes to Settings in all four languages.
+
+## Readiness During Document History
+
+Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.

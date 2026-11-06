@@ -124,3 +124,17 @@ Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inha
 Wiederholungen bieten Überspringen als einzigen Beenden-Button; der redundante Abbrechen-Button entfällt. Erstdurchläufe behalten ihre bisherigen Schrittaktionen.
 
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
+
+## Isolierte Einstellungsanleitung
+
+Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst; die Host-Übersicht verlinkt diese Dokumente.
+
+## Einheitliche Katalogeinrückung
+
+Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für String-Einträge. Übersetzungswerte bleiben erhalten; die Schrift-Texte wechseln in allen vier Sprachen von Klassen zu Einstellungen.
+
+## Bereitschaft beim Dokumentverlauf
+
+Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
+
+- [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)

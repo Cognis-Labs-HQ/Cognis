@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="gateway.logging.tutorial.logs.title">Pemeriksaan Log</string>
-    <string name="gateway.logging.tutorial.logs.filter.logs.title">Saring Log</string>
-    <string name="gateway.logging.tutorial.logs.filter.logs.body">Gunakan filter tingkat keparahan, kata kunci, dan rentang waktu untuk mempersempit log pemeriksaan.</string>
-    <string name="gateway.logging.tutorial.logs.read.log.details.title">Baca Detail Log</string>
-    <string name="gateway.logging.tutorial.logs.read.log.details.body">Periksa cap waktu dan detail terstruktur; perbarui saat memerlukan snapshot baru.</string>
+  <string name="gateway.logging.tutorial.logs.title">Pemeriksaan Log</string>
+  <string name="gateway.logging.tutorial.logs.filter.logs.title">Saring Log</string>
+  <string name="gateway.logging.tutorial.logs.filter.logs.body">Gunakan filter tingkat keparahan, kata kunci, dan rentang waktu untuk mempersempit log pemeriksaan.</string>
+  <string name="gateway.logging.tutorial.logs.read.log.details.title">Baca Detail Log</string>
+  <string name="gateway.logging.tutorial.logs.read.log.details.body">Periksa cap waktu dan detail terstruktur; perbarui saat memerlukan snapshot baru.</string>
 </resources>

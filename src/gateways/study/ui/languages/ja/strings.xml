@@ -55,7 +55,7 @@
   <string name="gateway.study.library_components">構成要素</string>
   <string name="gateway.study.library_used_by">使用元</string>
   <string name="gateway.study.library_no_relationships">関連する項目はありません。</string>
-    <string name="gateway.study.library_fields">フィールド</string>
+  <string name="gateway.study.library_fields">フィールド</string>
   <string name="gateway.study.library_definitions">定義</string>
   <string name="gateway.study.library_alternate_definitions">別の定義</string>
   <string name="gateway.study.library_provenance">来歴</string>
@@ -70,7 +70,7 @@
   <string name="gateway.study.favourite_failed">Study のお気に入りを更新できませんでした。</string>
   <string name="gateway.study.favourite_added">お気に入りに追加しました。</string>
   <string name="gateway.study.favourite_removed">お気に入りから削除しました。</string>
-<string name="gateway.study.drawing.title">書き取り練習</string>
+  <string name="gateway.study.drawing.title">書き取り練習</string>
   <string name="gateway.study.drawing.guidance">全ガイドを表示</string>
   <string name="gateway.study.drawing.well_done">よくできました</string>
   <string name="gateway.study.drawing.loser">負け！</string>
@@ -79,9 +79,9 @@
   <string name="gateway.study.drawing.reveal">文字を表示</string>
   <string name="gateway.study.drawing_open_card">Explore でカードを開きますか？</string>
   <string name="gateway.study.drawing_open_card_body">表示したカードを Explore で開き、このページを離れますか？</string>
-    <string name="gateway.study.tutorial.preferences.title">学習の設定</string>
-    <string name="gateway.study.tutorial.preferences.learning.languages.title">学習する言語</string>
-    <string name="gateway.study.tutorial.preferences.learning.languages.body">導入済みの言語モジュールから、学習する言語を選びます。</string>
-    <string name="gateway.study.tutorial.preferences.available.activities.title">利用できる学習機能</string>
-    <string name="gateway.study.tutorial.preferences.available.activities.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
+  <string name="gateway.study.tutorial.preferences.title">学習の設定</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.title">学習する言語</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.body">導入済みの言語モジュールから、学習する言語を選びます。</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.title">利用できる学習機能</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
 </resources>

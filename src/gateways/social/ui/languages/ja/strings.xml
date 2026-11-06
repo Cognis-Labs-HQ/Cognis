@@ -366,9 +366,9 @@
   <string name="social.emoji.white_flag">白旗</string>
   <string name="social.emoji.black_flag">黒旗</string>
   <string name="social.emoji.triangular_flag">三角旗</string>
-    <string name="gateway.social.tutorial.social.title">交流機能の管理</string>
-    <string name="gateway.social.tutorial.social.social.providers.title">交流機能の提供元</string>
-    <string name="gateway.social.tutorial.social.social.providers.body">有効な交流機能のアダプターと設定を確認します。</string>
-    <string name="gateway.social.tutorial.social.change.availability.title">利用状態を変更</string>
-    <string name="gateway.social.tutorial.social.change.availability.body">提供元の有効化、無効化、設定変更の前に、利用者への影響を確認します。</string>
+  <string name="gateway.social.tutorial.social.title">交流機能の管理</string>
+  <string name="gateway.social.tutorial.social.social.providers.title">交流機能の提供元</string>
+  <string name="gateway.social.tutorial.social.social.providers.body">有効な交流機能のアダプターと設定を確認します。</string>
+  <string name="gateway.social.tutorial.social.change.availability.title">利用状態を変更</string>
+  <string name="gateway.social.tutorial.social.change.availability.body">提供元の有効化、無効化、設定変更の前に、利用者への影響を確認します。</string>
 </resources>

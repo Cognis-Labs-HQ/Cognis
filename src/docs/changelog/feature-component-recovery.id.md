@@ -103,3 +103,15 @@ Stack tutorial kini mengarahkan Kembali ke awal grup atau cabang dependensi yang
 Pemutaran ulang memakai Lewati sebagai satu-satunya tombol keluar. Tombol Batal yang berlebihan dihapus.
 
 - [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+
+## Panduan Pengaturan Terisolasi
+
+Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya; inventaris host menautkan dokumen tersebut.
+
+## Indentasi Katalog Konsisten
+
+XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai terjemahan dipertahankan; teks langkah fon dipindahkan dari Kelas ke Pengaturan dalam keempat bahasa.
+
+## Kesiapan Saat Riwayat Dokumen
+
+Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.

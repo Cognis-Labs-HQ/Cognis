@@ -103,3 +103,15 @@ Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen ode
 Wiederholungen verwenden Überspringen als einzigen Beenden-Button. Der redundante Abbrechen-Button entfällt.
 
 - [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+
+## Isolierte Einstellungsanleitung
+
+Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst; die Host-Übersicht verlinkt diese Dokumente.
+
+## Einheitliche Katalogeinrückung
+
+Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für String-Einträge. Übersetzungswerte bleiben erhalten; die Schrift-Texte wechseln in allen vier Sprachen von Klassen zu Einstellungen.
+
+## Bereitschaft beim Dokumentverlauf
+
+Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.

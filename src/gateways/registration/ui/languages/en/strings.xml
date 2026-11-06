@@ -69,16 +69,16 @@
   <string name="ui.app.register.email_verify_notice">You must verify your email address within 5 minutes of registering, or your account will be automatically deleted.</string>
   <string name="gateway.registration.invite_sent">Invitation sent.</string>
   <string name="gateway.registration.invite_failed">Failed to send invitation.</string>
-    <string name="gateway.registration.tutorial.invitations.title">Invitation Guide</string>
-    <string name="gateway.registration.tutorial.invitations.invite.options.title">Invite Options</string>
-    <string name="gateway.registration.tutorial.invitations.invite.options.body">Choose an invitation method available to your role; email invitations and registration tokens have different delivery steps.</string>
-    <string name="gateway.registration.tutorial.invitations.invitation.history.title">Invitation History</string>
-    <string name="gateway.registration.tutorial.invitations.invitation.history.body">Review invitation status and expiry; copy tokens only for the intended recipient and revoke unused invitations when needed.</string>
-    <string name="gateway.registration.tutorial.policy.title">Registration Policy</string>
-    <string name="gateway.registration.tutorial.policy.registration.access.title">Registration Access</string>
-    <string name="gateway.registration.tutorial.policy.registration.access.body">Review public registration and invitation permissions before changing who can create accounts.</string>
-    <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Apply Registration Rules</string>
-    <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Save reviewed policy changes and check the invitation page for the resulting options.</string>
+  <string name="gateway.registration.tutorial.invitations.title">Invitation Guide</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.title">Invite Options</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">Choose an invitation method available to your role; email invitations and registration tokens have different delivery steps.</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.title">Invitation History</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.body">Review invitation status and expiry; copy tokens only for the intended recipient and revoke unused invitations when needed.</string>
+  <string name="gateway.registration.tutorial.policy.title">Registration Policy</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.title">Registration Access</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.body">Review public registration and invitation permissions before changing who can create accounts.</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Apply Registration Rules</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Save reviewed policy changes and check the invitation page for the resulting options.</string>
   <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">Manage Issued Invitations</string>
   <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">Review each invitation’s recipient and status before copying or sharing it. Revoke invitations that should no longer be used.</string>
 </resources>

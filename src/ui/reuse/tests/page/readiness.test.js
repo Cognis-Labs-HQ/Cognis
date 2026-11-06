@@ -168,3 +168,31 @@ test("a cancelled mount can remount the same URL with a fresh readiness cycle", 
     assert.equal(state.readiness.isReady(), true);
     assert.equal(cycles, 2);
 });
+
+test("document history preserves a ready mount and its replay gate until page replacement", async (context) => {
+    const state = fixture(context);
+    state.window.location.pathname = "/docs/tutorials";
+    let runs = 0;
+    state.extend("blocking", () => runs++);
+    await state.mounted();
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    for (const path of ["/docs/ui", "/docs/tutorials", "/docs/ui"]) {
+        state.window.location.pathname = path;
+        state.window.dispatchEvent(new Event("popstate"));
+        await tick();
+        assert.equal(state.readiness.isReady(), true);
+    }
+    assert.equal(runs, 1);
+    state.window.dispatchEvent(new Event("cognis:route-will-change"));
+    assert.equal(state.readiness.isReady(), false);
+    state.window.location.pathname = "/changelogs/tutorials";
+    await state.mounted();
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    state.window.location.pathname = "/changelogs/another";
+    state.window.dispatchEvent(new Event("popstate"));
+    await tick();
+    assert.equal(state.readiness.isReady(), true);
+    assert.equal(runs, 2);
+});

@@ -22,11 +22,11 @@
   <string name="gateway.study.leaderboard_silver">perak</string>
   <string name="gateway.study.leaderboard_bronze">perunggu</string>
   <string name="gateway.study.leaderboard_classroom">Skor Kelas</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.title">Panduan Papan Peringkat</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Pilih Peringkat</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Pilih peringkat untuk melihat peserta dan periode penilaiannya.</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Skor dan Pergerakan</string>
-    <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.title">Panduan Papan Peringkat</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Pilih Peringkat</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Pilih peringkat untuk melihat peserta dan periode penilaiannya.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Skor dan Pergerakan</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.</string>
   <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">Baca Kemajuan Anda</string>
   <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">Temukan baris Anda dan bandingkan skor dalam peringkat terpilih. Ganti peringkat untuk membandingkan aktivitas yang diukurnya.</string>
 </resources>

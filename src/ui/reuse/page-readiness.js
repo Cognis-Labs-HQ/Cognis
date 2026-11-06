@@ -87,7 +87,7 @@ export function installPageReadiness(ctx, { window = globalThis.window } = {}) {
                 });
         },
     );
-    for (const event of ["cognis:route-will-change", "popstate", "pagehide"])
+    for (const event of ["cognis:route-will-change", "pagehide"])
         window?.addEventListener(event, reset, { signal });
     signal.addEventListener(
         "abort",

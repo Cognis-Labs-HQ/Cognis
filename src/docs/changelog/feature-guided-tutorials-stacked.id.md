@@ -124,3 +124,17 @@ Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan is
 Pemutaran ulang tutorial menyediakan Lewati sebagai satu-satunya tombol keluar; tombol Batal yang berlebihan dihapus. Panduan pertama mempertahankan kontrol kemajuan yang ada.
 
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
+
+## Panduan Pengaturan Terisolasi
+
+Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya; inventaris host menautkan dokumen tersebut.
+
+## Indentasi Katalog Konsisten
+
+XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai terjemahan dipertahankan; teks langkah fon dipindahkan dari Kelas ke Pengaturan dalam keempat bahasa.
+
+## Kesiapan Saat Riwayat Dokumen
+
+Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
+
+- [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)

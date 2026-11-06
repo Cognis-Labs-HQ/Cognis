@@ -8,9 +8,9 @@
   <string name="gateway.files.admin.quota_bytes">Standardkontingent (Bytes)</string>
   <string name="gateway.files.admin.saved">Standardkontingent gespeichert.</string>
   <string name="gateway.files.admin.save_failed">Das Standardkontingent konnte nicht gespeichert werden.</string>
-    <string name="gateway.files.tutorial.quotas.title">Speicherquoten</string>
-    <string name="gateway.files.tutorial.quotas.default.quota.title">Standardquote</string>
-    <string name="gateway.files.tutorial.quotas.default.quota.body">Prüfen Sie den globalen Speicherstandard und betroffene Komponentennamensräume.</string>
-    <string name="gateway.files.tutorial.quotas.namespace.limits.title">Namensraumgrenzen</string>
-    <string name="gateway.files.tutorial.quotas.namespace.limits.body">Prüfen Sie Besitzer und Sichtbarkeit vor Änderung und Speicherung der Bytequote.</string>
+  <string name="gateway.files.tutorial.quotas.title">Speicherquoten</string>
+  <string name="gateway.files.tutorial.quotas.default.quota.title">Standardquote</string>
+  <string name="gateway.files.tutorial.quotas.default.quota.body">Prüfen Sie den globalen Speicherstandard und betroffene Komponentennamensräume.</string>
+  <string name="gateway.files.tutorial.quotas.namespace.limits.title">Namensraumgrenzen</string>
+  <string name="gateway.files.tutorial.quotas.namespace.limits.body">Prüfen Sie Besitzer und Sichtbarkeit vor Änderung und Speicherung der Bytequote.</string>
 </resources>
