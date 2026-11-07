@@ -106,7 +106,7 @@ Wiederholungen verwenden Überspringen als einzigen Beenden-Button. Der redundan
 
 ## Isolierte Einstellungsanleitung
 
-Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst; die Host-Übersicht verlinkt diese Dokumente.
+Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst.
 
 ## Einheitliche Katalogeinrückung
 
@@ -117,3 +117,7 @@ Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für Stri
 Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
 
 - [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+
+## Tutorial-Menüaktionen
+
+Tutorial neu starten ist im ersten sichtbaren Schritt verborgen. Wiederholungen verbergen Überspringen im letzten sichtbaren Schritt und bieten Fertig an. Ein einteiliger Guide hat weder Tutorial neu starten noch Überspringen. Die redundante Gesamtübersicht entfällt; die Abdeckung bleibt bei der jeweiligen Komponente.

@@ -202,7 +202,8 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             actions.back,
             (waiting && !missing) || index === 0,
         );
-        button("restart", "ui.tutorial.restart", actions.restart);
+        if (index > 0)
+            button("restart", "ui.tutorial.restart", actions.restart);
         button(
             "next",
             index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
@@ -210,7 +211,8 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             !firstTime && waiting && !missing,
             "neutral",
         );
-        if (!firstTime) button("skip", "ui.reuse.skip", actions.skip);
+        if (!firstTime && index < total - 1)
+            button("skip", "ui.reuse.skip", actions.skip);
         const menu = createFloatingMenu({
             document,
             label: hostI18n.t("ui.reuse.tutorials"),

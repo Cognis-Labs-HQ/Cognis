@@ -106,7 +106,7 @@ Tutorial replays use Skip as their single exit button. The redundant Cancel butt
 
 ## Isolated Settings Guide
 
-The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage lives in each owner’s docs; the host inventory links those documents.
+The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage stays in each owner’s docs.
 
 ## Consistent Locale Indentation
 
@@ -117,3 +117,7 @@ Locale XML touched by the tutorial PR uses consistent two-space string indentati
 Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.
 
 - [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+
+## Tutorial menu actions
+
+Restart Tutorial is hidden on the first visible step. Replays hide Skip on the last visible step and offer Finish instead. A one-step guide has neither Restart Tutorial nor Skip. The redundant aggregate coverage document is removed; feature coverage stays with its owning component.

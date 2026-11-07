@@ -106,7 +106,7 @@ Pemutaran ulang memakai Lewati sebagai satu-satunya tombol keluar. Tombol Batal 
 
 ## Panduan Pengaturan Terisolasi
 
-Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya; inventaris host menautkan dokumen tersebut.
+Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya.
 
 ## Indentasi Katalog Konsisten
 
@@ -117,3 +117,7 @@ XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai t
 Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
 
 - [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+
+## Tindakan menu tutorial
+
+Mulai Ulang Tutorial disembunyikan pada langkah terlihat pertama. Pemutaran ulang menyembunyikan Lewati pada langkah terlihat terakhir dan menyediakan Selesai. Panduan satu langkah tidak memiliki Mulai Ulang Tutorial atau Lewati. Dokumen cakupan gabungan yang berlebihan dihapus; cakupan fitur tetap bersama komponen pemiliknya.

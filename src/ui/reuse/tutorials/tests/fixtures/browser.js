@@ -111,6 +111,30 @@ window.tutorialFixture = {
         await session.ready;
         return session.state();
     },
+    async menuEdges({ firstTime = false, single = false } = {}) {
+        owner?.dispose();
+        owner = api.owner("browser.menu-edges", {
+            signal: new AbortController().signal,
+            i18n: { t: (key) => key },
+        });
+        const registration = await owner.register({
+            version: 1,
+            id: "controls",
+            page: ({ pathname }) => pathname === fixturePath,
+            titleKey: "ui.reuse.tutorials",
+            steps: (single
+                ? ["opening"]
+                : ["opening", "details", "finish"]
+            ).map((id) => ({
+                id,
+                titleKey: "ui.reuse.tutorials",
+                highlightNext: true,
+            })),
+        });
+        session = await registration.start({ firstTime });
+        await session.ready;
+        return session.state();
+    },
     async chooser() {
         localStorage.setItem(
             "cognis_tutorial:tutorial-browser:browser:first-visit",
