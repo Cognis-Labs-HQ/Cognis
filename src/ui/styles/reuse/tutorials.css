@@ -43,23 +43,38 @@
 .page-context h1:has(> .tutorial-help) {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     max-width: 100%;
 }
-.tutorial-help {
+.tutorial-help.btn-neutral {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
     color: var(--text);
-    font-size: inherit;
+    font-size: 1rem;
     flex-shrink: 0;
-    padding: 0.25rem;
     vertical-align: middle;
+}
+.tutorial-help.btn-neutral:hover:not(:disabled),
+.tutorial-help.btn-neutral:focus-visible {
+    background: var(--surface-soft);
+    border-color: var(--border);
+}
+.tutorial-help.btn-neutral:focus-visible {
+    outline: 2px solid var(--accent-2, var(--accent));
+    outline-offset: 2px;
 }
 .tutorial-help-icon {
     display: block;
-    width: 1.1em;
-    height: 1.1em;
+    width: 1.125rem;
+    height: 1.125rem;
     background: currentColor;
     mask: url("/static/assets/reuse/icons/tutorial-help.svg") center / contain
         no-repeat;
