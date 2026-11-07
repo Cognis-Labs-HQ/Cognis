@@ -178,4 +178,4 @@ Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan is
 
 Mulai Ulang Tutorial muncul setelah langkah terlihat pertama. Pemutaran ulang menyediakan Lewati sebelum langkah terlihat terakhir; langkah terakhir menyediakan Selesai. Panduan satu langkah tidak menyediakan Mulai Ulang Tutorial atau Lewati. Panduan pertama tetap tidak menyediakan Lewati.
 
-Kontrol ? berada di tengah vertikal di samping judul dan deskripsi halaman, termasuk teks terbungkus dan tata letak sempit. Header tanpa panduan mempertahankan tata letak yang ada.
+Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.

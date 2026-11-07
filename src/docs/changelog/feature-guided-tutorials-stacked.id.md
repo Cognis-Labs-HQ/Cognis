@@ -159,6 +159,10 @@ Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol e
 
 ## Perataan pemutaran ulang
 
-Kontrol ? berada di tengah vertikal di samping judul dan deskripsi halaman, termasuk teks terbungkus dan tata letak sempit. Header tanpa panduan mempertahankan tata letak yang ada.
+Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
 
 - [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)
+
+## Tombol pemutaran ulang sejajar
+
+Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.

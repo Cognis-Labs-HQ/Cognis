@@ -178,4 +178,4 @@ Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inha
 
 Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholungen bieten Überspringen vor dem letzten sichtbaren Schritt; der letzte Schritt bietet Fertig. Ein einteiliger Guide bietet weder Tutorial neu starten noch Überspringen. Erstdurchläufe bieten weiterhin nie Überspringen.
 
-Das ? steht vertikal mittig neben Seitentitel und Beschreibung, auch bei Zeilenumbrüchen und schmalen Ansichten. Seitenköpfe ohne Anleitung behalten ihr bestehendes Layout.
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.

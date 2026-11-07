@@ -28,7 +28,12 @@ class Element extends EventTarget {
         this.attributes.set(name, value);
     }
     querySelector(tag) {
-        return this.children.find((child) => child.tag === tag);
+        for (const child of this.children) {
+            if (child.tag === tag) return child;
+            const nested = child.querySelector(tag);
+            if (nested) return nested;
+        }
+        return undefined;
     }
     focus() {}
 }
