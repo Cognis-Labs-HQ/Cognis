@@ -81,12 +81,20 @@ export function createPageTutorials({
         const revision = epoch;
         const page = location();
         const actor = account();
-        const header = document.querySelector(".page-context h1");
+        const header = document.querySelector(".page-context");
+        const heading = header?.querySelector("h1");
+        if (!heading) {
+            help?.remove();
+            help = null;
+            menu?.dispose();
+            return;
+        }
         const plays = await api.list({ page });
         if (
             signal.aborted ||
             revision !== epoch ||
             !header?.isConnected ||
+            !heading?.isConnected ||
             account() !== actor ||
             window.location.pathname !== page.pathname
         )
@@ -103,6 +111,7 @@ export function createPageTutorials({
             signal.aborted ||
             revision !== epoch ||
             !header.isConnected ||
+            !heading.isConnected ||
             account() !== actor
         )
             return;

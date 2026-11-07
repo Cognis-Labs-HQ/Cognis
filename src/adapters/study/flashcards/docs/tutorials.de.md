@@ -11,7 +11,9 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 | Seite / Bereich                           | Anleitung             | Zugriff               |
 | ----------------------------------------- | --------------------- | --------------------- |
 | `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)` | Karteikartenanleitung | Angemeldeter Nutzer   |
-| Flashcards · `[data-study-session]`       | Stapel verwalten      | Angemeldeter Benutzer |
+| Flashcards · `[data-study-deck]`          | Stapel verwalten      | Angemeldeter Benutzer |
 | Flashcards · `[data-practice]`            | Mit einem Stapel üben | Angemeldeter Benutzer |
 
 Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.

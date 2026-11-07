@@ -18,13 +18,19 @@ test("first visits persist completion per account, survive remounting, and offer
     await tick();
     assert.equal(state.api.current().firstTime, true);
     assert.equal(
-        state.header.children[0].attributes.get("aria-label"),
+        state.header.querySelector("button").attributes.get("aria-label"),
         "ui.tutorial.replay",
     );
     await state.api.refreshPage();
-    assert.equal(state.header.children[0].disabled, false);
+    assert.equal(state.header.querySelector("button").disabled, false);
     assert.equal(await state.api.openPage(), false);
     assert.equal(state.api.current().firstTime, true);
+    assert.equal(
+        state.header.querySelector("button").parentElement,
+        state.header,
+    );
+    assert.equal(state.heading.children.length, 0);
+    assert.equal(state.header.children[1], state.description);
     await complete(state);
     assert.equal(state.values.size, 1);
     await state.api.refreshPage();
@@ -56,7 +62,10 @@ test("unmatched pages and required popups defer first visits until the page is a
     state.popup(true);
     await state.api.refreshPage();
     assert.equal(state.api.current(), null);
-    assert.equal(state.header.children.length, 1);
+    assert.equal(
+        state.header.children.filter((child) => child.tag === "button").length,
+        1,
+    );
     state.popup(false);
     await state.api.refreshPage();
     await tick();
@@ -72,7 +81,10 @@ test("provider removal releases help controls and automatic sessions without per
     owner.dispose();
     await state.api.refreshPage();
     assert.equal(state.api.current(), null);
-    assert.equal(state.header.children.length, 0);
+    assert.equal(
+        state.header.children.filter((child) => child.tag === "button").length,
+        0,
+    );
     assert.equal(state.values.size, 0);
     assert.ok(state.rendered.every((entry) => entry.disposed));
 });
@@ -123,7 +135,7 @@ test("pending page blockers prevent automatic and replay tutorials until dismiss
     assert.equal(state.readiness.isReady(), false);
     assert.equal(state.api.current(), null);
     assert.equal(await state.api.openPage(), false);
-    assert.equal(state.header.children[0].disabled, true);
+    assert.equal(state.header.querySelector("button").disabled, true);
     dismissed.resolve();
     await tick();
     await tick();
@@ -171,4 +183,23 @@ test("a provider-started guide records completion before automatic page discover
     const replay = await state.api.openPage();
     await replay.ready;
     assert.equal(replay.state().firstTime, false);
+});
+
+test("replay controls follow the descriptor lifetime without replacing its content", async (context) => {
+    const state = pageHost(context);
+    await state.owner().register(play());
+    await state.api.refreshPage();
+    const first = state.header.querySelector("button");
+    assert.ok(first);
+    assert.equal(first.parentElement, state.header);
+    state.heading.remove();
+    await state.api.refreshPage();
+    assert.equal(state.header.querySelector("button"), undefined);
+    assert.equal(state.header.children[0], state.description);
+    state.header.append(state.heading);
+    await state.api.refreshPage();
+    const replacement = state.header.querySelector("button");
+    assert.ok(replacement);
+    assert.notEqual(replacement, first);
+    assert.equal(state.heading.children.length, 0);
 });

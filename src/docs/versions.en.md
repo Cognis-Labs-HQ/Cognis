@@ -57,7 +57,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.10` |
 | Library (Study)       | `src/adapters/study/library/`       | `4.1.18` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.28` |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.29` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.10` |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -90,7 +90,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.12.25` |
+| API Server | `src/api/` | `0.12.26` |
 
 ## Tooling
 

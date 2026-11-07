@@ -55,11 +55,15 @@ export function pageHost(context, values = new Map(), role = "user") {
     void state.ctx.runFlow("page:mounted", {
         pathname: state.window.location.pathname,
     });
-    const header = new Element("h1");
+    const header = new Element("div");
+    const heading = new Element("h1");
+    const description = new Element("p");
+    header.append(heading);
+    header.append(description);
     state.document.createElement = (tag) => new Element(tag);
     state.document.body = new Element("body");
     state.document.querySelector = (selector) =>
-        selector === ".page-context h1" ? header : popup ? {} : null;
+        selector === ".page-context" ? header : popup ? {} : null;
     state.window.MutationObserver = class {
         observe() {}
         disconnect() {}
@@ -87,6 +91,8 @@ export function pageHost(context, values = new Map(), role = "user") {
         page,
         readiness,
         header,
+        heading,
+        description,
         values,
         errors,
         account: (value) => {
