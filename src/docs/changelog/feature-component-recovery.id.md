@@ -127,3 +127,5 @@ Mulai Ulang Tutorial disembunyikan pada langkah terlihat pertama. Pemutaran ulan
 ## Hapus Fixture Demo Peramban
 
 Demo peramban mandiri untuk tutorial, riwayat perubahan, dan pemulihan dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
+
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)

@@ -127,3 +127,5 @@ Restart Tutorial is hidden on the first visible step. Replays hide Skip on the l
 ## Remove Browser Demo Fixtures
 
 Standalone tutorial, changelog and recovery browser demos are removed. Shared helpers used by automated tests remain in place.
+
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)

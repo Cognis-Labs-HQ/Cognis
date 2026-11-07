@@ -127,3 +127,5 @@ cognisctl component:disable module analytics --force
 ## ブラウザーデモを削除
 
 チュートリアル、変更履歴、復旧用の独立したブラウザーデモを削除し、自動テスト用の共通の補助コードは維持します。
+
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
