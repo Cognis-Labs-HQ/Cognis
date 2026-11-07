@@ -13,3 +13,5 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 | `^/study/(?:settings\|welcome)$` | Lerneinstellungen | Angemeldeter Nutzer |
 
 Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
+
+Spracheinführungen ergänzen die Übersicht; Aktivitätsführungen bleiben in der aktuellen Explore- oder Flashcards-Ansicht. Spracheinstellungen heben verfügbare und aktive Sprachen getrennt hervor.

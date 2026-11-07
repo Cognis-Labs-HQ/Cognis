@@ -4,6 +4,7 @@ export const guides = [
         definitions: [
             {
                 id: "decks",
+                visibleWhen: ".study-deck-browser",
                 page: ({ pathname }) =>
                     /^\/study\/(?:[a-z-]+\/)?flashcards(?:\/|$)/.test(pathname),
                 titleKey: "adapter.study.flashcards.tutorial.decks.title",
@@ -20,20 +21,12 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "study-modes",
-                        selector: "[data-study-deck]",
+                        selector: ".study-deck-preview",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.flashcards.tutorial.decks.study.modes.title",
                         bodyKey:
                             "adapter.study.flashcards.tutorial.decks.study.modes.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "practice-and-progress",
-                        selector: "[data-study-deck]",
-                        titleKey:
-                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.title",
-                        bodyKey:
-                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.body",
                     },
                     {
                         highlightNext: true,
@@ -89,6 +82,15 @@ export const guides = [
                 scope: "[data-study-deck]:has([data-study-session])",
                 titleKey: "adapter.study.flashcards.tutorial.manage.deck.title",
                 steps: [
+                    {
+                        highlightNext: true,
+                        id: "practice-and-progress",
+                        selector: ".study-practice-summary",
+                        titleKey:
+                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.title",
+                        bodyKey:
+                            "adapter.study.flashcards.tutorial.decks.practice.and.progress.body",
+                    },
                     {
                         highlightNext: true,
                         id: "edit-cards",

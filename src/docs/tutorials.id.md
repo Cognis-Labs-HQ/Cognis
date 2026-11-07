@@ -1,6 +1,6 @@
 # Tutorial Terpandu
 
-Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
+Tutorial terikat ke halaman atau tampilan terlihat. Pada kunjungan pertama yang memenuhi syarat, satu panduan yang belum dilihat dimulai otomatis. SVG tanda tanya di samping judul membuka panduan yang tersedia. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip.
 
 ## Mendaftarkan Panduan
 
@@ -54,7 +54,7 @@ Registrasikan melalui `mountProvider`, bukan saat mengimpor skrip. Kembalikan `o
 
 Setiap panduan memerlukan `page`: jalur tepat seperti `/dashboard` atau predikat sinkron tepercaya `({ pathname }) => boolean` untuk beberapa URL atau kondisi halaman. Ikatan ini terpisah dari navigasi langkah. Mulai di luar ikatan ditolak. Registrasi, pemasangan halaman, pergantian akun, dan penutupan popup memperbarui pencarian. Penyedia yang dilepas menarik aksi bantuannya. Dialog wajib menunda mulai otomatis.
 
-Study menyediakan `study:tutorialTargets.matchesPage({ pathname, language })` agar penyedia bahasa mengikat tutorial pada halaman Explore dan Flashcards milik Study tanpa menyalin aturan rute host. Composer menerbitkan pemasangan halaman selesai melalui `page:mounted` (`publish`).
+Study menyediakan `study:tutorialTargets.matchesPage({ pathname, language })` untuk pengantar bahasa pada ringkasan. Panduan aktivitas terikat ke tampilan host aktif; berpindah Kana ke Kanji tidak boleh memulai pengantar bahasa atau kembali ke Study. Komposer menerbitkan pemasangan selesai melalui `page:mounted` (`publish`).
 
 ## Target dan Lokalisasi
 
@@ -183,3 +183,21 @@ Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarah
 Target yang hilang saat perenderan asinkron dicari ulang sebelum kesiapan diterbitkan. Penyajian yang dimulai ulang atau dibatalkan tidak dapat melanjutkan pemulihan lama atau menahan menu mengambang.
 
 `scope` membatasi target dan penemuan. `visibleWhen` opsional memerlukan satu elemen terlihat tanpa membatasi target ke turunannya; target tetap berada dalam akar komponen. Administrasi Pustaka memakainya untuk visibilitas browser sambil menyoroti pencarian di bilah samping. Selektor tidak valid menggagalkan registrasi dan membersihkan pemilik.
+
+## Panduan yang Andal
+
+Ikat penemuan ke tampilan aktif, bukan hanya URL. Tab pada URL sama, dek terpilih, lapisan konten, dan dialog memerlukan penanda terlihat milik komponen. `scope` harus memuat semua target; gunakan `visibleWhen` jika kontrol samping berada di luar bagian konten. ID elemen komposer adalah metadata tata letak, bukan jaminan ID DOM. Targetkan elemen fitur nyata. Untuk sakelar bergaya, sorot label terlihat, bukan input tersembunyi.
+
+Hanya satu panduan dimulai otomatis per tampilan terlihat dalam satu sesi browser. Menyelesaikannya tidak mengantrekan panduan lain; semuanya tetap tersedia melalui ?. Pergantian bagian dapat menemukan panduan bagian tersebut. Gunakan `automatic: false` untuk pengantar tambahan. Pertahankan ID penyelesaian dan jangan arahkan pengunjung Explore kembali ke ringkasan hanya untuk pengantar. Pengantar bahasa terikat ke ringkasan Study; host memiliki panduan aktivitas.
+
+Ikuti urutan UI kecuali ketergantungan interaksi memerlukan urutan berbeda. Setiap tahap menyorot kontrol atau area berbeda. Gabungkan penjelasan berulang. Jelaskan tujuan dan hasil bagi pengguna. Jangan menjelaskan Simpan/Buang atau Tinjau Perubahan jika perubahan tidak dapat dibuat. Cakup kalender dan daftar kosong, kontrol opsional, peran, serta fitur yang tidak tersedia.
+
+`targetMatch: "first"` mempertahankan elemen terhubung yang dipilih selama kontribusi terpasang; perubahan urutan akibat sorotan kursor tidak boleh memindahkan panduan ke kartu lain. Target yang sejak awal tidak ada mengikuti kebijakan yang ditulis. Jika target yang sudah ditampilkan hilang, kontrol tetap tersedia dan menunggu pemulihan sampai lima belas detik, lalu Berikutnya atau Mulai Ulang tetap dapat digunakan. Menggulir tidak boleh diam-diam menyelesaikan panduan.
+
+Cabang detail menggunakan `interaction: "target"`, `suppressHover`, gerbang peristiwa, `group`, dan `dependsOn`. Berikutnya sebelum membuka melewati cabang. Selektor opsional `popup` hanya mengizinkan dialog milik fitur yang diharapkan; dialog lain tetap menginterupsi. Kontribusi halaman dapat memakai `portal` untuk membatasi target pada permukaan dokumen sama yang dipilih secara eksplisit. Halaman pemilik harus tetap tersedia. Ikat penutupan ke `groupSignal` agar Kembali, Mulai Ulang, Selesai, navigasi, dan pelepasan pemilik membersihkannya. Penjelasan pasif memakai `layer: "overlay"` di atas dialog tanpa mengubah data.
+
+Shell menutup menu akun pada tahap validasi awal tutorial, termasuk awal langsung oleh penyedia. Kepemilikan pemblokir kesiapan berada pada `ui:pageReadiness.registerBlocker(options, handler)`, bersama untuk impor bundel dan langsung. Gunakan metode ini atau `registerPageReadinessBlocker`; ganti berdasarkan ID pemilik dan jaga agar pembatalan lama tidak menghapus pengganti. Jangan gunakan peta registrasi lokal yang saling bersaing.
+
+Verifikasi target hasil render dan progres melalui kontrak publik pada build sumber dan produksi: pemasangan langsung dan SPA berulang, perubahan bagian tanpa URL baru, data kosong dan terisi, gulir/perubahan tata letak, sorotan kursor, kontrol opsional, hilangnya peran, cabang yang dilewati dan Kembali, mulai ulang, pelepasan pemilik, serta penutupan dialog. Periksa hitungan tahap dan serah-terima menu. Pemeriksaan demo browser tetap sementara; pembantu pengujian otomatis bersama dipertahankan. Perubahan fitur harus meninjau panduan, terjemahan, dan dokumentasi milik komponennya bersama.
+
+Callback enter/waitFor tepercaya menerima ctx publik beserta sinyal masa hidup. Ambil perilaku bersama melalui kapabilitasnya. Dialog fitur mendaftarkan elemen, operasi penutupan pemilik, dan sinyal melalui ui:transientSurfaces; cabang detail mengikat groupSignal melalui kontrak itu, bukan mencari tombol internal dialog.

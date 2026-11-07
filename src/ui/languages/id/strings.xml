@@ -667,8 +667,6 @@
   <string name="ui.tutorial.settings.advanced.title">Preferensi Lanjutan</string>
   <string name="ui.tutorial.settings.advanced.preference.data.title">Data Preferensi</string>
   <string name="ui.tutorial.settings.advanced.preference.data.body">Periksa data preferensi di sini; penyuntingan mungkin memerlukan persetujuan editor lanjutan.</string>
-  <string name="ui.tutorial.settings.advanced.review.changes.title">Tinjau Perubahan</string>
-  <string name="ui.tutorial.settings.advanced.review.changes.body">Simpan salinan sebelum mengubah pengaturan lanjutan; Buang mengembalikan nilai tersimpan.</string>
   <string name="ui.tutorial.admin.components.title">Administrasi Komponen</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateway dan Adapter</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Buka komponen untuk memeriksa versi, dependensi, dan konfigurasinya.</string>
@@ -710,12 +708,10 @@
   <string name="ui.tutorial.changelogs.releases.release.changes.body">Pilih rilis untuk membaca perubahan dan rujukan implementasi komponennya.</string>
   <string name="ui.tutorial.changelogs.releases.compare.releases.title">Bandingkan Rilis</string>
   <string name="ui.tutorial.changelogs.releases.compare.releases.body">Periksa catatan rilis sebelum memperbarui komponen, terutama saat perilaku atau persyaratannya berubah.</string>
-  <string name="ui.tutorial.settings.general.save.preferences.title">Simpan Atau Buang Perubahan</string>
-  <string name="ui.tutorial.settings.general.save.preferences.body">Setelah mengubah preferensi, gunakan Simpan atau Buang pada menu mengambang. Tinjau perubahan yang belum disimpan sebelum keluar.</string>
   <string name="ui.tutorial.settings.general.release.notes.title">Pilih Pemberitahuan Rilis</string>
   <string name="ui.tutorial.settings.general.release.notes.body">Pilih apakah catatan rilis tampil setelah pembaruan. Riwayat komponen terpasang tetap tersedia di Catatan Perubahan.</string>
-  <string name="ui.tutorial.users.directory.find.account.title">Temukan Akun</string>
-  <string name="ui.tutorial.users.directory.find.account.body">Cari akun sebelum membuka detailnya. Periksa identitas, peran, dan status siklus hidup sebelum menerapkan tindakan administratif.</string>
+  <string name="ui.tutorial.users.directory.find.account.title">Pilih Akun</string>
+  <string name="ui.tutorial.users.directory.find.account.body">Baca nama akun, lalu buka barisnya untuk memeriksa detail. Pastikan identitasnya sebelum mengubah akses atau menggunakan tindakan akun.</string>
   <string name="ui.tutorial.marketplace.browse.review.source.title">Tinjau Sumber Marketplace</string>
   <string name="ui.tutorial.marketplace.browse.review.source.body">Buka pengaturan marketplace untuk meninjau sumber repositori. Segarkan katalog setelah perubahan sumber, lalu periksa penerbit sebelum memasang.</string>
   <string name="ui.tutorial.workspace.query.title">Cari Halaman</string>
@@ -751,6 +747,6 @@
   <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
   <string name="ui.tutorial.workspace.dock.layout.body">Gunakan editor tata letak untuk memindahkan atau mengubah ukuran widget dan menambah elemen. Tinjau susunan, lalu simpan atau buang perubahan melalui tindakan mengambang.</string>
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
-  <string name="ui.tutorial.settings.appearance.choose.font.title">Pilih Fon Yang Nyaman</string>
-  <string name="ui.tutorial.settings.appearance.choose.font.body">Pilih fon dan pratinjau sebelum menyimpan. Gunakan kontrol ukuran agar teks nyaman dibaca.</string>
+  <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
+  <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>
 </resources>

@@ -17,8 +17,15 @@ export async function mountPageTutorials(
 ) {
     const document = root.ownerDocument;
     const owner = api.owner(ownerId, { signal, i18n });
-    const resolve = (selector, match = "unique", boundary) => {
-        const matches = [...root.querySelectorAll(selector)].filter(
+    const resolve = (
+        selector,
+        match = "unique",
+        boundary,
+        queryRoot = root,
+    ) => {
+        const matches = [
+            ...(queryRoot?.querySelectorAll(selector) ?? []),
+        ].filter(
             (element) =>
                 (!boundary || boundary.contains(element)) &&
                 usableTarget(element, document),
@@ -45,19 +52,55 @@ export async function mountPageTutorials(
                 (!scope || Boolean(resolve(scope))) &&
                 (!visibleWhen || Boolean(resolve(visibleWhen)));
             const registeredSteps = [];
-            for (const { selector, targetMatch = "unique", ...step } of steps) {
+            for (const {
+                selector,
+                targetMatch = "unique",
+                portal,
+                ...step
+            } of steps) {
+                let selected;
+                if (portal !== undefined) {
+                    if (typeof portal !== "string" || !portal.trim())
+                        throw new TypeError("invalid_tutorial_portal");
+                    document.querySelectorAll(portal);
+                }
+                const targetRoot = () =>
+                    portal
+                        ? resolve(portal, "unique", undefined, document)
+                        : root;
                 if (!["unique", "first"].includes(targetMatch))
                     throw new TypeError("invalid_tutorial_target_match");
                 const target = selector
                     ? await owner.target(`${play.id}.${step.id}`, {
-                          root: () => root,
+                          root: targetRoot,
                           resolve: () => {
+                              if (portal)
+                                  return resolve(
+                                      selector,
+                                      targetMatch,
+                                      undefined,
+                                      targetRoot(),
+                                  );
                               const boundary = scope
                                   ? resolve(scope)
                                   : undefined;
-                              return scope && !boundary
-                                  ? null
-                                  : resolve(selector, targetMatch, boundary);
+                              if (scope && !boundary) return null;
+                              if (targetMatch === "unique")
+                                  return resolve(
+                                      selector,
+                                      targetMatch,
+                                      boundary,
+                                  );
+                              if (!selected?.isConnected)
+                                  selected = resolve(
+                                      selector,
+                                      "first",
+                                      boundary,
+                                  );
+                              return usableTarget(selected, document) &&
+                                  (!boundary || boundary.contains(selected))
+                                  ? selected
+                                  : null;
                           },
                       })
                     : null;

@@ -196,3 +196,28 @@ test("document history preserves a ready mount and its replay gate until page re
     assert.equal(state.readiness.isReady(), true);
     assert.equal(runs, 2);
 });
+
+test("direct and bundled registrations replace one owner through the shared capability", async (context) => {
+    const state = fixture(context);
+    const { registerPageReadinessBlocker: registerCopy } =
+        await import("../../page-readiness.js?independent-loader");
+    const previous = new AbortController();
+    const replacement = new AbortController();
+    context.after(() => replacement.abort());
+    const calls = [];
+    registerPageReadinessBlocker(
+        uiCtx,
+        { id: "test:sharedOwner", signal: previous.signal },
+        () => calls.push("old"),
+    );
+    registerCopy(
+        uiCtx,
+        { id: "test:sharedOwner", signal: replacement.signal },
+        () => calls.push("replacement"),
+    );
+    previous.abort();
+    await state.mounted();
+    await tick();
+    assert.deepEqual(calls, ["replacement"]);
+    assert.equal(state.readiness.isReady(), true);
+});

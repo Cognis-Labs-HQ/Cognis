@@ -828,6 +828,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     composer = createPageComposer(root, {
         tutorials: guides,
+        signal,
         allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",

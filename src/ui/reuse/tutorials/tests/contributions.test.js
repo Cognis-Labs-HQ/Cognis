@@ -380,3 +380,97 @@ test("invalid visibility selectors fail registration and release the owner", asy
         assert.deepEqual(await state.api.list(), []);
     }
 });
+
+test("first-match targets retain their card when hover changes candidate ordering", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const first = state.element();
+    const second = state.element();
+    let candidates = [first, second];
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => true,
+        querySelectorAll: () => candidates,
+    };
+    await state.api.mountPage({
+        owner: "cards",
+        root,
+        signal: state.ctx.signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "browse",
+                page: "/dashboard",
+                titleKey: "cards",
+                steps: [
+                    {
+                        id: "example",
+                        titleKey: "example",
+                        selector: ".card",
+                        targetMatch: "first",
+                    },
+                ],
+            },
+        ],
+    });
+    const session = await state.api.start("cards:browse");
+    await session.ready;
+    const rendered = state.rendered.at(-1);
+    assert.equal(rendered.target, first);
+    candidates = [second, first];
+    assert.equal(rendered.valid(), true);
+    assert.equal(rendered.target, first);
+    await session.restart();
+    assert.equal(state.rendered.at(-1).target, first);
+    await session.dispose();
+});
+
+test("detail targets resolve only inside the explicitly owned portal while the page is available", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const detail = state.element();
+    const portal = state.element();
+    portal.contains = (element) => element === detail;
+    portal.querySelectorAll = () => [detail];
+    state.document.querySelectorAll = (selector) =>
+        selector === ".owned-popup" ? [portal] : [];
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => false,
+        querySelectorAll: () => [],
+    };
+    await state.api.mountPage({
+        owner: "portal.owner",
+        root,
+        signal: state.ctx.signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "details",
+                page: "/dashboard",
+                titleKey: "details",
+                steps: [
+                    {
+                        id: "read",
+                        titleKey: "read",
+                        selector: ".details",
+                        portal: ".owned-popup",
+                        popup: ".owned-popup",
+                        layer: "overlay",
+                    },
+                ],
+            },
+        ],
+    });
+    const session = await state.api.start("portal.owner:details");
+    await session.ready;
+    assert.equal(state.rendered.at(-1).target, detail);
+    root.isConnected = false;
+    assert.equal(state.rendered.at(-1).valid(), false);
+    state.rendered.at(-1).lost();
+    assert.equal((await session.finished).reason, "permissionLost");
+});

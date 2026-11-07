@@ -134,6 +134,7 @@ export function registerTutorials(
         const i18n = await translationResolver(owner);
         i18n.t(play.titleKey);
         for (const step of play.steps) {
+            if (step.popup) document?.querySelectorAll?.(step.popup);
             i18n.t(step.titleKey);
             if (step.bodyKey) i18n.t(step.bodyKey);
         }
@@ -243,6 +244,7 @@ export function registerTutorials(
                 signal: record.signal,
             });
             const session = createSession({
+                ctx,
                 record: { ...record, i18n },
                 firstTime,
                 role,
@@ -320,6 +322,9 @@ export function registerTutorials(
                 available.push({
                     id: record.id,
                     title: i18n.t(record.play.titleKey),
+                    ...(record.play.automatic === false
+                        ? { automatic: false }
+                        : {}),
                 });
         }
         return available;
@@ -435,7 +440,8 @@ export function registerTutorials(
         "keydown",
         (event) => {
             if (!active || event.key !== "Escape") return;
-            if (document.querySelector(".popup-overlay--visible")) {
+            const popup = document.querySelector(".popup-overlay--visible");
+            if (popup && !active.acceptsPopup(popup)) {
                 active.cancel("modal");
                 return;
             }

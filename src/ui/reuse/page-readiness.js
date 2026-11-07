@@ -5,7 +5,7 @@
  * @example ctx.extendFlow('page:ready', 'blocking', { id: 'owner:popup' }, async ({input}) => showPopup({signal: input.signal}));
  * @param {object} ctx Browser flow/capability context.
  * @param {object} options Optional window for isolated hosts; lifetime follows ctx.signal.
- * @returns {{isReady: Function, dispose: Function}} Current readiness and cleanup.
+ * @returns {{isReady: Function, registerBlocker: Function, dispose: Function}} Current readiness and cleanup.
  */
 export function installPageReadiness(ctx, { window = globalThis.window } = {}) {
     const existing = ctx.capabilities.get("ui:pageReadiness");
@@ -31,6 +31,7 @@ export function installPageReadiness(ctx, { window = globalThis.window } = {}) {
         isReady: () =>
             current.ready && !signal.aborted && !current.lifetime?.aborted,
         dispose: () => controller.abort(),
+        registerBlocker: createBlockerRegistrar(ctx, signal),
     };
     ctx.capabilities.contribute("ui:pageReadiness", capability);
     const id = "ui:pageReadiness";
@@ -106,8 +107,6 @@ export function installPageReadiness(ctx, { window = globalThis.window } = {}) {
     return capability;
 }
 
-const blockers = new WeakMap();
-
 /**
  * Append an awaited owner check or popup to page readiness with replacement-safe cleanup.
  * @param {object} ctx Browser flow context.
@@ -121,42 +120,54 @@ export function registerPageReadinessBlocker(
     { id, order = 0, signal },
     handler,
 ) {
-    let entries = blockers.get(ctx);
-    if (!entries) {
-        entries = new Map();
-        blockers.set(ctx, entries);
-    }
-    entries.get(id)?.();
-    const registered = ctx.extendFlow(
-        "page:ready",
-        "blocking",
-        { id, order },
-        async (stage) => {
-            const lifetime = AbortSignal.any([
-                stage.input.signal,
-                ...(signal ? [signal] : []),
-            ]);
-            try {
-                lifetime.throwIfAborted();
-                return await handler({
-                    ...stage,
-                    input: { ...stage.input, signal: lifetime },
-                });
-            } catch (error) {
-                if (stage.input.signal.aborted) throw error;
-                if (!signal?.aborted) throw error;
-            }
+    const readiness = ctx.capabilities.get("ui:pageReadiness");
+    if (!readiness) throw new Error("page_readiness_unavailable");
+    return readiness.registerBlocker({ id, order, signal }, handler);
+}
+
+function createBlockerRegistrar(ctx, hostSignal) {
+    const entries = new Map();
+    hostSignal.addEventListener(
+        "abort",
+        () => {
+            for (const dispose of [...entries.values()]) dispose();
         },
+        { once: true },
     );
-    if (!registered) throw new Error("page_readiness_blocker_conflict");
-    const dispose = () => {
-        if (entries.get(id) !== dispose) return;
-        ctx.removeFlowHook("page:ready", "blocking", id);
-        entries.delete(id);
-        signal?.removeEventListener("abort", dispose);
+    return ({ id, order = 0, signal }, handler) => {
+        hostSignal.throwIfAborted();
+        entries.get(id)?.();
+        const registered = ctx.extendFlow(
+            "page:ready",
+            "blocking",
+            { id, order },
+            async (stage) => {
+                const lifetime = AbortSignal.any([
+                    stage.input.signal,
+                    ...(signal ? [signal] : []),
+                ]);
+                try {
+                    lifetime.throwIfAborted();
+                    return await handler({
+                        ...stage,
+                        input: { ...stage.input, signal: lifetime },
+                    });
+                } catch (error) {
+                    if (stage.input.signal.aborted) throw error;
+                    if (!signal?.aborted) throw error;
+                }
+            },
+        );
+        if (!registered) throw new Error("page_readiness_blocker_conflict");
+        const dispose = () => {
+            if (entries.get(id) !== dispose) return;
+            ctx.removeFlowHook("page:ready", "blocking", id);
+            entries.delete(id);
+            signal?.removeEventListener("abort", dispose);
+        };
+        entries.set(id, dispose);
+        signal?.addEventListener("abort", dispose, { once: true });
+        if (signal?.aborted) dispose();
+        return dispose;
     };
-    entries.set(id, dispose);
-    signal?.addEventListener("abort", dispose, { once: true });
-    if (signal?.aborted) dispose();
-    return dispose;
 }

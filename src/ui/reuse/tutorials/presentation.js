@@ -259,8 +259,10 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             menu.dispose();
             root.remove();
         }
-        const isPopup = () =>
-            Boolean(document.querySelector(".popup-overlay--visible"));
+        const isPopup = () => {
+            const popup = document.querySelector(".popup-overlay--visible");
+            return Boolean(popup && !(step.popup && popup.matches(step.popup)));
+        };
         const isBroadcast = (node, event) =>
             Boolean(
                 node?.closest?.("#site-top-banners") ||
@@ -612,6 +614,7 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                             : current - 1
                         : (current + 1) % options.length;
                     event.preventDefault();
+                    event.stopImmediatePropagation();
                     (options[next] ?? panel).focus({ preventScroll: true });
                 } else if (["Enter", " "].includes(event.key)) block(event);
             },

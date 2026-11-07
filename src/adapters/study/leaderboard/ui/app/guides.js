@@ -20,7 +20,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "scores-and-movement",
-                        selector: ".leaderboard-table-scroll",
+                        selector: ".leaderboard-table-scroll thead",
                         titleKey:
                             "adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title",
                         bodyKey:
@@ -29,7 +29,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compare-progress",
-                        selector: ".leaderboard-table-scroll",
+                        selector: ".leaderboard-row",
+                        targetMatch: "first",
                         titleKey:
                             "adapter.study.leaderboard.tutorial.rankings.compare.progress.title",
                         bodyKey:

@@ -7,11 +7,12 @@ export const guides = [
                 page: ({ pathname }) =>
                     /^\/study\/explore(?:\/|$)/.test(pathname),
                 titleKey: "adapter.study.library.tutorial.explore.title",
+                visibleWhen: ".library-browser",
                 steps: [
                     {
                         highlightNext: true,
                         id: "browse-a-layer",
-                        selector: "#study-library-layer",
+                        selector: ".library-layer-navigation",
                         titleKey:
                             "adapter.study.library.tutorial.explore.browse.a.layer.title",
                         bodyKey:
@@ -19,55 +20,75 @@ export const guides = [
                     },
                     {
                         highlightNext: true,
-                        id: "details-and-relationships",
-                        selector: ".library-entry-card[data-library-entry]",
-                        targetMatch: "first",
+                        id: "filter-and-select",
+                        selector: ".library-filters",
                         titleKey:
-                            "adapter.study.library.tutorial.explore.details.and.relationships.title",
+                            "adapter.study.library.tutorial.explore.filter.and.select.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.explore.details.and.relationships.body",
+                            "adapter.study.library.tutorial.explore.filter.and.select.body",
+                        targetMatch: "first",
                     },
                     {
                         highlightNext: true,
                         id: "favourites-and-contributions",
                         selector:
-                            '[data-study-favourite][data-study-favourite-kind="library"]',
-                        targetMatch: "first",
+                            "[data-study-favourite][data-study-favourite-kind=library]",
                         titleKey:
                             "adapter.study.library.tutorial.explore.favourites.and.contributions.title",
                         bodyKey:
                             "adapter.study.library.tutorial.explore.favourites.and.contributions.body",
+                        targetMatch: "first",
+                    },
+                    {
+                        id: "details-and-relationships",
+                        selector: ".library-entry-card[data-library-entry]",
+                        titleKey:
+                            "adapter.study.library.tutorial.explore.details.and.relationships.title",
+                        bodyKey:
+                            "adapter.study.library.tutorial.explore.details.and.relationships.body",
+                        highlightNext: false,
+                        targetMatch: "first",
+                        interaction: "target",
+                        suppressHover: true,
+                        group: "entry-details",
+                        popup: ".library-entry-popup",
+                        advance: { event: "click" },
                     },
                     {
                         highlightNext: true,
-                        id: "filter-and-select",
-                        selector: ".library-filters",
-                        targetMatch: "first",
+                        id: "read-details",
+                        selector: ".library-detail",
                         titleKey:
-                            "adapter.study.library.tutorial.explore.filter.and.select.title",
+                            "adapter.study.library.tutorial.explore.read.details.title",
                         bodyKey:
-                            "adapter.study.library.tutorial.explore.filter.and.select.body",
+                            "adapter.study.library.tutorial.explore.read.details.body",
+                        portal: ".library-entry-popup",
+                        popup: ".library-entry-popup",
+                        layer: "overlay",
+                        group: "entry-details",
+                        dependsOn: ["details-and-relationships"],
+                        enter: ({ target, groupSignal, ctx }) => {
+                            ctx.capabilities
+                                .get("ui:transientSurfaces")
+                                .attachLifetime(
+                                    target.closest(".library-entry-popup"),
+                                    groupSignal,
+                                );
+                        },
                     },
                     {
                         highlightNext: true,
                         id: "practise-writing",
-                        selector: ".library-entry-card[data-library-entry]",
-                        targetMatch: "first",
+                        selector: "[data-popup-action=draw]",
                         titleKey:
                             "adapter.study.library.tutorial.explore.practise.writing.title",
                         bodyKey:
                             "adapter.study.library.tutorial.explore.practise.writing.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "collect-and-request",
-                        selector:
-                            '[data-study-favourite][data-study-favourite-kind="library"]',
-                        targetMatch: "first",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.collect.and.request.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.collect.and.request.body",
+                        portal: ".library-entry-popup",
+                        popup: ".library-entry-popup",
+                        layer: "overlay",
+                        group: "entry-details",
+                        dependsOn: ["details-and-relationships"],
                     },
                 ],
             },
@@ -95,16 +116,6 @@ export const guides = [
                             "adapter.study.library.tutorial.search.inspect.before.importing.title",
                         bodyKey:
                             "adapter.study.library.tutorial.search.inspect.before.importing.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "compare-dictionary-matches",
-                        selector: "[data-dictionary-result]",
-                        targetMatch: "first",
-                        titleKey:
-                            "adapter.study.library.tutorial.search.compare.dictionary.matches.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.search.compare.dictionary.matches.body",
                     },
                 ],
             },
@@ -136,7 +147,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "follow-request-outcome",
-                        selector: "[data-library-request]",
+                        selector:
+                            ".library-request-header .library-metadata-pill",
                         targetMatch: "first",
                         titleKey:
                             "adapter.study.library.tutorial.requests.follow.request.outcome.title",

@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "account-directory",
-                        selector: "#users-table",
+                        selector: ".users-list",
                         titleKey:
                             "ui.tutorial.users.directory.account.directory.title",
                         bodyKey:
@@ -39,7 +39,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "find-account",
-                        selector: "#users-input",
+                        selector: ".users-name",
+                        targetMatch: "first",
                         titleKey:
                             "ui.tutorial.users.directory.find.account.title",
                         bodyKey:

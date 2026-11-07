@@ -207,6 +207,7 @@ export async function openEntryPopup(
                 bindEntryDetail(overlay, displayedEntry, {
                     signal: audioController.signal,
                     popupApi,
+                    dismiss,
                     requestId:
                         selectedEntry.id === initialEntry.id
                             ? options.requestId

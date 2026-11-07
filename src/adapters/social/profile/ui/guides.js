@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "profile-identity",
-                        selector: "#hero",
+                        selector: ".profile-hero-identity",
                         titleKey:
                             "module.social.profile.tutorial.profile.profile.identity.title",
                         bodyKey:
@@ -19,7 +19,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "posts",
-                        selector: "#posts",
+                        selector: ".profile-posts-section",
                         titleKey:
                             "module.social.profile.tutorial.profile.posts.title",
                         bodyKey:
@@ -28,7 +28,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "social-actions",
-                        selector: "#hero",
+                        selector: ".profile-hero-action-row",
                         titleKey:
                             "module.social.profile.tutorial.profile.social.actions.title",
                         bodyKey:

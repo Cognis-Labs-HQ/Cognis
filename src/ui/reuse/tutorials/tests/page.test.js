@@ -201,3 +201,56 @@ test("replay controls follow the descriptor lifetime without replacing its conte
     assert.notEqual(replacement, first);
     assert.equal(state.heading.children.length, 1);
 });
+
+test("finishing one automatic guide does not start other guides on the same surface", async (context) => {
+    const state = pageHost(context);
+    const owner = state.owner();
+    await owner.register(play());
+    await state.api.refreshPage();
+    await tick();
+    await owner.register({ ...play(), id: "supplement" });
+    await complete(state);
+    await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+    assert.equal(state.values.size, 1);
+    assert.equal((await state.api.list()).length, 2);
+});
+
+test("a same-URL view change starts its own guide once and revisiting does not restart it", async (context) => {
+    const state = pageHost(context);
+    let section = "general";
+    const owner = state.owner();
+    for (const id of ["general", "datetime"])
+        await owner.register({
+            ...play(),
+            id,
+            available: () => section === id,
+        });
+    await state.api.refreshPage();
+    await tick();
+    assert.equal(state.api.current().id, "example:general");
+    section = "datetime";
+    state.rendered.at(-1).lost();
+    await tick();
+    await state.api.refreshPage();
+    await tick();
+    assert.equal(state.api.current().id, "example:datetime");
+    section = "general";
+    state.rendered.at(-1).lost();
+    await tick();
+    await state.api.refreshPage();
+    section = "datetime";
+    await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+});
+
+test("supplemental guides remain discoverable through replay without starting automatically", async (context) => {
+    const state = pageHost(context);
+    await state.owner().register({ ...play(), automatic: false });
+    await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+    const session = await state.api.openPage();
+    await session.ready;
+    assert.equal(state.api.current().id, "example:intro");
+    await session.dispose();
+});

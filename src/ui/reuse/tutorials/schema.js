@@ -52,6 +52,7 @@ export function validatePlay(input) {
         "steps",
         "available",
         "requires",
+        "automatic",
     ]);
     assert(input.version === 1);
     if (typeof input.page !== "function") validateRoute(input.page);
@@ -73,6 +74,9 @@ export function validatePlay(input) {
                     (id) => typeof id === "string" && id.length <= 150,
                 )),
     );
+    assert(
+        input.automatic === undefined || typeof input.automatic === "boolean",
+    );
     const ids = new Set();
     const steps = input.steps.map((step) => {
         keys(step, [
@@ -87,6 +91,7 @@ export function validatePlay(input) {
             "suppressHover",
             "highlightNext",
             "layer",
+            "popup",
             "group",
             "preventNavigation",
             "advance",
@@ -158,6 +163,11 @@ export function validatePlay(input) {
         assert(
             step.layer === undefined ||
                 ["page", "overlay"].includes(step.layer),
+        );
+        assert(
+            step.popup === undefined ||
+                (typeof step.popup === "string" &&
+                    step.popup.trim().length > 0),
         );
         assert(step.interaction !== "none" || !step.advance);
         assert(

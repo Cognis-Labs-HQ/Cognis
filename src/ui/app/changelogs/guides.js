@@ -19,7 +19,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compare-releases",
-                        selector: "#doc",
+                        selector: ".side-menu",
                         titleKey:
                             "ui.tutorial.changelogs.releases.compare.releases.title",
                         bodyKey:

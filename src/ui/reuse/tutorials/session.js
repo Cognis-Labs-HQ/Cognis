@@ -11,6 +11,7 @@ import { waitForTarget } from "./targets.js";
 import { validateRoute } from "./schema.js";
 
 export function createSession({
+    ctx,
     record,
     firstTime = false,
     role,
@@ -122,7 +123,7 @@ export function createSession({
         }
         return rendered;
     }
-    async function enter(nextIndex, interrupt = false) {
+    async function enter(nextIndex, interrupt = false, recovering = false) {
         if (disposed || (busy && !interrupt)) return false;
         busy = true;
         cleanStep();
@@ -226,7 +227,7 @@ export function createSession({
             if (step.target && !target) {
                 rendering?.dispose();
                 rendering = null;
-                if (step.missing.action === "skip") {
+                if (step.missing.action === "skip" && !recovering) {
                     plan.skip(index);
                     busy = false;
                     return enter(index + 1);
@@ -250,6 +251,20 @@ export function createSession({
                 });
                 busy = false;
                 ready(true);
+                if (recovering) {
+                    void waitForTarget(() => resolve(step.target), {
+                        signal,
+                        timeoutMs: 15000,
+                        document,
+                    })
+                        .then((replacement) => {
+                            if (replacement && !signal.aborted)
+                                return emit("retry");
+                        })
+                        .catch((error) => {
+                            if (!signal.aborted) fail(error);
+                        });
+                }
                 return true;
             }
             if (
@@ -265,6 +280,7 @@ export function createSession({
                         sessionSignal: controller.signal,
                         groupSignal,
                         target,
+                        ctx,
                         stepId: step.id,
                     }),
                 );
@@ -305,7 +321,7 @@ export function createSession({
                     if (error) fail(error);
                     else {
                         targetLost = true;
-                        if (!busy) void enter(index);
+                        if (!busy) void enter(index, false, true);
                     }
                 },
                 interacted: async (event) => {
@@ -342,7 +358,7 @@ export function createSession({
             signal.throwIfAborted();
             if (targetLost) {
                 busy = false;
-                return enter(index);
+                return enter(index, false, true);
             }
             busy = false;
             ready(true);
@@ -360,6 +376,7 @@ export function createSession({
                             sessionSignal: controller.signal,
                             groupSignal,
                             target,
+                            ctx,
                             stepId: step.id,
                         }),
                     ),
@@ -402,6 +419,12 @@ export function createSession({
         finished,
         state: status,
         targetId: () => record.play.steps[index]?.target,
+        acceptsPopup: (popup) =>
+            Boolean(
+                popup &&
+                record.play.steps[index]?.popup &&
+                popup.matches(record.play.steps[index].popup),
+            ),
         begin: () => enter(0),
         next: (interacted = false) => {
             if (disposed || (busy && !firstTime)) return false;

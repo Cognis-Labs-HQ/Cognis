@@ -144,6 +144,18 @@ Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereits
 
 `scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
 
+## Gezielte Seitenführungen
+
+Anleitungen folgen der sichtbaren UI-Reihenfolge und verwenden unterschiedliche reale Bedienelemente. Einstellungen lassen Erklärungen zu nicht verfügbaren Änderungsaktionen weg. Profil, Benutzer, Dokumentation, Kalender und Study verwenden sinnvolle Ziele einschließlich leerer Kalender, Dokumentseitenleiste und Kartendetails.
+
+## SPA und Zielwiederherstellung
+
+Bereitschaftsblocker teilen ersetzungssichere Besitzer über gebündelte und direkte Importe. Seitenlebensdauern geben alte Beiträge frei. Scrollen oder Layoutwechsel überspringen kein bereits gezeigtes Ziel stillschweigend. Pro sichtbarer Ansicht läuft eine automatische Anleitung; Ergänzungen bleiben über ? wählbar.
+
+## Regeln für Tutorialautoren
+
+Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabile Karten, ausdrückliche Dialogzweige, optionale und leere Zustände, UI-Reihenfolge, Bereinigung und Prüfung von Quell- und Produktionsbuilds. Das Kontomenü schließt vor dem Tutorialstart.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "social-providers",
-                        selector: "#social",
+                        selector: "#social table",
                         titleKey:
                             "gateway.social.tutorial.social.social.providers.title",
                         bodyKey:
@@ -19,7 +19,9 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "change-availability",
-                        selector: "#social",
+                        selector:
+                            "#social .pill-active, #social .pill-available",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.social.tutorial.social.change.availability.title",
                         bodyKey:

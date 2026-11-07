@@ -24,6 +24,7 @@ export function createPageTutorials({
         : controller.signal;
     const completed = new Set();
     const attempted = new Set();
+    const automaticSurfaces = new Set();
     const storageFailures = new Set();
     let help,
         menu,
@@ -144,11 +145,16 @@ export function createPageTutorials({
             document.querySelector(".popup-overlay--visible")
         )
             return;
+        const surface = JSON.stringify([actor, page.pathname, plays[0].id]);
+        if (automaticSurfaces.has(surface)) return;
         const first = plays.find(
             (play) =>
-                !attempted.has(key(actor, play.id)) && !seen(actor, play.id),
+                play.automatic !== false &&
+                !attempted.has(key(actor, play.id)) &&
+                !seen(actor, play.id),
         );
         if (!first) return;
+        automaticSurfaces.add(surface);
         return start(first.id, actor);
     }
     async function start(id, actor) {
@@ -238,7 +244,7 @@ export function createPageTutorials({
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ["class"],
+            attributeFilter: ["class", "hidden", "aria-hidden"],
         });
         signal.addEventListener(
             "abort",
