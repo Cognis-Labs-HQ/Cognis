@@ -694,6 +694,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("logging", uiDir);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/logging/tutorials.js",
+        providesCapabilities: ["logging:pageTutorials"],
+        access: { minRole: "admin" },
+    });
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",

@@ -54,6 +54,8 @@ export const BROWSER_FLOW_CONTRACTS = Object.freeze({
         "mount-page",
     ]),
     "load-page": Object.freeze(["authenticate", "mount-page"]),
+    "page:mounted": Object.freeze(["publish"]),
+    "page:ready": Object.freeze(["prepare", "blocking", "ready", "afterReady"]),
     "defer-page-action": Object.freeze(["schedule"]),
     "complete-login": Object.freeze(["setup-account-services"]),
     logout: Object.freeze(["revokeSession", "clearSession", "redirectToLogin"]),

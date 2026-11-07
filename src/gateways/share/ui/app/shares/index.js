@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import {
@@ -424,6 +425,7 @@ export async function mount(root, { signal } = {}) {
     };
     await loadOverview();
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         preferenceKey: "shares-layout",
         i18n,

@@ -1,3 +1,4 @@
+import { registerPageReadinessBlocker } from "../reuse/page-readiness.js";
 import { mountOfflineStatus } from "../reuse/offline-status.js";
 import { isOffline } from "../reuse/offline-state.js";
 import { updateNavbarAvatar } from "./navbar-avatar.js";
@@ -19,7 +20,7 @@ import {
     applyTimeFormatToLocalStorage,
     applyTimezoneToLocalStorage,
 } from "../reuse/timestamp.js";
-import { maybeShowReleaseChangelogPopup } from "./release-changelog/popup.js";
+import { registerReleaseChangelogReadiness } from "./release-changelog/readiness.js";
 import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
@@ -31,7 +32,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
-import { bindUserMenuIntegrity } from "./user-menu.js";
+import { bindAccountMenu, bindUserMenuIntegrity } from "./user-menu.js";
 import { footerLinks, mountFooterLinks } from "../reuse/footer-links.js";
 import { ensurePersistentStylesheet } from "../reuse/page-styles.js";
 import {
@@ -278,30 +279,8 @@ function bindTopbarActions() {
         }
     })();
 
-    const openMenu = () => {
-        dropdown?.classList.remove("hidden");
-        profileMenu?.classList.add("open");
-        toggle?.classList.add("active");
-        toggle?.setAttribute("aria-expanded", "true");
-    };
-
-    const closeMenu = () => {
-        dropdown?.classList.add("hidden");
-        profileMenu?.classList.remove("open");
-        toggle?.classList.remove("active");
-        toggle?.setAttribute("aria-expanded", "false");
-    };
-
-    toggle?.setAttribute("aria-expanded", "false");
-    toggle?.addEventListener("mouseenter", openMenu);
-    toggle?.addEventListener("click", (event) => {
-        event.stopPropagation();
-        openMenu();
-    });
-
-    document.addEventListener("click", (event) => {
-        if (!profileMenu?.contains(event.target)) closeMenu();
-    });
+    if (toggle && dropdown && profileMenu)
+        bindAccountMenu({ toggle, dropdown, menu: profileMenu });
 
     logout?.addEventListener("click", async () => {
         if (isOffline()) return;
@@ -309,34 +288,47 @@ function bindTopbarActions() {
     });
 }
 
-let releaseChangelogPopupChecked = false;
-
 export async function ensureNavbarPluginsLoaded() {
     await ensureUiProvidersLoaded();
     return loadNavbarPlugins();
 }
 
-function completeDeferredLoginSetup() {
+function completeDeferredLoginSetup(signal) {
     return ensureNavbarPluginsLoaded().then(() => {
+        signal?.throwIfAborted();
         const hasDeferredKeyringSetup = uiCtx.capabilities.get(
             "keyring:hasDeferredSetup",
         );
         return hasDeferredKeyringSetup?.()
-            ? uiCtx.runFlow("complete-login", {})
+            ? uiCtx.runFlow("complete-login", { signal })
             : undefined;
     });
 }
 
-function scheduleDeferredLoginSetup(i18n) {
-    requestAnimationFrame(() => {
-        completeDeferredLoginSetup().catch((error) => {
-            console.error(
-                "[dashboard-layout]:deferred-login-setup-failed",
-                error,
-            );
-            showToast(i18n.t("ui.reuse.error"), { variant: "error" });
-        });
-    });
+function scheduleDeferredLoginSetup(i18n, signal) {
+    registerPageReadinessBlocker(
+        uiCtx,
+        { id: "layout:deferredLoginSetup", order: -100, signal },
+        async ({ input }) => {
+            try {
+                input.signal.throwIfAborted();
+                await completeDeferredLoginSetup(input.signal);
+                input.signal.throwIfAborted();
+            } catch (error) {
+                if (input.signal.aborted) throw error;
+                uiCtx.capabilities.get("ui:log")?.(
+                    "error",
+                    "deferred_login_setup_failed",
+                    {
+                        component: "ui",
+                        operation: "deferredLoginSetup",
+                        errorName: error?.name,
+                    },
+                );
+                showToast(i18n.t("ui.reuse.error"), { variant: "error" });
+            }
+        },
+    );
 }
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
@@ -376,16 +368,6 @@ function scheduleNavbarEnhancements() {
         return;
     }
     setTimeout(runEnhancements, 0);
-}
-
-function ensureReleaseChangelogPopupChecked(i18n) {
-    if (
-        releaseChangelogPopupChecked ||
-        uiCtx.capabilities.get("session:isGuest")?.() === true
-    )
-        return;
-    releaseChangelogPopupChecked = true;
-    maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
 
 function applyCompactNav(root) {
@@ -655,9 +637,12 @@ export async function renderDashboardLayout(root, slots = {}) {
             uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
             scheduleNavbarEnhancements();
-            scheduleDeferredLoginSetup(i18n);
+            scheduleDeferredLoginSetup(i18n, slots.signal);
             initSearchBar(i18n);
-            ensureReleaseChangelogPopupChecked(i18n);
+            registerReleaseChangelogReadiness(uiCtx, {
+                i18n,
+                signal: slots.signal,
+            });
         }
         bindHeaderScrollState(root);
         if (!componentWindow)
@@ -719,11 +704,14 @@ export async function renderDashboardLayout(root, slots = {}) {
     ) {
         bindTopbarActions();
         scheduleNavbarEnhancements();
-        scheduleDeferredLoginSetup(i18n);
+        scheduleDeferredLoginSetup(i18n, slots.signal);
         applyActiveNavigation();
         applyCompactNav(root);
         initSearchBar(i18n);
-        ensureReleaseChangelogPopupChecked(i18n);
+        registerReleaseChangelogReadiness(uiCtx, {
+            i18n,
+            signal: slots.signal,
+        });
     }
     bindHeaderScrollState(root);
     if (!componentWindow)

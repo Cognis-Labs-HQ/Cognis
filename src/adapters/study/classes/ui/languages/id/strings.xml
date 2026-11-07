@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="module.study.classes.tutorial.classes.title">Panduan Kelas</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.title">Filter Bahasa</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.body">Saring kelas berdasarkan bahasa untuk menemukan kelas yang tersedia bagi Anda.</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.title">Keanggotaan Kelas</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.body">Periksa anggota dan status permintaan; chat dan rapat mengikuti aturan akses kelas.</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.title">Mengajar dan Mengelola</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.body">Pengajar mengelola kelas dan undangan yang ditugaskan; permintaan menjadi pengajar mungkin memerlukan persetujuan administrator.</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.title">Kelas Terdaftar</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.body">Periksa kelas yang diikuti dan bahasanya sebelum membuka kelas.</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.title">Permintaan Bergabung</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.body">Jelajahi kelas tersedia dan periksa permintaan tertunda sebelum mengajukan lagi.</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">Minta Keanggotaan Kelas</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">Pilih kelas sesuai bahasa dan tinjau detailnya sebelum meminta bergabung. Keanggotaan diperbarui setelah permintaan disetujui.</string>
+</resources>

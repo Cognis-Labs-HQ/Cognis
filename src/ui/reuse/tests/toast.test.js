@@ -69,6 +69,7 @@ class FakeElement {
 test("temporary toast hover and drag gestures control dismissal", async () => {
     const originalGlobals = {
         document: globalThis.document,
+        localStorage: globalThis.localStorage,
         requestAnimationFrame: globalThis.requestAnimationFrame,
         setTimeout: globalThis.setTimeout,
         clearTimeout: globalThis.clearTimeout,
@@ -96,6 +97,27 @@ test("temporary toast hover and drag gestures control dismissal", async () => {
 
     try {
         const { showToast } = await import(`../toast.js?test=${Date.now()}`);
+        for (const role of ["user", "teacher", "moderator", "unknown", null]) {
+            globalThis.localStorage = { getItem: () => role };
+            const before = tray.children.length;
+            const timerCount = timers.size;
+            const dismiss = showToast("Privileged operational message", {
+                minRole: "admin",
+                onDismiss: () => assert.fail("suppressed toast callback"),
+            });
+            dismiss();
+            assert.equal(tray.children.length, before);
+            assert.equal(timers.size, timerCount);
+        }
+        for (const role of ["admin", "owner"]) {
+            globalThis.localStorage = { getItem: () => role };
+            const before = tray.children.length;
+            showToast("Privileged operational message", { minRole: "admin" });
+            assert.equal(tray.children.length, before + 1);
+        }
+        tray.children.length = 0;
+        timers.clear();
+        globalThis.localStorage = { getItem: () => "user" };
         let dismissedCount = 0;
         let expiredCount = 0;
         showToast("Saved", {

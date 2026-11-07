@@ -1,3 +1,4 @@
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { loadReferenceImages } from "./reference-images.js";
 import { bindDrawingPreview, placeAudioSpeaker } from "./drawing.js";
@@ -42,8 +43,17 @@ export function bindDetailLayout(root, signal) {
 export function bindEntryDetail(
     root,
     entry,
-    { signal, audioObjectUrls, audioError, imageError, requestId, popupApi },
+    {
+        signal,
+        audioObjectUrls,
+        audioError,
+        imageError,
+        requestId,
+        popupApi,
+        dismiss,
+    },
 ) {
+    transientSurfaces.register(root, dismiss, signal);
     bindDetailLayout(root, signal);
     bindDrawingPreview(popupApi, entry, signal);
     placeAudioSpeaker(root, signal, popupApi);

@@ -15,4 +15,13 @@
   <string name="ui.app.profile.provider_sync">{{ provider }} と同期</string>
   <string name="ui.app.profile.provider_sync_complete">プロフィールを同期しました。</string>
   <string name="ui.app.profile.provider_sync_failed">プロフィールを同期できませんでした。</string>
+  <string name="module.social.profile.tutorial.profile.title">プロフィールと投稿</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.title">プロフィールの情報</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.body">本人情報と連絡可能な状態を確認します。自分のプロフィールには編集操作があります。</string>
+  <string name="module.social.profile.tutorial.profile.posts.title">投稿</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">表示できる投稿を読み、自分のアカウントで許可された操作を使います。</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.title">交流の操作</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.title">投稿をプレビューする</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">投稿を書き、書式と添付内容をプレビューします。公開前に対象読者を確認します。</string>
 </resources>

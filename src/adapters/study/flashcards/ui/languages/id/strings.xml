@@ -38,4 +38,27 @@
   <string name="adapter.study.flashcards.practice_restart_warning">Mengubah mode latihan akan memulai ulang sesi serta membuang posisi dan jawaban saat ini. Ulasan yang telah dikirim tetap tersimpan.</string>
   <string name="adapter.study.flashcards.practice_hint">Tampilkan Jawaban Benar</string>
   <string name="adapter.study.flashcards.practice_hint_answer">Jawaban benar: {{ answer }}</string>
+  <string name="adapter.study.flashcards.tutorial.decks.title">Panduan Kartu Belajar</string>
+  <string name="adapter.study.flashcards.tutorial.decks.deck.selection.title">Pilih Dek</string>
+  <string name="adapter.study.flashcards.tutorial.decks.deck.selection.body">Pilih dek dari bilah samping lalu periksa bahasa dan kartu di dalamnya.</string>
+  <string name="adapter.study.flashcards.tutorial.decks.study.modes.title">Mode Belajar</string>
+  <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">Tinjau mode dan filter belajar yang tersedia sebelum mulai berlatih.</string>
+  <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">Latihan dan Kemajuan</string>
+  <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">Gunakan kontrol latihan untuk menjawab dan meninjau kartu; kemajuan terikat pada akun Anda.</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">Buat Dek</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">Buat dek, beri nama yang berguna, dan pilih kartu pustaka. Periksa kartu yang dipilih sebelum menyimpan.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.title">Latihan Dengan Dek</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">Pilih Mode Latihan</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">Pilih mode membaca, mendengar, atau menulis yang tersedia. Mode bergantung pada isi kartu terpilih.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">Jawab Kartu</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">Baca soal lalu masukkan atau pilih jawaban. Pada latihan menulis, gunakan kontrol menggambar dan petunjuk goresan.</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">Periksa Umpan Balik</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.body">Setelah menjawab, bandingkan umpan balik dan jawaban. Lanjutkan kartu dan gunakan kontrol sebelumnya/berikutnya bila tersedia.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.title">Kelola Dek</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.title">Edit Isi Dek</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.body">Edit dek milik Anda untuk mengubah nama atau pilihan kartu. Tinjau pilihan sebelum menyimpan untuk latihan berikutnya.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.title">Bagikan Kepada Pelajar</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.body">Gunakan kontrol berbagi untuk memilih penerima dan akses. Tinjau dialog sebelum mengonfirmasi siapa yang boleh memakai dek.</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.title">Ekspor Dek Anda</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.body">Pembuat dek dan administrator dapat mengekspor dek yang tersedia. Simpan berkas untuk memakai kartu di alat belajar lain yang didukung.</string>
 </resources>

@@ -51,4 +51,16 @@
   <string name="ui.app.login.tfa.resend_rate_limited">{seconds}秒後にコードを再送信</string>
   <string name="ui.app.login.tfa.resend_sent">新しい確認コードを送信しました。</string>
   <string name="ui.app.login.tfa.code_placeholder">確認コード</string>
+  <string name="gateway.tfa.tutorial.methods.title">二要素認証</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.title">認証方式を設定</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">利用できる方式を選び、ログインに使う前に設定を完了します。</string>
+  <string name="gateway.tfa.tutorial.methods.preferred.methods.title">優先する認証方式</string>
+  <string name="gateway.tfa.tutorial.methods.preferred.methods.body">有効な方式を並べ替え、最初に使う方式を決めます。</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.title">復旧コード</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">復旧コードは安全に保管します。表示や再発行は、それぞれの操作で行います。</string>
+  <string name="gateway.tfa.tutorial.enforcement.title">二要素認証の必須設定</string>
+  <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">必須にする方針</string>
+  <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">全アカウントへの影響を確認してから、二要素認証を必須にします。</string>
+  <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">方針を適用</string>
+  <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">必須設定と利用者に必要な準備を見直してから保存します。</string>
 </resources>

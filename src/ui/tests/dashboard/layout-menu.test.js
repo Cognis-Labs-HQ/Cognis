@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { reconcileUserMenuEntries } from "../../layouts/user-menu.js";
+import {
+    bindAccountMenu,
+    reconcileUserMenuEntries,
+} from "../../layouts/user-menu.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
@@ -45,14 +48,44 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     );
 });
 
-test("profile menu toggle is active while its dropdown is open", () => {
-    const layoutSource = readFileSync(
-        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
-        "utf8",
-    );
+function accountMenuFixture() {
+    const document = new EventTarget();
+    const element = () => {
+        const node = new EventTarget(),
+            classes = new Set(),
+            attributes = new Map();
+        node.ownerDocument = document;
+        node.classList = {
+            add: (value) => classes.add(value),
+            remove: (value) => classes.delete(value),
+            contains: (value) => classes.has(value),
+        };
+        node.setAttribute = (key, value) => attributes.set(key, value);
+        node.getAttribute = (key) => attributes.get(key);
+        return node;
+    };
+    const toggle = element(),
+        dropdown = element(),
+        menu = element();
+    menu.contains = (node) => node === toggle || node === dropdown;
+    dropdown.classList.add("hidden");
+    const controller = new AbortController();
+    bindAccountMenu({ toggle, dropdown, menu, signal: controller.signal });
+    return { document, toggle, dropdown, menu, controller };
+}
 
-    assert.match(layoutSource, /toggle\?\.classList\.add\("active"\)/);
-    assert.match(layoutSource, /toggle\?\.classList\.remove\("active"\)/);
+test("profile menu toggle and expanded state follow its real open and close handlers", () => {
+    const state = accountMenuFixture();
+    state.toggle.dispatchEvent(new Event("mouseenter"));
+    assert.equal(state.toggle.classList.contains("active"), true);
+    assert.equal(state.menu.classList.contains("open"), true);
+    assert.equal(state.toggle.getAttribute("aria-expanded"), "true");
+    assert.equal(state.dropdown.classList.contains("hidden"), false);
+    state.document.dispatchEvent(new Event("click"));
+    assert.equal(state.toggle.classList.contains("active"), false);
+    assert.equal(state.menu.classList.contains("open"), false);
+    assert.equal(state.toggle.getAttribute("aria-expanded"), "false");
+    state.controller.abort();
 });
 
 test("profile menu keeps the current page link active", () => {
@@ -208,12 +241,12 @@ test("dashboard layout checks release changelog popup in shell sessions", () => 
         "utf8",
     );
     assert.ok(
-        layoutSource.includes("maybeShowReleaseChangelogPopup"),
+        layoutSource.includes("registerReleaseChangelogReadiness"),
         "dashboard layout should import release changelog popup logic",
     );
     assert.ok(
-        layoutSource.includes("ensureReleaseChangelogPopupChecked(i18n)"),
-        "dashboard layout should trigger the release changelog check after rendering shell navigation",
+        layoutSource.includes("registerReleaseChangelogReadiness(uiCtx,"),
+        "dashboard layout should register the release changelog readiness blocker after rendering shell navigation",
     );
 });
 
@@ -285,21 +318,20 @@ test("built-in dashboard pages expose UUID-owned component page metadata", () =>
     assert.match(studyBootstrapSource, /id: "gateway\.study\.child"/);
 });
 
-test("profile dropdown opens on hover or click and closes only on click away", () => {
-    const layoutSource = readFileSync(
-        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
-        "utf8",
-    );
-    assert.match(layoutSource, /addEventListener\("mouseenter", openMenu\)/);
-    assert.match(layoutSource, /addEventListener\("click", \(event\) => \{/);
-    assert.doesNotMatch(
-        layoutSource,
-        /addEventListener\("mouseleave", closeMenu\)/,
-    );
-    assert.match(
-        layoutSource,
-        /if \(!profileMenu\?\.contains\(event.target\)\) closeMenu\(\)/,
-    );
+test("profile dropdown persists after pointer departure and releases its listeners with its owner", () => {
+    const state = accountMenuFixture();
+    state.toggle.dispatchEvent(new Event("click"));
+    state.toggle.dispatchEvent(new Event("mouseleave"));
+    assert.equal(state.dropdown.classList.contains("hidden"), false);
+    const inside = new Event("click");
+    Object.defineProperty(inside, "target", { value: state.dropdown });
+    state.document.dispatchEvent(inside);
+    assert.equal(state.dropdown.classList.contains("hidden"), false);
+    state.controller.abort();
+    assert.equal(state.dropdown.classList.contains("hidden"), true);
+    state.toggle.dispatchEvent(new Event("mouseenter"));
+    state.toggle.dispatchEvent(new Event("click"));
+    assert.equal(state.dropdown.classList.contains("hidden"), true);
 });
 
 test("user menu entries gain an outline on hover", () => {
@@ -378,9 +410,30 @@ test("core reconciles duplicate provider entries in the user menu", () => {
         integritySource,
         /function bindUserMenuIntegrity\(dropdown\)[\s\S]*new MutationObserver[\s\S]*observer\.observe\(dropdown, \{ childList: true \}\)/,
     );
-    assert.match(layoutSource, /import \{ bindUserMenuIntegrity \}/);
+    assert.match(
+        layoutSource,
+        /import \{ bindAccountMenu, bindUserMenuIntegrity \}/,
+    );
     assert.match(
         layoutSource,
         /if \(dropdown\) bindUserMenuIntegrity\(dropdown\)/,
     );
+});
+
+test("a tutorial start closes the account dropdown before session setup", async () => {
+    const { uiCtx } = await import("../../reuse/ui-ctx.js");
+    const state = accountMenuFixture();
+    try {
+        state.toggle.dispatchEvent(new Event("mouseenter"));
+        assert.equal(state.menu.classList.contains("open"), true);
+        await assert.rejects(
+            uiCtx.runFlow("ui:tutorial:start", { id: "unavailable:guide" }),
+            /tutorial_unavailable/,
+        );
+        assert.equal(state.dropdown.classList.contains("hidden"), true);
+        assert.equal(state.toggle.getAttribute("aria-expanded"), "false");
+        assert.equal(state.menu.classList.contains("open"), false);
+    } finally {
+        state.controller.abort();
+    }
 });

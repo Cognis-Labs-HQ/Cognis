@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { mountOfflineStudyPage } from "/static/gateways/study/offline-page.js";
 import {
     readStudySnapshot,
@@ -486,6 +487,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             ),
     });
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         contentScrolling: false,
         i18n,

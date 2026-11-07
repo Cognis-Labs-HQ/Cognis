@@ -15,6 +15,7 @@
  * @module reuse/search-util/popup
  */
 
+import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import {
@@ -539,6 +540,7 @@ export function openSearchPopup({
     const closeOverlay = () => {
         if (closeStarted) return;
         closeStarted = true;
+        overlay.inert = true;
         latestSearchRunId += 1;
         activeSearchController?.abort();
         clearTimeout(debounceTimer);
@@ -552,6 +554,7 @@ export function openSearchPopup({
         }, 140);
     };
 
+    transientSurfaces.register(overlay, closeOverlay, eventController.signal);
     overlay.__closeSearchPopup = closeOverlay;
 
     const onKeyDown = (event) => {

@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { ensurePageStylesheet } from "../../reuse/page-styles.js";
 import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
 import { createUserDetailsReader } from "./details.js";
@@ -693,6 +694,7 @@ export async function mount(rootEl, { signal } = {}) {
         : "";
 
     composer = createPageComposer(root, {
+        tutorials: guides,
         signal,
         allowCustomization: false,
         i18n,

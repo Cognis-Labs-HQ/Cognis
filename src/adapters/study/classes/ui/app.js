@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 /**
  * Classes page — framework for per-language class management.
  *
@@ -22,7 +23,9 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { isAdminScope, isTeacherScope } from "/static/reuse/access-role.js";
 
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/study/classes/languages"],
+    });
     applyDocumentTitle(i18n, "module.study.classes.page_title");
 
     let classes = [];
@@ -648,6 +651,8 @@ export async function mount(root, { signal } = {}) {
     };
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
+        signal,
         allowCustomization: false,
         elements: [classListElement],
         preferenceKey: "classes-layout",

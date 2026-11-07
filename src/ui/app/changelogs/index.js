@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { loadDocsIndex } from "../../reuse/docs-client.js";
 import {
     applyDocumentTitle,
@@ -158,6 +159,7 @@ export async function mount(root, { signal } = {}) {
     ];
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         elements,
         preferenceKey: "changelogs-layout",

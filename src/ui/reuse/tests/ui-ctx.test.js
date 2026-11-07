@@ -1,3 +1,6 @@
+import { registerFloatingMenus } from "../floating-menu-queue.js";
+import { installPageReadiness } from "../page-readiness.js";
+import { installTutorials } from "../tutorials/index.js";
 import { createTopBanners } from "../top-banners.js";
 import { registerOfflineRuntime } from "../offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
@@ -21,6 +24,9 @@ function loadUiCtxForTests() {
         new URL("../ui-ctx.js", import.meta.url),
         {
             "./flow-contracts.js": context,
+            "./tutorials/index.js": { installTutorials },
+            "./page-readiness.js": { installPageReadiness },
+            "./floating-menu-queue.js": { registerFloatingMenus },
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": context,
             "./top-banners.js": { createTopBanners },
@@ -214,4 +220,18 @@ test("uiCtx exposes the shared broadcast publisher before a page or provider mou
     const second = await import("../ui-ctx.js?broadcast-lifecycle");
     assert.equal(second.uiCtx.capabilities.get("ui:broadcast"), publisher);
     assert.equal(second.uiCtx.capabilities.get("ui:subPages"), subPages);
+});
+
+test("uiCtx installs executable floating-menu queue flows before page providers mount", async () => {
+    const { uiCtx } = loadUiCtxForTests();
+    const queue = uiCtx.capabilities.get("ui:floatingMenus");
+    assert.equal(queue.version, 1);
+    const lease = await queue.request({});
+    const element = { hidden: true };
+    await lease.present(element);
+    assert.equal(element.hidden, false);
+    await lease.dispose();
+    assert.equal(element.hidden, true);
+    for (const action of ["request", "present", "dismiss", "release"])
+        assert.equal(uiCtx.flowExists(`ui:floatingMenu:${action}`), true);
 });

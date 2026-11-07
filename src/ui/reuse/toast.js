@@ -24,16 +24,18 @@
  *
  * Options:
  *   variant   — 'info' | 'success' | 'warning' | 'error'. Default: 'info'.
+ *   minRole   — optional minimum access role; unknown/missing roles fail closed.
  *   duration  — auto-dismiss delay in ms. Default: 4000 for info/success,
  *               7000 for warning/error.
  *   permanent — when true the toast never auto-dismisses (only the × button
  *               removes it). Overrides duration.
  *
  * @param {string} message - Plain-text message to display.
- * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, linkHref?: string, linkLabel?: string, onDismiss?: () => void, onExpire?: () => void }} [options]
+ * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean, minRole?: string, linkHref?: string, linkLabel?: string, onDismiss?: () => void, onExpire?: () => void }} [options]
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
+import { hasMinAccessRole } from "./access-role.js";
 import { isOfflineTransition } from "./offline-state.js";
 import { escapeHtml } from "./escape-html.js";
 
@@ -130,6 +132,7 @@ export function showToast(
     message,
     {
         variant = "info",
+        minRole,
         duration,
         permanent = false,
         linkHref = "",
@@ -138,6 +141,14 @@ export function showToast(
         onExpire,
     } = {},
 ) {
+    if (
+        minRole !== undefined &&
+        !hasMinAccessRole(
+            globalThis.localStorage?.getItem("cognis_role"),
+            minRole,
+        )
+    )
+        return () => {};
     if (variant === "error" && isOfflineTransition()) return () => {};
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
     const icon = VARIANT_ICONS[variant] ?? VARIANT_ICONS.info;

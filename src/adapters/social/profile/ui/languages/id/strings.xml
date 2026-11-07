@@ -15,4 +15,13 @@
   <string name="ui.app.profile.provider_sync">Sinkronkan dengan {{ provider }}</string>
   <string name="ui.app.profile.provider_sync_complete">Profil disinkronkan.</string>
   <string name="ui.app.profile.provider_sync_failed">Profil tidak dapat disinkronkan.</string>
+  <string name="module.social.profile.tutorial.profile.title">Profil dan Postingan</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.title">Identitas Profil</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.body">Periksa identitas dan ketersediaan profil; profil sendiri menyediakan kontrol penyuntingan.</string>
+  <string name="module.social.profile.tutorial.profile.posts.title">Postingan</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Jelajahi postingan yang terlihat dan gunakan aksi yang diizinkan bagi akun Anda.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.title">Aksi Sosial</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Ikuti, kirim pesan, atau kelola hubungan melalui kontrol profil; periksa orang yang dipilih sebelum bertindak.</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.title">Pratinjau Kiriman</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">Tulis kiriman, lalu pratinjau format dan lampirannya. Periksa audiens sebelum menerbitkan.</string>
 </resources>

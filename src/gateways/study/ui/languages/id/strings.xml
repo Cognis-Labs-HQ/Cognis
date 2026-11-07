@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Mulai Menggunakan Study</string>
+  <string name="gateway.study.tutorial.navigation.title">Pilih Alat Belajar</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore menampilkan bahasa yang diikuti. Kartu belajar dan alat terpasang lainnya muncul di sini jika tersedia untuk akun Anda.</string>
+  <string name="gateway.study.tutorial.languages.title">Bahasa Belajar Anda</string>
+  <string name="gateway.study.tutorial.languages.body">Beralih di antara bahasa yang Anda ikuti. Ubah pendaftaran melalui pengaturan Study.</string>
+  <string name="gateway.study.tutorial.modules.title">Buka Modul Belajar</string>
+  <string name="gateway.study.tutorial.modules.body">Kartu ini membuka alat belajar terpasang. Jika alat tidak tersedia saat luring atau untuk peran Anda, sambungkan kembali atau hubungi administrator.</string>
   <string name="gateway.study.picker.title">Pilih Bahasa yang Dipelajari</string>
   <string name="gateway.study.picker.select">Pilih bahasa:</string>
   <string name="gateway.study.page_subtitle">Dasbor pembelajaran bahasamu</string>
@@ -48,7 +55,7 @@
   <string name="gateway.study.library_components">Komponen</string>
   <string name="gateway.study.library_used_by">Digunakan Oleh</string>
   <string name="gateway.study.library_no_relationships">Tidak ada entri terkait.</string>
-    <string name="gateway.study.library_fields">Bidang</string>
+  <string name="gateway.study.library_fields">Bidang</string>
   <string name="gateway.study.library_definitions">Definisi</string>
   <string name="gateway.study.library_alternate_definitions">Definisi alternatif</string>
   <string name="gateway.study.library_provenance">Asal-usul</string>
@@ -63,7 +70,7 @@
   <string name="gateway.study.favourite_failed">Favorit Study tidak dapat diperbarui.</string>
   <string name="gateway.study.favourite_added">Ditambahkan ke favorit.</string>
   <string name="gateway.study.favourite_removed">Dihapus dari favorit.</string>
-<string name="gateway.study.drawing.title">Latihan Menulis</string>
+  <string name="gateway.study.drawing.title">Latihan Menulis</string>
   <string name="gateway.study.drawing.guidance">Tampilkan panduan lengkap</string>
   <string name="gateway.study.drawing.well_done">Bagus Sekali</string>
   <string name="gateway.study.drawing.loser">Kalah!</string>
@@ -72,4 +79,9 @@
   <string name="gateway.study.drawing.reveal">Tampilkan karakter</string>
   <string name="gateway.study.drawing_open_card">Buka Kartu di Explore?</string>
   <string name="gateway.study.drawing_open_card_body">Buka kartu yang telah ditampilkan di Explore dan tinggalkan halaman ini?</string>
+  <string name="gateway.study.tutorial.preferences.title">Preferensi Belajar</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.title">Bahasa Belajar</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.body">Pilih bahasa yang ingin dipelajari dari modul bahasa terpasang.</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.title">Aktivitas Tersedia</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.body">Pilihan bahasa menentukan aktivitas belajar dan navigasi yang tersedia.</string>
 </resources>

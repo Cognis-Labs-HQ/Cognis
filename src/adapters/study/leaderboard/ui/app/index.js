@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -92,6 +93,7 @@ export async function mount(root, { signal } = {}) {
         return `<section class="study-leaderboard">${selector}<h2>${escapeHtml(definitionLabel(selectedDefinition))}</h2><div class="leaderboard-table-scroll"><table><caption>${escapeHtml(table.caption)}</caption><thead><tr>${headings}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
     };
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         elements: [
             {

@@ -47,3 +47,13 @@ export function entryExploreUrl(entry, schemas) {
         ? `/study/explore/${encodeURIComponent(schema.language)}/${encodeURIComponent(selected.layer.navigationSlug ?? selected.layer.id)}/${encodeURIComponent(entry.id)}`
         : "";
 }
+
+export function languageStudyPage({ pathname, language }) {
+    if (
+        typeof pathname !== "string" ||
+        typeof language !== "string" ||
+        !/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(language)
+    )
+        return false;
+    return pathname === "/study";
+}

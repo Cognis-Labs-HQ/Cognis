@@ -38,4 +38,27 @@
   <string name="adapter.study.flashcards.practice_restart_warning">練習モードを変更すると、このセッションの位置と回答を破棄して最初からやり直します。送信済みの復習記録は保持されます。</string>
   <string name="adapter.study.flashcards.practice_hint">正解を表示</string>
   <string name="adapter.study.flashcards.practice_hint_answer">正解：{{ answer }}</string>
+  <string name="adapter.study.flashcards.tutorial.decks.title">フラッシュカードの使い方</string>
+  <string name="adapter.study.flashcards.tutorial.decks.deck.selection.title">デッキを選ぶ</string>
+  <string name="adapter.study.flashcards.tutorial.decks.deck.selection.body">サイドバーからデッキを選び、言語と含まれるカードを確認します。</string>
+  <string name="adapter.study.flashcards.tutorial.decks.study.modes.title">学習モード</string>
+  <string name="adapter.study.flashcards.tutorial.decks.study.modes.body">練習を始める前に、利用できる学習モードと絞り込みを確認します。</string>
+  <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.title">練習と進捗</string>
+  <string name="adapter.study.flashcards.tutorial.decks.practice.and.progress.body">練習の操作で回答と復習を進めます。進捗は自分のアカウントに記録されます。</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">デッキを作る</string>
+  <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">デッキに分かりやすい名前を付け、ライブラリーからカードを選び、保存前に内容を確認します。</string>
+  <string name="adapter.study.flashcards.tutorial.practice.title">デッキで練習する</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">練習モードを選ぶ</string>
+  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">読む・聞く・書く練習から、カードの内容に対応するモードを選びます。</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">カードに答える</string>
+  <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">問題を読み、答えを入力または選択します。書き取りでは描画操作や筆順のヒントを使えます。</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">結果を確認して進む</string>
+  <string name="adapter.study.flashcards.tutorial.practice.check.feedback.body">回答後に結果と正解を見比べ、次のカードへ進みます。利用できる場合は前後の操作で振り返れます。</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.title">デッキを管理する</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.title">デッキの内容を編集する</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.edit.cards.body">自分のデッキの名前やカードを編集できます。次の練習に使う内容を保存前に確認します。</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.title">学習者と共有する</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.share.deck.body">共有操作で相手とアクセスを選び、利用できる人を確認してから確定します。</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.title">自分のデッキを書き出す</string>
+  <string name="adapter.study.flashcards.tutorial.manage.deck.export.deck.body">作成者と管理者はデッキを書き出せます。対応する別の学習ツールで使う場合はファイルを保存します。</string>
 </resources>

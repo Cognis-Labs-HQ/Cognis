@@ -249,6 +249,14 @@ uiRegistry.registerCapabilityProvider({
     providesCapabilities: ["ui:resourceLoader"],
 });
 uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/layouts/tutorials.js",
+    providesCapabilities: ["ui:workspaceTutorial"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/app/modules/tutorials.js",
+    providesCapabilities: ["ui:moduleTutorialTargets"],
+});
+uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/scoped-actions.js",
     providesCapabilities: ["ui:scopedActions"],
 });
@@ -260,6 +268,7 @@ uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/ui-ctx.js",
     providesCapabilities: [
         "ui:reuse",
+        "ui:tutorials",
         "offline:accessPolicy",
         "offline:outbox",
         "offline:state",

@@ -110,4 +110,13 @@
   <string name="share.shares.detail_updated">Updated</string>
   <string name="share.shares.detail_accessed">Accessed</string>
   <string name="share.shares.detail_expires">Expires</string>
+  <string name="share.tutorial.shares.title">Sharing Guide</string>
+  <string name="share.tutorial.shares.shared.items.title">Shared Items</string>
+  <string name="share.tutorial.shares.shared.items.body">Review your shared items and filter the list to find a particular share.</string>
+  <string name="share.tutorial.shares.recipients.and.access.title">Recipients And Access</string>
+  <string name="share.tutorial.shares.recipients.and.access.body">Open share details to inspect recipients, expiry and access before changing or revoking a share.</string>
+  <string name="share.tutorial.shares.filter.sharing.title">Find Sent And Received Shares</string>
+  <string name="share.tutorial.shares.filter.sharing.body">Filter sent or received shares to find who provided access and which items you shared with others.</string>
+  <string name="share.tutorial.shares.manage.share.access.title">Review Expiry And Revoke Access</string>
+  <string name="share.tutorial.shares.manage.share.access.body">Check a share’s status, recipient and expiry. Use its actions to open the item or revoke access you granted.</string>
 </resources>

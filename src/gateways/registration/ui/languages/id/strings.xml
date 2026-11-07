@@ -69,4 +69,16 @@
   <string name="ui.app.register.email_verify_notice">Anda harus memverifikasi alamat email dalam 5 menit setelah mendaftar, atau akun Anda akan dihapus secara otomatis.</string>
   <string name="gateway.registration.invite_sent">Undangan terkirim.</string>
   <string name="gateway.registration.invite_failed">Gagal mengirim undangan.</string>
+  <string name="gateway.registration.tutorial.invitations.title">Panduan Undangan</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.title">Pilihan Undangan</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda.</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.title">Riwayat Undangan</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.body">Periksa status dan kedaluwarsa; salin token hanya untuk penerima yang dituju dan cabut undangan tak terpakai jika perlu.</string>
+  <string name="gateway.registration.tutorial.policy.title">Kebijakan Pendaftaran</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.title">Akses Pendaftaran</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.body">Tinjau pendaftaran publik dan izin undangan sebelum mengubah siapa yang dapat membuat akun.</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">Terapkan Aturan Pendaftaran</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">Simpan perubahan kebijakan yang ditinjau lalu periksa opsi pada halaman undangan.</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">Kelola Undangan Terkirim</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">Periksa penerima dan status undangan sebelum menyalin atau membagikannya. Cabut undangan yang tidak boleh digunakan lagi.</string>
 </resources>

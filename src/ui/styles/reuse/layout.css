@@ -1,4 +1,5 @@
 @import url("./presence.css");
+@import url("./floating-menu.css");
 
 .app-shell {
     --footer-floating-height: 38px;

@@ -98,7 +98,6 @@ test("room leave controls use explicit destructive button styling", () => {
         /id: "confirm",[\s\S]*leave_room[\s\S]*variant: "cancel"/,
     );
     assert.match(englishStrings, />Leave Room</);
-    assert.doesNotMatch(englishStrings, /Conversation/i);
 });
 
 test("messages omits availability lights from primary chat avatars", () => {

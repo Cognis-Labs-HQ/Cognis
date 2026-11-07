@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="module.study.classes.tutorial.classes.title">Kursanleitung</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.title">Sprachfilter</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.body">Filtern Sie Kurse nach Sprache, um verfügbare Kurse zu finden.</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.title">Kursmitgliedschaft</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.body">Prüfen Sie Mitglieder und Anfragestatus; Chat und Besprechungen folgen den Kursberechtigungen.</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.title">Unterrichten und verwalten</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.body">Lehrkräfte verwalten zugewiesene Kurse und Einladungen; Lehranfragen können eine Freigabe erfordern.</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.title">Belegte Kurse</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.body">Prüfen Sie belegte Kurse und deren Sprache vor dem Öffnen.</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.title">Beitrittsanfragen</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.body">Prüfen Sie verfügbare Kurse und offene Beitrittsanfragen vor einer erneuten Bewerbung.</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">Klassenmitgliedschaft anfragen</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">Wählen Sie eine passende Sprachklasse und prüfen Sie Details vor der Beitrittsanfrage. Nach Genehmigung wird die Mitgliedschaft aktualisiert.</string>
+</resources>

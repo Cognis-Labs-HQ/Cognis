@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { loadDocsIndex } from "../../reuse/docs-client.js";
 import {
     applyDocumentTitle,
@@ -260,6 +261,7 @@ export async function mount(root, { signal } = {}) {
     ];
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
         signal,
         allowCustomization: false,
         elements,
@@ -275,7 +277,7 @@ export async function mount(root, { signal } = {}) {
                 id: "docs-nav",
                 label: i18n.t("ui.reuse.navigation"),
                 render: () =>
-                    `<h3>${i18n.t("ui.reuse.navigation")}</h3>${navigationMenu.render()}`,
+                    `<div data-docs-navigation><h3>${i18n.t("ui.reuse.navigation")}</h3>${navigationMenu.render()}</div>`,
             },
         ],
         toolbarScrollable: true,

@@ -15,4 +15,13 @@
   <string name="ui.app.profile.provider_sync">Sync with {{ provider }}</string>
   <string name="ui.app.profile.provider_sync_complete">Profile synchronized.</string>
   <string name="ui.app.profile.provider_sync_failed">Profile could not be synchronized.</string>
+  <string name="module.social.profile.tutorial.profile.title">Profiles And Posts</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.title">Profile Identity</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.body">Review the profile identity and availability; your own profile provides editing controls.</string>
+  <string name="module.social.profile.tutorial.profile.posts.title">Posts</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Browse visible posts and use the post actions allowed for your account.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.title">Social Actions</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Follow, message or manage relationships from the profile controls; review the selected person before acting.</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.title">Preview A Post</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">Compose a post, then preview its formatting and attachments. Check the audience before publishing.</string>
 </resources>
