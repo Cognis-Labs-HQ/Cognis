@@ -156,6 +156,10 @@ Bereitschaftsblocker teilen ersetzungssichere Besitzer über gebündelte und dir
 
 Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabile Karten, ausdrückliche Dialogzweige, optionale und leere Zustände, UI-Reihenfolge, Bereinigung und Prüfung von Quell- und Produktionsbuilds. Das Kontomenü schließt vor dem Tutorialstart.
 
+## Asynchrone Detailzweige
+
+Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

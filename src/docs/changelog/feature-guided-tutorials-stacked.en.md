@@ -156,6 +156,10 @@ Readiness blockers share replacement-safe ownership across bundled and direct im
 
 Authoring guidance and all four host tutorial documents cover active-view discovery, stable cards, explicit popup branches, optional and empty states, UI order, cleanup and source/production verification. The account dropdown closes before tutorial startup.
 
+## Asynchronous detail branches
+
+Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

@@ -45,6 +45,7 @@ export const guides = [
                         selector:
                             ".classes-manage-panel .classes-member-list:last-of-type",
                         targetMatch: "first",
+                        missing: { timeoutMs: 15000, action: "skip" },
                         group: "manage-class",
                         dependsOn: ["teaching-and-management"],
                         titleKey:

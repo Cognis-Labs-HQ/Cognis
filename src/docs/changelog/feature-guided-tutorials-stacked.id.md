@@ -156,6 +156,10 @@ Pemblokir kesiapan berbagi kepemilikan yang aman saat diganti antara impor bunde
 
 Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kartu stabil, cabang dialog eksplisit, kondisi opsional dan kosong, urutan UI, pembersihan, serta verifikasi sumber dan produksi. Menu akun ditutup sebelum tutorial dimulai.
 
+## Cabang detail asinkron
+
+Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan tahap opsional diperbarui setelah penyiapan, sehingga aksi menulis yang tidak ada dikeluarkan sebelum kontrol langkah berikut ditampilkan.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
