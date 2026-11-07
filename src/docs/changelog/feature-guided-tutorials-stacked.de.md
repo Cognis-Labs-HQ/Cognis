@@ -158,7 +158,7 @@ Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabil
 
 ## Asynchrone Detailzweige
 
-Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen.
+Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen. Optionale Bedingungen nutzen das öffentliche, besitzerberechtigte targetAvailable-Ergebnis statt gemeinsamer Dialogmarkierungen.
 
 ## Commits
 
@@ -194,3 +194,4 @@ Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Opti
 - [6cfa9769f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6cfa9769f146c65e7f1c268d458e011900c2459a)
 - [b5c47c643](https://github.com/Cognis-Labs-HQ/Cognis/commit/b5c47c6438ef41910e0409942e04a1f5d8031272)
 - [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)
+- [87b6a4796](https://github.com/Cognis-Labs-HQ/Cognis/commit/87b6a479635cff8fc42f1db24762e5b6d0cebbc1)
