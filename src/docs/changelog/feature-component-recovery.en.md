@@ -138,6 +138,10 @@ Readiness blockers share replacement-safe ownership across bundled and direct im
 
 Authoring guidance and all four host tutorial documents cover active-view discovery, stable cards, explicit popup branches, optional and empty states, UI order, cleanup and source/production verification. The account dropdown closes before tutorial startup.
 
+## Asynchronous detail branches
+
+Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.
@@ -165,3 +169,6 @@ Authoring guidance and all four host tutorial documents cover active-view discov
 - [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
 - [e47034c9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e47034c9e2138b1e34f6f1309143c5637b3afd01)
+- [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
+- [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
+- [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)

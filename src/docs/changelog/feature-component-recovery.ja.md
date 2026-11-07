@@ -138,6 +138,10 @@ cognisctl component:disable module analytics --force
 
 作成指針と 4 言語のホスト文書に、画面状態の検出、安定したカード、明示的なダイアログ分岐、省略可能・空の状態、表示順、後処理、ソースと製品ビルドの検証を記載します。開始前にアカウントメニューを閉じます。
 
+## 非同期の詳細分岐
+
+詳細やクラス管理の分岐は開いた画面を待ちます。準備後に省略可能なステップ数を更新し、筆記操作がない場合は次の操作を表示する前に対象から除外します。 許可した詳細ダイアログの上に別のダイアログが重なった場合もガイドを中断します。
+
 ## コミット
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.
@@ -165,3 +169,6 @@ cognisctl component:disable module analytics --force
 - [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
 - [e47034c9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e47034c9e2138b1e34f6f1309143c5637b3afd01)
+- [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
+- [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
+- [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)

@@ -138,6 +138,10 @@ Pemblokir kesiapan berbagi kepemilikan yang aman saat diganti antara impor bunde
 
 Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kartu stabil, cabang dialog eksplisit, kondisi opsional dan kosong, urutan UI, pembersihan, serta verifikasi sumber dan produksi. Menu akun ditutup sebelum tutorial dimulai.
 
+## Cabang detail asinkron
+
+Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan tahap opsional diperbarui setelah penyiapan, sehingga aksi menulis yang tidak ada dikeluarkan sebelum kontrol langkah berikut ditampilkan. Dialog lain menginterupsi panduan meskipun ditumpuk di atas dialog detail yang diizinkan.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
@@ -165,3 +169,6 @@ Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kar
 - [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
 - [e47034c9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e47034c9e2138b1e34f6f1309143c5637b3afd01)
+- [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
+- [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
+- [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)

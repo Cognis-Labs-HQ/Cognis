@@ -138,6 +138,10 @@ Bereitschaftsblocker teilen ersetzungssichere Besitzer über gebündelte und dir
 
 Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabile Karten, ausdrückliche Dialogzweige, optionale und leere Zustände, UI-Reihenfolge, Bereinigung und Prüfung von Quell- und Produktionsbuilds. Das Kontomenü schließt vor dem Tutorialstart.
 
+## Asynchrone Detailzweige
+
+Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
@@ -165,3 +169,6 @@ Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabil
 - [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
 - [e47034c9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e47034c9e2138b1e34f6f1309143c5637b3afd01)
+- [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
+- [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
+- [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)
