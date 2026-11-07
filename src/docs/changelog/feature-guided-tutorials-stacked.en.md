@@ -144,6 +144,18 @@ Target loss during asynchronous rendering is retried before readiness is publish
 
 `scope` bounds targets and discovery. Optional `visibleWhen` requires a unique visible element without restricting targets to its descendants; targets still stay inside the component root. Library Administration uses this for its browser visibility while highlighting sidebar search. Invalid selectors fail registration and roll back the owner.
 
+## Intentional page guides
+
+Guides follow visible UI order and use distinct rendered controls. Settings omits explanations of unavailable unsaved-change actions. Profile, Users, Docs, Calendar and Study use meaningful targets, including empty calendars, the document sidebar and card details.
+
+## SPA and target recovery
+
+Readiness blockers share replacement-safe ownership across bundled and direct imports. Page lifetimes release old contributions. Scrolling or reflow cannot silently skip a previously displayed target. One automatic guide runs per visible surface; supplemental introductions remain selectable through ?.
+
+## Tutorial authoring rules
+
+Authoring guidance and all four host tutorial documents cover active-view discovery, stable cards, explicit popup branches, optional and empty states, UI order, cleanup and source/production verification. The account dropdown closes before tutorial startup.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -174,3 +186,4 @@ Target loss during asynchronous rendering is retried before readiness is publish
 - [ed98d0a85](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed98d0a85646823c09848713d32a9f6f9d8652be)
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
 - [b6874a330](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6874a3309123f93968bec3c7a1091354f71c5d1)
+- [0dd7b9917](https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd7b9917948061b2e1ea929c00748d20fbcc6c7)

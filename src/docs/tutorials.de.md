@@ -1,6 +1,6 @@
 # Geführte Anleitungen
 
-Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
+Anleitungen gehören zu einer Seite oder sichtbaren Ansicht. Beim ersten berechtigten Besuch startet eine ungesehene Anleitung automatisch. Das Fragezeichen neben dem Seitentitel öffnet verfügbare Anleitungen erneut. Der Host besitzt Darstellung und Lebenszyklus; jedes Feature besitzt Texte, Ziele und Ablauf.
 
 ## Einen Ablauf registrieren
 
@@ -54,7 +54,7 @@ Registrierungen erfolgen in `mountProvider`, niemals beim Import. Bei Fehlern we
 
 Jeder Ablauf benötigt `page`: einen genauen Pfad wie `/dashboard` oder ein vertrauenswürdiges synchrones Prädikat `({ pathname }) => boolean` für mehrere URLs oder eine seitenspezifische Bedingung. Die Bindung ist unabhängig von der Schrittnavigation. Starts außerhalb der Bindung werden abgelehnt. Registrierung, Seitenwechsel, Kontowechsel und geschlossene Popups aktualisieren die Erkennung. Entfernte Anbieter ziehen ihre Hilfeaktion zurück. Pflichtdialoge verschieben den automatischen Start.
 
-Study bietet `study:tutorialTargets.matchesPage({ pathname, language })`, damit Sprachanbieter ihre Anleitung ohne kopierte Host-Routenregeln an Explore- und Flashcards-Seiten binden. Der Composer veröffentlicht abgeschlossene Seitenaufbauten über `page:mounted` (`publish`).
+Study stellt `study:tutorialTargets.matchesPage({ pathname, language })` für Spracheinführungen auf der Übersicht bereit. Aktivitätsanleitungen gehören zur aktuellen Host-Ansicht. Ein Wechsel von Kana zu Kanji darf weder eine Spracheinführung starten noch zur Übersicht zurückführen. Der Composer meldet fertige Montagen über `page:mounted` (`publish`).
 
 ## Ziele und Übersetzungen
 
@@ -183,3 +183,21 @@ Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover
 Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereitschaftsmeldung erneut aufgelöst. Neustart und Abbruch verhindern veraltete Wiederherstellung und blockierte schwebende Menüs.
 
 `scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
+
+## Zuverlässige Anleitungen
+
+Binde die Erkennung an die aktive Ansicht, nicht nur an ihre URL. Reiter derselben URL, ausgewählte Stapel, Inhaltsebenen und Dialoge benötigen sichtbare, komponenteneigene Merkmale. `scope` muss alle Ziele enthalten; für Seitenleisten außerhalb des Inhalts dient `visibleWhen`. Eine Composer-Element-ID ist Layoutmetadatum und keine garantierte DOM-ID. Verwende echte Feature-Elemente. Hebe bei gestalteten Schaltern die sichtbare Beschriftung statt des versteckten Eingabefelds hervor.
+
+Pro sichtbarer Ansicht startet in einer Browsersitzung nur eine Anleitung automatisch. Ihr Abschluss reiht keine weiteren ein; diese bleiben über ? erreichbar. Ein Abschnittswechsel kann dessen Anleitung entdecken. Ergänzende Einführungen setzen `automatic: false`. Abschluss-IDs bleiben stabil. Leite Besucher von Explore nicht für eine Einführung zurück zur Übersicht. Spracheinführungen gehören zur Study-Übersicht; Aktivitätsführungen gehören dem Host.
+
+Folge der sichtbaren UI-Reihenfolge, außer eine Interaktionsabhängigkeit verlangt etwas anderes. Jeder Schritt erhält ein eigenes Bedienelement oder einen eigenen Bereich. Fasse doppelte Erklärungen zusammen. Erkläre Ziele und Ergebnisse der Nutzer. Erwähne Speichern/Verwerfen oder Änderungsprüfung nur, wenn tatsächlich Änderungen möglich sind. Prüfe leere Kalender und Listen, optionale Bedienelemente, Rollen und fehlende Funktionen.
+
+`targetMatch: "first"` behält das gewählte verbundene Element während der Komponentenmontage; eine durch Hover geänderte Reihenfolge darf nicht zu einer anderen Karte führen. Anfangs fehlende Ziele folgen der definierten Richtlinie. Geht ein bereits gezeigtes Ziel verloren, bleiben die Aktionen erhalten. Bis zu fünfzehn Sekunden wird auf seine Rückkehr gewartet; danach bleiben Weiter und Neustart möglich. Scrollen darf die Anleitung nicht still abschließen.
+
+Detailzweige verwenden `interaction: "target"`, `suppressHover`, Ereignisbedingungen, `group` und `dependsOn`. Weiter vor dem Öffnen überspringt den Zweig. Der optionale Selektor `popup` erlaubt nur den erwarteten komponenteneigenen Dialog; andere Dialoge unterbrechen weiterhin. `portal` begrenzt ein Seitenziel auf die ausdrücklich gewählte Oberfläche desselben Dokuments. Die Eigentümerseite muss verfügbar bleiben. Binde das Schließen an `groupSignal`, damit Zurück, Neustart, Abschluss, Navigation und Entfernen aufräumen. Passive Erklärungen verwenden `layer: "overlay"` und lösen keine Datenänderungen aus.
+
+Die Shell schließt das Kontomenü in der Validierungsphase des Tutorialstarts, auch bei direkten Anbieterstarts. Besitzer von Bereitschaftsblockern werden in `ui:pageReadiness.registerBlocker(options, handler)` gemeinsam für gebündelte und direkte Importe verwaltet. Nutze diese Methode oder `registerPageReadinessBlocker`; ersetze per Besitzer-ID und sichere die Bereinigung gegen alte Abbrüche. Verwende keine konkurrierenden lokalen Registrierungslisten.
+
+Prüfe echte gerenderte Ziele und Fortschritt über öffentliche Verträge in Quell- und Produktionsbuilds: direkte und wiederholte SPA-Montagen, Abschnittswechsel derselben URL, leere und gefüllte Daten, Scrollen, Layoutwechsel, Hover, optionale Elemente, Rollenverlust, Überspringen und Zurück in Zweigen, Neustart, Besitzerentfernung und Dialogschluss. Prüfe Schrittzahlen und Menüübergabe. Browser-Demos bleiben temporär; gemeinsame automatisierte Helfer bleiben erhalten. Feature-Änderungen prüfen Anleitungen, Übersetzungen und komponenteneigene Dokumentation zusammen.
+
+Vertrauenswürdige enter/waitFor-Callbacks erhalten den öffentlichen ctx zusammen mit ihren Lebensdauersignalen. Gemeinsames Verhalten wird über dessen Fähigkeiten bezogen. Feature-Dialoge registrieren Element, eigene Schließoperation und Signal über ui:transientSurfaces; Detailzweige binden groupSignal über diesen Vertrag statt private Dialogbuttons zu suchen.

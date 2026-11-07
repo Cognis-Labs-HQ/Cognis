@@ -128,3 +128,37 @@ test("owner removal cancels pending presentation recovery and releases the menu 
     assert.equal(await lease.ready, true);
     await lease.dispose();
 });
+
+test("temporarily losing a shown target keeps controls and restores the same step", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    const owner = state.owner();
+    let control = state.element();
+    const target = await owner.target("control", { resolve: () => control });
+    const registered = await owner.register(
+        play([
+            {
+                id: "shown",
+                titleKey: "shown",
+                target: target.id,
+                effects: { spotlight: true },
+                missing: { timeoutMs: 0, action: "skip" },
+            },
+        ]),
+    );
+    const session = await registered.start();
+    await session.ready;
+    control = null;
+    state.rendered.at(-1).lost();
+    await tick();
+    assert.equal(session.state().stepId, "shown");
+    assert.equal(state.api.current().stepId, "shown");
+    assert.equal(state.rendered.at(-1).missing, true);
+    assert.equal(state.rendered.at(-1).disposed, false);
+    control = state.element();
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    assert.equal(state.rendered.at(-1).target, control);
+    assert.equal(state.rendered.at(-1).waiting, undefined);
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+});

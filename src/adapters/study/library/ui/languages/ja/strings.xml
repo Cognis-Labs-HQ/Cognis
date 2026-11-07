@@ -203,11 +203,11 @@
   <string name="adapter.study.library.notification_deletion_body">共有コンテンツが削除または移動されたため、次のカードが削除されました：{{ cards }}</string>
   <string name="adapter.study.library.tutorial.explore.title">ライブラリーを探索</string>
   <string name="adapter.study.library.tutorial.explore.browse.a.layer.title">レイヤーを見る</string>
-  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">選択した言語とコンテンツのレイヤーをたどり、項目を開いて確認します。</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">詳細と関連項目</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">意味、発音、例文、関連する項目を確認してから操作を選びます。</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">お気に入りと提案</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">お気に入りで自分の一覧を作れます。作成や修正の操作は権限によって異なります。</string>
+  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">階層サイドバーで学習言語に利用できるコンテンツの種類を切り替え、選んだ階層のカードを閲覧します。</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">カードを開く</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">このカードをクリックして詳細画面を開くか、ガイドを進めて詳細の説明を省略します。</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">お気に入りに保存</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">このカードのお気に入り操作で後から使うために保存します。お気に入りフィルターで保存したカードに戻れます。</string>
   <string name="adapter.study.library.tutorial.search.title">辞書の検索</string>
   <string name="adapter.study.library.tutorial.search.search.results.title">検索結果</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">辞書の検索結果と、その言語、読み方、意味を確認します。</string>
@@ -235,4 +235,6 @@
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">表記、読み、意味を比較し、取り込む前に目的の項目かを確認します。</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">リクエストの結果を確認する</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">リクエストを開いて変更案と判断結果を確認し、修正して再提出する前にフィードバックを読みます。</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.title">カードの詳細を読む</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">詳細画面には意味、読み方、例文、関連項目がまとめられています。関連をたどると、このカードの使い方を理解できます。</string>
 </resources>

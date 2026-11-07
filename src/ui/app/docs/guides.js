@@ -9,6 +9,14 @@ export const guides = [
                 steps: [
                     {
                         highlightNext: true,
+                        id: "browse-documents",
+                        selector: "[data-docs-navigation]",
+                        titleKey:
+                            "ui.tutorial.docs.read.browse.documents.title",
+                        bodyKey: "ui.tutorial.docs.read.browse.documents.body",
+                    },
+                    {
+                        highlightNext: true,
                         id: "read-the-current-page",
                         selector: "#doc",
                         titleKey:

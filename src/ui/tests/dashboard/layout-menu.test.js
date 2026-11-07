@@ -419,3 +419,21 @@ test("core reconciles duplicate provider entries in the user menu", () => {
         /if \(dropdown\) bindUserMenuIntegrity\(dropdown\)/,
     );
 });
+
+test("a tutorial start closes the account dropdown before session setup", async () => {
+    const { uiCtx } = await import("../../reuse/ui-ctx.js");
+    const state = accountMenuFixture();
+    try {
+        state.toggle.dispatchEvent(new Event("mouseenter"));
+        assert.equal(state.menu.classList.contains("open"), true);
+        await assert.rejects(
+            uiCtx.runFlow("ui:tutorial:start", { id: "unavailable:guide" }),
+            /tutorial_unavailable/,
+        );
+        assert.equal(state.dropdown.classList.contains("hidden"), true);
+        assert.equal(state.toggle.getAttribute("aria-expanded"), "false");
+        assert.equal(state.menu.classList.contains("open"), false);
+    } finally {
+        state.controller.abort();
+    }
+});

@@ -126,6 +126,18 @@ Target yang hilang saat perenderan asinkron dicari ulang sebelum kesiapan diterb
 
 `scope` membatasi target dan penemuan. `visibleWhen` opsional memerlukan satu elemen terlihat tanpa membatasi target ke turunannya; target tetap berada dalam akar komponen. Administrasi Pustaka memakainya untuk visibilitas browser sambil menyoroti pencarian di bilah samping. Selektor tidak valid menggagalkan registrasi dan membersihkan pemilik.
 
+## Panduan halaman terarah
+
+Panduan mengikuti urutan UI terlihat dan memakai kontrol nyata yang berbeda. Pengaturan menghilangkan penjelasan tindakan perubahan yang tidak tersedia. Profil, Pengguna, Dokumen, Kalender, dan Study memakai target bermakna, termasuk kalender kosong, menu samping dokumen, dan detail kartu.
+
+## SPA dan pemulihan target
+
+Pemblokir kesiapan berbagi kepemilikan yang aman saat diganti antara impor bundel dan langsung. Masa hidup halaman melepas kontribusi lama. Gulir atau perubahan tata letak tidak diam-diam melewati target yang sudah ditampilkan. Satu panduan otomatis berjalan per tampilan; panduan tambahan dapat dipilih melalui ?.
+
+## Aturan penulisan tutorial
+
+Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kartu stabil, cabang dialog eksplisit, kondisi opsional dan kosong, urutan UI, pembersihan, serta verifikasi sumber dan produksi. Menu akun ditutup sebelum tutorial dimulai.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

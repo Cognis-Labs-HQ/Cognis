@@ -203,11 +203,11 @@
   <string name="adapter.study.library.notification_deletion_body">Kartu ini dihapus karena konten bersamanya dihapus atau dipindahkan: {{ cards }}</string>
   <string name="adapter.study.library.tutorial.explore.title">Jelajahi Pustaka</string>
   <string name="adapter.study.library.tutorial.explore.browse.a.layer.title">Jelajahi Lapisan</string>
-  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Jelajahi bahasa dan lapisan konten terpilih, lalu buka rekaman untuk memeriksanya.</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Detail dan Hubungan</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Periksa makna, pelafalan, contoh, dan rekaman terkait sebelum memilih aksi.</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Favorit dan Kontribusi</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Gunakan favorit untuk koleksi pribadi; kontrol membuat dan mengoreksi bergantung pada izin Anda.</string>
+  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Gunakan menu lapisan di samping untuk berpindah jenis konten yang tersedia bagi bahasa Anda, lalu jelajahi kartu pada lapisan pilihan.</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Buka Kartu</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Klik kartu ini untuk membuka tampilan detail, atau lanjutkan panduan untuk melewati penjelasan tersebut.</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Simpan Favorit</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Gunakan aksi favorit pada kartu ini untuk menyimpannya. Filter favorit membantu Anda kembali ke kartu tersimpan.</string>
   <string name="adapter.study.library.tutorial.search.title">Pencarian Kamus</string>
   <string name="adapter.study.library.tutorial.search.search.results.title">Hasil Pencarian</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Periksa hasil kamus beserta bahasa, bacaan, dan maknanya.</string>
@@ -235,4 +235,6 @@
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Bandingkan ejaan, bacaan, dan definisi hasil. Periksa kandidat sebelum mengimpor agar Anda memilih entri yang dimaksud.</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Pantau Permintaan</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Buka permintaan untuk meninjau perubahan yang diusulkan dan keputusannya. Periksa umpan balik sebelum mengirim permintaan yang diperbaiki.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.title">Baca Detail Kartu</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">Tampilan detail menggabungkan arti, bacaan, contoh, dan rekaman terkait. Ikuti hubungan tersebut untuk memahami penggunaan kartu.</string>
 </resources>

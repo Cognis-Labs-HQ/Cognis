@@ -18,8 +18,17 @@ export const guides = [
                     },
                     {
                         highlightNext: true,
+                        id: "release-notes",
+                        selector: ".switch:has(#pref-release-changelog-show)",
+                        titleKey:
+                            "ui.tutorial.settings.general.release.notes.title",
+                        bodyKey:
+                            "ui.tutorial.settings.general.release.notes.body",
+                    },
+                    {
+                        highlightNext: true,
                         id: "offline-access",
-                        selector: "#pref-offline-enabled",
+                        selector: ".switch:has(#pref-offline-enabled)",
                         titleKey:
                             "ui.tutorial.settings.general.offline.access.title",
                         bodyKey:
@@ -33,24 +42,6 @@ export const guides = [
                             "ui.tutorial.settings.general.account.lifecycle.title",
                         bodyKey:
                             "ui.tutorial.settings.general.account.lifecycle.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "save-preferences",
-                        selector: "#general",
-                        titleKey:
-                            "ui.tutorial.settings.general.save.preferences.title",
-                        bodyKey:
-                            "ui.tutorial.settings.general.save.preferences.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "release-notes",
-                        selector: "#pref-release-changelog-show",
-                        titleKey:
-                            "ui.tutorial.settings.general.release.notes.title",
-                        bodyKey:
-                            "ui.tutorial.settings.general.release.notes.body",
                     },
                 ],
                 scope: "#general",
@@ -84,15 +75,6 @@ export const guides = [
                             "ui.tutorial.settings.appearance.message.layout.title",
                         bodyKey:
                             "ui.tutorial.settings.appearance.message.layout.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "choose-font",
-                        selector: "#pref-font-picker",
-                        titleKey:
-                            "ui.tutorial.settings.appearance.choose.font.title",
-                        bodyKey:
-                            "ui.tutorial.settings.appearance.choose.font.body",
                     },
                 ],
                 scope: "#appearance",
@@ -170,15 +152,6 @@ export const guides = [
                             "ui.tutorial.settings.advanced.preference.data.title",
                         bodyKey:
                             "ui.tutorial.settings.advanced.preference.data.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "review-changes",
-                        selector: "#advanced",
-                        titleKey:
-                            "ui.tutorial.settings.advanced.review.changes.title",
-                        bodyKey:
-                            "ui.tutorial.settings.advanced.review.changes.body",
                     },
                 ],
                 scope: "#advanced",

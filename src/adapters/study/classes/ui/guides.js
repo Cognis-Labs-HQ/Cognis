@@ -19,16 +19,21 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "class-membership",
-                        selector: "#class-list",
+                        selector: ".classes-list",
                         titleKey:
                             "module.study.classes.tutorial.classes.class.membership.title",
                         bodyKey:
                             "module.study.classes.tutorial.classes.class.membership.body",
                     },
                     {
-                        highlightNext: true,
+                        highlightNext: false,
                         id: "teaching-and-management",
-                        selector: "#class-list",
+                        selector: ".classes-manage-btn:not(:disabled)",
+                        targetMatch: "first",
+                        interaction: "target",
+                        suppressHover: true,
+                        advance: { event: "click" },
+                        group: "manage-class",
                         titleKey:
                             "module.study.classes.tutorial.classes.teaching.and.management.title",
                         bodyKey:
@@ -37,14 +42,18 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "review-enrollment",
-                        selector: "#class-list",
+                        selector:
+                            ".classes-manage-panel .classes-member-list:last-of-type",
+                        targetMatch: "first",
+                        group: "manage-class",
+                        dependsOn: ["teaching-and-management"],
                         titleKey:
                             "module.study.classes.tutorial.classes.review.enrollment.title",
                         bodyKey:
                             "module.study.classes.tutorial.classes.review.enrollment.body",
                     },
                 ],
-                scope: "#class-list",
+                visibleWhen: ".classes-filter-row",
             },
             {
                 id: "membership",

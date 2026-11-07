@@ -203,11 +203,11 @@
   <string name="adapter.study.library.notification_deletion_body">These cards were removed because their shared content was deleted or relocated: {{ cards }}</string>
   <string name="adapter.study.library.tutorial.explore.title">Explore The Library</string>
   <string name="adapter.study.library.tutorial.explore.browse.a.layer.title">Browse A Layer</string>
-  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Browse the selected language and content layer, then open a record to inspect it.</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Details And Relationships</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Inspect meanings, pronunciations, examples and linked records before choosing an action.</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Favourites And Contributions</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Use favourites for your own collection; creation and correction controls depend on your permissions.</string>
+  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Use the layers sidebar to switch between the available content types for your language, then browse the cards in the selected layer.</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Open A Card</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Click this card to open its detail view, or continue the guide to skip that walkthrough.</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Save A Favourite</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Use this card’s favourite action to keep it for later. The favourites filter helps you return to saved cards.</string>
   <string name="adapter.study.library.tutorial.search.title">Dictionary Search</string>
   <string name="adapter.study.library.tutorial.search.search.results.title">Search Results</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Review dictionary results and their language, readings and meanings.</string>
@@ -235,4 +235,6 @@
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Compare spelling, readings and definitions across matches. Inspect a candidate before importing it so you can choose the intended entry.</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Follow A Request</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Open your request to review its proposed changes and current decision. Check feedback before submitting a corrected request.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.title">Read Card Details</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">The detail view combines meanings, readings, examples and linked records. Follow those relationships when you want to understand how the card is used.</string>
 </resources>

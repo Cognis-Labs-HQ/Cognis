@@ -10,6 +10,7 @@
  * bindUserMenuIntegrity(document.querySelector("#profile-dropdown"));
  */
 
+import { uiCtx } from "../reuse/ui-ctx.js";
 import { transientSurfaces } from "../reuse/transient-surfaces.js";
 
 /**
@@ -84,6 +85,13 @@ export function bindAccountMenu({ toggle, dropdown, menu, signal }) {
         toggle.classList.add("active");
         toggle.setAttribute("aria-expanded", "true");
     };
+    const hookId = `ui:accountMenu:${crypto.randomUUID()}`;
+    uiCtx.extendFlow("ui:tutorial:start", "validate", { id: hookId }, close);
+    scoped.addEventListener(
+        "abort",
+        () => uiCtx.removeFlowHook("ui:tutorial:start", "validate", hookId),
+        { once: true },
+    );
     toggle.setAttribute("aria-expanded", "false");
     toggle.addEventListener("mouseenter", open, { signal: scoped });
     toggle.addEventListener(

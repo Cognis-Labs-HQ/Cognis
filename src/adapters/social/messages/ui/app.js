@@ -835,6 +835,7 @@ export async function mount(root, { signal } = {}) {
 
     const composer = createPageComposer(root, {
         tutorials: guides,
+        signal,
         allowCustomization: false,
         elements,
         preferenceKey: "messages-layout",

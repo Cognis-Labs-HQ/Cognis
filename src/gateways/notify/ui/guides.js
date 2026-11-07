@@ -18,15 +18,6 @@ export const guides = [
                         bodyKey:
                             "gateway.notify.tutorial.preferences.channels.and.categories.body",
                     },
-                    {
-                        highlightNext: true,
-                        id: "save-preferences",
-                        selector: "#notif-matrix-container",
-                        titleKey:
-                            "gateway.notify.tutorial.preferences.save.preferences.title",
-                        bodyKey:
-                            "gateway.notify.tutorial.preferences.save.preferences.body",
-                    },
                 ],
                 scope: "#notif-matrix-container",
             },

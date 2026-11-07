@@ -37,7 +37,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "navigate-dates",
-                        selector: "#calendar-toolbar-summary",
+                        selector: ".calendar-view-nav",
                         titleKey:
                             "gateway.calendar.tutorial.calendar.navigate.dates.title",
                         bodyKey:
@@ -46,7 +46,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "plan-event",
-                        selector: ".calendar-view-canvas",
+                        selector: "[data-month-create-date], [data-slot-start]",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.calendar.tutorial.calendar.plan.event.title",
                         bodyKey:

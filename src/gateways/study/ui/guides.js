@@ -12,7 +12,7 @@ export const guides = [
                         highlightNext: true,
                         id: "learning-languages",
                         selector:
-                            ".study-language-grid, .study-lang-settings-wrap",
+                            ".study-language-grid, .study-lang-settings-column:first-child",
                         titleKey:
                             "gateway.study.tutorial.preferences.learning.languages.title",
                         bodyKey:
@@ -22,7 +22,7 @@ export const guides = [
                         highlightNext: true,
                         id: "available-activities",
                         selector:
-                            ".study-language-grid, .study-lang-settings-wrap",
+                            ".study-welcome-actions, .study-lang-settings-column:last-child",
                         titleKey:
                             "gateway.study.tutorial.preferences.available.activities.title",
                         bodyKey:

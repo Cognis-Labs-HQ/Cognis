@@ -1,6 +1,6 @@
 # Guided Tutorials
 
-Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.
+Tutorials belong to a page or visible view. On its first eligible visit, one unseen guide starts automatically. The question-mark SVG beside the page title replays the available guides. The host owns presentation and lifecycle; each feature owns its text, targets and script.
 
 ## Register A Play
 
@@ -54,7 +54,7 @@ Register through `mountProvider`; importing a script must not register anything.
 
 Every play requires `page`: an exact pathname such as `/dashboard`, or a trusted synchronous predicate `({ pathname }) => boolean` for a group of URLs or a page-specific condition. This is separate from step navigation. Starts outside the binding are rejected. Registration, page mounts, account changes and popup dismissal refresh discovery; removed providers withdraw their help action. Required popups defer automatic starts.
 
-Study exposes `study:tutorialTargets.matchesPage({ pathname, language })` so language providers can bind their tutorial to Study-owned Explore and Flashcards pages without copying host route rules. The composer publishes completed page mounts through `page:mounted` (`publish`).
+Study exposes `study:tutorialTargets.matchesPage({ pathname, language })` for overview-bound language introductions. Activity guides belong to their current host view; switching Kana to Kanji must not start a language introduction or route back to Study. The composer publishes completed mounts through `page:mounted` (`publish`).
 
 ## Targets And Localization
 
@@ -183,3 +183,21 @@ The ? button sits in line with the page title. It has no hover tooltip and retai
 Target loss during asynchronous rendering is retried before readiness is published. Restarted or cancelled presentations cannot resume stale recovery or strand the floating menu.
 
 `scope` bounds targets and discovery. Optional `visibleWhen` requires a unique visible element without restricting targets to its descendants; targets still stay inside the component root. Library Administration uses this for its browser visibility while highlighting sidebar search. Invalid selectors fail registration and roll back the owner.
+
+## Reliable Walkthroughs
+
+Bind discovery to the active view, not just its URL. Same-URL tabs, selected decks, content layers and dialogs need visible component-owned markers. `scope` must contain every scoped target; use `visibleWhen` when a sidebar control is outside the content section. A composer element ID is layout metadata, not a guaranteed DOM ID. Target actual feature markup. For styled switches, highlight the visible label rather than the hidden input.
+
+Only one guide starts automatically for a visible surface in a browser session. Finishing it does not queue the other eligible guides; they remain available through ?. Changing the visible section can discover that section’s guide. Set `automatic: false` for supplemental introductions. Keep stable completion IDs, and never route an Explore visitor back to an overview merely to start a tutorial. Language introductions match the Study overview; the host owns activity walkthroughs.
+
+Follow visual UI order unless an interaction dependency requires otherwise. Every stage must focus a distinct control or region. Combine redundant explanations instead of highlighting the same area again. Explain user goals and outcomes. Do not advertise Save/Discard or Review Changes when nothing can be staged. Cover empty calendars, empty lists, optional controls, roles and unavailable features explicitly.
+
+`targetMatch: "first"` retains its selected connected element for the mounted contribution; hover-driven candidate reordering must not move a guide to another card. Initially absent targets follow the authored missing policy. A target lost after presentation instead keeps the current controls, waits up to fifteen seconds for restoration and then remains manually escapable with Next or Restart. Scrolling must not silently complete the guide.
+
+Interactive detail branches use `interaction: "target"`, `suppressHover`, an event gate, `group`, and `dependsOn`. Next before opening skips the branch. A step’s optional `popup` selector permits only the expected feature-owned popup; unrelated dialogs still interrupt. Page contributions may declare `portal` for a target rooted in that explicitly selected same-document surface. The owning page must remain available. Bind popup dismissal to `groupSignal` so Back, Restart, Finish, navigation and owner removal release it. Keep passive detail explanations above their popup with `layer: "overlay"` and prevent their controls from mutating data.
+
+The shell closes the account dropdown in the tutorial-start validation stage, including direct provider starts. Readiness blocker ownership lives in `ui:pageReadiness.registerBlocker(options, handler)`, shared by bundled and directly imported consumers. Use that method or `registerPageReadinessBlocker`; replace by owner ID and preserve replacement-safe abort cleanup. Do not keep competing module-local registration maps.
+
+Verify actual rendered targets and progression through public contracts in source and production builds. Cover direct and repeated SPA mounts, same-URL section changes, empty and populated data, scrolling/reflow, hover, optional controls, role loss, branch skipping/Back, restart, owner removal and popup dismissal. Check current visible step counts and menu handoff. Keep browser/demo checks temporary; retain shared automated helpers. Feature changes must review affected guides, translations and component-owned coverage docs together.
+
+Trusted enter/waitFor callbacks receive the public ctx alongside their lifetime signals. Obtain shared behavior through its capabilities. Feature popups register their element, owner close operation and signal through ui:transientSurfaces; detail branches attach groupSignal through that contract rather than querying popup-private buttons.

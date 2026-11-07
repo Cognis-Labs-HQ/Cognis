@@ -109,6 +109,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         tutorials: guides,
+        signal,
         allowCustomization: false,
         contentScrolling: false,
         elements: [
@@ -132,7 +133,8 @@ export async function mount(root, { signal } = {}) {
             {
                 id: "explore-layers",
                 label: i18n.t("gateway.study.explore"),
-                render: () => menu.render(),
+                render: () =>
+                    `<nav class="library-layer-navigation">${menu.render()}</nav>`,
             },
         ],
         toolbarScrollable: true,

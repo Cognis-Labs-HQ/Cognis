@@ -203,11 +203,11 @@
   <string name="adapter.study.library.notification_deletion_body">Diese Karten wurden entfernt, weil ihre geteilten Inhalte gelöscht oder verschoben wurden: {{ cards }}</string>
   <string name="adapter.study.library.tutorial.explore.title">Bibliothek erkunden</string>
   <string name="adapter.study.library.tutorial.explore.browse.a.layer.title">Ebene durchsuchen</string>
-  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Durchsuchen Sie Sprache und Inhaltsebene und öffnen Sie einen Datensatz zur Prüfung.</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Details und Beziehungen</string>
-  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Prüfen Sie Bedeutungen, Aussprache, Beispiele und verknüpfte Datensätze vor einer Aktion.</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Favoriten und Beiträge</string>
-  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Nutzen Sie Favoriten für Ihre Sammlung; Erstellen und Korrigieren hängen von Berechtigungen ab.</string>
+  <string name="adapter.study.library.tutorial.explore.browse.a.layer.body">Wechsle in der Ebenenseitenleiste zwischen den verfügbaren Inhaltstypen deiner Sprache und durchsuche die Karten der gewählten Ebene.</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.title">Karte öffnen</string>
+  <string name="adapter.study.library.tutorial.explore.details.and.relationships.body">Klicke auf diese Karte, um ihre Detailansicht zu öffnen, oder fahre mit der Anleitung fort, um diesen Zweig zu überspringen.</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.title">Favoriten speichern</string>
+  <string name="adapter.study.library.tutorial.explore.favourites.and.contributions.body">Speichere diese Karte über ihre Favoritenaktion für später. Mit dem Favoritenfilter findest du gespeicherte Karten wieder.</string>
   <string name="adapter.study.library.tutorial.search.title">Wörterbuchsuche</string>
   <string name="adapter.study.library.tutorial.search.search.results.title">Suchergebnisse</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Prüfen Sie Wörterbuchtreffer mit Sprache, Lesungen und Bedeutungen.</string>
@@ -235,4 +235,6 @@
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.body">Vergleichen Sie Schreibweise, Lesungen und Definitionen. Prüfen Sie Kandidaten vor dem Import, um den beabsichtigten Eintrag auszuwählen.</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Anfrage verfolgen</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Öffnen Sie Ihre Anfrage für vorgeschlagene Änderungen und die aktuelle Entscheidung. Beachten Sie Rückmeldungen vor einer korrigierten Anfrage.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.title">Kartendetails lesen</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">Die Detailansicht verbindet Bedeutungen, Lesungen, Beispiele und verknüpfte Einträge. Folge diesen Beziehungen, um die Verwendung der Karte zu verstehen.</string>
 </resources>

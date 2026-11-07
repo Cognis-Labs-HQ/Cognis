@@ -13,3 +13,5 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 | `^/messages(?:/\|$)` | Messaging Guide | Signed-in user |
 
 Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
+
+The router signal bounds tutorial registrations and the page composer. Scrolling retains tutorial controls; a temporarily lost displayed target is recovered without silently advancing.

@@ -58,6 +58,8 @@ Every UI-facing component must have a component-owned, page- or URL-bound tutori
 
 Keep tutorial strings and feature coverage documentation inside the owning component. Host pages must register with their own public catalogs even when all optional components are absent; document coverage in the owning component’s existing documentation instead of creating a separate aggregate tutorial inventory. Match XML sibling indentation and preserve translation values when formatting.
 
+Each stage must focus a distinct, concrete control or region; do not repeat the same highlighted area for separate explanations. Follow the visual UI order unless an interaction dependency requires a different sequence. Bind discovery to the active view or section, including same-URL state; never force page navigation just to present an introductory guide. Use stable example cards, meaningful empty states and optional branches for real detail views. Do not explain hidden Save/Discard controls without facilitating the corresponding changes.
+
 Keep tutorial owner/IDs stable across content and package updates. Account completion must never be invalidated by revisions; only the page-header ? control replays a completed guide.
 
 Use the shared `ui:floatingMenus` queue and its staged flows for floating actions. Bind menu ownership to its page/component lifetime, preserve tutorial reservations across steps, and let page menus wait for the tutorial to yield rather than independently changing toolbar visibility.
