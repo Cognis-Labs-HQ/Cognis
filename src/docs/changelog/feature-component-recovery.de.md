@@ -145,3 +145,7 @@ Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover
 Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
 
 - [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
+
+## Wiederholung im Kopf verfeinern
+
+Die Wiederholung ist ein kompaktes Symbol ohne sichtbaren Rahmen mit klarem Abstand zum Seitentitel. Es vergrößert die Titelzeile nicht, behält die Textfarbe des Themes und zeigt dezente Hover- sowie sichtbare Tastaturfokus-Hinweise. Der Tooltip bleibt entfernt.
