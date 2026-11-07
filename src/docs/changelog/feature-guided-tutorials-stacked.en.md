@@ -158,7 +158,7 @@ Authoring guidance and all four host tutorial documents cover active-view discov
 
 ## Asynchronous detail branches
 
-Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup. Only active popup portals provide targets; closing overlays cannot supply a new branch or its writing action.
+Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup. Only active popup portals provide targets; closing overlays cannot supply a new branch or its writing action. Optional conditions use the public owner-authorized targetAvailable result rather than shared modal markup.
 
 ## Commits
 

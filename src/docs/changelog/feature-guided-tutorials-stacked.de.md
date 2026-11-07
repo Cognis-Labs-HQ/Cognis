@@ -158,7 +158,7 @@ Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabil
 
 ## Asynchrone Detailzweige
 
-Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen.
+Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen. Optionale Bedingungen nutzen das öffentliche, besitzerberechtigte targetAvailable-Ergebnis statt gemeinsamer Dialogmarkierungen.
 
 ## Commits
 

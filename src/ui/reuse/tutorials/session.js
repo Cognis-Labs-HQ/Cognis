@@ -24,7 +24,11 @@ export function createSession({
     onFinish,
     emit,
 }) {
-    const plan = createStepPlan(record.play.steps, { role, firstTime });
+    const plan = createStepPlan(record.play.steps, {
+        role,
+        firstTime,
+        resolve,
+    });
     const controller = new AbortController();
     let priorityPending = false;
     let groupController = new AbortController();

@@ -6,12 +6,15 @@
 import { hasMinAccessRole } from "../access-role.js";
 
 /** @param {object[]} steps Validated steps. @param {object} options Session role and mode. @returns {object} Path queries and outcome operations. */
-export function createStepPlan(steps, { role, firstTime }) {
+export function createStepPlan(steps, { role, firstTime, resolve }) {
     const completed = new Set();
     const skipped = new Set();
-    const context = () =>
+    const context = (index) =>
         Object.freeze({
             firstTime,
+            targetAvailable: Boolean(
+                steps[index].target && resolve(steps[index].target),
+            ),
             completed: Object.freeze([...completed]),
             skipped: Object.freeze([...skipped]),
         });
@@ -21,7 +24,7 @@ export function createStepPlan(steps, { role, firstTime }) {
             return false;
         if (!step.dependsOn.every((id) => completed.has(id))) return false;
         if (!step.when) return true;
-        const result = step.when(context());
+        const result = step.when(context(index));
         if (typeof result !== "boolean")
             throw new TypeError("invalid_tutorial_condition");
         return result;

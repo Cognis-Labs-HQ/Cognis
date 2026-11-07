@@ -255,7 +255,12 @@ test("optional stages are counted after asynchronous setup reveals their control
     const state = tutorialHost();
     context.after(state.dispose);
     let visible = false;
-    const registered = await state.owner().register(
+    const owner = state.owner();
+    const control = state.element();
+    const target = await owner.target("optional", {
+        resolve: () => (visible ? control : null),
+    });
+    const registered = await owner.register(
         play([
             {
                 id: "open",
@@ -264,7 +269,12 @@ test("optional stages are counted after asynchronous setup reveals their control
                     visible = true;
                 },
             },
-            { id: "optional", titleKey: "optional", when: () => visible },
+            {
+                id: "optional",
+                titleKey: "optional",
+                target: target.id,
+                when: ({ targetAvailable }) => targetAvailable,
+            },
         ]),
     );
     const session = await registered.start();

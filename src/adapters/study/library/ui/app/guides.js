@@ -85,12 +85,7 @@ export const guides = [
                             "adapter.study.library.tutorial.explore.practise.writing.title",
                         bodyKey:
                             "adapter.study.library.tutorial.explore.practise.writing.body",
-                        when: () =>
-                            Boolean(
-                                document.querySelector(
-                                    ".library-entry-popup.popup-overlay--visible [data-popup-action=draw]",
-                                ),
-                            ),
+                        when: ({ targetAvailable }) => targetAvailable,
                         portal: ".library-entry-popup",
                         popup: ".library-entry-popup",
                         layer: "overlay",
