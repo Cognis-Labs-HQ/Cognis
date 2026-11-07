@@ -177,3 +177,5 @@ Dock callouts retain visible control anchors below the menu reservation and avoi
 Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
 
 Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
+
+The ? control is centered beside the complete page title and descriptor, including wrapped text and narrow layouts. Headers without a guide keep their existing layout.

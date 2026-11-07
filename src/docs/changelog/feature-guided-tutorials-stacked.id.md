@@ -152,3 +152,13 @@ Dokumentasikan halaman dan persyaratan akses dalam dokumentasi komponen yang sud
 Halaman demo/peramban mandiri beserta modul skenarionya dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
 
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
+
+## Kelola dek terpilih
+
+Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol edit, berbagi, dan ekspor. Panduan tetap tidak tersedia dalam daftar dek.
+
+## Perataan pemutaran ulang
+
+Kontrol ? berada di tengah vertikal di samping judul dan deskripsi halaman, termasuk teks terbungkus dan tata letak sempit. Header tanpa panduan mempertahankan tata letak yang ada.
+
+- [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)

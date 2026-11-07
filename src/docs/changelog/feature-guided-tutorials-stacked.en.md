@@ -152,3 +152,13 @@ Document covered pages and access requirements in the owning component’s exist
 Standalone browser/demo pages and their scenario modules are removed. Shared helpers used by automated tests remain in place.
 
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
+
+## Selected-deck management
+
+The management guide uses the selected deck container as its boundary, including the edit, share and export controls. It remains unavailable in the deck list.
+
+## Header replay alignment
+
+The ? control is centered beside the complete page title and descriptor, including wrapped text and narrow layouts. Headers without a guide keep their existing layout.
+
+- [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)

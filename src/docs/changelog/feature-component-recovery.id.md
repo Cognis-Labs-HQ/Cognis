@@ -129,3 +129,11 @@ Mulai Ulang Tutorial disembunyikan pada langkah terlihat pertama. Pemutaran ulan
 Demo peramban mandiri untuk tutorial, riwayat perubahan, dan pemulihan dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
 
 - [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+
+## Kelola dek terpilih
+
+Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol edit, berbagi, dan ekspor. Panduan tetap tidak tersedia dalam daftar dek.
+
+## Perataan pemutaran ulang
+
+Kontrol ? berada di tengah vertikal di samping judul dan deskripsi halaman, termasuk teks terbungkus dan tata letak sempit. Header tanpa panduan mempertahankan tata letak yang ada.

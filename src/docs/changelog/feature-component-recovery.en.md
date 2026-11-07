@@ -129,3 +129,11 @@ Restart Tutorial is hidden on the first visible step. Replays hide Skip on the l
 Standalone tutorial, changelog and recovery browser demos are removed. Shared helpers used by automated tests remain in place.
 
 - [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+
+## Selected-deck management
+
+The management guide uses the selected deck container as its boundary, including the edit, share and export controls. It remains unavailable in the deck list.
+
+## Header replay alignment
+
+The ? control is centered beside the complete page title and descriptor, including wrapped text and narrow layouts. Headers without a guide keep their existing layout.

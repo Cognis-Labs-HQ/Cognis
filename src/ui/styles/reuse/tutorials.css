@@ -40,12 +40,37 @@
     justify-content: center;
     overflow: auto;
 }
+/* Keep replay controls beside the complete descriptor without changing other page headers. */
+.page-context:has(> .tutorial-help) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    justify-items: end;
+}
+.page-context:has(> .tutorial-help) > h1,
+.page-context:has(> .tutorial-help) > p {
+    grid-column: 1;
+}
+.page-context > .tutorial-help {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+}
+.page-context:not(:has(> p)) > .tutorial-help {
+    grid-row: 1;
+}
+@media (max-width: 900px) {
+    .page-context:has(> .tutorial-help) {
+        justify-items: start;
+    }
+}
 .tutorial-help {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--text);
-    margin-inline-start: 0.5rem;
+    font-size: 1.2rem;
     padding: 0.25rem;
     vertical-align: middle;
 }

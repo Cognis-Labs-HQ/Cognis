@@ -152,3 +152,13 @@ Dokumentieren Sie Seiten und Zugriffsrechte in der bestehenden Dokumentation der
 Eigenständige Browser-Testseiten und ihre Szenario-Module sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
 
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
+
+## Ausgewählten Stapel verwalten
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+## Wiederholung im Seitenkopf
+
+Das ? steht vertikal mittig neben Seitentitel und Beschreibung, auch bei Zeilenumbrüchen und schmalen Ansichten. Seitenköpfe ohne Anleitung behalten ihr bestehendes Layout.
+
+- [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)

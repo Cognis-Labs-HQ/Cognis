@@ -86,7 +86,7 @@ export const guides = [
                 id: "manage-deck",
                 page: ({ pathname }) =>
                     /^\/study\/(?:[a-z-]+\/)?flashcards(?:\/|$)/.test(pathname),
-                scope: "[data-study-session]",
+                scope: "[data-study-deck]:has([data-study-session])",
                 titleKey: "adapter.study.flashcards.tutorial.manage.deck.title",
                 steps: [
                     {

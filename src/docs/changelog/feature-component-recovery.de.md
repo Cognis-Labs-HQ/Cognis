@@ -129,3 +129,11 @@ Tutorial neu starten ist im ersten sichtbaren Schritt verborgen. Wiederholungen 
 Eigenständige Browser-Demos für Tutorials, Änderungsverlauf und Wiederherstellung sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
 
 - [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+
+## Ausgewählten Stapel verwalten
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+## Wiederholung im Seitenkopf
+
+Das ? steht vertikal mittig neben Seitentitel und Beschreibung, auch bei Zeilenumbrüchen und schmalen Ansichten. Seitenköpfe ohne Anleitung behalten ihr bestehendes Layout.
