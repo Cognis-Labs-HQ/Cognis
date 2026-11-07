@@ -121,3 +121,5 @@ Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesia
 ## Tindakan menu tutorial
 
 Mulai Ulang Tutorial disembunyikan pada langkah terlihat pertama. Pemutaran ulang menyembunyikan Lewati pada langkah terlihat terakhir dan menyediakan Selesai. Panduan satu langkah tidak memiliki Mulai Ulang Tutorial atau Lewati. Dokumen cakupan gabungan yang berlebihan dihapus; cakupan fitur tetap bersama komponen pemiliknya.
+
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)

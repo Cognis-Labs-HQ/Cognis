@@ -121,3 +121,5 @@ cognisctl component:disable module analytics --force
 ## チュートリアルのメニュー操作
 
 最初の表示ステップでは最初からやり直す操作を隠し、再実行の最後の表示ステップではスキップの代わりに完了を表示します。1 ステップのガイドには両方とも表示しません。重複する総合一覧を削除し、対象範囲は各コンポーネントの文書に残します。
+
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)

@@ -121,3 +121,5 @@ Back and Forward within Docs or Changelogs retain the current mount’s readines
 ## Tutorial menu actions
 
 Restart Tutorial is hidden on the first visible step. Replays hide Skip on the last visible step and offer Finish instead. A one-step guide has neither Restart Tutorial nor Skip. The redundant aggregate coverage document is removed; feature coverage stays with its owning component.
+
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
