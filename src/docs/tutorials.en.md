@@ -178,4 +178,4 @@ Completion belongs to the stable account and owner/tutorial ID. Content and pack
 
 Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
 
-The ? control is centered beside the complete page title and descriptor, including wrapped text and narrow layouts. Headers without a guide keep their existing layout.
+The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.

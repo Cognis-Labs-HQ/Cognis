@@ -136,6 +136,10 @@ Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfas
 
 ## Wiederholung im Seitenkopf
 
-Das ? steht vertikal mittig neben Seitentitel und Beschreibung, auch bei Zeilenumbrüchen und schmalen Ansichten. Seitenköpfe ohne Anleitung behalten ihr bestehendes Layout.
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
 
 - [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+
+## Wiederholung neben dem Titel
+
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.

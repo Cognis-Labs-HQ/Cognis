@@ -136,6 +136,10 @@ The management guide uses the selected deck container as its boundary, including
 
 ## Header replay alignment
 
-The ? control is centered beside the complete page title and descriptor, including wrapped text and narrow layouts. Headers without a guide keep their existing layout.
+The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.
 
 - [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+
+## Inline replay button
+
+The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.

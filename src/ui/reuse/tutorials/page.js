@@ -115,7 +115,7 @@ export function createPageTutorials({
             account() !== actor
         )
             return;
-        if (!help?.isConnected || help.parentElement !== header) {
+        if (!help?.isConnected || help.parentElement !== heading) {
             help?.remove();
             help = document.createElement("button");
             help.type = "button";
@@ -131,10 +131,9 @@ export function createPageTutorials({
                 },
                 { signal },
             );
-            header.append(help);
+            heading.append(help);
         }
         help.setAttribute("aria-label", i18n.t("ui.tutorial.replay"));
-        help.setAttribute("title", i18n.t("ui.tutorial.replay"));
         const ready = ctx.capabilities.get("ui:pageReadiness");
         if (!ready) throw new Error("page_readiness_unavailable");
         help.disabled = !ready.isReady();

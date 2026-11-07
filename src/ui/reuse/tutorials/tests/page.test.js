@@ -21,15 +21,19 @@ test("first visits persist completion per account, survive remounting, and offer
         state.header.querySelector("button").attributes.get("aria-label"),
         "ui.tutorial.replay",
     );
+    assert.equal(
+        state.header.querySelector("button").attributes.has("title"),
+        false,
+    );
     await state.api.refreshPage();
     assert.equal(state.header.querySelector("button").disabled, false);
     assert.equal(await state.api.openPage(), false);
     assert.equal(state.api.current().firstTime, true);
     assert.equal(
         state.header.querySelector("button").parentElement,
-        state.header,
+        state.heading,
     );
-    assert.equal(state.heading.children.length, 0);
+    assert.equal(state.heading.children.length, 1);
     assert.equal(state.header.children[1], state.description);
     await complete(state);
     assert.equal(state.values.size, 1);
@@ -62,10 +66,7 @@ test("unmatched pages and required popups defer first visits until the page is a
     state.popup(true);
     await state.api.refreshPage();
     assert.equal(state.api.current(), null);
-    assert.equal(
-        state.header.children.filter((child) => child.tag === "button").length,
-        1,
-    );
+    assert.equal(Number(Boolean(state.header.querySelector("button"))), 1);
     state.popup(false);
     await state.api.refreshPage();
     await tick();
@@ -81,10 +82,7 @@ test("provider removal releases help controls and automatic sessions without per
     owner.dispose();
     await state.api.refreshPage();
     assert.equal(state.api.current(), null);
-    assert.equal(
-        state.header.children.filter((child) => child.tag === "button").length,
-        0,
-    );
+    assert.equal(Number(Boolean(state.header.querySelector("button"))), 0);
     assert.equal(state.values.size, 0);
     assert.ok(state.rendered.every((entry) => entry.disposed));
 });
@@ -191,7 +189,7 @@ test("replay controls follow the descriptor lifetime without replacing its conte
     await state.api.refreshPage();
     const first = state.header.querySelector("button");
     assert.ok(first);
-    assert.equal(first.parentElement, state.header);
+    assert.equal(first.parentElement, state.heading);
     state.heading.remove();
     await state.api.refreshPage();
     assert.equal(state.header.querySelector("button"), undefined);
@@ -201,5 +199,5 @@ test("replay controls follow the descriptor lifetime without replacing its conte
     const replacement = state.header.querySelector("button");
     assert.ok(replacement);
     assert.notEqual(replacement, first);
-    assert.equal(state.heading.children.length, 0);
+    assert.equal(state.heading.children.length, 1);
 });
