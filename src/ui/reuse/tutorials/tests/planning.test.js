@@ -250,3 +250,28 @@ for (const grouped of [true, false]) {
         );
     });
 }
+
+test("optional stages are counted after asynchronous setup reveals their controls", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    let visible = false;
+    const registered = await state.owner().register(
+        play([
+            {
+                id: "open",
+                titleKey: "open",
+                enter: async () => {
+                    visible = true;
+                },
+            },
+            { id: "optional", titleKey: "optional", when: () => visible },
+        ]),
+    );
+    const session = await registered.start();
+    await session.ready;
+    assert.equal(state.rendered.at(-1).total, 2);
+    await session.next();
+    assert.equal(session.state().stepId, "optional");
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+});

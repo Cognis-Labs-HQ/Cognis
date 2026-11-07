@@ -156,6 +156,10 @@
 
 作成指針と 4 言語のホスト文書に、画面状態の検出、安定したカード、明示的なダイアログ分岐、省略可能・空の状態、表示順、後処理、ソースと製品ビルドの検証を記載します。開始前にアカウントメニューを閉じます。
 
+## 非同期の詳細分岐
+
+詳細やクラス管理の分岐は開いた画面を待ちます。準備後に省略可能なステップ数を更新し、筆記操作がない場合は次の操作を表示する前に対象から除外します。
+
 ## コミット
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -187,3 +191,4 @@
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
 - [b6874a330](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6874a3309123f93968bec3c7a1091354f71c5d1)
 - [0dd7b9917](https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd7b9917948061b2e1ea929c00748d20fbcc6c7)
+- [6cfa9769f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6cfa9769f146c65e7f1c268d458e011900c2459a)

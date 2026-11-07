@@ -299,6 +299,7 @@ export function createSession({
                     throw new TypeError("invalid_tutorial_cleanup");
             }
             signal.throwIfAborted();
+            path = plan.indices();
             rendering?.dispose();
             rendering = null;
             let interactionPending = false;

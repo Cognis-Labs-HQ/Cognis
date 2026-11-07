@@ -62,6 +62,7 @@ export const guides = [
                             "adapter.study.library.tutorial.explore.read.details.title",
                         bodyKey:
                             "adapter.study.library.tutorial.explore.read.details.body",
+                        missing: { timeoutMs: 15000, action: "skip" },
                         portal: ".library-entry-popup",
                         popup: ".library-entry-popup",
                         layer: "overlay",
@@ -84,6 +85,12 @@ export const guides = [
                             "adapter.study.library.tutorial.explore.practise.writing.title",
                         bodyKey:
                             "adapter.study.library.tutorial.explore.practise.writing.body",
+                        when: () =>
+                            Boolean(
+                                document.querySelector(
+                                    ".library-entry-popup [data-popup-action=draw]",
+                                ),
+                            ),
                         portal: ".library-entry-popup",
                         popup: ".library-entry-popup",
                         layer: "overlay",
