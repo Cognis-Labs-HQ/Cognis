@@ -160,3 +160,5 @@ Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfas
 ## Wiederholung im Seitenkopf
 
 Das ? steht vertikal mittig neben Seitentitel und Beschreibung, auch bei Zeilenumbrüchen und schmalen Ansichten. Seitenköpfe ohne Anleitung behalten ihr bestehendes Layout.
+
+- [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)
