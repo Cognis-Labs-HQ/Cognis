@@ -172,3 +172,5 @@ Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarah
 ## Perbaiki kontrol pemutaran ulang
 
 Kontrol pemutaran ulang berupa ikon ringkas tanpa bingkai terlihat dengan jarak jelas dari judul halaman. Kontrol tidak memperbesar baris judul, mempertahankan warna teks tema, serta menampilkan umpan balik hover halus dan fokus papan ketik yang terlihat. Tooltip tetap tidak ditampilkan.
+
+- [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
