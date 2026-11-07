@@ -143,3 +143,5 @@ Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover
 ## Wiederholung neben dem Titel
 
 Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)

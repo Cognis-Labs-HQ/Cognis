@@ -143,3 +143,5 @@ cognisctl component:disable module analytics --force
 ## 見出し内の再実行ボタン
 
 ? ボタンはページタイトルと同じ行に配置します。ホバー時のツールチップは表示せず、翻訳済みのアクセシブルなラベルは維持します。
+
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)

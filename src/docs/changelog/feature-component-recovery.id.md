@@ -143,3 +143,5 @@ Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarah
 ## Tombol pemutaran ulang sejajar
 
 Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
+
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
