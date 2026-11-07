@@ -66,7 +66,14 @@ export async function mountPageTutorials(
                 }
                 const targetRoot = () =>
                     portal
-                        ? resolve(portal, "unique", undefined, document)
+                        ? resolve(
+                              step.popup
+                                  ? `:is(${portal}).popup-overlay--visible`
+                                  : portal,
+                              "unique",
+                              undefined,
+                              document,
+                          )
                         : root;
                 if (!["unique", "first"].includes(targetMatch))
                     throw new TypeError("invalid_tutorial_target_match");
