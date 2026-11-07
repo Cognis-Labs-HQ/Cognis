@@ -179,3 +179,7 @@ Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inha
 Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholungen bieten Überspringen vor dem letzten sichtbaren Schritt; der letzte Schritt bietet Fertig. Ein einteiliger Guide bietet weder Tutorial neu starten noch Überspringen. Erstdurchläufe bieten weiterhin nie Überspringen.
 
 Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereitschaftsmeldung erneut aufgelöst. Neustart und Abbruch verhindern veraltete Wiederherstellung und blockierte schwebende Menüs.
+
+`scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.

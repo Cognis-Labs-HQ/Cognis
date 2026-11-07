@@ -66,43 +66,17 @@ cognisctl component:disable module analytics --force
 
 完了は安定したアカウントと所有者・チュートリアル ID に紐付きます。内容やパッケージの更新でリセットしません。完了済みのガイドはページ見出しの ? から要求した場合だけ再実行します。改訂時も ID を維持し、完了はアカウントのブラウザーストレージに保存します。
 
-## コミット
-
-- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.
-- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — 簡潔な CLI 出力、詳細モード、更新の進行状況を追加.
-- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — レビュー指摘を修正し外部モジュールを任意に維持.
-- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — 強制指定のない重複操作を省略し CLI 表記を統一.
-- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — チュートリアルの表示範囲とホストのバージョンを同期.
-- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — 案内ブランチの起動時ポップアップ準備フローを同期.
-- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
-- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
-- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
-- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
-- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
-
 コンポーネント復旧のトーストには、正式なマニフェストの表示名と、指定がある場合はコンポーネントの翻訳カタログを使います。名前は一度だけそのままのテキストとして挿入します。提供元の所有者メタデータに任意の `name` と `stringsBaseUrl` を追加しました。運用エラーや反復障害による無効化のトーストは `minRole: "admin"` で管理者と所有者だけに表示し、通常の通知の対象は変更しません。スタックには条件付きチュートリアル経路、役割別の進捗、再開始、実際のドック寸法、バナー操作の優先処理も含まれます。
-
-- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
 
 チュートリアルのスタックで、ヘッダー上の検索入力欄の強調を修正し、各フィルターのクリックで次へ進むようにしました。手動で進めるステップには「次へ」や「完了」の強調を追加し、動きを減らす設定にも対応します。
 
-- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
-
 チュートリアルの各ステップは任意の真偽値 `highlightNext` を使い、省略時は false です。既存の説明では有効にし、自動で進む練習では無効にします。ホストとモジュールの開発ガイドラインは、利用者を中心にしたチュートリアルの網羅と UI 機能変更時の見直しを求めます。
 
-- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
-
 完了したステップ群や依存分岐から戻ると、その開始点へ移動します。明示した場合だけ、指定セクション内で利用可能な最初の対象を強調し、省略時は一意の一致を保ちます。コンポーネントでは変更可能な電源スイッチを示し、存在しなければステップを飛ばします。ホストと関連モジュールの内容を見直し、34 個の対象を具体化しました。
-
-- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
-- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
-- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
 
 ## 再実行の終了操作
 
 再実行ではスキップを唯一の終了ボタンとし、重複する中止ボタンを削除します。
-
-- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
 
 ## 設定ガイドの独立性
 
@@ -116,19 +90,13 @@ cognisctl component:disable module analytics --force
 
 ドキュメントや変更履歴内の戻る・進むでは、現在のページの準備状態を維持します。確定したルート置換やページの寿命終了では引き続き無効にし、文書内の履歴操作で起動時の待機処理を再実行しません。
 
-- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
-
 ## チュートリアルのメニュー操作
 
 最初の表示ステップでは最初からやり直す操作を隠し、再実行の最後の表示ステップではスキップの代わりに完了を表示します。1 ステップのガイドには両方とも表示しません。重複する総合一覧を削除し、対象範囲は各コンポーネントの文書に残します。
 
-- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
-
 ## ブラウザーデモを削除
 
 チュートリアル、変更履歴、復旧用の独立したブラウザーデモを削除し、自動テスト用の共通の補助コードは維持します。
-
-- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
 
 ## 選択したデッキの管理
 
@@ -138,16 +106,49 @@ cognisctl component:disable module analytics --force
 
 ? ボタンはページタイトルと同じ行に配置します。ホバー時のツールチップは表示せず、翻訳済みのアクセシブルなラベルは維持します。
 
-- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
-
 ## 見出し内の再実行ボタン
 
 ? ボタンはページタイトルと同じ行に配置します。ホバー時のツールチップは表示せず、翻訳済みのアクセシブルなラベルは維持します。
-
-- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 
 ## 見出しの再実行操作を調整
 
 再実行は枠を常時表示しない小さなアイコンとし、ページタイトルとの間隔を確保します。タイトル行を大きくせず、テーマの文字色を維持し、ホバー時は控えめに、キーボードフォーカスは明確に示します。ツールチップは表示しません。
 
+## マーケットプレイスの対象範囲
+
+一覧と詳細の条件を維持しながら、ツールバー、カード、ソース設定、モジュール詳細の操作をガイドの境界に含めます。
+
+## 表示中断からの復旧
+
+非同期描画中に対象が失われた場合は、準備完了を通知する前に再取得します。再開や中止後の古い描画から復旧を再開せず、フローティングメニューを占有し続けません。
+
+## 独立した表示条件
+
+`scope` は対象と検出範囲を制限します。任意の `visibleWhen` は一意の表示要素を要求しますが、その子孫だけに対象を制限せず、コンポーネント内の対象を使えます。ライブラリー管理ではブラウザーの表示を確認し、サイドバーの検索を強調します。無効なセレクターは登録時に失敗し、所有者を解除します。
+
+## コミット
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.
+- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — 簡潔な CLI 出力、詳細モード、更新の進行状況を追加.
+- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — レビュー指摘を修正し外部モジュールを任意に維持.
+- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — 強制指定のない重複操作を省略し CLI 表記を統一.
+- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — チュートリアルの表示範囲とホストのバージョンを同期.
+- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — 案内ブランチの起動時ポップアップ準備フローを同期.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
+- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
+- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
+- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
+- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
+- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)

@@ -179,3 +179,7 @@ Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan is
 Mulai Ulang Tutorial muncul setelah langkah terlihat pertama. Pemutaran ulang menyediakan Lewati sebelum langkah terlihat terakhir; langkah terakhir menyediakan Selesai. Panduan satu langkah tidak menyediakan Mulai Ulang Tutorial atau Lewati. Panduan pertama tetap tidak menyediakan Lewati.
 
 Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
+
+Target yang hilang saat perenderan asinkron dicari ulang sebelum kesiapan diterbitkan. Penyajian yang dimulai ulang atau dibatalkan tidak dapat melanjutkan pemulihan lama atau menahan menu mengambang.
+
+`scope` membatasi target dan penemuan. `visibleWhen` opsional memerlukan satu elemen terlihat tanpa membatasi target ke turunannya; target tetap berada dalam akar komponen. Administrasi Pustaka memakainya untuk visibilitas browser sambil menyoroti pencarian di bilah samping. Selektor tidak valid menggagalkan registrasi dan membersihkan pemilik.

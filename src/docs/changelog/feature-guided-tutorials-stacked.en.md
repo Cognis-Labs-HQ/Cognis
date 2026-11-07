@@ -54,6 +54,96 @@ The Dashboard walkthrough has 18 steps and deliberately opens the notification p
 
 Transient surfaces publish their element, close operation and owner signal through `ui:transientSurfaces.register(element, close, signal)`. A guide uses `attachLifetime(element, groupSignal)` to release only the matching finder, notification pane or dropdown when its group ends. Tutorial action clicks do not reach background click-away handlers, so menus remain open throughout their explanations.
 
+Step paths support `minRole`, a synchronous `when({ firstTime, completed, skipped })` boolean predicate, and `dependsOn: ["earlier-step-id"]`. Unauthorized and false-condition stages are excluded from progress. Dependencies must reference earlier stages; unknown, duplicate, self and forward references are rejected. Interaction stages satisfy dependencies only after their event or wait condition succeeds; manually choosing Next skips their dependent branch. Static stages satisfy dependencies with Next. Outcomes passed to conditions are immutable snapshots. Counts reflect the currently eligible path and can expand after an interaction opens a branch. Back rewinds outcomes from its destination; `restart()` and the Restart Tutorial action reset all outcomes and release transient surfaces without replacing the session. The Dashboard Search, notification and account branches require opening their respective controls. Administration requires `minRole: "admin"`; optional dock controls have visibility conditions. Dock highlights follow the live dock bounds, including controls below the footer boundary, while callouts keep their reserved viewport.
+
+Broadcast-banner buttons, links and keyboard activation remain available throughout a tutorial. Activating a banner action yields the tutorial through `ui:tutorial:priority` before any action-owned popup or navigation. Banner focus targets participate in keyboard traversal.
+
+`showToast(message, { minRole: "admin" })` limits operational feedback to administrators and owners. Other or unknown roles receive no toast DOM, timers or dismissal callbacks. Omitting `minRole` keeps normal feedback available to everyone. This client presentation option does not authorize server operations.
+
+Search overlay steps use the overlay viewport, so shell headers and footers do not clip the search input highlight. Clicking any refinement pill completes the filter exercise. Steps requiring Next (or Finish) highlight that action with a breathing outline; reduced-motion preferences retain a static outline. Waiting and automatically advancing steps do not show this cue.
+
+Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
+
+Tutorial coverage is required for every UI-facing component. Contributor guidance requires user-first, task-focused walkthroughs and a review of existing tutorials whenever features or UI behavior change.
+
+Back from outside a completed step group or dependency branch returns to its opener and clears its outcomes. Back within a branch remains sequential. This avoids revisiting a closed Search panel and automatically skipping to the exit.
+
+Page steps can declare `targetMatch: "first"` to select the first visible, usable match inside their declared section. The default remains unique matching. Missing or disabled targets are skipped according to the authored policy. Action-specific highlights now point to editable power switches, role selectors, quota fields, notification tests, share controls, records and module actions. Components uses an editable displayed power switch; required and hidden controls are excluded.
+
+## Visible tutorial regions and recovery
+
+Restart Tutorial is the persistent recovery action; the tutorial no longer renders a Retry button. UI-facing introductory steps now highlight their referenced regions, including empty Jitsi meeting lists and Find Participants. Learning providers use published Study language targets and the public workspace target. Explicit `highlightNext` remains enabled on explanatory steps and disabled on event-driven stages.
+
+## Shared floating menu queue
+
+Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
+
+## Animation-only Next cue
+
+The Next/Finish cue uses only the breathing animation, without a permanent outline. Reduced-motion preferences disable the animation; normal keyboard focus remains visible.
+
+## Precise tutorial targets
+
+Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
+
+## Completion survives updates
+
+Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
+
+## Replay exit action
+
+Tutorial replays offer Skip as their single exit button; the redundant Cancel button is removed. First-time guides retain their existing progression controls.
+
+## Isolated Settings Guide
+
+The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage stays in each owner’s docs.
+
+## Consistent Locale Indentation
+
+Locale XML touched by the tutorial PR uses consistent two-space string indentation. Formatting preserves translation values; the font-step strings move from Classes to Settings in all four languages.
+
+## Readiness During Document History
+
+Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.
+
+## Tutorial menu actions
+
+Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
+
+Document covered pages and access requirements in the owning component’s existing documentation, without a separate aggregate inventory.
+
+## Remove Browser Demo Fixtures
+
+Standalone browser/demo pages and their scenario modules are removed. Shared helpers used by automated tests remain in place.
+
+## Selected-deck management
+
+The management guide uses the selected deck container as its boundary, including the edit, share and export controls. It remains unavailable in the deck list.
+
+## Header replay alignment
+
+The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.
+
+## Inline replay button
+
+The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.
+
+## Refine header replay control
+
+The replay control is a compact, unboxed icon with a clear gap from the page title. It matches the title row without enlarging it, keeps the theme text color, and shows subtle hover and visible keyboard-focus feedback. The tooltip remains absent.
+
+## Complete marketplace boundaries
+
+Marketplace guides contain the toolbar, cards, source settings and module-detail actions while retaining their list/detail conditions.
+
+## Recover interrupted presentation
+
+Target loss during asynchronous rendering is retried before readiness is published. Restarted or cancelled presentations cannot resume stale recovery or strand the floating menu.
+
+## Independent visibility conditions
+
+`scope` bounds targets and discovery. Optional `visibleWhen` requires a unique visible element without restricting targets to its descendants; targets still stay inside the component root. Library Administration uses this for its browser visibility while highlighting sidebar search. Invalid selectors fail registration and roll back the owner.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -69,108 +159,18 @@ Transient surfaces publish their element, close operation and owner signal throu
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
 - [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)
-
-Step paths support `minRole`, a synchronous `when({ firstTime, completed, skipped })` boolean predicate, and `dependsOn: ["earlier-step-id"]`. Unauthorized and false-condition stages are excluded from progress. Dependencies must reference earlier stages; unknown, duplicate, self and forward references are rejected. Interaction stages satisfy dependencies only after their event or wait condition succeeds; manually choosing Next skips their dependent branch. Static stages satisfy dependencies with Next. Outcomes passed to conditions are immutable snapshots. Counts reflect the currently eligible path and can expand after an interaction opens a branch. Back rewinds outcomes from its destination; `restart()` and the Restart Tutorial action reset all outcomes and release transient surfaces without replacing the session. The Dashboard Search, notification and account branches require opening their respective controls. Administration requires `minRole: "admin"`; optional dock controls have visibility conditions. Dock highlights follow the live dock bounds, including controls below the footer boundary, while callouts keep their reserved viewport.
-
-Broadcast-banner buttons, links and keyboard activation remain available throughout a tutorial. Activating a banner action yields the tutorial through `ui:tutorial:priority` before any action-owned popup or navigation. Banner focus targets participate in keyboard traversal.
-
-`showToast(message, { minRole: "admin" })` limits operational feedback to administrators and owners. Other or unknown roles receive no toast DOM, timers or dismissal callbacks. Omitting `minRole` keeps normal feedback available to everyone. This client presentation option does not authorize server operations.
-
 - [f681187ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f681187ca572fa4270f9b398d429a3d1177c62d3)
-
-Search overlay steps use the overlay viewport, so shell headers and footers do not clip the search input highlight. Clicking any refinement pill completes the filter exercise. Steps requiring Next (or Finish) highlight that action with a breathing outline; reduced-motion preferences retain a static outline. Waiting and automatically advancing steps do not show this cue.
-
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
-
-Each tutorial step now explicitly declares `highlightNext`: explanations that require Next or Finish enable it, while interaction- and wait-driven exercises disable it. The cue retains a static outline for reduced motion. All existing tutorials were reviewed for this distinction, including search results and notification explanations.
-
-Tutorial coverage is required for every UI-facing component. Contributor guidance requires user-first, task-focused walkthroughs and a review of existing tutorials whenever features or UI behavior change.
-
 - [f578b8115](https://github.com/Cognis-Labs-HQ/Cognis/commit/f578b8115e452d8afae8ef21dbbd86dd5756eceb)
-
-Back from outside a completed step group or dependency branch returns to its opener and clears its outcomes. Back within a branch remains sequential. This avoids revisiting a closed Search panel and automatically skipping to the exit.
-
-Page steps can declare `targetMatch: "first"` to select the first visible, usable match inside their declared section. The default remains unique matching. Missing or disabled targets are skipped according to the authored policy. Action-specific highlights now point to editable power switches, role selectors, quota fields, notification tests, share controls, records and module actions. Components uses an editable displayed power switch; required and hidden controls are excluded.
-
 - [c7eefff5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7eefff5ad35c79574c1067ee97032cc6a76045a)
-
-## Visible tutorial regions and recovery
-
-Restart Tutorial is the persistent recovery action; the tutorial no longer renders a Retry button. UI-facing introductory steps now highlight their referenced regions, including empty Jitsi meeting lists and Find Participants. Learning providers use published Study language targets and the public workspace target. Explicit `highlightNext` remains enabled on explanatory steps and disabled on event-driven stages.
-
-## Shared floating menu queue
-
-Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
-
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
 - [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
-
-## Animation-only Next cue
-
-The Next/Finish cue uses only the breathing animation, without a permanent outline. Reduced-motion preferences disable the animation; normal keyboard focus remains visible.
-
-## Precise tutorial targets
-
-Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
-
-## Completion survives updates
-
-Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
-
 - [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
-
-## Replay exit action
-
-Tutorial replays offer Skip as their single exit button; the redundant Cancel button is removed. First-time guides retain their existing progression controls.
-
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
-
-## Isolated Settings Guide
-
-The font step uses Settings-owned strings from the host catalog. Optional Classes translations are no longer needed to register Settings guides. Component guide coverage stays in each owner’s docs.
-
-## Consistent Locale Indentation
-
-Locale XML touched by the tutorial PR uses consistent two-space string indentation. Formatting preserves translation values; the font-step strings move from Classes to Settings in all four languages.
-
-## Readiness During Document History
-
-Back and Forward within Docs or Changelogs retain the current mount’s readiness. Committed route replacement and page lifetime cancellation still invalidate it; an internal document-history event does not rerun startup blockers.
-
 - [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)
-
-## Tutorial menu actions
-
-Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
-
-Document covered pages and access requirements in the owning component’s existing documentation, without a separate aggregate inventory.
-
 - [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
-
-## Remove Browser Demo Fixtures
-
-Standalone browser/demo pages and their scenario modules are removed. Shared helpers used by automated tests remain in place.
-
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
-
-## Selected-deck management
-
-The management guide uses the selected deck container as its boundary, including the edit, share and export controls. It remains unavailable in the deck list.
-
-## Header replay alignment
-
-The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.
-
 - [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)
-
-## Inline replay button
-
-The ? button sits in line with the page title. It has no hover tooltip and retains its localized accessible label.
-
 - [ed98d0a85](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed98d0a85646823c09848713d32a9f6f9d8652be)
-
-## Refine header replay control
-
-The replay control is a compact, unboxed icon with a clear gap from the page title. It matches the title row without enlarging it, keeps the theme text color, and shows subtle hover and visible keyboard-focus feedback. The tooltip remains absent.
-
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
+- [b6874a330](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6874a3309123f93968bec3c7a1091354f71c5d1)

@@ -66,43 +66,17 @@ Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten M
 
 Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos.
 
-## Commits
-
-- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
-- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Kurze CLI-Ausgaben, ausführlichen Modus und Aktualisierungsfortschritt ergänzen.
-- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Reviewfehler beheben und externe Module optional halten.
-- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Unnötige Komponentenaktionen ohne Zwang überspringen und CLI-Schreibweise vereinheitlichen.
-- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Tutorial-Ansicht und Hostversion synchronisieren.
-- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Bereitschaft für Start-Popups aus dem Tutorial-Zweig übernehmen.
-- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
-- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
-- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
-- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
-- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
-
 Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests und gegebenenfalls dessen Übersetzungskatalog. Der Name wird als unveränderter Text eingesetzt. Metadaten zum Anbieterbesitz enthalten optional `name` und `stringsBaseUrl`. Betriebsfehler und automatische Deaktivierungen verwenden `minRole: "admin"` und erscheinen nur für Administratoren und Eigentümer; normale Benachrichtigungen behalten ihre Zielgruppe. Der Stack enthält außerdem bedingte Tutorialpfade, rollenabhängigen Fortschritt, Neustart, aktuelle Dock-Geometrie und Vorrang für Banneraktionen.
-
-- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
 
 Der Tutorial-Stack korrigiert die Hervorhebung des Sucheingabefelds über Kopfzeilen, setzt nach jedem Filter-Klick fort und zeigt für manuelle Schritte einen pulsierenden Weiter/Fertig-Hinweis mit Unterstützung reduzierter Bewegung.
 
-- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
-
 Der Tutorial-Stack verwendet jetzt das optionale boolesche Feld `highlightNext` pro Schritt mit Standardwert false. Bestehende Erklärungen aktivieren es; automatische Übungen deaktivieren es. Die Beitragsrichtlinien für Host und Module verlangen nutzerorientierte Tutorial-Abdeckung und deren Prüfung bei UI-Änderungen.
 
-- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
-
 Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen oder Abhängigkeitszweige. Aktionsbezogene Hervorhebungen verwenden auf ausdrücklichen Wunsch den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt; standardmäßig bleibt die Zuordnung eindeutig. Komponenten hebt einen bearbeitbaren Schalter hervor und überspringt den Schritt, wenn keiner verfügbar ist. Die Inhaltsprüfung präzisierte 34 Ziele im Host und den Begleitmodulen.
-
-- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
-- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
-- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
 
 ## Wiederholungen beenden
 
 Wiederholungen verwenden Überspringen als einzigen Beenden-Button. Der redundante Abbrechen-Button entfällt.
-
-- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
 
 ## Isolierte Einstellungsanleitung
 
@@ -116,19 +90,13 @@ Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für Stri
 
 Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
 
-- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
-
 ## Tutorial-Menüaktionen
 
 Tutorial neu starten ist im ersten sichtbaren Schritt verborgen. Wiederholungen verbergen Überspringen im letzten sichtbaren Schritt und bieten Fertig an. Ein einteiliger Guide hat weder Tutorial neu starten noch Überspringen. Die redundante Gesamtübersicht entfällt; die Abdeckung bleibt bei der jeweiligen Komponente.
 
-- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
-
 ## Browser-Testseiten entfernen
 
 Eigenständige Browser-Demos für Tutorials, Änderungsverlauf und Wiederherstellung sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
-
-- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
 
 ## Ausgewählten Stapel verwalten
 
@@ -138,16 +106,49 @@ Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfas
 
 Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
 
-- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
-
 ## Wiederholung neben dem Titel
 
 Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
-
-- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 
 ## Wiederholung im Kopf verfeinern
 
 Die Wiederholung ist ein kompaktes Symbol ohne sichtbaren Rahmen mit klarem Abstand zum Seitentitel. Es vergrößert die Titelzeile nicht, behält die Textfarbe des Themes und zeigt dezente Hover- sowie sichtbare Tastaturfokus-Hinweise. Der Tooltip bleibt entfernt.
 
+## Vollständige Marktplatz-Grenzen
+
+Marktplatz-Anleitungen umfassen Werkzeugleiste, Karten, Quelleneinstellungen und Modulaktionen und behalten ihre Listen- und Detailbedingungen.
+
+## Unterbrochene Darstellung fortsetzen
+
+Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereitschaftsmeldung erneut aufgelöst. Neustart und Abbruch verhindern veraltete Wiederherstellung und blockierte schwebende Menüs.
+
+## Unabhängige Sichtbarkeitsbedingungen
+
+`scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
+
+## Commits
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
+- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Kurze CLI-Ausgaben, ausführlichen Modus und Aktualisierungsfortschritt ergänzen.
+- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Reviewfehler beheben und externe Module optional halten.
+- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Unnötige Komponentenaktionen ohne Zwang überspringen und CLI-Schreibweise vereinheitlichen.
+- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Tutorial-Ansicht und Hostversion synchronisieren.
+- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Bereitschaft für Start-Popups aus dem Tutorial-Zweig übernehmen.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
+- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
+- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
+- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
+- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
+- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)

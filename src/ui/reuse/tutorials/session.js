@@ -286,6 +286,7 @@ export function createSession({
             rendering?.dispose();
             rendering = null;
             let interactionPending = false;
+            let targetLost = false;
             rendering = await present({
                 step,
                 text,
@@ -300,8 +301,12 @@ export function createSession({
                         !step.target ||
                         resolve(step.target) === target),
                 lost: (error) => {
+                    if (signal.aborted || disposed) return;
                     if (error) fail(error);
-                    else if (!busy && !disposed) void enter(index);
+                    else {
+                        targetLost = true;
+                        if (!busy) void enter(index);
+                    }
                 },
                 interacted: async (event) => {
                     if (
@@ -335,6 +340,10 @@ export function createSession({
                 },
             });
             signal.throwIfAborted();
+            if (targetLost) {
+                busy = false;
+                return enter(index);
+            }
             busy = false;
             ready(true);
             emit("presented", status());

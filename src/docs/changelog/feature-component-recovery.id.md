@@ -66,43 +66,17 @@ Balon penjelasan tetap memakai kontrol dok yang terlihat di bawah ruang menu seb
 
 Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan isi dan paket tidak pernah mengatur ulang penyelesaian. Tutorial yang selesai hanya diulang melalui kontrol ? di judul halaman. Pertahankan ID saat merevisi panduan; penyelesaian tetap disimpan di penyimpanan peramban akun.
 
-## Commit
-
-- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
-- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Tambahkan keluaran CLI ringkas, mode terperinci, dan progres peningkatan.
-- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Perbaiki temuan tinjauan dan pertahankan modul eksternal opsional.
-- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Lewati tindakan komponen berulang kecuali dipaksa dan seragamkan kapitalisasi CLI.
-- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Sinkronkan tampilan viewport tutorial dan versi host.
-- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Sinkronkan kesiapan popup awal dari cabang tutorial.
-- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
-- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
-- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
-- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
-- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
-
 Toast pemulihan komponen memakai nama tampilan manifest yang otoritatif dan katalog terjemahan komponen bila tersedia. Nama disisipkan sebagai teks utuh. Metadata pemilik penyedia memiliki kolom opsional `name` dan `stringsBaseUrl`. Toast kegagalan operasional dan penonaktifan setelah kegagalan berulang memakai `minRole: "admin"`, sehingga hanya administrator dan pemilik yang melihatnya; notifikasi biasa tetap memakai audiens normal. Stack juga mencakup jalur tutorial bersyarat, kemajuan sesuai peran, mulai ulang, geometri dok aktual, dan prioritas tindakan banner.
-
-- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
 
 Stack tutorial memperbaiki sorotan input pencarian di atas header, melanjutkan setelah klik pil filter mana pun, dan memberi isyarat lembut pada Berikutnya/Selesai untuk langkah manual dengan dukungan pengurangan gerakan.
 
-- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
-
 Stack tutorial kini memakai boolean opsional `highlightNext` per langkah dengan nilai bawaan false. Penjelasan yang ada mengaktifkannya, sedangkan latihan otomatis menonaktifkannya. Panduan kontribusi host dan modul mewajibkan cakupan tutorial yang berfokus pada pengguna dan peninjauan setiap kali fitur antarmuka berubah.
 
-- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
-
 Stack tutorial kini mengarahkan Kembali ke awal grup atau cabang dependensi yang selesai. Sorotan tindakan dapat memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan jika diminta secara eksplisit; pencocokan unik tetap menjadi bawaan. Komponen menyoroti sakelar daya yang dapat diubah dan melewati langkah jika tidak tersedia. Tinjauan konten memperjelas 34 target di host dan modul pendamping.
-
-- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
-- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
-- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
 
 ## Tindakan keluar pemutaran ulang
 
 Pemutaran ulang memakai Lewati sebagai satu-satunya tombol keluar. Tombol Batal yang berlebihan dihapus.
-
-- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
 
 ## Panduan Pengaturan Terisolasi
 
@@ -116,19 +90,13 @@ XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai t
 
 Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
 
-- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
-
 ## Tindakan menu tutorial
 
 Mulai Ulang Tutorial disembunyikan pada langkah terlihat pertama. Pemutaran ulang menyembunyikan Lewati pada langkah terlihat terakhir dan menyediakan Selesai. Panduan satu langkah tidak memiliki Mulai Ulang Tutorial atau Lewati. Dokumen cakupan gabungan yang berlebihan dihapus; cakupan fitur tetap bersama komponen pemiliknya.
 
-- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
-
 ## Hapus Fixture Demo Peramban
 
 Demo peramban mandiri untuk tutorial, riwayat perubahan, dan pemulihan dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
-
-- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
 
 ## Kelola dek terpilih
 
@@ -138,16 +106,49 @@ Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol e
 
 Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
 
-- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
-
 ## Tombol pemutaran ulang sejajar
 
 Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
-
-- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 
 ## Perbaiki kontrol pemutaran ulang
 
 Kontrol pemutaran ulang berupa ikon ringkas tanpa bingkai terlihat dengan jarak jelas dari judul halaman. Kontrol tidak memperbesar baris judul, mempertahankan warna teks tema, serta menampilkan umpan balik hover halus dan fokus papan ketik yang terlihat. Tooltip tetap tidak ditampilkan.
 
+## Batas marketplace lengkap
+
+Panduan marketplace mencakup bilah alat, kartu, pengaturan sumber, dan tindakan detail modul sambil mempertahankan kondisi daftar/detail.
+
+## Pulihkan penyajian terputus
+
+Target yang hilang saat perenderan asinkron dicari ulang sebelum kesiapan diterbitkan. Penyajian yang dimulai ulang atau dibatalkan tidak dapat melanjutkan pemulihan lama atau menahan menu mengambang.
+
+## Kondisi visibilitas terpisah
+
+`scope` membatasi target dan penemuan. `visibleWhen` opsional memerlukan satu elemen terlihat tanpa membatasi target ke turunannya; target tetap berada dalam akar komponen. Administrasi Pustaka memakainya untuk visibilitas browser sambil menyoroti pencarian di bilah samping. Selektor tidak valid menggagalkan registrasi dan membersihkan pemilik.
+
+## Commit
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
+- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Tambahkan keluaran CLI ringkas, mode terperinci, dan progres peningkatan.
+- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Perbaiki temuan tinjauan dan pertahankan modul eksternal opsional.
+- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Lewati tindakan komponen berulang kecuali dipaksa dan seragamkan kapitalisasi CLI.
+- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Sinkronkan tampilan viewport tutorial dan versi host.
+- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Sinkronkan kesiapan popup awal dari cabang tutorial.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
+- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
+- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
+- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
+- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
+- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
 - [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)

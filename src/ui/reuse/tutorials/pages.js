@@ -31,12 +31,19 @@ export async function mountPageTutorials(
     };
     try {
         for (const definition of definitions) {
-            const { scope, steps, available, ...play } = definition;
+            const { scope, visibleWhen, steps, available, ...play } =
+                definition;
+            if (visibleWhen !== undefined) {
+                if (typeof visibleWhen !== "string" || !visibleWhen.trim())
+                    throw new TypeError("invalid_tutorial_visibility_selector");
+                root.querySelectorAll(visibleWhen);
+            }
             const matchesPage = (page) =>
                 (typeof play.page === "function"
                     ? play.page(page) === true
                     : page.pathname === play.page) &&
-                (!scope || Boolean(resolve(scope)));
+                (!scope || Boolean(resolve(scope))) &&
+                (!visibleWhen || Boolean(resolve(visibleWhen)));
             const registeredSteps = [];
             for (const { selector, targetMatch = "unique", ...step } of steps) {
                 if (!["unique", "first"].includes(targetMatch))

@@ -54,6 +54,96 @@ Panduan Dasbor memiliki 18 langkah dan membuka panel notifikasi serta menu akun 
 
 Permukaan sementara mendaftarkan elemen, tindakan tutup, dan sinyal pemilik melalui `ui:transientSurfaces.register(element, close, signal)`. Panduan memakai `attachLifetime(element, groupSignal)` untuk melepaskan pencari, panel notifikasi, atau menu yang cocok saat grup berakhir. Klik tindakan tutorial tidak mencapai penangan klik luar di latar, sehingga menu tetap terbuka selama penjelasannya.
 
+Jalur langkah mendukung `minRole`, predikat boolean sinkron `when({ firstTime, completed, skipped })`, dan `dependsOn: ["earlier-step-id"]`. Langkah tanpa izin atau dengan kondisi salah tidak masuk hitungan kemajuan. Dependensi harus menunjuk langkah sebelumnya; referensi tidak dikenal, duplikat, diri sendiri, dan langkah berikutnya ditolak. Langkah interaktif memenuhi dependensi hanya setelah peristiwa atau kondisi tunggunya berhasil. Memilih Berikutnya melewati cabang dependennya; langkah statis dipenuhi dengan Berikutnya. Kondisi menerima salinan hasil yang tidak dapat diubah. Jumlah mencerminkan jalur yang tersedia dan dapat bertambah ketika interaksi membuka cabang. Kembali menghapus hasil mulai dari tujuannya. `restart()` dan Mulai Ulang Tutorial menghapus seluruh hasil dan menutup permukaan sementara dalam sesi yang sama. Cabang Pencarian, notifikasi, dan akun memerlukan pembukaan kontrol terkait. Administrasi memerlukan `minRole: "admin"`; kontrol dok opsional disaring menurut visibilitas. Sorotan mengikuti ukuran dok aktual, termasuk bagian di bawah batas footer, sementara balon penjelasan tetap memakai area tampilan yang dicadangkan.
+
+Tombol, tautan, dan aktivasi papan ketik pada banner tetap tersedia. Aktivasi menghentikan tutorial melalui `ui:tutorial:priority` sebelum dialog atau navigasi milik tindakan berjalan. Kontrol banner dapat dicapai dengan Tab.
+
+`showToast(message, { minRole: "admin" })` membatasi informasi operasional kepada administrator dan pemilik. Peran lain atau tidak dikenal tidak membuat DOM toast, timer, atau callback penutupan. Tanpa `minRole`, umpan balik biasa tetap terlihat oleh semua pengguna. Opsi tampilan ini bukan otorisasi operasi server.
+
+Langkah overlay pencarian memakai area tampilan overlay agar header dan footer tidak memotong sorotan input. Klik pil penyempurnaan mana pun menyelesaikan latihan filter. Langkah yang memerlukan Berikutnya atau Selesai menyoroti tindakan itu dengan garis tepi beranimasi lembut; preferensi pengurangan gerakan mempertahankan garis statis. Langkah yang menunggu atau maju otomatis tidak menampilkan isyarat ini.
+
+Setiap langkah tutorial kini menetapkan `highlightNext` secara eksplisit: penjelasan yang memerlukan Berikutnya atau Selesai mengaktifkannya, sedangkan latihan berbasis interaksi atau penantian menonaktifkannya. Pengurangan gerakan mempertahankan garis tepi statis. Semua tutorial ditinjau, termasuk hasil pencarian dan penjelasan notifikasi.
+
+Setiap komponen antarmuka wajib dicakup tutorial. Panduan kontribusi mengharuskan alur tugas yang berfokus pada pengguna dan peninjauan tutorial setiap kali fitur atau perilaku antarmuka berubah.
+
+Kembali dari luar grup langkah atau cabang dependensi yang selesai akan menuju pembukanya dan menghapus hasil cabang. Di dalam cabang, Kembali tetap berurutan. Ini mencegah kunjungan ulang ke panel Pencarian yang sudah ditutup lalu melompat otomatis ke akhir.
+
+Langkah halaman dapat memakai `targetMatch: "first"` untuk memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan. Pencocokan unik tetap menjadi bawaan. Target yang hilang atau nonaktif mengikuti kebijakan pelewatan penulis. Sorotan tindakan kini mengarah ke sakelar yang dapat diubah, pemilih peran, kuota, pengujian notifikasi, kontrol berbagi, rekaman, dan tindakan modul. Komponen menyorot sakelar daya yang dapat diubah; kontrol wajib dan tersembunyi dikecualikan.
+
+## Wilayah tutorial dan pemulihan
+
+Mulai Ulang Tutorial tetap menjadi tindakan pemulihan; tombol Coba Lagi tidak lagi ditampilkan. Langkah pengantar menyoroti bagian yang dirujuk, termasuk daftar rapat Jitsi kosong dan Cari Peserta. Penyedia pembelajaran memakai target bahasa Study dan ruang kerja publik yang terdaftar. `highlightNext` tetap aktif untuk penjelasan dan nonaktif untuk langkah berbasis peristiwa.
+
+## Antrean menu mengambang bersama
+
+Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap `ui:floatingMenu:request`, `present`, `dismiss`, serta `release`. Prioritas sama mengikuti urutan permintaan; prioritas lebih tinggi menangguhkan menu di bawahnya. Reservasi menyediakan `ready` untuk izin pertama atau pembatalan, `present(element, { visible })`, `dismiss(element)`, dan `dispose()`. Tutorial menahan prioritas 100 sampai selesai, dibatalkan, atau pemilik dilepas, termasuk di antara langkah. Slot komposer dan pemilih pemutaran ulang memakai antrean yang sama. Permintaan batal dan tampilan lama tidak dapat menggantikan menu baru; slot kosong mengalah, dan pelepasan halaman membersihkan observer serta reservasi.
+
+## Isyarat Berikutnya hanya dengan animasi
+
+Isyarat Berikutnya/Selesai hanya memakai animasi berdenyut tanpa garis tepi permanen. Pengurangan gerakan menonaktifkan animasi; fokus papan ketik normal tetap terlihat.
+
+## Target tutorial yang tepat
+
+Balon penjelasan tetap memakai kontrol dok yang terlihat di bawah ruang menu sebagai jangkar dan menghindari menu tindakan yang sebenarnya. Langkah pemutaran ulang menyoroti tombol ? itu sendiri. Tombol mempertahankan warna teks tema selama tutorial; pemutaran ulang tidak mengganti panduan yang aktif.
+
+## Penyelesaian bertahan setelah pembaruan
+
+Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan isi dan paket tidak pernah mengatur ulang penyelesaian. Tutorial yang selesai hanya diulang melalui kontrol ? di judul halaman. Pertahankan ID saat merevisi panduan; penyelesaian tetap disimpan di penyimpanan peramban akun. Setiap sesi yang berhasil menyimpan penyelesaian sebelum penemuan halaman dilanjutkan, termasuk panduan yang dimulai langsung melalui handle publik penyedia.
+
+## Tindakan keluar pemutaran ulang
+
+Pemutaran ulang tutorial menyediakan Lewati sebagai satu-satunya tombol keluar; tombol Batal yang berlebihan dihapus. Panduan pertama mempertahankan kontrol kemajuan yang ada.
+
+## Panduan Pengaturan Terisolasi
+
+Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya.
+
+## Indentasi Katalog Konsisten
+
+XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai terjemahan dipertahankan; teks langkah fon dipindahkan dari Kelas ke Pengaturan dalam keempat bahasa.
+
+## Kesiapan Saat Riwayat Dokumen
+
+Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
+
+## Tindakan menu tutorial
+
+Mulai Ulang Tutorial muncul setelah langkah terlihat pertama. Pemutaran ulang menyediakan Lewati sebelum langkah terlihat terakhir; langkah terakhir menyediakan Selesai. Panduan satu langkah tidak menyediakan Mulai Ulang Tutorial atau Lewati. Panduan pertama tetap tidak menyediakan Lewati.
+
+Dokumentasikan halaman dan persyaratan akses dalam dokumentasi komponen yang sudah ada, tanpa inventaris gabungan terpisah.
+
+## Hapus Fixture Demo Peramban
+
+Halaman demo/peramban mandiri beserta modul skenarionya dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
+
+## Kelola dek terpilih
+
+Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol edit, berbagi, dan ekspor. Panduan tetap tidak tersedia dalam daftar dek.
+
+## Perataan pemutaran ulang
+
+Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
+
+## Tombol pemutaran ulang sejajar
+
+Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
+
+## Perbaiki kontrol pemutaran ulang
+
+Kontrol pemutaran ulang berupa ikon ringkas tanpa bingkai terlihat dengan jarak jelas dari judul halaman. Kontrol tidak memperbesar baris judul, mempertahankan warna teks tema, serta menampilkan umpan balik hover halus dan fokus papan ketik yang terlihat. Tooltip tetap tidak ditampilkan.
+
+## Batas marketplace lengkap
+
+Panduan marketplace mencakup bilah alat, kartu, pengaturan sumber, dan tindakan detail modul sambil mempertahankan kondisi daftar/detail.
+
+## Pulihkan penyajian terputus
+
+Target yang hilang saat perenderan asinkron dicari ulang sebelum kesiapan diterbitkan. Penyajian yang dimulai ulang atau dibatalkan tidak dapat melanjutkan pemulihan lama atau menahan menu mengambang.
+
+## Kondisi visibilitas terpisah
+
+`scope` membatasi target dan penemuan. `visibleWhen` opsional memerlukan satu elemen terlihat tanpa membatasi target ke turunannya; target tetap berada dalam akar komponen. Administrasi Pustaka memakainya untuk visibilitas browser sambil menyoroti pencarian di bilah samping. Selektor tidak valid menggagalkan registrasi dan membersihkan pemilik.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -69,108 +159,18 @@ Permukaan sementara mendaftarkan elemen, tindakan tutup, dan sinyal pemilik mela
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
 - [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)
-
-Jalur langkah mendukung `minRole`, predikat boolean sinkron `when({ firstTime, completed, skipped })`, dan `dependsOn: ["earlier-step-id"]`. Langkah tanpa izin atau dengan kondisi salah tidak masuk hitungan kemajuan. Dependensi harus menunjuk langkah sebelumnya; referensi tidak dikenal, duplikat, diri sendiri, dan langkah berikutnya ditolak. Langkah interaktif memenuhi dependensi hanya setelah peristiwa atau kondisi tunggunya berhasil. Memilih Berikutnya melewati cabang dependennya; langkah statis dipenuhi dengan Berikutnya. Kondisi menerima salinan hasil yang tidak dapat diubah. Jumlah mencerminkan jalur yang tersedia dan dapat bertambah ketika interaksi membuka cabang. Kembali menghapus hasil mulai dari tujuannya. `restart()` dan Mulai Ulang Tutorial menghapus seluruh hasil dan menutup permukaan sementara dalam sesi yang sama. Cabang Pencarian, notifikasi, dan akun memerlukan pembukaan kontrol terkait. Administrasi memerlukan `minRole: "admin"`; kontrol dok opsional disaring menurut visibilitas. Sorotan mengikuti ukuran dok aktual, termasuk bagian di bawah batas footer, sementara balon penjelasan tetap memakai area tampilan yang dicadangkan.
-
-Tombol, tautan, dan aktivasi papan ketik pada banner tetap tersedia. Aktivasi menghentikan tutorial melalui `ui:tutorial:priority` sebelum dialog atau navigasi milik tindakan berjalan. Kontrol banner dapat dicapai dengan Tab.
-
-`showToast(message, { minRole: "admin" })` membatasi informasi operasional kepada administrator dan pemilik. Peran lain atau tidak dikenal tidak membuat DOM toast, timer, atau callback penutupan. Tanpa `minRole`, umpan balik biasa tetap terlihat oleh semua pengguna. Opsi tampilan ini bukan otorisasi operasi server.
-
 - [f681187ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f681187ca572fa4270f9b398d429a3d1177c62d3)
-
-Langkah overlay pencarian memakai area tampilan overlay agar header dan footer tidak memotong sorotan input. Klik pil penyempurnaan mana pun menyelesaikan latihan filter. Langkah yang memerlukan Berikutnya atau Selesai menyoroti tindakan itu dengan garis tepi beranimasi lembut; preferensi pengurangan gerakan mempertahankan garis statis. Langkah yang menunggu atau maju otomatis tidak menampilkan isyarat ini.
-
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
-
-Setiap langkah tutorial kini menetapkan `highlightNext` secara eksplisit: penjelasan yang memerlukan Berikutnya atau Selesai mengaktifkannya, sedangkan latihan berbasis interaksi atau penantian menonaktifkannya. Pengurangan gerakan mempertahankan garis tepi statis. Semua tutorial ditinjau, termasuk hasil pencarian dan penjelasan notifikasi.
-
-Setiap komponen antarmuka wajib dicakup tutorial. Panduan kontribusi mengharuskan alur tugas yang berfokus pada pengguna dan peninjauan tutorial setiap kali fitur atau perilaku antarmuka berubah.
-
 - [f578b8115](https://github.com/Cognis-Labs-HQ/Cognis/commit/f578b8115e452d8afae8ef21dbbd86dd5756eceb)
-
-Kembali dari luar grup langkah atau cabang dependensi yang selesai akan menuju pembukanya dan menghapus hasil cabang. Di dalam cabang, Kembali tetap berurutan. Ini mencegah kunjungan ulang ke panel Pencarian yang sudah ditutup lalu melompat otomatis ke akhir.
-
-Langkah halaman dapat memakai `targetMatch: "first"` untuk memilih kecocokan pertama yang terlihat dan dapat digunakan dalam bagian yang ditetapkan. Pencocokan unik tetap menjadi bawaan. Target yang hilang atau nonaktif mengikuti kebijakan pelewatan penulis. Sorotan tindakan kini mengarah ke sakelar yang dapat diubah, pemilih peran, kuota, pengujian notifikasi, kontrol berbagi, rekaman, dan tindakan modul. Komponen menyorot sakelar daya yang dapat diubah; kontrol wajib dan tersembunyi dikecualikan.
-
 - [c7eefff5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7eefff5ad35c79574c1067ee97032cc6a76045a)
-
-## Wilayah tutorial dan pemulihan
-
-Mulai Ulang Tutorial tetap menjadi tindakan pemulihan; tombol Coba Lagi tidak lagi ditampilkan. Langkah pengantar menyoroti bagian yang dirujuk, termasuk daftar rapat Jitsi kosong dan Cari Peserta. Penyedia pembelajaran memakai target bahasa Study dan ruang kerja publik yang terdaftar. `highlightNext` tetap aktif untuk penjelasan dan nonaktif untuk langkah berbasis peristiwa.
-
-## Antrean menu mengambang bersama
-
-Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap `ui:floatingMenu:request`, `present`, `dismiss`, serta `release`. Prioritas sama mengikuti urutan permintaan; prioritas lebih tinggi menangguhkan menu di bawahnya. Reservasi menyediakan `ready` untuk izin pertama atau pembatalan, `present(element, { visible })`, `dismiss(element)`, dan `dispose()`. Tutorial menahan prioritas 100 sampai selesai, dibatalkan, atau pemilik dilepas, termasuk di antara langkah. Slot komposer dan pemilih pemutaran ulang memakai antrean yang sama. Permintaan batal dan tampilan lama tidak dapat menggantikan menu baru; slot kosong mengalah, dan pelepasan halaman membersihkan observer serta reservasi.
-
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
 - [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
-
-## Isyarat Berikutnya hanya dengan animasi
-
-Isyarat Berikutnya/Selesai hanya memakai animasi berdenyut tanpa garis tepi permanen. Pengurangan gerakan menonaktifkan animasi; fokus papan ketik normal tetap terlihat.
-
-## Target tutorial yang tepat
-
-Balon penjelasan tetap memakai kontrol dok yang terlihat di bawah ruang menu sebagai jangkar dan menghindari menu tindakan yang sebenarnya. Langkah pemutaran ulang menyoroti tombol ? itu sendiri. Tombol mempertahankan warna teks tema selama tutorial; pemutaran ulang tidak mengganti panduan yang aktif.
-
-## Penyelesaian bertahan setelah pembaruan
-
-Penyelesaian terikat pada akun dan ID pemilik/tutorial yang stabil. Pembaruan isi dan paket tidak pernah mengatur ulang penyelesaian. Tutorial yang selesai hanya diulang melalui kontrol ? di judul halaman. Pertahankan ID saat merevisi panduan; penyelesaian tetap disimpan di penyimpanan peramban akun. Setiap sesi yang berhasil menyimpan penyelesaian sebelum penemuan halaman dilanjutkan, termasuk panduan yang dimulai langsung melalui handle publik penyedia.
-
 - [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
-
-## Tindakan keluar pemutaran ulang
-
-Pemutaran ulang tutorial menyediakan Lewati sebagai satu-satunya tombol keluar; tombol Batal yang berlebihan dihapus. Panduan pertama mempertahankan kontrol kemajuan yang ada.
-
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
-
-## Panduan Pengaturan Terisolasi
-
-Langkah fon memakai teks milik Pengaturan dari katalog host. Terjemahan Kelas opsional tidak lagi diperlukan untuk mendaftarkan panduan Pengaturan. Cakupan panduan komponen berada di dokumentasi pemiliknya.
-
-## Indentasi Katalog Konsisten
-
-XML bahasa yang diubah PR tutorial memakai dua spasi untuk entri string. Nilai terjemahan dipertahankan; teks langkah fon dipindahkan dari Kelas ke Pengaturan dalam keempat bahasa.
-
-## Kesiapan Saat Riwayat Dokumen
-
-Mundur dan Maju di dalam Dokumentasi atau Riwayat Perubahan mempertahankan kesiapan halaman terpasang. Penggantian rute yang dilakukan dan pembatalan masa hidup halaman tetap membatalkannya; riwayat dokumen internal tidak mengulang pemeriksaan awal.
-
 - [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)
-
-## Tindakan menu tutorial
-
-Mulai Ulang Tutorial muncul setelah langkah terlihat pertama. Pemutaran ulang menyediakan Lewati sebelum langkah terlihat terakhir; langkah terakhir menyediakan Selesai. Panduan satu langkah tidak menyediakan Mulai Ulang Tutorial atau Lewati. Panduan pertama tetap tidak menyediakan Lewati.
-
-Dokumentasikan halaman dan persyaratan akses dalam dokumentasi komponen yang sudah ada, tanpa inventaris gabungan terpisah.
-
 - [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
-
-## Hapus Fixture Demo Peramban
-
-Halaman demo/peramban mandiri beserta modul skenarionya dihapus. Helper bersama untuk pengujian otomatis tetap dipertahankan.
-
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
-
-## Kelola dek terpilih
-
-Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol edit, berbagi, dan ekspor. Panduan tetap tidak tersedia dalam daftar dek.
-
-## Perataan pemutaran ulang
-
-Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
-
 - [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)
-
-## Tombol pemutaran ulang sejajar
-
-Tombol ? sejajar dengan judul halaman. Tombol tidak memiliki tooltip saat diarahkan dan tetap memakai label aksesibel yang dilokalkan.
-
 - [ed98d0a85](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed98d0a85646823c09848713d32a9f6f9d8652be)
-
-## Perbaiki kontrol pemutaran ulang
-
-Kontrol pemutaran ulang berupa ikon ringkas tanpa bingkai terlihat dengan jarak jelas dari judul halaman. Kontrol tidak memperbesar baris judul, mempertahankan warna teks tema, serta menampilkan umpan balik hover halus dan fokus papan ketik yang terlihat. Tooltip tetap tidak ditampilkan.
-
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
+- [b6874a330](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6874a3309123f93968bec3c7a1091354f71c5d1)
