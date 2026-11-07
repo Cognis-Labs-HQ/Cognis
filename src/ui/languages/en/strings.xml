@@ -749,4 +749,6 @@
   <string name="ui.tutorial.restart">Restart Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Browse Documents</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>
+  <string name="ui.components.provider_failed">The {{component}} component failed and was isolated. Other components remain available.</string>
+  <string name="ui.components.disabled_after_failures">The {{component}} component was disabled after repeated failures. Use component management or the CLI to repair and re-enable it.</string>
 </resources>

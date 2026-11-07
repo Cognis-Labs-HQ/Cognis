@@ -1,3 +1,4 @@
+import { conciseText, summarizeOutput } from "./reuse/output-summary.ts";
 import { normalizeResponse } from "./payload.ts";
 
 const FIELD_EMPTY_PLACEHOLDER = "—";
@@ -95,29 +96,9 @@ function formatValue(value: unknown): string {
     return String(value);
 }
 
-function collectTableColumns(
-    rows: Array<Record<string, unknown>>,
-): Array<{ key: string; label: string }> {
-    const keys: string[] = [];
-    for (const row of rows) {
-        for (const key of Object.keys(row)) {
-            const value = row[key];
-            if (
-                value === undefined ||
-                Array.isArray(value) ||
-                isPlainRecord(value)
-            ) {
-                continue;
-            }
-            if (!keys.includes(key)) keys.push(key);
-        }
-    }
-    return keys.slice(0, 8).map((key) => ({ key, label: humanizeKey(key) }));
-}
-
 function formatDurationMs(value: unknown): string {
     if (typeof value !== "number" || !Number.isFinite(value)) {
-        return String(value);
+        return value == null ? FIELD_EMPTY_PLACEHOLDER : conciseText(value);
     }
 
     if (value < 1000) return `${value} ms`;
@@ -136,46 +117,31 @@ export function formatStructured(value: unknown): string {
 }
 
 export function renderStructuredSummary(value: unknown): string {
-    const normalized =
-        typeof value === "string" ? normalizeResponse(value) : value;
-    if (typeof normalized === "string") return normalized;
-    if (!isPlainRecord(normalized)) return formatStructured(normalized);
-
-    const sections: string[] = [];
-    const data = normalized.data;
-    if (Array.isArray(data)) {
-        const rows = data.filter(isPlainRecord);
-        const columns = collectTableColumns(rows);
-        if (rows.length > 0 && columns.length > 0) {
-            sections.push(formatTable(columns, rows));
-        } else {
-            sections.push(formatStructured(data));
-        }
-    } else if (isPlainRecord(data)) {
-        sections.push(
-            Object.entries(data)
-                .map(([key, fieldValue]) =>
-                    formatField(humanizeKey(key), formatValue(fieldValue)),
+    return summarizeOutput(
+        typeof value === "string" ? normalizeResponse(value) : value,
+        (rows) => {
+            const keys = [...new Set(rows.flatMap((row) => Object.keys(row)))];
+            const columns = keys
+                .filter((key) =>
+                    rows.some(
+                        (row) =>
+                            row[key] !== undefined &&
+                            (row[key] === null || typeof row[key] !== "object"),
+                    ),
                 )
-                .join("\n"),
-        );
-    }
-
-    const meta = normalized.meta;
-    if (isPlainRecord(meta) && Object.keys(meta).length > 0) {
-        sections.push(formatHeading("Metadata", "cyan"));
-        sections.push(
-            Object.entries(meta)
-                .map(([key, fieldValue]) =>
-                    formatField(humanizeKey(key), formatValue(fieldValue)),
-                )
-                .join("\n"),
-        );
-    }
-
-    return sections.length > 0
-        ? sections.join("\n\n")
-        : formatStructured(normalized);
+                .slice(0, 8);
+            if (!columns.length) return summarizeOutput({ data: rows });
+            return (
+                formatTable(
+                    columns.map((key) => ({ key, label: humanizeKey(key) })),
+                    rows,
+                ) +
+                (keys.length > columns.length
+                    ? "\nUse -v for full details."
+                    : "")
+            );
+        },
+    );
 }
 
 function formatTable(
@@ -187,6 +153,17 @@ function formatTable(
         return colorize(options?.emptyMessage ?? "No entries found.", "gray");
     }
 
+    const omitted = Math.max(0, rows.length - 20);
+    rows = rows
+        .slice(0, 20)
+        .map((row) =>
+            Object.fromEntries(
+                Object.entries(row).map(([key, value]) => [
+                    key,
+                    conciseText(value),
+                ]),
+            ),
+        );
     const widths = columns.map(({ key, label }) =>
         rows.reduce(
             (width, row) =>
@@ -214,7 +191,13 @@ function formatTable(
             .join("  "),
     );
 
-    return [header, ...body].join("\n");
+    return [
+        header,
+        ...body,
+        ...(omitted
+            ? [`… ${omitted} more entries. Use -v for full details.`]
+            : []),
+    ].join("\n");
 }
 
 function formatSuccessBlock(
@@ -229,6 +212,7 @@ export function renderApiErrorPayload(input: {
     status?: number;
     statusText?: string;
     payload?: unknown;
+    verbose?: boolean;
 }): string {
     const sections = [formatHeading("API Error", "red")];
     if (input.status !== undefined) {
@@ -241,19 +225,34 @@ export function renderApiErrorPayload(input: {
     }
 
     const payload = input.payload;
+    if (input.verbose && payload !== undefined) {
+        sections.push(formatField("Response", formatStructured(payload)));
+        return sections.join("\n");
+    }
     const response = isPlainRecord(payload) ? payload : null;
     const error = isPlainRecord(response?.error) ? response.error : null;
     if (error) {
         sections.push(formatField("Code", formatValue(error.code)));
-        sections.push(formatField("Message", formatValue(error.message)));
-        if (error.details !== undefined) {
+        sections.push(formatField("Message", conciseText(error.message)));
+        if (input.verbose && error.details !== undefined) {
             sections.push(formatField("Details", formatValue(error.details)));
         }
         return sections.join("\n");
     }
 
     if (payload !== undefined && payload !== "") {
-        sections.push(formatField("Response", formatValue(payload)));
+        sections.push(
+            formatField(
+                "Response",
+                input.verbose
+                    ? formatValue(payload)
+                    : conciseText(
+                          typeof payload === "string"
+                              ? payload
+                              : "Use -v for response details.",
+                      ),
+            ),
+        );
     }
     return sections.join("\n");
 }
@@ -345,6 +344,7 @@ export function renderComponentsList(payload: unknown): string {
             version?: string;
             status?: string;
             gatewayId?: string;
+            adapterCatalogError?: string;
         }>;
     };
     const data = response.data ?? [];
@@ -358,6 +358,9 @@ export function renderComponentsList(payload: unknown): string {
                 { key: "version", label: "Version" },
                 { key: "status", label: "Status" },
                 { key: "gatewayId", label: "Gateway" },
+                ...(data.some((entry) => entry.adapterCatalogError)
+                    ? [{ key: "catalog", label: "Adapter catalog" }]
+                    : []),
             ],
             data.map((component) => ({
                 id: component.id ?? FIELD_EMPTY_PLACEHOLDER,
@@ -365,6 +368,7 @@ export function renderComponentsList(payload: unknown): string {
                 version: component.version ?? FIELD_EMPTY_PLACEHOLDER,
                 status: component.status ?? FIELD_EMPTY_PLACEHOLDER,
                 gatewayId: component.gatewayId ?? FIELD_EMPTY_PLACEHOLDER,
+                catalog: component.adapterCatalogError ? "Unavailable" : "OK",
             })),
             { emptyMessage: "No components found." },
         ),

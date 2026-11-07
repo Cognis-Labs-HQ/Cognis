@@ -54,7 +54,8 @@ export function printGlobalHelp(): void {
     console.log(
         "  -h, --help               Show global help or command help (e.g. cognisctl user:create --help)",
     );
-    console.log("  -v, --version            Show CLI version");
+    console.log("  -v, --verbose            Show the full command response");
+    console.log("  --version                Show CLI version");
     console.log("");
     console.log("Environment:");
     console.log(
@@ -140,4 +141,8 @@ export function printCommandHelp(commandName: string): void {
     console.log(`Command: ${command.name}`);
     console.log(`Description: ${command.description}`);
     console.log(`Usage: ${command.usage}`);
+    console.log("Options: -v, --verbose (full response); -h, --help");
+    console.log(
+        "Progress is written to stderr; the final result is written to stdout.",
+    );
 }

@@ -749,4 +749,6 @@
   <string name="ui.tutorial.restart">Tutorial neu starten</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Dokumente durchsuchen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Wähle im Seitenmenü ein Thema oder eine Komponente. Öffne eine Gruppe, um ihre Seiten zu finden; das gewählte Dokument erscheint daneben.</string>
+  <string name="ui.components.provider_failed">Die Komponente {{component}} ist fehlgeschlagen und wurde isoliert. Andere Komponenten bleiben verfügbar.</string>
+  <string name="ui.components.disabled_after_failures">Die Komponente {{component}} wurde nach wiederholten Fehlern deaktiviert. Reparieren und aktivieren Sie sie über die Komponentenverwaltung oder die Befehlszeile.</string>
 </resources>

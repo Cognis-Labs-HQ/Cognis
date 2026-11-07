@@ -27,9 +27,19 @@ function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
     const registry = new RouteRegistry();
 
-    const handlerA = async () => false;
-    const handlerB = async () => false;
-    const handlerC = async () => false;
+    const calls: string[] = [];
+    const handlerA = async () => {
+        calls.push("notify");
+        return false;
+    };
+    const handlerB = async () => {
+        calls.push("profile");
+        return true;
+    };
+    const handlerC = async () => {
+        calls.push("unowned");
+        return false;
+    };
 
     registry.register(handlerA, "notify");
     registry.register(handlerB, "profile");
@@ -40,9 +50,13 @@ test("RouteRegistry.getEntries returns handlers with their associated gatewayId"
     assert.equal(entries[0].gatewayId, "notify");
     assert.equal(entries[1].gatewayId, "profile");
     assert.equal(entries[2].gatewayId, undefined);
-    assert.equal(entries[0].handler, handlerA);
-    assert.equal(entries[1].handler, handlerB);
-    assert.equal(entries[2].handler, handlerC);
+    const request = {} as never;
+    const response = {} as never;
+    const url = new URL("http://test/api");
+    assert.equal(await entries[0].handler(request, response, url), false);
+    assert.equal(await entries[1].handler(request, response, url), true);
+    assert.equal(await entries[2].handler(request, response, url), false);
+    assert.deepEqual(calls, ["notify", "profile", "unowned"]);
 });
 
 test("auth bootstrap contributes page script origin registration capability", async () => {

@@ -74,11 +74,16 @@ export async function runBootstrapScope<T>(
     });
 }
 
+/** Reads the current registration owner without requiring a bootstrap to be active. */
+export function getBootstrapScope(root?: object): BootstrapScope | undefined {
+    const scope = current.getStore();
+    return scope?.active && (!root || scope.root === root) ? scope : undefined;
+}
+
 /** Registration capabilities call this on every invocation, including retained references. */
 export function requireBootstrapScope(root?: object): BootstrapScope {
-    const scope = current.getStore();
-    if (!scope?.active || (root && scope.root !== root))
-        throw new Error("bootstrap_registration_closed");
+    const scope = getBootstrapScope(root);
+    if (!scope) throw new Error("bootstrap_registration_closed");
     return scope;
 }
 

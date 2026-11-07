@@ -749,4 +749,6 @@
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
+  <string name="ui.components.provider_failed">コンポーネント {{component}} で障害が発生したため隔離しました。他のコンポーネントは引き続き利用できます。</string>
+  <string name="ui.components.disabled_after_failures">コンポーネント {{component}} で障害が繰り返されたため無効にしました。コンポーネント管理またはコマンドラインで修復し、再度有効にしてください。</string>
 </resources>

@@ -111,7 +111,7 @@ test("unbuilt, external and revision-qualified resources retain their authoritat
     );
 });
 
-test("provider discovery retains injected authorization and live owner lifecycle filtering", () => {
+test("provider discovery retains injected authorization and live owner lifecycle filtering", async () => {
     const registry = createRegistry();
     registry.registerStaticDir(
         "alias",
@@ -132,11 +132,14 @@ test("provider discovery retains injected authorization and live owner lifecycle
             response.end();
             return null;
         },
-    } as RouteContext;
-    const read = () => {
+        getCapability() {
+            return undefined;
+        },
+    } as unknown as RouteContext;
+    const read = async () => {
         const response = createResponseRecorder();
         assert.equal(
-            serveProviders(
+            await serveProviders(
                 { method: "GET" } as IncomingMessage,
                 response.res as unknown as ServerResponse,
                 new URL("http://localhost/api/v1/ui/capability-providers"),
@@ -148,18 +151,18 @@ test("provider discovery retains injected authorization and live owner lifecycle
         );
         return response;
     };
-    assert.equal(read().status, 401);
+    assert.equal((await read()).status, 401);
     allowed = true;
     assert.equal(
-        JSON.parse(read().body).data[0].scriptUrl,
+        JSON.parse((await read()).body).data[0].scriptUrl,
         "/assets/provider-ABC123.js",
     );
     enabled = false;
-    assert.deepEqual(JSON.parse(read().body).data, []);
+    assert.deepEqual(JSON.parse((await read()).body).data, []);
     enabled = true;
-    assert.equal(JSON.parse(read().body).data.length, 1);
+    assert.equal(JSON.parse((await read()).body).data.length, 1);
     registry.unregisterModuleContributions("example");
-    assert.deepEqual(JSON.parse(read().body).data, []);
+    assert.deepEqual(JSON.parse((await read()).body).data, []);
     allowed = false;
-    assert.equal(read().status, 401);
+    assert.equal((await read()).status, 401);
 });

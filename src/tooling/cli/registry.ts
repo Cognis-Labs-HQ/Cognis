@@ -32,5 +32,6 @@ export function register(
         description: options?.description ?? "No description provided.",
         section: options?.section ?? defaultSection(name),
         render: options?.render,
+        exitCode: options?.exitCode,
     });
 }

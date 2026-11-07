@@ -20,11 +20,15 @@ import { apiFetch } from "./api-client.js";
 import { uiCtx } from "./ui-ctx.js";
 import { createProviderLifecycle } from "./provider-lifecycle.js";
 import "./navbar-contributions.js";
+import { createComponentRecovery } from "./component-recovery.js";
 
 const lifecycleCapability = "ui:providerLifecycle";
 const providerLifecycle =
     uiCtx.capabilities.get(lifecycleCapability) ??
-    createProviderLifecycle({ uiCtx });
+    createProviderLifecycle({
+        uiCtx,
+        onFailure: createComponentRecovery(uiCtx),
+    });
 uiCtx.capabilities.contribute(lifecycleCapability, providerLifecycle);
 
 let providersLoaded = false;
@@ -32,7 +36,10 @@ let providersLoadPromise = null;
 let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
 
-async function importCatalog(endpoint, { preload = false } = {}) {
+async function importCatalog(
+    endpoint,
+    { preload = false, retryFailed = false } = {},
+) {
     const response = await apiFetch(endpoint);
     if (response.status === 401) {
         await providerLifecycle.reconcile([], endpoint);
@@ -51,7 +58,10 @@ async function importCatalog(endpoint, { preload = false } = {}) {
                 .map((provider) => provider.offlineAccessGuard)
                 .filter(Boolean),
         );
-    await providerLifecycle.reconcile(providers, endpoint, { preload });
+    await providerLifecycle.reconcile(providers, endpoint, {
+        preload,
+        retryFailed,
+    });
     return true;
 }
 
@@ -70,7 +80,7 @@ export async function ensureUiProvidersLoaded({ force = false } = {}) {
     providersLoadPromise = (async () => {
         providersLoaded = await importCatalog(
             "/api/v1/ui/capability-providers",
-            { preload: true },
+            { preload: true, retryFailed: force },
         );
     })().finally(() => {
         providersLoadPromise = null;

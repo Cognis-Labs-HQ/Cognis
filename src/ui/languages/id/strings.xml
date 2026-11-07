@@ -749,4 +749,6 @@
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>
+  <string name="ui.components.provider_failed">Komponen {{component}} gagal dan telah diisolasi. Komponen lain tetap tersedia.</string>
+  <string name="ui.components.disabled_after_failures">Komponen {{component}} dinonaktifkan setelah kegagalan berulang. Gunakan pengelolaan komponen atau baris perintah untuk memperbaiki dan mengaktifkannya kembali.</string>
 </resources>

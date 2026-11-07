@@ -56,13 +56,19 @@ test("formatStructured pretty-prints object payloads and handles empty output", 
     assert.equal(formatStructured(undefined), "");
 });
 
-test("ApiRequestError formats JSON payloads for readable CLI errors", () => {
+test("ApiRequestError keeps concise messages and preserves verbose payload details", () => {
     const error = new ApiRequestError(400, "Bad Request", {
         error: { code: "invalid", message: "Invalid payload" },
     });
 
-    assert.match(error.message, /\n  "error": \{/);
-    assert.match(error.message, /\n    "message": "Invalid payload"/);
+    assert.equal(
+        error.message,
+        "API request failed (400 Bad Request): Invalid payload",
+    );
+    assert.equal(
+        JSON.stringify(error.payload),
+        '{"error":{"code":"invalid","message":"Invalid payload"}}',
+    );
 
     const rendered = renderApiErrorPayload({
         status: error.status,
@@ -332,10 +338,18 @@ test("component:enable fails when API acknowledgement says module is still disab
     try {
         globalThis.fetch = async (input) => {
             const requestUrl = String(input);
-            if (requestUrl.endsWith("/api/v1/modules/demo/enable")) {
+            if (requestUrl.endsWith("/api/v1/components/actions")) {
                 return new Response(
                     JSON.stringify({
-                        data: { moduleId: "demo", enabled: false },
+                        data: {
+                            results: [
+                                {
+                                    target: { type: "module", id: "demo" },
+                                    status: "succeeded",
+                                    data: { moduleId: "demo", enabled: false },
+                                },
+                            ],
+                        },
                         message: "Module remains disabled",
                     }),
                     {
@@ -352,66 +366,45 @@ test("component:enable fails when API acknowledgement says module is still disab
                 apiBaseUrl: "http://localhost:3000",
                 getApiToken: async () => "token",
             }),
-            /Module "demo" was not enabled: Module remains disabled/,
+            /Module "demo" was not enabled/,
         );
     } finally {
         globalThis.fetch = originalFetch;
     }
 });
 
-test("component:list aggregates modules, gateways, and adapters", async () => {
+test("component:list uses the owned inventory for modules, gateways, and adapters", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input) => {
-            const requestUrl = String(input);
-            if (requestUrl.endsWith("/api/v1/modules")) {
-                return new Response(
-                    JSON.stringify({
-                        data: [
-                            {
-                                id: "analytics",
-                                version: "1.0.0",
-                                status: "enabled",
-                            },
-                        ],
-                    }),
+        globalThis.fetch = async (input, options) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/components",
+            );
+            assert.equal(options?.headers?.["authorization"], "Bearer token");
+            return Response.json({
+                data: [
                     {
-                        status: 200,
-                        headers: { "content-type": "application/json" },
+                        id: "analytics",
+                        type: "module",
+                        version: "1.0.0",
+                        status: "enabled",
                     },
-                );
-            }
-            if (requestUrl.endsWith("/api/v1/gateways")) {
-                return new Response(
-                    JSON.stringify({
-                        data: [
-                            { id: "auth", version: "2.0.0", status: "active" },
-                        ],
-                    }),
                     {
-                        status: 200,
-                        headers: { "content-type": "application/json" },
+                        id: "auth",
+                        type: "gateway",
+                        version: "2.0.0",
+                        status: "active",
                     },
-                );
-            }
-            if (requestUrl.endsWith("/api/v1/gateways/auth/adapters")) {
-                return new Response(
-                    JSON.stringify({
-                        data: [
-                            {
-                                adapterId: "local",
-                                version: "1.2.0",
-                                enabled: true,
-                            },
-                        ],
-                    }),
                     {
-                        status: 200,
-                        headers: { "content-type": "application/json" },
+                        id: "local",
+                        type: "adapter",
+                        version: "1.2.0",
+                        status: "enabled",
+                        gatewayId: "auth",
                     },
-                );
-            }
-            throw new Error(`Unexpected request: ${requestUrl}`);
+                ],
+            });
         };
 
         const payload = (await executeRegisteredCommand("component:list", [], {

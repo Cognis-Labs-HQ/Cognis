@@ -636,11 +636,21 @@ export function createUiRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
+            let plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
                 (plugin) =>
                     (!plugin.isEnabled || plugin.isEnabled()) &&
                     isRoleAllowed(claims.role, plugin.access),
             );
+            const management = ctx
+                .getCapability<import("@cognis/core").Ctx>("system:ctx")
+                ?.getCapability<{
+                    describeProviders: (
+                        entries: typeof plugins,
+                        catalog: string,
+                    ) => Promise<typeof plugins>;
+                }>("component:providerCatalog");
+            if (management)
+                plugins = await management.describeProviders(plugins, "navbar");
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -650,7 +660,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
+        if (await serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
             return true;
 
         if (
