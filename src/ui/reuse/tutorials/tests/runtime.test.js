@@ -914,3 +914,29 @@ test("first visits honour skip policies for unavailable and role-hidden controls
     await session.next();
     assert.equal((await session.finished).status, "completed");
 });
+
+test("an unrelated stacked dialog interrupts an explicitly allowed detail popup", async (context) => {
+    const state = host(context);
+    const popups = [];
+    state.document.querySelectorAll = () => popups;
+    const registered = await state
+        .owner()
+        .register(
+            play([
+                { id: "details", titleKey: "details", popup: ".owned-detail" },
+            ]),
+        );
+    const session = await registered.start({ firstTime: true });
+    await session.ready;
+    const escape = () => {
+        const event = new Event("keydown", { cancelable: true });
+        Object.defineProperty(event, "key", { value: "Escape" });
+        state.window.dispatchEvent(event);
+    };
+    popups.push({ matches: (selector) => selector === ".owned-detail" });
+    escape();
+    assert.equal(state.api.current().stepId, "details");
+    popups.push({ matches: () => false });
+    escape();
+    assert.equal((await session.finished).reason, "modal");
+});
