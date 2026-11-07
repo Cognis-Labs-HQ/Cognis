@@ -191,3 +191,4 @@ Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan taha
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)
 - [b6874a330](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6874a3309123f93968bec3c7a1091354f71c5d1)
 - [0dd7b9917](https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd7b9917948061b2e1ea929c00748d20fbcc6c7)
+- [6cfa9769f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6cfa9769f146c65e7f1c268d458e011900c2459a)
