@@ -146,3 +146,9 @@ Restart Tutorial appears after the first visible step. Replays offer Skip before
 Document covered pages and access requirements in the owning component’s existing documentation, without a separate aggregate inventory.
 
 - [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
+
+## Remove Browser Demo Fixtures
+
+Standalone browser/demo pages and their scenario modules are removed. Shared helpers used by automated tests remain in place.
+
+- [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)

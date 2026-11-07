@@ -123,3 +123,7 @@ Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalte
 Tutorial neu starten ist im ersten sichtbaren Schritt verborgen. Wiederholungen verbergen Überspringen im letzten sichtbaren Schritt und bieten Fertig an. Ein einteiliger Guide hat weder Tutorial neu starten noch Überspringen. Die redundante Gesamtübersicht entfällt; die Abdeckung bleibt bei der jeweiligen Komponente.
 
 - [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
+
+## Browser-Testseiten entfernen
+
+Eigenständige Browser-Demos für Tutorials, Änderungsverlauf und Wiederherstellung sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
