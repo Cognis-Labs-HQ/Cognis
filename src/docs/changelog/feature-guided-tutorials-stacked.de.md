@@ -146,3 +146,7 @@ Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholunge
 Dokumentieren Sie Seiten und Zugriffsrechte in der bestehenden Dokumentation der jeweiligen Komponente, ohne separate Gesamtübersicht.
 
 - [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
+
+## Browser-Testseiten entfernen
+
+Eigenständige Browser-Testseiten und ihre Szenario-Module sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
