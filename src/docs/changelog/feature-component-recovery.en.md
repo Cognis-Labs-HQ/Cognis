@@ -149,3 +149,5 @@ The ? button sits in line with the page title. It has no hover tooltip and retai
 ## Refine header replay control
 
 The replay control is a compact, unboxed icon with a clear gap from the page title. It matches the title row without enlarging it, keeps the theme text color, and shows subtle hover and visible keyboard-focus feedback. The tooltip remains absent.
+
+- [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)

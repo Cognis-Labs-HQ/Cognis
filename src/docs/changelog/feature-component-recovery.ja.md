@@ -149,3 +149,5 @@ cognisctl component:disable module analytics --force
 ## 見出しの再実行操作を調整
 
 再実行は枠を常時表示しない小さなアイコンとし、ページタイトルとの間隔を確保します。タイトル行を大きくせず、テーマの文字色を維持し、ホバー時は控えめに、キーボードフォーカスは明確に示します。ツールチップは表示しません。
+
+- [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
