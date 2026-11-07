@@ -140,7 +140,7 @@ cognisctl component:disable module analytics --force
 
 ## 非同期の詳細分岐
 
-詳細やクラス管理の分岐は開いた画面を待ちます。準備後に省略可能なステップ数を更新し、筆記操作がない場合は次の操作を表示する前に対象から除外します。 許可した詳細ダイアログの上に別のダイアログが重なった場合もガイドを中断します。
+詳細やクラス管理の分岐は開いた画面を待ちます。準備後に省略可能なステップ数を更新し、筆記操作がない場合は次の操作を表示する前に対象から除外します。 許可した詳細ダイアログの上に別のダイアログが重なった場合もガイドを中断します。 有効なポップアップのポータルだけを対象とし、終了中の要素を新しい分岐や筆記操作に使いません。 省略可能な条件には共有ダイアログの内部要素ではなく、所有者認可済みの公開 targetAvailable 結果を使います。
 
 ## コミット
 
@@ -172,3 +172,5 @@ cognisctl component:disable module analytics --force
 - [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
 - [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
 - [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)
+- [f744ed1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/f744ed1ff133e702d17b99a55c2292ea831bc0b7)
+- [e14d74fd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14d74fd26a17fb36908456580b49a0daa6009f1)

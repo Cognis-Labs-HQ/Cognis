@@ -140,7 +140,7 @@ Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kar
 
 ## Cabang detail asinkron
 
-Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan tahap opsional diperbarui setelah penyiapan, sehingga aksi menulis yang tidak ada dikeluarkan sebelum kontrol langkah berikut ditampilkan. Dialog lain menginterupsi panduan meskipun ditumpuk di atas dialog detail yang diizinkan.
+Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan tahap opsional diperbarui setelah penyiapan, sehingga aksi menulis yang tidak ada dikeluarkan sebelum kontrol langkah berikut ditampilkan. Dialog lain menginterupsi panduan meskipun ditumpuk di atas dialog detail yang diizinkan. Hanya portal dialog aktif yang menyediakan target; overlay yang ditutup tidak dapat menjadi cabang baru atau aksi menulisnya. Kondisi opsional memakai hasil targetAvailable publik dengan otorisasi pemilik, bukan markup modal bersama.
 
 ## Commit
 
@@ -172,3 +172,5 @@ Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan taha
 - [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
 - [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
 - [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)
+- [f744ed1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/f744ed1ff133e702d17b99a55c2292ea831bc0b7)
+- [e14d74fd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14d74fd26a17fb36908456580b49a0daa6009f1)
