@@ -158,7 +158,7 @@ Authoring guidance and all four host tutorial documents cover active-view discov
 
 ## Asynchronous detail branches
 
-Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup.
+Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup. Only active popup portals provide targets; closing overlays cannot supply a new branch or its writing action.
 
 ## Commits
 
@@ -193,3 +193,4 @@ Detail and class-management branches wait for their opened surfaces. Optional st
 - [0dd7b9917](https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd7b9917948061b2e1ea929c00748d20fbcc6c7)
 - [6cfa9769f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6cfa9769f146c65e7f1c268d458e011900c2459a)
 - [b5c47c643](https://github.com/Cognis-Labs-HQ/Cognis/commit/b5c47c6438ef41910e0409942e04a1f5d8031272)
+- [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)

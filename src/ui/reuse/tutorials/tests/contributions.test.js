@@ -435,8 +435,12 @@ test("detail targets resolve only inside the explicitly owned portal while the p
     const portal = state.element();
     portal.contains = (element) => element === detail;
     portal.querySelectorAll = () => [detail];
+    let active = true;
     state.document.querySelectorAll = (selector) =>
-        selector === ".owned-popup" ? [portal] : [];
+        selector === ".owned-popup" ||
+        (selector === ":is(.owned-popup).popup-overlay--visible" && active)
+            ? [portal]
+            : [];
     const root = {
         ownerDocument: state.document,
         isConnected: true,
@@ -469,6 +473,11 @@ test("detail targets resolve only inside the explicitly owned portal while the p
     const session = await state.api.start("portal.owner:details");
     await session.ready;
     assert.equal(state.rendered.at(-1).target, detail);
+    active = false;
+    assert.equal(state.rendered.at(-1).valid(), false);
+    assert.equal(portal.isConnected, true);
+    active = true;
+    assert.equal(state.rendered.at(-1).valid(), true);
     root.isConnected = false;
     assert.equal(state.rendered.at(-1).valid(), false);
     state.rendered.at(-1).lost();

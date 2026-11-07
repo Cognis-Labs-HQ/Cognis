@@ -88,7 +88,7 @@ export const guides = [
                         when: () =>
                             Boolean(
                                 document.querySelector(
-                                    ".library-entry-popup [data-popup-action=draw]",
+                                    ".library-entry-popup.popup-overlay--visible [data-popup-action=draw]",
                                 ),
                             ),
                         portal: ".library-entry-popup",
