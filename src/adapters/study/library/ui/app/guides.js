@@ -186,7 +186,7 @@ export const guides = [
                             "adapter.study.library.tutorial.administration.visibility.and.review.body",
                     },
                 ],
-                scope: ".library-browser",
+                visibleWhen: ".library-browser",
             },
         ],
         minRole: "admin",

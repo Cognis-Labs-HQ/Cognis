@@ -10,6 +10,7 @@ export function tutorialHost({
     page,
     openPage,
     onComplete,
+    onPresent,
 } = {}) {
     const controller = new AbortController();
     const { core, ctx, events } = flowHost(controller.signal);
@@ -53,6 +54,7 @@ export function tutorialHost({
                 },
             };
             rendered.push(entry);
+            if (onPresent) await onPresent(entry);
             return entry;
         },
         log: (...args) => logs.push(args),

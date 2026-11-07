@@ -47,13 +47,13 @@ export const guides = [
                             "ui.tutorial.marketplace.browse.review.source.body",
                     },
                 ],
-                scope: ".module-store-grid",
+                scope: ".module-store-results:has(.module-store-grid)",
             },
             {
                 id: "details",
                 page: ({ pathname }) =>
                     /^\/administration\/modules(?:\/|$)/.test(pathname),
-                scope: ".module-detail-release",
+                scope: ".module-detail:has(.module-detail-release)",
                 titleKey: "ui.tutorial.marketplace.details.title",
                 steps: [
                     {

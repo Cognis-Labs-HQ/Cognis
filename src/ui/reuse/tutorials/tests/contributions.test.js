@@ -294,3 +294,89 @@ test("first-match selection cannot highlight another section's controls", async 
     await session.ready;
     assert.equal(state.rendered.at(-1).target, inside);
 });
+
+test("a visibility requirement permits sibling controls inside the component root", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const section = state.element();
+    const sidebarControl = state.element();
+    let visible = false;
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => true,
+        querySelectorAll: (selector) =>
+            selector === ".section"
+                ? visible
+                    ? [section]
+                    : []
+                : selector === ".sidebar-control"
+                  ? [sidebarControl]
+                  : [],
+    };
+    await state.api.mountPage({
+        owner: "component.visibility",
+        root,
+        signal: state.ctx.signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "controls",
+                page: "/dashboard",
+                visibleWhen: ".section",
+                titleKey: "title",
+                steps: [
+                    {
+                        id: "search",
+                        selector: ".sidebar-control",
+                        titleKey: "search",
+                    },
+                ],
+            },
+        ],
+    });
+    assert.deepEqual(await state.api.list(), []);
+    visible = true;
+    const [play] = await state.api.list();
+    const session = await state.api.start(play.id);
+    assert.equal(await session.ready, true);
+    assert.equal(state.rendered.at(-1).target, sidebarControl);
+    assert.equal(state.rendered.at(-1).valid(), true);
+    visible = false;
+    assert.equal(state.rendered.at(-1).valid(), false);
+    await session.next();
+    assert.equal((await session.finished).reason, "permissionLost");
+    assert.deepEqual(await state.api.list(), []);
+});
+
+test("invalid visibility selectors fail registration and release the owner", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        querySelectorAll: () => [],
+    };
+    for (const visibleWhen of [false, [], " "]) {
+        await assert.rejects(
+            state.api.mountPage({
+                owner: "component.invalid-visibility",
+                root,
+                signal: state.ctx.signal,
+                i18n: { t: (key) => key },
+                definitions: [
+                    {
+                        id: "controls",
+                        page: "/dashboard",
+                        visibleWhen,
+                        titleKey: "title",
+                        steps: [{ id: "read", titleKey: "read" }],
+                    },
+                ],
+            }),
+            /invalid_tutorial_visibility_selector/,
+        );
+        assert.deepEqual(await state.api.list(), []);
+    }
+});

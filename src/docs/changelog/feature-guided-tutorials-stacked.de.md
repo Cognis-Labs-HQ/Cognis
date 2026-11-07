@@ -54,6 +54,96 @@ Die Dashboard-Anleitung hat 18 Schritte und öffnet Benachrichtigungen und Konto
 
 Vorübergehende Oberflächen registrieren Element, Schließaktion und Eigentümersignal über `ui:transientSurfaces.register(element, close, signal)`. Eine Anleitung bindet mit `attachLifetime(element, groupSignal)` nur die passende Suche, Benachrichtigungsansicht oder das Kontomenü an die Schrittgruppe. Klicks auf Tutorialaktionen erreichen keine Hintergrund-Handler zum Schließen bei Außenklicks; Menüs bleiben während ihrer Erklärungen offen.
 
+Schrittpfade unterstützen `minRole`, das synchrone boolesche Prädikat `when({ firstTime, completed, skipped })` und `dependsOn: ["earlier-step-id"]`. Nicht berechtigte oder bedingt ausgeschlossene Schritte zählen nicht zum Fortschritt. Abhängigkeiten müssen auf frühere Schritte zeigen; unbekannte, doppelte, eigene und spätere Verweise werden abgewiesen. Interaktive Schritte erfüllen Abhängigkeiten erst nach erfolgreichem Ereignis oder Wartezustand. Weiter überspringt sonst den abhängigen Zweig; statische Schritte werden durch Weiter erfüllt. Bedingungen erhalten unveränderliche Ergebnislisten. Die Gesamtzahl zeigt den aktuell verfügbaren Pfad und kann nach Interaktionen wachsen. Zurück setzt Ergebnisse ab dem Ziel zurück. `restart()` und Tutorial neu starten setzen alle Ergebnisse zurück und schließen temporäre Oberflächen innerhalb derselben Sitzung. Suche, Benachrichtigungen und Kontomenü erfordern das Öffnen des jeweiligen Steuerelements. Verwaltung verlangt `minRole: "admin"`; optionale Dock-Steuerelemente werden nach Sichtbarkeit gefiltert. Die Hervorhebung folgt den tatsächlichen Dock-Grenzen auch unterhalb der Fußzeilengrenze; Erklärungskarten behalten ihren reservierten Ansichtsbereich.
+
+Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden die Anleitung über `ui:tutorial:priority`, bevor eigene Dialoge oder Navigation beginnen. Banneraktionen sind per Tab erreichbar.
+
+`showToast(message, { minRole: "admin" })` beschränkt Betriebsinformationen auf Administratoren und Eigentümer. Andere oder unbekannte Rollen erzeugen weder Toast-DOM noch Timer oder Schließ-Callbacks. Ohne `minRole` bleibt normales Feedback für alle sichtbar. Diese Anzeigeoption ersetzt keine serverseitige Berechtigung.
+
+Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußzeilen die Hervorhebung des Eingabefelds nicht abschneiden. Jede Filter-Schaltfläche beendet die Filterübung. Schritte, die Weiter oder Fertig benötigen, heben die Aktion mit einer pulsierenden Umrandung hervor; bei reduzierter Bewegung bleibt sie statisch. Wartende und automatisch fortschreitende Schritte zeigen diesen Hinweis nicht.
+
+Jeder Tutorial-Schritt legt `highlightNext` ausdrücklich fest: Erklärungen, die Weiter oder Fertig benötigen, aktivieren den Hinweis; interaktive und wartebasierte Übungen deaktivieren ihn. Bei reduzierter Bewegung bleibt eine statische Umrandung. Alle bestehenden Anleitungen wurden darauf geprüft, einschließlich Suchergebnissen und Benachrichtigungen.
+
+Alle UI-Komponenten benötigen eine Anleitung. Die Beitragsrichtlinien verlangen nutzerorientierte Aufgabenabläufe und eine Prüfung bestehender Anleitungen bei neuen Funktionen oder geänderter Bedienung.
+
+Zurück von außerhalb einer abgeschlossenen Schrittgruppe oder eines Abhängigkeitszweigs führt zu dessen Einstieg und setzt die Ergebnisse zurück. Innerhalb eines Zweigs bleibt Zurück schrittweise. So wird ein geschlossener Suchdialog nicht erneut aufgerufen und automatisch übersprungen.
+
+Seitenschritte können mit `targetMatch: "first"` den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt wählen. Standardmäßig ist weiterhin ein eindeutiger Treffer erforderlich. Fehlende oder deaktivierte Ziele folgen der festgelegten Überspringregel. Aktionsbezogene Hervorhebungen zeigen jetzt auf bearbeitbare Schalter, Rollenfelder, Speicherquoten, Benachrichtigungstests, Freigaben, Datensätze und Modulaktionen. Komponenten verwendet einen bearbeitbaren sichtbaren Schalter; notwendige und versteckte Steuerelemente sind ausgeschlossen.
+
+## Sichtbare Tutorial-Ziele und Wiederherstellung
+
+Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
+
+## Gemeinsame Warteschlange für schwebende Menüs
+
+Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
+
+## Weiter-Hinweis nur mit Animation
+
+Der Hinweis für Weiter/Fertig verwendet nur die pulsierende Animation ohne dauerhafte Umrandung. Reduzierte Bewegung deaktiviert die Animation; der normale Tastaturfokus bleibt sichtbar.
+
+## Genaue Tutorial-Ziele
+
+Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten Menübereichs als Anker und meiden das tatsächliche Aktionsmenü. Der Wiederholungsschritt hebt den ?-Button selbst hervor. Dieser behält während Tutorials die Textfarbe des Themes; die Wiederholung ersetzt keine laufende Anleitung.
+
+## Abschluss bleibt nach Updates erhalten
+
+Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos. Jede erfolgreich abgeschlossene Sitzung speichert den Abschluss vor der erneuten Seitenerkennung, auch beim direkten Start über das öffentliche Anbieter-Handle.
+
+## Wiederholungen beenden
+
+Wiederholungen bieten Überspringen als einzigen Beenden-Button; der redundante Abbrechen-Button entfällt. Erstdurchläufe behalten ihre bisherigen Schrittaktionen.
+
+## Isolierte Einstellungsanleitung
+
+Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst.
+
+## Einheitliche Katalogeinrückung
+
+Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für String-Einträge. Übersetzungswerte bleiben erhalten; die Schrift-Texte wechseln in allen vier Sprachen von Klassen zu Einstellungen.
+
+## Bereitschaft beim Dokumentverlauf
+
+Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
+
+## Tutorial-Menüaktionen
+
+Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholungen bieten Überspringen vor dem letzten sichtbaren Schritt; der letzte Schritt bietet Fertig. Ein einteiliger Guide bietet weder Tutorial neu starten noch Überspringen. Erstdurchläufe bieten weiterhin nie Überspringen.
+
+Dokumentieren Sie Seiten und Zugriffsrechte in der bestehenden Dokumentation der jeweiligen Komponente, ohne separate Gesamtübersicht.
+
+## Browser-Testseiten entfernen
+
+Eigenständige Browser-Testseiten und ihre Szenario-Module sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
+
+## Ausgewählten Stapel verwalten
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+## Wiederholung im Seitenkopf
+
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+## Wiederholung neben dem Titel
+
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+## Wiederholung im Kopf verfeinern
+
+Die Wiederholung ist ein kompaktes Symbol ohne sichtbaren Rahmen mit klarem Abstand zum Seitentitel. Es vergrößert die Titelzeile nicht, behält die Textfarbe des Themes und zeigt dezente Hover- sowie sichtbare Tastaturfokus-Hinweise. Der Tooltip bleibt entfernt.
+
+## Vollständige Marktplatz-Grenzen
+
+Marktplatz-Anleitungen umfassen Werkzeugleiste, Karten, Quelleneinstellungen und Modulaktionen und behalten ihre Listen- und Detailbedingungen.
+
+## Unterbrochene Darstellung fortsetzen
+
+Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereitschaftsmeldung erneut aufgelöst. Neustart und Abbruch verhindern veraltete Wiederherstellung und blockierte schwebende Menüs.
+
+## Unabhängige Sichtbarkeitsbedingungen
+
+`scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -69,108 +159,17 @@ Vorübergehende Oberflächen registrieren Element, Schließaktion und Eigentüme
 - [7a337d228](https://github.com/Cognis-Labs-HQ/Cognis/commit/7a337d2283f729ae121ef34d4a1becc29c394ec5)
 - [a37ebad6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/a37ebad6cbfe54e2e1da28144e3dc7a9ffb4e39c)
 - [ce721403b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ce721403ba29d74c71a8056ba58f0a25ea315cf0)
-
-Schrittpfade unterstützen `minRole`, das synchrone boolesche Prädikat `when({ firstTime, completed, skipped })` und `dependsOn: ["earlier-step-id"]`. Nicht berechtigte oder bedingt ausgeschlossene Schritte zählen nicht zum Fortschritt. Abhängigkeiten müssen auf frühere Schritte zeigen; unbekannte, doppelte, eigene und spätere Verweise werden abgewiesen. Interaktive Schritte erfüllen Abhängigkeiten erst nach erfolgreichem Ereignis oder Wartezustand. Weiter überspringt sonst den abhängigen Zweig; statische Schritte werden durch Weiter erfüllt. Bedingungen erhalten unveränderliche Ergebnislisten. Die Gesamtzahl zeigt den aktuell verfügbaren Pfad und kann nach Interaktionen wachsen. Zurück setzt Ergebnisse ab dem Ziel zurück. `restart()` und Tutorial neu starten setzen alle Ergebnisse zurück und schließen temporäre Oberflächen innerhalb derselben Sitzung. Suche, Benachrichtigungen und Kontomenü erfordern das Öffnen des jeweiligen Steuerelements. Verwaltung verlangt `minRole: "admin"`; optionale Dock-Steuerelemente werden nach Sichtbarkeit gefiltert. Die Hervorhebung folgt den tatsächlichen Dock-Grenzen auch unterhalb der Fußzeilengrenze; Erklärungskarten behalten ihren reservierten Ansichtsbereich.
-
-Banneraktionen bleiben per Schaltfläche, Link und Tastatur nutzbar. Sie beenden die Anleitung über `ui:tutorial:priority`, bevor eigene Dialoge oder Navigation beginnen. Banneraktionen sind per Tab erreichbar.
-
-`showToast(message, { minRole: "admin" })` beschränkt Betriebsinformationen auf Administratoren und Eigentümer. Andere oder unbekannte Rollen erzeugen weder Toast-DOM noch Timer oder Schließ-Callbacks. Ohne `minRole` bleibt normales Feedback für alle sichtbar. Diese Anzeigeoption ersetzt keine serverseitige Berechtigung.
-
 - [f681187ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/f681187ca572fa4270f9b398d429a3d1177c62d3)
-
-Suchschritte in Overlays verwenden deren Ansichtsbereich, damit Kopf- und Fußzeilen die Hervorhebung des Eingabefelds nicht abschneiden. Jede Filter-Schaltfläche beendet die Filterübung. Schritte, die Weiter oder Fertig benötigen, heben die Aktion mit einer pulsierenden Umrandung hervor; bei reduzierter Bewegung bleibt sie statisch. Wartende und automatisch fortschreitende Schritte zeigen diesen Hinweis nicht.
-
 - [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c754784d85d080a675615e35f01281ee6c4b)
-
-Jeder Tutorial-Schritt legt `highlightNext` ausdrücklich fest: Erklärungen, die Weiter oder Fertig benötigen, aktivieren den Hinweis; interaktive und wartebasierte Übungen deaktivieren ihn. Bei reduzierter Bewegung bleibt eine statische Umrandung. Alle bestehenden Anleitungen wurden darauf geprüft, einschließlich Suchergebnissen und Benachrichtigungen.
-
-Alle UI-Komponenten benötigen eine Anleitung. Die Beitragsrichtlinien verlangen nutzerorientierte Aufgabenabläufe und eine Prüfung bestehender Anleitungen bei neuen Funktionen oder geänderter Bedienung.
-
 - [f578b8115](https://github.com/Cognis-Labs-HQ/Cognis/commit/f578b8115e452d8afae8ef21dbbd86dd5756eceb)
-
-Zurück von außerhalb einer abgeschlossenen Schrittgruppe oder eines Abhängigkeitszweigs führt zu dessen Einstieg und setzt die Ergebnisse zurück. Innerhalb eines Zweigs bleibt Zurück schrittweise. So wird ein geschlossener Suchdialog nicht erneut aufgerufen und automatisch übersprungen.
-
-Seitenschritte können mit `targetMatch: "first"` den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt wählen. Standardmäßig ist weiterhin ein eindeutiger Treffer erforderlich. Fehlende oder deaktivierte Ziele folgen der festgelegten Überspringregel. Aktionsbezogene Hervorhebungen zeigen jetzt auf bearbeitbare Schalter, Rollenfelder, Speicherquoten, Benachrichtigungstests, Freigaben, Datensätze und Modulaktionen. Komponenten verwendet einen bearbeitbaren sichtbaren Schalter; notwendige und versteckte Steuerelemente sind ausgeschlossen.
-
 - [c7eefff5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7eefff5ad35c79574c1067ee97032cc6a76045a)
-
-## Sichtbare Tutorial-Ziele und Wiederherstellung
-
-Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
-
-## Gemeinsame Warteschlange für schwebende Menüs
-
-Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
-
 - [ddf8e825b](https://github.com/Cognis-Labs-HQ/Cognis/commit/ddf8e825b565329c8b676de10ff4d411c133b6e1)
 - [90fffbcb7](https://github.com/Cognis-Labs-HQ/Cognis/commit/90fffbcb7ff0a12417bf470febee6bfc05c30990)
-
-## Weiter-Hinweis nur mit Animation
-
-Der Hinweis für Weiter/Fertig verwendet nur die pulsierende Animation ohne dauerhafte Umrandung. Reduzierte Bewegung deaktiviert die Animation; der normale Tastaturfokus bleibt sichtbar.
-
-## Genaue Tutorial-Ziele
-
-Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten Menübereichs als Anker und meiden das tatsächliche Aktionsmenü. Der Wiederholungsschritt hebt den ?-Button selbst hervor. Dieser behält während Tutorials die Textfarbe des Themes; die Wiederholung ersetzt keine laufende Anleitung.
-
-## Abschluss bleibt nach Updates erhalten
-
-Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos. Jede erfolgreich abgeschlossene Sitzung speichert den Abschluss vor der erneuten Seitenerkennung, auch beim direkten Start über das öffentliche Anbieter-Handle.
-
 - [7f62e2fa8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7f62e2fa80bc97b99acd51a6f5334c04bd350cb5)
-
-## Wiederholungen beenden
-
-Wiederholungen bieten Überspringen als einzigen Beenden-Button; der redundante Abbrechen-Button entfällt. Erstdurchläufe behalten ihre bisherigen Schrittaktionen.
-
 - [c3b6df7dc](https://github.com/Cognis-Labs-HQ/Cognis/commit/c3b6df7dc95f6e50e9e050d797b6b9c80398d5cf)
-
-## Isolierte Einstellungsanleitung
-
-Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst.
-
-## Einheitliche Katalogeinrückung
-
-Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für String-Einträge. Übersetzungswerte bleiben erhalten; die Schrift-Texte wechseln in allen vier Sprachen von Klassen zu Einstellungen.
-
-## Bereitschaft beim Dokumentverlauf
-
-Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
-
 - [3ab1a20da](https://github.com/Cognis-Labs-HQ/Cognis/commit/3ab1a20da1a049bcfc8acabc4586f9c336c3fc12)
-
-## Tutorial-Menüaktionen
-
-Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholungen bieten Überspringen vor dem letzten sichtbaren Schritt; der letzte Schritt bietet Fertig. Ein einteiliger Guide bietet weder Tutorial neu starten noch Überspringen. Erstdurchläufe bieten weiterhin nie Überspringen.
-
-Dokumentieren Sie Seiten und Zugriffsrechte in der bestehenden Dokumentation der jeweiligen Komponente, ohne separate Gesamtübersicht.
-
 - [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
-
-## Browser-Testseiten entfernen
-
-Eigenständige Browser-Testseiten und ihre Szenario-Module sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
-
 - [73e90e7f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/73e90e7f6950a3ec1557d896d745d1593d7419da)
-
-## Ausgewählten Stapel verwalten
-
-Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
-
-## Wiederholung im Seitenkopf
-
-Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
-
 - [1b4c0e338](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4c0e3380b78f86ab4e6b54d8751c7805023f89)
-
-## Wiederholung neben dem Titel
-
-Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
-
 - [ed98d0a85](https://github.com/Cognis-Labs-HQ/Cognis/commit/ed98d0a85646823c09848713d32a9f6f9d8652be)
-
-## Wiederholung im Kopf verfeinern
-
-Die Wiederholung ist ein kompaktes Symbol ohne sichtbaren Rahmen mit klarem Abstand zum Seitentitel. Es vergrößert die Titelzeile nicht, behält die Textfarbe des Themes und zeigt dezente Hover- sowie sichtbare Tastaturfokus-Hinweise. Der Tooltip bleibt entfernt.
-
 - [d23429b0f](https://github.com/Cognis-Labs-HQ/Cognis/commit/d23429b0f4df4ec6f5c276678e9eb7fc09651944)

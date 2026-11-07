@@ -16,3 +16,5 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 | `^/study/library(?:/\|$)` · `.library-browser` | Library Administration | Administrator  |
 
 Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
+
+`scope` bounds targets and discovery. Optional `visibleWhen` requires a unique visible element without restricting targets to its descendants; targets still stay inside the component root. Library Administration uses this for its browser visibility while highlighting sidebar search. Invalid selectors fail registration and roll back the owner.
