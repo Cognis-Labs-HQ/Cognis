@@ -260,8 +260,9 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             root.remove();
         }
         const isPopup = () => {
-            const popup = document.querySelector(".popup-overlay--visible");
-            return Boolean(popup && !(step.popup && popup.matches(step.popup)));
+            return [
+                ...document.querySelectorAll(".popup-overlay--visible"),
+            ].some((popup) => !(step.popup && popup.matches(step.popup)));
         };
         const isBroadcast = (node, event) =>
             Boolean(

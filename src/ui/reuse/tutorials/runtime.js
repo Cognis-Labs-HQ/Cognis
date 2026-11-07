@@ -440,8 +440,10 @@ export function registerTutorials(
         "keydown",
         (event) => {
             if (!active || event.key !== "Escape") return;
-            const popup = document.querySelector(".popup-overlay--visible");
-            if (popup && !active.acceptsPopup(popup)) {
+            const popup = [
+                ...document.querySelectorAll(".popup-overlay--visible"),
+            ].find((element) => !active.acceptsPopup(element));
+            if (popup) {
                 active.cancel("modal");
                 return;
             }

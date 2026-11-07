@@ -33,6 +33,10 @@ export function tutorialHost({
         defaultView: window,
         activeElement: focus,
         querySelector: () => null,
+        querySelectorAll(selector) {
+            const element = this.querySelector(selector);
+            return element ? [element] : [];
+        },
     };
     const rendered = [],
         logs = [],
