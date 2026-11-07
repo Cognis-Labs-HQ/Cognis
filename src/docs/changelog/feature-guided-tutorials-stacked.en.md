@@ -144,3 +144,5 @@ Back and Forward within Docs or Changelogs retain the current mount’s readines
 Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
 
 Document covered pages and access requirements in the owning component’s existing documentation, without a separate aggregate inventory.
+
+- [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)

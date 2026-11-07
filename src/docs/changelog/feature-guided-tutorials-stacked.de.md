@@ -144,3 +144,5 @@ Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalte
 Tutorial neu starten erscheint nach dem ersten sichtbaren Schritt. Wiederholungen bieten Überspringen vor dem letzten sichtbaren Schritt; der letzte Schritt bietet Fertig. Ein einteiliger Guide bietet weder Tutorial neu starten noch Überspringen. Erstdurchläufe bieten weiterhin nie Überspringen.
 
 Dokumentieren Sie Seiten und Zugriffsrechte in der bestehenden Dokumentation der jeweiligen Komponente, ohne separate Gesamtübersicht.
+
+- [6d7276bad](https://github.com/Cognis-Labs-HQ/Cognis/commit/6d7276bad6c38081af1c6d688255323df5f48e71)
