@@ -32,7 +32,9 @@ export const guides = [
                         highlightNext: true,
                         id: "favourites-and-contributions",
                         selector:
-                            "[data-study-favourite][data-study-favourite-kind=library]",
+                            ":scope>[data-study-favourite][data-study-favourite-kind=library]",
+                        targetScope:
+                            ".library-entry-card-shell:has(>.library-entry-card[data-library-entry]):has(>[data-study-favourite-kind=library])",
                         titleKey:
                             "adapter.study.library.tutorial.explore.favourites.and.contributions.title",
                         bodyKey:
@@ -41,7 +43,10 @@ export const guides = [
                     },
                     {
                         id: "details-and-relationships",
-                        selector: ".library-entry-card[data-library-entry]",
+                        selector:
+                            ":scope>.library-entry-card[data-library-entry]",
+                        targetScope:
+                            ".library-entry-card-shell:has(>.library-entry-card[data-library-entry]):has(>[data-study-favourite-kind=library])",
                         titleKey:
                             "adapter.study.library.tutorial.explore.details.and.relationships.title",
                         bodyKey:

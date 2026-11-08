@@ -17,3 +17,5 @@ Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` m
 Das Routersignal begrenzt Tutorialregistrierungen und den Seiten-Composer. Beim Scrollen bleiben Tutorialaktionen erhalten; ein vorübergehend verlorenes gezeigtes Ziel wird ohne stilles Fortschreiten wiederhergestellt.
 
 Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getrennt.
+
+Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.

@@ -483,3 +483,60 @@ test("detail targets resolve only inside the explicitly owned portal while the p
     state.rendered.at(-1).lost();
     assert.equal((await session.finished).reason, "permissionLost");
 });
+
+test("related steps retain one selected container after cards reorder", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    state.ctx.capabilities.contribute("session:isAuthenticated", () => true);
+    const favorite = state.element();
+    const card = state.element();
+    const first = state.element();
+    const second = state.element();
+    first.contains = (element) => element === card || element === favorite;
+    first.querySelectorAll = (selector) =>
+        selector === ".favorite" ? [favorite] : [card];
+    second.querySelectorAll = () => [state.element()];
+    let containers = [first, second];
+    const root = {
+        ownerDocument: state.document,
+        isConnected: true,
+        contains: () => true,
+        querySelectorAll: () => containers,
+    };
+    await state.api.mountPage({
+        owner: "related.cards",
+        root,
+        signal: state.ctx.signal,
+        i18n: { t: (key) => key },
+        definitions: [
+            {
+                id: "browse",
+                page: "/dashboard",
+                titleKey: "browse",
+                steps: [
+                    {
+                        id: "favorite",
+                        titleKey: "favorite",
+                        selector: ".favorite",
+                        targetScope: ".card-shell",
+                    },
+                    {
+                        id: "details",
+                        titleKey: "details",
+                        selector: ".card",
+                        targetScope: ".card-shell",
+                    },
+                ],
+            },
+        ],
+    });
+    const session = await state.api.start("related.cards:browse");
+    await session.ready;
+    assert.equal(state.rendered.at(-1).target, favorite);
+    containers = [second, first];
+    await session.next();
+    assert.equal(state.rendered.at(-1).target, card);
+    await session.back();
+    assert.equal(state.rendered.at(-1).target, favorite);
+    await session.dispose();
+});

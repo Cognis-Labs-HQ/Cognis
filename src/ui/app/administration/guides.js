@@ -57,7 +57,9 @@ export const guides = [
                                 event.target.closest("details.module-row")
                                     ?.open === true,
                         },
-                        selector: ".module-row-summary>[data-details-toggle]",
+                        selector:
+                            ".module-row:has([data-tutorial-configurable])>.module-row-summary>[data-details-toggle]",
+                        when: ({ targetAvailable }) => targetAvailable,
                         targetMatch: "first",
                         titleKey:
                             "ui.tutorial.admin.components.gateways.and.adapters.title",
@@ -78,7 +80,7 @@ export const guides = [
                         highlightNext: false,
                         id: "configuration",
                         selector:
-                            ".module-row[data-tutorial-component][open] .adapter-inline-summary>.collapsible-section-title",
+                            ".module-row[data-tutorial-component][open] .adapter-inline-row[data-tutorial-configurable]>.adapter-inline-summary>.collapsible-section-title",
                         targetMatch: "first",
                         when: ({ targetAvailable }) => targetAvailable,
                         interaction: "target",

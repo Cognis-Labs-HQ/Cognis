@@ -242,3 +242,30 @@ test("user menu links administrators to the module marketplace", () => {
     assert.match(source, /href="\/administration\/modules"/);
     assert.match(source, /data-i18n="ui\.reuse\.modules"/);
 });
+
+test("tutorial configuration candidates have editable schema fields", () => {
+    const html = renderComponentsContent(
+        [],
+        [{ id: "example", name: "Example", hasAdapters: true }],
+        [
+            { id: "empty", _gatewayId: "example", schema: [] },
+            {
+                id: "power",
+                _gatewayId: "example",
+                schema: [{ key: "enabled" }],
+            },
+            {
+                id: "configured",
+                _gatewayId: "example",
+                schema: [{ key: "host", type: "text" }],
+            },
+        ],
+        { i18n, escapeHtml, healthStatus: null },
+    );
+    const candidates = [
+        ...html.matchAll(
+            /data-adapter-id="([^"]+)" data-gateway-id="example" data-tutorial-configurable/g,
+        ),
+    ].map((match) => match[1]);
+    assert.deepEqual(candidates, ["configured"]);
+});

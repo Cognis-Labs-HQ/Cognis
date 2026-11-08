@@ -168,6 +168,10 @@ Restart Tutorial is the first action in the floating menu and uses btn-cancel st
 
 Tutorials now target the full meeting Participants element and Available Participants section, distinguish Profile posts and compact social actions, remove duplicate Messages guidance and handle empty Shares. Language-module guides require explicit enrollment and begin with useful activities. Component administration includes conditional detail and settings exploration; optional administration controls are excluded when absent. Tutorial choices use the shared breathing animation, and content describes useful actions and outcomes.
 
+## Stable Examples And Empty Chats
+
+Related card steps share a stable targetScope container: the favourite control and card details must refer to the same example after reordering. targetScope is a page-owned CSS selector, reused by related steps, and cannot be combined with portal. Verify computed animation colours for tutorial choices outside an active tutorial layer; Cancel stays unanimated. Configuration examples must have an editable field in their declared schema; an endpoint alone does not establish configurability. Omit room-management stages when no room exists and keep Profile social actions before its adjacent post stages.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

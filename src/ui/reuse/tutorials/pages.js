@@ -52,13 +52,24 @@ export async function mountPageTutorials(
                 (!scope || Boolean(resolve(scope))) &&
                 (!visibleWhen || Boolean(resolve(visibleWhen)));
             const registeredSteps = [];
+            const selections = new Map();
             for (const {
                 selector,
                 targetMatch = "unique",
+                targetScope,
                 portal,
                 ...step
             } of steps) {
                 let selected;
+                if (targetScope !== undefined) {
+                    if (
+                        typeof targetScope !== "string" ||
+                        !targetScope.trim() ||
+                        portal !== undefined
+                    )
+                        throw new TypeError("invalid_tutorial_target_scope");
+                    root.querySelectorAll(targetScope);
+                }
                 if (portal !== undefined) {
                     if (typeof portal !== "string" || !portal.trim())
                         throw new TypeError("invalid_tutorial_portal");
@@ -92,20 +103,42 @@ export async function mountPageTutorials(
                                   ? resolve(scope)
                                   : undefined;
                               if (scope && !boundary) return null;
+                              let queryRoot = root;
+                              if (targetScope) {
+                                  let anchor = selections.get(targetScope);
+                                  if (!anchor?.isConnected) {
+                                      anchor = resolve(
+                                          targetScope,
+                                          "first",
+                                          boundary,
+                                      );
+                                      selections.set(targetScope, anchor);
+                                  }
+                                  if (
+                                      !usableTarget(anchor, document) ||
+                                      (boundary && !boundary.contains(anchor))
+                                  )
+                                      return null;
+                                  queryRoot = anchor;
+                              }
                               if (targetMatch === "unique")
                                   return resolve(
                                       selector,
                                       targetMatch,
                                       boundary,
+                                      queryRoot,
                                   );
                               if (!selected?.isConnected)
                                   selected = resolve(
                                       selector,
                                       "first",
                                       boundary,
+                                      queryRoot,
                                   );
                               return usableTarget(selected, document) &&
-                                  (!boundary || boundary.contains(selected))
+                                  (!boundary || boundary.contains(selected)) &&
+                                  (queryRoot === root ||
+                                      queryRoot.contains(selected))
                                   ? selected
                                   : null;
                           },

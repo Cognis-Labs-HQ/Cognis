@@ -55,6 +55,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "manage-room",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "#messages-thread-header",
                         titleKey:
                             "module.social.messages.tutorial.messages.manage.room.title",
