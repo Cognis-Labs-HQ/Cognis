@@ -188,3 +188,4 @@ cognisctl component:disable module analytics --force
 - [e14d74fd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14d74fd26a17fb36908456580b49a0daa6009f1)
 - [34757d5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/34757d5ec0826abe7918af96c87e23f9eee05e60)
 - [c7c2c2c5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7c2c2c5b10e72244f2ae42793099c6927dc33bb)
+- [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
