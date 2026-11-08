@@ -150,6 +150,10 @@ Tutorial neu starten ist die erste Aktion im schwebenden Menü und verwendet btn
 
 Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschnitt verfügbare Teilnehmer, unterscheiden Profilbeiträge und kompakte Sozialaktionen, entfernen doppelte Nachrichtenhinweise und behandeln leere Freigaben. Sprachmodulanleitungen erfordern eine ausdrückliche Einschreibung und beginnen mit Aktivitäten. Die Komponentenverwaltung bietet bedingte Detail- und Einstellungszweige; fehlende optionale Steuerelemente entfallen. Anleitungsauswahlen nutzen die gemeinsame Atemanimation, Texte beschreiben nützliche Aktionen und Ergebnisse.
 
+## Stabile Beispiele Und Leere Chats
+
+Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Favorit und Kartendetails müssen auch nach einer Umsortierung dasselbe Beispiel zeigen. targetScope ist ein seiteneigener CSS-Selektor für verwandte Schritte und darf nicht mit portal kombiniert werden. Prüfen Sie berechnete Animationsfarben der Anleitungsauswahl außerhalb einer aktiven Anleitungsebene; Abbrechen bleibt ohne Animation. Einstellungsbeispiele benötigen ein bearbeitbares Schemafeld; ein Endpunkt allein genügt nicht. Ohne Gespräch entfallen Verwaltungsschritte. Profilaktionen stehen vor den zusammenhängenden Beitragsschritten.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

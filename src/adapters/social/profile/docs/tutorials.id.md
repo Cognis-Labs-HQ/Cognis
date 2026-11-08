@@ -17,3 +17,5 @@ Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, k
 Identitas, postingan, dan tindakan akun menargetkan bagian profil hasil render, termasuk bagian postingan kosong. Sinyal halaman memiliki masa hidup panduan.
 
 Posting memakai target daftar tersendiri meski editor terlihat. Sorotan aksi sosial mengikuti ukuran tombol; pratinjau editor dihilangkan pada profil lain.
+
+Identitas dan aksi sosial muncul sebelum langkah posting dan pratinjau yang berurutan.

@@ -17,3 +17,5 @@ Guides register through the public `ui:tutorials` capability with component-owne
 Identity, posts and account actions target the rendered profile regions, including an empty posts section. The page signal owns the guide lifetime.
 
 Posts use a distinct list target even when the composer is present. Social actions fit their buttons; composer-only preview is omitted on other profiles.
+
+Identity and social actions precede the consecutive posts and preview stages.

@@ -211,7 +211,7 @@ function renderInlineAdapters(
                 controlsClassName:
                     "module-row-controls adapter-inline-controls",
                 contentClassName: "module-meta adapter-inline-meta",
-                attributesHtml: `data-adapter-id="${escapeHtml(adapterId)}" data-gateway-id="${escapeHtml(gatewayId)}"`,
+                attributesHtml: `data-adapter-id="${escapeHtml(adapterId)}" data-gateway-id="${escapeHtml(gatewayId)}"${Array.isArray(adapter.schema) && adapter.schema.some((field) => typeof field?.key === "string" && field.key.trim() && field.key !== "enabled") ? " data-tutorial-configurable" : ""}`,
                 titleHtml: `<span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>`,
                 controlsHtml: `
               <span class="state-pill ${isActive ? "pill-active" : "pill-disabled"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.disabled")}</span>

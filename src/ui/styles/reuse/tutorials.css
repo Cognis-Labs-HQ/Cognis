@@ -1,9 +1,13 @@
+.tutorial-layer,
+.tutorial-actions {
+    --tutorial-accent: var(--accent-2, #46b69b);
+}
+
 .tutorial-layer {
     position: fixed;
     inset: 0;
     z-index: 1800;
     pointer-events: none;
-    --tutorial-accent: var(--accent-2, #46b69b);
 }
 .tutorial-callout {
     position: fixed;

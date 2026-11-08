@@ -20,3 +20,5 @@ Guides register through the public `ui:tutorials` capability with component-owne
 `scope` bounds targets and discovery. Optional `visibleWhen` requires a unique visible element without restricting targets to its descendants; targets still stay inside the component root. Library Administration uses this for its browser visibility while highlighting sidebar search. Invalid selectors fail registration and roll back the owner.
 
 Explore begins with the layers sidebar, filters and a stable favourite example. Clicking the selected card opens a conditional detail branch; Next skips it. Details and optional writing controls have distinct highlights inside the owned popup, which closes when the branch ends.
+
+The favourite and detail steps share one stable card container, including on Alphabet pages and after grid reordering.

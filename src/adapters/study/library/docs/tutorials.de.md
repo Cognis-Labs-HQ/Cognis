@@ -20,3 +20,5 @@ Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` m
 `scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
 
 Explore beginnt mit Ebenenseitenleiste, Filtern und einem stabilen Favoritenbeispiel. Ein Klick auf die gewählte Karte öffnet den bedingten Detailzweig; Weiter überspringt ihn. Details und optionale Schreibaktionen werden im eigenen Dialog getrennt hervorgehoben; der Dialog schließt am Zweigende.
+
+Favoriten- und Detailschritte teilen einen stabilen Kartencontainer, auch auf Alphabetseiten und nach Umsortierung.

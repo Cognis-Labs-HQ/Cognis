@@ -17,3 +17,5 @@ Guides register through the public `ui:tutorials` capability with component-owne
 The router signal bounds tutorial registrations and the page composer. Scrolling retains tutorial controls; a temporarily lost displayed target is recovered without silently advancing.
 
 The walkthrough explains composing once, targeting the message input and then its preview control separately.
+
+Room management is excluded from the path and count until a room header is available.
