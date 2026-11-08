@@ -673,10 +673,10 @@
   <string name="ui.tutorial.admin.components.enable.and.disable.title">有効化と無効化</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチで表示中のコンポーネントを有効または無効にします。変更を確定する前に依存関係の警告を確認してください。</string>
   <string name="ui.tutorial.admin.components.configuration.title">設定内容</string>
-  <string name="ui.tutorial.admin.components.configuration.body">アダプター名を選ぶと利用可能な設定を開きます。保存する前に入力項目と未保存の変更を確認してください。</string>
+  <string name="ui.tutorial.admin.components.configuration.body">アダプター名をクリックすると設定が開きます。開かずに進むには「次へ」を押します。</string>
   <string name="ui.tutorial.admin.status.title">システムの状態</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.title">稼働状態と整合性</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.body">稼働状態とファイル整合性の結果から、対応が必要なコンポーネントを探します。</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.title">コンポーネントの状態</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.body">システムの状態と各コンポーネントの結果から、確認が必要なサービスを見つけます。</string>
   <string name="ui.tutorial.admin.status.refresh.checks.title">確認結果を更新</string>
   <string name="ui.tutorial.admin.status.refresh.checks.body">更新で状態を再確認できます。設定を変える前に新しい結果を比較します。</string>
   <string name="ui.tutorial.admin.security.title">セキュリティーポリシー</string>
@@ -749,4 +749,14 @@
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
+  <string name="ui.tutorial.admin.components.metadata.title">コンポーネントの詳細</string>
+  <string name="ui.tutorial.admin.components.metadata.body">ここでバージョンと依存関係を確認し、このコンポーネントの動作条件を把握できます。</string>
+  <string name="ui.tutorial.admin.components.settings.fields.title">コンポーネント設定の編集</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">このアダプターに必要な項目を編集します。必須項目には印が付き、保存済みの認証情報はパスワード欄で非表示になります。</string>
+  <string name="ui.tutorial.admin.components.settings.actions.title">設定の保存と破棄</string>
+  <string name="ui.tutorial.admin.components.settings.actions.body">「保存」で変更を適用し、「キャンセル」で保存せずに閉じます。初期値への復元に対応するアダプターでは「リセット」も使えます。</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.title">信頼するドメイン</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.body">信頼するドメインで Cognis にアクセスできるオリジンを指定します。この環境で使用するドメインを入力します。</string>
+  <string name="ui.tutorial.admin.status.file.integrity.title">ファイルの整合性</string>
+  <string name="ui.tutorial.admin.status.file.integrity.body">ここでファイル検査の結果を確認します。ファイルの欠落や変更は、コンポーネントが読み込めない原因になることがあります。</string>
 </resources>

@@ -64,10 +64,10 @@
   <string name="gateway.notify.tutorial.preferences.save.preferences.title">通知設定を保存</string>
   <string name="gateway.notify.tutorial.preferences.save.preferences.body">選択を確認して保存します。利用できない通知先はここで有効にできません。</string>
   <string name="gateway.notify.tutorial.delivery.title">通知の配信</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">配信状況の確認</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">テスト通知を送る前に、提供元の稼働状態と配信状況を確認します。</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">テスト通知の準備</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">宛先とカテゴリーを選び、テスト通知の件名と本文を入力します。</string>
   <string name="gateway.notify.tutorial.delivery.test.delivery.title">テスト配信</string>
-  <string name="gateway.notify.tutorial.delivery.test.delivery.body">テストの宛先と通知先を選びます。送信は別の操作で実行します。</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">テスト通知を送信し、選択した配信方法で相手がメッセージを受け取れるか確認します。</string>
   <string name="gateway.notify.tutorial.broadcasts.title">お知らせの管理</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">対象者と内容</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">掲載前に、お知らせの内容、対象者、表示期間を確認します。</string>

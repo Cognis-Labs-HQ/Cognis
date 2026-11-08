@@ -20,7 +20,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "namespace-limits",
-                        selector: "[data-files-save-namespace]",
+                        selector: 'input[name^="namespace:"]',
+                        when: ({ targetAvailable }) => targetAvailable,
                         targetMatch: "first",
                         titleKey:
                             "gateway.files.tutorial.quotas.namespace.limits.title",

@@ -15,3 +15,5 @@ Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di
 | `/administration` · `#broadcasts`       | Administrasi Siaran   | Administrator  |
 
 Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, katalog, target, dan sinyal masa hidup milik komponen. Halaman, bagian yang terlihat, dan persyaratan akses menentukan ketersediaan. Pelepasan komponen melepas panduannya. Penyajian dan penyelesaian bersama dijelaskan dalam [kontrak tutorial host](/docs/tutorials).
+
+Kontrol pengujian dan penerbitan opsional hanya disertakan saat tersedia; tombol uji berulang memakai satu target terlihat.

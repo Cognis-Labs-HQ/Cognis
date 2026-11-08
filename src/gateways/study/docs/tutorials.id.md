@@ -15,3 +15,5 @@ Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di
 Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, katalog, target, dan sinyal masa hidup milik komponen. Halaman, bagian yang terlihat, dan persyaratan akses menentukan ketersediaan. Pelepasan komponen melepas panduannya. Penyajian dan penyelesaian bersama dijelaskan dalam [kontrak tutorial host](/docs/tutorials).
 
 Pengantar bahasa adalah pelengkap ringkasan; panduan aktivitas tetap pada tampilan Explore atau Flashcards aktif. Pengaturan bahasa menyorot bahasa tersedia dan aktif secara terpisah.
+
+Panduan modul bahasa hanya ditawarkan untuk bahasa belajar yang didaftarkan secara eksplisit. Bahasa yang dikunjungi langsung tetap dapat dibuka tanpa memperoleh panduan tersebut.

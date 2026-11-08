@@ -29,6 +29,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "install-and-update",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector:
                             ".module-store-card-actions>button:not(:disabled)",
                         targetMatch: "first",
@@ -53,7 +54,7 @@ export const guides = [
                 id: "details",
                 page: ({ pathname }) =>
                     /^\/administration\/modules(?:\/|$)/.test(pathname),
-                scope: ".module-detail:has(.module-detail-release)",
+                scope: ".module-detail",
                 titleKey: "ui.tutorial.marketplace.details.title",
                 steps: [
                     {
@@ -68,6 +69,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "configure-module",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "[data-module-preferences]",
                         titleKey:
                             "ui.tutorial.marketplace.details.configure.module.title",
@@ -77,6 +79,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "manage-lifecycle",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "[data-module-menu]",
                         titleKey:
                             "ui.tutorial.marketplace.details.manage.lifecycle.title",

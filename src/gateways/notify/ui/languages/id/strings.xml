@@ -64,10 +64,10 @@
   <string name="gateway.notify.tutorial.preferences.save.preferences.title">Simpan Preferensi</string>
   <string name="gateway.notify.tutorial.preferences.save.preferences.body">Tinjau kombinasi yang dipilih lalu simpan; kanal yang tidak tersedia tidak dapat diaktifkan di sini.</string>
   <string name="gateway.notify.tutorial.delivery.title">Pengiriman Notifikasi</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">Diagnostik Pengiriman</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Periksa ketersediaan penyedia dan diagnostik pengiriman sebelum mengirim notifikasi uji.</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">Siapkan Notifikasi Uji</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Pilih penerima dan kategori, lalu tulis subjek dan pesan untuk notifikasi uji.</string>
   <string name="gateway.notify.tutorial.delivery.test.delivery.title">Uji Pengiriman</string>
-  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Pilih penerima uji dan kanal yang dituju; mengirim uji adalah aksi terpisah.</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Kirim notifikasi uji untuk memeriksa apakah penerima dapat menerima pesan melalui saluran yang dipilih.</string>
   <string name="gateway.notify.tutorial.broadcasts.title">Administrasi Siaran</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">Audiens dan Konten</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">Tinjau isi pengumuman, audiens, dan periode tampilan sebelum menerbitkan.</string>

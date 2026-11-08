@@ -57,7 +57,7 @@
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Metode Pilihan</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Urutkan metode aktif untuk menentukan metode yang ditawarkan lebih dahulu.</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Kode Pemulihan</string>
-  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Simpan kode pemulihan dengan aman; menampilkan atau menggantinya merupakan aksi tersendiri.</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Gunakan kode pemulihan untuk masuk saat faktor kedua tidak tersedia. Simpan salinannya di tempat yang dapat diakses tanpa masuk.</string>
   <string name="gateway.tfa.tutorial.enforcement.title">Kewajiban Dua Faktor</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">Kebijakan Wajib</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Tinjau dampaknya pada semua akun sebelum mewajibkan autentikasi dua faktor.</string>

@@ -34,7 +34,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "delivery-diagnostics",
-                        selector: "#notifications",
+                        selector: ".notif-debug-fields",
                         titleKey:
                             "gateway.notify.tutorial.delivery.delivery.diagnostics.title",
                         bodyKey:
@@ -44,6 +44,8 @@ export const guides = [
                         highlightNext: true,
                         id: "test-delivery",
                         selector: ".notif-debug-send:not(:disabled)",
+                        targetMatch: "first",
+                        when: ({ targetAvailable }) => targetAvailable,
                         titleKey:
                             "gateway.notify.tutorial.delivery.test.delivery.title",
                         bodyKey:
@@ -61,6 +63,7 @@ export const guides = [
                         highlightNext: true,
                         id: "audience-and-content",
                         selector: ".notif-broadcast-role-options",
+                        targetMatch: "first",
                         titleKey:
                             "gateway.notify.tutorial.broadcasts.audience.and.content.title",
                         bodyKey:
@@ -69,6 +72,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "publication-state",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: ".notif-broadcast-toggle:not(:disabled)",
                         targetMatch: "first",
                         titleKey:

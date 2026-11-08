@@ -673,10 +673,10 @@
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktivieren und deaktivieren</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.body">Dieser Schalter aktiviert oder deaktiviert die angezeigte Komponente. Prüfen Sie Abhängigkeitswarnungen, bevor Sie eine Änderung bestätigen.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Konfiguration</string>
-  <string name="ui.tutorial.admin.components.configuration.body">Wählen Sie den Namen eines Adapters, um seine verfügbaren Einstellungen zu öffnen. Prüfen Sie die Felder und ausstehenden Änderungen vor dem Speichern.</string>
+  <string name="ui.tutorial.admin.components.configuration.body">Klicken Sie auf einen Adapternamen, um seine Einstellungen zu öffnen, oder auf Weiter, um fortzufahren.</string>
   <string name="ui.tutorial.admin.status.title">Systemstatus</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.title">Zustand und Integrität</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.body">Lesen Sie Zustand und Dateiintegrität, um betroffene Komponenten zu finden.</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.title">Komponentenzustand</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.body">Prüfen Sie Systemstatus und Komponentenergebnisse, um Dienste mit Problemen zu finden.</string>
   <string name="ui.tutorial.admin.status.refresh.checks.title">Prüfungen aktualisieren</string>
   <string name="ui.tutorial.admin.status.refresh.checks.body">Aktualisieren wiederholt die Prüfungen; vergleichen Sie neue Ergebnisse vor Konfigurationsänderungen.</string>
   <string name="ui.tutorial.admin.security.title">Sicherheitsregeln</string>
@@ -749,4 +749,14 @@
   <string name="ui.tutorial.restart">Tutorial neu starten</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Dokumente durchsuchen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Wähle im Seitenmenü ein Thema oder eine Komponente. Öffne eine Gruppe, um ihre Seiten zu finden; das gewählte Dokument erscheint daneben.</string>
+  <string name="ui.tutorial.admin.components.metadata.title">Komponentendetails</string>
+  <string name="ui.tutorial.admin.components.metadata.body">Hier sehen Sie Version und Abhängigkeiten und damit die Voraussetzungen dieser Komponente.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.title">Komponenteneinstellungen</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Bearbeiten Sie die benötigten Felder dieses Adapters. Pflichtfelder sind markiert; gespeicherte Zugangsdaten bleiben in Passwortfeldern verborgen.</string>
+  <string name="ui.tutorial.admin.components.settings.actions.title">Einstellungen Übernehmen</string>
+  <string name="ui.tutorial.admin.components.settings.actions.body">Speichern übernimmt Ihre Änderungen. Abbrechen schließt die Einstellungen ohne Speichern. Zurücksetzen stellt bei unterstützten Adaptern die Standardwerte wieder her.</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.title">Vertrauenswürdige Domains</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.body">Vertrauenswürdige Domains bestimmen, welche Ursprünge auf Cognis zugreifen dürfen. Tragen Sie die Domains Ihrer Installation ein.</string>
+  <string name="ui.tutorial.admin.status.file.integrity.title">Dateiintegrität</string>
+  <string name="ui.tutorial.admin.status.file.integrity.body">Vergleichen Sie hier die Dateiprüfungen. Fehlende oder geänderte Dateien können erklären, warum eine Komponente nicht geladen wird.</string>
 </resources>

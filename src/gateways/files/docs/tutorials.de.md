@@ -13,3 +13,5 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 | `/administration` · `[data-files-quota-admin]` | Speicherquoten | Administrator |
 
 Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
+
+Die Anleitung für Namensraumkontingente zeigt ein bearbeitbares Eingabefeld und entfällt ohne Namensräume.

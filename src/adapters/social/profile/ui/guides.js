@@ -19,7 +19,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "posts",
-                        selector: ".profile-posts-section",
+                        selector: "[data-profile-post-list]",
                         titleKey:
                             "module.social.profile.tutorial.profile.posts.title",
                         bodyKey:
@@ -37,6 +37,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "preview-post",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "#profile-post-preview-toggle",
                         titleKey:
                             "module.social.profile.tutorial.profile.preview.post.title",

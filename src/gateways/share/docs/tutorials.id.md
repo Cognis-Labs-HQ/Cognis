@@ -13,3 +13,5 @@ Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di
 | `/shares`        | Panduan Berbagi | Pengguna masuk |
 
 Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, katalog, target, dan sinyal masa hidup milik komponen. Halaman, bagian yang terlihat, dan persyaratan akses menentukan ketersediaan. Pelepasan komponen melepas panduannya. Penyajian dan penyelesaian bersama dijelaskan dalam [kontrak tutorial host](/docs/tutorials).
+
+Daftar kosong tetap menjelaskan ikhtisar dan filter; langkah penerima dan pengelolaan tidak dihitung.

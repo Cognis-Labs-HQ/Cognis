@@ -10,13 +10,14 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "shared-items",
-                        selector: "#shares-overview",
+                        selector: ".shares-table-wrap",
                         titleKey: "share.tutorial.shares.shared.items.title",
                         bodyKey: "share.tutorial.shares.shared.items.body",
                     },
                     {
                         highlightNext: true,
                         id: "recipients-and-access",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "tr[data-share-expandable]",
                         targetMatch: "first",
                         titleKey:
@@ -34,6 +35,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "manage-share-access",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "[data-share-manage]",
                         targetMatch: "first",
                         titleKey:

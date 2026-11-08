@@ -57,7 +57,7 @@
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Preferred Methods</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Order your enabled methods to choose which one is offered first.</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Recovery Codes</string>
-  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Store recovery codes securely; revealing or replacing them is a separate deliberate action.</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Use a recovery code to sign in when your usual second factor is unavailable. Keep a copy somewhere you can access without signing in.</string>
   <string name="gateway.tfa.tutorial.enforcement.title">Two-Factor Enforcement</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">Enforcement Policy</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Review the effect on all accounts before requiring two-factor authentication.</string>
