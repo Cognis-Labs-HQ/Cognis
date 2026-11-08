@@ -205,3 +205,5 @@ Callback enter/waitFor tepercaya menerima ctx publik beserta sinyal masa hidup. 
 Target portal dialog hanya diselesaikan dalam modal aktif yang diharapkan. Overlay yang ditutup dapat tetap terhubung selama animasi keluar; overlay itu tidak boleh menjadi target atau memengaruhi hitungan kontrol opsional cabang berikutnya. Uji Kembali, buka ulang, dan Mulai Ulang dengan cepat pada build produksi maupun sumber.
 
 Kondisi menerima targetAvailable sebagai boolean tetap yang diselesaikan melalui target tahap dengan otorisasi pemilik. Nilainya salah untuk target hilang, tersembunyi, nonaktif, atau portal tidak aktif. Gunakan untuk aksi opsional, bukan memeriksa kelas modal komponen lain.
+
+Mulai Ulang Tutorial menjadi aksi pertama pada menu mengambang dan memakai gaya btn-cancel. Aksi ini tetap tersembunyi pada langkah terlihat pertama.

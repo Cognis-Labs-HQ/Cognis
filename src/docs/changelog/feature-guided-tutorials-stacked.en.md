@@ -160,6 +160,10 @@ Authoring guidance and all four host tutorial documents cover active-view discov
 
 Detail and class-management branches wait for their opened surfaces. Optional stage counts are refreshed after setup, so a missing writing action is excluded before displaying the next-step controls. An unrelated dialog interrupts the guide even when stacked above its allowed detail popup. Only active popup portals provide targets; closing overlays cannot supply a new branch or its writing action. Optional conditions use the public owner-authorized targetAvailable result rather than shared modal markup.
 
+## Restart Action Placement
+
+Restart Tutorial is the first action in the floating menu and uses btn-cancel styling. It remains hidden on the first visible step.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

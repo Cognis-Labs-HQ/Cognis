@@ -205,3 +205,5 @@ Trusted enter/waitFor callbacks receive the public ctx alongside their lifetime 
 Popup portal targets resolve only within an active expected modal. Closing overlays may remain connected for their exit animation; they must not supply a later branch’s target or optional-control count. Verify rapid Back, reopen and Restart in production builds as well as source builds.
 
 Conditions receive targetAvailable as an immutable boolean resolved through the stage’s declared, owner-authorized target. It is false for a missing, hidden, disabled or inactive portal target. Use it for optional actions instead of inspecting another component’s modal classes.
+
+Restart Tutorial is the first action in the floating menu and uses btn-cancel styling. It remains hidden on the first visible step.
