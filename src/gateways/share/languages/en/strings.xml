@@ -112,7 +112,7 @@
   <string name="share.shares.detail_expires">Expires</string>
   <string name="share.tutorial.shares.title">Sharing Guide</string>
   <string name="share.tutorial.shares.shared.items.title">Shared Items</string>
-  <string name="share.tutorial.shares.shared.items.body">Review your shared items and filter the list to find a particular share.</string>
+  <string name="share.tutorial.shares.shared.items.body">Items shared by you or with you appear here. If the list is empty, share an item from its own page or ask someone to share one with you.</string>
   <string name="share.tutorial.shares.recipients.and.access.title">Recipients And Access</string>
   <string name="share.tutorial.shares.recipients.and.access.body">Open share details to inspect recipients, expiry and access before changing or revoking a share.</string>
   <string name="share.tutorial.shares.filter.sharing.title">Find Sent And Received Shares</string>

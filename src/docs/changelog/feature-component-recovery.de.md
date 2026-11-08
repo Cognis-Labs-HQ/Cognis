@@ -146,6 +146,10 @@ Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Opti
 
 Tutorial neu starten ist die erste Aktion im schwebenden Menü und verwendet btn-cancel. Sie bleibt im ersten sichtbaren Schritt verborgen.
 
+## Gezielte Anleitungen
+
+Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschnitt verfügbare Teilnehmer, unterscheiden Profilbeiträge und kompakte Sozialaktionen, entfernen doppelte Nachrichtenhinweise und behandeln leere Freigaben. Sprachmodulanleitungen erfordern eine ausdrückliche Einschreibung und beginnen mit Aktivitäten. Die Komponentenverwaltung bietet bedingte Detail- und Einstellungszweige; fehlende optionale Steuerelemente entfallen. Anleitungsauswahlen nutzen die gemeinsame Atemanimation, Texte beschreiben nützliche Aktionen und Ergebnisse.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

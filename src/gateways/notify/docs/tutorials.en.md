@@ -15,3 +15,5 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 | `/administration` · `#broadcasts`       | Broadcast Administration | Administrator  |
 
 Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
+
+Optional test-delivery and publication controls are included only while available; repeated test buttons use one visible target.

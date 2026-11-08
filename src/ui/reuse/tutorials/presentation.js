@@ -486,7 +486,10 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                         window.clearTimeout(advanceTimer);
                         interactionPending = true;
                         advanceTimer = window.setTimeout(() => {
-                            if (scoped.aborted || event.defaultPrevented) {
+                            if (
+                                scoped.aborted ||
+                                (event.defaultPrevented && !step.advance.accept)
+                            ) {
                                 interactionPending = false;
                                 return;
                             }

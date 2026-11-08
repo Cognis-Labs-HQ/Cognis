@@ -376,6 +376,7 @@ export async function loadStudySubNavigationModel({
                 : [],
         modules,
         learningLanguages: activeLanguageCodes,
+        enrolledLanguages: learningLanguages,
         languageCatalogByCode,
         languagePageUrlsByCode,
     };
@@ -486,7 +487,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
-                    <a class="dropdown-item btn-no-animation${activeClass}" href="${escapeHtml(languageHubUrl)}" data-language-code="${escapeHtml(languageCode)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                    <a class="dropdown-item btn-no-animation${activeClass}" href="${escapeHtml(languageHubUrl)}" data-language-code="${escapeHtml(languageCode)}"${model.enrolledLanguages?.includes(languageCode) ? " data-study-enrolled" : ""} data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                         ${escapeHtml(language.flag)}
                         <span>${escapeHtml(language.name)}</span>
                     </a>

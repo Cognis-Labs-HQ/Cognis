@@ -673,10 +673,10 @@
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktifkan dan Nonaktifkan</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.body">Sakelar daya ini mengaktifkan atau menonaktifkan komponen yang ditampilkan. Tinjau peringatan dependensi sebelum mengonfirmasi perubahan.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Konfigurasi</string>
-  <string name="ui.tutorial.admin.components.configuration.body">Pilih nama adaptor untuk membuka pengaturan yang tersedia. Tinjau kolom dan perubahan yang belum disimpan sebelum menyimpan.</string>
+  <string name="ui.tutorial.admin.components.configuration.body">Klik nama adaptor untuk membuka pengaturannya, atau tekan Berikutnya untuk melanjutkan.</string>
   <string name="ui.tutorial.admin.status.title">Status Sistem</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.title">Kesehatan dan Integritas</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.body">Baca kesehatan komponen dan integritas berkas untuk menemukan bagian yang perlu ditangani.</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.title">Kesehatan Komponen</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.body">Periksa status sistem dan hasil komponen untuk menemukan layanan yang memerlukan perhatian.</string>
   <string name="ui.tutorial.admin.status.refresh.checks.title">Perbarui Pemeriksaan</string>
   <string name="ui.tutorial.admin.status.refresh.checks.body">Perbarui menjalankan ulang pemeriksaan; bandingkan hasil sebelum mengubah konfigurasi.</string>
   <string name="ui.tutorial.admin.security.title">Kebijakan Keamanan</string>
@@ -751,4 +751,14 @@
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>
   <string name="ui.components.provider_failed">Komponen {{component}} gagal dan telah diisolasi. Komponen lain tetap tersedia.</string>
   <string name="ui.components.disabled_after_failures">Komponen {{component}} dinonaktifkan setelah kegagalan berulang. Gunakan pengelolaan komponen atau baris perintah untuk memperbaiki dan mengaktifkannya kembali.</string>
+  <string name="ui.tutorial.admin.components.metadata.title">Detail Komponen</string>
+  <string name="ui.tutorial.admin.components.metadata.body">Periksa versi dan dependensi di sini untuk mengetahui kebutuhan komponen ini.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.title">Ubah Pengaturan Komponen</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Ubah bidang yang diperlukan adaptor ini. Bidang wajib ditandai; kredensial tersimpan disembunyikan dalam bidang kata sandi.</string>
+  <string name="ui.tutorial.admin.components.settings.actions.title">Simpan Atau Buang Pengaturan</string>
+  <string name="ui.tutorial.admin.components.settings.actions.body">Simpan menerapkan perubahan. Batal menutup pengaturan tanpa menyimpan; Atur Ulang tersedia jika adaptor mendukung pemulihan nilai bawaan.</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.title">Domain Tepercaya</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.body">Domain tepercaya mengatur asal yang boleh mengakses Cognis. Masukkan domain yang digunakan instalasi Anda.</string>
+  <string name="ui.tutorial.admin.status.file.integrity.title">Integritas Berkas</string>
+  <string name="ui.tutorial.admin.status.file.integrity.body">Bandingkan hasil pemeriksaan berkas di sini. Berkas yang hilang atau berubah dapat menjelaskan kegagalan pemuatan komponen.</string>
 </resources>

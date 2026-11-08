@@ -164,6 +164,10 @@ Detail and class-management branches wait for their opened surfaces. Optional st
 
 Restart Tutorial is the first action in the floating menu and uses btn-cancel styling. It remains hidden on the first visible step.
 
+## Focused Walkthroughs
+
+Tutorials now target the full meeting Participants element and Available Participants section, distinguish Profile posts and compact social actions, remove duplicate Messages guidance and handle empty Shares. Language-module guides require explicit enrollment and begin with useful activities. Component administration includes conditional detail and settings exploration; optional administration controls are excluded when absent. Tutorial choices use the shared breathing animation, and content describes useful actions and outcomes.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -200,3 +204,4 @@ Restart Tutorial is the first action in the floating menu and uses btn-cancel st
 - [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)
 - [87b6a4796](https://github.com/Cognis-Labs-HQ/Cognis/commit/87b6a479635cff8fc42f1db24762e5b6d0cebbc1)
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
+- [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)

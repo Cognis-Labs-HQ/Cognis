@@ -57,7 +57,7 @@
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">優先する認証方式</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">有効な方式を並べ替え、最初に使う方式を決めます。</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">復旧コード</string>
-  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">復旧コードは安全に保管します。表示や再発行は、それぞれの操作で行います。</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">通常の第2認証要素が使えない場合は、リカバリーコードでログインできます。ログインせずに取り出せる場所に控えを保管してください。</string>
   <string name="gateway.tfa.tutorial.enforcement.title">二要素認証の必須設定</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">必須にする方針</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">全アカウントへの影響を確認してから、二要素認証を必須にします。</string>

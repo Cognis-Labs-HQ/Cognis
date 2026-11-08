@@ -164,6 +164,10 @@ Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan taha
 
 Mulai Ulang Tutorial menjadi aksi pertama pada menu mengambang dan memakai gaya btn-cancel. Aksi ini tetap tersembunyi pada langkah terlihat pertama.
 
+## Panduan Terarah
+
+Panduan menyorot seluruh elemen peserta rapat dan bagian peserta tersedia, membedakan posting profil dan aksi sosial yang ringkas, menghapus penjelasan pesan berulang, serta menangani berbagi kosong. Panduan modul bahasa memerlukan pendaftaran eksplisit dan dimulai dengan aktivitas. Administrasi komponen menyediakan cabang detail dan pengaturan bersyarat; kontrol opsional yang tidak tersedia dihilangkan. Pilihan panduan memakai animasi berdenyut bersama, dan isi menjelaskan aksi serta hasil yang berguna.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -200,3 +204,4 @@ Mulai Ulang Tutorial menjadi aksi pertama pada menu mengambang dan memakai gaya 
 - [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)
 - [87b6a4796](https://github.com/Cognis-Labs-HQ/Cognis/commit/87b6a479635cff8fc42f1db24762e5b6d0cebbc1)
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
+- [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)

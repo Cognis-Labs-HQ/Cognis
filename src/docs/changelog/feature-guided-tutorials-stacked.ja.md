@@ -164,6 +164,10 @@
 
 チュートリアルの再開始をフローティングメニューの先頭に置き、btn-cancel の表示を適用します。最初の表示ステップでは引き続き非表示です。
 
+## 操作に沿ったガイド
+
+会議の参加者全体と参加可能なユーザーの欄を強調し、プロフィールの投稿一覧と交流操作を適切に区別しました。メッセージの重複説明を整理し、共有が空の場合に対応しました。言語モジュールのガイドは明示的な学習登録後だけに表示し、活動の説明から開始します。コンポーネント管理には詳細と設定の条件付き分岐を追加し、存在しない任意操作は除外します。ガイド選択には共通の明滅効果を使い、説明を役立つ操作と結果に絞りました。
+
 ## コミット
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -200,3 +204,4 @@
 - [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)
 - [87b6a4796](https://github.com/Cognis-Labs-HQ/Cognis/commit/87b6a479635cff8fc42f1db24762e5b6d0cebbc1)
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
+- [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)

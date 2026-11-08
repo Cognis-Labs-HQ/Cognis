@@ -380,11 +380,11 @@ function renderHealthStatusContent(healthStatus, i18n) {
 
 export function renderStatusContent(healthStatus, integrityRows, i18n) {
     return `
-      <div class="components-section">
+      <div class="components-section" data-component-health>
         <h3 class="components-section-heading">${i18n.t("ui.reuse.status")}</h3>
         ${renderHealthStatusContent(healthStatus, i18n)}
       </div>
-      <div class="components-section">
+      <div class="components-section" data-component-integrity>
         <h3 class="components-section-heading">${i18n.t("ui.reuse.file_integrity")}</h3>
         ${renderIntegrityContent(integrityRows, i18n)}
       </div>

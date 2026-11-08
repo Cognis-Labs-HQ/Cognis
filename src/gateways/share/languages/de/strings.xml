@@ -112,7 +112,7 @@
   <string name="share.shares.detail_expires">Läuft ab</string>
   <string name="share.tutorial.shares.title">Freigabeanleitung</string>
   <string name="share.tutorial.shares.shared.items.title">Geteilte Inhalte</string>
-  <string name="share.tutorial.shares.shared.items.body">Prüfen Sie Freigaben und filtern Sie die Liste nach gewünschten Inhalten.</string>
+  <string name="share.tutorial.shares.shared.items.body">Hier erscheinen Inhalte, die Sie oder andere mit Ihnen geteilt haben. Ist die Liste leer, teilen Sie einen Inhalt auf dessen Seite oder bitten Sie jemanden, einen mit Ihnen zu teilen.</string>
   <string name="share.tutorial.shares.recipients.and.access.title">Empfänger und Zugriff</string>
   <string name="share.tutorial.shares.recipients.and.access.body">Öffnen Sie Details für Empfänger, Ablauf und Zugriff, bevor Sie eine Freigabe ändern oder widerrufen.</string>
   <string name="share.tutorial.shares.filter.sharing.title">Gesendete Freigaben finden</string>

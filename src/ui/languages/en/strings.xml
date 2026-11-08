@@ -673,10 +673,10 @@
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Enable And Disable</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.body">This power switch enables or disables the displayed component. Review dependency warnings before confirming a change.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Configuration</string>
-  <string name="ui.tutorial.admin.components.configuration.body">Select an adapter’s name to open its available settings. Review the fields and pending changes before saving.</string>
+  <string name="ui.tutorial.admin.components.configuration.body">Click an adapter name to open its settings, or press Next to continue without opening them.</string>
   <string name="ui.tutorial.admin.status.title">System Status</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.title">Health And Integrity</string>
-  <string name="ui.tutorial.admin.status.health.and.integrity.body">Read component health and file-integrity results to locate the component needing attention.</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.title">Component Health</string>
+  <string name="ui.tutorial.admin.status.health.and.integrity.body">Check the system status and component results to find which service needs attention.</string>
   <string name="ui.tutorial.admin.status.refresh.checks.title">Refresh Checks</string>
   <string name="ui.tutorial.admin.status.refresh.checks.body">Refresh reruns status checks; compare the new results before changing configuration.</string>
   <string name="ui.tutorial.admin.security.title">Security Policies</string>
@@ -751,4 +751,14 @@
   <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>
   <string name="ui.components.provider_failed">The {{component}} component failed and was isolated. Other components remain available.</string>
   <string name="ui.components.disabled_after_failures">The {{component}} component was disabled after repeated failures. Use component management or the CLI to repair and re-enable it.</string>
+  <string name="ui.tutorial.admin.components.metadata.title">Component Details</string>
+  <string name="ui.tutorial.admin.components.metadata.body">Check the version and dependencies here to identify what this component needs to run.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.title">Edit Component Settings</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Edit the fields needed for this adapter. Required fields are marked; password fields keep saved credentials concealed.</string>
+  <string name="ui.tutorial.admin.components.settings.actions.title">Save Or Discard Settings</string>
+  <string name="ui.tutorial.admin.components.settings.actions.body">Save applies your edits. Cancel closes settings without saving them; Reset is available for adapters that support restoring defaults.</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.title">Trusted Domains</string>
+  <string name="ui.tutorial.admin.security.trusted.domains.body">Trusted domains control which origins may access Cognis. Enter the domains your deployment uses.</string>
+  <string name="ui.tutorial.admin.status.file.integrity.title">File Integrity</string>
+  <string name="ui.tutorial.admin.status.file.integrity.body">Compare file-check results here. Missing or changed files can explain why a component fails to load.</string>
 </resources>

@@ -59,6 +59,14 @@ export async function mountProvider(ctx) {
                 ...ids,
                 ...actions,
                 matchesPage: languageStudyPage,
+                isEnrolled: (language) =>
+                    typeof language === "string" &&
+                    /^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(language) &&
+                    Boolean(
+                        document.querySelector(
+                            `.study-subnav-language-options [data-language-code="${language}"][data-study-enrolled]`,
+                        ),
+                    ),
             }),
         );
         await owner.register({

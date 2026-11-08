@@ -1,3 +1,5 @@
+import { transientSurfaces } from "../../reuse/transient-surfaces.js";
+
 import { extendI18n } from "../../reuse/i18n.js";
 import {
     markPopupFieldInvalid,
@@ -338,6 +340,7 @@ export function createAdapterConfigPopup({
                 }
             }
 
+            const popupLifetime = new AbortController();
             await openPopup({
                 title: name,
                 body: renderGenericAdapterForm(
@@ -437,7 +440,13 @@ export function createAdapterConfigPopup({
                     return true;
                 },
                 closeProtection: true,
-                onOpen: (overlay) => {
+                onOpen: (overlay, dismiss) => {
+                    overlay.setAttribute("data-component-settings-popup", "");
+                    transientSurfaces.register(
+                        overlay,
+                        dismiss,
+                        popupLifetime.signal,
+                    );
                     popupFormEl = overlay.querySelector(".provider-popup-form");
                     if (!popupFormEl) return;
 
@@ -515,7 +524,7 @@ export function createAdapterConfigPopup({
                         });
                     }
                 },
-            });
+            }).finally(() => popupLifetime.abort());
             return true;
         },
     };

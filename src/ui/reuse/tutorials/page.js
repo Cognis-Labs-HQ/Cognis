@@ -220,6 +220,9 @@ export function createPageTutorials({
             ],
         });
         menu.element.classList.add("tutorial-actions");
+        for (const choice of menu.element.querySelectorAll("button"))
+            if (choice.dataset.action !== "cancel")
+                choice.classList.add("tutorial-next-prompt");
         const chooser = menu;
         if (
             !(await chooser.ready) ||

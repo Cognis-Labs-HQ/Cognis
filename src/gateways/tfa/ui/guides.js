@@ -50,7 +50,8 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "enforcement-policy",
-                        selector: "#tfa-enforcement",
+                        selector:
+                            ":is(label, .switch):has(#tfa-admin-enforce-all-users)",
                         titleKey:
                             "gateway.tfa.tutorial.enforcement.enforcement.policy.title",
                         bodyKey:

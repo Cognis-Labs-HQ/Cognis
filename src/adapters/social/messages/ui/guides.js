@@ -27,15 +27,6 @@ export const guides = [
                     },
                     {
                         highlightNext: true,
-                        id: "compose-and-preview",
-                        selector: ".messages-composer-main",
-                        titleKey:
-                            "module.social.messages.tutorial.messages.compose.and.preview.title",
-                        bodyKey:
-                            "module.social.messages.tutorial.messages.compose.and.preview.body",
-                    },
-                    {
-                        highlightNext: true,
                         id: "start-room",
                         selector: "#messages-new-btn",
                         titleKey:

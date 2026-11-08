@@ -57,7 +57,7 @@
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Bevorzugte Methoden</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Ordnen Sie aktive Methoden, um die zuerst angebotene auszuwählen.</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Wiederherstellungscodes</string>
-  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Bewahren Sie Wiederherstellungscodes sicher auf; Anzeigen und Ersetzen sind eigene bewusste Aktionen.</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Mit einem Wiederherstellungscode können Sie sich anmelden, wenn Ihr üblicher zweiter Faktor nicht verfügbar ist. Bewahren Sie eine Kopie außerhalb Ihres Kontos auf.</string>
   <string name="gateway.tfa.tutorial.enforcement.title">Zwei-Faktor-Pflicht</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">Pflichtregeln</string>
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Prüfen Sie Folgen für alle Konten vor dem Verpflichten zur Zwei-Faktor-Authentifizierung.</string>
