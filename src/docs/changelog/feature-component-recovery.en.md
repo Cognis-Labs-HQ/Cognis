@@ -183,3 +183,4 @@ Tutorials now target the full meeting Participants element and Available Partici
 - [f744ed1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/f744ed1ff133e702d17b99a55c2292ea831bc0b7)
 - [e14d74fd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14d74fd26a17fb36908456580b49a0daa6009f1)
 - [34757d5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/34757d5ec0826abe7918af96c87e23f9eee05e60)
+- [c7c2c2c5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7c2c2c5b10e72244f2ae42793099c6927dc33bb)
