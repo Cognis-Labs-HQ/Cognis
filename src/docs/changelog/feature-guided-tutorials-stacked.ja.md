@@ -160,6 +160,10 @@
 
 詳細やクラス管理の分岐は開いた画面を待ちます。準備後に省略可能なステップ数を更新し、筆記操作がない場合は次の操作を表示する前に対象から除外します。 許可した詳細ダイアログの上に別のダイアログが重なった場合もガイドを中断します。 有効なポップアップのポータルだけを対象とし、終了中の要素を新しい分岐や筆記操作に使いません。 省略可能な条件には共有ダイアログの内部要素ではなく、所有者認可済みの公開 targetAvailable 結果を使います。
 
+## 再開始操作の配置
+
+チュートリアルの再開始をフローティングメニューの先頭に置き、btn-cancel の表示を適用します。最初の表示ステップでは引き続き非表示です。
+
 ## コミット
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -195,3 +199,4 @@
 - [b5c47c643](https://github.com/Cognis-Labs-HQ/Cognis/commit/b5c47c6438ef41910e0409942e04a1f5d8031272)
 - [a06345997](https://github.com/Cognis-Labs-HQ/Cognis/commit/a063459977156137527f6997c466890fc40e7171)
 - [87b6a4796](https://github.com/Cognis-Labs-HQ/Cognis/commit/87b6a479635cff8fc42f1db24762e5b6d0cebbc1)
+- [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)

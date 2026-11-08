@@ -142,6 +142,10 @@ Petunjuk dan keempat dokumen tutorial host mencakup penemuan tampilan aktif, kar
 
 Cabang detail dan pengelolaan kelas menunggu tampilan yang dibuka. Hitungan tahap opsional diperbarui setelah penyiapan, sehingga aksi menulis yang tidak ada dikeluarkan sebelum kontrol langkah berikut ditampilkan. Dialog lain menginterupsi panduan meskipun ditumpuk di atas dialog detail yang diizinkan. Hanya portal dialog aktif yang menyediakan target; overlay yang ditutup tidak dapat menjadi cabang baru atau aksi menulisnya. Kondisi opsional memakai hasil targetAvailable publik dengan otorisasi pemilik, bukan markup modal bersama.
 
+## Posisi Aksi Mulai Ulang
+
+Mulai Ulang Tutorial menjadi aksi pertama pada menu mengambang dan memakai gaya btn-cancel. Aksi ini tetap tersembunyi pada langkah terlihat pertama.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

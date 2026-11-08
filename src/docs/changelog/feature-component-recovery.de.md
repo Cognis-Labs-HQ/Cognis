@@ -142,6 +142,10 @@ Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabil
 
 Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen. Optionale Bedingungen nutzen das öffentliche, besitzerberechtigte targetAvailable-Ergebnis statt gemeinsamer Dialogmarkierungen.
 
+## Position der Neustartaktion
+
+Tutorial neu starten ist die erste Aktion im schwebenden Menü und verwendet btn-cancel. Sie bleibt im ersten sichtbaren Schritt verborgen.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

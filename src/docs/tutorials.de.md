@@ -205,3 +205,5 @@ Vertrauenswürdige enter/waitFor-Callbacks erhalten den öffentlichen ctx zusamm
 Popup-Portalziele werden nur im aktiven erwarteten Dialog aufgelöst. Schließende Overlays können während ihrer Animation verbunden bleiben; sie dürfen weder Ziele noch optionale Schrittzahlen späterer Zweige liefern. Prüfe schnelles Zurück, erneutes Öffnen und Neustarten auch im Produktionsbuild.
 
 Bedingungen erhalten targetAvailable als unveränderlichen booleschen Wert des deklarierten, berechtigten Schrittziels. Bei fehlenden, versteckten, deaktivierten oder inaktiven Portalzielen ist er falsch. Nutze ihn für optionale Aktionen statt Dialogklassen anderer Komponenten zu prüfen.
+
+Tutorial neu starten ist die erste Aktion im schwebenden Menü und verwendet btn-cancel. Sie bleibt im ersten sichtbaren Schritt verborgen.

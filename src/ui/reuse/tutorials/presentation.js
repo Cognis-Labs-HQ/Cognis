@@ -196,14 +196,20 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                 disabled,
                 variant,
             });
+        if (index > 0)
+            button(
+                "restart",
+                "ui.tutorial.restart",
+                actions.restart,
+                false,
+                "cancel",
+            );
         button(
             "back",
             "ui.reuse.back",
             actions.back,
             (waiting && !missing) || index === 0,
         );
-        if (index > 0)
-            button("restart", "ui.tutorial.restart", actions.restart);
         button(
             "next",
             index === total - 1 ? "ui.reuse.finish" : "ui.reuse.next",
