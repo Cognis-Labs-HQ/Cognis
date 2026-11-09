@@ -59,9 +59,10 @@ export function usableTarget(element, document) {
  * @param {string} id Requested semantic target.
  * @param {string} owner Requesting tutorial owner.
  * @param {Document} document Expected owner document.
+ * @param {object} context Stable identity for the requesting session.
  * @returns {Element|null} The authorized visible target.
  */
-export function resolveTarget(targets, id, owner, document) {
+export function resolveTarget(targets, id, owner, document, context) {
     if (!id) return null;
     const record = targets.get(id);
     if (
@@ -71,7 +72,7 @@ export function resolveTarget(targets, id, owner, document) {
         (record.available && record.available() !== true)
     )
         return null;
-    const element = record.resolve();
+    const element = record.resolve(context);
     if (!usableTarget(element, document)) return null;
     const root = record.root?.();
     if (record.root && !root) return null;

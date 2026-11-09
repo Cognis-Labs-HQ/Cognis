@@ -243,6 +243,7 @@ export function registerTutorials(
                 priority: 100,
                 signal: record.signal,
             });
+            const targetContext = Object.freeze({});
             const session = createSession({
                 ctx,
                 record: { ...record, i18n },
@@ -251,7 +252,13 @@ export function registerTutorials(
                 document,
                 allowed: () => allowed(record) && identity() === actor,
                 resolve: (target) =>
-                    resolveTarget(targets, target, record.owner, document),
+                    resolveTarget(
+                        targets,
+                        target,
+                        record.owner,
+                        document,
+                        targetContext,
+                    ),
                 view: (options) => view({ ...options, menuLease }),
                 navigate: ctx.capabilities.get("ui:navigate"),
                 log,

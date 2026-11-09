@@ -53,6 +53,7 @@ export async function mountPageTutorials(
                 (!visibleWhen || Boolean(resolve(visibleWhen)));
             const registeredSteps = [];
             const selections = new Map();
+            let selectionContext;
             for (const {
                 selector,
                 targetMatch = "unique",
@@ -61,6 +62,7 @@ export async function mountPageTutorials(
                 ...step
             } of steps) {
                 let selected;
+                let selectedContext;
                 if (targetScope !== undefined) {
                     if (
                         typeof targetScope !== "string" ||
@@ -91,7 +93,15 @@ export async function mountPageTutorials(
                 const target = selector
                     ? await owner.target(`${play.id}.${step.id}`, {
                           root: targetRoot,
-                          resolve: () => {
+                          resolve: (context) => {
+                              if (selectionContext !== context) {
+                                  selections.clear();
+                                  selectionContext = context;
+                              }
+                              if (selectedContext !== context) {
+                                  selected = undefined;
+                                  selectedContext = context;
+                              }
                               if (portal)
                                   return resolve(
                                       selector,
