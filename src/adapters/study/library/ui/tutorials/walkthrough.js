@@ -6,16 +6,13 @@ const example =
     ".library-entry-card-shell:has(>.library-entry-card[data-library-entry]):has(>[data-study-favourite-kind=library])";
 const optional = ({ targetAvailable }) => targetAvailable;
 
-function ownEntry({ target, groupSignal, ctx }) {
+function ownSurface({ target, groupSignal, ctx }) {
     ctx.capabilities
         .get("ui:transientSurfaces")
-        .attachLifetime(target.closest(entryPopup), groupSignal);
-}
-
-function ownCreation({ target, groupSignal, ctx }) {
-    ctx.capabilities
-        .get("ui:transientSurfaces")
-        .attachLifetime(target.closest(createPopup), groupSignal);
+        .attachLifetime(
+            target.closest(`${entryPopup},${createPopup}`),
+            groupSignal,
+        );
 }
 
 /** Return real, dependency-aware UI branches without submitting or manufacturing content. */
@@ -84,7 +81,7 @@ export function exploreWalkthrough({ text = {}, drawing = {} } = {}) {
             id: "read-details",
             selector: ".library-detail",
             ...details,
-            enter: ownEntry,
+            enter: ownSurface,
             missing: { timeoutMs: 15000, action: "skip" },
             highlightNext: true,
             ...copy("read-details"),
@@ -160,7 +157,7 @@ export function exploreWalkthrough({ text = {}, drawing = {} } = {}) {
             id: "choose-card-type",
             selector: "[data-library-create-layer]",
             ...creation,
-            enter: ownCreation,
+            enter: ownSurface,
             missing: { timeoutMs: 15000, action: "skip" },
             interaction: "target",
             highlightNext: true,
@@ -181,7 +178,7 @@ export function exploreWalkthrough({ text = {}, drawing = {} } = {}) {
             ...creation,
             portal: "[data-library-create-entry-popup]",
             dependsOn: ["open-card-editor"],
-            enter: ownCreation,
+            enter: ownSurface,
             missing: { timeoutMs: 15000, action: "skip" },
             interaction: "target",
             missing: { timeoutMs: 15000, action: "skip" },

@@ -94,9 +94,9 @@ export async function mountProvider(ctx) {
             steps: [
                 "navigation",
                 "languages",
-                "modules",
                 "dictionary",
                 "settings",
+                "modules",
             ].map((name) => ({
                 highlightNext: true,
                 when: ({ targetAvailable }) => targetAvailable,
