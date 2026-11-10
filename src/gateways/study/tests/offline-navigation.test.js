@@ -147,3 +147,55 @@ test("Study serves prepared online navigation immediately and invalidates it on 
     window.dispatchEvent(new Event("cognis:module-lifecycle-changed"));
     assert.equal((await client.fetchStudyPreferences()).revision, 3);
 });
+
+test("tutorial enrollment is verified, account-bound and revoked before refreshed preferences arrive", async (context) => {
+    const window = new EventTarget();
+    let release;
+    let slow = false;
+    const host = createOfflineClientFixture(
+        async () => {
+            if (slow)
+                await new Promise((resolve) => {
+                    release = resolve;
+                });
+            return Response.json({ data: { learningLanguages: ["ja"] } });
+        },
+        { window },
+    );
+    context.after(() => host.controller.abort());
+    const client = loadClient(host);
+    client.registerStudyNavigation(host.ctx);
+    const navigation = host.ctx.capabilities.get("study:navigation");
+    assert.equal(
+        navigation.isEnrolled("ja"),
+        false,
+        "visiting a language is not enrollment",
+    );
+    await client.fetchStudyPreferences();
+    assert.equal(navigation.isEnrolled("ja"), true);
+    assert.equal(navigation.isEnrolled("en"), false);
+    host.changeAccount("other-account");
+    assert.equal(
+        navigation.isEnrolled("ja"),
+        false,
+        "another account cannot inherit enrollment",
+    );
+    await client.fetchStudyPreferences();
+    assert.equal(navigation.isEnrolled("ja"), true);
+    window.dispatchEvent(new Event("cognis:study-enrollment-changed"));
+    assert.equal(navigation.isEnrolled("ja"), false);
+    slow = true;
+    const pending = client.fetchStudyPreferences();
+    while (!release) await new Promise(setImmediate);
+    window.dispatchEvent(new Event("cognis:study-enrollment-changed"));
+    release();
+    await pending;
+    assert.equal(
+        navigation.isEnrolled("ja"),
+        false,
+        "a stale read cannot restore revoked enrollment",
+    );
+    slow = false;
+    await client.fetchStudyPreferences();
+    assert.equal(navigation.isEnrolled("ja"), true);
+});

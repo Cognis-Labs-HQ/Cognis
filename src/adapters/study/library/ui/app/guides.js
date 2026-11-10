@@ -1,3 +1,5 @@
+import { exploreWalkthrough } from "../tutorials/walkthrough.js";
+
 export const guides = [
     {
         owner: "study.library.pages",
@@ -8,96 +10,7 @@ export const guides = [
                     /^\/study\/explore(?:\/|$)/.test(pathname),
                 titleKey: "adapter.study.library.tutorial.explore.title",
                 visibleWhen: ".library-browser",
-                steps: [
-                    {
-                        highlightNext: true,
-                        id: "browse-a-layer",
-                        selector: ".library-layer-navigation",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.browse.a.layer.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.browse.a.layer.body",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "filter-and-select",
-                        selector: ".library-filters",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.filter.and.select.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.filter.and.select.body",
-                        targetMatch: "first",
-                    },
-                    {
-                        highlightNext: true,
-                        id: "favourites-and-contributions",
-                        selector:
-                            ":scope>[data-study-favourite][data-study-favourite-kind=library]",
-                        targetScope:
-                            ".library-entry-card-shell:has(>.library-entry-card[data-library-entry]):has(>[data-study-favourite-kind=library])",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.favourites.and.contributions.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.favourites.and.contributions.body",
-                        targetMatch: "first",
-                    },
-                    {
-                        id: "details-and-relationships",
-                        selector:
-                            ":scope>.library-entry-card[data-library-entry]",
-                        targetScope:
-                            ".library-entry-card-shell:has(>.library-entry-card[data-library-entry]):has(>[data-study-favourite-kind=library])",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.details.and.relationships.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.details.and.relationships.body",
-                        highlightNext: false,
-                        targetMatch: "first",
-                        interaction: "target",
-                        suppressHover: true,
-                        group: "entry-details",
-                        popup: ".library-entry-popup",
-                        advance: { event: "click" },
-                    },
-                    {
-                        highlightNext: true,
-                        id: "read-details",
-                        selector: ".library-detail",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.read.details.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.read.details.body",
-                        missing: { timeoutMs: 15000, action: "skip" },
-                        portal: ".library-entry-popup",
-                        popup: ".library-entry-popup",
-                        layer: "overlay",
-                        group: "entry-details",
-                        dependsOn: ["details-and-relationships"],
-                        enter: ({ target, groupSignal, ctx }) => {
-                            ctx.capabilities
-                                .get("ui:transientSurfaces")
-                                .attachLifetime(
-                                    target.closest(".library-entry-popup"),
-                                    groupSignal,
-                                );
-                        },
-                    },
-                    {
-                        highlightNext: true,
-                        id: "practise-writing",
-                        selector: "[data-popup-action=draw]",
-                        titleKey:
-                            "adapter.study.library.tutorial.explore.practise.writing.title",
-                        bodyKey:
-                            "adapter.study.library.tutorial.explore.practise.writing.body",
-                        when: ({ targetAvailable }) => targetAvailable,
-                        portal: ".library-entry-popup",
-                        popup: ".library-entry-popup",
-                        layer: "overlay",
-                        group: "entry-details",
-                        dependsOn: ["details-and-relationships"],
-                    },
-                ],
+                steps: exploreWalkthrough(),
             },
             {
                 id: "search",

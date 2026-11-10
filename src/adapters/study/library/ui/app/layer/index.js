@@ -1,4 +1,3 @@
-import { guides } from "../guides.js";
 import {
     readStudySnapshot,
     showOfflineContentNotice,
@@ -108,7 +107,6 @@ export async function mount(root, { signal } = {}) {
           : i18n.t("gateway.study.explore");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
-        tutorials: guides,
         signal,
         allowCustomization: false,
         contentScrolling: false,
@@ -120,7 +118,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
+                    `<section class="library-browser" data-library-language="${escapeHtml(languageCode)}">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layer-layout",
@@ -153,6 +151,7 @@ export async function mount(root, { signal } = {}) {
     if (canCreate) {
         const createButton = document.createElement("button");
         createButton.type = "button";
+        createButton.setAttribute("data-library-create-entry", "");
         createButton.className = "btn-confirm";
         createButton.innerHTML =
             '<span class="library-create-action" aria-hidden="true">+</span>';

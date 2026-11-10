@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Study memisahkan panduan navigasi umum dari konten bahasa. Panduan bahasa yang diikuti menggantikan Explore umum dan menjelaskan detail kartu, menggambar, dan pembuatan kartu melalui cabang bersyarat serta masa hidup terlingkup.
+
 Pemutaran ulang tutorial memilih kartu contoh yang sedang terlihat. Langkah-langkah terkait mempertahankan kartu yang sama selama sesi tersebut, termasuk setelah pengurutan ulang atau memulai ulang.
 
 Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.

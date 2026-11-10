@@ -1,3 +1,5 @@
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
+
 import { guides } from "./guides.js";
 import { fetchLibrarySchemas } from "./library-client.js";
 import {
@@ -19,20 +21,36 @@ export async function mountProvider(ctx) {
             navigation: ".study-subnav-modules",
             languages: ".study-subnav-language-options",
             modules: ".study-hub-modules",
+            dictionary: "[data-study-dictionary-search]",
+            settings: "[data-study-settings]",
+            drawingCanvas: ".study-drawing-host .study-drawing-pad canvas",
+            drawingTools: ".study-drawing-host .study-drawing-controls",
         })) {
-            const target = await owner.target(name, {
-                public: true,
-                available: () => window.location.pathname.startsWith("/study"),
-                resolve: () => {
-                    const all = document.querySelectorAll(selector);
-                    return all.length === 1 ? all[0] : null;
+            const target = await owner.target(
+                name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`),
+                {
+                    public: true,
+                    available: () =>
+                        window.location.pathname.startsWith("/study"),
+                    resolve: () => {
+                        const all = document.querySelectorAll(selector);
+                        return all.length === 1 ? all[0] : null;
+                    },
                 },
-            });
+            );
             ids[name] = target.id;
         }
         const registerActions = ctx.capabilities.get("ui:scopedActions");
         if (!registerActions) throw new Error("scoped_actions_unavailable");
         const actions = registerActions(ctx, "study:tutorialNavigation", {
+            attachDrawing: ({ signal }) => {
+                const pad = document.querySelector(
+                    ".study-drawing-host .study-drawing-pad",
+                );
+                return Boolean(
+                    pad && transientSurfaces.attachLifetime(pad, signal),
+                );
+            },
             route: async ({ language, area }) => {
                 ctx.signal.throwIfAborted();
                 if (
@@ -60,13 +78,9 @@ export async function mountProvider(ctx) {
                 ...actions,
                 matchesPage: languageStudyPage,
                 isEnrolled: (language) =>
-                    typeof language === "string" &&
-                    /^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(language) &&
-                    Boolean(
-                        document.querySelector(
-                            `.study-subnav-language-options [data-language-code="${language}"][data-study-enrolled]`,
-                        ),
-                    ),
+                    ctx.capabilities
+                        .get("study:navigation")
+                        ?.isEnrolled(language) === true,
             }),
         );
         await owner.register({
@@ -77,8 +91,15 @@ export async function mountProvider(ctx) {
             available: () =>
                 ctx.capabilities.get("session:isAuthenticated")?.() === true,
             requires: ["ui:navigate", "study:navigation"],
-            steps: ["navigation", "languages", "modules"].map((name) => ({
+            steps: [
+                "navigation",
+                "languages",
+                "modules",
+                "dictionary",
+                "settings",
+            ].map((name) => ({
                 highlightNext: true,
+                when: ({ targetAvailable }) => targetAvailable,
                 id: name,
                 route: "/study",
                 target: ids[name],

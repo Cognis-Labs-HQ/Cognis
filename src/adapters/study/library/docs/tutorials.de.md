@@ -22,3 +22,13 @@ Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` m
 Explore beginnt mit Ebenenseitenleiste, Filtern und einem stabilen Favoritenbeispiel. Ein Klick auf die gewählte Karte öffnet den bedingten Detailzweig; Weiter überspringt ihn. Details und optionale Schreibaktionen werden im eigenen Dialog getrennt hervorgehoben; der Dialog schließt am Zweigende.
 
 Favoriten- und Detailschritte teilen einen stabilen Kartencontainer, auch auf Alphabetseiten und nach Umsortierung.
+
+## Sprachvarianten Und Zweige
+
+Der Anbieter veröffentlicht `study:libraryTutorials` Version 1 über gekapselte Aktionen. Module rufen `register({ owner, id, language, titleKey, text, stringsBaseUrls, signal })` mit stabiler Identität, Sprache und lokalisierten Schritttexten auf. Ergebnis: `{ id, dispose }`. Library besitzt Selektoren, Kartenaktionen, Routenwahl und Dialoglebensdauer; Module importieren keine Implementierung. Doppelte Sprachregistrierung scheitert; Entfernung stellt den allgemeinen Explore-Leitfaden wieder her.
+
+Nur ausdrücklich gewählte Lernsprachen erhalten Modulführungen. Auf `/study` sind sie manuell wählbar; im passenden Explore ersetzt die Sprachvariante die allgemeine Anleitung. Registrierung und Erkennung navigieren nie. Bewusster Start aus der Übersicht öffnet Inhalte, bestehende Ebenen bleiben erhalten. Der Erstellungszweig kann von Zeichen zu einer Ebene mit Kartenerstellung wechseln.
+
+Die Anleitung erklärt Ebenen, Filter, dieselbe Favoritenkarte, Kartendetails, verfügbare Aussprache, Schreibübung und Zeichenwerkzeuge. Klicks auf Karte oder Zeichnen öffnen Zweige; Weiter überspringt ungeöffnete Zweige. Zurück von der Zeichenfläche führt zum Kartenöffner, weil Zeichnen den Dialog schließt.
+
+Erstellen öffnet die echte Kartentypauswahl und danach Editor, Register und Speicheraktionen. Nichts wird automatisch gespeichert. Dialoge und Zeichenfeld folgen dem Zweig; Zurück, Neustart, Abschluss und Entfernung schließen sie mit Schutz ungespeicherter Änderungen.

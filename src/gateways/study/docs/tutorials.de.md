@@ -10,10 +10,13 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 
 | Seite / Bereich                  | Anleitung         | Zugriff             |
 | -------------------------------- | ----------------- | ------------------- |
+| `/study`                         | Study-Übersicht   | Angemeldeter Nutzer |
 | `^/study/(?:settings\|welcome)$` | Lerneinstellungen | Angemeldeter Nutzer |
 
-Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
+## Übersicht Und Sprachleitfäden
 
-Spracheinführungen ergänzen die Übersicht; Aktivitätsführungen bleiben in der aktuellen Explore- oder Flashcards-Ansicht. Spracheinstellungen heben verfügbare und aktive Sprachen getrennt hervor.
+Der Leitfaden auf `/study` erklärt die Aktivitätsnavigation, gewählte Lernsprachen, verfügbare Module, Wörterbuchsuche und Lerneinstellungen. Nicht verfügbare Bedienelemente entfallen; Kartenabläufe werden nicht wiederholt.
 
-Sprachmodulanleitungen werden nur für ausdrücklich eingeschriebene Lernsprachen angeboten. Direkt besuchte Sprachen bleiben erreichbar, erhalten dadurch aber keine Anleitung.
+`study:tutorialTargets` veröffentlicht Navigation und Zeichenziele aus Study sowie die gekapselten Aktionen `route` und `attachDrawing`. `isEnrolled(language)` liest bestätigte Einstellungen über `study:navigation`, kontogebunden und bei Änderungen ungültig gemacht. Ein Sprachbesuch ist keine Anmeldung.
+
+Sprachleitfäden sind im ?-Menü der Übersicht wählbar. Diese bewusste Auswahl öffnet die Explore-Inhalte der Sprache. Automatisch starten sie nur auf den eigenen Inhaltsseiten und behalten eine bereits geöffnete Ebene bei. Library besitzt den interaktiven Kartenablauf und den allgemeinen Ersatzleitfaden; siehe Komponentendokumentation.

@@ -213,3 +213,11 @@ Periksa target pada UI yang dirender dengan data terisi maupun kosong. Selektor 
 Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan detail kartu harus merujuk contoh yang sama setelah pengurutan berubah. targetScope adalah selektor CSS milik halaman yang digunakan bersama dan tidak boleh digabung dengan portal. Periksa warna animasi terhitung untuk pilihan panduan di luar lapisan panduan aktif; Batal tetap tanpa animasi. Contoh konfigurasi harus memiliki bidang skema yang dapat diedit; endpoint saja tidak membuktikannya. Hilangkan pengelolaan ruang jika belum ada percakapan dan tempatkan aksi sosial profil sebelum langkah posting yang berurutan.
 
 Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sementara Kembali dan Mulai Ulang mempertahankan contoh sesi saat ini. Uji pemutaran ulang setelah menyembunyikan kartu lama tanpa melepasnya dari DOM. Jangan mengganti kontrol dalam menu antre dengan label terdekat; hilangkan langkah saat kontrol aslinya tidak dapat ditampilkan. Editor adaptor yang dibuka melalui API popup terinjeksi berbagi target konten dan masa aktif milik host, termasuk editor khusus dan formulir multihalaman. Pertahankan callback onOpen dan perlindungan perubahan; dialog konfirmasi bersarang tetap memiliki identitas modal sendiri.
+
+## Panduan Konten Bahasa
+
+`automatic` menerima boolean atau predikat sinkron `({ pathname }) => boolean`. Penemuan mengevaluasinya tanpa navigasi. Panduan dapat dipilih manual dari ringkasan dan hanya dimulai otomatis di halaman kontennya. Pertahankan pemilik dan ID agar penyelesaian sebelumnya tetap berlaku.
+
+Gunakan `backTo: "earlier-step-id"` saat cabang menggantikan tampilan pembukanya, misalnya dialog kartu menjadi kanvas. Kembali akan menuju langkah pembuka sebelumnya dan menghapus hasil setelahnya, bukan menyorot dialog yang sudah ditutup.
+
+Pisahkan navigasi ringkasan dari panduan aktivitas. Varian bahasa menggantikan panduan umum pada tampilan yang sama, bukan mengantre setelahnya. Buka kartu, kanvas, dan editor melalui tindakan pengguna yang nyata. Berikutnya melewati cabang yang belum dibuka. Ikat tampilan sementara ke masa hidup grup agar Kembali, Mulai Ulang, selesai, dan penghapusan menutupnya dengan perlindungan perubahan yang belum disimpan. Jangan membuat atau menyimpan kartu contoh secara otomatis.

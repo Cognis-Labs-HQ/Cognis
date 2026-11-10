@@ -285,3 +285,77 @@ test("optional stages are counted after asynchronous setup reveals their control
     await session.next();
     assert.equal((await session.finished).status, "completed");
 });
+
+test("Back can return to an earlier opener when a drawing action consumes its dialog", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    const owner = state.owner();
+    await owner.target("card", { resolve: state.element });
+    const registration = await owner.register(
+        play([
+            {
+                id: "open",
+                titleKey: "open",
+                target: "example:card",
+                advance: { event: "click" },
+                group: "content",
+            },
+            {
+                id: "read",
+                titleKey: "read",
+                dependsOn: ["open"],
+                group: "content",
+            },
+            {
+                id: "draw",
+                titleKey: "draw",
+                target: "example:card",
+                advance: { event: "click" },
+                dependsOn: ["open"],
+                group: "content",
+            },
+            {
+                id: "canvas",
+                titleKey: "canvas",
+                dependsOn: ["draw"],
+                backTo: "open",
+                group: "content",
+            },
+        ]),
+    );
+    const session = await registration.start();
+    await session.ready;
+    await state.rendered.at(-1).interacted({ type: "click" });
+    await tick();
+    await session.next();
+    await state.rendered.at(-1).interacted({ type: "click" });
+    await tick();
+    assert.equal(session.state().stepId, "canvas");
+    await session.back();
+    assert.equal(session.state().stepId, "open");
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+});
+
+test("automatic discovery is evaluated for the requested page without executing navigation", async (context) => {
+    const state = tutorialHost();
+    context.after(state.dispose);
+    await state.owner().register({
+        ...play(),
+        page: () => true,
+        automatic: ({ pathname }) => pathname.startsWith("/study/explore/"),
+    });
+    assert.equal(
+        (await state.api.list({ page: { pathname: "/study" } }))[0].automatic,
+        false,
+    );
+    assert.notEqual(
+        (
+            await state.api.list({
+                page: { pathname: "/study/explore/en/words" },
+            })
+        )[0].automatic,
+        false,
+    );
+    assert.equal(state.api.current(), null);
+});

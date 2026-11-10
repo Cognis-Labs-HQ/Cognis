@@ -325,14 +325,24 @@ export function registerTutorials(
             if (!allowed(record)) continue;
             if (page && !matchesPage(record, page)) continue;
             const i18n = await translationResolver(record);
-            if (plays.get(record.id) === record && allowed(record))
-                available.push({
-                    id: record.id,
-                    title: i18n.t(record.play.titleKey),
-                    ...(record.play.automatic === false
-                        ? { automatic: false }
-                        : {}),
-                });
+            if (plays.get(record.id) !== record || !allowed(record)) continue;
+            const automatic =
+                typeof record.play.automatic === "function"
+                    ? record.play.automatic(
+                          Object.freeze({
+                              pathname:
+                                  page?.pathname ??
+                                  document.defaultView.location.pathname,
+                          }),
+                      )
+                    : record.play.automatic !== false;
+            if (typeof automatic !== "boolean")
+                throw new TypeError("invalid_tutorial_automatic");
+            available.push({
+                id: record.id,
+                title: i18n.t(record.play.titleKey),
+                ...(automatic === false ? { automatic: false } : {}),
+            });
         }
         return available;
     });

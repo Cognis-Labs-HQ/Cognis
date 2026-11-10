@@ -227,8 +227,8 @@
   <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Check ownership, visibility and pending requests before publishing or changing shared content.</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Narrow Your Collection</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Choose a language and layer, then use available filters to narrow the cards. Open a matching card to inspect its readings, meanings and relationships.</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Listen And Practise Writing</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.body">In a card’s details, play available pronunciation audio or open its drawing practice. Use the stroke guide, undo and reset controls while practising.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Open Drawing Practice</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Click the drawing button to practise this card’s strokes, or press Next to skip drawing.</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Save Cards And Suggest Changes</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Favourite useful cards for later. Use contribution or request actions to suggest missing content or corrections, then follow their status in Requests.</string>
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Compare Dictionary Matches</string>
@@ -237,4 +237,22 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Open your request to review its proposed changes and current decision. Check feedback before submitting a corrected request.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Read Card Details</string>
   <string name="adapter.study.library.tutorial.explore.read.details.body">The detail view combines meanings, readings, examples and linked records. Follow those relationships when you want to understand how the card is used.</string>
+  <string name="adapter.study.library.tutorial.explore.listen.title">Hear The Pronunciation</string>
+  <string name="adapter.study.library.tutorial.explore.listen.body">Play the card’s audio to hear how it sounds. Listen again before practising the pronunciation yourself.</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Trace The Strokes</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.body">Draw on this canvas, following the displayed stroke order. Each accepted stroke moves you towards completing the character.</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.title">Reset Your Attempt</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.body">Reset clears the current attempt so you can try again. Use the drawing window’s question mark for guidance and its close button to return to your collection.</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.title">Create Your Own Card</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.body">Use the plus action to create content for this language. Click it to explore the card editor, or press Next to leave creation for later.</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.title">Choose A Card Type</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.body">Choose the kind of card you want to add, such as a word or sentence. Available types come from this language’s content model.</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.title">Continue To The Editor</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.body">Click this Next button to open the editor for the selected card type. The tutorial’s Next button skips the editing branch instead.</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.title">Fill In Your Card</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.body">Enter the content and use available lookups or linked cards to build it. Review pronunciation and meaning before creating the card.</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.title">Add Relationships And Meanings</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.body">Use these tabs to move between content, relationships and definitions when available. Linked records let a card reuse the words and meanings already in your collection.</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.title">Create Or Leave The Draft</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.body">Create saves the completed card to its selected location. Cancel leaves the editor; if you changed the draft, review the discard prompt before leaving.</string>
 </resources>

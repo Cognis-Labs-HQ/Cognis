@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Study separates its general navigation guide from language content guides. Enrolled language guides replace generic Explore and walk through real card details, drawing and card creation using conditional branches and scoped lifetimes.
+
 Replaying a tutorial selects a currently visible example card. Related steps keep the same card throughout that session, including after reordering or restarting.
 
 Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.

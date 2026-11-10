@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Study trennt allgemeine Navigation von Sprachinhalten. Leitfäden für gewählte Lernsprachen ersetzen allgemeines Explore und erklären echte Kartendetails, Zeichnen und Kartenerstellung mit bedingten Zweigen und begrenzter Lebensdauer.
+
 Beim erneuten Abspielen eines Tutorials wird eine aktuell sichtbare Beispielkarte ausgewählt. Zusammengehörige Schritte behalten während dieser Sitzung dieselbe Karte bei, auch nach einer Neusortierung oder einem Neustart.
 
 Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.

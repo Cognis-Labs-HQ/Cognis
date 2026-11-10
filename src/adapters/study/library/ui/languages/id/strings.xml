@@ -227,8 +227,8 @@
   <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Periksa kepemilikan, visibilitas, dan permintaan tertunda sebelum menerbitkan atau mengubah konten bersama.</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Persempit Koleksi</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Pilih bahasa dan lapisan, lalu gunakan filter untuk mempersempit kartu. Buka kartu untuk memeriksa bacaan, arti, dan hubungannya.</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Dengarkan Dan Latih Tulisan</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Di detail kartu, putar audio pelafalan atau buka latihan menulis. Gunakan panduan goresan, urungkan, dan reset saat berlatih.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Buka Latihan Menulis</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Klik tombol menggambar untuk berlatih goresan kartu ini, atau tekan Berikutnya untuk melewatinya.</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Simpan Kartu Dan Usulkan Perubahan</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Favoritkan kartu yang berguna. Usulkan konten yang belum ada atau koreksi melalui kontribusi, lalu pantau statusnya di Permintaan.</string>
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Bandingkan Hasil Kamus</string>
@@ -237,4 +237,22 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Buka permintaan untuk meninjau perubahan yang diusulkan dan keputusannya. Periksa umpan balik sebelum mengirim permintaan yang diperbaiki.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Baca Detail Kartu</string>
   <string name="adapter.study.library.tutorial.explore.read.details.body">Tampilan detail menggabungkan arti, bacaan, contoh, dan rekaman terkait. Ikuti hubungan tersebut untuk memahami penggunaan kartu.</string>
+  <string name="adapter.study.library.tutorial.explore.listen.title">Dengarkan Pelafalan</string>
+  <string name="adapter.study.library.tutorial.explore.listen.body">Putar audio kartu untuk mendengar bunyinya. Dengarkan kembali sebelum melatih pelafalan sendiri.</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Ikuti Goresan</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.body">Gambar di kanvas ini mengikuti urutan goresan. Setiap goresan yang diterima mendekatkan Anda pada penyelesaian karakter.</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.title">Ulangi Percobaan</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.body">Atur Ulang membersihkan percobaan saat ini. Gunakan tanda tanya pada jendela gambar untuk panduan dan tombol tutup untuk kembali ke koleksi.</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.title">Buat Kartu Sendiri</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.body">Gunakan tombol tambah untuk membuat konten bahasa ini. Klik untuk menjelajahi editor kartu, atau tekan Berikutnya untuk membuatnya nanti.</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.title">Pilih Jenis Kartu</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.body">Pilih jenis kartu yang ingin ditambahkan, seperti kata atau kalimat. Jenis yang tersedia mengikuti model konten bahasa ini.</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.title">Lanjut Ke Editor</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.body">Klik tombol Berikutnya ini untuk membuka editor jenis kartu yang dipilih. Tombol Berikutnya pada panduan melewati cabang pengeditan.</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.title">Isi Kartu Anda</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.body">Masukkan konten dan gunakan pencarian atau kartu terkait untuk menyusunnya. Periksa pelafalan dan arti sebelum membuat kartu.</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.title">Tambah Hubungan Dan Arti</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.body">Gunakan tab untuk berpindah antara konten, hubungan, dan definisi yang tersedia. Catatan terkait memakai kembali kata dan arti dalam koleksi.</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.title">Buat Atau Tinggalkan Draf</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.body">Buat menyimpan kartu yang lengkap ke lokasi terpilih. Batal meninggalkan editor; jika draf berubah, periksa konfirmasi pembuangan sebelum keluar.</string>
 </resources>

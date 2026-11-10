@@ -49,6 +49,9 @@ export function createStepPlan(steps, { role, firstTime, resolve }) {
         indices,
         previous(index) {
             const path = indices();
+            const explicit = positions.get(steps[index]?.backTo);
+            if (explicit !== undefined && path.includes(explicit))
+                return explicit;
             const previous = path
                 .filter((candidate) => candidate < index)
                 .at(-1);

@@ -1,3 +1,4 @@
+import { transientSurfaces } from "../../../../../ui/reuse/transient-surfaces.js";
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import { findMatchingEntry } from "../../ui/app/create-entry/entry-match.js";
@@ -77,8 +78,8 @@ test("global writers create globally without publish checkboxes", async () => {
         showToast() {},
         LIBRARY_COMPOSER_LIMITS: { tags: 12 },
         openPopup: async (options) => {
-            const overlay = { querySelector: () => form };
-            options.onOpen(overlay);
+            const overlay = { querySelector: () => form, setAttribute() {} };
+            options.onOpen(overlay, () => {});
             assert.equal(await options.onAction("create", overlay), true);
             return "create";
         },
@@ -86,6 +87,7 @@ test("global writers create globally without publish checkboxes", async () => {
     const { openCreateEntryPopup } = loadTestModule(
         new URL("../../ui/app/create-entry/index.js", import.meta.url),
         {
+            "/static/reuse/transient-surfaces.js": { transientSurfaces },
             "./classification.js": context,
             "./import.js": context,
             "../linked-entries.js": context,

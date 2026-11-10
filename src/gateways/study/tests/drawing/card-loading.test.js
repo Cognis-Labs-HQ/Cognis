@@ -1,3 +1,4 @@
+import { transientSurfaces } from "../../../../ui/reuse/transient-surfaces.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
     loadTestModule,
@@ -245,6 +246,7 @@ async function drawingSession({
         await importTestModule(
             new URL("../../ui/reuse/drawing.js", import.meta.url),
             {
+                "/static/reuse/transient-surfaces.js": { transientSurfaces },
                 "/static/reuse/offline-state.js": offlineState,
                 "../library-client.js": {
                     fetchLibrarySchemas: environment.fetchLibrarySchemas,

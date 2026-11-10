@@ -5,7 +5,7 @@
   <string name="gateway.study.tutorial.languages.title">Deine Lernsprachen</string>
   <string name="gateway.study.tutorial.languages.body">Wechsle zwischen deinen eingeschriebenen Sprachen. Ändere die Einschreibung in den Study-Einstellungen.</string>
   <string name="gateway.study.tutorial.modules.title">Ein Lernmodul öffnen</string>
-  <string name="gateway.study.tutorial.modules.body">Diese Karten öffnen installierte Lernwerkzeuge. Ist ein Werkzeug offline oder für deine Rolle nicht verfügbar, stelle die Verbindung wieder her oder frage einen Administrator.</string>
+  <string name="gateway.study.tutorial.modules.body">Diese Karten öffnen installierte Lernwerkzeuge. Die Sprachanleitungen führen durch die zugehörigen Sammlungen und Kartenaktionen.</string>
   <string name="gateway.study.picker.title">Lernsprache wählen</string>
   <string name="gateway.study.picker.select">Sprache auswählen:</string>
   <string name="gateway.study.page_subtitle">Dein Sprachlern-Dashboard</string>
@@ -84,4 +84,8 @@
   <string name="gateway.study.tutorial.preferences.learning.languages.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
   <string name="gateway.study.tutorial.preferences.available.activities.title">Verfügbare Lernangebote</string>
   <string name="gateway.study.tutorial.preferences.available.activities.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
+  <string name="gateway.study.tutorial.dictionary.title">Inhalte Nachschlagen</string>
+  <string name="gateway.study.tutorial.dictionary.body">Schlagen Sie Wörter oder Ausdrücke mit einem verfügbaren Wörterbuchanbieter nach. Die Ergebnisse helfen beim Finden und Erstellen von Karten.</string>
+  <string name="gateway.study.tutorial.settings.title">Lernsprachen Verwalten</string>
+  <string name="gateway.study.tutorial.settings.body">Wählen Sie in den Lerneinstellungen die Sprachen zum Lernen oder Lehren. Anleitungen werden für Ihre eingeschriebenen Lernsprachen angeboten.</string>
 </resources>

@@ -8,6 +8,9 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 /** Study owns the lightweight metadata needed to reopen its hub and child navigation. */
 export function registerStudyNavigation(ctx) {
+    let enrolled = new Set();
+    let enrollmentOwner;
+    let enrollmentRevision = 0;
     const read = createOfflineReadCache({
         signal: ctx.signal,
         preferCached: true,
@@ -17,9 +20,18 @@ export function registerStudyNavigation(ctx) {
         "cognis:study-enrollment-changed",
         "cognis:module-lifecycle-changed",
     ])
-        globalThis.window?.addEventListener(event, () => read.invalidate(), {
-            signal: ctx.signal,
-        });
+        globalThis.window?.addEventListener(
+            event,
+            () => {
+                read.invalidate();
+                enrollmentRevision++;
+                enrolled.clear();
+                enrollmentOwner = undefined;
+            },
+            {
+                signal: ctx.signal,
+            },
+        );
     const registerActions = ctx.capabilities.get("ui:scopedActions");
     if (!registerActions) throw new Error("scoped_actions_unavailable");
     const load = async (path, signal) => {
@@ -54,10 +66,18 @@ export function registerStudyNavigation(ctx) {
         languages: ({ signal } = {}) =>
             load("/api/v1/study/registered-languages", signal ?? ctx.signal),
         preferences: async ({ signal } = {}) => {
+            const revision = enrollmentRevision;
+            const assertAccount = captureAccountGuard();
             const prefs = await load(
                 "/api/v1/study/preferences",
                 signal ?? ctx.signal,
             );
+            assertAccount();
+            if (revision === enrollmentRevision) {
+                enrolled = new Set(prefs?.learningLanguages ?? []);
+                enrollmentOwner =
+                    globalThis.localStorage?.getItem("cognis_account");
+            }
             return prefs;
         },
         modules: ({ languageCode, signal }) =>
@@ -66,7 +86,14 @@ export function registerStudyNavigation(ctx) {
                 signal ?? ctx.signal,
             ),
     });
-    ctx.capabilities.contribute("study:navigation", actions);
+    ctx.capabilities.contribute("study:navigation", {
+        ...actions,
+        isEnrolled: (language) =>
+            enrollmentOwner !== undefined &&
+            enrollmentOwner ===
+                globalThis.localStorage?.getItem("cognis_account") &&
+            enrolled.has(language),
+    });
     bindOfflineSnapshotRefresh(ctx, {
         id: "study:prepareOfflineSnapshot",
         refresh: async () => {
