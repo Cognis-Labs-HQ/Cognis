@@ -1,4 +1,4 @@
-import { transientSurfaces } from "../../reuse/transient-surfaces.js";
+import { createAdapterSettingsPopup } from "./reuse/settings-popup.js";
 
 import { extendI18n } from "../../reuse/i18n.js";
 import {
@@ -150,6 +150,7 @@ export function createAdapterConfigPopup({
             const payload = await response.json();
             if (payload.stringsBaseUrl)
                 i18n = await extendI18n(i18n, [payload.stringsBaseUrl]);
+            const openSettingsPopup = createAdapterSettingsPopup(openPopup);
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
             ).trim();
@@ -174,7 +175,7 @@ export function createAdapterConfigPopup({
                     i18n,
                     escapeHtml,
                     apiFetch,
-                    openPopup,
+                    openPopup: openSettingsPopup,
                     showToast,
                     buildConfigPayload,
                 });
@@ -340,8 +341,7 @@ export function createAdapterConfigPopup({
                 }
             }
 
-            const popupLifetime = new AbortController();
-            await openPopup({
+            await openSettingsPopup({
                 title: name,
                 body: renderGenericAdapterForm(
                     descriptors,
@@ -440,13 +440,7 @@ export function createAdapterConfigPopup({
                     return true;
                 },
                 closeProtection: true,
-                onOpen: (overlay, dismiss) => {
-                    overlay.setAttribute("data-component-settings-popup", "");
-                    transientSurfaces.register(
-                        overlay,
-                        dismiss,
-                        popupLifetime.signal,
-                    );
+                onOpen: (overlay) => {
                     popupFormEl = overlay.querySelector(".provider-popup-form");
                     if (!popupFormEl) return;
 
@@ -524,7 +518,7 @@ export function createAdapterConfigPopup({
                         });
                     }
                 },
-            }).finally(() => popupLifetime.abort());
+            });
             return true;
         },
     };

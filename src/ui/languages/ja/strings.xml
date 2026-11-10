@@ -754,7 +754,7 @@
   <string name="ui.tutorial.admin.components.metadata.title">コンポーネントの詳細</string>
   <string name="ui.tutorial.admin.components.metadata.body">ここでバージョンと依存関係を確認し、このコンポーネントの動作条件を把握できます。</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">コンポーネント設定の編集</string>
-  <string name="ui.tutorial.admin.components.settings.fields.body">このアダプターに必要な項目を編集します。必須項目には印が付き、保存済みの認証情報はパスワード欄で非表示になります。</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">ここに表示される設定でアダプターを構成します。項目を開くか、利用できる欄を編集し、保存前に変更内容を確認してください。</string>
   <string name="ui.tutorial.admin.components.settings.actions.title">設定の保存と破棄</string>
   <string name="ui.tutorial.admin.components.settings.actions.body">「保存」で変更を適用し、「キャンセル」で保存せずに閉じます。初期値への復元に対応するアダプターでは「リセット」も使えます。</string>
   <string name="ui.tutorial.admin.security.trusted.domains.title">信頼するドメイン</string>

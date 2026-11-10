@@ -48,8 +48,6 @@
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">Stapel erstellen</string>
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">Erstellen Sie einen Stapel mit einem passenden Namen und wählen Sie Bibliothekskarten aus. Prüfen Sie die Auswahl vor dem Speichern.</string>
   <string name="adapter.study.flashcards.tutorial.practice.title">Mit einem Stapel üben</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">Übungsmodus wählen</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">Wählen Sie einen verfügbaren Modus zum Lesen, Hören oder Schreiben. Die Auswahl hängt vom Karteninhalt ab.</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">Karte beantworten</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">Lesen Sie die Aufgabe und geben Sie eine Antwort ein oder wählen Sie sie aus. Nutzen Sie beim Schreiben Zeichensteuerung und Strichhilfen.</string>
   <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">Rückmeldung prüfen</string>

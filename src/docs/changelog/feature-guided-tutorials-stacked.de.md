@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Beim erneuten Abspielen eines Tutorials wird eine aktuell sichtbare Beispielkarte ausgewählt. Zusammengehörige Schritte behalten während dieser Sitzung dieselbe Karte bei, auch nach einer Neusortierung oder einem Neustart.
+
 Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
 
 Der Host verwaltet Darstellung, Barrierefreiheit, Ereignissperren, Zielauflösung und Lebenszyklusbereinigung. Beispiele für Arbeitsbereich und Lernen liegen in ihren zuständigen Komponenten. Externe Module registrieren Abläufe und Ziele über ctx, ohne interne Host-Implementierungen zu importieren. Tests prüfen registrierte Flows, fehlende und ersetzte Ziele, asynchronen Abbruch, Berechtigungen, Anbieter-Rollback und veraltete Handles. Native Chromium-Prüfungen decken Fokus, Scrollen, Zoom, Tastatur- und Berührungssperren, Barrierefreiheitsrollen, reduzierte Bewegung und beide Farbschemata ab.
@@ -172,6 +174,10 @@ Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschn
 
 Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Favorit und Kartendetails müssen auch nach einer Umsortierung dasselbe Beispiel zeigen. targetScope ist ein seiteneigener CSS-Selektor für verwandte Schritte und darf nicht mit portal kombiniert werden. Prüfen Sie berechnete Animationsfarben der Anleitungsauswahl außerhalb einer aktiven Anleitungsebene; Abbrechen bleibt ohne Animation. Einstellungsbeispiele benötigen ein bearbeitbares Schemafeld; ein Endpunkt allein genügt nicht. Ohne Gespräch entfallen Verwaltungsschritte. Profilaktionen stehen vor den zusammenhängenden Beitragsschritten.
 
+## Wiederholung Und Einstellungen
+
+Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -210,3 +216,5 @@ Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Fa
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
 - [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
+- [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)
+- [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)

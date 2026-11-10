@@ -48,8 +48,6 @@
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">Buat Dek</string>
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">Buat dek, beri nama yang berguna, dan pilih kartu pustaka. Periksa kartu yang dipilih sebelum menyimpan.</string>
   <string name="adapter.study.flashcards.tutorial.practice.title">Latihan Dengan Dek</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">Pilih Mode Latihan</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">Pilih mode membaca, mendengar, atau menulis yang tersedia. Mode bergantung pada isi kartu terpilih.</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">Jawab Kartu</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">Baca soal lalu masukkan atau pilih jawaban. Pada latihan menulis, gunakan kontrol menggambar dan petunjuk goresan.</string>
   <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">Periksa Umpan Balik</string>

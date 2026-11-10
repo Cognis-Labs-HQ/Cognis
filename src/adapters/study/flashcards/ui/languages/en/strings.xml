@@ -48,8 +48,6 @@
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">Build A Deck</string>
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">Create a deck, give it a useful name, and select library cards for it. Check the selected cards before saving.</string>
   <string name="adapter.study.flashcards.tutorial.practice.title">Practise A Deck</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">Choose A Practice Mode</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">Choose an available mode for reading, listening or writing. Mode availability depends on the selected card’s content.</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">Answer The Card</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">Read the prompt and enter or choose an answer. In writing practice, use the drawing controls and stroke hints to work through the character.</string>
   <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">Check Feedback And Continue</string>

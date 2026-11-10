@@ -154,6 +154,10 @@ Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschn
 
 Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Favorit und Kartendetails müssen auch nach einer Umsortierung dasselbe Beispiel zeigen. targetScope ist ein seiteneigener CSS-Selektor für verwandte Schritte und darf nicht mit portal kombiniert werden. Prüfen Sie berechnete Animationsfarben der Anleitungsauswahl außerhalb einer aktiven Anleitungsebene; Abbrechen bleibt ohne Animation. Einstellungsbeispiele benötigen ein bearbeitbares Schemafeld; ein Endpunkt allein genügt nicht. Ohne Gespräch entfallen Verwaltungsschritte. Profilaktionen stehen vor den zusammenhängenden Beitragsschritten.
 
+## Wiederholung Und Einstellungen
+
+Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

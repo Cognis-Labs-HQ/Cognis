@@ -754,7 +754,7 @@
   <string name="ui.tutorial.admin.components.metadata.title">Component Details</string>
   <string name="ui.tutorial.admin.components.metadata.body">Check the version and dependencies here to identify what this component needs to run.</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">Edit Component Settings</string>
-  <string name="ui.tutorial.admin.components.settings.fields.body">Edit the fields needed for this adapter. Required fields are marked; password fields keep saved credentials concealed.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Use the settings shown here to configure this adapter. Open an entry or edit the available fields, then review your changes before saving.</string>
   <string name="ui.tutorial.admin.components.settings.actions.title">Save Or Discard Settings</string>
   <string name="ui.tutorial.admin.components.settings.actions.body">Save applies your edits. Cancel closes settings without saving them; Reset is available for adapters that support restoring defaults.</string>
   <string name="ui.tutorial.admin.security.trusted.domains.title">Trusted Domains</string>

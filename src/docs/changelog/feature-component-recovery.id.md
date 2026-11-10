@@ -154,6 +154,10 @@ Panduan menyorot seluruh elemen peserta rapat dan bagian peserta tersedia, membe
 
 Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan detail kartu harus merujuk contoh yang sama setelah pengurutan berubah. targetScope adalah selektor CSS milik halaman yang digunakan bersama dan tidak boleh digabung dengan portal. Periksa warna animasi terhitung untuk pilihan panduan di luar lapisan panduan aktif; Batal tetap tanpa animasi. Contoh konfigurasi harus memiliki bidang skema yang dapat diedit; endpoint saja tidak membuktikannya. Hilangkan pengelolaan ruang jika belum ada percakapan dan tempatkan aksi sosial profil sebelum langkah posting yang berurutan.
 
+## Ulang Dan Kepemilikan Pengaturan
+
+Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sementara Kembali dan Mulai Ulang mempertahankan contoh sesi saat ini. Uji pemutaran ulang setelah menyembunyikan kartu lama tanpa melepasnya dari DOM. Jangan mengganti kontrol dalam menu antre dengan label terdekat; hilangkan langkah saat kontrol aslinya tidak dapat ditampilkan. Editor adaptor yang dibuka melalui API popup terinjeksi berbagi target konten dan masa aktif milik host, termasuk editor khusus dan formulir multihalaman. Pertahankan callback onOpen dan perlindungan perubahan; dialog konfirmasi bersarang tetap memiliki identitas modal sendiri.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

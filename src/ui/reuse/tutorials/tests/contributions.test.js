@@ -424,7 +424,13 @@ test("first-match targets retain their card when hover changes candidate orderin
     assert.equal(rendered.target, first);
     await session.restart();
     assert.equal(state.rendered.at(-1).target, first);
-    await session.dispose();
+    await session.next();
+    assert.equal((await session.finished).status, "completed");
+    first.checkVisibility = () => false;
+    const replay = await state.api.start("cards:browse");
+    await replay.ready;
+    assert.equal(state.rendered.at(-1).target, second);
+    await replay.dispose();
 });
 
 test("detail targets resolve only inside the explicitly owned portal while the page is available", async (context) => {
@@ -495,7 +501,8 @@ test("related steps retain one selected container after cards reorder", async (c
     first.contains = (element) => element === card || element === favorite;
     first.querySelectorAll = (selector) =>
         selector === ".favorite" ? [favorite] : [card];
-    second.querySelectorAll = () => [state.element()];
+    const replacement = state.element();
+    second.querySelectorAll = () => [replacement];
     let containers = [first, second];
     const root = {
         ownerDocument: state.document,
@@ -539,4 +546,11 @@ test("related steps retain one selected container after cards reorder", async (c
     await session.back();
     assert.equal(state.rendered.at(-1).target, favorite);
     await session.dispose();
+    first.checkVisibility = () => false;
+    const replay = await state.api.start("related.cards:browse");
+    await replay.ready;
+    assert.equal(state.rendered.at(-1).target, replacement);
+    await replay.next();
+    assert.equal(state.rendered.at(-1).target, replacement);
+    await replay.dispose();
 });

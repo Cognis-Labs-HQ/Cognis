@@ -64,6 +64,8 @@ Check targets against the rendered UI in both populated and empty states. A sele
 
 Related card steps share a stable targetScope container: the favourite control and card details must refer to the same example after reordering. targetScope is a page-owned CSS selector, reused by related steps, and cannot be combined with portal. Verify computed animation colours for tutorial choices outside an active tutorial layer; Cancel stays unanimated. Configuration examples must have an editable field in their declared schema; an endpoint alone does not establish configurability. Omit room-management stages when no room exists and keep Profile social actions before its adjacent post stages.
 
+Example targets and shared card scopes reset for each new replay session, while Back and Restart retain the current session’s example. Test replay after hiding an old card without disconnecting it. A queued control must not be replaced in a guide by a nearby label: omit the stage while the real control cannot be shown. Adapter editors opened through the injected popup API share host-owned content targets and transient lifetimes, including custom editors and multi-page forms. Preserve their onOpen callback and close protection; nested confirmation dialogs retain their own modal identity.
+
 Keep tutorial owner/IDs stable across content and package updates. Account completion must never be invalidated by revisions; only the page-header ? control replays a completed guide.
 
 Use the shared `ui:floatingMenus` queue and its staged flows for floating actions. Bind menu ownership to its page/component lifetime, preserve tutorial reservations across steps, and let page menus wait for the tutorial to yield rather than independently changing toolbar visibility.
