@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-component-recovery
 
+Study now separates overview navigation from interactive language guides. Enrolled language variants replace generic Explore and cover real card details, drawing and card creation; scoped branch cleanup and route-aware discovery prevent overlapping walkthroughs.
+
 ## Failure Isolation
 
 Browser catalogs resolve provider ownership and installed versions from host registries. A failed optional owner loses its partial capabilities, flows and listeners while healthy owners continue. Explicit refresh or a revision change retries quarantined providers. Required host components retain their existing protection. External modules are always optional: module manifests cannot make Cognis fail closed or become a required host dependency.

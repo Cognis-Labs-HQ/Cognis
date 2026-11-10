@@ -2,6 +2,8 @@
 
 **Cabang Fitur:** feature-component-recovery
 
+Study kini memisahkan navigasi ringkasan dari panduan bahasa interaktif. Varian bahasa yang diikuti menggantikan Explore umum dan membahas detail kartu, menggambar, serta pembuatan kartu; pembersihan cabang terlingkup dan penemuan berbasis rute mencegah panduan bertumpuk.
+
 ## Isolasi Kegagalan
 
 Katalog peramban menentukan pemilik penyedia dan versi terpasang dari registri host. Komponen opsional yang gagal kehilangan kemampuan parsial, alur, dan pendengarnya, sementara pemilik lain tetap dimuat. Penyegaran eksplisit atau perubahan revisi memungkinkan percobaan ulang. Komponen host wajib mempertahankan perlindungan yang sudah ada. Modul eksternal selalu opsional: manifest modul tidak dapat membuat Cognis gagal tertutup atau menjadi ketergantungan wajib host.

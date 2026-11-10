@@ -227,8 +227,8 @@
   <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">共有コンテンツの公開や変更を行う前に、所有者、公開範囲、未処理の申請を確認します。</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.title">コレクションを絞り込む</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.body">言語と階層を選び、利用できるフィルターでカードを絞ります。カードを開いて読み、意味、関連項目を確認します。</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.title">音声と書き取りを練習する</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.body">カードの詳細から発音音声や書き取り練習を開きます。練習中は筆順ガイド、取り消し、リセットを使えます。</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">書き取り練習を開く</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">描画ボタンを押してこのカードの筆順を練習します。「次へ」で描画を省略できます。</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.title">カードの保存と修正提案</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.body">役立つカードをお気に入りに保存します。不足する内容や修正を提案し、リクエストで状況を確認できます。</string>
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">辞書の候補を比較する</string>
@@ -237,4 +237,22 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">リクエストを開いて変更案と判断結果を確認し、修正して再提出する前にフィードバックを読みます。</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">カードの詳細を読む</string>
   <string name="adapter.study.library.tutorial.explore.read.details.body">詳細画面には意味、読み方、例文、関連項目がまとめられています。関連をたどると、このカードの使い方を理解できます。</string>
+  <string name="adapter.study.library.tutorial.explore.listen.title">発音を聞く</string>
+  <string name="adapter.study.library.tutorial.explore.listen.body">カードの音声を再生して発音を確かめます。何度か聞いてから自分でも発音してみましょう。</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.title">筆順に沿って書く</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.body">表示された筆順に従ってキャンバスに書きます。正しく受け付けられた線を重ねて文字を完成させます。</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.title">書き直す</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.body">リセットで現在の練習を消してやり直せます。描画ウィンドウの「?」で案内を開き、閉じるボタンでコレクションに戻ります。</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.title">自分のカードを作る</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.body">プラスボタンからこの言語の内容を作成できます。押してカード編集を見てみるか、「次へ」で後に回します。</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.title">カードの種類を選ぶ</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.body">単語や文など、追加したいカードの種類を選びます。この言語で扱う内容に応じた種類が並びます。</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.title">編集画面へ進む</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.body">この「次へ」で選んだ種類の編集画面を開きます。ガイド側の「次へ」は編集の分岐を省略します。</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.title">カードの内容を入力する</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.body">内容を入力し、利用できる検索や関連カードを使って組み立てます。作成前に発音と意味を確認します。</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.title">関連情報と意味を追加する</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.body">これらのタブで内容、関連情報、定義を切り替えます。関連する項目を使うと、コレクション内の単語や意味を再利用できます。</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.title">作成するか下書きを閉じる</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.body">作成ボタンで完成したカードを選択先に保存します。キャンセルで編集を閉じ、変更がある場合は破棄の確認が表示されます。</string>
 </resources>

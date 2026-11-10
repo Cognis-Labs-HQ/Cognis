@@ -1,3 +1,5 @@
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
+
 import { fetchLibrarySchemas } from "../library-client.js";
 import { bindDrawingHeading } from "./drawing-heading.js";
 import { setDrawingCard } from "./drawing-state.js";
@@ -912,7 +914,10 @@ async function createDrawingPad({
         load: (payload) =>
             runDrawingAction("load", () => load(payload), controller.signal),
     };
-    if (!container) activeDrawingSession = session;
+    if (!container) {
+        activeDrawingSession = session;
+        transientSurfaces.register(pad, session.close, controller.signal);
+    }
     try {
         await load({ card, definition, pronunciations, strokePattern });
     } catch (error) {

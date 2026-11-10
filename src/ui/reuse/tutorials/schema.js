@@ -75,7 +75,9 @@ export function validatePlay(input) {
                 )),
     );
     assert(
-        input.automatic === undefined || typeof input.automatic === "boolean",
+        input.automatic === undefined ||
+            typeof input.automatic === "boolean" ||
+            typeof input.automatic === "function",
     );
     const ids = new Set();
     const steps = input.steps.map((step) => {
@@ -102,10 +104,12 @@ export function validatePlay(input) {
             "minRole",
             "when",
             "dependsOn",
+            "backTo",
         ]);
         validateName(step.id);
         if (step.group !== undefined) validateName(step.group);
         assert(!ids.has(step.id));
+        assert(step.backTo === undefined || ids.has(step.backTo));
         assert(
             step.minRole === undefined || ACCESS_ROLES.includes(step.minRole),
         );

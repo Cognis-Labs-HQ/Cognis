@@ -162,7 +162,13 @@ export function createPageTutorials({
         const firstTime = Boolean(actor && !seen(actor, id));
         attempted.add(key(actor, id));
         const session = await api.start(id, { firstTime });
-        void session.finished.then(schedule).catch(report);
+        void session.finished
+            .then(() => {
+                // An intentional guide can cross routes; do not auto-start it again on arrival.
+                if (account() === actor) attempted.add(key(actor, id));
+                schedule();
+            })
+            .catch(report);
         return session;
     }
     function complete(actor, id) {

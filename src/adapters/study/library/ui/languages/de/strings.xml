@@ -227,8 +227,8 @@
   <string name="adapter.study.library.tutorial.administration.visibility.and.review.body">Prüfen Sie Besitz, Sichtbarkeit und offene Anfragen vor Veröffentlichung oder Änderung geteilter Inhalte.</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.title">Sammlung eingrenzen</string>
   <string name="adapter.study.library.tutorial.explore.filter.and.select.body">Wählen Sie Sprache und Ebene und grenzen Sie Karten über verfügbare Filter ein. Öffnen Sie eine Karte für Lesungen, Bedeutungen und Beziehungen.</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Hören und Schreiben üben</string>
-  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Spielen Sie in den Kartendetails verfügbare Aussprache ab oder öffnen Sie die Schreibübung. Nutzen Sie Strichhilfe, Rückgängig und Zurücksetzen.</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.title">Schreibübung Öffnen</string>
+  <string name="adapter.study.library.tutorial.explore.practise.writing.body">Klicken Sie auf die Zeichenschaltfläche, um die Striche dieser Karte zu üben, oder überspringen Sie die Übung mit Weiter.</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.title">Karten merken und ändern</string>
   <string name="adapter.study.library.tutorial.explore.collect.and.request.body">Merken Sie nützliche Karten als Favoriten. Schlagen Sie fehlende Inhalte oder Korrekturen vor und verfolgen Sie den Status unter Anfragen.</string>
   <string name="adapter.study.library.tutorial.search.compare.dictionary.matches.title">Wörterbuchtreffer vergleichen</string>
@@ -237,4 +237,22 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Öffnen Sie Ihre Anfrage für vorgeschlagene Änderungen und die aktuelle Entscheidung. Beachten Sie Rückmeldungen vor einer korrigierten Anfrage.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Kartendetails lesen</string>
   <string name="adapter.study.library.tutorial.explore.read.details.body">Die Detailansicht verbindet Bedeutungen, Lesungen, Beispiele und verknüpfte Einträge. Folge diesen Beziehungen, um die Verwendung der Karte zu verstehen.</string>
+  <string name="adapter.study.library.tutorial.explore.listen.title">Aussprache Anhören</string>
+  <string name="adapter.study.library.tutorial.explore.listen.body">Spielen Sie die Audioaufnahme der Karte ab. Hören Sie erneut zu, bevor Sie die Aussprache selbst üben.</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Striche Nachzeichnen</string>
+  <string name="adapter.study.library.tutorial.explore.draw.strokes.body">Zeichnen Sie auf dieser Fläche in der angezeigten Strichreihenfolge. Jeder angenommene Strich bringt Sie dem fertigen Zeichen näher.</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.title">Versuch Zurücksetzen</string>
+  <string name="adapter.study.library.tutorial.explore.drawing.tools.body">Zurücksetzen leert den aktuellen Versuch. Das Fragezeichen im Zeichenfenster öffnet Hinweise; über Schließen gelangen Sie zur Sammlung zurück.</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.title">Eigene Karte Erstellen</string>
+  <string name="adapter.study.library.tutorial.explore.create.card.body">Mit der Plusaktion erstellen Sie Inhalte für diese Sprache. Klicken Sie darauf, um den Editor kennenzulernen, oder verschieben Sie dies mit Weiter.</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.title">Kartentyp Auswählen</string>
+  <string name="adapter.study.library.tutorial.explore.choose.card.type.body">Wählen Sie den gewünschten Kartentyp, etwa Wort oder Satz. Die verfügbaren Typen gehören zum Inhaltsmodell dieser Sprache.</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.title">Zum Editor Weitergehen</string>
+  <string name="adapter.study.library.tutorial.explore.open.card.editor.body">Klicken Sie auf diese Weiter-Schaltfläche, um den Editor für den gewählten Typ zu öffnen. Weiter in der Anleitung überspringt dagegen die Bearbeitung.</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.title">Karte Ausfüllen</string>
+  <string name="adapter.study.library.tutorial.explore.write.card.body">Geben Sie den Inhalt ein und verwenden Sie verfügbare Nachschlagen- oder Kartenverknüpfungen. Prüfen Sie Aussprache und Bedeutung vor dem Erstellen.</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.title">Beziehungen Und Bedeutungen</string>
+  <string name="adapter.study.library.tutorial.explore.card.sections.body">Mit diesen Reitern wechseln Sie zwischen Inhalt, Beziehungen und Definitionen. Verknüpfte Einträge verwenden vorhandene Wörter und Bedeutungen Ihrer Sammlung wieder.</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.title">Erstellen Oder Entwurf Verlassen</string>
+  <string name="adapter.study.library.tutorial.explore.save.card.body">Erstellen speichert die fertige Karte am gewählten Ort. Abbrechen verlässt den Editor; bei Änderungen prüfen Sie zuvor die Verwerfen-Abfrage.</string>
 </resources>

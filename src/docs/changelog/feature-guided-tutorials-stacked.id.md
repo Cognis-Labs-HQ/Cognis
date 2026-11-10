@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Study memisahkan panduan navigasi umum dari konten bahasa. Panduan bahasa yang diikuti menggantikan Explore umum dan menjelaskan detail kartu, menggambar, dan pembuatan kartu melalui cabang bersyarat serta masa hidup terlingkup.
+
 Pemutaran ulang tutorial memilih kartu contoh yang sedang terlihat. Langkah-langkah terkait mempertahankan kartu yang sama selama sesi tersebut, termasuk setelah pengurutan ulang atau memulai ulang.
 
 Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
@@ -218,3 +220,4 @@ Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sem
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
 - [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)
 - [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)
+- [03b052822](https://github.com/Cognis-Labs-HQ/Cognis/commit/03b052822981b8bbeaf692de6ec3cfc908d6e6e3)

@@ -254,3 +254,32 @@ test("supplemental guides remain discoverable through replay without starting au
     assert.equal(state.api.current().id, "example:intro");
     await session.dispose();
 });
+
+test("a manually selected guide cancelled after crossing a route does not auto-restart on arrival", async (context) => {
+    const state = pageHost(context);
+    await state.owner().register({
+        ...play(),
+        page: () => true,
+        automatic: ({ pathname }) => pathname === "/study/explore/en/alphabet",
+    });
+    state.page.connect();
+    await tick();
+    assert.equal(state.api.current(), null);
+    const session = await state.api.openPage();
+    await session.ready;
+    state.window.dispatchEvent(new Event("cognis:route-will-change"));
+    state.window.location.pathname = "/study/explore/en/alphabet";
+    await session.finished;
+    await state.ctx.runFlow("page:mounted", {
+        pathname: state.window.location.pathname,
+    });
+    await tick();
+    await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+    assert.equal(
+        state.values.size,
+        0,
+        "cancellation must not record completion",
+    );
+    assert.deepEqual(state.errors, []);
+});

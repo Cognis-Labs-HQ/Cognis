@@ -1,4 +1,3 @@
-import { guides } from "../guides.js";
 import { loadFavourites } from "/static/gateways/study/reuse/favourites.js";
 import { bindRequestPreviews } from "../request-preview.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -82,7 +81,6 @@ export async function mount(root, { signal } = {}) {
         },
     });
     const composer = createPageComposer(root, {
-        tutorials: guides,
         allowCustomization: false,
         contentScrolling: false,
         elements: [

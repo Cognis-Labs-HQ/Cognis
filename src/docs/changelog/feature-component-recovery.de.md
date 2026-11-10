@@ -2,6 +2,8 @@
 
 **Feature-Zweig:** feature-component-recovery
 
+Study trennt jetzt Übersichtsnavigation und interaktive Sprachleitfäden. Varianten für gewählte Lernsprachen ersetzen allgemeines Explore und erklären Kartendetails, Zeichnen und Kartenerstellung; begrenzte Zweiglebensdauer und routenbezogene Erkennung verhindern Überschneidungen.
+
 ## Fehler isolieren
 
 Browserkataloge ermitteln Anbieterzugehörigkeit und installierte Version aus Hostregistrierungen. Bei einem Fehler verliert eine optionale Komponente ihre teilweisen Fähigkeiten, Abläufe und Listener; andere Komponenten werden weiter geladen. Eine ausdrückliche Aktualisierung oder neue Revision erlaubt einen erneuten Versuch. Erforderliche Hostkomponenten behalten ihren bestehenden Schutz. Externe Module bleiben immer optional: Modulmanifeste können Cognis weder global sperren noch eine erforderliche Hostabhängigkeit erzeugen.

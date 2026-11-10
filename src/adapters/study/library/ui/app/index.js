@@ -1,4 +1,3 @@
-import { guides } from "./guides.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -90,7 +89,6 @@ export async function mount(root, { signal } = {}) {
         },
     });
     const composer = createPageComposer(root, {
-        tutorials: guides,
         allowCustomization: false,
         contentScrolling: false,
         elements: [

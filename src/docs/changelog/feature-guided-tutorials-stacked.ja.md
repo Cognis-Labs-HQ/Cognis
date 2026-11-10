@@ -2,6 +2,8 @@
 
 **Feature Branch:** feature-guided-tutorials-stacked
 
+Study の共通ナビゲーションと言語コンテンツのガイドを分離しました。登録済み言語のガイドは汎用 Explore を置き換え、条件付き分岐とスコープ付き寿命を使って実際のカード詳細、描画、カード作成を案内します。
+
 チュートリアルを再生すると、現在表示されているサンプルカードが選択されます。関連するステップでは、並べ替えや最初からのやり直し後も、そのセッション中は同じカードが維持されます。
 
 チュートリアルはページや URL に紐付きます。利用条件を満たす初回訪問では、そのページの未完了ガイドを自動的に開始します。`page-context` のタイトル横にある疑問符 SVG から、そのページで利用できるガイドを再生できます。ホストは表示と寿命を管理し、各機能が文章、対象、スクリプトを所有します。権限は変更しません。
@@ -218,3 +220,4 @@
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
 - [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)
 - [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)
+- [03b052822](https://github.com/Cognis-Labs-HQ/Cognis/commit/03b052822981b8bbeaf692de6ec3cfc908d6e6e3)

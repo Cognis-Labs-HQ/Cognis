@@ -10,10 +10,13 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 
 | Page / surface                   | Guide             | Access         |
 | -------------------------------- | ----------------- | -------------- |
+| `/study`                         | Study Overview    | Signed-in user |
 | `^/study/(?:settings\|welcome)$` | Study Preferences | Signed-in user |
 
-Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
+## Overview And Language Guides
 
-Language introductions are supplemental overview guides; activity walkthroughs stay on the current Explore or Flashcards surface. Language settings highlight available and active languages separately.
+The `/study` guide covers the activity subnav, enrolled languages, available modules, dictionary search and Study settings, omitting unavailable controls. It does not repeat card workflows.
 
-Language-module guides are offered only for explicitly enrolled learning languages. Directly visited languages remain navigable without qualifying for these guides.
+`study:tutorialTargets` publishes Study-owned navigation and drawing targets plus scoped `route` and `attachDrawing` actions. `isEnrolled(language)` reads verified preferences through `study:navigation`, bound to the current account and invalidated on enrollment changes. Visiting a language does not enroll it.
+
+Language-module guides can be selected from the overview's ? menu. Choosing one intentionally enters that language's Explore content. They start automatically only on their own content pages and preserve the current layer when already there. Library owns the interactive card walkthrough and its generic fallback; see its component documentation.

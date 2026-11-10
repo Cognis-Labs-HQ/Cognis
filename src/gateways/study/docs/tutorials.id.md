@@ -10,10 +10,13 @@ Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di
 
 | Halaman / bagian                 | Panduan            | Akses          |
 | -------------------------------- | ------------------ | -------------- |
+| `/study`                         | Ringkasan Study    | Pengguna masuk |
 | `^/study/(?:settings\|welcome)$` | Preferensi Belajar | Pengguna masuk |
 
-Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, katalog, target, dan sinyal masa hidup milik komponen. Halaman, bagian yang terlihat, dan persyaratan akses menentukan ketersediaan. Pelepasan komponen melepas panduannya. Penyajian dan penyelesaian bersama dijelaskan dalam [kontrak tutorial host](/docs/tutorials).
+## Ringkasan Dan Panduan Bahasa
 
-Pengantar bahasa adalah pelengkap ringkasan; panduan aktivitas tetap pada tampilan Explore atau Flashcards aktif. Pengaturan bahasa menyorot bahasa tersedia dan aktif secara terpisah.
+Panduan `/study` menjelaskan subnavigasi aktivitas, bahasa yang diikuti, modul tersedia, pencarian kamus, dan pengaturan belajar. Kontrol yang tidak tersedia dilewati; alur kartu tidak diulang.
 
-Panduan modul bahasa hanya ditawarkan untuk bahasa belajar yang didaftarkan secara eksplisit. Bahasa yang dikunjungi langsung tetap dapat dibuka tanpa memperoleh panduan tersebut.
+`study:tutorialTargets` menerbitkan target navigasi dan menggambar milik Study serta tindakan terlingkup `route` dan `attachDrawing`. `isEnrolled(language)` membaca preferensi terverifikasi melalui `study:navigation`, terikat akun aktif dan dibatalkan saat keikutsertaan berubah. Mengunjungi bahasa bukan berarti mengikutinya.
+
+Panduan modul bahasa dapat dipilih dari menu ? pada ringkasan. Pilihan sadar ini membuka konten Explore bahasa tersebut. Panduan hanya otomatis dimulai pada kontennya sendiri dan mempertahankan lapisan aktif. Library memiliki alur kartu interaktif dan panduan umum cadangan; lihat dokumentasi komponennya.
