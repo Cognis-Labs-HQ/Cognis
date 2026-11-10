@@ -193,3 +193,4 @@ Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung z
 - [34757d5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/34757d5ec0826abe7918af96c87e23f9eee05e60)
 - [c7c2c2c5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7c2c2c5b10e72244f2ae42793099c6927dc33bb)
 - [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
+- [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
