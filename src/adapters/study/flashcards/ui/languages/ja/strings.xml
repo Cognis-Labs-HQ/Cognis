@@ -48,8 +48,6 @@
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.title">デッキを作る</string>
   <string name="adapter.study.flashcards.tutorial.decks.build.a.deck.body">デッキに分かりやすい名前を付け、ライブラリーからカードを選び、保存前に内容を確認します。</string>
   <string name="adapter.study.flashcards.tutorial.practice.title">デッキで練習する</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.title">練習モードを選ぶ</string>
-  <string name="adapter.study.flashcards.tutorial.practice.choose.mode.body">読む・聞く・書く練習から、カードの内容に対応するモードを選びます。</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.title">カードに答える</string>
   <string name="adapter.study.flashcards.tutorial.practice.answer.task.body">問題を読み、答えを入力または選択します。書き取りでは描画操作や筆順のヒントを使えます。</string>
   <string name="adapter.study.flashcards.tutorial.practice.check.feedback.title">結果を確認して進む</string>

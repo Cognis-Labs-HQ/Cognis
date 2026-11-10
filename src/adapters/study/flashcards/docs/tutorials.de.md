@@ -17,3 +17,5 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
 
 Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+Die Übungsanleitung behandelt Aufgabe und Rückmeldung. Lesen oder Schreiben wählen Sie nach Abschluss über das normale schwebende Menü; während der Anleitung steht dessen Auswahl nicht bereit.

@@ -48,15 +48,6 @@ export const guides = [
                 steps: [
                     {
                         highlightNext: true,
-                        id: "choose-mode",
-                        selector: ".study-practice-modes",
-                        titleKey:
-                            "adapter.study.flashcards.tutorial.practice.choose.mode.title",
-                        bodyKey:
-                            "adapter.study.flashcards.tutorial.practice.choose.mode.body",
-                    },
-                    {
-                        highlightNext: true,
                         id: "answer-task",
                         selector: "[data-practice-task]",
                         titleKey:

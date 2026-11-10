@@ -752,7 +752,7 @@
   <string name="ui.tutorial.admin.components.metadata.title">Detail Komponen</string>
   <string name="ui.tutorial.admin.components.metadata.body">Periksa versi dan dependensi di sini untuk mengetahui kebutuhan komponen ini.</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">Ubah Pengaturan Komponen</string>
-  <string name="ui.tutorial.admin.components.settings.fields.body">Ubah bidang yang diperlukan adaptor ini. Bidang wajib ditandai; kredensial tersimpan disembunyikan dalam bidang kata sandi.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Gunakan pengaturan di sini untuk mengonfigurasi adaptor ini. Buka entri atau ubah bidang yang tersedia, lalu tinjau perubahan sebelum menyimpan.</string>
   <string name="ui.tutorial.admin.components.settings.actions.title">Simpan Atau Buang Pengaturan</string>
   <string name="ui.tutorial.admin.components.settings.actions.body">Simpan menerapkan perubahan. Batal menutup pengaturan tanpa menyimpan; Atur Ulang tersedia jika adaptor mendukung pemulihan nilai bawaan.</string>
   <string name="ui.tutorial.admin.security.trusted.domains.title">Domain Tepercaya</string>

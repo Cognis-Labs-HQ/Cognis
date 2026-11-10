@@ -174,6 +174,10 @@ Tutorials now target the full meeting Participants element and Available Partici
 
 Related card steps share a stable targetScope container: the favourite control and card details must refer to the same example after reordering. targetScope is a page-owned CSS selector, reused by related steps, and cannot be combined with portal. Verify computed animation colours for tutorial choices outside an active tutorial layer; Cancel stays unanimated. Configuration examples must have an editable field in their declared schema; an endpoint alone does not establish configurability. Omit room-management stages when no room exists and keep Profile social actions before its adjacent post stages.
 
+## Replay And Settings Ownership
+
+Example targets and shared card scopes reset for each new replay session, while Back and Restart retain the current session’s example. Test replay after hiding an old card without disconnecting it. A queued control must not be replaced in a guide by a nearby label: omit the stage while the real control cannot be shown. Adapter editors opened through the injected popup API share host-owned content targets and transient lifetimes, including custom editors and multi-page forms. Preserve their onOpen callback and close protection; nested confirmation dialogs retain their own modal identity.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -212,3 +216,4 @@ Related card steps share a stable targetScope container: the favourite control a
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
 - [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
+- [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)

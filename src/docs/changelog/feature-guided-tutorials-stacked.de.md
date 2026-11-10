@@ -174,6 +174,10 @@ Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschn
 
 Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Favorit und Kartendetails müssen auch nach einer Umsortierung dasselbe Beispiel zeigen. targetScope ist ein seiteneigener CSS-Selektor für verwandte Schritte und darf nicht mit portal kombiniert werden. Prüfen Sie berechnete Animationsfarben der Anleitungsauswahl außerhalb einer aktiven Anleitungsebene; Abbrechen bleibt ohne Animation. Einstellungsbeispiele benötigen ein bearbeitbares Schemafeld; ein Endpunkt allein genügt nicht. Ohne Gespräch entfallen Verwaltungsschritte. Profilaktionen stehen vor den zusammenhängenden Beitragsschritten.
 
+## Wiederholung Und Einstellungen
+
+Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -212,3 +216,4 @@ Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Fa
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
 - [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
+- [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)

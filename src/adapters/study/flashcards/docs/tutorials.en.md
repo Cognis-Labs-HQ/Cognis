@@ -17,3 +17,5 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
 
 The management guide uses the selected deck container as its boundary, including the edit, share and export controls. It remains unavailable in the deck list.
+
+The practice guide covers the task and feedback. Choose reading or writing with the normal floating-menu selector after the guide finishes; it is not available while the tutorial owns that menu.

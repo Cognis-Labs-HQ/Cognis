@@ -174,6 +174,10 @@ Panduan menyorot seluruh elemen peserta rapat dan bagian peserta tersedia, membe
 
 Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan detail kartu harus merujuk contoh yang sama setelah pengurutan berubah. targetScope adalah selektor CSS milik halaman yang digunakan bersama dan tidak boleh digabung dengan portal. Periksa warna animasi terhitung untuk pilihan panduan di luar lapisan panduan aktif; Batal tetap tanpa animasi. Contoh konfigurasi harus memiliki bidang skema yang dapat diedit; endpoint saja tidak membuktikannya. Hilangkan pengelolaan ruang jika belum ada percakapan dan tempatkan aksi sosial profil sebelum langkah posting yang berurutan.
 
+## Ulang Dan Kepemilikan Pengaturan
+
+Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sementara Kembali dan Mulai Ulang mempertahankan contoh sesi saat ini. Uji pemutaran ulang setelah menyembunyikan kartu lama tanpa melepasnya dari DOM. Jangan mengganti kontrol dalam menu antre dengan label terdekat; hilangkan langkah saat kontrol aslinya tidak dapat ditampilkan. Editor adaptor yang dibuka melalui API popup terinjeksi berbagi target konten dan masa aktif milik host, termasuk editor khusus dan formulir multihalaman. Pertahankan callback onOpen dan perlindungan perubahan; dialog konfirmasi bersarang tetap memiliki identitas modal sendiri.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -212,3 +216,4 @@ Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan
 - [c6478d674](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6478d674dcf0001d89e67dc1456b4cbcd812d44)
 - [d8d06956e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8d06956e993963cf51794e90bed3b145bb49deb)
 - [b62756188](https://github.com/Cognis-Labs-HQ/Cognis/commit/b627561886394643fa454d32b6ece0064e8e9666)
+- [fac81c153](https://github.com/Cognis-Labs-HQ/Cognis/commit/fac81c153f7d6ce0b5dfe8c84c2eec1aae6953f6)

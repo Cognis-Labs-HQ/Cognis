@@ -106,7 +106,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "settings-fields",
-                        selector: ".provider-fields",
+                        selector: "[data-component-settings-content]",
                         portal: "[data-component-settings-popup]",
                         popup: "[data-component-settings-popup]",
                         layer: "overlay",

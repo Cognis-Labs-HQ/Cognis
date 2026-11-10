@@ -752,7 +752,7 @@
   <string name="ui.tutorial.admin.components.metadata.title">Komponentendetails</string>
   <string name="ui.tutorial.admin.components.metadata.body">Hier sehen Sie Version und Abhängigkeiten und damit die Voraussetzungen dieser Komponente.</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">Komponenteneinstellungen</string>
-  <string name="ui.tutorial.admin.components.settings.fields.body">Bearbeiten Sie die benötigten Felder dieses Adapters. Pflichtfelder sind markiert; gespeicherte Zugangsdaten bleiben in Passwortfeldern verborgen.</string>
+  <string name="ui.tutorial.admin.components.settings.fields.body">Konfigurieren Sie diesen Adapter mit den hier angezeigten Einstellungen. Öffnen Sie einen Eintrag oder bearbeiten Sie die verfügbaren Felder und prüfen Sie Ihre Änderungen vor dem Speichern.</string>
   <string name="ui.tutorial.admin.components.settings.actions.title">Einstellungen Übernehmen</string>
   <string name="ui.tutorial.admin.components.settings.actions.body">Speichern übernimmt Ihre Änderungen. Abbrechen schließt die Einstellungen ohne Speichern. Zurücksetzen stellt bei unterstützten Adaptern die Standardwerte wieder her.</string>
   <string name="ui.tutorial.admin.security.trusted.domains.title">Vertrauenswürdige Domains</string>

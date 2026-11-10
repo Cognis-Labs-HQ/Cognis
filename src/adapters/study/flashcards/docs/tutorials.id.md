@@ -17,3 +17,5 @@ Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di
 Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, katalog, target, dan sinyal masa hidup milik komponen. Halaman, bagian yang terlihat, dan persyaratan akses menentukan ketersediaan. Pelepasan komponen melepas panduannya. Penyajian dan penyelesaian bersama dijelaskan dalam [kontrak tutorial host](/docs/tutorials).
 
 Panduan pengelolaan memakai wadah dek terpilih sebagai batas, termasuk kontrol edit, berbagi, dan ekspor. Panduan tetap tidak tersedia dalam daftar dek.
+
+Panduan latihan mencakup tugas dan umpan balik. Pilih membaca atau menulis melalui pemilih menu mengambang setelah panduan selesai; pemilih tersebut tidak tersedia saat panduan memakai menu.
