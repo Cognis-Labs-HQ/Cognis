@@ -221,3 +221,5 @@ Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sem
 Gunakan `backTo: "earlier-step-id"` saat cabang menggantikan tampilan pembukanya, misalnya dialog kartu menjadi kanvas. Kembali akan menuju langkah pembuka sebelumnya dan menghapus hasil setelahnya, bukan menyorot dialog yang sudah ditutup.
 
 Pisahkan navigasi ringkasan dari panduan aktivitas. Varian bahasa menggantikan panduan umum pada tampilan yang sama, bukan mengantre setelahnya. Buka kartu, kanvas, dan editor melalui tindakan pengguna yang nyata. Berikutnya melewati cabang yang belum dibuka. Ikat tampilan sementara ke masa hidup grup agar Kembali, Mulai Ulang, selesai, dan penghapusan menutupnya dengan perlindungan perubahan yang belum disimpan. Jangan membuat atau menyimpan kartu contoh secara otomatis.
+
+Hasil pencarian, permintaan, dan administrasi Library menghilangkan langkah khusus rekaman saat tidak ada rekaman terlihat. Kontrol ringkasan tetap tersedia tanpa menunggu target yang tidak ada.

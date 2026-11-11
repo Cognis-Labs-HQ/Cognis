@@ -32,3 +32,5 @@ Only explicitly enrolled languages receive module guides. On `/study` they are m
 The walkthrough covers layers, filters, one stable favourite/card example, its detail popup, available pronunciation audio, writing practice and drawing controls. Clicking the card or Draw opens its branch; Next bypasses unopened branches. Back from the canvas returns to the card opener because Draw closes the detail popup.
 
 Create opens the real card-type chooser, then the real content editor, its tabs and save controls. Users can explore these tools without saving. The guide never submits a card. Popup and drawing lifetimes follow the branch; Back, Restart, completion and removal release them, retaining unsaved-change confirmation.
+
+Search results, requests and Library administration omit record-specific steps when there are no visible records. Their overview controls remain available without waiting for absent targets.

@@ -180,6 +180,12 @@ Related card steps share a stable targetScope container: the favourite control a
 
 Example targets and shared card scopes reset for each new replay session, while Back and Restart retain the current session’s example. Test replay after hiding an old card without disconnecting it. A queued control must not be replaced in a guide by a nearby label: omit the stage while the real control cannot be shown. Adapter editors opened through the injected popup API share host-owned content targets and transient lifetimes, including custom editors and multi-page forms. Preserve their onOpen callback and close protection; nested confirmation dialogs retain their own modal identity.
 
+## Empty Library Views
+
+Search results, requests and Library administration omit record-specific steps when there are no visible records. Their overview controls remain available without waiting for absent targets.
+
+Result and request guidance explains the content users can inspect.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -222,3 +228,5 @@ Example targets and shared card scopes reset for each new replay session, while 
 - [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)
 - [03b052822](https://github.com/Cognis-Labs-HQ/Cognis/commit/03b052822981b8bbeaf692de6ec3cfc908d6e6e3)
 - [92aef5cfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/92aef5cfbeb5be722119219c857b3fb15690233e)
+- [8568efae8](https://github.com/Cognis-Labs-HQ/Cognis/commit/8568efae8f86a0eaf2b361b4e330e47a992a47ac)
+- [4f0215ff1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4f0215ff16733a754d2822ae618e864bab47ef3a)

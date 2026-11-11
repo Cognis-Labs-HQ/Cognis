@@ -1,5 +1,7 @@
 import { exploreWalkthrough } from "../tutorials/walkthrough.js";
 
+const optional = ({ targetAvailable }) => targetAvailable;
+
 export const guides = [
     {
         owner: "study.library.pages",
@@ -30,6 +32,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "inspect-before-importing",
+                        when: optional,
                         selector: "[data-dictionary-result]",
                         targetMatch: "first",
                         titleKey:
@@ -57,6 +60,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "review-details",
+                        when: optional,
                         selector: "[data-library-request]",
                         targetMatch: "first",
                         titleKey:
@@ -67,6 +71,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "follow-request-outcome",
+                        when: optional,
                         selector:
                             ".library-request-header .library-metadata-pill",
                         targetMatch: "first",
@@ -100,6 +105,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "create-and-edit",
+                        when: optional,
                         selector: "[data-library-admin-edit]",
                         targetMatch: "first",
                         titleKey:
@@ -110,6 +116,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "visibility-and-review",
+                        when: optional,
                         selector: ".library-entry-card-status",
                         targetMatch: "first",
                         titleKey:

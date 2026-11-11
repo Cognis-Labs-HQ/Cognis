@@ -180,6 +180,12 @@ Study の共通ナビゲーションと言語コンテンツのガイドを分�
 
 例の対象と共有カードの範囲は、新しい再生セッションごとに選び直します。「戻る」と「最初から」では現在の例を維持します。以前のカードを DOM から外さず非表示にした場合も再生を確認してください。待機中のメニューの操作部品を近くのラベルで代用せず、実物を表示できないステップは除外します。注入されたポップアップ API で開くアダプター設定は、独自画面や複数ページのフォームでもホスト所有の内容対象と一時的なライフサイクルを共有します。onOpen と未保存変更の保護を維持し、入れ子の確認ダイアログは別のモーダルとして扱います。
 
+## Library の空表示
+
+検索結果、リクエスト、Library 管理では、表示中のレコードがない場合にレコード固有のステップを省略します。存在しない対象を待たず、概要の操作は利用できます。
+
+結果とリクエストの説明では、利用者が確認できる内容を案内します。
+
 ## コミット
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -222,3 +228,5 @@ Study の共通ナビゲーションと言語コンテンツのガイドを分�
 - [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)
 - [03b052822](https://github.com/Cognis-Labs-HQ/Cognis/commit/03b052822981b8bbeaf692de6ec3cfc908d6e6e3)
 - [92aef5cfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/92aef5cfbeb5be722119219c857b3fb15690233e)
+- [8568efae8](https://github.com/Cognis-Labs-HQ/Cognis/commit/8568efae8f86a0eaf2b361b4e330e47a992a47ac)
+- [4f0215ff1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4f0215ff16733a754d2822ae618e864bab47ef3a)

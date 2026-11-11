@@ -212,12 +212,12 @@
   <string name="adapter.study.library.tutorial.search.search.results.title">Search Results</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Review dictionary results and their language, readings and meanings.</string>
   <string name="adapter.study.library.tutorial.search.inspect.before.importing.title">Inspect Before Importing</string>
-  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Inspect a result before importing or opening its library record; duplicate and permission checks still apply.</string>
+  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Open a result to compare its readings and meanings before importing it into your collection.</string>
   <string name="adapter.study.library.tutorial.requests.title">Library Requests</string>
   <string name="adapter.study.library.tutorial.requests.request.status.title">Request Status</string>
   <string name="adapter.study.library.tutorial.requests.request.status.body">Filter your requests and read the current review status before submitting another change.</string>
   <string name="adapter.study.library.tutorial.requests.review.details.title">Review Details</string>
-  <string name="adapter.study.library.tutorial.requests.review.details.body">Open a request to inspect its proposed content; approval controls are restricted to authorized reviewers.</string>
+  <string name="adapter.study.library.tutorial.requests.review.details.body">Open a request to see its proposed content and where the record will be stored.</string>
   <string name="adapter.study.library.tutorial.administration.title">Library Administration</string>
   <string name="adapter.study.library.tutorial.administration.find.records.title">Find Records</string>
   <string name="adapter.study.library.tutorial.administration.find.records.body">Search and choose a layer to find the records you intend to manage.</string>

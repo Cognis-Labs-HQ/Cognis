@@ -212,12 +212,12 @@
   <string name="adapter.study.library.tutorial.search.search.results.title">検索結果</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">辞書の検索結果と、その言語、読み方、意味を確認します。</string>
   <string name="adapter.study.library.tutorial.search.inspect.before.importing.title">取り込む前に確認</string>
-  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">取り込みやライブラリー項目の表示前に内容を確認します。重複と権限の確認も引き続き行われます。</string>
+  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">結果を開いて読み方と意味を比較し、コレクションに取り込む内容を確認します。</string>
   <string name="adapter.study.library.tutorial.requests.title">ライブラリーへの申請</string>
   <string name="adapter.study.library.tutorial.requests.request.status.title">申請の状態</string>
   <string name="adapter.study.library.tutorial.requests.request.status.body">申請を絞り込み、次の変更を送る前に審査の状態を確認します。</string>
   <string name="adapter.study.library.tutorial.requests.review.details.title">詳細を確認</string>
-  <string name="adapter.study.library.tutorial.requests.review.details.body">申請を開いて提案された内容を確認します。承認は権限を持つ審査担当者だけが行えます。</string>
+  <string name="adapter.study.library.tutorial.requests.review.details.body">リクエストを開いて、提案された内容とレコードの保存先を確認します。</string>
   <string name="adapter.study.library.tutorial.administration.title">ライブラリーの管理</string>
   <string name="adapter.study.library.tutorial.administration.find.records.title">項目を探す</string>
   <string name="adapter.study.library.tutorial.administration.find.records.body">検索とレイヤー選択で、管理する項目を探します。</string>
