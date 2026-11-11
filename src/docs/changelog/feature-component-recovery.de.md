@@ -164,6 +164,10 @@ Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung z
 
 Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstrap-Kontext erfasst, bevor URLs umgeschrieben werden. Aliase statischer Verzeichnisse bestimmen keine Komponentenidentität. Erforderliche oder gesperrte Host-Adapter bleiben geschützt; externe Module bleiben optional. Das konfigurierte Adapterverzeichnis ordnet Manifeste ohne Gateway-Feld zu. Adapter in einem anders benannten Ordner deklarieren ihr logisches Gateway im Manifest. Durch Abhängigkeiten blockierte Verfügbarkeit gilt als inaktiv statt ausdrücklich deaktiviert; Deaktivierungsanfragen erreichen daher weiterhin den Besitzer. JSON-Routen für Objekte akzeptieren Objektinhalte, weist null, Arrays und primitive Werte als Clientfehler zurück und klassifiziert zu große Eingaben vor der Wiederherstellungszuordnung als Clientfehler. Endpunkte mit Array-Inhalten wählen ausdrücklich `shape: "array"`, darunter die Benachrichtigungseinstellungen.
 
+## Ausstehende Öffnung
+
+Das Öffnen einer Karte ist vor dem Klick an den Anleitungszweig gebunden. Neustart und Abschluss brechen die ausstehende Detailanzeige einschließlich asynchroner Zusammenstellung und Dialogvorbereitung ab. Neue Versuche starten sofort; ältere Abschlüsse geben keine neueren Versuche frei. Normale Kartenaufrufe behalten ihre Seitenlebensdauer.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

@@ -164,6 +164,10 @@ Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sem
 
 Kepemilikan penyedia browser dicatat dari lingkup bootstrap yang mendaftarkannya sebelum URL ditulis ulang. Alias direktori statis tidak menentukan identitas komponen. Adaptor host yang wajib atau terkunci tetap dilindungi; modul eksternal tetap opsional. Direktori adaptor yang dikonfigurasi mengidentifikasi manifes tanpa bidang gateway. Adaptor dalam folder bernama berbeda mendeklarasikan gateway logisnya di manifes. Ketersediaan yang terhalang dependensi dilaporkan tidak aktif, bukan dinonaktifkan secara eksplisit, sehingga permintaan penonaktifan tetap mencapai pemiliknya. Rute JSON berbasis objek menerima objek, menolak null, array, dan nilai primitif sebagai kesalahan klien, serta mengklasifikasikan masukan terlalu besar sebagai kesalahan klien sebelum atribusi pemulihan. Endpoint dengan muatan array memilih `shape: "array"` secara eksplisit, termasuk preferensi notifikasi.
 
+## Pembukaan Tutorial Tertunda
+
+Pembukaan kartu terikat pada cabang tutorial sebelum klik. Mulai ulang dan selesai membatalkan tampilan detail tertunda, termasuk penyusunan asinkron dan persiapan popup. Percobaan baru dapat dimulai segera, dan penyelesaian lama tidak dapat melepaskan kunci percobaan baru. Pembukaan kartu biasa mempertahankan masa hidup halaman.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

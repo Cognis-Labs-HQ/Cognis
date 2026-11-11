@@ -12,6 +12,7 @@ export async function mountProvider(ctx) {
     if (!api || !study || !registerActions)
         throw new Error("library_tutorial_contract_unavailable");
     const records = new Map();
+    const openings = new WeakMap();
     const { mountTutorialProvider } = await ctx.capabilities
         .get("ui:reuse")
         .importModule("tutorials/pages.js");
@@ -21,6 +22,21 @@ export async function mountProvider(ctx) {
             window.location.pathname,
         )?.[1];
     const actions = registerActions(ctx, "study.library:tutorials", {
+        bindOpening: ({ target, signal }) => {
+            if (!target || typeof target !== "object")
+                throw new TypeError("invalid_library_opening_target");
+            signal.throwIfAborted();
+            const lifetime = AbortSignal.any([ctx.signal, signal]);
+            openings.set(target, lifetime);
+            lifetime.addEventListener(
+                "abort",
+                () => {
+                    if (openings.get(target) === lifetime)
+                        openings.delete(target);
+                },
+                { once: true },
+            );
+        },
         register: async ({
             owner,
             id,
@@ -128,6 +144,10 @@ export async function mountProvider(ctx) {
     ctx.capabilities.contribute("study:libraryTutorials", {
         version: 1,
         ...actions,
+        openingSignal: (target, signal) => {
+            const lifetime = openings.get(target);
+            return lifetime ? AbortSignal.any([lifetime, signal]) : signal;
+        },
         hasGuide: () => {
             const language = activeLanguage();
             return Boolean(

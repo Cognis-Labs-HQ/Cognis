@@ -164,6 +164,10 @@ Example targets and shared card scopes reset for each new replay session, while 
 
 Browser provider ownership is captured from the registering bootstrap scope, before URL rewriting. Static-directory aliases do not define component identity. Host adapters retain their required or locked protection; external modules remain optional. The configured adapter directory identifies manifests without a gateway field. Adapters stored under a different folder name declare their logical gateway in the manifest. Dependency-blocked availability is reported as inactive rather than explicitly disabled, so a disable request still reaches its owner. Object-based JSON routes accept object bodies, rejects null, arrays and primitives with a client error, and classifies oversized input as a client error before recovery attribution. Endpoints with array payloads explicitly select `shape: "array"`, including notification preferences.
 
+## Pending Tutorial Openings
+
+Card opening is bound to the tutorial branch before clicking. Restart and completion cancel pending detail presentation, including asynchronous composition and popup preparation. A retry starts immediately, and an older completion cannot release a newer attempt’s lock. Ordinary card openings keep their page lifetime.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

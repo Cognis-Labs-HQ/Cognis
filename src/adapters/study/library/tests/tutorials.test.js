@@ -203,3 +203,27 @@ test("empty Library views omit record actions from the visible tutorial count", 
         host.dispose();
     }
 });
+
+test("opening lifetimes follow the branch without changing ordinary page openings", async (context) => {
+    const host = fixture(context);
+    await host.mount();
+    const openings = host.ctx.capabilities.get("study:libraryTutorials");
+    const target = host.element();
+    const page = new AbortController();
+    const branch = new AbortController();
+    assert.equal(openings.openingSignal(target, page.signal), page.signal);
+    await openings.bindOpening({ target, signal: branch.signal });
+    const pending = openings.openingSignal(target, page.signal);
+    assert.equal(pending.aborted, false);
+    branch.abort();
+    assert.equal(pending.aborted, true);
+    assert.equal(page.signal.aborted, false);
+    assert.equal(openings.openingSignal(target, page.signal), page.signal);
+    const replacement = new AbortController();
+    await openings.bindOpening({ target, signal: replacement.signal });
+    const current = openings.openingSignal(target, page.signal);
+    assert.equal(current.aborted, false);
+    page.abort();
+    assert.equal(current.aborted, true);
+    assert.ok(host.events.includes("study.library:tutorials:bindOpening"));
+});

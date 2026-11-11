@@ -186,6 +186,10 @@ Search results, requests and Library administration omit record-specific steps w
 
 Result and request guidance explains the content users can inspect.
 
+## Restart While Loading
+
+Restarting or finishing while card details are loading cancels that opening. Late detail, composition or popup-preparation results cannot open a dialog over the guide, and a new attempt can start immediately.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
@@ -230,3 +234,4 @@ Result and request guidance explains the content users can inspect.
 - [92aef5cfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/92aef5cfbeb5be722119219c857b3fb15690233e)
 - [8568efae8](https://github.com/Cognis-Labs-HQ/Cognis/commit/8568efae8f86a0eaf2b361b4e330e47a992a47ac)
 - [4f0215ff1](https://github.com/Cognis-Labs-HQ/Cognis/commit/4f0215ff16733a754d2822ae618e864bab47ef3a)
+- [6b779bd88](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b779bd88547c3c111677664008a08c2401e9ffe)

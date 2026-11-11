@@ -30,12 +30,18 @@ export function drawingHeaderActions(pattern, i18n) {
         : [];
 }
 
-export function openDrawing(entry, strokePattern, definition = "") {
+export function openDrawing(
+    entry,
+    strokePattern,
+    definition = "",
+    { signal } = {},
+) {
     return uiCtx.capabilities.get("study:drawing:open")({
         card: entry,
         definition,
         pronunciations: pronunciationValues(entry),
         strokePattern,
+        signal,
     });
 }
 
