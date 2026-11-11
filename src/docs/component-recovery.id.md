@@ -41,3 +41,7 @@ cognisctl component:disable module analytics --force
 ```
 
 Toast pemulihan komponen memakai nama tampilan manifest yang otoritatif dan katalog terjemahan komponen bila tersedia. Nama disisipkan sebagai teks utuh. Metadata pemilik penyedia memiliki kolom opsional `name` dan `stringsBaseUrl`. Toast kegagalan operasional dan penonaktifan setelah kegagalan berulang memakai `minRole: "admin"`, sehingga hanya administrator dan pemilik yang melihatnya; notifikasi biasa tetap memakai audiens normal.
+
+## Kepemilikan Dan Pemulihan
+
+Kepemilikan penyedia browser dicatat dari lingkup bootstrap yang mendaftarkannya sebelum URL ditulis ulang. Alias direktori statis tidak menentukan identitas komponen. Adaptor host yang wajib atau terkunci tetap dilindungi; modul eksternal tetap opsional. Direktori adaptor yang dikonfigurasi mengidentifikasi manifes tanpa bidang gateway. Adaptor dalam folder bernama berbeda mendeklarasikan gateway logisnya di manifes. Ketersediaan yang terhalang dependensi dilaporkan tidak aktif, bukan dinonaktifkan secara eksplisit, sehingga permintaan penonaktifan tetap mencapai pemiliknya. Rute JSON berbasis objek menerima objek, menolak null, array, dan nilai primitif sebagai kesalahan klien, serta mengklasifikasikan masukan terlalu besar sebagai kesalahan klien sebelum atribusi pemulihan. Endpoint dengan muatan array memilih `shape: "array"` secara eksplisit, termasuk preferensi notifikasi.

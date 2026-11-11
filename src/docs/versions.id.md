@@ -34,8 +34,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.33` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.25` |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.23` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `2.1.3`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
@@ -71,7 +71,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.4`  |
 | Share                 | `src/gateways/share/`         | `1.9.7`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.5`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.8`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.9`  |
 | Social                | `src/gateways/social/`        | `1.4.5`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`  |
 | Registration          | `src/gateways/registration/`  | `1.2.6`  |
@@ -90,7 +90,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.27` |
+| API Server | `src/api/` | `0.13.28` |
 
 ## Peralatan
 

@@ -160,6 +160,10 @@ Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan
 
 Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sementara Kembali dan Mulai Ulang mempertahankan contoh sesi saat ini. Uji pemutaran ulang setelah menyembunyikan kartu lama tanpa melepasnya dari DOM. Jangan mengganti kontrol dalam menu antre dengan label terdekat; hilangkan langkah saat kontrol aslinya tidak dapat ditampilkan. Editor adaptor yang dibuka melalui API popup terinjeksi berbagi target konten dan masa aktif milik host, termasuk editor khusus dan formulir multihalaman. Pertahankan callback onOpen dan perlindungan perubahan; dialog konfirmasi bersarang tetap memiliki identitas modal sendiri.
 
+## Kepemilikan Dan Pemulihan
+
+Kepemilikan penyedia browser dicatat dari lingkup bootstrap yang mendaftarkannya sebelum URL ditulis ulang. Alias direktori statis tidak menentukan identitas komponen. Adaptor host yang wajib atau terkunci tetap dilindungi; modul eksternal tetap opsional. Direktori adaptor yang dikonfigurasi mengidentifikasi manifes tanpa bidang gateway. Adaptor dalam folder bernama berbeda mendeklarasikan gateway logisnya di manifes. Ketersediaan yang terhalang dependensi dilaporkan tidak aktif, bukan dinonaktifkan secara eksplisit, sehingga permintaan penonaktifan tetap mencapai pemiliknya. Rute JSON berbasis objek menerima objek, menolak null, array, dan nilai primitif sebagai kesalahan klien, serta mengklasifikasikan masukan terlalu besar sebagai kesalahan klien sebelum atribusi pemulihan. Endpoint dengan muatan array memilih `shape: "array"` secara eksplisit, termasuk preferensi notifikasi.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
@@ -197,3 +201,4 @@ Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sem
 - [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
 - [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
 - [2879b39c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/2879b39c53d42bbff0809997ce87ecff17e0e0c4)
+- [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)

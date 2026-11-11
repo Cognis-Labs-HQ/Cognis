@@ -33,6 +33,7 @@ export async function installComponentManagement(options: {
             gatewayId?: string;
             version?: string;
             required?: boolean;
+            locked?: boolean;
             adapterId?: string;
             name?: string;
             ui?: { stringsBaseUrl?: string };
@@ -112,8 +113,9 @@ export async function installComponentManagement(options: {
                             identity.type === "module"
                                 ? (manifest as { class?: string } | undefined)
                                       ?.class === "core"
-                                : identity.type === "gateway" &&
-                                  manifest?.required === true,
+                                : manifest?.required === true ||
+                                  (manifest as { locked?: boolean } | undefined)
+                                      ?.locked === true,
                     };
                     return { ...provider, component: owner };
                 });

@@ -24,6 +24,7 @@ async function fixture(
         gatewayRequired?: boolean;
         installedCommit?: string | null;
         catalogBranch?: string;
+        adapterState?: Record<string, unknown>;
     } = {},
 ) {
     const directory = await mkdtemp(
@@ -99,6 +100,7 @@ async function fixture(
                         id: "optional",
                         enabled: true,
                         required: false,
+                        ...options.adapterState,
                         controls: {
                             enable: "/api/v1/gateways/storage/adapters/optional/enable",
                             disable:
@@ -682,4 +684,38 @@ test("catalog provenance preserves the installed channel and missing revisions r
         }),
         /invalid_component_selection/,
     );
+});
+
+test("dependency-blocked adapters still execute disable; explicit disabled adapters skip without force", async (context) => {
+    const target = { type: "adapter", gatewayId: "storage", id: "optional" };
+    for (const adapterState of [
+        { enabled: undefined, active: false },
+        { enabled: false, active: false },
+        { enabled: undefined, active: false, status: "disabled" },
+    ]) {
+        const explicitDisabled =
+            adapterState.enabled === false ||
+            adapterState.status === "disabled";
+        const host = await fixture(context, { adapterState });
+        const inventory = (await host.service.list(host.request)) as Array<{
+            type: string;
+            status?: string;
+        }>;
+        assert.equal(
+            inventory.find((entry) => entry.type === "adapter")?.status,
+            explicitDisabled ? "disabled" : "inactive",
+        );
+        const result = (await host.service.apply(host.request, {
+            action: "disable",
+            target,
+        })) as { results: Array<{ data?: { unchanged?: boolean } }> };
+        const requests = host.calls.filter((call) =>
+            call.path.endsWith("/adapters/optional/disable"),
+        );
+        assert.equal(requests.length, explicitDisabled ? 0 : 1);
+        assert.equal(
+            result.results[0].data?.unchanged,
+            explicitDisabled ? true : undefined,
+        );
+    }
 });

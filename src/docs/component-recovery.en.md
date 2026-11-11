@@ -41,3 +41,7 @@ cognisctl component:disable module analytics --force
 ```
 
 Component recovery toasts now use the authoritative manifest display name and, when supplied, its component translation catalog. Interpolation preserves the name as opaque text. Provider ownership metadata includes optional `name` and `stringsBaseUrl` fields. Operational failure and repeated-failure disable toasts request `minRole: "admin"`, so only administrators and owners see them; ordinary notifications retain their normal audience.
+
+## Provider Ownership And Recovery
+
+Browser provider ownership is captured from the registering bootstrap scope, before URL rewriting. Static-directory aliases do not define component identity. Host adapters retain their required or locked protection; external modules remain optional. The configured adapter directory identifies manifests without a gateway field. Adapters stored under a different folder name declare their logical gateway in the manifest. Dependency-blocked availability is reported as inactive rather than explicitly disabled, so a disable request still reaches its owner. Object-based JSON routes accept object bodies, rejects null, arrays and primitives with a client error, and classifies oversized input as a client error before recovery attribution. Endpoints with array payloads explicitly select `shape: "array"`, including notification preferences.

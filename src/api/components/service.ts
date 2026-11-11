@@ -211,8 +211,7 @@ export function createComponentService(
         const disabled =
             item.status === "disabled" ||
             item.status === "available" ||
-            item.enabled === false ||
-            item.active === false;
+            item.enabled === false;
         if (
             !force &&
             ((operation === "enable" && enabled) ||

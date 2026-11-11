@@ -160,6 +160,10 @@ cognisctl component:disable module analytics --force
 
 例の対象と共有カードの範囲は、新しい再生セッションごとに選び直します。「戻る」と「最初から」では現在の例を維持します。以前のカードを DOM から外さず非表示にした場合も再生を確認してください。待機中のメニューの操作部品を近くのラベルで代用せず、実物を表示できないステップは除外します。注入されたポップアップ API で開くアダプター設定は、独自画面や複数ページのフォームでもホスト所有の内容対象と一時的なライフサイクルを共有します。onOpen と未保存変更の保護を維持し、入れ子の確認ダイアログは別のモーダルとして扱います。
 
+## 所有者と障害回復
+
+ブラウザープロバイダーの所有者は URL 書き換え前の登録時に、ブートストラップのスコープから記録します。静的ディレクトリの別名はコンポーネント識別子にはなりません。必須またはロックされたホストのアダプターは保護を維持し、外部モジュールは任意のままです。ゲートウェイ項目がないマニフェストは設定されたアダプターディレクトリから特定します。保存フォルダー名と論理ゲートウェイ名が異なる場合は、マニフェストで論理ゲートウェイを宣言します。依存関係で利用できない状態は明示的な無効化と区別し、無効化要求を所有者に送信します。オブジェクト用 JSON ルートはオブジェクトを受け付け、null、配列、プリミティブ値をクライアントエラーとして拒否します。大きすぎる入力も、障害回復に帰属させる前にクライアントエラーと分類します。 通知設定など配列を受け付けるエンドポイントは、`shape: "array"` を明示的に指定します。
+
 ## コミット
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.
@@ -197,3 +201,4 @@ cognisctl component:disable module analytics --force
 - [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
 - [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
 - [2879b39c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/2879b39c53d42bbff0809997ce87ecff17e0e0c4)
+- [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)

@@ -83,3 +83,62 @@ test("owned request failures report their canonical owner and contain recovery f
     assert.equal(body.includes("private_details"), false);
     assert.equal(logs.length, 1);
 });
+
+test("invalid JSON shapes and oversized input cannot accrue component failures", async () => {
+    const { Readable } = await import("node:stream");
+    const { readJson } = await import("../../reuse/read-json.js");
+    const registry = new RouteRegistry();
+    const root = createCtx();
+    const target = { type: "gateway" as const, id: "social" };
+    await runBootstrapScope(root, "gateway:social", async () => {
+        registry.register(async (request) => {
+            await readJson(request, { maxBytes: 32 });
+            return true;
+        }, "social");
+    });
+    let reports = 0;
+    for (const body of [
+        "null",
+        "[]",
+        '"wrong shape"',
+        JSON.stringify({ large: "x".repeat(40) }),
+    ]) {
+        const request = Readable.from([body]);
+        let failure: unknown;
+        await assert.rejects(
+            registry.getHandlers()[0](
+                request as never,
+                {} as never,
+                new URL("http://test/config"),
+            ),
+            (error) => {
+                failure = error;
+                return true;
+            },
+        );
+        assert.equal(componentFaultOwner(failure), undefined);
+        assert.ok([400, 413].includes((failure as { status: number }).status));
+        await recoverComponentRequest(
+            request as never,
+            { headersSent: false, writeHead() {}, end() {} } as never,
+            failure,
+            Promise.resolve({
+                async reportServerFailure() {
+                    reports++;
+                },
+            }),
+            () => {},
+        );
+    }
+    assert.equal(reports, 0);
+    assert.deepEqual(
+        componentFaultOwner(
+            attributeComponentFault(
+                new TypeError("unexpected_backend_failure"),
+                target,
+            ),
+        ),
+        target,
+        "genuine implementation errors remain eligible for isolation",
+    );
+});

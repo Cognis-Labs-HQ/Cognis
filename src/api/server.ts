@@ -308,10 +308,17 @@ function isUiStaticAssetRequest(pathname: string): boolean {
 
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
-    const coreComponentDependencies = discoverCoreComponentDependencies([
-        fileURLToPath(new URL("../gateways", import.meta.url)),
-        fileURLToPath(new URL("../adapters", import.meta.url)),
-    ]);
+    const coreComponentDependencies = discoverCoreComponentDependencies(
+        [
+            fileURLToPath(new URL("../gateways", import.meta.url)),
+            fileURLToPath(new URL("../adapters", import.meta.url)),
+        ],
+        {
+            adaptersRoot: fileURLToPath(
+                new URL("../adapters", import.meta.url),
+            ),
+        },
+    );
     const routeContext = deps.routeContext;
     if (!routeContext) {
         throw new Error(

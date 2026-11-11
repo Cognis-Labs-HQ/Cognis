@@ -71,11 +71,13 @@ export async function loadComponentInventory(
                                 ? adapter.enabled
                                     ? "enabled"
                                     : "disabled"
-                                : typeof adapter.active === "boolean"
-                                  ? adapter.active
-                                      ? "enabled"
-                                      : "disabled"
-                                  : adapter.status,
+                                : typeof adapter.status === "string"
+                                  ? adapter.status
+                                  : typeof adapter.active === "boolean"
+                                    ? adapter.active
+                                        ? "enabled"
+                                        : "inactive"
+                                    : undefined,
                         type: "adapter" as const,
                         gatewayId: gateway.id,
                         managedBy: "host" as const,

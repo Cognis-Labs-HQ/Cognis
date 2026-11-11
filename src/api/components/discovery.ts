@@ -8,11 +8,13 @@ export interface CoreComponentDependency {
     gatewayId?: string;
     version?: string;
     required?: boolean;
+    locked?: boolean;
     adapterId?: string;
 }
 
 export async function discoverCoreComponentDependencies(
     roots: readonly string[],
+    options: { adaptersRoot?: string } = {},
 ): Promise<CoreComponentDependency[]> {
     const components: CoreComponentDependency[] = [];
     const visit = async (root: string): Promise<void> => {
@@ -37,6 +39,7 @@ export async function discoverCoreComponentDependencies(
                 gateway?: unknown;
                 version?: string;
                 required?: boolean;
+                locked?: boolean;
                 adapterId?: string;
             };
             if (
@@ -45,6 +48,23 @@ export async function discoverCoreComponentDependencies(
                 typeof manifest.name !== "string"
             )
                 continue;
+            const relativeAdapter = options.adaptersRoot
+                ? path
+                      .relative(
+                          path.resolve(options.adaptersRoot),
+                          path.resolve(root),
+                      )
+                      .split(path.sep)
+                : [];
+            const gatewayId =
+                typeof manifest.gateway === "string"
+                    ? manifest.gateway
+                    : relativeAdapter.length === 2 &&
+                        relativeAdapter.every((segment) =>
+                            /^[a-z][a-z0-9-]*$/.test(segment),
+                        )
+                      ? relativeAdapter[0]
+                      : undefined;
             components.push({
                 id: manifest.id,
                 uuid: manifest.uuid,
@@ -53,10 +73,13 @@ export async function discoverCoreComponentDependencies(
                 ...(manifest.required !== undefined
                     ? { required: manifest.required }
                     : {}),
+                ...(manifest.locked !== undefined
+                    ? { locked: manifest.locked }
+                    : {}),
 
-                ...(typeof manifest.gateway === "string"
+                ...(gatewayId
                     ? {
-                          gatewayId: manifest.gateway,
+                          gatewayId,
                           adapterId: path.basename(root),
                       }
                     : {}),

@@ -1,10 +1,12 @@
 import path from "node:path";
-import { readFile } from "node:fs/promises";
+import { readFile, mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { discoverCoreComponentDependencies } from "../../components/discovery.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
     createCtx,
+    runBootstrapScope,
     GatewayRegistry,
     type CapabilityContracts,
     type ModuleManifest,
@@ -24,13 +26,17 @@ test("provider ownership and protection come from server registries, and managem
         ownerId: "example",
         providesCapabilities: ["example:ready"],
     });
-    registry.registerCapabilityProvider({
-        scriptUrl: "/static/gateways/storage/provider.js",
-        providesCapabilities: ["storage:ready"],
+    await runBootstrapScope(ctx, "gateway:storage", async () => {
+        registry.registerCapabilityProvider({
+            scriptUrl: "/static/gateways/storage/provider.js",
+            providesCapabilities: ["storage:ready"],
+        });
     });
-    registry.registerCapabilityProvider({
-        scriptUrl: "/static/adapters/storage/driver/provider.js",
-        providesCapabilities: ["storage:driver"],
+    await runBootstrapScope(ctx, "adapter:storage:driver", async () => {
+        registry.registerCapabilityProvider({
+            scriptUrl: "/static/adapters/storage/driver/provider.js",
+            providesCapabilities: ["storage:driver"],
+        });
     });
     const gateways = new GatewayRegistry();
     gateways.register({
@@ -127,9 +133,11 @@ test("Social provider owners use runtime IDs while retaining canonical manifest 
             id,
             path.resolve("src/adapters/social", id),
         );
-        registry.registerCapabilityProvider({
-            scriptUrl: `/static/adapters/social/${id}/provider.js`,
-            providesCapabilities: [`social:${id}`],
+        await runBootstrapScope(ctx, `adapter:social:${id}`, async () => {
+            registry.registerCapabilityProvider({
+                scriptUrl: `/static/adapters/social/${id}/provider.js`,
+                providesCapabilities: [`social:${id}`],
+            });
         });
     }
     const components = await discoverCoreComponentDependencies([
@@ -169,6 +177,100 @@ test("Social provider owners use runtime IDs while retaining canonical manifest 
                 required: false,
             });
         }
+    } finally {
+        await management.dispose();
+    }
+});
+
+test("required and locked adapter providers retain their identity across aliases and descriptor resolution", async (context) => {
+    const directory = await mkdtemp(path.join(tmpdir(), "provider-ownership-"));
+    context.after(() => rm(directory, { recursive: true, force: true }));
+    const manifestPath = path.join(directory, "assets.json");
+    await writeFile(
+        manifestPath,
+        JSON.stringify({
+            "/static/gateways/notify-internal/navbar-plugin.js":
+                "/assets/internal.js",
+            "/static/adapters/auth/keyring/provider.js": "/assets/keyring.js",
+        }),
+    );
+    const ctx = createCtx();
+    const registry = new UIRegistry(manifestPath);
+    await runBootstrapScope(ctx, "adapter:notify:internal", async () => {
+        registry.registerStaticDir("notify-internal", "/owned/internal");
+        registry.registerNavbarPlugin({
+            scriptUrl: "/static/gateways/notify-internal/navbar-plugin.js",
+        });
+    });
+    await runBootstrapScope(ctx, "adapter:auth:keyring", async () => {
+        registry.registerCapabilityProvider({
+            scriptUrl: "/static/adapters/auth/keyring/provider.js",
+            providesCapabilities: ["auth:keyring"],
+            component: { type: "module", id: "forged", required: false },
+        });
+    });
+    for (const id of ["local", "quota"]) {
+        await runBootstrapScope(ctx, `adapter:files:${id}`, async () => {
+            registry.registerCapabilityProvider({
+                scriptUrl: `/assets/${id}.js`,
+                providesCapabilities: [`files:${id}`],
+            });
+        });
+    }
+    const components = await discoverCoreComponentDependencies(
+        [
+            path.resolve("src/adapters/auth/keyring"),
+            path.resolve("src/adapters/notify/internal"),
+            path.resolve("src/adapters/file/local"),
+            path.resolve("src/adapters/file/quota"),
+        ],
+        { adaptersRoot: path.resolve("src/adapters") },
+    );
+    const management = await installComponentManagement({
+        ctx,
+        routeContext: createDefaultRouteContext(),
+        modules: { list: async () => [] },
+        uiRegistry: registry,
+        components: async () => components,
+        handlers: () => [],
+        log: () => {},
+    });
+    try {
+        const providers = await management.capability.describeProviders(
+            [
+                ...registry.listNavbarPlugins(),
+                ...registry.listCapabilityProviders(),
+            ],
+            "capabilities",
+        );
+        assert.equal(providers.length, 4);
+        assert.deepEqual(
+            providers.map((provider) => provider.scriptUrl),
+            [
+                "/assets/internal.js",
+                "/assets/keyring.js",
+                "/assets/local.js",
+                "/assets/quota.js",
+            ],
+        );
+        for (const provider of providers) {
+            const owner = provider.component!;
+            const component = components.find(
+                (entry) =>
+                    entry.adapterId === owner.id &&
+                    entry.gatewayId === owner.gatewayId,
+            );
+            assert.equal(owner.type, "adapter");
+            assert.equal(owner.gatewayId, component?.gatewayId);
+            assert.equal(owner.name, component?.name);
+            assert.equal(owner.version, component?.version);
+            assert.equal(owner.required, true);
+        }
+        assert.equal(
+            registry.listNavbarPlugins()[0].component?.id,
+            "internal",
+            "registration ownership survives after its bootstrap scope closes",
+        );
     } finally {
         await management.dispose();
     }

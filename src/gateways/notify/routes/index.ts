@@ -709,8 +709,7 @@ export function createNotificationRoutes(
                     res.end(JSON.stringify({ data: { saved: true } }));
                     return true;
                 }
-                const body = await readJson(req);
-                const prefsArray = Array.isArray(body) ? body : [];
+                const prefsArray = await readJson(req, { shape: "array" });
                 const filtered = (
                     prefsArray as Array<{
                         category: string;

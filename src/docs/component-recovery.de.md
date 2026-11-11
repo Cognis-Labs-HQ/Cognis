@@ -41,3 +41,7 @@ cognisctl component:disable module analytics --force
 ```
 
 Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests und gegebenenfalls dessen Übersetzungskatalog. Der Name wird als unveränderter Text eingesetzt. Metadaten zum Anbieterbesitz enthalten optional `name` und `stringsBaseUrl`. Betriebsfehler und automatische Deaktivierungen verwenden `minRole: "admin"` und erscheinen nur für Administratoren und Eigentümer; normale Benachrichtigungen behalten ihre Zielgruppe.
+
+## Anbieterbesitz Und Wiederherstellung
+
+Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstrap-Kontext erfasst, bevor URLs umgeschrieben werden. Aliase statischer Verzeichnisse bestimmen keine Komponentenidentität. Erforderliche oder gesperrte Host-Adapter bleiben geschützt; externe Module bleiben optional. Das konfigurierte Adapterverzeichnis ordnet Manifeste ohne Gateway-Feld zu. Adapter in einem anders benannten Ordner deklarieren ihr logisches Gateway im Manifest. Durch Abhängigkeiten blockierte Verfügbarkeit gilt als inaktiv statt ausdrücklich deaktiviert; Deaktivierungsanfragen erreichen daher weiterhin den Besitzer. JSON-Routen für Objekte akzeptieren Objektinhalte, weist null, Arrays und primitive Werte als Clientfehler zurück und klassifiziert zu große Eingaben vor der Wiederherstellungszuordnung als Clientfehler. Endpunkte mit Array-Inhalten wählen ausdrücklich `shape: "array"`, darunter die Benachrichtigungseinstellungen.

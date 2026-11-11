@@ -160,6 +160,10 @@ Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Fa
 
 Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
 
+## Anbieterbesitz Und Wiederherstellung
+
+Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstrap-Kontext erfasst, bevor URLs umgeschrieben werden. Aliase statischer Verzeichnisse bestimmen keine Komponentenidentität. Erforderliche oder gesperrte Host-Adapter bleiben geschützt; externe Module bleiben optional. Das konfigurierte Adapterverzeichnis ordnet Manifeste ohne Gateway-Feld zu. Adapter in einem anders benannten Ordner deklarieren ihr logisches Gateway im Manifest. Durch Abhängigkeiten blockierte Verfügbarkeit gilt als inaktiv statt ausdrücklich deaktiviert; Deaktivierungsanfragen erreichen daher weiterhin den Besitzer. JSON-Routen für Objekte akzeptieren Objektinhalte, weist null, Arrays und primitive Werte als Clientfehler zurück und klassifiziert zu große Eingaben vor der Wiederherstellungszuordnung als Clientfehler. Endpunkte mit Array-Inhalten wählen ausdrücklich `shape: "array"`, darunter die Benachrichtigungseinstellungen.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
@@ -197,3 +201,4 @@ Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung z
 - [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
 - [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
 - [2879b39c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/2879b39c53d42bbff0809997ce87ecff17e0e0c4)
+- [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)

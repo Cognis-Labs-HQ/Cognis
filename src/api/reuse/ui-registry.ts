@@ -4,7 +4,7 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
-import type { RoleAccessPolicy } from "@cognis/core";
+import { getBootstrapScope, type RoleAccessPolicy } from "@cognis/core";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -309,7 +309,7 @@ export class UIRegistry {
         ) {
             throw new Error("ui_registration_conflict");
         }
-        this.navbarPlugins.push(plugin);
+        this.navbarPlugins.push(this.ownedProvider(plugin));
     }
 
     registerSpaRoute(route: SpaRoute): void {
@@ -513,44 +513,39 @@ export class UIRegistry {
     }
 
     listNavbarPlugins(): NavbarPlugin[] {
-        return this.resolveDescriptor(
-            this.navbarPlugins.map((provider) => this.ownedProvider(provider)),
-        );
+        return this.resolveDescriptor(this.navbarPlugins);
     }
 
     listCapabilityProviders(): UiCapabilityProvider[] {
         return this.resolveDescriptor(
-            this.listActiveCapabilityProviders()
-                .filter((provider) => provider.providesCapabilities?.length)
-                .map((provider) => this.ownedProvider(provider)),
+            this.listActiveCapabilityProviders().filter(
+                (provider) => provider.providesCapabilities?.length,
+            ),
         );
     }
 
     registerCapabilityProvider(provider: UiCapabilityProvider): void {
-        this.capabilityProviders.push(provider);
+        this.capabilityProviders.push(this.ownedProvider(provider));
     }
 
     private ownedProvider<T extends NavbarPlugin | UiCapabilityProvider>(
         provider: T,
     ): T {
-        const url = new URL(provider.scriptUrl, "http://component.internal");
-        const gateway = url.pathname.match(
-            /^\/static\/gateways\/([a-z0-9-]+)\//,
-        );
-        const adapter = url.pathname.match(
-            /^\/static\/adapters\/([a-z0-9-]+)\/([a-z0-9-]+)\//,
-        );
-        const identity = provider.ownerId
-            ? { type: "module" as const, id: provider.ownerId }
-            : gateway && this.staticDirs.has(gateway[1])
-              ? { type: "gateway" as const, id: gateway[1] }
-              : adapter && this.getAdapterStaticDir(adapter[1], adapter[2])
+        const scope = getBootstrapScope()?.owner.split(":");
+        const identity =
+            scope?.[0] === "adapter" && scope.length === 3
                 ? {
                       type: "adapter" as const,
-                      id: adapter[2],
-                      gatewayId: adapter[1],
+                      gatewayId: scope[1],
+                      id: scope[2],
                   }
-                : undefined;
+                : scope?.[0] === "gateway" && scope.length === 2
+                  ? { type: "gateway" as const, id: scope[1] }
+                  : scope?.[0] === "module" && scope.length === 2
+                    ? { type: "module" as const, id: scope[1] }
+                    : provider.ownerId
+                      ? { type: "module" as const, id: provider.ownerId }
+                      : undefined;
         const result = { ...provider };
         delete result.component;
         if (identity)

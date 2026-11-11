@@ -160,6 +160,10 @@ Related card steps share a stable targetScope container: the favourite control a
 
 Example targets and shared card scopes reset for each new replay session, while Back and Restart retain the current session’s example. Test replay after hiding an old card without disconnecting it. A queued control must not be replaced in a guide by a nearby label: omit the stage while the real control cannot be shown. Adapter editors opened through the injected popup API share host-owned content targets and transient lifetimes, including custom editors and multi-page forms. Preserve their onOpen callback and close protection; nested confirmation dialogs retain their own modal identity.
 
+## Provider Ownership And Recovery
+
+Browser provider ownership is captured from the registering bootstrap scope, before URL rewriting. Static-directory aliases do not define component identity. Host adapters retain their required or locked protection; external modules remain optional. The configured adapter directory identifies manifests without a gateway field. Adapters stored under a different folder name declare their logical gateway in the manifest. Dependency-blocked availability is reported as inactive rather than explicitly disabled, so a disable request still reaches its owner. Object-based JSON routes accept object bodies, rejects null, arrays and primitives with a client error, and classifies oversized input as a client error before recovery attribution. Endpoints with array payloads explicitly select `shape: "array"`, including notification preferences.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.
@@ -197,3 +201,4 @@ Example targets and shared card scopes reset for each new replay session, while 
 - [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
 - [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
 - [2879b39c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/2879b39c53d42bbff0809997ce87ecff17e0e0c4)
+- [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
