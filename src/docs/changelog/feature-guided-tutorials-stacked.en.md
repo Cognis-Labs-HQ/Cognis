@@ -184,6 +184,8 @@ Example targets and shared card scopes reset for each new replay session, while 
 
 Search results, requests and Library administration omit record-specific steps when there are no visible records. Their overview controls remain available without waiting for absent targets.
 
+Result and request guidance explains the content users can inspect.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

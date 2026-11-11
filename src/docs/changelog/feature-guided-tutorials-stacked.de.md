@@ -184,6 +184,8 @@ Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung z
 
 Suchergebnisse, Anfragen und die Library-Verwaltung lassen datensatzbezogene Schritte aus, wenn keine sichtbaren Einträge vorhanden sind. Die Übersichtssteuerung bleibt ohne Warten auf fehlende Ziele verfügbar.
 
+Die Hinweise zu Ergebnissen und Anfragen erklären die Inhalte, die Nutzer prüfen können.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

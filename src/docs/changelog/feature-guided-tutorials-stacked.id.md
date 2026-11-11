@@ -184,6 +184,8 @@ Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sem
 
 Hasil pencarian, permintaan, dan administrasi Library menghilangkan langkah khusus rekaman saat tidak ada rekaman terlihat. Kontrol ringkasan tetap tersedia tanpa menunggu target yang tidak ada.
 
+Panduan hasil dan permintaan menjelaskan konten yang dapat diperiksa pengguna.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

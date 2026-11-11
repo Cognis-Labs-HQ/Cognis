@@ -212,12 +212,12 @@
   <string name="adapter.study.library.tutorial.search.search.results.title">Suchergebnisse</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Prüfen Sie Wörterbuchtreffer mit Sprache, Lesungen und Bedeutungen.</string>
   <string name="adapter.study.library.tutorial.search.inspect.before.importing.title">Vor dem Import prüfen</string>
-  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Prüfen Sie Treffer vor Import oder Öffnen; Dubletten- und Berechtigungsprüfungen bleiben wirksam.</string>
+  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Öffnen Sie ein Ergebnis, um Lesungen und Bedeutungen zu vergleichen, bevor Sie es in Ihre Sammlung importieren.</string>
   <string name="adapter.study.library.tutorial.requests.title">Bibliotheksanfragen</string>
   <string name="adapter.study.library.tutorial.requests.request.status.title">Anfragestatus</string>
   <string name="adapter.study.library.tutorial.requests.request.status.body">Filtern Sie Anfragen und prüfen Sie den Bearbeitungsstand vor einer weiteren Änderung.</string>
   <string name="adapter.study.library.tutorial.requests.review.details.title">Details prüfen</string>
-  <string name="adapter.study.library.tutorial.requests.review.details.body">Öffnen Sie Anfragen für vorgeschlagene Inhalte; Freigaben stehen nur berechtigten Prüfern zu.</string>
+  <string name="adapter.study.library.tutorial.requests.review.details.body">Öffnen Sie eine Anfrage, um den vorgeschlagenen Inhalt und den vorgesehenen Speicherort zu sehen.</string>
   <string name="adapter.study.library.tutorial.administration.title">Bibliothek verwalten</string>
   <string name="adapter.study.library.tutorial.administration.find.records.title">Datensätze finden</string>
   <string name="adapter.study.library.tutorial.administration.find.records.body">Suchen Sie und wählen Sie eine Ebene für die zu verwaltenden Datensätze.</string>

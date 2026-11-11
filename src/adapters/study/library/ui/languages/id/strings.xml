@@ -212,12 +212,12 @@
   <string name="adapter.study.library.tutorial.search.search.results.title">Hasil Pencarian</string>
   <string name="adapter.study.library.tutorial.search.search.results.body">Periksa hasil kamus beserta bahasa, bacaan, dan maknanya.</string>
   <string name="adapter.study.library.tutorial.search.inspect.before.importing.title">Periksa Sebelum Mengimpor</string>
-  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Periksa hasil sebelum mengimpor atau membuka rekamannya; pemeriksaan duplikasi dan izin tetap berlaku.</string>
+  <string name="adapter.study.library.tutorial.search.inspect.before.importing.body">Buka hasil untuk membandingkan bacaan dan maknanya sebelum mengimpornya ke koleksi Anda.</string>
   <string name="adapter.study.library.tutorial.requests.title">Permintaan Pustaka</string>
   <string name="adapter.study.library.tutorial.requests.request.status.title">Status Permintaan</string>
   <string name="adapter.study.library.tutorial.requests.request.status.body">Saring permintaan dan baca status tinjauan sebelum mengajukan perubahan lain.</string>
   <string name="adapter.study.library.tutorial.requests.review.details.title">Tinjau Detail</string>
-  <string name="adapter.study.library.tutorial.requests.review.details.body">Buka permintaan untuk memeriksa usulan konten; kontrol persetujuan terbatas bagi peninjau berwenang.</string>
+  <string name="adapter.study.library.tutorial.requests.review.details.body">Buka permintaan untuk melihat konten yang diusulkan dan tempat penyimpanan rekaman.</string>
   <string name="adapter.study.library.tutorial.administration.title">Administrasi Pustaka</string>
   <string name="adapter.study.library.tutorial.administration.find.records.title">Cari Rekaman</string>
   <string name="adapter.study.library.tutorial.administration.find.records.body">Cari dan pilih lapisan untuk menemukan rekaman yang ingin dikelola.</string>
