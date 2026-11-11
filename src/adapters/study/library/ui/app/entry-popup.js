@@ -162,12 +162,11 @@ export async function openEntryPopup(
             entries,
             i18n.t("gateway.study.library_from_parent"),
         );
-        let dismissPopup, relatedEntry, chosenTransformation;
+        let relatedEntry, chosenTransformation;
         const audioObjectUrls = new Set();
         const audioController = new AbortController();
-        const abortPopup = () => dismissPopup?.();
-        signal?.addEventListener("abort", abortPopup, { once: true });
         const result = await openPopup({
+            signal,
             title: transformed.title,
             titleLeading: composed.titleLeading,
             titleItems: popupTitleItems(titleReferences),
@@ -202,7 +201,6 @@ export async function openEntryPopup(
             ],
             onOpen: (overlay, dismiss, popupApi) => {
                 void markEntryViewed(root, detail.entry, entries, i18n);
-                dismissPopup = dismiss;
                 overlay.classList.add("library-entry-popup");
                 bindEntryDetail(overlay, displayedEntry, {
                     signal: audioController.signal,
@@ -250,6 +248,7 @@ export async function openEntryPopup(
                         displayedEntry,
                         strokePattern,
                         displayedDefinition,
+                        { signal },
                     );
                     return true;
                 }
@@ -267,7 +266,7 @@ export async function openEntryPopup(
                 });
             },
         });
-        releaseEntryMedia(audioController, audioObjectUrls, signal, abortPopup);
+        releaseEntryMedia(audioController, audioObjectUrls);
         if (chosenTransformation !== undefined) {
             selectedTransformation = chosenTransformation;
             selectedEntry = detail.entry;

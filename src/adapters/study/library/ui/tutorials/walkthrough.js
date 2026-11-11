@@ -72,6 +72,10 @@ export function exploreWalkthrough({ text = {}, drawing = {} } = {}) {
             interaction: "target",
             suppressHover: true,
             group: "entry-details",
+            enter: ({ target, groupSignal, ctx }) =>
+                ctx.capabilities
+                    .get("study:libraryTutorials")
+                    .bindOpening({ target, signal: groupSignal }),
             popup: entryPopup,
             advance: { event: "click" },
             highlightNext: false,
@@ -181,7 +185,6 @@ export function exploreWalkthrough({ text = {}, drawing = {} } = {}) {
             enter: ownSurface,
             missing: { timeoutMs: 15000, action: "skip" },
             interaction: "target",
-            missing: { timeoutMs: 15000, action: "skip" },
             highlightNext: true,
             ...copy("write-card"),
         },

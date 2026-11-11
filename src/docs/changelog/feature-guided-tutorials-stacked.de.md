@@ -186,6 +186,10 @@ Suchergebnisse, Anfragen und die Library-Verwaltung lassen datensatzbezogene Sch
 
 Die Hinweise zu Ergebnissen und Anfragen erklären die Inhalte, die Nutzer prüfen können.
 
+## Neustart Beim Laden
+
+Neustart oder Abschluss während des Ladens von Kartendetails bricht dieses Öffnen ab. Späte Ergebnisse beim Laden, Zusammensetzen oder Vorbereiten des Dialogs öffnen kein Fenster über der Anleitung; ein neuer Versuch kann sofort beginnen.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

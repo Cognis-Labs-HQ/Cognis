@@ -186,6 +186,10 @@ Hasil pencarian, permintaan, dan administrasi Library menghilangkan langkah khus
 
 Panduan hasil dan permintaan menjelaskan konten yang dapat diperiksa pengguna.
 
+## Mulai Ulang Saat Memuat
+
+Memulai ulang atau menyelesaikan panduan saat detail kartu dimuat membatalkan pembukaan tersebut. Hasil pemuatan, penyusunan, atau persiapan popup yang terlambat tidak dapat membuka dialog di atas panduan, dan percobaan baru dapat dimulai segera.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

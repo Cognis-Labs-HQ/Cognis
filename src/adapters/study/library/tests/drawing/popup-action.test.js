@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 
-async function drawingAction(openDrawing) {
+async function drawingAction(openDrawing, signal) {
     let action;
     const entry = {
         id: "card",
@@ -94,6 +94,7 @@ async function drawingAction(openDrawing) {
         [entry],
         { t: (key) => key },
         "ja",
+        signal,
     );
     return action;
 }
@@ -117,4 +118,19 @@ test("a failed pad opening propagates to the popup and keeps the details availab
         throw new Error("drawing_unavailable");
     });
     await assert.rejects(action("draw"), /drawing_unavailable/);
+});
+
+test("drawing opened from a card inherits the card opening lifetime", async () => {
+    const controller = new AbortController();
+    let signal;
+    const action = await drawingAction(
+        async (_entry, _pattern, _definition, options) => {
+            signal = options.signal;
+        },
+        controller.signal,
+    );
+    await action("draw");
+    assert.equal(signal, controller.signal);
+    controller.abort();
+    assert.equal(signal.aborted, true);
 });
