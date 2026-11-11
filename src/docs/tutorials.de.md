@@ -221,3 +221,5 @@ Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung z
 Verwenden Sie `backTo: "earlier-step-id"`, wenn ein Zweig seine Ausgangsansicht ersetzt, etwa ein Kartendialog durch das Zeichenfeld. Zurück führt zum früheren Öffnungsschritt und setzt spätere Ergebnisse zurück, statt einen geschlossenen Dialog anzusteuern.
 
 Trennen Sie Übersichtsnavigation und praktische Anleitungen. Pro Aktivitätsansicht ersetzt eine Sprachvariante den allgemeinen Leitfaden, statt sich dahinter einzureihen. Karten, Zeichenfelder und Editoren werden durch echte Benutzeraktionen geöffnet; Weiter überspringt ungeöffnete Zweige. Binden Sie flüchtige Ansichten an die Gruppenlebensdauer, damit Zurück, Neustart, Abschluss und Entfernung sie mit normalem Schutz ungespeicherter Änderungen schließen. Niemals Beispielkarten automatisch erstellen oder speichern.
+
+Suchergebnisse, Anfragen und die Library-Verwaltung lassen datensatzbezogene Schritte aus, wenn keine sichtbaren Einträge vorhanden sind. Die Übersichtssteuerung bleibt ohne Warten auf fehlende Ziele verfügbar.

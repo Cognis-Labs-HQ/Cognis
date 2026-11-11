@@ -703,3 +703,5 @@ Hardcoded English user-facing strings are forbidden under all circumstances, inc
 ### Study Tutorial Responsibilities
 
 Keep Study overview guides focused on navigation and general features. Language guides must explore real module content through the public study:libraryTutorials contract, replacing the generic guide on the matching enrolled language view. Registration and discovery never navigate; only an explicit launch may enter content. Preserve an active layer, use stable card examples, attach drawing/editor surfaces to branch lifetimes, and test Next-skipping, Back, Restart, enrollment and provider removal without automatically saving cards.
+
+Row-specific tutorial actions must use owner-authorized target availability conditions. Verify the displayed count in empty search, requests and administration lists through an actual tutorial session, rather than registration or source assertions alone.

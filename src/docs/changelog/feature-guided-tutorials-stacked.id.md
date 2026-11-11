@@ -180,6 +180,10 @@ Langkah kartu terkait memakai wadah targetScope yang stabil: kontrol favorit dan
 
 Target contoh dan lingkup kartu bersama direset pada setiap sesi ulang baru, sementara Kembali dan Mulai Ulang mempertahankan contoh sesi saat ini. Uji pemutaran ulang setelah menyembunyikan kartu lama tanpa melepasnya dari DOM. Jangan mengganti kontrol dalam menu antre dengan label terdekat; hilangkan langkah saat kontrol aslinya tidak dapat ditampilkan. Editor adaptor yang dibuka melalui API popup terinjeksi berbagi target konten dan masa aktif milik host, termasuk editor khusus dan formulir multihalaman. Pertahankan callback onOpen dan perlindungan perubahan; dialog konfirmasi bersarang tetap memiliki identitas modal sendiri.
 
+## Tampilan Library Kosong
+
+Hasil pencarian, permintaan, dan administrasi Library menghilangkan langkah khusus rekaman saat tidak ada rekaman terlihat. Kontrol ringkasan tetap tersedia tanpa menunggu target yang tidak ada.
+
 ## Komit
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)

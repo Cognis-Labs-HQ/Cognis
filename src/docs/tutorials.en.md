@@ -221,3 +221,5 @@ Example targets and shared card scopes reset for each new replay session, while 
 Use `backTo: "earlier-step-id"` when a branch consumes its opener's surface, such as replacing a card popup with a drawing pad. Back then returns to the earlier opener and clears subsequent outcomes instead of pointing at the closed dialog.
 
 Keep overview navigation separate from activity walkthroughs. Register one relevant guide per activity surface; language-specific variants replace, rather than queue behind, its generic fallback. Optional branches must use real user actions to open cards, drawing tools and editors. Next skips an unopened branch. Attach transient surfaces to the group lifetime so Back, Restart, Finish and removal close them while preserving normal discard protection. Never create example cards or save edits automatically.
+
+Search results, requests and Library administration omit record-specific steps when there are no visible records. Their overview controls remain available without waiting for absent targets.

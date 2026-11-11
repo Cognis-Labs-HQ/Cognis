@@ -9,8 +9,8 @@ import { exploreWalkthrough } from "../ui/tutorials/walkthrough.js";
 import { canCreateLayerEntries } from "../ui/app/editability.js";
 import { guides } from "../ui/app/guides.js";
 
-function fixture(context) {
-    const host = tutorialHost();
+function fixture(context, { visible } = {}) {
+    const host = tutorialHost({ role: () => "admin" });
     const controller = new AbortController();
     context.after(() => {
         controller.abort();
@@ -21,12 +21,16 @@ function fixture(context) {
     ctx.signal = controller.signal;
     window.location.pathname = "/study";
     const element = host.element();
-    document.querySelector = () => element;
-    document.querySelectorAll = () => [element];
+    const query = (selector) =>
+        !visible || visible.has(selector) ? [element] : [];
+    document.querySelector = (selector) => query(selector)[0] ?? null;
+    document.querySelectorAll = query;
     document.body = {
         ...element,
         ownerDocument: document,
-        querySelectorAll: () => [element],
+        contains: (candidate) =>
+            candidate === element || candidate === document.body,
+        querySelectorAll: query,
     };
     document.documentElement = { lang: "en" };
     globalThis.document = document;
@@ -154,4 +158,48 @@ test("duplicate language registrations fail without losing the guide; provider r
         (await host.list("/study/explore/en/words"))[0].id,
         "module.study-language-en:introduction",
     );
+});
+
+test("empty Library views omit record actions from the visible tutorial count", async (context) => {
+    for (const [pathname, id, selector, expected] of [
+        [
+            "/study/library/search/en",
+            "search",
+            "#dictionary-results",
+            "search-results",
+        ],
+        [
+            "/study/library/requests",
+            "requests",
+            "#study-library-requests",
+            "request-status",
+        ],
+        [
+            "/study/library/en",
+            "administration",
+            "[data-library-quick-search]",
+            "find-records",
+        ],
+    ]) {
+        const host = fixture(context, {
+            visible: new Set([selector, ".library-browser"]),
+        });
+        await host.mount();
+        await host.list(pathname);
+        const owner =
+            id === "administration"
+                ? "study.library.admin"
+                : "study.library.pages";
+        const session = await host.api.start(`${owner}:${id}`);
+        await session.ready;
+        assert.equal(session.state().stepId, expected);
+        assert.equal(
+            session.state().total,
+            1,
+            "no absent record should be counted",
+        );
+        await session.next();
+        assert.equal((await session.finished).status, "completed");
+        host.dispose();
+    }
 });

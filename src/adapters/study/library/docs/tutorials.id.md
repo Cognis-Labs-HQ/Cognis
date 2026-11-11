@@ -32,3 +32,5 @@ Hanya bahasa yang diikuti secara eksplisit menerima panduan modul. Di `/study`, 
 Panduan meliputi lapisan, filter, satu contoh favorit/kartu yang tetap, dialog detail, audio pelafalan tersedia, latihan menulis, dan alat menggambar. Klik kartu atau Gambar membuka cabang; Berikutnya melewati cabang yang belum dibuka. Kembali dari kanvas menuju pembuka kartu karena menggambar menutup dialog detail.
 
 Buat membuka pemilih jenis kartu asli, lalu editor, tab, dan kontrol simpan. Pengguna dapat menjelajah tanpa menyimpan; panduan tidak pernah mengirim kartu. Dialog dan kanvas mengikuti masa hidup cabang; Kembali, Mulai Ulang, selesai, dan penghapusan menutupnya dengan konfirmasi pembuangan perubahan.
+
+Hasil pencarian, permintaan, dan administrasi Library menghilangkan langkah khusus rekaman saat tidak ada rekaman terlihat. Kontrol ringkasan tetap tersedia tanpa menunggu target yang tidak ada.

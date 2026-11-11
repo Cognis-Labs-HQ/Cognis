@@ -32,3 +32,5 @@ Nur ausdrücklich gewählte Lernsprachen erhalten Modulführungen. Auf `/study` 
 Die Anleitung erklärt Ebenen, Filter, dieselbe Favoritenkarte, Kartendetails, verfügbare Aussprache, Schreibübung und Zeichenwerkzeuge. Klicks auf Karte oder Zeichnen öffnen Zweige; Weiter überspringt ungeöffnete Zweige. Zurück von der Zeichenfläche führt zum Kartenöffner, weil Zeichnen den Dialog schließt.
 
 Erstellen öffnet die echte Kartentypauswahl und danach Editor, Register und Speicheraktionen. Nichts wird automatisch gespeichert. Dialoge und Zeichenfeld folgen dem Zweig; Zurück, Neustart, Abschluss und Entfernung schließen sie mit Schutz ungespeicherter Änderungen.
+
+Suchergebnisse, Anfragen und die Library-Verwaltung lassen datensatzbezogene Schritte aus, wenn keine sichtbaren Einträge vorhanden sind. Die Übersichtssteuerung bleibt ohne Warten auf fehlende Ziele verfügbar.

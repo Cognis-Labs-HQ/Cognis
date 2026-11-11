@@ -118,7 +118,7 @@ export async function mount(root, { signal } = {}) {
                 width: "fill",
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () =>
-                    `<section class="library-browser" data-library-language="${escapeHtml(languageCode)}">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
+                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
             },
         ],
         preferenceKey: "study-library-layer-layout",

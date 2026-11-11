@@ -180,6 +180,10 @@ Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Fa
 
 Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
 
+## Leere Library-Ansichten
+
+Suchergebnisse, Anfragen und die Library-Verwaltung lassen datensatzbezogene Schritte aus, wenn keine sichtbaren Einträge vorhanden sind. Die Übersichtssteuerung bleibt ohne Warten auf fehlende Ziele verfügbar.
+
 ## Commits
 
 - [5f3bad1422cd47085170ba2c5e4d06ca118c05fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f3bad1422cd47085170ba2c5e4d06ca118c05fe)
