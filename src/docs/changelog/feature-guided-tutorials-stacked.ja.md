@@ -226,3 +226,4 @@ Study の共通ナビゲーションと言語コンテンツのガイドを分�
 - [1de0a8703](https://github.com/Cognis-Labs-HQ/Cognis/commit/1de0a870342b69c261dc621cd48e7a838cc87986)
 - [03b052822](https://github.com/Cognis-Labs-HQ/Cognis/commit/03b052822981b8bbeaf692de6ec3cfc908d6e6e3)
 - [92aef5cfb](https://github.com/Cognis-Labs-HQ/Cognis/commit/92aef5cfbeb5be722119219c857b3fb15690233e)
+- [8568efae8](https://github.com/Cognis-Labs-HQ/Cognis/commit/8568efae8f86a0eaf2b361b4e330e47a992a47ac)
