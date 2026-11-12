@@ -176,6 +176,10 @@ The administrator-only adapter catalog at `GET /api/v1/gateways/tfa/adapters` pu
 
 The authenticated catalog strings endpoint serves the requested cached locale when available and falls back to cached English when that locale is missing. Responses identify the served language with `Content-Language`; unknown modules and modules without either usable bundle still return 404. Manual Refresh scans all configured server sources before preparing catalog translations, so a broken cached bundle or an unloaded source list cannot prevent the repair scan. A failed preparation retains the last published catalog and releases the refresh button for another attempt.
 
+## Account Tutorial Completion
+
+Tutorial completion is stored in the application database for the authenticated account and stable owner/tutorial ID. It follows the account across browsers and devices, survives browser-data removal and is never reset by tutorial updates or preference resets. Only the page-header ? control replays a completed guide. `GET /api/v1/tutorials/completions` reads the caller’s completion IDs; `POST` records up to 100 validated IDs idempotently through named completion flows and a database transaction. Account identity comes from authentication, never the request body. Existing browser completion records migrate after sign-in and are removed only after the database acknowledges them. Database read failures defer automatic tutorials; failed writes report an error and remain retryable. A session waits for persistence before acknowledging successful completion.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

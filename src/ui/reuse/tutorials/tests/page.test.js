@@ -283,3 +283,19 @@ test("a manually selected guide cancelled after crossing a route does not auto-r
     );
     assert.deepEqual(state.errors, []);
 });
+
+test("failed completion reads defer automatic guides without a retry loop and permit explicit retry", async (context) => {
+    const state = pageHost(context);
+    state.failCompletionReads(new Error("tutorial_completion_load_failed"));
+    await state.owner().register(play());
+    await assert.rejects(state.api.refreshPage(), /completion_load_failed/);
+    for (let refresh = 0; refresh < 3; refresh++) await state.api.refreshPage();
+    assert.equal(state.api.current(), null);
+    assert.equal(state.completionReads, 1);
+    assert.equal(state.header.querySelector("button").disabled, false);
+    state.failCompletionReads(undefined);
+    const session = await state.api.openPage();
+    await session.ready;
+    assert.equal(session.state().firstTime, true);
+    assert.equal(state.completionReads, 2);
+});

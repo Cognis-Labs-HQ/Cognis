@@ -66,7 +66,7 @@ Related card steps share a stable targetScope container: the favourite control a
 
 Example targets and shared card scopes reset for each new replay session, while Back and Restart retain the current session’s example. Test replay after hiding an old card without disconnecting it. A queued control must not be replaced in a guide by a nearby label: omit the stage while the real control cannot be shown. Adapter editors opened through the injected popup API share host-owned content targets and transient lifetimes, including custom editors and multi-page forms. Preserve their onOpen callback and close protection; nested confirmation dialogs retain their own modal identity.
 
-Keep tutorial owner/IDs stable across content and package updates. Account completion must never be invalidated by revisions; only the page-header ? control replays a completed guide.
+Keep tutorial owner/IDs stable across content and package updates. Account completion must never be invalidated by revisions; only the page-header ? control replays a completed guide. Persist completion in the application database for the authenticated account, never as browser-local progress or ordinary resettable preferences. Await account completion reads before automatic discovery and acknowledge successful completion only after database persistence. Test fresh browsers, account switches, migration and failed reads/writes; a persistence failure must not be treated as an unseen or successfully completed guide.
 
 Use the shared `ui:floatingMenus` queue and its staged flows for floating actions. Bind menu ownership to its page/component lifetime, preserve tutorial reservations across steps, and let page menus wait for the tutorial to yield rather than independently changing toolbar visibility.
 

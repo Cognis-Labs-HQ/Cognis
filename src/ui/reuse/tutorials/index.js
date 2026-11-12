@@ -1,3 +1,4 @@
+import { createTutorialCompletions } from "./completions.js";
 /**
  * Install tutorials through host-owned resources; components consume ui:tutorials only.
  * Public export: installTutorials — installs the host tutorial capability and page coordinator.
@@ -44,10 +45,14 @@ export function installTutorials(ctx) {
         log,
         identity: () => globalThis.localStorage?.getItem("cognis_account"),
         role: () => globalThis.localStorage?.getItem("cognis_role"),
-        feedback: async () => {
+        feedback: async (kind) => {
             const i18n = await localize();
             ctx.capabilities.get("ui:showToast")?.(
-                i18n.t("ui.tutorial.error"),
+                i18n.t(
+                    kind === "completion"
+                        ? "ui.tutorial.progress_error"
+                        : "ui.tutorial.error",
+                ),
                 { variant: "error" },
             );
         },
@@ -66,7 +71,7 @@ export function installTutorials(ctx) {
                 ctx.capabilities.get("session:isAuthenticated")?.() === true
                     ? globalThis.localStorage?.getItem("cognis_account")
                     : null,
-            storage: () => globalThis.localStorage,
+            completions: createTutorialCompletions(),
             report(error) {
                 log("error", "Page tutorial failed.", {
                     component: "ui",
@@ -76,7 +81,11 @@ export function installTutorials(ctx) {
                 void localize()
                     .then((i18n) =>
                         ctx.capabilities.get("ui:showToast")?.(
-                            i18n.t("ui.tutorial.error"),
+                            i18n.t(
+                                error?.message?.includes("completion")
+                                    ? "ui.tutorial.progress_error"
+                                    : "ui.tutorial.error",
+                            ),
                             { variant: "error" },
                         ),
                     )

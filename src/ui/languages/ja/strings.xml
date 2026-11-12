@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">対象の操作項目を利用できません。表示してから「再試行」を選んでください。</string>
   <string name="ui.tutorial.waiting">ページの要素を待っています。いつでも中止できます。</string>
   <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
+  <string name="ui.tutorial.progress_error">チュートリアルの進捗を読み込み、または保存できませんでした。接続を確認して再度お試しください。</string>
   <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
   <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションには、アカウントで利用できるページへのリンクがあります。</string>
   <string name="ui.tutorial.workspace.search.body">検索を開いて、ページ、設定、現在のページの操作を探してみます。</string>

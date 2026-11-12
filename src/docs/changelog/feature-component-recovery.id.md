@@ -176,6 +176,10 @@ Katalog adaptor khusus administrator di `GET /api/v1/gateways/tfa/adapters` meny
 
 Endpoint terjemahan katalog yang diautentikasi menyajikan bahasa yang diminta dari cache jika tersedia, lalu menggunakan bahasa Inggris dalam cache jika bahasa tersebut tidak tersedia. Respons menyatakan bahasa yang disajikan melalui `Content-Language`; modul yang tidak dikenal dan modul tanpa bundel yang dapat digunakan tetap mengembalikan 404. Penyegaran manual memindai seluruh sumber yang dikonfigurasi di server sebelum menyiapkan terjemahan katalog, sehingga bundel cache yang rusak atau daftar sumber yang belum dimuat tidak menghalangi pemindaian pemulihan. Jika persiapan gagal, katalog terakhir tetap tersedia dan tombol penyegaran dapat digunakan kembali.
 
+## Penyelesaian Tutorial Per Akun
+
+Penyelesaian tutorial disimpan dalam basis data aplikasi untuk akun yang diautentikasi dan ID pemilik/tutorial yang stabil. Penyelesaian mengikuti akun di berbagai browser dan perangkat, tetap tersimpan setelah data browser dihapus, serta tidak diatur ulang oleh pembaruan tutorial atau pengaturan preferensi. Hanya tombol ? pada judul halaman yang mengulang panduan yang selesai. `GET /api/v1/tutorials/completions` membaca ID penyelesaian pemanggil; `POST` mencatat hingga 100 ID tervalidasi secara idempoten melalui alur bernama dan transaksi basis data. Identitas akun berasal dari autentikasi, bukan isi permintaan. Catatan browser lama dimigrasikan setelah masuk dan baru dihapus setelah basis data mengonfirmasi penyimpanan. Kegagalan membaca menunda tutorial otomatis; kegagalan menulis menampilkan kesalahan dan dapat dicoba kembali. Sesi menunggu penyimpanan sebelum mengonfirmasi penyelesaian.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

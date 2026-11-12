@@ -42,6 +42,8 @@ export function pageHost(context, values = new Map(), role = "user") {
     let page;
     let actor = "first-account";
     let popup = false;
+    let completionError;
+    let completionReads = 0;
     const state = tutorialHost({
         page: () => page.refresh(),
         openPage: () => page.open(),
@@ -79,10 +81,20 @@ export function pageHost(context, values = new Map(), role = "user") {
         api: state.api,
         document: state.document,
         account: () => actor,
-        storage: () => ({
-            getItem: (key) => values.get(key),
-            setItem: (key, value) => values.set(key, value),
-        }),
+        completions: {
+            invalidate() {},
+            load: async (accountId) => {
+                completionReads++;
+                if (completionError) throw completionError;
+                return new Set(
+                    [...values.keys()]
+                        .filter((key) => key.startsWith(`${accountId}:`))
+                        .map((key) => key.slice(accountId.length + 1)),
+                );
+            },
+            complete: async (accountId, id) =>
+                values.set(`${accountId}:${id}`, "completed"),
+        },
         localize: async () => ({ t: (key) => key }),
         prepareStyles: async () => {},
         report: (error) => errors.push(error),
@@ -100,6 +112,12 @@ export function pageHost(context, values = new Map(), role = "user") {
         description,
         values,
         errors,
+        get completionReads() {
+            return completionReads;
+        },
+        failCompletionReads: (error) => {
+            completionError = error;
+        },
         account: (value) => {
             actor = value;
         },

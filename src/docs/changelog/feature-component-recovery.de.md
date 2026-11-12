@@ -176,6 +176,10 @@ Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET 
 
 Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angeforderte Sprache aus dem Cache und verwendet bei fehlenden Daten Englisch aus dem Cache. `Content-Language` bezeichnet die tatsächlich gelieferte Sprache; unbekannte Module und Module ohne nutzbares Sprachpaket liefern weiterhin 404. Manuelles Aktualisieren durchsucht alle serverseitig konfigurierten Quellen, bevor die Katalogübersetzungen vorbereitet werden. Fehlerhafte Sprachpakete oder eine noch nicht geladene Quellenliste verhindern dadurch keinen Reparaturscan. Schlägt die Vorbereitung fehl, bleibt der zuletzt veröffentlichte Katalog erhalten und die Aktualisierungsschaltfläche wird für einen weiteren Versuch freigegeben.
 
+## Kontogebundener Tutorialabschluss
+
+Tutorialabschlüsse werden in der Anwendungsdatenbank für das authentifizierte Konto und den stabilen Anbieter/Tutorial-Bezeichner gespeichert. Sie gelten über Browser und Geräte hinweg, bleiben beim Löschen von Browserdaten erhalten und werden durch Tutorialupdates oder zurückgesetzte Einstellungen nicht gelöscht. Nur das ? im Seitenkopf startet abgeschlossene Anleitungen erneut. `GET /api/v1/tutorials/completions` liest die Abschlüsse des Aufrufers; `POST` speichert bis zu 100 geprüfte Bezeichner idempotent über benannte Abläufe und eine Datenbanktransaktion. Die Kontoidentität stammt aus der Authentifizierung, niemals aus dem Anfrageinhalt. Bestehende Browserabschlüsse werden nach der Anmeldung übertragen und erst nach Datenbankbestätigung entfernt. Lesefehler verschieben automatische Tutorials; Schreibfehler werden angezeigt und erlauben einen erneuten Versuch. Eine Sitzung bestätigt den erfolgreichen Abschluss erst nach der Speicherung.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

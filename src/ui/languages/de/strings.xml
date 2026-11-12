@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">Das Bedienelement ist nicht verfügbar. Machen Sie es verfügbar und wählen Sie Erneut versuchen.</string>
   <string name="ui.tutorial.waiting">Warten auf das Seitenelement. Sie können jederzeit abbrechen.</string>
   <string name="ui.tutorial.error">Die Anleitung konnte nicht fortgesetzt werden. Ihre Seite bleibt verfügbar.</string>
+  <string name="ui.tutorial.progress_error">Der Tutorialfortschritt konnte nicht geladen oder gespeichert werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.</string>
   <string name="ui.tutorial.workspace.title">Ihr Arbeitsbereich</string>
   <string name="ui.tutorial.workspace.navigation.body">Die Hauptnavigation führt zu den für Ihr Konto verfügbaren Seiten.</string>
   <string name="ui.tutorial.workspace.search.body">Öffnen Sie die Suche und suchen Sie eine Seite, Einstellung oder Aktion der aktuellen Seite.</string>

@@ -88,7 +88,7 @@ Only one session is active. A competing start rejects unless `{ replace: true }`
 
 All tutorial action buttons live in an independent instance of the shared floating menu. First-time sessions have no Cancel or Skip action; Escape does not dismiss them. Next remains available during target waits, asynchronous work and event-driven steps, so repeatedly pressing it always reaches completion. Replays use Skip to leave the guide. Unrelated navigation, history, account/access loss, provider removal and required popups still release every session. Tutorials never confirm dialogs, submit privileged forms or initiate calls.
 
-Completion and cancellation remove overlays, floating menus, listeners, observers and pending work, then restore focus where appropriate. Late callbacks cannot revive old steps. Completed tutorial IDs are stored in this browser under the current account, separately from other accounts. Interrupted or failed first visits remain eligible on a later visit; failures do not automatically loop on the current page. Clearing browser storage makes them unseen again. Consumers may observe `cognis:tutorial-presented` and `cognis:tutorial-finish`.
+Completion and cancellation remove overlays, floating menus, listeners, observers and pending work, then restore focus where appropriate. Completion is account-backed in the database. Interrupted or failed first visits remain eligible on a later visit; failures do not automatically loop on the current page. Consumers may observe `cognis:tutorial-presented` and `cognis:tutorial-finish`.
 
 ## Component-Owned Page Guides
 
@@ -174,7 +174,7 @@ Floating menus use the version-one `ui:floatingMenus` capability and the staged 
 
 Dock callouts retain visible control anchors below the menu reservation and avoid the actual floating action menu. The replay step highlights the ? button itself. The button retains the theme text color during tutorials while replay is guarded against replacing an active guide.
 
-Completion belongs to the stable account and owner/tutorial ID. Content and package updates never reset it. A completed tutorial runs again only when requested through the page-header ? control. Preserve IDs when revising guides; completion remains in the account’s browser storage. Every successful session records completion before page discovery resumes, including guides started directly through a provider’s public handle.
+Tutorial completion is stored in the application database for the authenticated account and stable owner/tutorial ID. It follows the account across browsers and devices, survives browser-data removal and is never reset by tutorial updates or preference resets. Only the page-header ? control replays a completed guide. `GET /api/v1/tutorials/completions` reads the caller’s completion IDs; `POST` records up to 100 validated IDs idempotently through named completion flows and a database transaction. Account identity comes from authentication, never the request body. Existing browser completion records migrate after sign-in and are removed only after the database acknowledges them. Database read failures defer automatic tutorials; failed writes report an error and remain retryable. A session waits for persistence before acknowledging successful completion.
 
 Restart Tutorial appears after the first visible step. Replays offer Skip before the last visible step; the last step offers Finish. A one-step guide offers neither Restart Tutorial nor Skip. First-time guides continue to omit Skip throughout.
 

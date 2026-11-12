@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">The control is unavailable. Make it available, then choose Retry.</string>
   <string name="ui.tutorial.waiting">Waiting for the page element. You can cancel at any time.</string>
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
+  <string name="ui.tutorial.progress_error">Tutorial progress could not be loaded or saved. Check your connection and try again.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
   <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account.</string>
   <string name="ui.tutorial.workspace.search.body">Open Search to try finding a page, setting or action on the current page.</string>
