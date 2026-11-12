@@ -45,10 +45,10 @@ async function fixture(context, { failTranslations = false } = {}) {
     const module = (id, version) => ({
         id,
         uuid: id,
-        name: `module.${id}.name`,
-        summary: `module.${id}.summary`,
-        description: `module.${id}.description`,
-        tags: [`module.${id}.tag`],
+        name: `module.${id.replaceAll("-", ".")}.name`,
+        summary: `module.${id.replaceAll("-", ".")}.summary`,
+        description: `module.${id.replaceAll("-", ".")}.description`,
+        tags: [`module.${id.replaceAll("-", ".")}.tag`],
         ui: { stringsBaseUrl: `/catalog/${id}` },
         version,
         installedVersion: version,
@@ -81,14 +81,20 @@ async function fixture(context, { failTranslations = false } = {}) {
                     const id = url.split("/").at(-1);
                     const bundle = new Map([
                         [
-                            `module.${id}.name`,
+                            `module.${id.replaceAll("-", ".")}.name`,
                             id === "elevenlabs-tts"
                                 ? "ElevenLabs Speech"
                                 : "Japanese",
                         ],
-                        [`module.${id}.summary`, "Summary"],
-                        [`module.${id}.description`, "Description"],
-                        [`module.${id}.tag`, "Speech"],
+                        [
+                            `module.${id.replaceAll("-", ".")}.summary`,
+                            "Summary",
+                        ],
+                        [
+                            `module.${id.replaceAll("-", ".")}.description`,
+                            "Description",
+                        ],
+                        [`module.${id.replaceAll("-", ".")}.tag`, "Speech"],
                     ]);
                     return {
                         t: (key) => {
@@ -362,7 +368,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     const release = state.stall();
     const incoming = {
         ...state.initial[1],
-        name: "module.elevenlabs-tts.missing",
+        name: "module.elevenlabs.tts.missing",
     };
     const pending = state.catalog.prepareDiscoveredCatalog(
         published,
@@ -373,7 +379,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     assert.deepEqual(structuredClone(published), before);
     assert.equal(
         filters.formatModuleTag(
-            "module.elevenlabs-tts.tag",
+            "module.elevenlabs.tts.tag",
             published,
             state.i18n,
         ),
@@ -382,7 +388,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     release();
     await assert.rejects(pending, {
         code: "missing_translation",
-        key: "module.elevenlabs-tts.missing",
+        key: "module.elevenlabs.tts.missing",
     });
     assert.deepEqual(structuredClone(published), before);
 });
@@ -402,7 +408,7 @@ test("catalog metadata keeps its matching locale bundle when installed metadata 
         state.i18n,
     );
     assert.equal(catalog[0].localizedPresentation.name, "Japanese");
-    assert.equal(catalog[0].name, "module.study-language-ja.name");
+    assert.equal(catalog[0].name, "module.study.language.ja.name");
     assert.equal(catalog[0].status, "disabled");
     assert.equal(catalog[0].ui.stringsBaseUrl, "/installed/other");
     assert.equal(

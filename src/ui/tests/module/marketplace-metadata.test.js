@@ -26,7 +26,7 @@ test("cached marketplace names retain their matching locale bundle after an inst
     const module = {
         id: "terms-of-service",
         ui: { stringsBaseUrl: "/static/modules/terms-of-service/languages" },
-        name: "module.terms-of-service.name",
+        name: "module.terms.of.service.name",
         catalogPresentation: {
             name: "module.catalog.name",
             summary: "module.catalog.summary",

@@ -180,6 +180,10 @@ The authenticated catalog strings endpoint serves the requested cached locale wh
 
 Tutorial completion is stored in the application database for the authenticated account and stable owner/tutorial ID. It follows the account across browsers and devices, survives browser-data removal and is never reset by tutorial updates or preference resets. Only the page-header ? control replays a completed guide. `GET /api/v1/tutorials/completions` reads the caller’s completion IDs; `POST` records up to 100 validated IDs idempotently through named completion flows and a database transaction. Account identity comes from authentication, never the request body. Existing browser completion records migrate after sign-in and are removed only after the database acknowledges them. Database read failures defer automatic tutorials; failed writes report an error and remain retryable. A session waits for persistence before acknowledging successful completion.
 
+## Translation Namespace Rules
+
+Localization keys use lowercase words separated only by periods, including the module namespace and tutorial keys. For the immutable ID `terms-of-service`, use `module.terms.of.service.admin.title`. Manifest metadata, catalogs and references share this namespace; module IDs, UUIDs, capability names and tutorial owner/completion IDs retain their established identities. Never weaken namespace validation to admit an invalid key. Match XML sibling indentation and preserve translated values when formatting.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

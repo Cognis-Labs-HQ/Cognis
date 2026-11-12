@@ -59,7 +59,7 @@ Module, die rechtliche, unterstützende oder andere vor der Anmeldung relevante 
 
 Das Manifest deklariert `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-basierter `requires`, `entrypoints` und `assets`. Asset-Pfade sind Repository-bezogen. `assets.icon` identifiziert das quadratische Store-Symbol, `assets.banner` identifiziert den Detailhelden und `assets.screenshots` ist eine geordnete Galerie. Pfade müssen innerhalb des Repositorys bleiben.
 
-Lokalisierungsschlüssel müssen Punkte als Worttrenner verwenden: `module.example.canvas.label` statt `module.example.canvas_label` oder `module.example.canvas-label`. Durch Punkte getrennte Segmente gewährleisten vorhersehbare Eigentümerschaft, Auflösung, Validierung und Werkzeugunterstützung. Die registrierte Modul-ID ist die einzige beabsichtigte Ausnahme, wenn ihre unveränderliche ID bereits einen Bindestrich enthält.
+Lokalisierungsschlüssel verwenden sowohl im Modulnamensraum als auch in Funktionsbezeichnungen kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, Kataloge und Codeverweise müssen übereinstimmen. Unveränderliche Modul-IDs begründen keine Ausnahme von dieser Regel.
 
 ### Quellen und private Repositories
 
@@ -171,9 +171,9 @@ Der Host-Helfer `mountWhenDirect` übergibt `mount(root, { signal })` ein AbortS
 
 Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch bei ausstehender Übersetzungs-, Anbieter- oder Composer-Initialisierung. Die Ressourcenbereinigung bleibt an dasselbe Host-Signal gebunden.
 
-## Modul-IDs in Übersetzungen erhalten
+## Punktgetrennte Übersetzungsnamensräume
 
-Übersetzungsschlüssel verwenden `module.<manifest.id>.<feature>.<label>`. Eine mehrteilige Modul-ID bleibt mit ihren Bindestrichen erhalten; für `terms-of-service` lautet ein Schlüssel `module.terms-of-service.admin.title`. Der Suffix nach der Modul-ID verwendet kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, XML-Dateien und Codeverweise müssen denselben Namensraum verwenden.
+Lokalisierungsschlüssel verwenden ausschließlich kleingeschriebene, durch Punkte getrennte Wörter, auch im Modulnamensraum und bei Tutorialschlüsseln. Für die unveränderliche ID `terms-of-service` lautet ein Schlüssel `module.terms.of.service.admin.title`. Manifest-Metadaten, Kataloge und Verweise verwenden denselben Namensraum; Modul-IDs, UUIDs, Fähigkeitsnamen und Tutorial-Anbieter-/Abschlussbezeichner behalten ihre bestehenden Identitäten. Namensraumprüfungen dürfen nicht für ungültige Schlüssel gelockert werden. XML-Einrückung an benachbarte Einträge anpassen und Übersetzungswerte beim Formatieren erhalten.
 
 Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kategorien und Tags mit den zugehörigen Katalogübersetzungen zusammen, wenn das installierte Modul einen anderen Namensraum verwendet. Installierte Einstellungen behalten ihre eigene Übersetzungs-URL; eine neue Katalogsuche ersetzt die zwischengespeicherte Darstellung.
 

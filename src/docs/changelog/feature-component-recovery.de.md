@@ -180,6 +180,10 @@ Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angefordert
 
 Tutorialabschlüsse werden in der Anwendungsdatenbank für das authentifizierte Konto und den stabilen Anbieter/Tutorial-Bezeichner gespeichert. Sie gelten über Browser und Geräte hinweg, bleiben beim Löschen von Browserdaten erhalten und werden durch Tutorialupdates oder zurückgesetzte Einstellungen nicht gelöscht. Nur das ? im Seitenkopf startet abgeschlossene Anleitungen erneut. `GET /api/v1/tutorials/completions` liest die Abschlüsse des Aufrufers; `POST` speichert bis zu 100 geprüfte Bezeichner idempotent über benannte Abläufe und eine Datenbanktransaktion. Die Kontoidentität stammt aus der Authentifizierung, niemals aus dem Anfrageinhalt. Bestehende Browserabschlüsse werden nach der Anmeldung übertragen und erst nach Datenbankbestätigung entfernt. Lesefehler verschieben automatische Tutorials; Schreibfehler werden angezeigt und erlauben einen erneuten Versuch. Eine Sitzung bestätigt den erfolgreichen Abschluss erst nach der Speicherung.
 
+## Regeln für Übersetzungsnamensräume
+
+Lokalisierungsschlüssel verwenden ausschließlich kleingeschriebene, durch Punkte getrennte Wörter, auch im Modulnamensraum und bei Tutorialschlüsseln. Für die unveränderliche ID `terms-of-service` lautet ein Schlüssel `module.terms.of.service.admin.title`. Manifest-Metadaten, Kataloge und Verweise verwenden denselben Namensraum; Modul-IDs, UUIDs, Fähigkeitsnamen und Tutorial-Anbieter-/Abschlussbezeichner behalten ihre bestehenden Identitäten. Namensraumprüfungen dürfen nicht für ungültige Schlüssel gelockert werden. XML-Einrückung an benachbarte Einträge anpassen und Übersetzungswerte beim Formatieren erhalten.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

@@ -213,3 +213,36 @@ test("warmed public component translations remain usable without network", async
     assert.equal(offline.t("title"), "Cached title");
     assert.equal(host.requests.length, requests);
 });
+
+test("hyphenated module IDs load period-delimited translation namespaces without changing their routes", async () => {
+    const environment = installI18nEnvironment((path) => {
+        if (path.startsWith("/modules/study-language-en/"))
+            return xml({
+                "module.study.language.en.name": "English Study",
+                "module.study.language.en.tutorial.title": "Learn English",
+                "module.another.name": "Another owner",
+            });
+        return xml({});
+    });
+    const { createI18n } = await import(
+        `../../i18n.js?fixture=${crypto.randomUUID()}`
+    );
+    const i18n = await createI18n({
+        preferredLanguages: ["en"],
+        moduleIds: ["study-language-en"],
+        persistLocale: false,
+    });
+    assert.equal(i18n.t("module.study.language.en.name"), "English Study");
+    assert.equal(
+        i18n.t("module.study.language.en.tutorial.title"),
+        "Learn English",
+    );
+    assert.throws(() => i18n.t("module.another.name"), {
+        code: "missing_translation",
+    });
+    assert.ok(
+        environment.requests.some(
+            ({ path }) => path === "/modules/study-language-en/strings/en.xml",
+        ),
+    );
+});

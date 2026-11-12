@@ -180,6 +180,10 @@ Endpoint terjemahan katalog yang diautentikasi menyajikan bahasa yang diminta da
 
 Penyelesaian tutorial disimpan dalam basis data aplikasi untuk akun yang diautentikasi dan ID pemilik/tutorial yang stabil. Penyelesaian mengikuti akun di berbagai browser dan perangkat, tetap tersimpan setelah data browser dihapus, serta tidak diatur ulang oleh pembaruan tutorial atau pengaturan preferensi. Hanya tombol ? pada judul halaman yang mengulang panduan yang selesai. `GET /api/v1/tutorials/completions` membaca ID penyelesaian pemanggil; `POST` mencatat hingga 100 ID tervalidasi secara idempoten melalui alur bernama dan transaksi basis data. Identitas akun berasal dari autentikasi, bukan isi permintaan. Catatan browser lama dimigrasikan setelah masuk dan baru dihapus setelah basis data mengonfirmasi penyimpanan. Kegagalan membaca menunda tutorial otomatis; kegagalan menulis menampilkan kesalahan dan dapat dicoba kembali. Sesi menunggu penyimpanan sebelum mengonfirmasi penyelesaian.
 
+## Aturan Namespace Terjemahan
+
+Kunci pelokalan menggunakan kata huruf kecil yang hanya dipisahkan titik, termasuk namespace modul dan kunci tutorial. Untuk ID tetap `terms-of-service`, gunakan `module.terms.of.service.admin.title`. Metadata manifes, katalog, dan referensi memakai namespace yang sama; ID modul, UUID, nama kapabilitas, dan ID pemilik/penyelesaian tutorial mempertahankan identitasnya. Jangan melonggarkan validasi namespace untuk menerima kunci yang tidak valid. Ikuti indentasi entri XML di sekitarnya dan pertahankan nilai terjemahan saat memformat.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
