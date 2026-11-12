@@ -213,3 +213,4 @@ Katalog adaptor khusus administrator di `GET /api/v1/gateways/tfa/adapters` meny
 - [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
 - [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)
+- [2a16b8206](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a16b820668bf7e7df6b8076b95fd655394ad27d)
