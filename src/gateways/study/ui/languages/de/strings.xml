@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Mit Study beginnen</string>
+  <string name="gateway.study.tutorial.navigation.title">Ein Lernwerkzeug wählen</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore zeigt eingeschriebene Sprachen. Lernkarten und weitere installierte Werkzeuge erscheinen hier, wenn dein Konto sie nutzen darf.</string>
+  <string name="gateway.study.tutorial.languages.title">Deine Lernsprachen</string>
+  <string name="gateway.study.tutorial.languages.body">Wechsle zwischen deinen eingeschriebenen Sprachen. Ändere die Einschreibung in den Study-Einstellungen.</string>
+  <string name="gateway.study.tutorial.modules.title">Ein Lernmodul öffnen</string>
+  <string name="gateway.study.tutorial.modules.body">Diese Karten öffnen installierte Lernwerkzeuge. Die Sprachanleitungen führen durch die zugehörigen Sammlungen und Kartenaktionen.</string>
   <string name="gateway.study.picker.title">Lernsprache wählen</string>
   <string name="gateway.study.picker.select">Sprache auswählen:</string>
   <string name="gateway.study.page_subtitle">Dein Sprachlern-Dashboard</string>
@@ -48,7 +55,7 @@
   <string name="gateway.study.library_components">Bestandteile</string>
   <string name="gateway.study.library_used_by">Verwendet von</string>
   <string name="gateway.study.library_no_relationships">Keine verbundenen Einträge.</string>
-    <string name="gateway.study.library_fields">Felder</string>
+  <string name="gateway.study.library_fields">Felder</string>
   <string name="gateway.study.library_definitions">Definitionen</string>
   <string name="gateway.study.library_alternate_definitions">Alternative Definitionen</string>
   <string name="gateway.study.library_provenance">Herkunft</string>
@@ -63,7 +70,7 @@
   <string name="gateway.study.favourite_failed">Study-Favoriten konnten nicht aktualisiert werden.</string>
   <string name="gateway.study.favourite_added">Zu Favoriten hinzugefügt.</string>
   <string name="gateway.study.favourite_removed">Aus Favoriten entfernt.</string>
-<string name="gateway.study.drawing.title">Schreibübung</string>
+  <string name="gateway.study.drawing.title">Schreibübung</string>
   <string name="gateway.study.drawing.guidance">Vollständige Anleitung zeigen</string>
   <string name="gateway.study.drawing.well_done">Gut gemacht</string>
   <string name="gateway.study.drawing.loser">Verloren!</string>
@@ -72,4 +79,13 @@
   <string name="gateway.study.drawing.reveal">Zeichen anzeigen</string>
   <string name="gateway.study.drawing_open_card">Karte in Explore öffnen?</string>
   <string name="gateway.study.drawing_open_card_body">Die aufgedeckte Karte in Explore öffnen und diese Seite verlassen?</string>
+  <string name="gateway.study.tutorial.preferences.title">Lerneinstellungen</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.title">Lernsprachen</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.body">Wählen Sie Lernsprachen aus den installierten Sprachmodulen.</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.title">Verfügbare Lernangebote</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.body">Ihre Sprachauswahl bestimmt Lernangebote und Navigation.</string>
+  <string name="gateway.study.tutorial.dictionary.title">Inhalte Nachschlagen</string>
+  <string name="gateway.study.tutorial.dictionary.body">Schlagen Sie Wörter oder Ausdrücke mit einem verfügbaren Wörterbuchanbieter nach. Die Ergebnisse helfen beim Finden und Erstellen von Karten.</string>
+  <string name="gateway.study.tutorial.settings.title">Lernsprachen Verwalten</string>
+  <string name="gateway.study.tutorial.settings.body">Wählen Sie in den Lerneinstellungen die Sprachen zum Lernen oder Lehren. Anleitungen werden für Ihre eingeschriebenen Lernsprachen angeboten.</string>
 </resources>

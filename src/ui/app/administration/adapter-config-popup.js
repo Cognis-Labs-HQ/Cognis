@@ -1,3 +1,5 @@
+import { createAdapterSettingsPopup } from "./reuse/settings-popup.js";
+
 import { extendI18n } from "../../reuse/i18n.js";
 import {
     markPopupFieldInvalid,
@@ -148,6 +150,7 @@ export function createAdapterConfigPopup({
             const payload = await response.json();
             if (payload.stringsBaseUrl)
                 i18n = await extendI18n(i18n, [payload.stringsBaseUrl]);
+            const openSettingsPopup = createAdapterSettingsPopup(openPopup);
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
             ).trim();
@@ -172,7 +175,7 @@ export function createAdapterConfigPopup({
                     i18n,
                     escapeHtml,
                     apiFetch,
-                    openPopup,
+                    openPopup: openSettingsPopup,
                     showToast,
                     buildConfigPayload,
                 });
@@ -338,7 +341,7 @@ export function createAdapterConfigPopup({
                 }
             }
 
-            await openPopup({
+            await openSettingsPopup({
                 title: name,
                 body: renderGenericAdapterForm(
                     descriptors,

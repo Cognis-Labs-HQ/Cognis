@@ -4,7 +4,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 
-function popupFixture({ next, fetchError, editing = false } = {}) {
+function popupFixture({
+    next,
+    fetchError,
+    editing = false,
+    beforeLoad,
+    beforeCompose,
+} = {}) {
     const viewed = [],
         opened = [];
     const schema = {
@@ -57,6 +63,7 @@ function popupFixture({ next, fetchError, editing = false } = {}) {
                     "../reuse/entry-graph.js": entryGraph,
                     "/static/gateways/study/library-client.js": {
                         fetchLibraryEntry: async (id) => {
+                            if (beforeLoad) await beforeLoad();
                             if (fetchError) throw fetchError;
                             return {
                                 entry: id === initial.id ? initial : second,
@@ -67,11 +74,10 @@ function popupFixture({ next, fetchError, editing = false } = {}) {
                 },
             ),
             "./detail.js": {
-                composeDetail: async () => ({
-                    body: "detail",
-                    actions: [],
-                    definitions: [],
-                }),
+                composeDetail: async () => {
+                    if (beforeCompose) await beforeCompose();
+                    return { body: "detail", actions: [], definitions: [] };
+                },
             },
             "./presentation.js": {
                 isMeaningLayer: () => false,
@@ -177,3 +183,24 @@ test("failed or aborted details do not mark unseen cards", async () => {
     await aborted.open({}, controller.signal);
     assert.deepEqual(aborted.viewed, []);
 });
+
+for (const phase of ["beforeLoad", "beforeCompose"]) {
+    test(`aborting a pending ${phase} cannot present or mark a late card popup`, async () => {
+        const entered = Promise.withResolvers();
+        const deferred = Promise.withResolvers();
+        const fixture = popupFixture({
+            [phase]: async () => {
+                entered.resolve();
+                await deferred.promise;
+            },
+        });
+        const controller = new AbortController();
+        const pending = fixture.open({}, controller.signal);
+        await entered.promise;
+        controller.abort();
+        deferred.resolve();
+        await assert.rejects(pending, { name: "AbortError" });
+        assert.deepEqual(fixture.opened, []);
+        assert.deepEqual(fixture.viewed, []);
+    });
+}

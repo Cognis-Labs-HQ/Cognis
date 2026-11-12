@@ -187,6 +187,11 @@ export async function bootstrapStudyAdapter(
         ],
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+    ctx.registerCapabilityProvider({
+        scriptUrl: "/static/adapters/study/library/tutorials/provider.js",
+        providesCapabilities: ["study:libraryTutorials"],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
     ctx.registerSpaRoute?.({
         id: "study-library-page",
         pattern: "^/study/library$",

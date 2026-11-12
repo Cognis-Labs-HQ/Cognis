@@ -1,3 +1,4 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOfflineContentMiss } from "/static/gateways/study/offline-content.js";
 import { bindDrawingGridPreviews } from "./drawing-grid-preview.js";
 import { bindViewedEntries } from "./viewed-entries.js";
@@ -200,31 +201,51 @@ export function bindLibraryInteractions(root, context) {
             );
             const schema = schemas.find(({ id }) => id === entry?.schemaId);
             const layer = schema?.layers.find(({ id }) => id === entry?.layer);
+            const openingSignal =
+                uiCtx.capabilities
+                    .get("study:libraryTutorials")
+                    ?.openingSignal(control, signal) ?? signal;
             if (entry && (await loadDrawing(entry, layer, entries, schemas)))
                 return;
-            if (!openDetails) return;
-            if (!entry || activeEntryPopup) return;
-            activeEntryPopup = openEntryPopup(
+            if (!openDetails || openingSignal.aborted) return;
+            if (
+                !entry ||
+                (activeEntryPopup && !activeEntryPopup.signal.aborted)
+            )
+                return;
+            const opening = { signal: openingSignal };
+            activeEntryPopup = opening;
+            void openEntryPopup(
                 root,
                 entry,
                 schemas,
                 entries,
                 i18n,
                 languageCode,
-                signal,
+                openingSignal,
                 {
                     readOnly,
                     showReferenceTree,
                     onEntryUpdated: renderEntries,
                 },
             )
-                .catch(() =>
+                .catch((error) => {
+                    if (openingSignal.aborted) return;
+                    uiCtx.capabilities.get("ui:log")?.(
+                        "error",
+                        "Library card details failed.",
+                        {
+                            component: "study.library",
+                            operation: "openEntryPopup",
+                            errorName: error?.name,
+                        },
+                    );
                     showToast(i18n.t("gateway.study.library_load_error"), {
                         variant: "error",
-                    }),
-                )
+                    });
+                })
                 .finally(() => {
-                    activeEntryPopup = null;
+                    if (activeEntryPopup === opening) activeEntryPopup = null;
                 });
         },
         { signal },

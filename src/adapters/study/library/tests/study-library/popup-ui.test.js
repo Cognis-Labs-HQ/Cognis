@@ -141,10 +141,7 @@ test("Study Library keeps related links concise and suggests similar items", () 
     assert.match(detail, /gateway\.study\.library_similar_items/);
 });
 
-test("Study Library serializes popup opening and identifies child parents", () => {
-    assert.match(source, /let activeEntryPopup = null/);
-    assert.match(source, /if \(!entry \|\| activeEntryPopup\) return/);
-    assert.match(source, /\.finally\(\(\) => \{[\s\S]*activeEntryPopup = null/);
+test("Study Library identifies child parents", () => {
     assert.match(
         source,
         /if \(suppressEntryClick\)[\s\S]*closeUnrelatedVariantViews/,

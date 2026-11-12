@@ -57,5 +57,20 @@
   <string name="gateway.notify.broadcast.acknowledge">確認</string>
   <string name="gateway.notify.broadcast.action_failed">一斉通知の状態更新に失敗しました。</string>
   <string name="gateway.notify.broadcast.invalid_redirect">リダイレクトURLが無効か、信頼されていません。</string>
-    <string name="gateway.notify.validation.email">確認済みメールアドレス</string>
+  <string name="gateway.notify.validation.email">確認済みメールアドレス</string>
+  <string name="gateway.notify.tutorial.preferences.title">通知の設定</string>
+  <string name="gateway.notify.tutorial.preferences.channels.and.categories.title">通知先と種類</string>
+  <string name="gateway.notify.tutorial.preferences.channels.and.categories.body">通知の種類ごとに、受け取る通知先を選びます。</string>
+  <string name="gateway.notify.tutorial.preferences.save.preferences.title">通知設定を保存</string>
+  <string name="gateway.notify.tutorial.preferences.save.preferences.body">選択を確認して保存します。利用できない通知先はここで有効にできません。</string>
+  <string name="gateway.notify.tutorial.delivery.title">通知の配信</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">テスト通知の準備</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">宛先とカテゴリーを選び、テスト通知の件名と本文を入力します。</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.title">テスト配信</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">テスト通知を送信し、選択した配信方法で相手がメッセージを受け取れるか確認します。</string>
+  <string name="gateway.notify.tutorial.broadcasts.title">お知らせの管理</string>
+  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">対象者と内容</string>
+  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">掲載前に、お知らせの内容、対象者、表示期間を確認します。</string>
+  <string name="gateway.notify.tutorial.broadcasts.publication.state.title">公開の状態</string>
+  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">編集や削除の前に既存のお知らせを確認します。公開すると他の利用者の画面に反映されます。</string>
 </resources>

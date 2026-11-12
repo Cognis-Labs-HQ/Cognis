@@ -51,4 +51,16 @@
   <string name="ui.app.login.tfa.resend_rate_limited">Kirim ulang kode dalam {seconds} dtk</string>
   <string name="ui.app.login.tfa.resend_sent">Kode verifikasi baru telah dikirim.</string>
   <string name="ui.app.login.tfa.code_placeholder">Kode Verifikasi</string>
+  <string name="gateway.tfa.tutorial.methods.title">Keamanan Dua Faktor</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.title">Siapkan Metode</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">Pilih metode tersedia dan selesaikan penyiapannya sebelum mengandalkannya untuk masuk.</string>
+  <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Metode Pilihan</string>
+  <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Urutkan metode aktif untuk menentukan metode yang ditawarkan lebih dahulu.</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Kode Pemulihan</string>
+  <string name="gateway.tfa.tutorial.methods.recovery.codes.body">Gunakan kode pemulihan untuk masuk saat faktor kedua tidak tersedia. Simpan salinannya di tempat yang dapat diakses tanpa masuk.</string>
+  <string name="gateway.tfa.tutorial.enforcement.title">Kewajiban Dua Faktor</string>
+  <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.title">Kebijakan Wajib</string>
+  <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Tinjau dampaknya pada semua akun sebelum mewajibkan autentikasi dua faktor.</string>
+  <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Terapkan Kebijakan</string>
+  <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Simpan setelah meninjau pilihan kewajiban dan penyiapan yang diperlukan pengguna.</string>
 </resources>

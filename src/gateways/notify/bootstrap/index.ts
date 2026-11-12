@@ -198,6 +198,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.routeRegistry.registerPrefix("/api/v1/notify", "notify");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/notify/tutorials.js",
+        providesCapabilities: ["notify:pageTutorials"],
+        access: { minRole: "user" },
+    });
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",

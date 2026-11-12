@@ -268,3 +268,7 @@ Penonaktifan gateway dan pelepasan modul menghapus aksi miliknya serta membatalk
 ## Pengikatan Kredensial Instalasi
 
 Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace yang sama dengan snapshot untuk memvalidasi URL repositori. Perubahan pengikatan sumber secara bersamaan membatalkan proses sebelum checkout, sehingga kredensial endpoint pengganti tidak dikirim ke host sebelumnya. Alias host API-ke-repositori GitHub hanya berlaku untuk sumber GitHub.
+
+## Tutorial terpandu
+
+Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.

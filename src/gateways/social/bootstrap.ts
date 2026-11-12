@@ -236,6 +236,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/social", "social");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/social/tutorials.js",
+        providesCapabilities: ["social:pageTutorials"],
+        access: { minRole: "admin" },
+    });
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",

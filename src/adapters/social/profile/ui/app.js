@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { saveProfileFields } from "./profile-save.js";
@@ -826,6 +827,8 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
+        tutorials: guides,
+        signal,
         allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",

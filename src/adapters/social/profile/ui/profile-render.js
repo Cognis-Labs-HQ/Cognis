@@ -691,7 +691,7 @@ export function renderNewPost({ profile, i18n }) {
 
 export function renderPosts({ posts, isOwnProfile, i18n }) {
     return `
-    <div class="profile-posts-section">
+    <div class="profile-posts-section" data-profile-post-list>
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.section.posts")}
         <span class="profile-count-badge">${posts.length}</span>

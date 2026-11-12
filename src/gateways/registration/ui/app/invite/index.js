@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -135,6 +136,7 @@ export async function mount(root, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         i18n,
         preferenceKey: "invite-layout",

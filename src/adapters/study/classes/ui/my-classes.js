@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 /**
  * My Classes page — student view for class enrollment management.
  *
@@ -20,7 +21,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/study/classes/languages"],
+    });
     applyDocumentTitle(i18n, "module.study.classes.my_classes_page_title");
 
     let enrolledClasses = [];
@@ -307,6 +310,7 @@ export async function mount(root, { signal } = {}) {
     };
 
     const composer = createPageComposer(root, {
+        tutorials: guides,
         allowCustomization: false,
         elements: [myClassesElement],
         preferenceKey: "my-classes-layout",

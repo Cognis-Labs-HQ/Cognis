@@ -1,3 +1,4 @@
+import { guides } from "../../../app/users/guides.js";
 import assert from "node:assert/strict";
 import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
 import * as roles from "../../../reuse/access-role.js";
@@ -56,6 +57,7 @@ export async function mountUsers(options = {}) {
     const { mount } = await importTestModule(
         new URL("../../../app/users/index.js", import.meta.url),
         {
+            "./guides.js": { guides },
             "../../reuse/page-styles.js": {
                 ensurePageStylesheet: async () => {},
             },

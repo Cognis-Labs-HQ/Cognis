@@ -1,3 +1,4 @@
+import { guides } from "../ui/app/guides.js";
 import {
     loadTestModule,
     importTestModule,
@@ -71,6 +72,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         await importTestModule(
             new URL("../ui/app/layer/index.js", import.meta.url),
             {
+                "../guides.js": { guides },
                 "/static/gateways/study/offline-content.js": {
                     readStudySnapshot: (load) => load(),
                     showOfflineContentNotice: () =>

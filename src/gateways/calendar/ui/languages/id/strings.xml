@@ -195,4 +195,17 @@
   <string name="gateway.calendar.share_acknowledge_action">Tambahkan kalender</string>
   <string name="gateway.calendar.delete_shared_calendar_confirm">Kalender bersama ini akan dihapus dari halaman Kalender Anda.</string>
   <string name="gateway.calendar.reminder_minutes">{minutes} menit sebelumnya</string>
+  <string name="gateway.calendar.tutorial.calendar.title">Panduan Kalender</string>
+  <string name="gateway.calendar.tutorial.calendar.calendars.title">Kalender</string>
+  <string name="gateway.calendar.tutorial.calendar.calendars.body">Pilih kalender dan periksa visibilitasnya sebelum menambah acara.</string>
+  <string name="gateway.calendar.tutorial.calendar.calendar.views.title">Tampilan Kalender</string>
+  <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Ganti tampilan dan berpindah periode untuk menemukan tanggal yang diperlukan.</string>
+  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Acara dan Undangan</string>
+  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Buka acara untuk meninjau detail, peserta, dan status undangan sebelum mengubahnya.</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Temukan Tanggal</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Gunakan navigasi tanggal untuk berpindah periode, lalu pilih tampilan kalender yang sesuai dengan jadwal Anda.</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.title">Rencanakan Acara</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Pilih tanggal atau waktu untuk membuat acara. Atur kalender, waktu, pengulangan, visibilitas, dan pengingat sebelum menyimpan.</string>
+  <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Tinjau Acara Mendatang</string>
+  <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Buka acara mendatang untuk meninjau detail dan undangan. Untuk acara berulang, periksa apakah perubahan berlaku pada satu kejadian atau seluruh rangkaian.</string>
 </resources>

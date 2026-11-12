@@ -2,10 +2,13 @@ import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import vm from "node:vm";
-import { pronunciationClass } from "../../../../../gateways/study/ui/reuse/pronunciation.js";
 
+const registrations = [];
 const context = {
-    pronunciationClass,
+    pronunciationClass: (value) => {
+        assert.equal(value, "/ˈlæŋɡwɪdʒ/");
+        return "provided-pronunciation";
+    },
     window: new EventTarget(),
     offline: false,
 };
@@ -15,6 +18,12 @@ Object.assign(
     loadTestModule(
         new URL("../../ui/app/detail-layout.js", import.meta.url),
         {
+            "/static/reuse/transient-surfaces.js": {
+                transientSurfaces: {
+                    register: (element, close, signal) =>
+                        registrations.push({ element, close, signal }),
+                },
+            },
             "/static/reuse/offline-state.js": {
                 isOffline: () => context.offline,
             },
@@ -63,7 +72,7 @@ test("related cards scroll only beyond five rows and release their resize observ
     };
     const controller = new AbortController();
     bindDetailLayout(root, controller.signal);
-    assert.ok(classes.has("study-ipa"));
+    assert.ok(classes.has("provided-pronunciation"));
     assert.ok(!classes.has("library-related-entries--scrolling"));
     group.children.push({ offsetTop: 100 });
     resized([{ target: group, contentRect: { width: 300 } }]);
@@ -100,12 +109,20 @@ test("entry previews initialize drawing concealment and audio with the same abor
         calls.push(["images", ...args]);
         return Promise.resolve();
     };
+    let dismissed = 0;
+    const dismiss = () => dismissed++;
     context.bindEntryDetail(root, entry, {
+        dismiss,
         signal: controller.signal,
         audioObjectUrls: objectUrls,
         popupApi,
         audioError: "localized-error",
     });
+    assert.deepEqual(registrations, [
+        { element: root, close: dismiss, signal: controller.signal },
+    ]);
+    registrations[0].close();
+    assert.equal(dismissed, 1);
     const images = calls.pop();
     assert.equal(images[0], "images");
     assert.equal(images[1], root);

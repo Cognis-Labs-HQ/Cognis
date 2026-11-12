@@ -69,4 +69,16 @@
   <string name="ui.app.register.email_verify_notice">登録から5分以内にメールアドレスを確認しないと、アカウントが自動的に削除されます。</string>
   <string name="gateway.registration.invite_sent">招待を送信しました。</string>
   <string name="gateway.registration.invite_failed">招待の送信に失敗しました。</string>
+  <string name="gateway.registration.tutorial.invitations.title">招待の使い方</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.title">招待方法</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">自分の役割で利用できる方法を選びます。メール招待と登録トークンでは渡し方が異なります。</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.title">招待の履歴</string>
+  <string name="gateway.registration.tutorial.invitations.invitation.history.body">状態と有効期限を確認します。トークンは招待する相手にだけ渡し、不要な招待は取り消せます。</string>
+  <string name="gateway.registration.tutorial.policy.title">登録の方針</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.title">登録を許可する範囲</string>
+  <string name="gateway.registration.tutorial.policy.registration.access.body">アカウントを作成できる人を変更する前に、公開登録と招待の許可を確認します。</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.title">登録方針を適用</string>
+  <string name="gateway.registration.tutorial.policy.apply.registration.rules.body">方針を見直して保存し、招待ページに表示される操作を確認します。</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.title">発行した招待を管理する</string>
+  <string name="gateway.registration.tutorial.invitations.manage.issued.invitations.body">招待をコピー・共有する前に宛先と状態を確認し、不要な招待は無効にします。</string>
 </resources>

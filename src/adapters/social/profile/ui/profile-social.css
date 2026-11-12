@@ -17,6 +17,9 @@
 }
 
 .profile-hero-action-row {
+    width: fit-content;
+    max-width: 100%;
+    flex-wrap: wrap;
     display: flex;
     gap: 8px;
     align-items: center;

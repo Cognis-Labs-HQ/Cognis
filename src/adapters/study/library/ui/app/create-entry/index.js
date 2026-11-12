@@ -1,3 +1,5 @@
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
+
 import { bindAutomaticClassification } from "./classification.js";
 import { openLibraryImport } from "./import.js";
 import { referencedLinkedEntries } from "../linked-entries.js";
@@ -76,6 +78,7 @@ export async function chooseCreateLayer({
     );
     if (!permitted.length) return null;
     let select;
+    const tutorialLifetime = new AbortController();
     const action = await openPopup({
         title: i18n.t("gateway.study.library_create"),
         body: `<label><span>${escapeHtml(i18n.t("gateway.study.library_composer_layer"))}</span><select data-library-create-layer>${permitted.map((layer) => `<option value="${escapeHtml(layer.id)}"${layer.id === preferredLayerId ? " selected" : ""}>${escapeHtml(localizedLabel(layer.metadata, schema.language) || layer.id)}</option>`).join("")}</select></label>`,
@@ -96,13 +99,19 @@ export async function chooseCreateLayer({
                 variant: "cancel",
             },
         ],
-        onOpen(overlay) {
+        onOpen(overlay, dismiss) {
+            overlay.setAttribute("data-library-create-layer-popup", "");
+            transientSurfaces.register(
+                overlay,
+                dismiss,
+                tutorialLifetime.signal,
+            );
             select = overlay.querySelector("[data-library-create-layer]");
             overlay.querySelector(
                 '[data-popup-action="import"]',
             ).style.marginInlineEnd = "auto";
         },
-    });
+    }).finally(() => tutorialLifetime.abort());
     if (action === "import") await openLibraryImport(i18n);
     return action === "continue" ? select.value : null;
 }
@@ -533,7 +542,13 @@ export async function openCreateEntryPopup({
             createdEntry = await submitEntry();
             return createdEntry !== null;
         },
-        onOpen(overlay) {
+        onOpen(overlay, dismiss) {
+            overlay.setAttribute("data-library-create-entry-popup", "");
+            transientSurfaces.register(
+                overlay,
+                dismiss,
+                audioController.signal,
+            );
             form = overlay.querySelector("[data-library-admin-editor]");
             builder.attach(form);
             bindLibraryEditorControls(form, draft, i18n, {

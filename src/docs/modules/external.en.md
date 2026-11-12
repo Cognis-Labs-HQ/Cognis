@@ -268,3 +268,7 @@ Gateway disable and module unmount dispose owned actions and pending deliveries.
 ## Installation Credential Binding
 
 Installation resolves credentials against the same provider, endpoint and namespace snapshot used to validate its repository URL. Concurrent source rebinding aborts before checkout, preventing a replacement endpoint’s credential from being sent to the previous host. GitHub’s API-to-repository host alias is applied only to GitHub sources.
+
+## Guided tutorials
+
+Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.

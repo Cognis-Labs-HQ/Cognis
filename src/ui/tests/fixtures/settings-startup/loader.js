@@ -1,3 +1,4 @@
+import { guides } from "../../../app/settings/guides.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { captureAccountGuard } from "../../../reuse/offline-identity.js";
 import * as messageStyles from "../../../reuse/message-style-options.js";
@@ -62,6 +63,7 @@ export async function loadSettingsMount({
         },
     );
     const overrides = {
+        guides,
         navigateTo: async (path, options) => {
             assert.equal(options.replace, true);
             redirects.push(path);

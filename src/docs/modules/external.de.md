@@ -268,3 +268,7 @@ Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktio
 ## Bindung von Zugangsdaten
 
 Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Namensraumstands auf, mit dem die Repository-URL geprüft wurde. Gleichzeitiges Umbinden einer Quelle bricht vor dem Checkout ab und verhindert, dass Zugangsdaten des neuen Endpunkts an den alten Host gesendet werden. Die Zuordnung zwischen GitHub-API- und Repository-Host gilt nur für GitHub-Quellen.
+
+## Geführte Tutorials
+
+Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.

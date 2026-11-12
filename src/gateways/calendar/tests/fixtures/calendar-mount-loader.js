@@ -1,3 +1,4 @@
+import { guides } from "../../ui/app/guides.js";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
@@ -8,6 +9,7 @@ export async function loadCalendarMount({ hold, signal }) {
         throw new Error("unexpected calendar dependency");
     };
     const contracts = {
+        "./guides.js": { guides },
         "../offline-client.js": { calendarFetch: unexpected },
         "/static/reuse/offline-state.js": { isOffline: () => false },
         "/static/reuse/i18n.js": {

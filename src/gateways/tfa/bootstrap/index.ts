@@ -71,6 +71,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     ctx.routeRegistry.registerPrefix("/api/v1/tfa", "tfa");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/tfa/tutorials.js",
+        providesCapabilities: ["tfa:pageTutorials"],
+        access: { minRole: "user" },
+    });
     ctx.gatewayRegistry.register({
         id: "tfa",
         name: "Two-Factor Authentication Gateway",

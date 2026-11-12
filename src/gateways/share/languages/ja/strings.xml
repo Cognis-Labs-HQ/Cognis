@@ -110,4 +110,13 @@
   <string name="share.shares.detail_updated">更新</string>
   <string name="share.shares.detail_accessed">アクセス</string>
   <string name="share.shares.detail_expires">有効期限</string>
+  <string name="share.tutorial.shares.title">共有の使い方</string>
+  <string name="share.tutorial.shares.shared.items.title">共有した項目</string>
+  <string name="share.tutorial.shares.shared.items.body">自分が共有した項目と、他の人から共有された項目がここに表示されます。空の場合は項目のページから共有するか、他の人に共有を依頼してください。</string>
+  <string name="share.tutorial.shares.recipients.and.access.title">共有相手とアクセス</string>
+  <string name="share.tutorial.shares.recipients.and.access.body">共有相手、有効期限、アクセスを詳細で確認してから、変更や取り消しを行います。</string>
+  <string name="share.tutorial.shares.filter.sharing.title">送受信した共有を探す</string>
+  <string name="share.tutorial.shares.filter.sharing.body">送信・受信の共有を絞り込み、共有元と自分が共有した項目を確認します。</string>
+  <string name="share.tutorial.shares.manage.share.access.title">有効期限とアクセスを確認する</string>
+  <string name="share.tutorial.shares.manage.share.access.body">共有の状態、相手、有効期限を確認します。操作メニューから項目を開いたり、付与したアクセスを取り消したりできます。</string>
 </resources>

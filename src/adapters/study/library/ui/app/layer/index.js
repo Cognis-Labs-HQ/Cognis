@@ -107,6 +107,7 @@ export async function mount(root, { signal } = {}) {
           : i18n.t("gateway.study.explore");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
+        signal,
         allowCustomization: false,
         contentScrolling: false,
         elements: [
@@ -130,7 +131,8 @@ export async function mount(root, { signal } = {}) {
             {
                 id: "explore-layers",
                 label: i18n.t("gateway.study.explore"),
-                render: () => menu.render(),
+                render: () =>
+                    `<nav class="library-layer-navigation">${menu.render()}</nav>`,
             },
         ],
         toolbarScrollable: true,
@@ -149,6 +151,7 @@ export async function mount(root, { signal } = {}) {
     if (canCreate) {
         const createButton = document.createElement("button");
         createButton.type = "button";
+        createButton.setAttribute("data-library-create-entry", "");
         createButton.className = "btn-confirm";
         createButton.innerHTML =
             '<span class="library-create-action" aria-hidden="true">+</span>';

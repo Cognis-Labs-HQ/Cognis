@@ -367,8 +367,10 @@ test("dashboard layout resumes deferred login setup after rendering", () => {
         "utf8",
     );
     assert.match(source, /keyring:hasDeferredSetup/);
-    assert.match(source, /uiCtx\.runFlow\("complete-login", \{\}\)/);
-    assert.match(source, /scheduleDeferredLoginSetup\(i18n\)/);
+    assert.match(source, /uiCtx\.runFlow\("complete-login", \{ signal \}\)/);
+    assert.match(source, /scheduleDeferredLoginSetup\(i18n, slots\.signal\)/);
+    assert.match(source, /registerPageReadinessBlocker/);
+    assert.match(source, /id: "layout:deferredLoginSetup", order: -100/);
 });
 
 test("docs page uses signal to clean up its popstate listener", () => {

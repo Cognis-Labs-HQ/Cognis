@@ -1,4 +1,11 @@
 <resources>
+  <string name="gateway.study.tutorial.title">Study を使い始める</string>
+  <string name="gateway.study.tutorial.navigation.title">学習ツールを選ぶ</string>
+  <string name="gateway.study.tutorial.navigation.body">Explore では登録した言語を閲覧できます。フラッシュカードなどのツールはアカウントで利用可能な場合にここへ表示されます。</string>
+  <string name="gateway.study.tutorial.languages.title">学習する言語</string>
+  <string name="gateway.study.tutorial.languages.body">登録した言語を切り替えます。登録の変更には Study の設定を使います。</string>
+  <string name="gateway.study.tutorial.modules.title">学習モジュールを開く</string>
+  <string name="gateway.study.tutorial.modules.body">これらのカードから学習ツールを開けます。各言語のガイドでは、そのコレクションとカード操作を案内します。</string>
   <string name="gateway.study.picker.title">学習言語を選択</string>
   <string name="gateway.study.picker.select">言語を選択してください：</string>
   <string name="gateway.study.page_subtitle">言語学習ダッシュボード</string>
@@ -48,7 +55,7 @@
   <string name="gateway.study.library_components">構成要素</string>
   <string name="gateway.study.library_used_by">使用元</string>
   <string name="gateway.study.library_no_relationships">関連する項目はありません。</string>
-    <string name="gateway.study.library_fields">フィールド</string>
+  <string name="gateway.study.library_fields">フィールド</string>
   <string name="gateway.study.library_definitions">定義</string>
   <string name="gateway.study.library_alternate_definitions">別の定義</string>
   <string name="gateway.study.library_provenance">来歴</string>
@@ -63,7 +70,7 @@
   <string name="gateway.study.favourite_failed">Study のお気に入りを更新できませんでした。</string>
   <string name="gateway.study.favourite_added">お気に入りに追加しました。</string>
   <string name="gateway.study.favourite_removed">お気に入りから削除しました。</string>
-<string name="gateway.study.drawing.title">書き取り練習</string>
+  <string name="gateway.study.drawing.title">書き取り練習</string>
   <string name="gateway.study.drawing.guidance">全ガイドを表示</string>
   <string name="gateway.study.drawing.well_done">よくできました</string>
   <string name="gateway.study.drawing.loser">負け！</string>
@@ -72,4 +79,13 @@
   <string name="gateway.study.drawing.reveal">文字を表示</string>
   <string name="gateway.study.drawing_open_card">Explore でカードを開きますか？</string>
   <string name="gateway.study.drawing_open_card_body">表示したカードを Explore で開き、このページを離れますか？</string>
+  <string name="gateway.study.tutorial.preferences.title">学習の設定</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.title">学習する言語</string>
+  <string name="gateway.study.tutorial.preferences.learning.languages.body">導入済みの言語モジュールから、学習する言語を選びます。</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.title">利用できる学習機能</string>
+  <string name="gateway.study.tutorial.preferences.available.activities.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
+  <string name="gateway.study.tutorial.dictionary.title">内容を検索する</string>
+  <string name="gateway.study.tutorial.dictionary.body">利用できる辞書で単語や表現を調べます。検索結果はカードを探したり作成したりする際に役立ちます。</string>
+  <string name="gateway.study.tutorial.settings.title">学習する言語を管理する</string>
+  <string name="gateway.study.tutorial.settings.body">学習設定で学ぶ言語と教える言語を選びます。登録済みの学習言語には専用のガイドが表示されます。</string>
 </resources>

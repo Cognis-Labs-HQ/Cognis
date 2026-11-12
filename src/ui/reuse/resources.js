@@ -26,6 +26,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "choice-checkbox.css",
     "composition-input.css",
     "document-diff.css",
+    "floating-menu.css",
     "floating-window.css",
     "graph.css",
     "hamburger-menu.css",
@@ -44,6 +45,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "theme.css",
     "toast.css",
     "top-banners.css",
+    "tutorials.css",
 ]);
 
 function normalizeResourcePath(path, extension) {

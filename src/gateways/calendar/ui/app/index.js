@@ -1,3 +1,4 @@
+import { guides } from "./guides.js";
 import { calendarFetch as apiFetch } from "../offline-client.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
@@ -480,6 +481,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     );
 
     composer = createPageComposer(root, {
+        tutorials: guides,
         signal,
         allowCustomization: false,
         requireAccountSession: !shareContext,

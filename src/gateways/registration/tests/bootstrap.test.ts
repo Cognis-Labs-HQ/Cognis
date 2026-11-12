@@ -139,6 +139,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
 
     const registeredSections = [];
     const registeredPlugins = [];
+    const registeredTutorials = [];
     const registeredStaticDirs = [];
     const registeredAdapterStaticDirs = [];
     const registeredTypingMessages = [];
@@ -147,6 +148,9 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         capabilities: createCapabilities(map) as any,
         routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
+            registerCapabilityProvider(provider) {
+                registeredTutorials.push(provider);
+            },
             registerAdminSection(section) {
                 registeredSections.push(section);
             },
@@ -196,6 +200,14 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
                 ),
         ),
         true,
+    );
+    assert.ok(
+        registeredTutorials.some(
+            (provider) =>
+                provider.providesCapabilities.includes(
+                    "registration:pageTutorials",
+                ) && provider.access.minRole === "admin",
+        ),
     );
     const staticDir = registeredStaticDirs.find(
         (entry) => entry.id === "registration",
@@ -310,6 +322,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
         } as any,
         routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
+            registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
             registerStaticDir() {},
@@ -392,6 +405,7 @@ test("registration:public:register capability throws when gateway is disabled", 
         } as any,
         routeRegistry: { register() {}, registerPrefix() {} } as any,
         uiRegistry: {
+            registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
             registerStaticDir() {},
@@ -477,6 +491,7 @@ test("registration adapter routes announce controls and accept empty config save
         capabilities: capabilityStore,
         routeRegistry,
         uiRegistry: {
+            registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
             registerStaticDir() {},

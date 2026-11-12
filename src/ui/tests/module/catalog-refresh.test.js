@@ -1,3 +1,4 @@
+import { guides } from "../../app/modules/guides.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -134,6 +135,7 @@ async function fixture(context) {
     const page = await importTestModule(
         new URL("../../app/modules/index.js", import.meta.url),
         {
+            "./guides.js": { guides },
             "./catalog.js": catalog,
             "./filters.js": filters,
             "../../reuse/i18n.js": {
