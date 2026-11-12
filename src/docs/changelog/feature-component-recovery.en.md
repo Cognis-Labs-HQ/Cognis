@@ -172,6 +172,10 @@ Card opening is bound to the tutorial branch before clicking. Restart and comple
 
 The administrator-only adapter catalog at `GET /api/v1/gateways/tfa/adapters` publishes each method’s `config`, `enable` and `disable` endpoints. Component lifecycle commands consume these advertised controls for individual and bulk operations instead of guessing routes. The gateway enforces administrator authorization on the catalog and each control; methods do not advertise a test action because this gateway does not implement one.
 
+## Catalog Translation Recovery
+
+The authenticated catalog strings endpoint serves the requested cached locale when available and falls back to cached English when that locale is missing. Responses identify the served language with `Content-Language`; unknown modules and modules without either usable bundle still return 404. Manual Refresh scans all configured server sources before preparing catalog translations, so a broken cached bundle or an unloaded source list cannot prevent the repair scan. A failed preparation retains the last published catalog and releases the refresh button for another attempt.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.

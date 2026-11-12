@@ -563,9 +563,16 @@ async function discoverConfiguredSources(
     refreshMarketplace();
 }
 
-async function refreshMarketplaceData() {
-    await loadKnownModules();
-    await discoverConfiguredSources(true);
+async function refreshMarketplaceData(signal) {
+    // Repair the source cache before reading presentation data that may be broken.
+    discoverySequence++;
+    const { sourceFailures } = await loadAvailableModules(undefined, true, {
+        signal,
+    });
+    if (signal.aborted) return;
+    reportSourceFailures(sourceFailures);
+    marketplaceEtag = undefined;
+    await loadKnownModules(false, signal);
 }
 
 function bindInteractions(root, signal) {
@@ -645,7 +652,7 @@ function bindInteractions(root, signal) {
                 marketplaceRefreshPending = true;
                 refreshMarketplace();
                 try {
-                    await refreshMarketplaceData();
+                    await refreshMarketplaceData(signal);
                     showToast(i18n.t("ui.app.modules.refresh_complete"), {
                         type: "success",
                     });

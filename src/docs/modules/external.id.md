@@ -272,3 +272,7 @@ Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace
 ## Tutorial terpandu
 
 Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
+
+## Pemulihan Terjemahan Katalog
+
+Endpoint terjemahan katalog yang diautentikasi menyajikan bahasa yang diminta dari cache jika tersedia, lalu menggunakan bahasa Inggris dalam cache jika bahasa tersebut tidak tersedia. Respons menyatakan bahasa yang disajikan melalui `Content-Language`; modul yang tidak dikenal dan modul tanpa bundel yang dapat digunakan tetap mengembalikan 404. Penyegaran manual memindai seluruh sumber yang dikonfigurasi di server sebelum menyiapkan terjemahan katalog, sehingga bundel cache yang rusak atau daftar sumber yang belum dimuat tidak menghalangi pemindaian pemulihan. Jika persiapan gagal, katalog terakhir tetap tersedia dan tombol penyegaran dapat digunakan kembali.

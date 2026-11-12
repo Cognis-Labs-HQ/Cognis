@@ -272,3 +272,7 @@ Installation resolves credentials against the same provider, endpoint and namesp
 ## Guided tutorials
 
 Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.
+
+## Catalog Translation Recovery
+
+The authenticated catalog strings endpoint serves the requested cached locale when available and falls back to cached English when that locale is missing. Responses identify the served language with `Content-Language`; unknown modules and modules without either usable bundle still return 404. Manual Refresh scans all configured server sources before preparing catalog translations, so a broken cached bundle or an unloaded source list cannot prevent the repair scan. A failed preparation retains the last published catalog and releases the refresh button for another attempt.

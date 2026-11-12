@@ -172,6 +172,10 @@ Pembukaan kartu terikat pada cabang tutorial sebelum klik. Mulai ulang dan seles
 
 Katalog adaptor khusus administrator di `GET /api/v1/gateways/tfa/adapters` menyediakan endpoint `config`, `enable`, dan `disable` untuk setiap metode. Perintah siklus hidup komponen menggunakan kontrol yang dipublikasikan ini untuk operasi tunggal maupun massal, tanpa menebak rute. Gateway memeriksa hak administrator pada katalog dan setiap kontrol. Metode tidak menawarkan tindakan uji karena gateway ini tidak mengimplementasikannya.
 
+## Pemulihan Terjemahan Katalog
+
+Endpoint terjemahan katalog yang diautentikasi menyajikan bahasa yang diminta dari cache jika tersedia, lalu menggunakan bahasa Inggris dalam cache jika bahasa tersebut tidak tersedia. Respons menyatakan bahasa yang disajikan melalui `Content-Language`; modul yang tidak dikenal dan modul tanpa bundel yang dapat digunakan tetap mengembalikan 404. Penyegaran manual memindai seluruh sumber yang dikonfigurasi di server sebelum menyiapkan terjemahan katalog, sehingga bundel cache yang rusak atau daftar sumber yang belum dimuat tidak menghalangi pemindaian pemulihan. Jika persiapan gagal, katalog terakhir tetap tersedia dan tombol penyegaran dapat digunakan kembali.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.

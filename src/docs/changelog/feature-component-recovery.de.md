@@ -172,6 +172,10 @@ Das Öffnen einer Karte ist vor dem Klick an den Anleitungszweig gebunden. Neust
 
 Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET /api/v1/gateways/tfa/adapters` veröffentlicht für jede Methode die Endpunkte `config`, `enable` und `disable`. Komponentenbefehle verwenden diese veröffentlichten Endpunkte für einzelne und gebündelte Aktionen, statt Routen zu erraten. Das Gateway prüft Administratorrechte sowohl beim Katalog als auch bei jeder Aktion. Eine Testaktion wird nicht angeboten, da das Gateway keine implementiert.
 
+## Wiederherstellung von Katalogübersetzungen
+
+Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angeforderte Sprache aus dem Cache und verwendet bei fehlenden Daten Englisch aus dem Cache. `Content-Language` bezeichnet die tatsächlich gelieferte Sprache; unbekannte Module und Module ohne nutzbares Sprachpaket liefern weiterhin 404. Manuelles Aktualisieren durchsucht alle serverseitig konfigurierten Quellen, bevor die Katalogübersetzungen vorbereitet werden. Fehlerhafte Sprachpakete oder eine noch nicht geladene Quellenliste verhindern dadurch keinen Reparaturscan. Schlägt die Vorbereitung fehl, bleibt der zuletzt veröffentlichte Katalog erhalten und die Aktualisierungsschaltfläche wird für einen weiteren Versuch freigegeben.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.

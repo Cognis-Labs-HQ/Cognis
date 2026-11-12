@@ -272,3 +272,7 @@ Die Installation löst Zugangsdaten anhand desselben Anbieter-, Endpunkt- und Na
 ## Geführte Tutorials
 
 Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
+
+## Wiederherstellung von Katalogübersetzungen
+
+Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angeforderte Sprache aus dem Cache und verwendet bei fehlenden Daten Englisch aus dem Cache. `Content-Language` bezeichnet die tatsächlich gelieferte Sprache; unbekannte Module und Module ohne nutzbares Sprachpaket liefern weiterhin 404. Manuelles Aktualisieren durchsucht alle serverseitig konfigurierten Quellen, bevor die Katalogübersetzungen vorbereitet werden. Fehlerhafte Sprachpakete oder eine noch nicht geladene Quellenliste verhindern dadurch keinen Reparaturscan. Schlägt die Vorbereitung fehl, bleibt der zuletzt veröffentlichte Katalog erhalten und die Aktualisierungsschaltfläche wird für einen weiteren Versuch freigegeben.
