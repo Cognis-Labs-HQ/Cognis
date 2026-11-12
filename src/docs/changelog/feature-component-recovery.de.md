@@ -218,3 +218,4 @@ Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angefordert
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
 - [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)
 - [2a16b8206](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a16b820668bf7e7df6b8076b95fd655394ad27d)
+- [c39f46dac](https://github.com/Cognis-Labs-HQ/Cognis/commit/c39f46dac94426e706b10877115e66eae43248f2)
