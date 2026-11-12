@@ -168,6 +168,10 @@ Browser provider ownership is captured from the registering bootstrap scope, bef
 
 Card opening is bound to the tutorial branch before clicking. Restart and completion cancel pending detail presentation, including asynchronous composition and popup preparation. A retry starts immediately, and an older completion cannot release a newer attempt’s lock. Ordinary card openings keep their page lifetime.
 
+## Adapter Management Controls
+
+The administrator-only adapter catalog at `GET /api/v1/gateways/tfa/adapters` publishes each method’s `config`, `enable` and `disable` endpoints. Component lifecycle commands consume these advertised controls for individual and bulk operations instead of guessing routes. The gateway enforces administrator authorization on the catalog and each control; methods do not advertise a test action because this gateway does not implement one.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolate component failures and add lifecycle commands.
@@ -208,3 +212,4 @@ Card opening is bound to the tutorial branch before clicking. Restart and comple
 - [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
 - [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
+- [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)

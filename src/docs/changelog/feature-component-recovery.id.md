@@ -168,6 +168,10 @@ Kepemilikan penyedia browser dicatat dari lingkup bootstrap yang mendaftarkannya
 
 Pembukaan kartu terikat pada cabang tutorial sebelum klik. Mulai ulang dan selesai membatalkan tampilan detail tertunda, termasuk penyusunan asinkron dan persiapan popup. Percobaan baru dapat dimulai segera, dan penyelesaian lama tidak dapat melepaskan kunci percobaan baru. Pembukaan kartu biasa mempertahankan masa hidup halaman.
 
+## Kontrol Pengelolaan Adaptor
+
+Katalog adaptor khusus administrator di `GET /api/v1/gateways/tfa/adapters` menyediakan endpoint `config`, `enable`, dan `disable` untuk setiap metode. Perintah siklus hidup komponen menggunakan kontrol yang dipublikasikan ini untuk operasi tunggal maupun massal, tanpa menebak rute. Gateway memeriksa hak administrator pada katalog dan setiap kontrol. Metode tidak menawarkan tindakan uji karena gateway ini tidak mengimplementasikannya.
+
 ## Commit
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Isolasi kegagalan komponen dan tambahkan perintah siklus hidup.
@@ -208,3 +212,4 @@ Pembukaan kartu terikat pada cabang tutorial sebelum klik. Mulai ulang dan seles
 - [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
 - [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
+- [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)

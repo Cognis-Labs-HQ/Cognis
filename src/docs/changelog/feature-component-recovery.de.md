@@ -168,6 +168,10 @@ Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstra
 
 Das Öffnen einer Karte ist vor dem Klick an den Anleitungszweig gebunden. Neustart und Abschluss brechen die ausstehende Detailanzeige einschließlich asynchroner Zusammenstellung und Dialogvorbereitung ab. Neue Versuche starten sofort; ältere Abschlüsse geben keine neueren Versuche frei. Normale Kartenaufrufe behalten ihre Seitenlebensdauer.
 
+## Steuerung der Adapterverwaltung
+
+Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET /api/v1/gateways/tfa/adapters` veröffentlicht für jede Methode die Endpunkte `config`, `enable` und `disable`. Komponentenbefehle verwenden diese veröffentlichten Endpunkte für einzelne und gebündelte Aktionen, statt Routen zu erraten. Das Gateway prüft Administratorrechte sowohl beim Katalog als auch bei jeder Aktion. Eine Testaktion wird nicht angeboten, da das Gateway keine implementiert.
+
 ## Commits
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
@@ -208,3 +212,4 @@ Das Öffnen einer Karte ist vor dem Klick an den Anleitungszweig gebunden. Neust
 - [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
 - [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
+- [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)

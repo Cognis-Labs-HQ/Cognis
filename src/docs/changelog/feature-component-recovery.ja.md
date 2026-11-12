@@ -168,6 +168,10 @@ cognisctl component:disable module analytics --force
 
 クリック前にカードの表示処理をチュートリアルの分岐に結び付けます。再開始と完了では、非同期の構成やダイアログ準備を含む詳細表示を中止します。次の試行はすぐ始められ、古い処理の完了が新しい試行のロックを解放しません。通常のカード表示はページの有効期間を維持します。
 
+## アダプター管理の操作
+
+管理者専用のアダプターカタログ `GET /api/v1/gateways/tfa/adapters` は、各方式の `config`、`enable`、`disable` エンドポイントを公開します。コンポーネントのライフサイクルコマンドは、単体操作と一括操作の両方で、ルートを推測せずに公開された操作を使用します。ゲートウェイはカタログと各操作で管理者権限を確認します。このゲートウェイはテスト操作を実装していないため、各方式もテスト操作を公開しません。
+
 ## コミット
 
 - [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — コンポーネント障害の分離と管理コマンドの追加.
@@ -208,3 +212,4 @@ cognisctl component:disable module analytics --force
 - [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
 - [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
 - [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
+- [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)
