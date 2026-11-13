@@ -157,7 +157,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     private parseBroadcastRow(
         row: Record<string, unknown>,
     ): NotificationBroadcast {
-        let parsedRoles = [];
+        let parsedRoles: unknown = [];
         try {
             parsedRoles = JSON.parse(
                 String(row.target_roles_json ?? "[]"),
@@ -426,6 +426,9 @@ export class DbNotificationStore implements NotificationConfigStore {
         });
         const row = result.rows?.[0];
         if (!row) return null;
+        if (typeof row.config_json !== "string") {
+            throw new Error("invalid_notification_provider_config");
+        }
         return JSON.parse(row.config_json) as Record<string, unknown>;
     }
 

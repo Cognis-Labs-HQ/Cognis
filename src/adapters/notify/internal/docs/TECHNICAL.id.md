@@ -31,6 +31,10 @@ Produsen dapat melampirkan peta `metadata.localizedText` berdasarkan locale deng
 
 Kedua penyimpanan mempertahankan lima puluh notifikasi per penerima dan membuang yang tertua. Payload basis data terenkripsi bertahan dengan DATA_ENCRYPTION_KEY stabil. Tanpa DB data hilang saat restart; produksi menolak kunci hilang. Kunci pengembangan lokal proses tidak dapat mendekripsi data lama setelah restart. Penghapusan akun membersihkan inbox melalui pemilik data.
 
+### Kontrak Pengiriman Bertipe
+
+Pengiriman internal memperoleh eksekutor basis data terstruktur melalui ctx. Kontrak pencatatannya memakai tingkat keparahan bootstrap yang didukung. Enkripsi, otorisasi kotak masuk, dan pengiriman yang selalu aktif tidak berubah.
+
 ## Keamanan
 
 Rute notifikasi mengautentikasi penerima dan mengakses rekaman akunnya. Persistensi memerlukan DATA_ENCRYPTION_KEY; jaga kunci tetap stabil dan rahasia.

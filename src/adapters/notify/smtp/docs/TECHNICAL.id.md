@@ -90,6 +90,10 @@ Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa me
 
 Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga puluh detik. Koneksi yang macet dihancurkan agar permintaan diagnostik tidak terus tertunda. TLS langsung dan STARTTLS memakai nama host yang dikonfigurasi untuk identitas TLS dan SNI nama DNS; alamat IP tidak dikirim sebagai nama SNI.
 
+### Kontrak Pengiriman Bertipe
+
+Entri antrean SMTP mempertahankan subjek wajibnya selama pengiriman dan percobaan ulang. Opsi koneksi TLS membawa sinyal pembatalan untuk TLS langsung dan STARTTLS; kebijakan sertifikat, batas waktu, dan pembersihan koneksi tidak berubah.
+
 ## Keamanan
 
 Rahasia SMTP dikelola administrator. Mode TLS dan validasi sertifikat menentukan perlindungan; email verifikasi memakai tujuan terdaftar dan alamat penerima tervalidasi.

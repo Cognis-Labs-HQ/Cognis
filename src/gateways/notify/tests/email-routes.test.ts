@@ -1,31 +1,33 @@
+import { createRequest, createResponse } from "./reuse/http.js";
 import { emailVerificationKey } from "../bootstrap/email-verification-key.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createUserEmailRoutes } from "../bootstrap.js";
+import { createUserEmailRoutes as createRoutes } from "../bootstrap.js";
 import { DbNotificationStore } from "../notification-store.js";
-import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
+import { NotificationTestDatabase } from "./reuse/database.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "../../../api/reuse/verify-token.js";
-import { CoreNotificationGateway } from "../gateway.js";
-import { VolatileNotificationPreferenceStore } from "../gateway.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import { issueAccessToken, createAuthContext } from "./reuse/auth.js";
 
 const EMAIL_PURPOSE = "test:verification";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
-    const db = new InMemoryTestExecutor();
+    const db = new NotificationTestDatabase();
     const store = new DbNotificationStore(db);
     await store.ensureSchema();
     return store;
 }
 
+function createUserEmailRoutes(...args: Parameters<typeof createRoutes>) {
+    args[5] ??= createAuthContext();
+    return createRoutes(...args);
+}
+
 function makeGateway() {
-    return new CoreNotificationGateway(
-        new VolatileNotificationPreferenceStore(),
-    );
+    return { canSendVerificationEmail: () => false };
 }
 
 function makeEmailDelivery(gateway: {
@@ -60,19 +62,19 @@ function makeRequest(
     token: string,
 ) {
     const chunks = [Buffer.from(JSON.stringify(body))];
-    return {
+    return createRequest({
         method,
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
-    } as any;
+    });
 }
 
 function makeResponse() {
     let status = 0;
     let payload = "";
-    return {
+    return createResponse({
         writeHead(code: number) {
             status = code;
         },
@@ -85,7 +87,7 @@ function makeResponse() {
         get payload() {
             return payload;
         },
-    } as any;
+    });
 }
 
 test("adding the first email auto-sets it as primary", async () => {
@@ -186,10 +188,10 @@ test("cannot delete primary email", async () => {
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "DELETE",
             headers: { authorization: `Bearer ${token}` },
-        } as any,
+        }),
         res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com",
@@ -219,7 +221,7 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
         ) => {
             sentEmails.push({ to, code });
         },
-    } as any;
+    };
 
     const route = createUserEmailRoutes(
         notifStore,
@@ -278,7 +280,7 @@ test("email verification codes use configured TFA SMTP code length", async () =>
         ) => {
             sentEmails.push({ to, code });
         },
-    } as any;
+    };
 
     const route = createUserEmailRoutes(
         notifStore,
@@ -353,15 +355,15 @@ test("link verification GET redirects to /verify-email", async () => {
         "http://localhost",
     );
     let capturedLocation = "";
-    const res = {
+    const res = createResponse({
         writeHead(_code: number, headers?: Record<string, string>) {
             if (headers?.location) capturedLocation = headers.location;
         },
         end() {},
-    } as any;
+    });
 
     await route(
-        { method: "GET", headers: {} } as any,
+        createRequest({ method: "GET", headers: {} }),
         res,
         new URL(
             `http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify?token=${linkToken}`,
@@ -474,7 +476,7 @@ test("add email issues both TFA code and verify token and includes link in email
         ) => {
             sentEmails.push({ to, code, verifyUrl });
         },
-    } as any;
+    };
 
     const route = createUserEmailRoutes(
         notifStore,
@@ -521,7 +523,7 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
     const res = makeResponse();
 
     await route(
-        { method: "GET", headers: {} } as any,
+        createRequest({ method: "GET", headers: {} }),
         res,
         new URL(
             `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
@@ -563,7 +565,7 @@ test("verify-tokens/status returns pending:false after token is consumed", async
 
     const statusRes = makeResponse();
     await route(
-        { method: "GET", headers: {} } as any,
+        createRequest({ method: "GET", headers: {} }),
         statusRes,
         new URL(
             `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
@@ -594,10 +596,10 @@ test("owner can list another user's emails", async () => {
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${ownerToken}` },
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
@@ -623,7 +625,7 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
     const res = makeResponse();
 
     await route(
-        { method: "GET", headers: {} } as any,
+        createRequest({ method: "GET", headers: {} }),
         res,
         new URL(
             "http://localhost/api/v1/notify/verify-tokens/status?token=bogus",

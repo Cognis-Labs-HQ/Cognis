@@ -127,18 +127,16 @@ export async function openSession(
     allowSelfSigned?: boolean,
     signal?: AbortSignal,
 ): Promise<SmtpSession> {
+    const options: tls.ConnectionOptions & { signal?: AbortSignal } = {
+        host,
+        port,
+        servername: net.isIP(host) ? undefined : host,
+        rejectUnauthorized: !allowSelfSigned,
+        signal,
+    };
     const socket =
         secure === "tls"
-            ? await awaitConnection(
-                  tls.connect({
-                      host,
-                      port,
-                      servername: net.isIP(host) ? undefined : host,
-                      rejectUnauthorized: !allowSelfSigned,
-                      signal,
-                  }),
-                  "secureConnect",
-              )
+            ? await awaitConnection(tls.connect(options), "secureConnect")
             : await awaitConnection(
                   net.createConnection({ host, port, signal }),
                   "connect",
@@ -153,15 +151,13 @@ export async function upgradeToTls(
     signal?: AbortSignal,
 ): Promise<SmtpSession> {
     session.detach();
-    const socket = await awaitConnection(
-        tls.connect({
-            socket: session.socket,
-            host,
-            servername: net.isIP(host) ? undefined : host,
-            rejectUnauthorized: !allowSelfSigned,
-            signal,
-        }),
-        "secureConnect",
-    );
+    const options: tls.ConnectionOptions & { signal?: AbortSignal } = {
+        socket: session.socket,
+        host,
+        servername: net.isIP(host) ? undefined : host,
+        rejectUnauthorized: !allowSelfSigned,
+        signal,
+    };
+    const socket = await awaitConnection(tls.connect(options), "secureConnect");
     return new SmtpSession(socket);
 }

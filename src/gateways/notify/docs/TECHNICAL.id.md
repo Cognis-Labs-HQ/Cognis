@@ -51,6 +51,10 @@ Mode Luring dan Broadcast berbagi tumpukan banner di atas header. Mode Luring me
 
 Administrator dapat menguji konfigurasi sebelum pengirim diaktifkan. Pengujian tidak mengaktifkan pengiriman biasa; setiap penyedia mengelola transportasi diagnostik dan pembersihannya.
 
+### Kontrak Pengiriman Bertipe
+
+Pemeriksaan antrean pengirim bersifat opsional dan memiliki tipe dalam kontrak Notify. Bootstrap memuat penyimpanan milik gateway secara langsung serta menyediakan operasi email dan preferensinya tanpa penegasan tipe konstruktor yang tidak lengkap. Validasi siaran menghasilkan peran dan jadwal yang valid sebelum penyimpanan.
+
 ## Keamanan
 
 Verifikasi email mengikat akun dan alamat. Pengiriman hilang tidak membatalkan kebijakan; registrasi tujuan terbatas pada bootstrap dan pelepasan mencegah pesan terlambat.

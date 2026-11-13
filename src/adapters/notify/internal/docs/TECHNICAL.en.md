@@ -29,6 +29,10 @@ Producers may attach a `metadata.localizedText` map keyed by locale, with `subje
 
 Both stores retain up to fifty notifications per recipient, evicting the oldest when full. The database store encrypts persisted payloads and survives restarts with a stable DATA_ENCRYPTION_KEY. Without DB storage notifications are lost on restart; production bootstrap rejects a missing encryption key. Development may use a process-local key, which cannot decrypt older data after restart. Account deletion purges the inbox through the registered account-data owner.
 
+### Typed Delivery Contracts
+
+Internal delivery obtains the structured database executor through ctx. Its logging contract uses the supported bootstrap severity levels. Encryption, inbox authorization and always-on delivery remain unchanged.
+
 ## Security
 
 Notification routes authenticate the recipient and operate on that account's records. Persistent notifications require DATA_ENCRYPTION_KEY; keep that deployment key stable and secret.

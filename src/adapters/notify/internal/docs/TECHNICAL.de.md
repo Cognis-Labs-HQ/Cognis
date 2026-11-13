@@ -29,6 +29,10 @@ Erzeuger können eine nach Gebietsschema sortierte `metadata.localizedText`-Map 
 
 Beide Speicher behalten fünfzig Einträge pro Empfänger und entfernen die ältesten. Datenbankinhalte sind verschlüsselt und überstehen Neustarts mit stabilem DATA_ENCRYPTION_KEY. Ohne Datenbank gehen Einträge verloren; Produktion verweigert fehlende Schlüssel. Ein Entwicklungsschlüssel gilt nur im Prozess und entschlüsselt nach Neustart keine alten Daten. Kontolöschung leert das Postfach über den Datenbesitzer.
 
+### Typisierte Zustellverträge
+
+Die interne Zustellung bezieht den strukturierten Datenbankzugriff über ctx. Der Protokollierungsvertrag verwendet die unterstützten Bootstrap-Schweregrade. Verschlüsselung, Postfachberechtigungen und stets aktive Zustellung bleiben unverändert.
+
 ## Sicherheit
 
 Benachrichtigungsrouten prüfen den Empfänger und bearbeiten dessen Einträge. Dauerhafte Nachrichten benötigen DATA_ENCRYPTION_KEY; halte den Schlüssel stabil und geheim.
