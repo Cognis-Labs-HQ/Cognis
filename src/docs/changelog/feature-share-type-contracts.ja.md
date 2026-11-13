@@ -12,4 +12,4 @@ Share 1.9.9では、発行・更新・一覧取得の機能が返すトークン
 
 ## コミット
 
-- [c8aaf647458133c3c7d6dfd807ed63563bbb682f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8aaf647458133c3c7d6dfd807ed63563bbb682f)
+- [f8c570ec93b88599220fcbf1ec5b18d617e01136](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8c570ec93b88599220fcbf1ec5b18d617e01136)
