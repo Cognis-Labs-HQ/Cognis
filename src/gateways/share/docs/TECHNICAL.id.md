@@ -92,6 +92,14 @@ Halaman berbagi tautan yang terpasang dapat membuka halaman komponen yang valid 
 
 Halaman berbagi memeriksa sinyal setelah persiapan asinkron. Penutupan mencegah render terlambat; penonaktifan membatalkan pemeliharaan dan notifikasi kedaluwarsa berikutnya.
 
+### Periksa kedaluwarsa saat akses
+
+Berbagi langsung kepada pengguna tidak lagi memberi akses setelah kedaluwarsa, termasuk berbagi yang telah dibuka dengan kata sandi dan disimpan dalam riwayat. Nilai kedaluwarsa kosong tetap tanpa batas; nilai tidak kosong yang tidak valid menolak akses.
+
+### Hormati pencabutan hak eksplisit
+
+PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku.
+
 ## Keamanan
 
 ### Batas Keamanan

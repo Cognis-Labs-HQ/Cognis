@@ -86,6 +86,14 @@ A mounted link-share page may programmatically spawn an otherwise valid componen
 
 Share page startup checks the page abort signal after asynchronous preparation. Closing a guest page prevents late rendering; disabling Share cancels its maintenance lifetime so a pending expiry scan cannot send later notices.
 
+### Enforce expiry at access checks
+
+Direct user shares stop granting access at expiry, including password-unlocked shares retained for history. An empty expiry remains unlimited; malformed nonempty expiry values deny access.
+
+### Honor explicit grant revocation
+
+PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force.
+
 ## Security
 
 ### Security Boundary
