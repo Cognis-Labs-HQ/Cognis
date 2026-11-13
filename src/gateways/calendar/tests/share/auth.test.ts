@@ -123,3 +123,36 @@ test("resolveGatewayCalendarShare challenges for a protected calendar token", as
         { unauthorized: true },
     );
 });
+
+test("readSharePassphrase accepts undefined Node header entries", () => {
+    const url = new URL(
+        "http://localhost/calendar.ics?passphrase=query-secret",
+    );
+    assert.equal(
+        readSharePassphrase(
+            {
+                headers: {
+                    "x-cognis-calendar-passphrase": undefined,
+                    authorization: undefined,
+                },
+            },
+            url,
+        ),
+        "query-secret",
+    );
+    assert.equal(
+        readSharePassphrase(
+            {
+                headers: {
+                    "x-cognis-calendar-passphrase": [
+                        "header-secret",
+                        "ignored",
+                    ],
+                    authorization: undefined,
+                },
+            },
+            url,
+        ),
+        "header-secret",
+    );
+});

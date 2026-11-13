@@ -94,6 +94,10 @@ Shared-calendar period headings follow the current date and view through respons
 
 View buttons update their visible selection and pressed state together for every date presentation. View buttons keep their visible and pressed selection states synchronized.
 
+### Typed Calendar Boundaries
+
+Calendar event, persistence, bootstrap and adapter HTTP contracts now describe the implemented behavior. ICS and CalDAV retain their existing permissions, passphrase handling and feed formats.
+
 ## Security
 
 Calendar mutations require owned or delegated edit access. Share resolution checks current scope, expiry and protection; reminder delivery uses its bootstrap-registered notification category rather than registering during requests.

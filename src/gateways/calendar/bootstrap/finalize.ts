@@ -1,3 +1,8 @@
+import type { Ctx } from "@cognis/core";
+import type { GatewayBootstrapContext } from "../../shared.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import type { resolveRouteContext } from "../../../api/reuse/route-context.js";
+
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,12 +12,34 @@ import { createStatusPreferenceRoutes } from "./status-preference/index.js";
 import { registerCalendarUi } from "./ui-registration.js";
 import { registerCalendarComponent } from "./component-registration.js";
 import { createCalendarHtmlRoute } from "./html-route.js";
+
+type CalendarRouteOptions = Parameters<typeof createCalendarCoreRoutes>[0];
+type FinalizeCalendarInput = Pick<
+    CalendarRouteOptions,
+    | "gateway"
+    | "shareRegistry"
+    | "routeContext"
+    | "resolveShareableUsers"
+    | "resolveAccountDisplayName"
+    | "getDispatchNotification"
+> & {
+    ctx: GatewayBootstrapContext;
+    routeHelpers: ReturnType<typeof resolveRouteContext>;
+    adaptersRoot: string;
+    getPreferenceStore: () => UserPreferenceStore | undefined;
+    resolveAccountId: CalendarRouteOptions["resolveAccountId"] | undefined;
+    systemCtx: Ctx | undefined;
+    gatewayRoot: string;
+};
+
 export const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
 );
 
-export async function finalizeCalendarBootstrap(input: any): Promise<void> {
+export async function finalizeCalendarBootstrap(
+    input: FinalizeCalendarInput,
+): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
