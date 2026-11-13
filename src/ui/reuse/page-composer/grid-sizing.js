@@ -61,16 +61,19 @@ export function resolveElementGridSize(element) {
     }
 
     let resolvedMax = maxValue ?? null;
+    let fullWidth = false;
     let halfWidth = false;
     let halfHeight = false;
     let fillWidth = false;
     let fillHeight = false;
     if (Array.isArray(maxValue)) {
+        fullWidth = maxValue[0] === "full";
         halfWidth = maxValue[0] === "half";
         fillWidth = maxValue[0] === "fill";
         halfHeight = maxValue[1] === "half";
         fillHeight = maxValue[1] === "fill";
-        const width = halfWidth || fillWidth ? null : (maxValue[0] ?? null);
+        const width =
+            fullWidth || halfWidth || fillWidth ? null : (maxValue[0] ?? null);
         const height = halfHeight || fillHeight ? null : (maxValue[1] ?? null);
         resolvedMax =
             width === null && height === null ? null : [width, height];
@@ -79,7 +82,7 @@ export function resolveElementGridSize(element) {
         default: defaults,
         min: minimum,
         max: resolvedMax,
-        fullWidth: false,
+        fullWidth,
         fillWidth,
         halfWidth,
         halfHeight,

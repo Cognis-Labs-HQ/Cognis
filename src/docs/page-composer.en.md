@@ -50,6 +50,8 @@ An element is a named content block declared as a plain object:
 
 Grid units are 90 px wide and tall. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
 
+Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. While dragging below the grid, the editor grows its content bounds and visible grid together before the widget is dropped.
+
 In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the full cell surface is draggable. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
 
 ### Sub-page navigation

@@ -39,6 +39,8 @@ Sebuah elemen adalah blok konten bernama:
 
 Unit grid adalah 90 px lebar dan tinggi. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
 
+Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat widget diseret ke bawah grid, editor memperluas batas konten dan grid yang terlihat secara bersamaan sebelum widget dilepas.
+
 ### Navigasi Sub-Halaman
 
 Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu. Tombol toolbar dengan `[data-composer-scroll]` berfungsi sebagai pemilih bagian.
