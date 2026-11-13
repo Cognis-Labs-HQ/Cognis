@@ -14,4 +14,4 @@ NodeNext の解決と ES2024・DOM ライブラリでサーバーとブラウザ
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d0b88d4ee27d0e4b7d7047cd3c32f77694ea3ea2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/61adeda08a08fbf2b6dc7f1cabfb6e1303410f83
