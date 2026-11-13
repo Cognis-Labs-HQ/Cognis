@@ -38,3 +38,7 @@ Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/g
 ## Berbagi dan Pengujian Andal
 
 Administrator dapat menguji konfigurasi sebelum pengirim diaktifkan. Pengujian tidak mengaktifkan pengiriman biasa; setiap penyedia mengelola transportasi diagnostik dan pembersihannya.
+
+## Kontrak Pengiriman Bertipe
+
+Pemeriksaan antrean pengirim bersifat opsional dan memiliki tipe dalam kontrak Notify. Bootstrap memuat penyimpanan milik gateway secara langsung serta menyediakan operasi email dan preferensinya tanpa penegasan tipe konstruktor yang tidak lengkap. Validasi siaran menghasilkan peran dan jadwal yang valid sebelum penyimpanan.

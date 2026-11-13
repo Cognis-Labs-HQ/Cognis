@@ -38,3 +38,7 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 ## Reliable Sharing and Tests
 
 Administrator configuration tests are available before a sender is enabled. Testing does not activate normal delivery; each provider owns its diagnostic transport and cleanup.
+
+## Typed Delivery Contracts
+
+Sender queue inspection is optional and typed by the Notify contract. Bootstrap loads the gateway-owned store directly and exposes its email and preference operations without partial constructor assertions. Broadcast validation returns validated roles and scheduling values before persistence.

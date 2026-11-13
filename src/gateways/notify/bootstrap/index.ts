@@ -39,7 +39,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const { dbExecutor, notifStore, notificationPrefStore } =
+    const { notifStore, notificationPrefStore } =
         await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
@@ -89,10 +89,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         requireAuth: (req, res, minimumRole) =>
-            routeContext?.requireAuth(req, res, minimumRole) ?? false,
+            Boolean(routeContext?.requireAuth(req, res, minimumRole)),
         readJson: (req) => readJson(req) as Promise<Record<string, unknown>>,
         log: ctx.log,
-        dbExecutor,
     });
     const registerEmailAction =
         ctx.capabilities.get<RegisterNotificationAction>(

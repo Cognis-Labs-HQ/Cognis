@@ -81,3 +81,7 @@ SMTP-Konfigurationstests funktionieren bei deaktiviertem Sender, ohne normale Zu
 ## Prüfung und Lebenszyklus
 
 Für den SMTP-Verbindungsaufbau und die TLS-Aushandlung gilt jeweils eine Frist von dreißig Sekunden. Eine blockierte Verbindung wird geschlossen, statt die Diagnoseanfrage offen zu halten. Direktes TLS und STARTTLS verwenden den konfigurierten Hostnamen für die TLS-Identität und SNI mit DNS-Namen; IP-Adressen werden nicht als SNI-Namen gesendet.
+
+## Typisierte Zustellverträge
+
+SMTP-Warteschlangeneinträge behalten ihren erforderlichen Betreff bei Zustellung und Wiederholungen. TLS-Verbindungsoptionen enthalten das Abbruchsignal für direktes TLS und STARTTLS; Zertifikatsprüfung, Zeitlimits und Verbindungsbereinigung bleiben unverändert.
