@@ -129,7 +129,7 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         setupPending: false,
     });
 
-    test("revoking setup-pending tokens excludes provided subject", () => {
+    test("revoking setup-pending tokens includes every subject", () => {
         const pendingUserToken = issueAccessToken("pending-user", "user", 60, {
             setupPending: true,
         });
@@ -143,15 +143,10 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         );
         const normalToken = issueAccessToken("normal-user", "user", 60);
 
-        const revokedCount = revokeSetupPendingAccessTokens("pending-admin");
-        assert.ok(revokedCount >= 1);
+        const revokedCount = revokeSetupPendingAccessTokens();
+        assert.ok(revokedCount >= 2);
         assert.equal(verifyAccessToken(pendingUserToken), null);
-        assert.deepEqual(verifyAccessToken(pendingAdminToken), {
-            sub: "pending-admin",
-            role: "admin",
-            providerId: "local",
-            setupPending: true,
-        });
+        assert.equal(verifyAccessToken(pendingAdminToken), null);
         assert.deepEqual(verifyAccessToken(normalToken), {
             sub: "normal-user",
             role: "user",

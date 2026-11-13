@@ -190,6 +190,12 @@ Factor verification and setup completion both use the Auth-owned final commit. `
 
 Shared behavior: [TFA](/docs/gateways/tfa/technical).
 
+### Restricted token lifecycle
+
+Persisted token format 2 requires explicit security fields and rejects unsupported formats, malformed or ambiguous records. Rejected sessions require signing in again; there is no automatic format conversion. Current valid normal, restricted and revoked credentials retain their authority across restart. Token persistence failures are reported rather than acknowledged as successful writes.
+
+The auth:revokeSetupPendingAccessTokens capability takes no arguments and revokes all pending sessions; subject exemptions are no longer supported.
+
 ## Security
 
 Authentication validates primary credentials before session issuance and any required TFA challenge. Account, role and resource authorization remain separate; keyring unlock refusal must not create or switch account identity.

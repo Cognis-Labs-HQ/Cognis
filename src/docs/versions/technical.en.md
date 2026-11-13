@@ -14,7 +14,7 @@ The public interfaces and operational rules of Component Versions.
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.34` |
+| API Server | `src/api/` | `0.13.35` |
 
 ## Configuration
 
@@ -80,7 +80,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.8`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.9`  |
 | Share                 | `src/gateways/share/`         | `1.9.10` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.9`  |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10` |

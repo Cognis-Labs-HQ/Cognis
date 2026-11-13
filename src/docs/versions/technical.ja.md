@@ -14,7 +14,7 @@
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.34`  |
+| API Server     | `src/api/` | `0.13.35`  |
 
 ## 設定
 
@@ -88,7 +88,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`    |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.8`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.9`    |
 | Share                 | `src/gateways/share/`         | `1.9.10`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.9`    |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |

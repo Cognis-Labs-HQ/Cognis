@@ -569,20 +569,14 @@ test("security PUT revokes setup-pending tokens when mandatory TFA is disabled",
     };
     let status = 0;
     let setEnforceValue: boolean | null = null;
-    let revokeExcludedSubject = "";
+    let enforcementCalls = 0;
     const preferenceStore = new VolatileUserPreferenceStore();
     const capabilities = new CapabilityStore();
     capabilities.contribute(
         "tfa:applyEnforcementPolicy",
-        async ({
-            required,
-            excludedSubject,
-        }: {
-            required: boolean;
-            excludedSubject?: string;
-        }) => {
+        async ({ required }: { required: boolean }) => {
             setEnforceValue = required;
-            revokeExcludedSubject = String(excludedSubject ?? "");
+            enforcementCalls += 1;
             return {
                 required,
                 previousRequired: true,
@@ -621,7 +615,7 @@ test("security PUT revokes setup-pending tokens when mandatory TFA is disabled",
     assert.equal(handled, true);
     assert.equal(status, 200);
     assert.equal(setEnforceValue, false);
-    assert.equal(revokeExcludedSubject, "admin-user");
+    assert.equal(enforcementCalls, 1);
 });
 
 test("security PUT does not revoke setup-pending tokens when mandatory TFA was already disabled", async () => {
