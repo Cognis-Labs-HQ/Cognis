@@ -12,4 +12,4 @@ Fikstur autentikasi menggunakan kontrak basis data terstruktur yang sebenarnya d
 
 ## Komit
 
-- [508c168554a68c00fa4493768788df625f03abe6](https://github.com/Cognis-Labs-HQ/Cognis/commit/508c168554a68c00fa4493768788df625f03abe6)
+- [f953a13e8b8ec88c0907be13cc1891c0800ff25d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f953a13e8b8ec88c0907be13cc1891c0800ff25d)
