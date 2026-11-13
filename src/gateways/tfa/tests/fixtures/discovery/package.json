@@ -1,0 +1,6 @@
+{
+    "name": "tfa-discovery-proof",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "provider.js"
+}

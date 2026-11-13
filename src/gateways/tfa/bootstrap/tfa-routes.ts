@@ -1,7 +1,13 @@
+import type { RouteLifetime } from "./route-lifetime.js";
+import {
+    commitVerifiedSession,
+    rejectExpiredAssurance,
+    type CompleteSession,
+} from "./session-completion.js";
+import type { AccessRole } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     readJson,
-    requireAuth,
     hasMinRole,
     type GatewayBootstrapContext,
 } from "../../shared.js";
@@ -22,12 +28,27 @@ export function createTfaRoutes(
     gateway: CoreTfaGateway,
     capabilities: GatewayBootstrapContext["capabilities"],
     log?: GatewayBootstrapContext["log"],
+    lifetime?: Pick<RouteLifetime, "capture" | "isCurrent">,
 ) {
+    const requireAuth = capabilities.require<
+        (
+            req: IncomingMessage,
+            res: ServerResponse,
+            minRole: AccessRole,
+        ) => {
+            sub: string;
+            role: AccessRole;
+            providerId?: string;
+            ttlSeconds: number | null;
+            setupPending?: boolean;
+        } | null
+    >("auth:requireAuth");
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const revision = lifetime?.capture();
         const logMeta = {
             component: "tfa-gateway",
             method: req.method ?? "GET",
@@ -162,17 +183,12 @@ export function createTfaRoutes(
                     ttlSeconds: number | null;
                 } | null
             >("tfa:getPendingLoginAttempt");
-            const clearPendingLoginAttempt = capabilities.get<
-                (loginAttemptId: string) => void
-            >("tfa:clearPendingLoginAttempt");
-            const issueToken = capabilities.get<
-                (
-                    subject: string,
-                    role: "user" | "teacher" | "moderator" | "admin" | "owner",
-                    ttlSeconds: number | null,
-                    options?: { issuedAt?: number; providerId?: string },
-                ) => string
-            >("auth:issueAccessToken");
+            const consumePendingLoginAttempt = capabilities.get<
+                (loginAttemptId: string) => boolean
+            >("auth:consumePendingLoginAttempt");
+            const completeSession = capabilities.get<CompleteSession>(
+                "auth:completeSession",
+            );
             const buildCookie = capabilities.get<
                 (
                     req: IncomingMessage,
@@ -182,8 +198,8 @@ export function createTfaRoutes(
             >("auth:buildAccessTokenCookie");
             if (
                 !getPendingLoginAttempt ||
-                !clearPendingLoginAttempt ||
-                !issueToken ||
+                !consumePendingLoginAttempt ||
+                !completeSession ||
                 !buildCookie
             ) {
                 res.writeHead(503, { "content-type": "application/json" });
@@ -212,10 +228,25 @@ export function createTfaRoutes(
             }
             const tfaResult = await gateway
                 .verifyLogin(pendingAttempt.accountId, methodId, body)
-                .catch(() => ({
-                    verified: false,
-                    message: "verification_failed",
-                }));
+                .catch(
+                    (
+                        error,
+                    ): import("../gateway.js").TfaLoginVerificationResult => {
+                        log?.("error", "Second-factor verification failed.", {
+                            ...logMeta,
+                            operation: "verifyLogin",
+                            accountId: pendingAttempt.accountId,
+                            errorName:
+                                error instanceof Error
+                                    ? error.name
+                                    : "UnknownError",
+                        });
+                        return {
+                            verified: false,
+                            message: "verification_failed",
+                        };
+                    },
+                );
             if (!tfaResult.verified) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -231,17 +262,39 @@ export function createTfaRoutes(
                 );
                 return true;
             }
-            clearPendingLoginAttempt(loginAttemptId);
+            if (rejectExpiredAssurance(res, lifetime, revision)) return true;
+            // A concurrent verifier may have consumed this attempt while the factor was checked.
+            if (!consumePendingLoginAttempt(loginAttemptId)) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_attempt_expired",
+                            message: "tfa_attempt_expired",
+                        },
+                    }),
+                );
+                return true;
+            }
             const accessTokenTtlSeconds = pendingAttempt.ttlSeconds;
-            const apiToken = issueToken(
-                pendingAttempt.accountId,
-                pendingAttempt.role as
-                    "user" | "teacher" | "moderator" | "admin" | "owner",
-                accessTokenTtlSeconds,
+            const apiToken = await commitVerifiedSession(
+                completeSession,
                 {
+                    accountId: pendingAttempt.accountId,
+                    role: pendingAttempt.role as AccessRole,
+                    ttlSeconds: accessTokenTtlSeconds,
                     providerId: pendingAttempt.providerId,
+                    ...(lifetime
+                        ? {
+                              isAssuranceCurrent: () =>
+                                  lifetime.isCurrent(revision!),
+                          }
+                        : {}),
                 },
+                res,
+                log,
             );
+            if (!apiToken) return true;
             log?.("info", "Login succeeded after TFA verification.", {
                 ...logMeta,
                 accountId: pendingAttempt.accountId,
@@ -367,18 +420,9 @@ export function createTfaRoutes(
         if (setupVerifyMatch && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const issueToken = capabilities.get<
-                (
-                    subject: string,
-                    role: "user" | "teacher" | "moderator" | "admin" | "owner",
-                    ttlSeconds: number | null,
-                    options?: {
-                        issuedAt?: number;
-                        providerId?: string;
-                        setupPending?: boolean;
-                    },
-                ) => string
-            >("auth:issueAccessToken");
+            const completeSession = capabilities.get<CompleteSession>(
+                "auth:completeSession",
+            );
             const buildCookie = capabilities.get<
                 (
                     req: IncomingMessage,
@@ -395,6 +439,18 @@ export function createTfaRoutes(
                         error: {
                             code: "bad_request",
                             message: "setupId is required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!completeSession || !buildCookie) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "session_unavailable",
+                            message: "session_unavailable",
                         },
                     }),
                 );
@@ -422,32 +478,40 @@ export function createTfaRoutes(
                 );
                 return true;
             }
+            if (rejectExpiredAssurance(res, lifetime, revision)) return true;
             const responseData: Record<string, unknown> = { verified: true };
             const responseHeaders: Record<string, string> = {
                 "content-type": "application/json",
             };
-            if (issueToken && buildCookie) {
-                const accessTokenTtlSeconds = claims.ttlSeconds;
-                const refreshedToken = issueToken(
-                    claims.sub,
-                    claims.role,
-                    accessTokenTtlSeconds,
-                    {
-                        providerId: claims.providerId,
-                        setupPending: false,
-                    },
-                );
-                responseHeaders["set-cookie"] = buildCookie(
-                    req,
-                    refreshedToken,
-                    accessTokenTtlSeconds,
-                );
-                responseData.token = refreshedToken;
-                responseData.accountId = claims.sub;
-                responseData.role = claims.role;
-                responseData.providerId = claims.providerId;
-                responseData.ttlSeconds = accessTokenTtlSeconds;
-            }
+            const accessTokenTtlSeconds = claims.ttlSeconds;
+            const refreshedToken = await commitVerifiedSession(
+                completeSession,
+                {
+                    accountId: claims.sub,
+                    role: claims.role,
+                    ttlSeconds: accessTokenTtlSeconds,
+                    providerId: claims.providerId,
+                    ...(lifetime
+                        ? {
+                              isAssuranceCurrent: () =>
+                                  lifetime.isCurrent(revision!),
+                          }
+                        : {}),
+                },
+                res,
+                log,
+            );
+            if (!refreshedToken) return true;
+            responseHeaders["set-cookie"] = buildCookie(
+                req,
+                refreshedToken,
+                accessTokenTtlSeconds,
+            );
+            responseData.token = refreshedToken;
+            responseData.accountId = claims.sub;
+            responseData.role = claims.role;
+            responseData.providerId = claims.providerId;
+            responseData.ttlSeconds = accessTokenTtlSeconds;
             res.writeHead(200, responseHeaders);
             res.end(JSON.stringify({ data: responseData }));
             return true;

@@ -61,3 +61,46 @@ test("login submission shows loading during a delayed request, prevents duplicat
     assert.equal(handled, 1);
     assert.equal(loading, 0);
 });
+
+for (const [code, key] of [
+    ["session_unavailable", "ui.app.login.error.generic"],
+    ["tfa_unavailable", "ui.app.login.error.generic"],
+    ["account_disabled", "ui.app.login.reason.account_disabled"],
+]) {
+    test(`login translates ${code} without exposing server failure text`, async () => {
+        const { createLoginSubmitHandler } = loadTestModule(
+            new URL("../../ui/login-page/submit.js", import.meta.url),
+            {
+                "/static/reuse/page-entry.js": {
+                    beginPageLoading: () => () => {},
+                },
+            },
+            {
+                console,
+                HTMLElement: class {},
+                fetch: async () => ({
+                    ok: false,
+                    json: async () => ({
+                        error: { code, message: "private server detail" },
+                    }),
+                }),
+            },
+        );
+        const messages = [];
+        const handler = createLoginSubmitHandler({
+            getState: () => ({}),
+            showToast: (message) => messages.push(message),
+            i18n: { t: (value) => `translated:${value}` },
+        });
+        await handler({
+            preventDefault() {},
+            target: {
+                querySelector: (selector) =>
+                    selector === "#login-tfa-fields"
+                        ? null
+                        : { value: "fixture" },
+            },
+        });
+        assert.deepEqual(messages, [`translated:${key}`]);
+    });
+}

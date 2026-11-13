@@ -136,6 +136,8 @@ export interface AuthRouteBootstrapRuntime {
         ttlSeconds: number | null,
     ) => string;
     clearPendingTfaLoginAttempt: (loginAttemptId: string) => void;
+    consumePendingTfaLoginAttempt: (loginAttemptId: string) => boolean;
+    clearPendingTfaLoginAttempts: () => void;
     createPendingTfaLoginAttempt: (
         input: Omit<PendingTfaLoginAttempt, "id" | "expiresAt">,
     ) => PendingTfaLoginAttempt;

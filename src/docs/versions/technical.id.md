@@ -8,7 +8,7 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.3` |
+| Core Package | `src/core/` | `0.6.4` |
 
 ### API
 
@@ -88,7 +88,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi    |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.6`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.7`  |
 | Share                 | `src/gateways/share/`         | `1.9.10` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.7`  |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10` |

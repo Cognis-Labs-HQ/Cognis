@@ -198,38 +198,6 @@ export function createSessionRoutes({
         return null;
     }
 
-    function resolveFlowSessionResult(flowResult: {
-        data: Record<string, unknown>;
-        stageResults: Record<string, unknown[]>;
-    }): LoginFlowSessionResult | null {
-        const flowDataSessionResult = flowResult.data["sessionResult"];
-        if (
-            flowDataSessionResult &&
-            typeof flowDataSessionResult === "object"
-        ) {
-            return flowDataSessionResult as LoginFlowSessionResult;
-        }
-        const establishStageResults =
-            flowResult.stageResults["establish-session"] ?? [];
-        // Walk newest-first so later gateway hooks can override earlier
-        // `sessionResult` values in the same establish-session stage.
-        for (
-            let index = establishStageResults.length - 1;
-            index >= 0;
-            index -= 1
-        ) {
-            const stageResult = establishStageResults[index] as
-                { sessionResult?: unknown } | undefined;
-            if (
-                stageResult?.sessionResult &&
-                typeof stageResult.sessionResult === "object"
-            ) {
-                return stageResult.sessionResult as LoginFlowSessionResult;
-            }
-        }
-        return null;
-    }
-
     function dispatchLoginFlowResult(
         req: import("node:http").IncomingMessage,
         res: import("node:http").ServerResponse,
@@ -322,19 +290,21 @@ export function createSessionRoutes({
             );
             return true;
         }
-        if (outcome === "tfa_unavailable") {
+        if (
+            outcome === "tfa_unavailable" ||
+            outcome === "session_unavailable"
+        ) {
             log?.(
                 "warn",
-                "Login denied because configured TFA challenges are unavailable (flow).",
+                "Login denied because session assurance is unavailable (flow).",
                 { ...logMeta },
             );
             res.writeHead(503, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     error: {
-                        code: "tfa_unavailable",
-                        message:
-                            "Two-factor authentication is temporarily unavailable. Please try again.",
+                        code: outcome,
+                        message: outcome,
                     },
                 }),
             );
@@ -414,7 +384,7 @@ export function createSessionRoutes({
             );
             return true;
         }
-        if (outcome === "account_archived") {
+        if (outcome === "account_archived" || outcome === "account_disabled") {
             const code = outcome;
             log?.(
                 "warn",
@@ -429,8 +399,7 @@ export function createSessionRoutes({
                 JSON.stringify({
                     error: {
                         code,
-                        message:
-                            "Your account is archived. Contact an administrator to restore access.",
+                        message: outcome,
                     },
                 }),
             );
@@ -727,9 +696,14 @@ export function createSessionRoutes({
             const credentials: Record<string, unknown> = { ...body };
             delete credentials.provider;
 
-            const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
-            if (systemCtx?.flow.exists("login")) {
-                const result = await systemCtx.flow.run("login", {
+            const login =
+                capabilities.get<
+                    (
+                        input: Record<string, unknown>,
+                    ) => Promise<LoginFlowSessionResult>
+                >("auth:login");
+            if (login) {
+                const sessionResult = await login({
                     provider: pendingAccountCreation?.providerId ?? provider,
                     credentials,
                     ...(pendingAccountCreation
@@ -739,7 +713,6 @@ export function createSessionRoutes({
                           }
                         : {}),
                 });
-                const sessionResult = resolveFlowSessionResult(result);
                 if (sessionResult) {
                     const responseCookies: string[] = [];
                     if (
