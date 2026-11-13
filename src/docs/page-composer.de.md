@@ -39,6 +39,8 @@ Ein Element ist ein benannter Inhaltsblock:
 
 Rastereinheiten sind 90 px breit und hoch. `gridSize.max: 'full'` erstreckt das Element über alle verfügbaren Spalten. `gridSize.max: 'half'` erstreckt es über die Hälfte der Spalten.
 
+Array-Angaben unterstützen `['full', 'fill']` für die gesamte Breite und das Ausfüllen der verfügbaren Höhe sowie `['full', n]` für die gesamte Breite mit einer numerischen Höhenbegrenzung. Haupt- und verschachtelte Composer berücksichtigen diese Maße in schmalen und breiten Rastern. Beim Ziehen unter das Raster erweitert der Editor die Inhaltsgrenzen und das sichtbare Raster gemeinsam, bevor das Widget abgelegt wird.
+
 ### Unterseiten-Navigation
 
 Wenn `subPageNavigation: true`, ist jeweils nur ein Element sichtbar. Toolbar-Schaltflächen mit `[data-composer-scroll]` dienen als Abschnittsselektoren. Der aktive Abschnitt wird im URL-Hash für Deep-Links gespeichert.
