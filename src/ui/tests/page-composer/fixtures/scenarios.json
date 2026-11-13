@@ -1,0 +1,26 @@
+{
+    "default": [
+        {
+            "id": "form",
+            "template": "form-content",
+            "gridSize": { "default": [4, 4], "min": [2, 2] }
+        },
+        {
+            "id": "content",
+            "template": "long-content",
+            "gridSize": { "default": [5, 5], "min": [2, 2], "max": "fill" }
+        }
+    ],
+    "oversized": [
+        {
+            "id": "form",
+            "template": "form-content",
+            "gridSize": { "default": [5, 4], "min": [5, 2], "max": "half" }
+        },
+        {
+            "id": "content",
+            "template": "long-content",
+            "gridSize": { "default": [5, 4], "min": [5, 2], "max": "fill" }
+        }
+    ]
+}

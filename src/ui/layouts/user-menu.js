@@ -62,7 +62,22 @@ export function bindAccountMenu({ toggle, dropdown, menu, signal }) {
     const scoped = signal
         ? AbortSignal.any([signal, controller.signal])
         : controller.signal;
+    const window = dropdown.ownerDocument.defaultView;
     let menuController;
+    const updateAvailableHeight = () => {
+        if (dropdown.classList.contains("hidden")) return;
+        const viewportBottom =
+            (window.visualViewport?.offsetTop ?? 0) +
+            (window.visualViewport?.height ?? window.innerHeight);
+        const availableHeight = Math.max(
+            0,
+            viewportBottom - toggle.getBoundingClientRect().bottom - 4,
+        );
+        dropdown.style.setProperty(
+            "--dropdown-available-height",
+            `${availableHeight}px`,
+        );
+    };
     const close = () => {
         menuController?.abort();
         dropdown.classList.add("hidden");
@@ -84,6 +99,7 @@ export function bindAccountMenu({ toggle, dropdown, menu, signal }) {
         menu.classList.add("open");
         toggle.classList.add("active");
         toggle.setAttribute("aria-expanded", "true");
+        updateAvailableHeight();
     };
     const hookId = `ui:accountMenu:${crypto.randomUUID()}`;
     uiCtx.extendFlow("ui:tutorial:start", "validate", { id: hookId }, close);
@@ -109,6 +125,15 @@ export function bindAccountMenu({ toggle, dropdown, menu, signal }) {
         },
         { signal: scoped },
     );
+    for (const target of [window, window.visualViewport].filter(Boolean)) {
+        target.addEventListener("resize", updateAvailableHeight, {
+            signal: scoped,
+        });
+        target.addEventListener("scroll", updateAvailableHeight, {
+            signal: scoped,
+            passive: true,
+        });
+    }
     scoped.addEventListener("abort", close, { once: true });
     if (!signal) {
         const observer =

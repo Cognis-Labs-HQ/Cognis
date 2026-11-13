@@ -51,13 +51,17 @@ import {
     resolveGridColumnCount,
 } from "./grid-sizing.js";
 import { createPresenceTracker } from "./presence-tracker.js";
+import {
+    isCompactComposer,
+    resolveComposerResize,
+} from "./responsive-layout.js";
 import { pageActions } from "../page-actions.js";
 import { createFocusControlCoordinator } from "../focus-control.js";
 import {
     getFloatingSlot as findFloatingSlot,
     restoreWindowScrollPosition,
 } from "./dom-position.js";
-import { renderToolbarToggleIcon } from "./toolbar-icons.js";
+import { mountComposerToolbarDrawer } from "./toolbar-drawer.js";
 
 export function createPageComposer(
     root,
@@ -128,6 +132,8 @@ export function createPageComposer(
     let gridRows = 6;
     let resizeObserver = null;
     let lastObservedCols = 0;
+    let lastObservedCompact = false;
+    let lastObservedWidth = 0;
     let gridSection = null;
     let editToggleAbortController = null;
     let composerEditToggleButton = null;
@@ -135,6 +141,8 @@ export function createPageComposer(
     let activePresenceTracker = null;
     let composerDestroyed = false;
     let focusControl = null;
+    let subComposerHandlers = null;
+    let gridOverlayHandlers = null;
     const tutorialLifetime = new AbortController();
 
     function destroy() {
@@ -147,13 +155,16 @@ export function createPageComposer(
         resizeObserver = null;
         focusControl?.destroy();
         focusControl = null;
+        subComposerHandlers?.destroy();
+        gridOverlayHandlers?.destroy();
+        editToggleAbortController?.abort();
+        window.removeEventListener("beforeunload", handleBeforeUnload);
     }
 
     if (signal?.aborted) destroy();
     else signal?.addEventListener("abort", destroy, { once: true });
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
-    const MOBILE_TOOLBAR_BREAKPOINT = 900;
     const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
@@ -323,7 +334,7 @@ export function createPageComposer(
 
     let renderer;
 
-    const gridOverlayHandlers = createGridOverlayHandlers({
+    gridOverlayHandlers = createGridOverlayHandlers({
         state: composerState,
         UNIT,
         i18n,
@@ -334,7 +345,7 @@ export function createPageComposer(
         endEditMode,
     });
 
-    const subComposerHandlers = createSubComposerHandlers({
+    subComposerHandlers = createSubComposerHandlers({
         i18n,
         UNIT,
         beginEditMode,
@@ -641,139 +652,16 @@ export function createPageComposer(
         }
 
         if (Array.isArray(toolbar) && toolbar.length > 0) {
-            const toolbarEl = root.querySelector(".toolbar");
-            if (toolbarEl) {
-                const mobileMedia = window.matchMedia(
-                    `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
-                );
-                let mobileDrawerOpen = false;
-                const mainWindow = root.querySelector(".main-window");
-                const shell = root.querySelector(".app-shell");
-                mainWindow?.querySelector(".toolbar-mobile-toggle")?.remove();
-                mainWindow?.querySelector(".toolbar-mobile-backdrop")?.remove();
-                shell?.querySelector(".toolbar-mobile-backdrop")?.remove();
-                const mobileToggleBtn = document.createElement("button");
-                mobileToggleBtn.type = "button";
-                mobileToggleBtn.className = "toolbar-mobile-toggle";
-                const mobileBackdrop = document.createElement("div");
-                mobileBackdrop.className = "toolbar-mobile-backdrop";
-                if (mainWindow) {
-                    mainWindow.insertBefore(
-                        mobileToggleBtn,
-                        toolbarEl.nextSibling,
-                    );
-                }
-                if (mainWindow) {
-                    mainWindow.appendChild(mobileBackdrop);
-                } else if (shell) {
-                    shell.appendChild(mobileBackdrop);
-                }
-
-                function isMobileDrawerMode() {
-                    return mobileMedia.matches;
-                }
-
-                closeMobileDrawerIfNeeded = () => {
-                    if (isMobileDrawerMode() && mobileDrawerOpen) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                };
-
-                function setMobileDrawerOpen(
-                    nextOpen,
-                    { restoreFocus = true } = {},
-                ) {
-                    const open = isMobileDrawerMode() && nextOpen;
-                    mobileDrawerOpen = open;
-                    toolbarEl.classList.toggle("toolbar--mobile-open", open);
-                    mobileBackdrop.classList.toggle(
-                        "toolbar-mobile-backdrop--open",
-                        open,
-                    );
-                    mobileBackdrop.hidden = !open;
-                    if (!open && restoreFocus && mobileToggleBtn.isConnected) {
-                        mobileToggleBtn.focus();
-                    }
-                    mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.classList.toggle(
-                        "toolbar-mobile-toggle--drawer-open",
-                        open,
-                    );
-                    mobileToggleBtn.innerHTML = renderToolbarToggleIcon(open);
-                    mobileToggleBtn.setAttribute(
-                        "aria-label",
-                        open
-                            ? i18n.t("ui.layout.toolbar.collapse")
-                            : i18n.t("ui.layout.toolbar.expand"),
-                    );
-                }
-
-                mobileToggleBtn.setAttribute("aria-expanded", "false");
-                mobileToggleBtn.innerHTML = renderToolbarToggleIcon(false);
-                mobileToggleBtn.setAttribute(
-                    "aria-label",
-                    i18n.t("ui.layout.toolbar.expand"),
-                );
-                setMobileDrawerOpen(false, { restoreFocus: false });
-
-                mobileToggleBtn.addEventListener("click", () => {
-                    setMobileDrawerOpen(!mobileDrawerOpen);
-                });
-                toolbarEl.addEventListener("click", (event) => {
-                    if (!isMobileDrawerMode() || !mobileDrawerOpen) return;
-                    const target = event.target;
-                    if (!(target instanceof Element)) return;
-                    if (target.closest(".toolbar-mobile-toggle")) return;
-                    if (
-                        target.closest("a[href]") ||
-                        target.closest("button:not(.toolbar-mobile-toggle)")
-                    ) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                });
-                mobileBackdrop.addEventListener("click", () => {
-                    setMobileDrawerOpen(false);
-                });
-                mobileMedia.addEventListener("change", () => {
-                    if (!isMobileDrawerMode()) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                });
-
-                if (toolbarScrollable) {
-                    toolbarEl.classList.add("toolbar--scrollable");
-                    toolbarEl.tabIndex = 0;
-                    const headerEl = root.querySelector(".site-header");
-                    const footerEl = root.querySelector(".global-footer");
-                    let layoutObserver;
-                    function syncToolbarPosition() {
-                        if (!toolbarEl.isConnected) {
-                            layoutObserver?.disconnect();
-                            return;
-                        }
-                        const headerHeight = headerEl
-                            ? headerEl.getBoundingClientRect().height
-                            : 0;
-                        const footerHeight = footerEl
-                            ? footerEl.getBoundingClientRect().height
-                            : 0;
-                        toolbarEl.style.setProperty(
-                            "--toolbar-sticky-top",
-                            `${headerHeight}px`,
-                        );
-                        // 24px accounts for the workspace's top margin gap.
-                        toolbarEl.style.setProperty(
-                            "--toolbar-max-height",
-                            `calc(100dvh - ${headerHeight}px - ${footerHeight}px - var(--site-top-banner-height, 0px) - 24px)`,
-                        );
-                    }
-                    syncToolbarPosition();
-                    layoutObserver = new ResizeObserver(syncToolbarPosition);
-                    if (headerEl) layoutObserver.observe(headerEl);
-                    if (footerEl) layoutObserver.observe(footerEl);
-                    layoutObserver.observe(document.documentElement);
-                }
-            }
+            const toolbarDrawer = mountComposerToolbarDrawer({
+                root,
+                i18n,
+                toolbarScrollable,
+                signal: tutorialLifetime.signal,
+                log: uiCtx.capabilities.get("ui:log"),
+            });
+            if (toolbarDrawer)
+                closeMobileDrawerIfNeeded =
+                    toolbarDrawer.closeMobileDrawerIfNeeded;
         }
 
         if (subPageNavigation) {
@@ -818,6 +706,8 @@ export function createPageComposer(
 
         gridCols = getPreferredGridColumnCount();
         lastObservedCols = gridCols;
+        lastObservedCompact = isCompactComposer(contentGrid);
+        lastObservedWidth = contentGrid?.getBoundingClientRect().width ?? 0;
 
         layout = null;
 
@@ -825,10 +715,25 @@ export function createPageComposer(
             resizeObserver = new ResizeObserver(() => {
                 if (!contentGrid || !document.contains(contentGrid)) return;
                 const newCols = getPreferredGridColumnCount();
-                if (newCols !== lastObservedCols) {
+                const compact = isCompactComposer(contentGrid);
+                const width = contentGrid.getBoundingClientRect().width;
+                const resize = resolveComposerResize(
+                    {
+                        columns: lastObservedCols,
+                        compact: lastObservedCompact,
+                        width: lastObservedWidth,
+                    },
+                    { columns: newCols, compact, width },
+                    editing,
+                );
+                if (resize.render) {
                     lastObservedCols = newCols;
+                    lastObservedCompact = compact;
+                    lastObservedWidth = width;
                     gridCols = newCols;
-                    if (!editing && persistLayoutPreferences) {
+                    if (resize.reflow) {
+                        renderer.syncLayoutToCurrentGridColumns();
+                    } else if (!editing && persistLayoutPreferences) {
                         applyLayoutForCurrentGridColumns();
                     }
                     renderGridComposer();

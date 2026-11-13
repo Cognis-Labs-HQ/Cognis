@@ -109,23 +109,11 @@ test("page composer parks media DOM only when explicitly enabled", () => {
 test("page composer includes mobile toolbar drawer behavior", () => {
     const source = readPageComposerBundle();
 
-    assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
-    assert.match(source, /window\.matchMedia\(/);
-    assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
-    assert.match(source, /toolbar--mobile-open/);
-    assert.match(source, /toolbar-mobile-backdrop--open/);
-    assert.match(source, /target\.closest\("a\[href\]"\)/);
+    assert.match(source, /mountComposerToolbarDrawer\(/);
+    assert.match(source, /signal: tutorialLifetime.signal/);
     assert.match(
         source,
-        /target\.closest\("button:not\(\.toolbar-mobile-toggle\)"\)/,
-    );
-    assert.match(
-        source,
-        /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
-    );
-    assert.match(
-        source,
-        /mobileToggleBtn\.innerHTML = renderToolbarToggleIcon\(open\)/,
+        /closeMobileDrawerIfNeeded\s*=\s*toolbarDrawer.closeMobileDrawerIfNeeded/,
     );
     assert.match(source, /toolbar-mobile-toggle-icon--toolbar-close/);
     assert.match(source, /toolbar-mobile-toggle-icon--toolbar-menu/);

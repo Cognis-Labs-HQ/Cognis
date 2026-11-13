@@ -50,6 +50,11 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
 
 function accountMenuFixture() {
     const document = new EventTarget();
+    document.defaultView = new EventTarget();
+    document.defaultView.innerHeight = 800;
+    document.defaultView.visualViewport = new EventTarget();
+    document.defaultView.visualViewport.height = 800;
+    document.defaultView.visualViewport.offsetTop = 0;
     const element = () => {
         const node = new EventTarget(),
             classes = new Set(),
@@ -62,6 +67,12 @@ function accountMenuFixture() {
         };
         node.setAttribute = (key, value) => attributes.set(key, value);
         node.getAttribute = (key) => attributes.get(key);
+        node.getBoundingClientRect = () => ({ bottom: 200 });
+        const styles = new Map();
+        node.style = {
+            setProperty: (key, value) => styles.set(key, value),
+            getPropertyValue: (key) => styles.get(key),
+        };
         return node;
     };
     const toggle = element(),
@@ -361,11 +372,7 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
     assert.doesNotMatch(layoutSource, /entry\.matches\("a\[href\]"\)/);
     assert.match(
         layoutSource,
-        /function redrawNavigation\(\)[\s\S]*sortNavigationEntries\(topnav\)[\s\S]*drawerNav\.innerHTML = topnav\.innerHTML/,
-    );
-    assert.match(
-        layoutSource,
-        /new MutationObserver\(redrawNavigation\)[\s\S]*observe\(topnav, \{ childList: true \}\)/,
+        /bindCompactNavigation\(root, \{[\s\S]*prepareNavigation\(topnav\)[\s\S]*sortNavigationEntries\(topnav\)/,
     );
     assert.match(
         layoutSource,
@@ -436,4 +443,35 @@ test("a tutorial start closes the account dropdown before session setup", async 
     } finally {
         state.controller.abort();
     }
+});
+
+test("profile menu stays within the available visual viewport in short landscape screens", () => {
+    const state = accountMenuFixture();
+    const viewport = state.document.defaultView.visualViewport;
+    viewport.height = 320;
+    state.toggle.dispatchEvent(new Event("mouseenter"));
+    assert.equal(
+        state.dropdown.style.getPropertyValue("--dropdown-available-height"),
+        "116px",
+    );
+    viewport.height = 240;
+    viewport.offsetTop = 20;
+    viewport.dispatchEvent(new Event("resize"));
+    assert.equal(
+        state.dropdown.style.getPropertyValue("--dropdown-available-height"),
+        "56px",
+    );
+    state.toggle.getBoundingClientRect = () => ({ bottom: 100 });
+    viewport.dispatchEvent(new Event("scroll"));
+    assert.equal(
+        state.dropdown.style.getPropertyValue("--dropdown-available-height"),
+        "156px",
+    );
+    state.controller.abort();
+    viewport.height = 800;
+    viewport.dispatchEvent(new Event("resize"));
+    assert.equal(
+        state.dropdown.style.getPropertyValue("--dropdown-available-height"),
+        "156px",
+    );
 });

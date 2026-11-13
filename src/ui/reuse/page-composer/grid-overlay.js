@@ -10,7 +10,13 @@ import {
     halfGrid,
     snapGridRound,
 } from "./grid-math.js";
+import { createEditorPanelHandlers } from "./editor-panel.js";
 import { createGridGeometry } from "./grid-geometry.js";
+import {
+    resolveInitialGridWidth,
+    resolveGridWidthBounds,
+} from "./grid-sizing.js";
+import { bindLayoutKeyboard } from "./keyboard-layout.js";
 export function createGridOverlayHandlers({
     state,
     UNIT,
@@ -118,7 +124,7 @@ export function createGridOverlayHandlers({
         }
         return line;
     }
-    function initializePlacements() {
+    function initializePlacements({ reveal = [] } = {}) {
         if (!state.layout.placements) state.layout.placements = [];
         if (!state.layout.hidden) state.layout.hidden = [];
         state.layout.placements = state.layout.placements.filter(
@@ -139,18 +145,18 @@ export function createGridOverlayHandlers({
             if (state.layout.hidden.includes(element.id)) continue;
             if (state.layout.placements.some((p) => p.id === element.id))
                 continue;
-            if (element.defaultHidden && !element.pinned) {
+            if (
+                element.defaultHidden &&
+                !element.pinned &&
+                !reveal.includes(element.id)
+            ) {
                 state.layout.hidden.push(element.id);
                 continue;
             }
             const gridSize = getGridSize(element);
             const cStep = gridStep(state.gridCols);
             const rStep = gridStep(state.gridRows);
-            const baseW = gridSize.fullWidth
-                ? state.gridCols
-                : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
-                  : Math.min(gridSize.default[0], state.gridCols);
+            const baseW = resolveInitialGridWidth(gridSize, state.gridCols);
             const baseH = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
@@ -161,7 +167,10 @@ export function createGridOverlayHandlers({
                     : Math.max(0, state.gridCols - baseW);
                 for (let col = 0; col <= colLimit; col += cStep) {
                     const w = gridSize.fillWidth
-                        ? Math.max(gridSize.min[0], state.gridCols - col)
+                        ? Math.min(
+                              state.gridCols,
+                              Math.max(gridSize.min[0], state.gridCols - col),
+                          )
                         : gridSize.halfWidth &&
                             col + baseW + cStep === state.gridCols
                           ? baseW + cStep
@@ -257,6 +266,16 @@ export function createGridOverlayHandlers({
         cell.style.height = `${gridRowSpanSize(placement.h)}px`;
         if (state.editing) {
             cell.classList.add("composer-cell--editable");
+            bindLayoutKeyboard({
+                cell,
+                placement,
+                state,
+                gridSize: getGridSize(el),
+                canPlace,
+                findSwapCandidate,
+                render: renderGridComposer,
+                i18n,
+            });
             cell.addEventListener("pointerdown", (e) => {
                 if (e.button !== 0) return;
                 if (e.target.closest("button")) return;
@@ -367,6 +386,7 @@ export function createGridOverlayHandlers({
                     }
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
+                    if (e.type === "pointercancel") return;
                     const panel = document.getElementById(
                         "composer-elements-panel",
                     );
@@ -523,13 +543,14 @@ export function createGridOverlayHandlers({
                         pixelToGridColumn(x) - placement.col,
                         state.gridCols,
                     );
-                    const maxW = gridSize.max
-                        ? gridSize.max[0]
-                        : state.gridCols - placement.col;
+                    const widthBounds = resolveGridWidthBounds(
+                        gridSize,
+                        state.gridCols - placement.col,
+                    );
                     currentW = clampValue(
                         rawW,
-                        gridSize.min[0],
-                        Math.min(maxW, state.gridCols - placement.col),
+                        widthBounds.min,
+                        widthBounds.max,
                     );
                 }
                 if (direction === "s" || direction === "se") {
@@ -556,12 +577,13 @@ export function createGridOverlayHandlers({
                     ),
                 );
             }
-            function onUp() {
+            function onUp(event) {
                 handle.removeEventListener("pointermove", onMove);
                 handle.removeEventListener("pointerup", onUp);
                 handle.removeEventListener("pointercancel", onUp);
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
+                if (event.type === "pointercancel") return;
                 const sizeChanged =
                     currentW !== placement.w || currentH !== placement.h;
                 const valid = canPlace(
@@ -626,16 +648,11 @@ export function createGridOverlayHandlers({
     }
     function bindPanelItemDrag(item, el) {
         item.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || e.target.closest("button")) return;
             e.preventDefault();
             item.setPointerCapture(e.pointerId);
             const gridSize = getGridSize(el);
-            const w =
-                gridSize.fullWidth || gridSize.fillWidth
-                    ? state.gridCols
-                    : gridSize.halfWidth
-                      ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
-                      : Math.min(gridSize.default[0], state.gridCols);
+            const w = resolveInitialGridWidth(gridSize, state.gridCols);
             const h = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
@@ -687,11 +704,12 @@ export function createGridOverlayHandlers({
                     overGrid = false;
                 }
             }
-            function onUp() {
+            function onUp(event) {
                 item.removeEventListener("pointermove", onMove);
                 item.removeEventListener("pointerup", onUp);
                 item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
+                if (event.type === "pointercancel") return;
                 if (overGrid && canPlace(currentCol, currentRow, w, h, null)) {
                     state.layout.hidden = state.layout.hidden.filter(
                         (id) => id !== el.id,
@@ -711,196 +729,25 @@ export function createGridOverlayHandlers({
             item.addEventListener("pointercancel", onUp);
         });
     }
-    function bindPanelDrag(panel) {
-        const handle = panel.querySelector("#composer-panel-drag-handle");
-        if (!handle) return;
-        handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
-            if (e.target.closest("button")) return;
-            e.preventDefault();
-            handle.setPointerCapture(e.pointerId);
-            const startX = e.clientX - panel.offsetLeft;
-            const startY = e.clientY - panel.offsetTop;
-            function onMove(e) {
-                const bounds = getComposerPanelHorizontalBounds(
-                    panel.offsetWidth,
-                );
-                const maxLeft = bounds.maxLeft;
-                const minLeft = bounds.minLeft;
-                const minTop = getComposerPanelSafeTop();
-                const maxTop = Math.max(
-                    minTop,
-                    window.innerHeight - panel.offsetHeight - 4,
-                );
-                const newLeft = Math.max(
-                    minLeft,
-                    Math.min(maxLeft, e.clientX - startX),
-                );
-                const newTop = Math.max(
-                    minTop,
-                    Math.min(maxTop, e.clientY - startY),
-                );
-                panel.style.left = `${newLeft}px`;
-                panel.style.top = `${newTop}px`;
-                state.panelPosition = { top: newTop, left: newLeft };
-            }
-            function onUp() {
-                handle.removeEventListener("pointermove", onMove);
-                handle.removeEventListener("pointerup", onUp);
-                handle.removeEventListener("pointercancel", onUp);
-            }
-            handle.addEventListener("pointermove", onMove);
-            handle.addEventListener("pointerup", onUp);
-            handle.addEventListener("pointercancel", onUp);
-        });
-    }
-    function getComposerPanelSafeTop() {
-        const navRowBottom =
-            state.root.querySelector(".global-navrow")?.getBoundingClientRect()
-                ?.bottom ?? 0;
-        const topbarBottom =
-            state.root.querySelector(".global-topbar")?.getBoundingClientRect()
-                ?.bottom ?? 0;
-        return Math.max(
-            12,
-            Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
-        );
-    }
-    /**
-     * Calculates the horizontal drag/placement bounds for the floating composer
-     * panel, preferring workspace bounds when available and falling back to the
-     * viewport when workspace metrics are unavailable.
-     *
-     * @param {number} panelWidth
-     * @returns {{ minLeft: number, maxLeft: number }}
-     */
-    function getComposerPanelHorizontalBounds(panelWidth) {
-        const workspaceRect = state.root
-            .querySelector(".workspace")
-            ?.getBoundingClientRect();
-        const inset = 12;
-        if (workspaceRect) {
-            const minLeft = Math.ceil(workspaceRect.left + inset);
-            const maxLeft = Math.floor(
-                workspaceRect.right - panelWidth - inset,
-            );
-            if (maxLeft >= minLeft) {
-                return { minLeft, maxLeft };
-            }
-        }
-        return {
-            minLeft: 4,
-            maxLeft: Math.max(4, window.innerWidth - panelWidth - 4),
-        };
-    }
-    function clampComposerPanelLeft(nextLeft, panelWidth) {
-        const bounds = getComposerPanelHorizontalBounds(panelWidth);
-        return Math.max(bounds.minLeft, Math.min(bounds.maxLeft, nextLeft));
-    }
-
-    function createElementsPanel() {
-        const hiddenElements = state.elements.filter((e) =>
-            state.layout.hidden.includes(e.id),
-        );
-
-        const panel = document.createElement("div");
-        panel.id = "composer-elements-panel";
-        panel.className = "composer-panel";
-
-        let listHtml;
-        if (hiddenElements.length === 0) {
-            listHtml = `<li class="composer-library-empty">${i18n.t("ui.reuse.all_elements_visible")}</li>`;
-        } else {
-            listHtml = hiddenElements
-                .map(
-                    (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span></li>`,
-                )
-                .join("");
-        }
-
-        panel.innerHTML = `
-      <div id="composer-panel-drag-handle" class="composer-panel-header">
-        <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn" type="button">−</button>
-      </div>
-      <div class="composer-panel-body">
-        <ul class="composer-library-list">${listHtml}</ul>
-      </div>
-      <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
-        <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
-      </div>
-    `;
-
-        const safeTop = getComposerPanelSafeTop();
-        if (state.panelPosition !== null) {
-            panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
-            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
-            panel.style.right = "auto";
-        } else {
-            const gridRect = state.contentGrid.getBoundingClientRect();
-            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
-            const panelTop = gridRect.top;
-            panel.style.top = `${Math.max(safeTop, panelTop)}px`;
-            panel.style.left = `${panelLeft}px`;
-            panel.style.right = "auto";
-        }
-        document.body.appendChild(panel);
-        bindPanelDrag(panel);
-
-        panel
-            .querySelector(".composer-panel-minimize-btn")
-            .addEventListener("click", () => {
-                const minimized = panel.classList.toggle(
-                    "composer-panel--minimized",
-                );
-                panel.querySelector(
-                    ".composer-panel-minimize-btn",
-                ).textContent = minimized ? "+" : "−";
-            });
-
-        panel
-            .querySelector(".composer-done-btn")
-            .addEventListener("click", async (event) => {
-                event.preventDefault();
-                compactPlacements();
-                state.editing = false;
-                endEditMode();
-                await saveLayout();
-                renderGridComposer();
-            });
-
-        panel
-            .querySelector(".composer-discard-btn")
-            .addEventListener("click", (event) => {
-                event.preventDefault();
-                state.layout = state.layoutSnapshot;
-                state.editing = false;
-                endEditMode();
-                renderGridComposer();
-            });
-
-        panel
-            .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
-                event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializePlacements();
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                await saveLayout();
-                renderGridComposer();
-            });
-
-        panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
-            const elId = item.dataset.composerPanelItem;
-            const element = state.elements.find((e) => e.id === elId);
-            if (element) bindPanelItemDrag(item, element);
-        });
-    }
+    const {
+        destroy,
+        createElementsPanel,
+        getComposerPanelSafeTop,
+        getComposerPanelHorizontalBounds,
+        clampComposerPanelLeft,
+    } = createEditorPanelHandlers({
+        state,
+        i18n,
+        bindPanelItemDrag,
+        compactPlacements,
+        endEditMode,
+        saveLayout,
+        renderGridComposer,
+        initializePlacements,
+    });
 
     return {
+        destroy,
         computeGridDimensions,
         canPlace,
         applyGravity,
