@@ -8,4 +8,4 @@ Library-Tests erzeugen jetzt vollständige Eintrags- und Schema-Metadaten und ve
 
 ## Commits
 
-- [8c0730dcacfb4d70bb3f9fe5d1dccac342f344cd](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c0730dcacfb4d70bb3f9fe5d1dccac342f344cd)
+- [ff3b59217fd663236bdc6e6cfe5136cf816e5224](https://github.com/Cognis-Labs-HQ/Cognis/commit/ff3b59217fd663236bdc6e6cfe5136cf816e5224)
