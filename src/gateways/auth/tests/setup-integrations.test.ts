@@ -63,6 +63,11 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
             ),
             response as unknown as import("node:http").ServerResponse,
             new URL("http://localhost/api/v1/auth/setup-status"),
+            {
+                component: "gateway:auth",
+                method: "GET",
+                path: "/api/v1/auth/setup-status",
+            },
         );
         return { status: response.status, ...JSON.parse(response.payload) };
     }

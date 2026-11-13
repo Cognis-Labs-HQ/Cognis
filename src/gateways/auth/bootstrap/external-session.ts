@@ -1,3 +1,17 @@
+export type AuthenticatedSession = {
+    accountId: string;
+    provider: string;
+    externalUserId?: string;
+    email?: string;
+    emails?: string[];
+    displayName?: string;
+    handle?: string;
+    username?: string;
+    accountNamespace?: string;
+    role?: string;
+    registrationToken?: string;
+};
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 const ACCOUNT_NAMESPACE_PATTERN = /^[a-z0-9][a-z0-9_-]*$/;
 
@@ -14,13 +28,7 @@ export function resolveSessionEmail(session: {
 }
 
 export function applyAccountCreationCredentials(
-    session: {
-        accountId: string;
-        provider: string;
-        email?: string;
-        registrationToken?: string;
-        [key: string]: unknown;
-    },
+    session: AuthenticatedSession,
     credentials: Record<string, unknown>,
 ) {
     const registrationToken = String(

@@ -14,7 +14,7 @@ import {
 import { CoreTfaGateway } from "../gateway.js";
 
 function resolveTargetAccountId(
-    claims: { sub: string; role: string },
+    claims: { sub: string; role: AccessRole },
     url: URL,
 ): string | null {
     const requestedAccountId = String(

@@ -45,7 +45,7 @@ export interface LocalAccountStore {
     ): Promise<{
         username: string;
         enabled: boolean;
-        role: string;
+        role: "user" | "teacher" | "moderator" | "admin";
     }>;
     verify(username: string, password: string): Promise<AuthContext | null>;
     has(username: string): Promise<boolean>;
@@ -435,6 +435,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         enabled: boolean;
         isFounder: boolean;
         role?: string;
+        provider?: string;
     } | null> {
         const lowercaseUsername = normalizeUsername(username);
         const account = this.accounts.get(lowercaseUsername);

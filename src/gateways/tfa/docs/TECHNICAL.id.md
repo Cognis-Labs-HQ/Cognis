@@ -110,6 +110,10 @@ Kapabilitas versi 1 `tfa:assessSession` menjalankan tahap milik TFA `readPolicy`
 
 Host juga menyimpan bukti kegagalan yang tidak dapat dijalankan untuk gateway yang ditemukan dengan identitas manifest valid tetapi bootstrap tidak dapat diimpor. Hanya bootstrap berhasil menghapus bukti ini. Pembatalan menghapus rute dan kait penilaian yang dapat dijalankan; penonaktifan disengaja tetap diizinkan, sedangkan pengaktifan kembali tanpa inisialisasi berhasil menolak akses. Manifest hilang atau tidak valid tanpa identitas yang dapat digunakan tidak dapat diklasifikasikan oleh sinyal ini. Pemanggil Auth memakai kapabilitas versi 1 `auth:login`, bukan alur persiapan mentah.
 
+### Batas Autentikasi Bertipe
+
+Deklarasi Auth dan TFA kini menjelaskan peran akun, bidang identitas eksternal, perintah basis data, dan proyeksi sesi kuki yang sudah ada. Validasi batas waktu sesi tetap menerima nilai angka yang sama. Jaminan masuk dan percobaan faktor sekali pakai tidak berubah.
+
 ## Keamanan
 
 Penyiapan, konfirmasi, penghapusan, dan verifikasi memakai alur terlindungi. Adapter memvalidasi tantangan; metode belum terkonfirmasi atau gagal tidak dianggap berhasil.

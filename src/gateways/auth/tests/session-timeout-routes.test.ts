@@ -1,4 +1,5 @@
 import test from "node:test";
+import { ServerResponse } from "node:http";
 import assert from "node:assert/strict";
 import { CapabilityStore } from "@cognis/core";
 import { createSecurityRoutes } from "../bootstrap/routes/security.js";
@@ -228,4 +229,67 @@ test("timeout updates fail without preference storage and preserve sessions", as
         "preferences_unavailable",
     );
     assert.notEqual(verifyAccessToken(token), null);
+});
+
+test("timeout updates reject nonnumeric input without changing preferences or sessions", async (context) => {
+    const capabilities = new CapabilityStore();
+    let writes = 0;
+    let revocations = 0;
+    capabilities.contribute("preferences:store", {
+        async get() {
+            return "60";
+        },
+        async set() {
+            writes++;
+        },
+    });
+    capabilities.contribute("auth:revokeAccessTokensForSubject", () => {
+        revocations++;
+        return 0;
+    });
+    const route = createSecurityRoutes({
+        capabilities,
+        securitySubsections: [],
+        registrationsEnabled: async () => false,
+        readSecuritySettings: async () => ({
+            registrationsEnabled: false,
+            userValidationMode: "none",
+            loginSessionTimeoutMinutes: 60,
+        }),
+    });
+    const token = issueAccessToken("invalid-timeout-user", "user", 60);
+    for (const timeoutMinutes of ["30", null, true, [], {}, 0, -1, 1.5, 61]) {
+        const req = makeJsonRequest(
+            "PUT",
+            { timeoutMinutes },
+            { authorization: `Bearer ${token}` },
+        );
+        const res = new ServerResponse(req);
+        let payload = "";
+        context.mock.method(res, "end", (chunk?: string | Buffer) => {
+            payload = String(chunk ?? "");
+            return res;
+        });
+        assert.equal(
+            await route(
+                req,
+                res,
+                new URL(
+                    "/api/v1/auth/login-session-timeout",
+                    "http://localhost",
+                ),
+                {
+                    component: "auth",
+                    method: "PUT",
+                    path: "session-timeout",
+                },
+            ),
+            true,
+        );
+        assert.equal(res.statusCode, 400);
+        assert.equal(JSON.parse(payload).error.code, "invalid_session_timeout");
+        assert.notEqual(verifyAccessToken(token), null);
+    }
+    assert.equal(writes, 0);
+    assert.equal(revocations, 0);
 });
