@@ -16,4 +16,4 @@ Entri antrean SMTP mempertahankan subjek wajibnya selama pengiriman dan percobaa
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/fb1d8327e8118e5e0b6d34c6c9937d6b3964fd7b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/419e8648fe3bcbb04f1280517b79bba83852ecf4
