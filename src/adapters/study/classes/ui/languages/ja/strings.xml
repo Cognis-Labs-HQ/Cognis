@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="module.study.classes.tutorial.classes.title">クラスの使い方</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.title">言語で絞り込む</string>
+  <string name="module.study.classes.tutorial.classes.language.filter.body">言語で絞り込み、利用できるクラスを探します。</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.title">クラスへの参加</string>
+  <string name="module.study.classes.tutorial.classes.class.membership.body">メンバーと申請状況を確認します。チャットと会議にはクラスのアクセス条件が適用されます。</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.title">指導と管理</string>
+  <string name="module.study.classes.tutorial.classes.teaching.and.management.body">教師は担当クラスと招待を管理します。教師になる申請には管理者の承認が必要な場合があります。</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.title">参加中のクラス</string>
+  <string name="module.study.classes.tutorial.membership.enrolled.classes.body">所属するクラスと言語を確認してから、クラスを開きます。</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.title">参加の申請</string>
+  <string name="module.study.classes.tutorial.membership.join.requests.body">利用できるクラスと申請状況を確認し、同じ申請を重ねて送らないようにします。</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.title">クラスへの参加を申請する</string>
+  <string name="module.study.classes.tutorial.classes.review.enrollment.body">学習言語に合うクラスの詳細を確認して参加を申請します。承認後に所属が更新されます。</string>
+</resources>

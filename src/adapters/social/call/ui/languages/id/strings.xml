@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="adapter.social.call.name">Panggilan</string>
+  <string name="adapter.social.call.start_video_call">Mulai panggilan video</string>
+  <string name="adapter.social.call.incoming_call">Panggilan Masuk…</string>
+  <string name="adapter.social.call.incoming_call_from">{{user}} sedang menelepon</string>
+  <string name="adapter.social.call.answer">Jawab panggilan</string>
+  <string name="adapter.social.call.decline">Tolak panggilan</string>
+  <string name="adapter.social.call.ringing">Memanggil {{user}}...</string>
+  <string name="adapter.social.call.hangup">Tutup panggilan</string>
+  <string name="adapter.social.call.move_to_pip">Pindahkan panggilan ke gambar-dalam-gambar</string>
+  <string name="adapter.social.call.return_from_pip">Kembalikan panggilan ke Messages</string>
+  <string name="adapter.social.call.close_pip_title">Tutup panggilan gambar-dalam-gambar</string>
+  <string name="adapter.social.call.close_pip_body">Panggilan ini masih aktif. Apa yang ingin Anda lakukan?</string>
+  <string name="adapter.social.call.return_to_messages">Kembali ke Messages</string>
+  <string name="adapter.social.call.cancel">Batal</string>
+  <string name="adapter.social.call.close_pip_failed">Panggilan gambar-dalam-gambar tidak dapat ditutup.</string>
+  <string name="adapter.social.call.cancelled">Panggilan dibatalkan.</string>
+  <string name="adapter.social.call.declined">Panggilan ditolak.</string>
+  <string name="adapter.social.call.no_answer">Tidak ada jawaban.</string>
+  <string name="adapter.social.call.provider_declined">Penyedia pertemuan menolak panggilan.</string>
+  <string name="adapter.social.call.declined_self">Panggilan ditolak.</string>
+  <string name="adapter.social.call.cancel_failed">Panggilan tidak dapat dibatalkan.</string>
+  <string name="adapter.social.call.decline_failed">Panggilan tidak dapat ditolak.</string>
+  <string name="adapter.social.call.leave_failed">Tidak dapat keluar dari panggilan dengan benar.</string>
+  <string name="adapter.social.call.event_call_started">{name} memulai panggilan.</string>
+  <string name="adapter.social.call.event_call_answered">{name} menjawab panggilan.</string>
+  <string name="adapter.social.call.event_call_cancelled">{name} membatalkan panggilan.</string>
+  <string name="adapter.social.call.event_call_declined">{name} menolak panggilan.</string>
+  <string name="adapter.social.call.event_call_missed">Panggilan dari {name} tidak dijawab.</string>
+</resources>

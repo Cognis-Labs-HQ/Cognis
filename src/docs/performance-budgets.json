@@ -1,0 +1,8 @@
+[
+    {
+        "path": "/*",
+        "timings": [{ "metric": "largest-contentful-paint", "budget": 2500 }],
+        "resourceCounts": [{ "resourceType": "total", "budget": 45 }],
+        "resourceSizes": [{ "resourceType": "total", "budget": 512000 }]
+    }
+]

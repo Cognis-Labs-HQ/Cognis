@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="adapter.social.call.name">Anrufe</string>
+  <string name="adapter.social.call.start_video_call">Videoanruf starten</string>
+  <string name="adapter.social.call.incoming_call">Eingehender Anruf…</string>
+  <string name="adapter.social.call.incoming_call_from">{{user}} ruft an</string>
+  <string name="adapter.social.call.answer">Anruf annehmen</string>
+  <string name="adapter.social.call.decline">Anruf ablehnen</string>
+  <string name="adapter.social.call.ringing">{{user}} wird angerufen ...</string>
+  <string name="adapter.social.call.hangup">Auflegen</string>
+  <string name="adapter.social.call.move_to_pip">Anruf in Bild-im-Bild verschieben</string>
+  <string name="adapter.social.call.return_from_pip">Anruf zu Messages zurückholen</string>
+  <string name="adapter.social.call.close_pip_title">Bild-im-Bild-Anruf schließen</string>
+  <string name="adapter.social.call.close_pip_body">Dieser Anruf ist noch aktiv. Was möchten Sie tun?</string>
+  <string name="adapter.social.call.return_to_messages">Zu Messages zurückkehren</string>
+  <string name="adapter.social.call.cancel">Abbrechen</string>
+  <string name="adapter.social.call.close_pip_failed">Der Bild-im-Bild-Anruf konnte nicht geschlossen werden.</string>
+  <string name="adapter.social.call.cancelled">Anruf abgebrochen.</string>
+  <string name="adapter.social.call.declined">Anruf abgelehnt.</string>
+  <string name="adapter.social.call.no_answer">Keine Antwort.</string>
+  <string name="adapter.social.call.provider_declined">Der Meeting-Anbieter hat den Anruf abgelehnt.</string>
+  <string name="adapter.social.call.declined_self">Anruf abgelehnt.</string>
+  <string name="adapter.social.call.cancel_failed">Der Anruf konnte nicht abgebrochen werden.</string>
+  <string name="adapter.social.call.decline_failed">Der Anruf konnte nicht abgelehnt werden.</string>
+  <string name="adapter.social.call.leave_failed">Der Anruf konnte nicht ordnungsgemäß verlassen werden.</string>
+  <string name="adapter.social.call.event_call_started">{name} hat einen Anruf gestartet.</string>
+  <string name="adapter.social.call.event_call_answered">{name} hat den Anruf angenommen.</string>
+  <string name="adapter.social.call.event_call_cancelled">{name} hat den Anruf abgebrochen.</string>
+  <string name="adapter.social.call.event_call_declined">{name} hat den Anruf abgelehnt.</string>
+  <string name="adapter.social.call.event_call_missed">Der Anruf von {name} wurde nicht angenommen.</string>
+</resources>

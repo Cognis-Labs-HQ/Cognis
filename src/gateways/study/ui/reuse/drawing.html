@@ -1,0 +1,58 @@
+<header>
+    <span class="study-drawing-heading"
+        ><button
+            type="button"
+            class="btn-neutral"
+            data-card-label
+            aria-label="{reveal}"
+            aria-expanded="false"
+        ></button
+        ><span data-pronunciations></span><span data-definition></span></span
+    ><span class="study-drawing-header-actions"
+        ><button
+            class="btn-neutral"
+            type="button"
+            data-guidance
+            aria-label="{guidance}"
+        >
+            ?</button
+        ><button
+            class="btn-close btn-cancel"
+            type="button"
+            data-close
+            aria-label="{close}"
+        >
+            <img
+                class="study-drawing-close-light"
+                src="/static/assets/reuse/icons/close-light.svg"
+                alt=""
+            /><img
+                class="study-drawing-close-dark"
+                src="/static/assets/reuse/icons/close-dark.svg"
+                alt=""
+            /></button
+    ></span>
+</header>
+<div class="study-drawing-stage">
+    <canvas></canvas>
+    <section
+        class="study-drawing-complete"
+        data-complete
+        hidden
+        aria-live="polite"
+    >
+        <span class="study-drawing-result" aria-hidden="true"></span
+        ><strong data-result-message></strong>
+        <p data-mistakes></p>
+        <div>
+            <button class="btn-neutral" type="button" data-complete-close>
+                {close}</button
+            ><button class="btn-neutral" type="button" data-try-again>
+                {try_again}
+            </button>
+        </div>
+    </section>
+</div>
+<div class="study-drawing-controls">
+    <button class="btn-cancel" type="button" data-reset>{reset}</button>
+</div>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Papan peringkat</string>
+  <string name="gateway.study.leaderboard_subtitle">Bandingkan kemajuan belajar terverifikasi dalam acara Study aktif Anda.</string>
+  <string name="gateway.study.leaderboard_heading">Papan peringkat Study</string>
+  <string name="gateway.study.leaderboard_empty">Belum ada acara papan peringkat yang tersedia.</string>
+  <string name="gateway.study.leaderboard_select">Papan peringkat</string>
+  <string name="gateway.study.leaderboard_error">Papan peringkat tidak dapat dimuat.</string>
+  <string name="gateway.study.leaderboard_caption">Klasemen papan peringkat</string>
+  <string name="gateway.study.leaderboard_rank">Peringkat</string>
+  <string name="gateway.study.leaderboard_participant">Peserta</string>
+  <string name="gateway.study.leaderboard_score">Skor</string>
+  <string name="gateway.study.leaderboard_ties">Seri</string>
+  <string name="gateway.study.leaderboard_movement">Perubahan</string>
+  <string name="gateway.study.leaderboard_updated">Diperbarui</string>
+  <string name="gateway.study.leaderboard_rank_word">peringkat</string>
+  <string name="gateway.study.leaderboard_tied_word">seri</string>
+  <string name="gateway.study.leaderboard_medal">medali</string>
+  <string name="gateway.study.leaderboard_you">Anda</string>
+  <string name="gateway.study.leaderboard_anonymous">Peserta {{ number }}</string>
+  <string name="gateway.study.leaderboard_gold">emas</string>
+  <string name="gateway.study.leaderboard_silver">perak</string>
+  <string name="gateway.study.leaderboard_bronze">perunggu</string>
+  <string name="gateway.study.leaderboard_classroom">Skor Kelas</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.title">Panduan Papan Peringkat</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Pilih Peringkat</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Pilih peringkat untuk melihat peserta dan periode penilaiannya.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Skor dan Pergerakan</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">Baca Kemajuan Anda</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">Temukan baris Anda dan bandingkan skor dalam peringkat terpilih. Ganti peringkat untuk membandingkan aktivitas yang diukurnya.</string>
+</resources>

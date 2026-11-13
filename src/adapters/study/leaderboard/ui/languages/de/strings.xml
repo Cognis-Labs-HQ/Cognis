@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Bestenliste</string>
+  <string name="gateway.study.leaderboard_subtitle">Vergleiche geprüfte Lernfortschritte in deinen aktiven Study-Ereignissen.</string>
+  <string name="gateway.study.leaderboard_heading">Study-Bestenliste</string>
+  <string name="gateway.study.leaderboard_empty">Noch ist kein Bestenlisten-Ereignis verfügbar.</string>
+  <string name="gateway.study.leaderboard_select">Bestenliste</string>
+  <string name="gateway.study.leaderboard_error">Die Bestenliste konnte nicht geladen werden.</string>
+  <string name="gateway.study.leaderboard_caption">Bestenlistenstand</string>
+  <string name="gateway.study.leaderboard_rank">Rang</string>
+  <string name="gateway.study.leaderboard_participant">Teilnehmende</string>
+  <string name="gateway.study.leaderboard_score">Punktzahl</string>
+  <string name="gateway.study.leaderboard_ties">Gleichstand</string>
+  <string name="gateway.study.leaderboard_movement">Bewegung</string>
+  <string name="gateway.study.leaderboard_updated">Aktualisiert</string>
+  <string name="gateway.study.leaderboard_rank_word">Rang</string>
+  <string name="gateway.study.leaderboard_tied_word">Gleichstand</string>
+  <string name="gateway.study.leaderboard_medal">Medaille</string>
+  <string name="gateway.study.leaderboard_you">Du</string>
+  <string name="gateway.study.leaderboard_anonymous">Teilnehmer {{ number }}</string>
+  <string name="gateway.study.leaderboard_gold">Gold</string>
+  <string name="gateway.study.leaderboard_silver">Silber</string>
+  <string name="gateway.study.leaderboard_bronze">Bronze</string>
+  <string name="gateway.study.leaderboard_classroom">Klassenpunkte</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.title">Ranglistenanleitung</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Rangliste auswählen</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Wählen Sie eine Rangliste für Teilnehmer und Wertungszeitraum.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Punkte und Veränderungen</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Vergleichen Sie Punkte und Rangänderungen; markierte Zeilen zeigen gegebenenfalls Ihre Position.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">Fortschritt einordnen</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">Finden Sie Ihre Zeile und vergleichen Sie Punkte innerhalb der gewählten Rangliste. Andere Ranglisten messen andere Aktivitäten.</string>
+</resources>

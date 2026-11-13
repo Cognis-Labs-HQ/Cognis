@@ -1,0 +1,268 @@
+import "../session-flow-hooks.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+
+const log = (operation, error) =>
+    console.error("Share page operation failed.", {
+        component: "share",
+        operation,
+        errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+
+function renderFallbackBody(i18n, messageKey) {
+    return `
+        <section class="share-window-body">
+            <div class="share-empty-state">
+                <h2>${escapeHtml(i18n.t("share.page_title"))}</h2>
+                <p>${escapeHtml(i18n.t(messageKey))}</p>
+            </div>
+        </section>
+    `;
+}
+
+function updatePageDescriptor(root, i18n, subtitleKey) {
+    const context = root.querySelector(".page-context");
+    const subtitle = context?.querySelector("p");
+    if (subtitle instanceof HTMLElement) {
+        subtitle.textContent = i18n.t(subtitleKey);
+    }
+}
+
+async function navigateToShareError(i18n, reason, showFallback) {
+    const notFound = reason === "share_not_found";
+    const code = notFound ? "404" : "410";
+    const message = i18n.t(
+        notFound ? "share.error.not_found" : "share.error.expired",
+    );
+    const destination = `/error?code=${code}&message=${encodeURIComponent(message)}`;
+    try {
+        if (await navigateTo(destination)) return;
+    } catch (error) {
+        log("navigateShareError", error);
+    }
+    showFallback(notFound ? "share.error.not_found" : "share.error.expired");
+}
+
+/**
+ * Builds the composer element for the share page.
+ *
+ * The share page owns the whole public share surface, so the element asks
+ * the existing composer sizing contract to fill the available grid space
+ * rather than relying on the smaller default card dimensions.
+ */
+function buildShareElement(state) {
+    return {
+        id: "share-page",
+        label: state.i18n.t("share.page_title"),
+        pinned: true,
+        gridSize: {
+            default: [12, 10],
+            min: [1, 3],
+            max: ["fill", "fill"],
+        },
+        render: () => {
+            if (state.loading) {
+                return `
+                    <div class="share-window card-elevated">
+                        <section class="share-window-body">
+                            <div class="share-loading-state">
+                                <span class="share-spinner" aria-hidden="true"></span>
+                                <p>${escapeHtml(state.i18n.t("share.loading"))}</p>
+                            </div>
+                        </section>
+                    </div>
+                `;
+            }
+            return `
+                <div class="share-window card-elevated">
+                    ${renderFallbackBody(state.i18n, state.errorKey || "share.error.renderer_missing")}
+                </div>
+            `;
+        },
+    };
+}
+
+export async function mount(
+    root,
+    { signal, shareContext: routedShareContext } = {},
+) {
+    if (signal?.aborted) return;
+    const state = {
+        loading: true,
+        errorKey: "",
+        i18n: await createI18n({
+            componentStringBaseUrls: ["/static/gateways/share/languages"],
+        }),
+    };
+    if (signal?.aborted) return;
+    applyDocumentTitle(state.i18n, "share.page_title");
+
+    const composer = createPageComposer(root, {
+        signal,
+        allowCustomization: false,
+        i18n: state.i18n,
+        preferenceKey: "share-page-layout",
+        pageContext: {
+            title: state.i18n.t("share.page_title"),
+            subtitle: state.i18n.t("share.subtitle"),
+        },
+        showTopbar: true,
+        showNavbar: false,
+        showFooter: true,
+        showThemeToggle: true,
+        frameless: false,
+        persistLayoutPreferences: false,
+        // This page is visited by anonymous guests and runs its own
+        // authenticate-session flow below, so it must not block on a full
+        // account session — an expired/invalid share token legitimately
+        // resolves to an unauthenticated session with no redirect pending,
+        // which this page renders its own fallback screen for instead.
+        requireAccountSession: false,
+        enableAccountEnhancements: false,
+        elements: [buildShareElement(state)],
+    });
+
+    await composer.init();
+    if (signal?.aborted) return;
+
+    const showShareFallback = (messageKey) => {
+        if (signal?.aborted) return;
+        state.loading = false;
+        state.errorKey = messageKey;
+        updatePageDescriptor(root, state.i18n, messageKey);
+        composer.refresh([buildShareElement(state)]);
+    };
+    installGuestNavigationGuard({ root, signal });
+
+    const flowResult = routedShareContext
+        ? null
+        : await uiCtx.runFlow("authenticate-session", {
+              routePath: `${window.location.pathname}${window.location.search}`,
+          });
+    if (signal?.aborted) return;
+    const session = routedShareContext
+        ? { authenticated: true, shareContext: routedShareContext }
+        : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
+    const shareContext = routedShareContext ?? session?.shareContext ?? null;
+
+    if (session?.shareAttempted && !session?.authenticated) {
+        if (session.failureReason !== "share_access_denied") {
+            await navigateToShareError(
+                state.i18n,
+                session.failureReason,
+                showShareFallback,
+            );
+            return;
+        }
+        // A share token was present in the URL but failed to resolve
+        // (expired, revoked, or invalid). Render the fallback screen
+        // directly instead of the generic missing/malformed messages below.
+        state.loading = false;
+        state.errorKey = "share.error.access_denied";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
+
+    if (!shareContext?.resourceType) {
+        await navigateToShareError(
+            state.i18n,
+            shareContext === null ? "share_not_found" : "share_expired",
+            showShareFallback,
+        );
+        return;
+    }
+
+    if (!session?.authenticated) {
+        await navigateToShareError(
+            state.i18n,
+            "share_expired",
+            showShareFallback,
+        );
+        return;
+    }
+
+    uiCtx.capabilities.get("router:invalidateRoutes")?.();
+    await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.({
+        force: true,
+    });
+    if (signal?.aborted) return;
+
+    if (shareContext.contentUrl && shareContext.directAccess === true) {
+        const navigated = await navigateTo(shareContext.contentUrl);
+        if (signal?.aborted) return;
+        if (navigated) return;
+        state.loading = false;
+        state.errorKey = "share.error.renderer_missing";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
+
+    if (shareContext.page?.stringsBaseUrl) {
+        state.i18n = await extendI18n(
+            state.i18n,
+            shareContext.page.stringsBaseUrl,
+        );
+        if (signal?.aborted) return;
+    }
+
+    const stylesheetUrls = Array.isArray(shareContext.page?.stylesheetUrls)
+        ? shareContext.page.stylesheetUrls
+        : [];
+    if (stylesheetUrls.length) {
+        await Promise.all(
+            stylesheetUrls.map((url) => ensurePageStylesheet(String(url))),
+        );
+        if (signal?.aborted) return;
+    }
+
+    if (shareContext.page?.mountScriptUrl) {
+        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+        globalThis.__spaRouter = true;
+        let mountModule;
+        try {
+            mountModule = await import(
+                String(shareContext.page.mountScriptUrl)
+            );
+        } finally {
+            globalThis.__spaRouterCount--;
+            if (globalThis.__spaRouterCount === 0) {
+                globalThis.__spaRouter = false;
+            }
+        }
+        if (signal?.aborted) return;
+        const mountSharedPage =
+            typeof mountModule?.mount === "function" ? mountModule.mount : null;
+        if (!mountSharedPage) {
+            state.loading = false;
+            state.errorKey = "share.error.renderer_missing";
+            updatePageDescriptor(root, state.i18n, state.errorKey);
+            composer.refresh([buildShareElement(state)]);
+            return;
+        }
+        state.loading = false;
+        state.errorKey = "";
+        await mountSharedPage(root, {
+            shareContext,
+            i18n: state.i18n,
+            signal,
+        });
+        return;
+    }
+
+    if (signal?.aborted) return;
+    showShareFallback("share.error.renderer_missing");
+}
+
+await mountWhenDirect(mount);

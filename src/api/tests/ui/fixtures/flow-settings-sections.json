@@ -1,0 +1,18 @@
+[
+    {
+        "id": "host",
+        "scriptUrl": "/static/gateways/alias/provider.js",
+        "stringsBaseUrl": "/static/gateways/alias/languages"
+    },
+    {
+        "id": "admin",
+        "scriptUrl": "/static/gateways/example/ui/direct.js",
+        "access": { "minRole": "admin" }
+    },
+    {
+        "id": "module",
+        "scriptUrl": "/static/modules/example/section.js?revision=1"
+    },
+    { "id": "external", "scriptUrl": "https://example.invalid/section.js" },
+    { "id": "source", "scriptUrl": "/static/gateways/unbuilt/section.js" }
+]

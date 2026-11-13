@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <string name="gateway.study.leaderboard_label">Leaderboard</string>
+  <string name="gateway.study.leaderboard_subtitle">Compare verified learning progress in your active Study events.</string>
+  <string name="gateway.study.leaderboard_heading">Study leaderboard</string>
+  <string name="gateway.study.leaderboard_empty">No leaderboard event is available yet.</string>
+  <string name="gateway.study.leaderboard_select">Leaderboard</string>
+  <string name="gateway.study.leaderboard_error">The leaderboard could not be loaded.</string>
+  <string name="gateway.study.leaderboard_caption">Leaderboard standings</string>
+  <string name="gateway.study.leaderboard_rank">Rank</string>
+  <string name="gateway.study.leaderboard_participant">Participant</string>
+  <string name="gateway.study.leaderboard_score">Score</string>
+  <string name="gateway.study.leaderboard_ties">Tied</string>
+  <string name="gateway.study.leaderboard_movement">Movement</string>
+  <string name="gateway.study.leaderboard_updated">Updated</string>
+  <string name="gateway.study.leaderboard_rank_word">rank</string>
+  <string name="gateway.study.leaderboard_tied_word">tied</string>
+  <string name="gateway.study.leaderboard_medal">medal</string>
+  <string name="gateway.study.leaderboard_you">You</string>
+  <string name="gateway.study.leaderboard_anonymous">Participant {{ number }}</string>
+  <string name="gateway.study.leaderboard_gold">gold</string>
+  <string name="gateway.study.leaderboard_silver">silver</string>
+  <string name="gateway.study.leaderboard_bronze">bronze</string>
+  <string name="gateway.study.leaderboard_classroom">Classroom Scores</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.title">Leaderboard Guide</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.title">Ranking Selection</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.ranking.selection.body">Choose a ranking to see its participants and scoring period.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.title">Scores And Movement</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.scores.and.movement.body">Compare scores and rank movement; highlighted rows identify your own position when available.</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.title">Read Your Progress</string>
+  <string name="adapter.study.leaderboard.tutorial.rankings.compare.progress.body">Find your row and compare scores within the selected ranking. Switch rankings to compare the activity each one measures.</string>
+</resources>

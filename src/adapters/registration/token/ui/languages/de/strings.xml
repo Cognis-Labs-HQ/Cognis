@@ -1,0 +1,12 @@
+<resources>
+  <string name="adapter.registration.token.sso_intro">Fast geschafft! Ihre Identität wurde bestätigt. Geben Sie ein Cognis-Registrierungstoken ein, um die Einrichtung Ihres Kontos abzuschließen.</string>
+  <string name="adapter.registration.token.email">E-Mail-Adresse</string>
+  <string name="adapter.registration.token.token">Registrierungstoken</string>
+  <string name="adapter.registration.token.continue">Weiter</string>
+  <string name="adapter.registration.token.failed">Die Kontoerstellung konnte nicht autorisiert werden.</string>
+  <string name="adapter.registration.token.invalid">Dieses Registrierungstoken ist ungültig, abgelaufen oder widerrufen.</string>
+  <string name="adapter.registration.token.email_mismatch">Dieses Registrierungstoken wurde für eine andere E-Mail-Adresse ausgestellt.</string>
+  <string name="adapter.registration.token.lease_expires_in">Schließen Sie die Registrierung innerhalb von {countdown} ab</string>
+  <string name="adapter.registration.token.lease_expired">Diese sichere Registrierungssitzung ist abgelaufen. Melden Sie sich erneut über Ihren Anbieter an, um fortzufahren.</string>
+  <string name="adapter.registration.token.created">Ihr Konto wurde erstellt. Sie werden jetzt angemeldet.</string>
+</resources>

@@ -1,0 +1,10 @@
+[
+    {
+        "id": "synthetic:definition:greeting",
+        "label": "greeting",
+        "fields": {
+            "string_key": "synthetic:definitions:greeting",
+            "translations": { "en": "a greeting", "de": "ein Gruß" }
+        }
+    }
+]

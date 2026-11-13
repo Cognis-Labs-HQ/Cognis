@@ -1,0 +1,158 @@
+.users-identity {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.45rem;
+    max-width: 100%;
+    min-width: 0;
+}
+.users-provider-icon {
+    height: 1rem;
+    object-fit: contain;
+    width: 1rem;
+}
+.users-role-select {
+    min-width: 0;
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 6px;
+    background: var(--input-bg, #fff);
+    color: var(--text, #111);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.users-role-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.users-delete-btn {
+    background: var(--color-danger);
+    color: var(--color-danger-text);
+    border: 1px solid var(--color-danger-border);
+    line-height: 1;
+}
+
+.users-delete-btn:hover:not(:disabled) {
+    background: var(--color-danger-border);
+    border-color: var(--color-danger-border);
+    color: var(--color-danger-text);
+}
+.users-list,
+.users-row {
+    min-width: 0;
+}
+
+.users-row > .users-row-summary {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.users-row-summary:hover {
+    background: var(--surface-soft);
+}
+
+.users-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.users-row-controls {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(140px, 200px) auto auto;
+}
+
+.users-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.users-row-meta {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+}
+
+.users-details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 32px;
+    margin: 0;
+}
+
+.users-detail-field {
+    min-width: 0;
+}
+
+.users-detail-field dt {
+    color: var(--text-muted, var(--muted));
+    font-size: 0.85em;
+}
+
+.users-detail-field dd {
+    margin: 8px 0 0;
+    overflow-wrap: anywhere;
+}
+
+.users-detail-emails {
+    border-top: 1px solid var(--border);
+    grid-column: 1 / -1;
+    padding-top: 20px;
+}
+
+.users-email-list {
+    display: grid;
+    gap: 12px;
+}
+
+.users-email-row,
+.users-email-badges {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.users-email-row {
+    justify-content: space-between;
+}
+
+.users-email-badges .state-pill {
+    font-size: 0.8em;
+    min-height: 24px;
+    min-width: 0;
+    padding: 4px 10px;
+}
+
+@media (max-width: 900px) {
+    .users-row > .users-row-summary {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .users-row-controls {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .users-actions {
+        grid-column: 1 / -1;
+    }
+
+    .users-details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .users-details-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.users-actions > .users-toggle-btn,
+.users-actions > .users-menu-btn,
+.users-actions > .users-delete-btn {
+    margin: 0;
+}

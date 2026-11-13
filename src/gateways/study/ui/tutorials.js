@@ -1,0 +1,128 @@
+import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
+
+import { guides } from "./guides.js";
+import { fetchLibrarySchemas } from "./library-client.js";
+import {
+    languageExploreUrl,
+    languageFlashcardsUrl,
+    languageStudyPage,
+} from "./reuse/explore.js";
+
+/** Publish Study-owned semantic navigation targets for registered learning tutorials. */
+export async function mountProvider(ctx) {
+    const owner = ctx.capabilities.get("ui:tutorials").owner("study", {
+        signal: ctx.signal,
+        stringsBaseUrls: ["/static/gateways/study/languages"],
+    });
+    const ids = {};
+    let releaseGuides;
+    try {
+        for (const [name, selector] of Object.entries({
+            navigation: ".study-subnav-modules",
+            languages: ".study-subnav-language-options",
+            modules: ".study-hub-modules",
+            dictionary: "[data-study-dictionary-search]",
+            settings: "[data-study-settings]",
+            drawingCanvas: ".study-drawing-host .study-drawing-pad canvas",
+            drawingTools: ".study-drawing-host .study-drawing-controls",
+        })) {
+            const target = await owner.target(
+                name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`),
+                {
+                    public: true,
+                    available: () =>
+                        window.location.pathname.startsWith("/study"),
+                    resolve: () => {
+                        const all = document.querySelectorAll(selector);
+                        return all.length === 1 ? all[0] : null;
+                    },
+                },
+            );
+            ids[name] = target.id;
+        }
+        const registerActions = ctx.capabilities.get("ui:scopedActions");
+        if (!registerActions) throw new Error("scoped_actions_unavailable");
+        const actions = registerActions(ctx, "study:tutorialNavigation", {
+            attachDrawing: ({ signal }) => {
+                const pad = document.querySelector(
+                    ".study-drawing-host .study-drawing-pad",
+                );
+                return Boolean(
+                    pad && transientSurfaces.attachLifetime(pad, signal),
+                );
+            },
+            route: async ({ language, area }) => {
+                ctx.signal.throwIfAborted();
+                if (
+                    typeof language !== "string" ||
+                    !/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(language)
+                )
+                    throw new TypeError("invalid_study_language");
+                if (area === "overview") return "/study";
+                if (area === "flashcards")
+                    return languageFlashcardsUrl(language);
+                if (area !== "explore")
+                    throw new TypeError("invalid_study_tutorial_area");
+                const schemas = await fetchLibrarySchemas(language);
+                ctx.signal.throwIfAborted();
+                const route = languageExploreUrl(schemas, language);
+                if (!route)
+                    throw new Error("study_tutorial_content_unavailable");
+                return route;
+            },
+        });
+        ctx.capabilities.contribute(
+            "study:tutorialTargets",
+            Object.freeze({
+                ...ids,
+                ...actions,
+                matchesPage: languageStudyPage,
+                isEnrolled: (language) =>
+                    ctx.capabilities
+                        .get("study:navigation")
+                        ?.isEnrolled(language) === true,
+            }),
+        );
+        await owner.register({
+            version: 1,
+            page: "/study",
+            id: "getting-started",
+            titleKey: "gateway.study.tutorial.title",
+            available: () =>
+                ctx.capabilities.get("session:isAuthenticated")?.() === true,
+            requires: ["ui:navigate", "study:navigation"],
+            steps: [
+                "navigation",
+                "languages",
+                "dictionary",
+                "settings",
+                "modules",
+            ].map((name) => ({
+                highlightNext: true,
+                when: ({ targetAvailable }) => targetAvailable,
+                id: name,
+                route: "/study",
+                target: ids[name],
+                titleKey: `gateway.study.tutorial.${name}.title`,
+                bodyKey: `gateway.study.tutorial.${name}.body`,
+                effects: { callout: true, arrow: true, spotlight: true },
+                missing: { timeoutMs: 3000, action: "skip" },
+            })),
+        });
+        const { mountTutorialProvider } = await ctx.capabilities
+            .get("ui:reuse")
+            .importModule("tutorials/pages.js");
+        releaseGuides = await mountTutorialProvider(ctx, {
+            guides,
+            stringsBaseUrls: ["/static/gateways/study/languages"],
+        });
+        return () => {
+            releaseGuides();
+            owner.dispose();
+        };
+    } catch (error) {
+        releaseGuides?.();
+        owner.dispose();
+        throw error;
+    }
+}

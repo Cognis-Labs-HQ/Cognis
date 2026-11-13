@@ -1,0 +1,107 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+function readSource(relativePath) {
+    return readFileSync(resolve(ROOT, relativePath), "utf8");
+}
+
+test("page composer pointer tracker is opt-in through presence tracking", () => {
+    const pointerSource = readSource("src/ui/reuse/pointer-tracker.js");
+    const presenceSource = readSource(
+        "src/ui/reuse/page-composer/presence-tracker.js",
+    );
+    const composerSource = readSource("src/ui/reuse/page-composer/init.js");
+    const layoutCssSource = ["layout.css", "presence.css"]
+        .map((fileName) => readSource(`src/ui/styles/reuse/${fileName}`))
+        .join("\n");
+
+    assert.match(pointerSource, /export function createPointerTracker/);
+    assert.match(pointerSource, /from "\.\/escape-html\.js"/);
+    assert.match(pointerSource, /import \{ uiCtx \} from "\.\/ui-ctx\.js"/);
+    assert.doesNotMatch(pointerSource, /profileAvatarRenderer|avatar-utils/);
+    assert.match(pointerSource, /entry\?\.color/);
+    assert.match(pointerSource, /contentGrid\.addEventListener\("pointermove"/);
+    assert.match(pointerSource, /overlayRoot = null/);
+    assert.match(pointerSource, /getPointerOffset/);
+    assert.match(pointerSource, /function currentPointerOffset\(\)/);
+    assert.match(pointerSource, /offset\.x/);
+    assert.match(pointerSource, /offset\.y/);
+    assert.match(pointerSource, /renderRoot\.appendChild\(overlay\)/);
+    assert.match(pointerSource, /className = "pointer-style-toggle"/);
+    assert.match(pointerSource, /capabilities\.get\("page:actions"\)/);
+    assert.match(pointerSource, /removePageAction\?\.\(\)/);
+    assert.match(pointerSource, /noteActivity\?\.\(\)/);
+    assert.match(pointerSource, /page-pointer--/);
+    assert.match(pointerSource, /page-selection/);
+    assert.doesNotMatch(
+        pointerSource,
+        /POINTER_VISIBLE_MS|SELECTION_VISIBLE_MS/,
+    );
+    assert.match(pointerSource, /--selection-color:\$\{escapeHtml\(color\)\}/);
+    assert.match(pointerSource, /--pointer-color:\$\{escapeHtml\(color\)\}/);
+    assert.match(layoutCssSource, /page-pointer-laser-pulse/);
+    assert.match(layoutCssSource, /page-pointer__laser-dot/);
+    assert.match(layoutCssSource, /#page-presence-section \.page-presence/);
+    assert.match(layoutCssSource, /gap: 0/);
+    assert.match(layoutCssSource, /margin-left: -0\.65rem/);
+    assert.match(presenceSource, /pointerTracking === true/);
+    assert.match(
+        presenceSource,
+        /pointer: pointerTracker\?\.getPointerPayload/,
+    );
+    assert.match(presenceSource, /getSelectionPayload/);
+    assert.match(presenceSource, /onPresenceUpdate/);
+    assert.match(presenceSource, /getPointerOffset/);
+    assert.match(presenceSource, /pointerOverlayRoot/);
+    assert.match(presenceSource, /createAdaptivePoller/);
+    assert.match(presenceSource, /mountedParent/);
+    assert.match(presenceSource, /#page-presence-section/);
+    assert.match(presenceSource, /HEARTBEAT_MIN_INTERVAL_MS = 10_000/);
+    assert.match(presenceSource, /HEARTBEAT_MAX_INTERVAL_MS = 30_000/);
+    assert.match(presenceSource, /REFRESH_MIN_INTERVAL_MS = 2_500/);
+    assert.match(presenceSource, /REFRESH_MAX_INTERVAL_MS = 30_000/);
+    assert.match(pointerSource, /POINTER_SEND_THROTTLE_MS = 1_000/);
+    assert.match(
+        presenceSource,
+        /createPresenceSignature[\s\S]*entry\.sessionId,\s*entry\.active,/,
+    );
+    assert.match(presenceSource, /function isRecentlyActive\(\)/);
+    assert.match(
+        presenceSource,
+        /response\?\.status === 401 \|\| response\?\.status === 403/,
+    );
+    assert.match(presenceSource, /destroy\(\{ notifyInactive: false \}\)/);
+    assert.match(presenceSource, /requestAbortController\.abort\(\)/);
+    assert.match(presenceSource, /if \(!keepalive && presenceRequest\) return/);
+    assert.match(presenceSource, /if \(refreshRequest\) return refreshRequest/);
+    assert.match(
+        presenceSource,
+        /subscribePresenceActivity[\s\S]*if \(active\)[\s\S]*heartbeatPoller\?\.start\(\{ immediate: true \}\)[\s\S]*refreshPoller\?\.start\(\)/,
+    );
+    assert.match(
+        presenceSource,
+        /else \{[\s\S]*heartbeatPoller\?\.stop\(\)[\s\S]*refreshPoller\?\.stop\(\)[\s\S]*markInactive\?\.\(\)/,
+    );
+    assert.match(
+        composerSource,
+        /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,
+    );
+    assert.match(
+        composerSource,
+        /signal\?\.addEventListener\("abort", destroy/,
+    );
+    assert.match(
+        composerSource,
+        /function destroy\(\)[\s\S]*activePresenceTracker\?\.destroy\(\)/,
+    );
+    assert.ok(
+        composerSource.indexOf("render();") <
+            composerSource.indexOf("activePresenceTracker.mount(mainWindow)"),
+        "presence tracker must mount after composer content renders so the pointer overlay is not removed",
+    );
+});

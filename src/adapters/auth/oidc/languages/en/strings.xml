@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.oidc.config.providername">Provider Name</string>
+    <string name="adapter.oidc.config.clientid">Client ID</string>
+    <string name="adapter.oidc.config.clientsecret">Client Secret</string>
+    <string name="adapter.oidc.config.discoveryurl">Discovery URL</string>
+    <string name="adapter.oidc.config.adminroles">Admin Roles (Comma-separated)</string>
+</resources>

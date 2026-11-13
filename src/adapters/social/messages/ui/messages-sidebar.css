@@ -1,0 +1,155 @@
+.messages-sidebar-section {
+    border-top: 1px solid var(--color-border);
+    padding: 0.6rem 0.8rem 0.8rem;
+    display: grid;
+    gap: 0.45rem;
+    flex-shrink: 0;
+}
+
+.messages-sidebar-section-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.messages-sidebar-section-label--btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    padding: 0;
+    font: inherit;
+}
+
+.messages-sidebar-section-label--btn:hover {
+    color: var(--color-text);
+}
+
+.messages-sidebar-template-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.12rem 0 0;
+    display: grid;
+    gap: 0.35rem;
+    max-height: 12rem;
+    overflow-y: auto;
+}
+
+.messages-sidebar-template-load-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--color-text);
+    text-align: left;
+    padding: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: none;
+}
+
+button.messages-sidebar-template-load-btn:hover:not(:disabled):not(
+        .dropdown-item
+    ):not([class*="btn-"]) {
+    transform: none;
+    border-color: transparent;
+}
+
+.messages-sidebar-template-load-btn:hover {
+    color: var(--color-accent);
+}
+
+.messages-sidebar-template-edit-btn,
+.messages-sidebar-template-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.3rem;
+    height: 1.3rem;
+    min-width: 0;
+    min-height: 0;
+    flex: 0 0 auto;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    font-size: 0.72rem;
+    border-radius: 0.3rem;
+    line-height: 1;
+    border: 1px solid;
+    transition: none;
+}
+
+.toolbar .messages-sidebar-template-edit-btn,
+.toolbar .messages-sidebar-template-delete-btn {
+    width: 1.3rem;
+    min-width: 0;
+    min-height: 1.3rem;
+    padding: 0;
+}
+
+.messages-sidebar-template-edit-btn {
+    background: transparent;
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.messages-sidebar-template-edit-btn:hover {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-text-muted);
+}
+
+.messages-sidebar-template-delete-btn {
+    background: transparent;
+    color: var(--color-danger-outline-text, var(--color-danger-text));
+    border-color: var(--color-danger-outline-text, var(--color-danger-text));
+}
+
+.messages-sidebar-template-delete-btn:hover {
+    background: var(--color-surface-elevated);
+}
+
+.messages-template-edit-icon {
+    display: inline-block;
+    width: 16.5px;
+    height: 16.5px;
+    background-color: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/edit.svg");
+    mask-image: url("/static/assets/reuse/edit.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    vertical-align: middle;
+}
+
+.messages-sidebar-template-delete-btn {
+    font-size: 1.08rem;
+}
+
+.messages-sidebar-menu-btn {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0.45rem 0.7rem;
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.messages-sidebar-menu-btn:hover {
+    filter: brightness(1.1);
+}

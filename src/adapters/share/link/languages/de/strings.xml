@@ -1,0 +1,20 @@
+<resources>
+  <string name="adapter.share.link.name">Link</string>
+  <string name="adapter.share.link.description">Erstellen Sie einen Link, der außerhalb von Cognis versendet werden kann.</string>
+  <string name="adapter.share.link.email.send">Senden</string>
+  <string name="adapter.share.link.email.recipients">Eine Einladung mit diesem Freigabelink senden an:</string>
+  <string name="adapter.share.link.email.placeholder">E-Mail-Adressen eingeben</string>
+  <string name="adapter.share.link.email.required">Mindestens eine empfangende Person hinzufügen.</string>
+  <string name="adapter.share.link.email.sent">Freigabe-E-Mail gesendet.</string>
+  <string name="adapter.share.link.email.failed">Freigabe-E-Mail konnte nicht gesendet werden.</string>
+  <string name="adapter.share.link.popup.empty">Noch keine Freigabelinks.</string>
+  <string name="adapter.share.link.popup.active">Aktiv</string>
+  <string name="adapter.share.link.popup.expired">Abgelaufen</string>
+  <string name="adapter.share.link.popup.expires">Läuft ab</string>
+  <string name="adapter.share.link.popup.copy">Link kopieren</string>
+  <string name="adapter.share.link.popup.revoke">Widerrufen</string>
+  <string name="adapter.share.link.popup.copied">Link kopiert.</string>
+  <string name="adapter.share.link.popup.copy_failed">Der Link konnte nicht kopiert werden.</string>
+  <string name="adapter.share.link.popup.create_failed">Die Freigabe konnte nicht erstellt werden.</string>
+  <string name="adapter.share.link.popup.delete_failed">Die Freigabe konnte nicht widerrufen werden.</string>
+</resources>

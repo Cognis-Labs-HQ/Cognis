@@ -1,0 +1,16 @@
+<resources>
+  <string name="gateway.files.admin.title">ファイル名前空間のクォータ</string>
+  <string name="gateway.files.admin.description">登録済みの各ファイル名前空間について、新しく作成されるユーザーの既定ストレージクォータを設定します。</string>
+  <string name="gateway.files.admin.global_default">グローバル既定クォータ（バイト）</string>
+  <string name="gateway.files.admin.namespace">名前空間</string>
+  <string name="gateway.files.admin.owner">所有コンポーネント</string>
+  <string name="gateway.files.admin.visibility">可視性</string>
+  <string name="gateway.files.admin.quota_bytes">既定クォータ（バイト）</string>
+  <string name="gateway.files.admin.saved">既定クォータを保存しました。</string>
+  <string name="gateway.files.admin.save_failed">既定クォータを保存できませんでした。</string>
+  <string name="gateway.files.tutorial.quotas.title">保存容量の上限</string>
+  <string name="gateway.files.tutorial.quotas.default.quota.title">既定の上限</string>
+  <string name="gateway.files.tutorial.quotas.default.quota.body">全体の既定容量と、それを使用するコンポーネントの名前空間を確認します。</string>
+  <string name="gateway.files.tutorial.quotas.namespace.limits.title">名前空間ごとの上限</string>
+  <string name="gateway.files.tutorial.quotas.namespace.limits.body">名前空間の所有者と公開範囲を確認してから、容量の上限を変更して保存します。</string>
+</resources>

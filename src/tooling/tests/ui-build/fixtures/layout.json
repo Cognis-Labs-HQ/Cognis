@@ -1,0 +1,9 @@
+{
+    "app.js": "src/ui/app.js",
+    "style.css": "src/ui/styles/fixture.css",
+    "icon.svg": "src/ui/public/assets/icon.svg",
+    "index.html": "src/ui/public/pages/index.html",
+    "registration.js": "src/adapters/example/sample/index.js",
+    "provider.js": "src/adapters/example/sample/ui/provider.js",
+    "helper.js": "src/adapters/example/sample/ui/helper.js"
+}
