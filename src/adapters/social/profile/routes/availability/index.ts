@@ -26,7 +26,7 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
     "busy",
     "tentative",
 ];
-const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
+const VALID_STATUSES = new Set<unknown>(AVAILABILITY_STATUSES);
 const ACTIVE_PRESENCE_TTL_MS = 45_000;
 const MAX_PRESENCE_SESSIONS_PER_ACCOUNT = 8;
 

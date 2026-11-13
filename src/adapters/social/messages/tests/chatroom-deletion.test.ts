@@ -1,11 +1,20 @@
+import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createChatroomDeletionCapability } from "../chatroom-deletion.js";
+import {
+    createChatroomDeletionCapability,
+    type ChatroomDeletionStore,
+} from "../chatroom-deletion.js";
 import { DbMessagesStore } from "../store.js";
 
 function createHarness() {
     const calls: unknown[] = [];
-    const store = {
+    const store: ChatroomDeletionStore = {
+        getRoom: async () =>
+            assert.fail("Only administrators read the room directly"),
+        deleteRoom: async () =>
+            assert.fail("Use the actor-authorized deletion path"),
         async ensureSchema() {
             calls.push("ensureSchema");
         },
@@ -19,7 +28,7 @@ function createHarness() {
         metadata?: Record<string, unknown>;
     }> = [];
     const deleteChatroom = createChatroomDeletionCapability(
-        store as never,
+        store,
         (level, _message, metadata) => logs.push({ level, metadata }),
     );
     return { calls, deleteChatroom, logs, store };
@@ -77,17 +86,22 @@ test("chatroom deletion rejects another participant", async () => {
 });
 
 test("chatroom deletion removes dependent records transactionally", async () => {
-    const commands: Array<Record<string, unknown>> = [];
-    const executor = {
-        async executeCommand(command: Record<string, unknown>) {
+    const commands: StructuredDbCommand[] = [];
+    const executor: DbExecutor = {
+        async ensureTable() {
+            throw new Error(
+                "Schema setup is not used in deletion transaction tests",
+            );
+        },
+        async executeCommand(command: StructuredDbCommand) {
             commands.push(command);
             return { rows: [] };
         },
-        async transaction(callback: (db: typeof executor) => Promise<void>) {
-            await callback(executor);
+        async transaction<T>(callback: (db: DbExecutor) => Promise<T>) {
+            return callback(executor);
         },
     };
-    const store = new DbMessagesStore(executor as never);
+    const store = new DbMessagesStore(executor);
 
     await store.deleteRoom("room-1");
 
@@ -106,17 +120,22 @@ test("chatroom deletion removes dependent records transactionally", async () => 
     assert.ok(
         commands.every(
             (command) =>
-                (command.where as Array<{ value: string }>)[0]?.value ===
+                ("where" in command ? command.where?.[0]?.value : undefined) ===
                 "room-1",
         ),
     );
 });
 
 test("chatroom deletion authorizes and deletes in the same transaction", async () => {
-    const commands: Array<Record<string, unknown>> = [];
+    const commands: StructuredDbCommand[] = [];
     let transactionActive = false;
-    const executor = {
-        async executeCommand(command: Record<string, unknown>) {
+    const executor: DbExecutor = {
+        async ensureTable() {
+            throw new Error(
+                "Schema setup is not used in deletion transaction tests",
+            );
+        },
+        async executeCommand(command: StructuredDbCommand) {
             assert.equal(transactionActive, true);
             commands.push(command);
             if (command.table === "chatrooms" && command.option === "SELECT") {
@@ -150,14 +169,14 @@ test("chatroom deletion authorizes and deletes in the same transaction", async (
             }
             return { rows: [] };
         },
-        async transaction<T>(callback: (db: typeof executor) => Promise<T>) {
+        async transaction<T>(callback: (db: DbExecutor) => Promise<T>) {
             transactionActive = true;
             const result = await callback(executor);
             transactionActive = false;
             return result;
         },
     };
-    const store = new DbMessagesStore(executor as never);
+    const store = new DbMessagesStore(executor);
 
     const result = await store.deleteRoomForActor("room-1", "participant");
 
@@ -177,7 +196,7 @@ test("authoritative administrators can delete another account's room", async () 
             },
             deleteRoomForActor: async () =>
                 assert.fail("Use the authorized administrator path"),
-        } as never,
+        },
         undefined,
         async (accountId) => {
             assert.equal(accountId, "admin-account");
@@ -192,19 +211,22 @@ test("a caller-supplied role cannot grant administrative deletion", async () => 
     const remove = createChatroomDeletionCapability(
         {
             ensureSchema: async () => {},
+            getRoom: async () =>
+                assert.fail("Only administrators read the room directly"),
             deleteRoomForActor: async () => "forbidden",
             deleteRoom: async () =>
                 assert.fail("Never trust the requested role"),
-        } as never,
+        },
         undefined,
         async () => "user",
     );
     await assert.rejects(
-        remove({
-            roomId: "room",
-            actorAccountId: "user",
-            role: "admin",
-        } as never),
+        remove(
+            Object.assign(
+                { roomId: "room", actorAccountId: "user" },
+                { role: "admin" },
+            ),
+        ),
         /owner/,
     );
 });

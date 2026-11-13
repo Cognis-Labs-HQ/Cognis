@@ -120,6 +120,10 @@ Social components expose membership changes with the same two verbs: `POST` adds
 
 HTTP routes authenticate and authorize the acting user. Capabilities are the trusted server-to-server surface: callers must already have authority to act, and must always supply the actor explicitly. Consumers obtain capabilities from `ctx.capabilities`; they never import an adapter store or implementation.
 
+### Typed Storage and Routes
+
+Adapter bootstrap contracts declare page capability requirements and the host logging levels. Adapters receive the gateway registration operation through their bootstrap context. Profile row declarations retain the current role and visibility values without converting stored records.
+
 ## Security
 
 Adapters receive bounded registration hooks and ctx capabilities. Room membership, blocks and profile visibility are checked by the operation owner; the gateway does not grant access merely because an adapter is enabled.

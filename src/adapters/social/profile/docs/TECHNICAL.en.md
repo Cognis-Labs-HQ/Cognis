@@ -189,6 +189,10 @@ Preview shows the current title and body before publishing. Return to Compose or
 
 Published posts appear immediately, and deletions update the timeline without reloading.
 
+### Typed Storage and Routes
+
+Profile roles and visibility types match the stored records, including moderator accounts and private, friends and community visibility. Preference reads expose the stored JSON text. Persistence tests use a profile-owned structured database fixture with rollback support.
+
 ## Security
 
 ### Account privacy and keyring isolation

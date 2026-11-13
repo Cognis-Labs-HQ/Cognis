@@ -108,6 +108,10 @@ Pratinjau menampilkan judul dan isi terkini sebelum diterbitkan. Kembali ke mode
 
 Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa memuat ulang halaman.
 
+### Penyimpanan dan Rute Bertipe
+
+Tipe peran dan visibilitas profil sesuai dengan rekaman tersimpan, termasuk akun moderator serta visibilitas privat, teman, dan komunitas. Pembacaan preferensi menyediakan teks JSON tersimpan. Pengujian penyimpanan menggunakan simulasi basis data terstruktur milik profil dengan dukungan rollback.
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring

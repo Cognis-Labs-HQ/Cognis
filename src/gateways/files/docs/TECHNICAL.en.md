@@ -110,6 +110,10 @@ Usage is tracked incrementally in the file object metadata table (`file_objects`
 
 `GatewayService.bootstrap()` always bootstraps the files gateway before the database gateway. Consequently the files gateway cannot assume `db:executor` is available at its own bootstrap time — DB-backed schema creation (file object metadata, quota tables) is deferred to the first real call rather than performed eagerly.
 
+### Typed Storage and Routes
+
+ACL checks receive an explicit calling component together with the actor. Namespace registration retains its immutable allow-list; object ownership, namespace identity and authorization rules are unchanged.
+
 ## Security
 
 Namespace ACLs and current ownership govern file reads and writes. The gateway compares per-namespace and global usage before writes; storage-provider paths are not public authorization tokens.

@@ -1,3 +1,4 @@
+import type { DispatchEnvelope } from "../../routes/shared.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createMessagesRoutes } from "../../routes/index.js";
@@ -33,11 +34,11 @@ type MinimalMessagesStore = {
 };
 
 type MinimalProfileStore = {
-    getProfile(accountId: string): Promise<Record<string, unknown> | null>;
+    getProfile(accountId: string): Promise<{ handle: string } | null>;
 };
 
 type DispatchFn = (
-    envelope: Record<string, unknown>,
+    envelope: DispatchEnvelope,
 ) => Promise<{ dispatched: string[] }>;
 
 function makeFlow(
@@ -158,7 +159,7 @@ function makeReq(method: string, token: string | null) {
 
 test("POST /messages/rooms sends a message-request notification for pending DMs", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const dispatched: Array<Record<string, unknown>> = [];
+    const dispatched: DispatchEnvelope[] = [];
     const messagesStore = {
         async hasApprovedMessageRequestBetween() {
             return false;
@@ -217,7 +218,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     const route = createMessagesRoutes({
         messagesStore: messagesStore as any,
         profileStore: profileStore as any,
-        dispatch: async (envelope: Record<string, unknown>) => {
+        dispatch: async (envelope: DispatchEnvelope) => {
             dispatched.push(envelope);
             return { dispatched: ["bob"] };
         },
@@ -260,7 +261,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
 
 test("POST /messages/rooms does not resend an existing message-request notification", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const dispatched: Array<Record<string, unknown>> = [];
+    const dispatched: DispatchEnvelope[] = [];
     const existingRequest = {
         id: "req-existing",
         status: "pending",
@@ -305,7 +306,7 @@ test("POST /messages/rooms does not resend an existing message-request notificat
     const route = createMessagesRoutes({
         messagesStore: messagesStore as any,
         profileStore: profileStore as any,
-        dispatch: async (envelope: Record<string, unknown>) => {
+        dispatch: async (envelope: DispatchEnvelope) => {
             dispatched.push(envelope);
             return { dispatched: ["bob"] };
         },
@@ -334,7 +335,7 @@ test("POST /messages/rooms does not resend an existing message-request notificat
 
 test("POST /messages/rooms/:id/messages skips notifications when recipient has pending incoming request", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const dispatched: Array<Record<string, unknown>> = [];
+    const dispatched: DispatchEnvelope[] = [];
     const messagesStore = {
         async getRoom(roomId: string) {
             assert.equal(roomId, "room-1");
@@ -440,7 +441,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     const route = createMessagesRoutes({
         messagesStore: messagesStore as any,
         profileStore: profileStore as any,
-        dispatch: async (envelope: Record<string, unknown>) => {
+        dispatch: async (envelope: DispatchEnvelope) => {
             dispatched.push(envelope);
             return { dispatched: ["bob"] };
         },
@@ -448,7 +449,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
         flow: makeFlow(
             messagesStore as any,
             profileStore as any,
-            async (envelope: Record<string, unknown>) => {
+            async (envelope: DispatchEnvelope) => {
                 dispatched.push(envelope);
                 return { dispatched: ["bob"] };
             },

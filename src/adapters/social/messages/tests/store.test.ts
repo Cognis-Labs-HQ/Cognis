@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { DbMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbInsertCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbSelectCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbUpdateCommand } from "../../../../gateways/db/reuse/db-command.js";
@@ -171,7 +172,7 @@ test("removing a member archives a chat for its sole remaining member", async ()
 
     assert.equal(lifecycle, "archived");
     const archive = commandCalls.find(
-        (command) =>
+        (command): command is StructuredDbUpdateCommand =>
             command.option === "UPDATE" && command.table === "chatroom_members",
     );
     assert.ok(archive && archive.set.archived === 1);
@@ -328,11 +329,11 @@ test("membership changes persist their room event in the same transaction", asyn
     assert.equal(added, true);
     assert.equal(transactionCount, 1);
     const memberInsert = commandCalls.find(
-        (command) =>
+        (command): command is StructuredDbInsertCommand =>
             command.option === "INSERT" && command.table === "chatroom_members",
     );
     const eventInsert = commandCalls.find(
-        (command) =>
+        (command): command is StructuredDbInsertCommand =>
             command.option === "INSERT" && command.table === "chat_messages",
     );
     assert.ok(memberInsert);
@@ -357,7 +358,7 @@ test("createMessageRequest persists room id when provided", async () => {
     });
 
     const insertCmd = commandCalls.find(
-        (cmd) =>
+        (cmd): cmd is StructuredDbInsertCommand =>
             cmd.option === "INSERT" && cmd.table === "chat_message_requests",
     );
     assert.ok(insertCmd);
@@ -401,7 +402,8 @@ test("incrementEmojiUsage inserts a new row when none exists", async () => {
     await store.incrementEmojiUsage("account-1", "👍");
 
     const insertCmd = commandCalls.find(
-        (cmd) => cmd.option === "INSERT" && cmd.table === "chat_emoji_usage",
+        (cmd): cmd is StructuredDbInsertCommand =>
+            cmd.option === "INSERT" && cmd.table === "chat_emoji_usage",
     );
     assert.ok(insertCmd);
     assert.equal(insertCmd.values.account_id, "account-1");
@@ -454,7 +456,8 @@ test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
     await store.getTopEmojiUsage("account-1", 5);
 
     const selectCmd = commandCalls.find(
-        (cmd) => cmd.option === "SELECT" && cmd.table === "chat_emoji_usage",
+        (cmd): cmd is StructuredDbSelectCommand =>
+            cmd.option === "SELECT" && cmd.table === "chat_emoji_usage",
     );
     assert.ok(selectCmd);
     assert.ok(

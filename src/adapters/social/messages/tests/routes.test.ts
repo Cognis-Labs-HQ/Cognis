@@ -1,6 +1,7 @@
+import type { DispatchEnvelope } from "../routes/shared.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileProfileStore } from "../../profile/store-contract.js";
+import { MessagesProfileStore } from "./profile-store.js";
 import {
     canMessage,
     canSendMessageRequest,
@@ -18,7 +19,7 @@ function makeReq(method: string, token: string | null) {
 }
 
 test("canMessage allows mutual followers", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -31,7 +32,7 @@ test("canMessage allows mutual followers", async () => {
 });
 
 test("canMessage blocks one-way follow", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -43,7 +44,7 @@ test("canMessage blocks one-way follow", async () => {
 });
 
 test("canSendMessageRequest allows visible non-blocked users", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -58,7 +59,7 @@ test("canSendMessageRequest allows visible non-blocked users", async () => {
 });
 
 test("canDirectMessageNowOrByApprovedRequest allows once-approved pairs", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -79,7 +80,7 @@ test("canDirectMessageNowOrByApprovedRequest allows once-approved pairs", async 
 });
 
 test("canDirectMessageNowOrByApprovedRequest blocks unapproved non-mutual pairs", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -101,7 +102,7 @@ test("canDirectMessageNowOrByApprovedRequest blocks unapproved non-mutual pairs"
 });
 
 test("canDirectMessageNowOrByApprovedRequest blocks approved history when requester cannot send requests", async () => {
-    const profileStore = new VolatileProfileStore();
+    const profileStore = new MessagesProfileStore();
     await profileStore.createProfile("alice", "alice", "user");
     await profileStore.createProfile("bob", "bob", "user");
     await profileStore.updateProfile("alice", { visibility: "community" });
@@ -804,7 +805,7 @@ test("GET /messages/rooms/:id/messages returns messages when no pending request 
 
 test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction notification with emoji", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const dispatched: Array<Record<string, unknown>> = [];
+    const dispatched: DispatchEnvelope[] = [];
     const messagesStore = {
         async getRoom(roomId: string) {
             assert.equal(roomId, "room-1");
@@ -875,7 +876,7 @@ test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction
     const route = createMessagesRoutes({
         messagesStore: messagesStore as any,
         profileStore: profileStore as any,
-        dispatch: async (envelope: Record<string, unknown>) => {
+        dispatch: async (envelope: DispatchEnvelope) => {
             dispatched.push(envelope);
             return { dispatched: ["bob"] };
         },

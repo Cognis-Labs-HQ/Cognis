@@ -25,7 +25,7 @@ export class DbUserPreferenceStore {
         });
     }
 
-    async get(accountId: string, pageId: string) {
+    async get(accountId: string, pageId: string): Promise<string | null> {
         const key = cacheKey(accountId, pageId);
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -34,7 +34,8 @@ export class DbUserPreferenceStore {
             where: [{ column: "pref_key", value: key }],
             limit: 1,
         });
-        return result.rows?.[0]?.layout_json ?? null;
+        const row = result.rows?.[0] as { layout_json: string } | undefined;
+        return row?.layout_json ?? null;
     }
 
     async set(accountId: string, pageId: string, layoutJson: string) {

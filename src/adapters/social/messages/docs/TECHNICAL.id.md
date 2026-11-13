@@ -145,6 +145,10 @@ Permintaan pesan tidak membuat ruang obrolan. Ruang pesan langsung, kunci, keang
 
 Halaman Pesan menyelesaikan kunci ruang melalui lingkup keyring `Social Messages`. Membuka halaman meminta akses untuk memuat rahasia obrolan yang ada; pembatalan buka kunci tidak dilanjutkan dengan permintaan kedua untuk menyimpan kunci kiriman. Saat buka kunci berhasil atau dipulihkan setelah muat ulang, halaman memperbarui pratinjau daftar ruang dan percakapan aktif agar placeholder terenkripsi segera diganti.
 
+### Penyimpanan dan Rute Bertipe
+
+Deklarasi peran dan visibilitas profil sosial kini sesuai dengan rekaman tersimpan. Rute pesan dan profil tetap mempertahankan pemeriksaan izin, sementara callback, notifikasi, dan perintah basis data menggunakan kontrak eksplisit. Resolusi sesi tamu yang tidak tersedia tetap menggagalkan proses sebelum profil tamu dibaca.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.

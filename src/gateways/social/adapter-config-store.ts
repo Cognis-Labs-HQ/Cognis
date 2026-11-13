@@ -38,7 +38,7 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
         });
         const row = result.rows?.[0];
         if (!row) return null;
-        return JSON.parse(row.config_json) as Record<string, unknown>;
+        return JSON.parse(String(row.config_json)) as Record<string, unknown>;
     }
 
     async saveConfig(
