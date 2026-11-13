@@ -1,3 +1,4 @@
+import { registerEnforcementPolicy } from "../../bootstrap/enforcement-policy.js";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { createRouteLifetime } from "../../bootstrap/route-lifetime.js";
 import {
@@ -39,6 +40,7 @@ export async function createSessionFixture() {
     await gateway.enableAdapter(adapter.id);
     const attempts = new Map<string, typeof candidate>();
     const state = {
+        authenticated: true,
         commits: 0,
         committedInputs: [] as unknown[],
         issued: [] as Array<{ setupPending: boolean }>,
@@ -46,13 +48,25 @@ export async function createSessionFixture() {
         commitOutcome: "success",
     };
     capabilities.contribute("system:ctx", root);
-    capabilities.contribute("auth:requireAuth", () => ({
+    const claims = {
         sub: candidate.accountId,
         role: "user",
         providerId: "local",
         ttlSeconds: 1800,
         setupPending: true,
-    }));
+    };
+    capabilities.contribute(
+        "auth:requireAuth",
+        (_req: IncomingMessage, res: ServerResponse) => {
+            if (state.authenticated) return claims;
+            res.writeHead(401, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "unauthorized" } }));
+            return null;
+        },
+    );
+    capabilities.contribute("auth:getAuthClaims", () =>
+        state.authenticated ? claims : null,
+    );
     capabilities.contribute(
         "auth:issueAccessToken",
         (
@@ -119,7 +133,11 @@ export async function createSessionFixture() {
         root,
         "gateway:tfa",
         async () => {
-            registerSessionAssessment(context, gateway);
+            const suspendAssessments = registerSessionAssessment(
+                context,
+                gateway,
+            );
+            registerEnforcementPolicy(context, gateway, suspendAssessments);
             const lifetime = createRouteLifetime(context);
             const handler = createTfaRoutes(
                 gateway,
@@ -158,10 +176,14 @@ export async function createSessionFixture() {
                 sortOrder: 0,
                 state: {},
             }),
-        async request(path: string, body: Record<string, unknown>) {
+        async request(
+            path: string,
+            body: Record<string, unknown>,
+            method = "POST",
+        ) {
             let payload = "";
             const req = new IncomingMessage(new Socket());
-            req.method = "POST";
+            req.method = method;
             req.url = path;
             req.push(Buffer.from(JSON.stringify(body)));
             req.push(null);

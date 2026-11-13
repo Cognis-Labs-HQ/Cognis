@@ -1,3 +1,4 @@
+import type { ApplyEnforcementPolicy } from "./enforcement-policy.js";
 import type { RouteLifetime } from "./route-lifetime.js";
 import {
     commitVerifiedSession,
@@ -491,12 +492,18 @@ export function createTfaRoutes(
                     role: claims.role,
                     ttlSeconds: accessTokenTtlSeconds,
                     providerId: claims.providerId,
-                    ...(lifetime
-                        ? {
-                              isAssuranceCurrent: () =>
-                                  lifetime.isCurrent(revision!),
-                          }
-                        : {}),
+                    isAssuranceCurrent: () => {
+                        const current =
+                            capabilities.get<
+                                (
+                                    request: IncomingMessage,
+                                ) => { sub: string } | null
+                            >("auth:getAuthClaims")?.(req);
+                        return (
+                            current?.sub === claims.sub &&
+                            (!lifetime || lifetime.isCurrent(revision!))
+                        );
+                    },
                 },
                 res,
                 log,
@@ -736,8 +743,33 @@ export function createTfaRoutes(
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = await readJson(req);
-            const enforceAllUsers = body.enforceAllUsers === true;
-            await gateway.setEnforceAllUsers(enforceAllUsers);
+            if (typeof body.enforceAllUsers !== "boolean") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({ error: { code: "invalid_tfa_policy" } }),
+                );
+                return true;
+            }
+            const enforceAllUsers = body.enforceAllUsers;
+            try {
+                await capabilities.require<ApplyEnforcementPolicy>(
+                    "tfa:applyEnforcementPolicy",
+                )({ required: enforceAllUsers });
+            } catch (error) {
+                log?.("error", "Could not update mandatory TFA enforcement.", {
+                    ...logMeta,
+                    operation: "applyEnforcementPolicy",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "tfa_policy_unavailable" },
+                    }),
+                );
+                return true;
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { enforceAllUsers } }));
             return true;

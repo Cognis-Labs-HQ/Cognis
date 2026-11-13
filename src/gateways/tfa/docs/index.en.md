@@ -103,3 +103,11 @@ The host also retains non-executable failure evidence for a discovered gateway w
 ## Typed Authentication Boundaries
 
 Auth and TFA declarations now describe the existing account roles, external identity fields, database commands and cookie session projections. Session timeout validation retains the same accepted numeric values. Login assurance and single-use factor attempts remain unchanged.
+
+## TFA policy changes
+
+All TFA enforcement entry points use the owning policy flow. Disabling enforcement revokes every setup-pending credential, including the acting administrator’s older credentials, while preserving ordinary sessions. Cleanup precedes the policy write and is safe to retry. Missing providers or failed writes return failure; token-file and database writes are not one transaction. A failed policy write can leave the stricter policy with pending credentials already revoked. Local atomic replacement does not guarantee survival of hardware failure or synchronize multiple server processes.
+
+During a serialized policy write, TFA suspends new session assessments and invalidates previous assessment leases. In-flight policy reads cannot issue a restricted token after cleanup, and ordinary session commitment must obtain current assurance. Setup completion rechecks the original credential before final commitment, so a token revoked during factor verification cannot refresh into a session.
+
+The policy flow requires a single-use operation and execution state held by its owner. Direct raw-flow calls and captured-operation replay are rejected before mutation; integrations must call the policy capability.

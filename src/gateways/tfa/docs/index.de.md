@@ -101,3 +101,11 @@ Der Host behält außerdem nicht ausführbare Fehlernachweise für gefundene Gat
 ## Typisierte Authentifizierungsgrenzen
 
 Die Deklarationen von Auth und TFA beschreiben die bestehenden Kontorollen, externen Identitätsfelder, Datenbankbefehle und Cookie-Sitzungsdaten. Die Prüfung des Sitzungslimits akzeptiert dieselben Zahlenwerte. Die Anmeldeabsicherung und einmalig verwendbare Faktorversuche bleiben unverändert.
+
+## TFA-Richtlinienänderungen
+
+Alle Zugänge zur TFA-Erzwingung verwenden den zuständigen Richtlinienablauf. Das Abschalten widerruft sämtliche Token mit ausstehender Einrichtung, einschließlich älterer Token des handelnden Administrators; normale Sitzungen bleiben erhalten. Die Bereinigung erfolgt vor dem Schreiben der Richtlinie und kann wiederholt werden. Fehlende Anbieter oder Schreibfehler melden einen Fehler; Tokendatei und Datenbank bilden keine gemeinsame Transaktion. Nach einem Richtlinienfehler können die strengere Richtlinie und bereits widerrufene Token bestehen bleiben. Lokaler atomarer Dateiersatz garantiert weder Schutz vor Hardwareausfällen noch Synchronisierung mehrerer Serverprozesse.
+
+Während eines serialisierten Richtlinienschreibvorgangs setzt TFA neue Sitzungsprüfungen aus und macht zuvor erteilte Prüfzusagen ungültig. Laufende Richtlinienabfragen können nach der Bereinigung keine eingeschränkten Token ausstellen; normale Sitzungen benötigen eine aktuelle Bestätigung. Der Einrichtungsabschluss prüft vor dem endgültigen Abschluss erneut die ursprüngliche Berechtigung. Ein während der Faktorprüfung widerrufenes Token kann daher keine Sitzung erhalten.
+
+Der Richtlinienablauf verlangt einen einmaligen Vorgang und Ausführungszustand unter Kontrolle seines Eigentümers. Direkte Ablaufaufrufe und die Wiederholung erfasster Vorgänge werden vor Änderungen abgewiesen; Integrationen müssen die Richtliniencapability verwenden.

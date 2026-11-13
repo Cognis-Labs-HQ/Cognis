@@ -102,12 +102,35 @@ export function createSystemRoutes(
         "tfa:getEnforceAllUsers",
     );
     const applyTfaEnforcementPolicy = ctx.getCapability<
-        (input: { required: boolean; excludedSubject?: string }) => Promise<{
+        (input: { required: boolean }) => Promise<{
             required: boolean;
             previousRequired: boolean;
             revokedSetupPendingCount: number;
         }>
     >("tfa:applyEnforcementPolicy");
+    const readTfaPolicy = async (
+        mirrored: boolean,
+        res: ServerResponse,
+    ): Promise<boolean | null> => {
+        if (!getEnforceTfaForAllUsers) return mirrored;
+        try {
+            const required = await getEnforceTfaForAllUsers();
+            if (typeof required !== "boolean")
+                throw new Error("invalid_tfa_policy");
+            return required;
+        } catch (error) {
+            log?.("error", "Could not read mandatory TFA enforcement policy.", {
+                component: "api-system",
+                operation: "readEnforcementPolicy",
+                errorName: error instanceof Error ? error.name : "UnknownError",
+            });
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({ error: { code: "tfa_policy_unavailable" } }),
+            );
+            return null;
+        }
+    };
     const licenseMarkdownFile = resolve(
         process.cwd(),
         "src",
@@ -225,9 +248,11 @@ export function createSystemRoutes(
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
             const data = parseSecuritySettings(raw);
-            const enforceTfaForAllUsers = getEnforceTfaForAllUsers
-                ? await getEnforceTfaForAllUsers().catch(() => false)
-                : data?.enforceTfaForAllUsers === true;
+            const enforceTfaForAllUsers = await readTfaPolicy(
+                data?.enforceTfaForAllUsers === true,
+                res,
+            );
+            if (enforceTfaForAllUsers === null) return true;
             if (!data && raw) {
                 log?.("warn", "Failed to parse persisted security settings.", {
                     ...logMeta,
@@ -305,7 +330,21 @@ export function createSystemRoutes(
             }
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
-            const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
+            if (
+                body.enforceTfaForAllUsers !== undefined &&
+                typeof body.enforceTfaForAllUsers !== "boolean"
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({ error: { code: "invalid_tfa_policy" } }),
+                );
+                return true;
+            }
+            const enforceTfaForAllUsers =
+                body.enforceTfaForAllUsers === undefined
+                    ? await readTfaPolicy(previous.enforceTfaForAllUsers, res)
+                    : body.enforceTfaForAllUsers === true;
+            if (enforceTfaForAllUsers === null) return true;
             if (
                 body.loginSessionTimeoutMinutes !== undefined &&
                 (!Number.isInteger(body.loginSessionTimeoutMinutes) ||
@@ -329,6 +368,35 @@ export function createSystemRoutes(
                     : normalizeLoginSessionTimeoutMinutes(
                           body.loginSessionTimeoutMinutes,
                       );
+            if (body.enforceTfaForAllUsers !== undefined) {
+                try {
+                    if (!applyTfaEnforcementPolicy)
+                        throw new Error("tfa_policy_unavailable");
+                    await applyTfaEnforcementPolicy({
+                        required: enforceTfaForAllUsers,
+                    });
+                } catch (error) {
+                    log?.(
+                        "error",
+                        "Failed to apply mandatory TFA enforcement policy.",
+                        {
+                            ...logMeta,
+                            operation: "applyEnforcementPolicy",
+                            errorName:
+                                error instanceof Error
+                                    ? error.name
+                                    : "UnknownError",
+                        },
+                    );
+                    res.writeHead(503, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: { code: "tfa_policy_unavailable" },
+                        }),
+                    );
+                    return true;
+                }
+            }
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -341,42 +409,6 @@ export function createSystemRoutes(
                         loginSessionTimeoutMinutes,
                     }),
                 );
-            }
-            if (applyTfaEnforcementPolicy) {
-                const enforcementResult = await applyTfaEnforcementPolicy({
-                    required: enforceTfaForAllUsers,
-                    excludedSubject: claims.sub,
-                }).catch((error) => {
-                    log?.(
-                        "warn",
-                        "Failed to apply mandatory TFA enforcement policy.",
-                        {
-                            ...logMeta,
-                            accountId: claims.sub,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    return null;
-                });
-                if (
-                    enforcementResult?.previousRequired === true &&
-                    !enforcementResult.required &&
-                    enforcementResult.revokedSetupPendingCount > 0
-                ) {
-                    log?.(
-                        "info",
-                        "Revoked setup-pending access tokens after disabling mandatory TFA.",
-                        {
-                            ...logMeta,
-                            accountId: claims.sub,
-                            revokedSetupPendingCount:
-                                enforcementResult.revokedSetupPendingCount,
-                        },
-                    );
-                }
             }
             log?.("info", "Updated security settings.", {
                 ...logMeta,

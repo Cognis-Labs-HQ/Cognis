@@ -101,3 +101,11 @@ Host juga menyimpan bukti kegagalan yang tidak dapat dijalankan untuk gateway ya
 ## Batas Autentikasi Bertipe
 
 Deklarasi Auth dan TFA kini menjelaskan peran akun, bidang identitas eksternal, perintah basis data, dan proyeksi sesi kuki yang sudah ada. Validasi batas waktu sesi tetap menerima nilai angka yang sama. Jaminan masuk dan percobaan faktor sekali pakai tidak berubah.
+
+## Perubahan kebijakan TFA
+
+Semua jalur penegakan TFA memakai alur kebijakan milik komponen. Menonaktifkan penegakan mencabut seluruh kredensial dengan penyiapan tertunda, termasuk kredensial lama administrator pelaksana, tanpa mengubah sesi normal. Pembersihan mendahului penulisan kebijakan dan aman diulang. Penyedia yang tidak tersedia atau kegagalan penulisan menghasilkan kegagalan; berkas token dan basis data bukan satu transaksi. Kegagalan penulisan kebijakan dapat mempertahankan kebijakan yang lebih ketat dengan kredensial tertunda yang sudah dicabut. Penggantian berkas atomik lokal tidak menjamin ketahanan terhadap kerusakan perangkat keras atau menyinkronkan beberapa proses server.
+
+Selama penulisan kebijakan yang diserialkan, TFA menangguhkan penilaian sesi baru dan membatalkan jaminan penilaian sebelumnya. Pembacaan kebijakan yang masih berjalan tidak dapat menerbitkan token terbatas setelah pembersihan, dan penerbitan sesi normal membutuhkan jaminan terkini. Penyelesaian penyiapan memeriksa ulang kredensial asli sebelum komit akhir, sehingga token yang dicabut selama verifikasi faktor tidak dapat diperbarui menjadi sesi.
+
+Alur kebijakan memerlukan operasi sekali pakai dan status eksekusi yang dipegang pemiliknya. Pemanggilan alur langsung dan pengulangan operasi yang ditangkap ditolak sebelum mutasi; integrasi harus memanggil kapabilitas kebijakan.
