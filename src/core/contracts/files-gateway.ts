@@ -60,7 +60,7 @@ export interface NamespaceDefinition {
      * Component ids (besides the owner) permitted to call files:* against
      * this namespace. "core" is always implicitly permitted.
      */
-    allowComponents?: string[];
+    allowComponents?: readonly string[];
 }
 
 /** Identifies the caller making a namespaced file operation. */

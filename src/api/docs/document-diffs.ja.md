@@ -15,3 +15,5 @@
 ## Markdown 比較ビュー
 
 ブラウザーの `ui:documentDiff` Capability が提供する `renderMarkdownDocumentDiff(diff)` を使用すると、変更後の文書全体を Host の Markdown Renderer で描画できます。変更されていない内容は通常の文書表示を維持し、追加、置換、削除には緑、オレンジ、赤の Overlay と概要バーのナビゲーションが適用されます。 Renderer は比較内容全体を 1 回の Markdown 処理で描画するため、変更行をまたぐ Fenced Code Block、リスト、引用などの構造が維持されます。
+
+データベース入力は DB ゲートウェイの公開された構造化契約 `ensureTable` と `executeCommand` を使用します。ストアの生成と変更不可能なストアのメソッドには明示的な TypeScript 契約があり、特定のデータベースドライバーには依存しません。

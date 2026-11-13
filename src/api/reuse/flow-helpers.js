@@ -1,7 +1,7 @@
 /**
  * Returns the first value for a flow stage result array or null when absent.
  *
- * @param {Record<string, unknown[] | undefined>} stageResults
+ * @param {Record<string, unknown[] | undefined> | undefined} stageResults
  * @param {string} stageId
  * @returns {unknown | null}
  */
@@ -14,7 +14,7 @@ export function getFirstStageResult(stageResults, stageId) {
 /**
  * Returns the first value for a flow stage result array matching a predicate.
  *
- * @param {Record<string, unknown[] | undefined>} stageResults
+ * @param {Record<string, unknown[] | undefined> | undefined} stageResults
  * @param {string} stageId
  * @param {(result: unknown) => boolean} predicate
  * @returns {unknown | null}

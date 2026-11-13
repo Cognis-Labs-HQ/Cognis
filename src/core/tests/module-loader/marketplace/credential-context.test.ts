@@ -47,10 +47,14 @@ test("credential-bearing operations redact raw, escaped and basic-auth secrets i
 test("marketplace requests reject redirects and retain caller cancellation with bounded lifetime", async (t) => {
     let captured: RequestInit | undefined;
     const controller = new AbortController();
-    t.mock.method(globalThis, "fetch", async (_url, options) => {
-        captured = options;
-        return new Response("{}");
-    });
+    t.mock.method(
+        globalThis,
+        "fetch",
+        async (_url: string | URL | Request, options?: RequestInit) => {
+            captured = options;
+            return new Response("{}");
+        },
+    );
     await fetchMarketplaceResource("https://example.test/api", {
         headers: { authorization: "Bearer test-only" },
         signal: controller.signal,

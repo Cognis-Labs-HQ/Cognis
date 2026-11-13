@@ -7,13 +7,22 @@ import type { ComponentService } from "../../components/service.js";
 
 test("component routes enforce role boundaries and bind channel changes to the URL target", async (t) => {
     const calls: unknown[] = [];
-    const service = {
+    const unexpectedOperation = async (): Promise<never> => {
+        throw new Error("Unexpected component operation");
+    };
+    const service: ComponentService = {
+        dispose() {
+            throw new Error("Unexpected component disposal");
+        },
+        info: unexpectedOperation,
+        apply: unexpectedOperation,
+        releaseChannels: unexpectedOperation,
         list: async () => [],
         releaseChannel: async (_request, input) => {
             calls.push(input);
             return { channel: input?.channel };
         },
-    } as ComponentService;
+    };
     const context = createDefaultRouteContext();
     context.requireAuth = (request, response, minimum) => {
         const role = request.headers.authorization;

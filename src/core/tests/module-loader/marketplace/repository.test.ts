@@ -146,37 +146,41 @@ for (const privateRepository of [false, true]) {
         context.after(() => rm(root, { recursive: true, force: true }));
         const repository = new TestMarketplaceRepository("sources.json", root);
         const body = Buffer.alloc(1300000, 42);
-        context.mock.method(globalThis, "fetch", async (input, init) => {
-            const url = String(input);
-            if (privateRepository) {
-                const endpoint = new URL(url);
-                assert.equal(endpoint.origin, "https://api.github.com");
-                assert.equal(
-                    endpoint.pathname,
-                    "/repos/example/notes/contents/assets/banner.png",
-                );
-                assert.equal(
-                    new Headers(init?.headers).get("authorization"),
-                    "Bearer test-token",
-                );
-                assert.equal(
-                    new Headers(init?.headers).get("accept"),
-                    "application/vnd.github.raw+json",
-                );
-            } else {
-                assert.equal(
-                    url,
-                    "https://raw.githubusercontent.com/example/notes/feature%2Fartwork/assets/banner.png",
-                );
-                assert.equal(
-                    new Headers(init?.headers).get("authorization"),
-                    null,
-                );
-            }
-            return new Response(body, {
-                headers: { "content-type": "application/octet-stream" },
-            });
-        });
+        context.mock.method(
+            globalThis,
+            "fetch",
+            async (input: string | URL | Request, init?: RequestInit) => {
+                const url = String(input);
+                if (privateRepository) {
+                    const endpoint = new URL(url);
+                    assert.equal(endpoint.origin, "https://api.github.com");
+                    assert.equal(
+                        endpoint.pathname,
+                        "/repos/example/notes/contents/assets/banner.png",
+                    );
+                    assert.equal(
+                        new Headers(init?.headers).get("authorization"),
+                        "Bearer test-token",
+                    );
+                    assert.equal(
+                        new Headers(init?.headers).get("accept"),
+                        "application/vnd.github.raw+json",
+                    );
+                } else {
+                    assert.equal(
+                        url,
+                        "https://raw.githubusercontent.com/example/notes/feature%2Fartwork/assets/banner.png",
+                    );
+                    assert.equal(
+                        new Headers(init?.headers).get("authorization"),
+                        null,
+                    );
+                }
+                return new Response(body, {
+                    headers: { "content-type": "application/octet-stream" },
+                });
+            },
+        );
         const assetId = await repository.cacheAsset(
             { ...githubSource, scanPrivateRepos: privateRepository },
             "assets/banner.png",

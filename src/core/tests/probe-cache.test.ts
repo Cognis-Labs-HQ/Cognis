@@ -78,12 +78,12 @@ test("concurrent cold reads share a probe and a failed probe preserves the last 
 
 test("cache probes compare structured values independently of object key order", async () => {
     let now = 1000;
-    let snapshot: CacheSnapshot<object> | null = null;
+    const snapshots: Array<CacheSnapshot<object>> = [];
     const cache = createProbeCache(
         {
-            read: async () => snapshot,
+            read: async () => snapshots.at(-1) ?? null,
             write: async (_key, value) => {
-                snapshot = structuredClone(value);
+                snapshots.push(structuredClone(value));
             },
         },
         { now: () => now },
@@ -97,5 +97,5 @@ test("cache probes compare structured values independently of object key order",
         fields: { ja: "こんにちは", en: "hello" },
         label: "hello",
     }));
-    assert.equal(snapshot?.pending, undefined);
+    assert.equal(snapshots.at(-1)?.pending, undefined);
 });

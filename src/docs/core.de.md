@@ -107,3 +107,9 @@ export interface AuthAccountStore {
 Domänenverträge werden während des Bootstraps durch ihre Besitzer über die öffentliche Registry `system:contracts` deklariert. `define(id, { version, kind, members, description })` beschreibt die Struktur; `resolve(id, version)` prüft die öffentliche Implementierung und bindet den Zugriff an diese Registrierung. Rollback und Deaktivierung entfernen Definitionen; Reaktivierung stellt sie wieder her. Module verwenden ihren eigenen Namensraum. Die Auflösung im Modulkontext erhält die Berechtigungsprüfung des Hosts. Neue Modulverträge benötigen keine Core-Quelldatei; optionale Typdeklarationen liegen im öffentlichen Vertragsverzeichnis des Anbieters. Bestätigungscodes gehören zur gemeinsamen Server-Wiederverwendung und werden durch Auth als `auth:verificationCodes` bereitgestellt, nicht durch Core.
 
 Verschachtelte Bootstrap-Bereiche erben die Berechtigung ihres übergeordneten Bereichs und können nach dessen Ende keine Verträge mehr registrieren.
+
+## Öffentliche Typverträge
+
+Der Core-Export stellt einen einheitlichen Typ `AccessRole` bereit. Modulmanifeste deklarieren optionale `requiresCapabilities` neben den bereitgestellten Fähigkeiten. Kontolisten enthalten die stabile `accountId` für kontobezogene Verbraucher. Komponenteninhaber behalten ihre Namen und Lokalisierungsmetadaten in UI-Anbieterbeschreibungen.
+
+Datei-Namespace-Definitionen akzeptieren schreibgeschützte `allowComponents`-Listen. Flow-Helfer akzeptieren eine nicht vorhandene Ergebnissammlung, ohne Ergebnisauswahl oder Autorisierung zu ändern.

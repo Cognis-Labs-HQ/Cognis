@@ -15,3 +15,5 @@ The browser renderer escapes dynamic text and presents added lines in green, cha
 ## Markdown comparison views
 
 Use `renderMarkdownDocumentDiff(diff)` from the browser `ui:documentDiff` capability to render the complete destination document through the host Markdown renderer. Unchanged content keeps its normal document presentation, while additions, replacements, and removals receive green, orange, and red overlays with overview-rail navigation. The renderer processes the composed comparison in one Markdown pass, preserving fenced code blocks, lists, quotations, and other structures that cross changed lines.
+
+The database input uses the DB gateway’s public structured `ensureTable` and `executeCommand` contract. Store creation and immutable store methods carry explicit TypeScript contracts; they do not require a concrete database driver.
