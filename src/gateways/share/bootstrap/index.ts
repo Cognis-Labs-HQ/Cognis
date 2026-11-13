@@ -227,21 +227,35 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         resolveShareGuestSessionId,
     );
     ctx.capabilities.contribute("share:hasCapability", hasShareCapability);
-    ctx.capabilities.contribute("share:resolveGuestAccess", (options) =>
-        resolveShareGuestAccess({
-            ...options,
-            getTokenById: gateway.getTokenById.bind(gateway),
-            getGuestProfile: gateway.getGuestProfile.bind(gateway),
-        }),
+    ctx.capabilities.contribute(
+        "share:resolveGuestAccess",
+        (
+            options: Omit<
+                NonNullable<Parameters<typeof resolveShareGuestAccess>[0]>,
+                "getTokenById" | "getGuestProfile"
+            >,
+        ) =>
+            resolveShareGuestAccess({
+                ...options,
+                getTokenById: gateway.getTokenById.bind(gateway),
+                getGuestProfile: gateway.getGuestProfile.bind(gateway),
+            }),
     );
-    ctx.capabilities.contribute("share:resolveDelegatedAccess", (options) =>
-        resolveShareDelegatedAccess({
-            ...options,
-            getTokenById: gateway.getTokenById.bind(gateway),
-            getGuestProfile: gateway.getGuestProfile.bind(gateway),
-            runDelegationFlow: (flowInput) =>
-                ctx.flow.run("resolve-share-delegated-access", flowInput),
-        }),
+    ctx.capabilities.contribute(
+        "share:resolveDelegatedAccess",
+        (
+            options: Omit<
+                NonNullable<Parameters<typeof resolveShareDelegatedAccess>[0]>,
+                "getTokenById" | "getGuestProfile" | "runDelegationFlow"
+            >,
+        ) =>
+            resolveShareDelegatedAccess({
+                ...options,
+                getTokenById: gateway.getTokenById.bind(gateway),
+                getGuestProfile: gateway.getGuestProfile.bind(gateway),
+                runDelegationFlow: (flowInput) =>
+                    ctx.flow.run("resolve-share-delegated-access", flowInput),
+            }),
     );
     ctx.capabilities.contribute(
         "share:listPendingApprovalsForAccount",

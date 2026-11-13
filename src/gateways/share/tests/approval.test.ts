@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     createCtx,
+    CapabilityStore,
     registerCanonicalFlow,
     SHARE_FLOW_CATALOG,
 } from "@cognis/core";
@@ -9,17 +10,12 @@ import {
     registerShareApprovalFlow,
     requestShareApproval,
 } from "../bootstrap/approval.js";
-import type { GatewayBootstrapContext } from "../../shared.js";
-import type { CoreShareGateway } from "../gateway/index.js";
 
 test("share approval accepts the requester display name used by Jitsi Meet", async () => {
     const systemCtx = createCtx();
-    const ctx = {
-        flow: systemCtx.flow,
-        capabilities: {
-            get: (id: string) => (id === "system:ctx" ? systemCtx : undefined),
-        },
-    } as unknown as GatewayBootstrapContext;
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("system:ctx", systemCtx);
+    const ctx = { flow: systemCtx.flow, capabilities };
     const approvalFlow = SHARE_FLOW_CATALOG.find(
         (flow) => flow.id === "resolve-share-approval-targets",
     );
@@ -31,10 +27,10 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
         { id: "test:meeting-participants" },
         () => ({ targetAccountIds: ["bob"] }),
     );
-    let approvalRequest: Record<string, unknown> | null = null;
+    const approvalRequests: Record<string, unknown>[] = [];
     const gateway = {
         async createApprovalRequestBatch(input: Record<string, unknown>) {
-            approvalRequest = input;
+            approvalRequests.push(input);
             return { mintRequestId: "approval-1", rows: [] };
         },
         async resolveApprovalStatus() {
@@ -44,7 +40,7 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
 
     registerShareApprovalFlow({
         ctx,
-        gateway: gateway as unknown as CoreShareGateway,
+        gateway,
     });
     const result = await requestShareApproval({
         ctx,
@@ -59,20 +55,17 @@ test("share approval accepts the requester display name used by Jitsi Meet", asy
     });
 
     assert.deepEqual(result, { approved: true, requiresApproval: true });
-    assert.equal(approvalRequest?.requesterDisplayName, "Alice");
-    assert.equal(approvalRequest?.approvalAction, "add a participant");
-    assert.equal(approvalRequest?.approvalTarget, "Weekly meeting");
-    assert.deepEqual(approvalRequest?.targetAccountIds, ["bob"]);
+    assert.equal(approvalRequests[0]?.requesterDisplayName, "Alice");
+    assert.equal(approvalRequests[0]?.approvalAction, "add a participant");
+    assert.equal(approvalRequests[0]?.approvalTarget, "Weekly meeting");
+    assert.deepEqual(approvalRequests[0]?.targetAccountIds, ["bob"]);
 });
 
 test("share approval retains the share-link popup defaults", async () => {
     const systemCtx = createCtx();
-    const ctx = {
-        flow: systemCtx.flow,
-        capabilities: {
-            get: (id: string) => (id === "system:ctx" ? systemCtx : undefined),
-        },
-    } as unknown as GatewayBootstrapContext;
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("system:ctx", systemCtx);
+    const ctx = { flow: systemCtx.flow, capabilities };
     const approvalFlow = SHARE_FLOW_CATALOG.find(
         (flow) => flow.id === "resolve-share-approval-targets",
     );
@@ -84,10 +77,10 @@ test("share approval retains the share-link popup defaults", async () => {
         { id: "test:default-copy-target" },
         () => ({ targetAccountIds: ["bob"] }),
     );
-    let approvalRequest: Record<string, unknown> | null = null;
+    const approvalRequests: Record<string, unknown>[] = [];
     const gateway = {
         async createApprovalRequestBatch(input: Record<string, unknown>) {
-            approvalRequest = input;
+            approvalRequests.push(input);
             return { mintRequestId: "approval-2", rows: [] };
         },
         async resolveApprovalStatus() {
@@ -97,7 +90,7 @@ test("share approval retains the share-link popup defaults", async () => {
 
     registerShareApprovalFlow({
         ctx,
-        gateway: gateway as unknown as CoreShareGateway,
+        gateway,
     });
     await requestShareApproval({
         ctx,
@@ -108,6 +101,6 @@ test("share approval retains the share-link popup defaults", async () => {
         },
     });
 
-    assert.equal(approvalRequest?.approvalAction, "");
-    assert.equal(approvalRequest?.approvalTarget, "meeting");
+    assert.equal(approvalRequests[0]?.approvalAction, "");
+    assert.equal(approvalRequests[0]?.approvalTarget, "meeting");
 });

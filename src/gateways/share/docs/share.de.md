@@ -63,3 +63,9 @@ Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach P
 ## Ausdrücklichen Rechteentzug beachten
 
 PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.
+
+## Typisierte Token-Ergebnisse
+
+Share 1.9.9 deklariert die Token-Felder der Erstellungs-, Änderungs- und Listenfunktionen, einschließlich Metadaten, Ablaufzeit, Empfängern und gewährten Berechtigungen. Bootstrap-Callbacks und strukturierte Abfragetests verwenden explizite Verträge. Eigentümerprüfungen und der Widerruf durch eine leere Berechtigungsliste bleiben erhalten.
+
+Synthetische Tests prüfen gespeicherte Token-Ergebnisse, abgewiesene Änderungen durch Nicht-Eigentümer und die Bereinigung von Gastprofilen. Empfänger-, Passwort-, Adapter- und Ablaufprüfungen behalten ihr bisheriges Verhalten.

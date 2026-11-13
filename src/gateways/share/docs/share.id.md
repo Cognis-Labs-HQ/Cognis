@@ -63,3 +63,9 @@ Berbagi langsung kepada pengguna tidak lagi memberi akses setelah kedaluwarsa, t
 ## Hormati pencabutan hak eksplisit
 
 PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku.
+
+## Hasil Token Bertipe
+
+Share 1.9.9 mendeklarasikan bidang token yang dikembalikan oleh kapabilitas penerbitan, pembaruan, dan daftar, termasuk metadata, kedaluwarsa, penerima, dan kapabilitas yang diberikan. Callback bootstrap dan fixture kueri terstruktur menggunakan kontrak eksplisit. Pemeriksaan pemilik dan pencabutan melalui daftar kapabilitas kosong tetap berlaku.
+
+Pengujian sintetis mencakup hasil token tersimpan, penolakan pembaruan oleh bukan pemilik, dan pembersihan profil tamu. Pemeriksaan penerima, kata sandi, adaptor, dan kedaluwarsa mempertahankan perilaku sebelumnya.

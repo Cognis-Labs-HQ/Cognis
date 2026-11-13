@@ -18,7 +18,10 @@ import {
     ShareApprovalRequestStore,
     type ShareApprovalRequestRecord,
 } from "./approval-request-store.js";
-import { resolveQuickShareActions } from "./quick-share-actions.js";
+import {
+    resolveQuickShareActions,
+    type QuickShareAction,
+} from "./quick-share-actions.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ShareAdapterConfigStoreContract } from "./adapter-config-store.js";
@@ -63,6 +66,38 @@ export interface ShareVariant {
     contentType?: string;
     access?: "read" | "write";
 }
+
+export type ShareTokenView = Pick<
+    ShareTokenRecord,
+    | "id"
+    | "ownerAccountId"
+    | "resourceType"
+    | "resourceId"
+    | "label"
+    | "metadata"
+    | "grantedCapabilities"
+    | "accessControls"
+    | "expiresAt"
+    | "createdAt"
+    | "updatedAt"
+    | "lastAccessedAt"
+> & {
+    passwordProtected: boolean;
+    readonlyWatermark: boolean;
+    status: "expired" | "active";
+    activityEvents: Awaited<ReturnType<ShareTokenStore["listActivity"]>>;
+    shareUrl: string;
+    destinationUrl: string;
+    actionUrl: string;
+    shareMethod: string;
+    variants: ShareVariant[];
+    emailSupported: boolean;
+    quickShareActions: QuickShareAction[];
+};
+
+export type IssuedShareToken = ShareTokenView & {
+    generatedPassword: string | null;
+};
 
 export class CoreShareGateway {
     private readonly adapters = new Map<string, ShareMethodAdapter>();
@@ -232,9 +267,7 @@ export class CoreShareGateway {
         return isExpired(record.expiresAt);
     }
 
-    async serializeRecord(
-        record: ShareTokenRecord,
-    ): Promise<Record<string, unknown>> {
+    async serializeRecord(record: ShareTokenRecord): Promise<ShareTokenView> {
         const adapter = this.resolveRecordAdapter(record);
         const publicLink = adapter?.delivery === "public";
         const shareUrl = publicLink
@@ -319,7 +352,7 @@ export class CoreShareGateway {
         password?: string | null;
         generatePassword?: boolean;
         expiresAt?: string;
-    }): Promise<Record<string, unknown>> {
+    }): Promise<IssuedShareToken> {
         await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
             adapterId: String(input.metadata?.adapterId ?? ""),
@@ -350,7 +383,7 @@ export class CoreShareGateway {
         generatePassword?: boolean;
         clearPassword?: boolean;
         expiresAt?: string;
-    }): Promise<Record<string, unknown> | null> {
+    }): Promise<IssuedShareToken | null> {
         const existingRecord = await this.store.getById(input.shareId);
         if (
             !existingRecord ||
@@ -395,7 +428,7 @@ export class CoreShareGateway {
         ownerAccountId: string;
         resourceType?: string;
         resourceId?: string;
-    }): Promise<Record<string, unknown>[]> {
+    }): Promise<ShareTokenView[]> {
         const records = await this.store.listByOwner(filter);
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
@@ -404,7 +437,7 @@ export class CoreShareGateway {
 
     async listReceivedTokens(
         recipientAccountId: string,
-    ): Promise<Record<string, unknown>[]> {
+    ): Promise<ShareTokenView[]> {
         const records = await this.store.listByRecipient(recipientAccountId);
         return Promise.all(
             records.map((record) => this.serializeRecord(record)),
@@ -489,7 +522,7 @@ export class CoreShareGateway {
     async listByResource(filter: {
         resourceType: string;
         resourceId: string;
-    }): Promise<Record<string, unknown>[]> {
+    }): Promise<ShareTokenView[]> {
         const records = await this.store.listByResource(filter);
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
