@@ -74,7 +74,7 @@ function makeRouteContext(accountStore: LocalAccountStore) {
             const created = await accountStore.register(
                 username,
                 password,
-                role === "admin",
+                role === "admin" ? "admin" : "user",
             );
             return { persisted: true, created, role };
         },

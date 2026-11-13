@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { execFile } from "node:child_process";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -11,7 +12,7 @@ async function findFiles(
     root: string,
     predicate: (filePath: string) => boolean,
 ): Promise<string[]> {
-    let entries: Awaited<ReturnType<typeof readdir>>;
+    let entries: Dirent<string>[];
     try {
         entries = await readdir(root, { withFileTypes: true });
     } catch (error) {

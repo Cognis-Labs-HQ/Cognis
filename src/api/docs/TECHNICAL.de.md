@@ -37,6 +37,8 @@ Verwenden Sie `renderMarkdownDocumentDiff(diff)` aus der Browser-Capability `ui:
 
 Alle drei Ansichten und ihre verfügbaren Übersetzungen werden atomar in einer `bundle.json` unter der Komponentenversion gespeichert. Nur vollständige Pakete erscheinen im Index. Erneutes Lesen einer installierten Version aktualisiert das ganze Paket; andere vollständig veröffentlichte Versionen bleiben verfügbar.
 
+Die Datenbankeingabe verwendet den öffentlichen strukturierten Vertrag `ensureTable` und `executeCommand` des DB-Gateways. Speichererstellung und unveränderliche Speichermethoden besitzen explizite TypeScript-Verträge und benötigen keinen konkreten Datenbanktreiber.
+
 ## Sicherheit
 
 Dokumentationsendpunkte liefern nur lesbare Informationen. Zugangsdaten und private Kontodaten gehören nicht in diese Quellen. Routen der getrennten Dokumentvergleichsfunktion prüfen Anmeldung und Dokumentrechte selbst.

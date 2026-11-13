@@ -480,7 +480,9 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            const body = await readJson(req).catch(() => ({}));
+            const body: Record<string, unknown> = await readJson(req).catch(
+                () => ({}),
+            );
             const deleteContent = body?.deleteContent === true;
             if (manifest) {
                 const cleanupSupported = await hooks?.beforeUninstall?.(

@@ -8,13 +8,13 @@ The public interfaces and operational rules of Component Versions.
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.2` |
+| Core Package | `src/core/` | `0.6.3` |
 
 ### API
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.33` |
+| API Server | `src/api/` | `0.13.34` |
 
 ## Configuration
 

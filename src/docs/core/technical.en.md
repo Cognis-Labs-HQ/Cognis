@@ -129,6 +129,12 @@ export interface HealthStatus {
 
 Flows are ordered stage pipelines that components can extend without direct imports between owners. A single flow can orchestrate backend behavior (e.g. login, password change) and UI construction behavior (e.g. construct login page, construct settings page), while optional adapters/modules hook into stages only when enabled.
 
+### Public Type Contracts
+
+The Core export provides one canonical `AccessRole` type. Module manifests declare optional `requiresCapabilities` alongside the capabilities they provide, and account listings expose the stable `accountId` used by account-scoped consumers. Component owners retain their names and localization metadata in UI provider descriptors.
+
+File namespace definitions accept readonly `allowComponents` lists. Flow helpers accept an undefined stage-results collection without changing result selection or authorization.
+
 ## Security
 
 Bootstrap scopes identify registration owners. Flow handlers must authorize before state changes; a capability lookup is not proof that the user may access its data.
