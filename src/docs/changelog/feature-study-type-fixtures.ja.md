@@ -8,4 +8,4 @@ ClassesとFlashcardsのテストは、他のコンポーネントのゲートウ
 
 ## コミット
 
-- [b480b681ce9976366143f31fa516fbacb2d14cc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/b480b681ce9976366143f31fa516fbacb2d14cc7)
+- [ee0ad5b3a7d481a6c0b892b819f074150f10b6e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee0ad5b3a7d481a6c0b892b819f074150f10b6e7)
